@@ -512,21 +512,8 @@ Task updatedTask = taskManager.saveTaskEvent(event);
         assertEquals(2, updatedTask.getArtifacts().size());
         
         // Verify both artifacts are present
-        List<Artifact> artifacts = updatedTask.getArtifacts();
-        boolean foundArtifact1 = false;
-        boolean foundArtifact2 = false;
-        
-        for (Artifact artifact : artifacts) {
-            if ("artifact-id-1".equals(artifact.artifactId())) {
-                foundArtifact1 = true;
-                assertEquals("content 1", ((TextPart) artifact.parts().get(0)).getText());
-            } else if ("artifact-id-2".equals(artifact.artifactId())) {
-                foundArtifact2 = true;
-                assertEquals("content 2", ((TextPart) artifact.parts().get(0)).getText());
-            }
-        }
-        
-        assertTrue(foundArtifact1, "Artifact 1 should be present");
-        assertTrue(foundArtifact2, "Artifact 2 should be present");
+List<Artifact> artifacts = updatedTask.getArtifacts();
+assertTrue(artifacts.stream().anyMatch(a -> "artifact-id-1".equals(a.artifactId()) && "content 1".equals(((TextPart) a.parts().get(0)).getText())), "Artifact 1 should be present");
+assertTrue(artifacts.stream().anyMatch(a -> "artifact-id-2".equals(a.artifactId()) && "content 2".equals(((TextPart) a.parts().get(0)).getText())), "Artifact 2 should be present");
     }
 }
