@@ -211,8 +211,7 @@ public class TaskManagerTest {
                 .append(true)
                 .build();
 
-        Task saved = taskManager.saveTaskEvent(event);
-        Task updatedTask = taskManager.getTask();
+Task updatedTask = taskManager.saveTaskEvent(event);
 
         assertEquals(1, updatedTask.getArtifacts().size());
         Artifact updatedArtifact = updatedTask.getArtifacts().get(0);
