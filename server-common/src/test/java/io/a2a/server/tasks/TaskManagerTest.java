@@ -1,16 +1,18 @@
 package io.a2a.server.tasks;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Artifact;
@@ -22,8 +24,6 @@ import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.util.Utils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class TaskManagerTest {
     private static final String TASK_JSON = """
@@ -209,7 +209,7 @@ public class TaskManagerTest {
                 .append(true)
                 .build();
 
-Task updatedTask = taskManager.saveTaskEvent(event);
+        Task updatedTask = taskManager.saveTaskEvent(event);
 
         assertEquals(1, updatedTask.getArtifacts().size());
         Artifact updatedArtifact = updatedTask.getArtifacts().get(0);
@@ -421,17 +421,26 @@ Task updatedTask = taskManager.saveTaskEvent(event);
                 .messageId("task-msg-id")
                 .build();
         
-        Task taskWithMessage = new Task.Builder()
-                .id("new-task-id")
+        // Use TaskStatusUpdateEvent to trigger the creation of a task, which will check if the initialMessage is used.
+        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED, taskMessage, null))
+                .isFinal(false)
                 .build();
 
-        Task saved = taskManagerWithInitialMessage.saveTaskEvent(taskWithMessage);
+        Task saved = taskManagerWithInitialMessage.saveTaskEvent(event);
         Task retrieved = taskManagerWithInitialMessage.getTask();
 
-        // Check that the task does not have the initial message in its history
-        assertNull(retrieved.getHistory());
+        // There should now be a history containing the initialMessage
+        // But the current message (taskMessage) should be in the state, not in the history
+        assertNotNull(retrieved.getHistory());
+        assertEquals(1, retrieved.getHistory().size());
+        assertEquals("initial message", ((TextPart) retrieved.getHistory().get(0).getParts().get(0)).getText());
+        
+        // The message in the current state should be taskMessage
+        assertNotNull(retrieved.getStatus().message());
+        assertEquals("task message", ((TextPart) retrieved.getStatus().message().getParts().get(0)).getText());
     }
 
     @Test
@@ -510,8 +519,14 @@ Task updatedTask = taskManager.saveTaskEvent(event);
         assertEquals(2, updatedTask.getArtifacts().size());
         
         // Verify both artifacts are present
-List<Artifact> artifacts = updatedTask.getArtifacts();
-assertTrue(artifacts.stream().anyMatch(a -> "artifact-id-1".equals(a.artifactId()) && "content 1".equals(((TextPart) a.parts().get(0)).getText())), "Artifact 1 should be present");
-assertTrue(artifacts.stream().anyMatch(a -> "artifact-id-2".equals(a.artifactId()) && "content 2".equals(((TextPart) a.parts().get(0)).getText())), "Artifact 2 should be present");
+        List<Artifact> artifacts = updatedTask.getArtifacts();
+        assertTrue(artifacts.stream()
+                .anyMatch(a -> "artifact-id-1".equals(a.artifactId()) 
+                        && "content 1".equals(((TextPart) a.parts().get(0)).getText()))
+                , "Artifact 1 should be present");
+        assertTrue(artifacts.stream()
+                .anyMatch(a -> "artifact-id-2".equals(a.artifactId()) 
+                && "content 2".equals(((TextPart) a.parts().get(0)).getText()))
+                , "Artifact 2 should be present");
     }
 }
