@@ -48,6 +48,9 @@ public class NonStreamingJSONRPCRequestDeserializer extends JSONRPCRequestDeseri
             case DeleteTaskPushNotificationConfigRequest.METHOD:
                 return new DeleteTaskPushNotificationConfigRequest(jsonrpc, id, method,
                         getAndValidateParams(paramsNode, jsonParser, treeNode, DeleteTaskPushNotificationConfigParams.class));
+            case GetAuthenticatedExtendedCardRequest.METHOD:
+                return new GetAuthenticatedExtendedCardRequest(jsonrpc, id, method,
+                        getAndValidateParams(paramsNode, jsonParser, treeNode, Void.class));
             default:
                 throw new MethodNotFoundJsonMappingException("Invalid method", getIdIfPossible(treeNode, jsonParser));
         }

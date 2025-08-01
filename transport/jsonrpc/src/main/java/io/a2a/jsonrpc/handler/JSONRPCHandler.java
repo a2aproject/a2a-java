@@ -2,20 +2,25 @@ package io.a2a.jsonrpc.handler;
 
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.concurrent.Flow;
 
+import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.CancelTaskResponse;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.spec.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
+import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetTaskRequest;
@@ -43,14 +48,23 @@ import mutiny.zero.ZeroPublisher;
 public class JSONRPCHandler {
 
     private AgentCard agentCard;
+    private Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
 
     protected JSONRPCHandler() {
     }
 
     @Inject
+    public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
+                          RequestHandler requestHandler) {
+        this.agentCard = agentCard;
+        this.extendedAgentCard = extendedAgentCard;
+        this.requestHandler = requestHandler;
+    }
+
     public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, RequestHandler requestHandler) {
         this.agentCard = agentCard;
+        this.extendedAgentCard = null;
         this.requestHandler = requestHandler;
     }
 
@@ -199,6 +213,22 @@ public class JSONRPCHandler {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+        }
+    }
+
+    // TODO: Add authentication (https://github.com/a2aproject/a2a-java/issues/77)
+    public GetAuthenticatedExtendedCardResponse onGetAuthenticatedExtendedCardRequest(
+            GetAuthenticatedExtendedCardRequest request, ServerCallContext context) {
+        if ( !agentCard.supportsAuthenticatedExtendedCard() || !extendedAgentCard.isResolvable()) {
+            return new GetAuthenticatedExtendedCardResponse(request.getId(),
+                    new AuthenticatedExtendedCardNotConfiguredError());
+        }
+        try {
+            return new GetAuthenticatedExtendedCardResponse(request.getId(), extendedAgentCard.get());
+        } catch (JSONRPCError e) {
+            return new GetAuthenticatedExtendedCardResponse(request.getId(), e);
+        } catch (Throwable t) {
+            return new GetAuthenticatedExtendedCardResponse(request.getId(), new InternalError(t.getMessage()));
         }
     }
 
