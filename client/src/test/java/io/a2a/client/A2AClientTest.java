@@ -4,6 +4,8 @@ import static io.a2a.client.JsonMessages.AGENT_CARD;
 import static io.a2a.client.JsonMessages.AUTHENTICATION_EXTENDED_AGENT_CARD;
 import static io.a2a.client.JsonMessages.CANCEL_TASK_TEST_REQUEST;
 import static io.a2a.client.JsonMessages.CANCEL_TASK_TEST_RESPONSE;
+import static io.a2a.client.JsonMessages.GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST;
+import static io.a2a.client.JsonMessages.GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE;
 import static io.a2a.client.JsonMessages.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST;
 import static io.a2a.client.JsonMessages.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static io.a2a.client.JsonMessages.GET_TASK_TEST_REQUEST;
@@ -48,6 +50,7 @@ import io.a2a.spec.FileContent;
 import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
+import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetTaskResponse;
@@ -463,17 +466,20 @@ public class A2AClientTest {
     public void testA2AClientGetAuthenticatedExtendedAgentCard() throws Exception {
         this.server.when(
                         request()
-                                .withMethod("GET")
-                                .withPath("/agent/authenticatedExtendedCard")
+                                .withMethod("POST")
+                                .withPath("/")
+                                .withBody(JsonBody.json(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST, MatchType.STRICT))
+
                 )
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(AUTHENTICATION_EXTENDED_AGENT_CARD)
+                                .withBody(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE)
                 );
 
         A2AClient client = new A2AClient("http://localhost:4001");
-        AgentCard agentCard = client.getAgentCard("/agent/authenticatedExtendedCard", null);
+        GetAuthenticatedExtendedCardResponse response = client.getAuthenticatedExtendedCard("1", null);
+        AgentCard agentCard = response.getResult();
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
         assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());

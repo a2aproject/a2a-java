@@ -633,4 +633,21 @@ public class JsonMessages {
              }
             }""";
 
+    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST = """
+            {
+                "jsonrpc": "2.0",
+                "id": "1",
+                "method": "agent/getAuthenticatedExtendedCard"
+            }
+            """;
+
+    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE = """
+             {
+                "jsonrpc": "2.0",
+                "id": "1",
+                "result":
+            """ + AUTHENTICATION_EXTENDED_AGENT_CARD +
+            """
+            }
+            """;
 }
