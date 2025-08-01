@@ -18,20 +18,22 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
     private final OAuthFlows flows;
     private final String description;
     private final String type;
+    private final String oauth2MetadataUrl;
 
-    public OAuth2SecurityScheme(OAuthFlows flows, String description) {
-        this(flows, description, OAUTH2);
+    public OAuth2SecurityScheme(OAuthFlows flows, String description, String oauth2MetadataUrl) {
+        this(flows, description, oauth2MetadataUrl, OAUTH2);
     }
 
     @JsonCreator
     public OAuth2SecurityScheme(@JsonProperty("flows") OAuthFlows flows, @JsonProperty("description") String description,
-                                @JsonProperty("type") String type) {
+                                @JsonProperty("oauth2MetadataUrl") String oauth2MetadataUrl, @JsonProperty("type") String type) {
         Assert.checkNotNullParam("flows", flows);
         if (!type.equals(OAUTH2)) {
             throw new IllegalArgumentException("Invalid type for OAuth2SecurityScheme");
         }
         this.flows = flows;
         this.description = description;
+        this.oauth2MetadataUrl = oauth2MetadataUrl;
         this.type = type;
     }
 
@@ -48,9 +50,14 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
         return type;
     }
 
+    public String getOauth2MetadataUrl() {
+        return oauth2MetadataUrl;
+    }
+
     public static class Builder {
         private OAuthFlows flows;
         private String description;
+        private String oauth2MetadataUrl;
 
         public Builder flows(OAuthFlows flows) {
             this.flows = flows;
@@ -62,8 +69,13 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
             return this;
         }
 
+        public Builder oauth2MetadataUrl(String oauth2MetadataUrl) {
+            this.oauth2MetadataUrl = oauth2MetadataUrl;
+            return this;
+        }
+
         public OAuth2SecurityScheme build() {
-            return new OAuth2SecurityScheme(flows, description);
+            return new OAuth2SecurityScheme(flows, description, oauth2MetadataUrl);
         }
     }
 }
