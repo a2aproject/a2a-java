@@ -19,7 +19,6 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
                                        PushNotificationConfig pushNotification, boolean blocking) {
 
     public MessageSendConfiguration {
-        Assert.checkNotNullParam("acceptedOutputModes", acceptedOutputModes);
         if (historyLength != null && historyLength < 0) {
             throw new IllegalArgumentException("Invalid history length");
         }
