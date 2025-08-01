@@ -21,6 +21,7 @@ public record AgentCard(String name, String description, String url, AgentProvid
                         String preferredTransport, String protocolVersion) {
 
     private static final String TEXT_MODE = "text";
+    private static final String DEFAULT_PROTOCOL_VERSION = "0.2.6";
 
     public AgentCard {
         Assert.checkNotNullParam("capabilities", capabilities);
@@ -31,7 +32,9 @@ public record AgentCard(String name, String description, String url, AgentProvid
         Assert.checkNotNullParam("skills", skills);
         Assert.checkNotNullParam("url", url);
         Assert.checkNotNullParam("version", version);
-        Assert.checkNotNullParam("protocolVersion", protocolVersion);
+        if (protocolVersion == null) {
+            protocolVersion = DEFAULT_PROTOCOL_VERSION;
+        }
     }
 
     public static class Builder {
