@@ -9,7 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.a2a.util.Assert;
 
 /**
- * A task artifact update event.
+ * An event sent by the agent to notify the client that an artifact has been
+ * generated or updated. This is typically used in streaming models.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

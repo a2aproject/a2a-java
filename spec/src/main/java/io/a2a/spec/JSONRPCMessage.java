@@ -1,7 +1,7 @@
 package io.a2a.spec;
 
 /**
- * Represents a JSONRPC message.
+ * Defines the base structure for any JSON-RPC 2.0 request, response, or notification.
  */
 public sealed interface JSONRPCMessage permits JSONRPCRequest, JSONRPCResponse {
 

@@ -8,8 +8,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * A public metadata file that describes an agent's capabilities, skills, endpoint URL, and
- * authentication requirements. Clients use this for discovery.
+ * The AgentCard is a self-describing manifest for an agent. It provides essential
+ * metadata including the agent's identity, capabilities, skills, supported
+ * communication methods, and security requirements.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
