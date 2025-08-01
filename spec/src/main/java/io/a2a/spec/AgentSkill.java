@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,7 +13,8 @@ import io.a2a.util.Assert;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record AgentSkill(String id, String name, String description, List<String> tags,
-                         List<String> examples, List<String> inputModes, List<String> outputModes) {
+                         List<String> examples, List<String> inputModes, List<String> outputModes,
+                         List<Map<String, List<String>>> security) {
 
     public AgentSkill {
         Assert.checkNotNullParam("description", description);
@@ -30,6 +32,7 @@ public record AgentSkill(String id, String name, String description, List<String
         private List<String> examples;
         private List<String> inputModes;
         private List<String> outputModes;
+        private List<Map<String, List<String>>> security;
 
         public Builder id(String id) {
             this.id = id;
@@ -66,8 +69,13 @@ public record AgentSkill(String id, String name, String description, List<String
             return this;
         }
 
+        public Builder security(List<Map<String, List<String>>> security) {
+            this.security = security;
+            return this;
+        }
+
         public AgentSkill build() {
-            return new AgentSkill(id, name, description, tags, examples, inputModes, outputModes);
+            return new AgentSkill(id, name, description, tags, examples, inputModes, outputModes, security);
         }
     }
 }
