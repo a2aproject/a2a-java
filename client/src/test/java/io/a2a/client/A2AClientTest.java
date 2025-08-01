@@ -389,7 +389,7 @@ public class A2AClientTest {
         this.server.when(
                         request()
                                 .withMethod("GET")
-                                .withPath("/.well-known/agent.json")
+                                .withPath("/.well-known/agent-card.json")
                 )
                 .respond(
                         response()

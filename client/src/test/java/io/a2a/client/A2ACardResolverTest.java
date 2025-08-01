@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 
 public class A2ACardResolverTest {
 
-    private static final String AGENT_CARD_PATH = "/.well-known/agent.json";
+    private static final String AGENT_CARD_PATH = "/.well-known/agent-card.json";
     private static final TypeReference<AgentCard> AGENT_CARD_TYPE_REFERENCE = new TypeReference<>() {};
 
     @Test

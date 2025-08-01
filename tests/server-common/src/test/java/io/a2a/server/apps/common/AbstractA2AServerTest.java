@@ -428,7 +428,7 @@ public abstract class AbstractA2AServerTest {
         AgentCard agentCard = given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .when()
-                .get("/.well-known/agent.json")
+                .get("/.well-known/agent-card.json")
                 .then()
                 .statusCode(200)
                 .extract()
