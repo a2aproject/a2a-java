@@ -57,7 +57,7 @@ jobs:
         working-directory: tck
       - name: Wait for SUT to start
         run: |
-          URL="http://localhost:9999/.well-known/agent.json"
+          URL="http://localhost:9999/.well-known/agent-card.json"
           EXPECTED_STATUS=200
           TIMEOUT=120
           RETRY_INTERVAL=2

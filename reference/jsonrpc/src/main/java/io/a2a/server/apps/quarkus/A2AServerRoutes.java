@@ -156,7 +156,7 @@ public class A2AServerRoutes {
      *
      * @return the agent card
      */
-    @Route(path = "/.well-known/agent.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
+    @Route(path = "/.well-known/agent-card.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
     public AgentCard getAgentCard() {
         return jsonRpcHandler.getAgentCard();
     }
