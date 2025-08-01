@@ -20,7 +20,7 @@ public record AgentCard(String name, String description, String url, AgentProvid
                         List<String> defaultInputModes, List<String> defaultOutputModes, List<AgentSkill> skills,
                         boolean supportsAuthenticatedExtendedCard, Map<String, SecurityScheme> securitySchemes,
                         List<Map<String, List<String>>> security, String iconUrl, List<AgentInterface> additionalInterfaces,
-                        String preferredTransport, String protocolVersion) {
+                        String preferredTransport, String protocolVersion, List<AgentCardSignature> signatures) {
 
     private static final String TEXT_MODE = "text";
     private static final String DEFAULT_PROTOCOL_VERSION = "0.3.0";
@@ -59,8 +59,10 @@ public record AgentCard(String name, String description, String url, AgentProvid
         private List<Map<String, List<String>>> security;
         private String iconUrl;
         private List<AgentInterface> additionalInterfaces;
-        String preferredTransport;
-        String protocolVersion;
+        private String preferredTransport;
+        private String protocolVersion;
+        private List<AgentCardSignature> signatures;
+
 
         public Builder name(String name) {
             this.name = name;
@@ -147,6 +149,11 @@ public record AgentCard(String name, String description, String url, AgentProvid
             return this;
         }
 
+        public Builder signatures(List<AgentCardSignature> signatures) {
+            this.signatures = signatures;
+            return this;
+        }
+
         public AgentCard build() {
             if (preferredTransport == null) {
                 preferredTransport = DEFAULT_TRANSPORT.asString();
@@ -159,7 +166,7 @@ public record AgentCard(String name, String description, String url, AgentProvid
             return new AgentCard(name, description, url, provider, version, documentationUrl,
                     capabilities, defaultInputModes, defaultOutputModes, skills,
                     supportsAuthenticatedExtendedCard, securitySchemes, security, iconUrl,
-                    additionalInterfaces, preferredTransport, protocolVersion);
+                    additionalInterfaces, preferredTransport, protocolVersion, signatures);
         }
     }
 }
