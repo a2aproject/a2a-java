@@ -1,5 +1,6 @@
 package io.a2a.spec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +23,8 @@ public record AgentCard(String name, String description, String url, AgentProvid
                         String preferredTransport, String protocolVersion) {
 
     private static final String TEXT_MODE = "text";
-    private static final String DEFAULT_PROTOCOL_VERSION = "0.2.6";
+    private static final String DEFAULT_PROTOCOL_VERSION = "0.3.0";
+    private static final TransportProtocol DEFAULT_TRANSPORT = TransportProtocol.JSONRPC;
 
     public AgentCard {
         Assert.checkNotNullParam("capabilities", capabilities);
@@ -35,6 +37,9 @@ public record AgentCard(String name, String description, String url, AgentProvid
         Assert.checkNotNullParam("version", version);
         if (protocolVersion == null) {
             protocolVersion = DEFAULT_PROTOCOL_VERSION;
+        }
+        if (preferredTransport == null) {
+            preferredTransport = DEFAULT_TRANSPORT.asString();
         }
     }
 
@@ -143,6 +148,14 @@ public record AgentCard(String name, String description, String url, AgentProvid
         }
 
         public AgentCard build() {
+            if (preferredTransport == null) {
+                preferredTransport = DEFAULT_TRANSPORT.asString();
+            }
+            if (additionalInterfaces == null) {
+                // should include an entry matching the main 'url' and 'preferredTransport'
+                additionalInterfaces = new ArrayList<>();
+                additionalInterfaces.add(new AgentInterface(preferredTransport, url));
+            }
             return new AgentCard(name, description, url, provider, version, documentationUrl,
                     capabilities, defaultInputModes, defaultOutputModes, skills,
                     supportsAuthenticatedExtendedCard, securitySchemes, security, iconUrl,
