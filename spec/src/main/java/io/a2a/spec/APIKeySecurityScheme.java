@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import io.a2a.util.Assert;
 
 /**
- * Represents an API Key security scheme.
+ * Defines a security scheme using an API key.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

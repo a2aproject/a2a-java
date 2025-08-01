@@ -8,7 +8,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * A2A specific error indicating agent returned invalid response for the current method.
+ * An A2A-specific error indicating that the agent returned a response that
+ * does not conform to the specification for the current method.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

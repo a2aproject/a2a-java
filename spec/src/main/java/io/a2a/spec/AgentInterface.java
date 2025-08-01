@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * Provides a declaration of the target url and the supported transport to interact with the agent.
+ * Declares a combination of a target URL and a transport protocol for interacting with the agent.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

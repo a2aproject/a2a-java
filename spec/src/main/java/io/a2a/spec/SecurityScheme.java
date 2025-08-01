@@ -17,6 +17,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = OAuth2SecurityScheme.class, name = OAuth2SecurityScheme.OAUTH2),
         @JsonSubTypes.Type(value = OpenIdConnectSecurityScheme.class, name = OpenIdConnectSecurityScheme.OPENID_CONNECT)
 })
+/**
+ * Defines a security scheme that can be used to secure an agent's endpoints.
+ * This is a discriminated union type based on the OpenAPI 3.0 Security Scheme Object.
+ */
 public sealed interface SecurityScheme permits APIKeySecurityScheme, HTTPAuthSecurityScheme, OAuth2SecurityScheme, OpenIdConnectSecurityScheme {
 
     String getDescription();

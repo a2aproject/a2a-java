@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Represents the state of a task.
+ * Defines the lifecycle states of a Task.
  */
 public enum TaskState {
     SUBMITTED("submitted"),
