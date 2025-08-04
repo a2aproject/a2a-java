@@ -49,7 +49,7 @@ To use the reference implementation add the following dependency to your project
 ```xml
 <dependency>
     <groupId>io.github.a2asdk</groupId>
-    <artifactId>a2a-java-reference-server</artifactId>
+    <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
     <version>${io.a2a.sdk.version}</version>
 </dependency>
