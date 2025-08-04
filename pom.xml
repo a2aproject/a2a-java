@@ -281,8 +281,8 @@
         <module>examples/helloworld</module>
         <module>sdk-server-common</module>
         <module>spec</module>
-        <module>reference-grpc</module>
-        <module>reference-impl</module>
+        <module>reference/grpc</module>
+        <module>reference/impl</module>
         <module>tck</module>
         <module>tests/server-common</module>
         <module>transport/grpc</module>
