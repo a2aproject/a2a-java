@@ -1,12 +1,4 @@
-package io.a2a.server.requesthandlers;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+package io.a2a.jsonrpc.handler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +13,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.events.EventConsumer;
+import io.a2a.server.requesthandlers.AbstractA2ARequestHandlerTest;
+import io.a2a.server.requesthandlers.DefaultRequestHandler;
 import io.a2a.server.tasks.ResultAggregator;
 import io.a2a.server.tasks.TaskUpdater;
 import io.a2a.spec.AgentCard;
@@ -65,6 +59,7 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
 import mutiny.zero.ZeroPublisher;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
@@ -80,9 +75,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         taskStore.save(MINIMAL_TASK);
         GetTaskRequest request = new GetTaskRequest("1", new TaskQueryParams(MINIMAL_TASK.getId()));
         GetTaskResponse response = handler.onGetTask(request, callContext);
-        assertEquals(request.getId(), response.getId());
-        assertSame(MINIMAL_TASK, response.getResult());
-        assertNull(response.getError());
+        Assertions.assertEquals(request.getId(), response.getId());
+        Assertions.assertSame(MINIMAL_TASK, response.getResult());
+        Assertions.assertNull(response.getError());
     }
 
     @Test
@@ -90,9 +85,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler);
         GetTaskRequest request = new GetTaskRequest("1", new TaskQueryParams(MINIMAL_TASK.getId()));
         GetTaskResponse response = handler.onGetTask(request, callContext);
-        assertEquals(request.getId(), response.getId());
-        assertInstanceOf(TaskNotFoundError.class, response.getError());
-        assertNull(response.getResult());
+        Assertions.assertEquals(request.getId(), response.getId());
+        Assertions.assertInstanceOf(TaskNotFoundError.class, response.getError());
+        Assertions.assertNull(response.getResult());
     }
 
     @Test
@@ -112,12 +107,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         CancelTaskRequest request = new CancelTaskRequest("111", new TaskIdParams(MINIMAL_TASK.getId()));
         CancelTaskResponse response = handler.onCancelTask(request, callContext);
 
-        assertNull(response.getError());
-        assertEquals(request.getId(), response.getId());
+        Assertions.assertNull(response.getError());
+        Assertions.assertEquals(request.getId(), response.getId());
         Task task = response.getResult();
-        assertEquals(MINIMAL_TASK.getId(), task.getId());
-        assertEquals(MINIMAL_TASK.getContextId(), task.getContextId());
-        assertEquals(TaskState.CANCELED, task.getStatus().state());
+        Assertions.assertEquals(MINIMAL_TASK.getId(), task.getId());
+        Assertions.assertEquals(MINIMAL_TASK.getContextId(), task.getContextId());
+        Assertions.assertEquals(TaskState.CANCELED, task.getStatus().state());
     }
 
     @Test
@@ -131,9 +126,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         CancelTaskRequest request = new CancelTaskRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
         CancelTaskResponse response = handler.onCancelTask(request, callContext);
-        assertEquals(request.getId(), response.getId());
-        assertNull(response.getResult());
-        assertInstanceOf(UnsupportedOperationError.class, response.getError());
+        Assertions.assertEquals(request.getId(), response.getId());
+        Assertions.assertNull(response.getResult());
+        Assertions.assertInstanceOf(UnsupportedOperationError.class, response.getError());
     }
 
     @Test
@@ -141,9 +136,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler);
         CancelTaskRequest request = new CancelTaskRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
         CancelTaskResponse response = handler.onCancelTask(request, callContext);
-        assertEquals(request.getId(), response.getId());
-        assertNull(response.getResult());
-        assertInstanceOf(TaskNotFoundError.class, response.getError());
+        Assertions.assertEquals(request.getId(), response.getId());
+        Assertions.assertNull(response.getResult());
+        Assertions.assertInstanceOf(TaskNotFoundError.class, response.getError());
     }
 
     @Test
@@ -158,14 +153,14 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
         SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
         SendMessageResponse response = handler.onMessageSend(request, callContext);
-        assertNull(response.getError());
+        Assertions.assertNull(response.getError());
         // The Python implementation returns a Task here, but then again they are using hardcoded mocks and
         // bypassing the whole EventQueue.
         // If we were to send a Task in agentExecutorExecute EventConsumer.consumeAll() would not exit due to
         // the Task not having a 'final' state
         //
         // See testOnMessageNewMessageSuccessMocks() for a test more similar to the Python implementation
-        assertSame(message, response.getResult());
+        Assertions.assertSame(message, response.getResult());
     }
 
     @Test
@@ -184,8 +179,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 (mock, context) -> {Mockito.doReturn(ZeroPublisher.fromItems(MINIMAL_TASK)).when(mock).consumeAll();})){
             response = handler.onMessageSend(request, callContext);
         }
-        assertNull(response.getError());
-        assertSame(MINIMAL_TASK, response.getResult());
+        Assertions.assertNull(response.getError());
+        Assertions.assertSame(MINIMAL_TASK, response.getResult());
     }
 
     @Test
@@ -201,14 +196,14 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
         SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
         SendMessageResponse response = handler.onMessageSend(request, callContext);
-        assertNull(response.getError());
+        Assertions.assertNull(response.getError());
         // The Python implementation returns a Task here, but then again they are using hardcoded mocks and
         // bypassing the whole EventQueue.
         // If we were to send a Task in agentExecutorExecute EventConsumer.consumeAll() would not exit due to
         // the Task not having a 'final' state
         //
         // See testOnMessageNewMessageWithExistingTaskSuccessMocks() for a test more similar to the Python implementation
-        assertSame(message, response.getResult());
+        Assertions.assertSame(message, response.getResult());
     }
 
     @Test
@@ -228,8 +223,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                     Mockito.doReturn(ZeroPublisher.fromItems(MINIMAL_TASK)).when(mock).consumeAll();})){
             response = handler.onMessageSend(request, callContext);
         }
-        assertNull(response.getError());
-        assertSame(MINIMAL_TASK, response.getResult());
+        Assertions.assertNull(response.getError());
+        Assertions.assertSame(MINIMAL_TASK, response.getResult());
 
     }
 
@@ -248,8 +243,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageRequest request = new SendMessageRequest(
                 "1", new MessageSendParams(message, null, null));
         SendMessageResponse response = handler.onMessageSend(request, callContext);
-        assertInstanceOf(UnsupportedOperationError.class, response.getError());
-        assertNull(response.getResult());
+        Assertions.assertInstanceOf(UnsupportedOperationError.class, response.getError());
+        Assertions.assertNull(response.getResult());
     }
 
     @Test
@@ -269,8 +264,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             response = handler.onMessageSend(request, callContext);
         }
 
-        assertInstanceOf(UnsupportedOperationError.class, response.getError());
-        assertNull(response.getResult());
+        Assertions.assertInstanceOf(UnsupportedOperationError.class, response.getError());
+        Assertions.assertNull(response.getResult());
     }
 
     @Test
@@ -324,8 +319,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         // so there would be no more Events.
         //
         // See testOnMessageStreamNewMessageSuccessMocks() for a test more similar to the Python implementation
-        assertEquals(1, results.size());
-        assertSame(message, results.get(0));
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertSame(message, results.get(0));
     }
 
     @Test
@@ -392,7 +387,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-        assertEquals(events, results);
+        Assertions.assertEquals(events, results);
     }
 
     @Test
@@ -451,7 +446,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             });
         });
 
-        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        Assertions.assertTrue(latch.await(1, TimeUnit.SECONDS));
         subscriptionRef.get().cancel();
         // The Python implementation has several events emitted since it uses mocks.
         //
@@ -459,14 +454,14 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         Task expected = new Task.Builder(task)
                 .history(message)
                 .build();
-        assertEquals(1, results.size());
+        Assertions.assertEquals(1, results.size());
         StreamingEventKind receivedType = results.get(0);
-        assertInstanceOf(Task.class, receivedType);
+        Assertions.assertInstanceOf(Task.class, receivedType);
         Task received = (Task) receivedType;
-        assertEquals(expected.getId(), received.getId());
-        assertEquals(expected.getContextId(), received.getContextId());
-        assertEquals(expected.getStatus(), received.getStatus());
-        assertEquals(expected.getHistory(), received.getHistory());
+        Assertions.assertEquals(expected.getId(), received.getId());
+        Assertions.assertEquals(expected.getContextId(), received.getContextId());
+        Assertions.assertEquals(expected.getStatus(), received.getStatus());
+        Assertions.assertEquals(expected.getHistory(), received.getHistory());
     }
 
     @Test
@@ -540,7 +535,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-        assertEquals(events, results);
+        Assertions.assertEquals(events, results);
     }
 
 
@@ -554,7 +549,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().url("http://example.com").build());
         SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
         SetTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
-        assertSame(taskPushConfig, response.getResult());
+        Assertions.assertSame(taskPushConfig, response.getResult());
     }
 
     @Test
@@ -579,7 +574,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         TaskPushNotificationConfig expectedConfig = new TaskPushNotificationConfig(MINIMAL_TASK.getId(),
                 new PushNotificationConfig.Builder().id(MINIMAL_TASK.getId()).url("http://example.com").build());
-        assertEquals(expectedConfig, getResponse.getResult());
+        Assertions.assertEquals(expectedConfig, getResponse.getResult());
     }
 
     @Test
@@ -617,7 +612,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 new PushNotificationConfig.Builder().url("http://example.com").build());
         SetTaskPushNotificationConfigRequest stpnRequest = new SetTaskPushNotificationConfigRequest("1", config);
         SetTaskPushNotificationConfigResponse stpnResponse = handler.setPushNotificationConfig(stpnRequest, callContext);
-        assertNull(stpnResponse.getError());
+        Assertions.assertNull(stpnResponse.getError());
 
         Message msg = new Message.Builder(MESSAGE)
                 .taskId(MINIMAL_TASK.getId())
@@ -659,32 +654,32 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             });
         });
 
-        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        Assertions.assertTrue(latch.await(5, TimeUnit.SECONDS));
         subscriptionRef.get().cancel();
-        assertEquals(3, results.size());
-        assertEquals(3, httpClient.tasks.size());
+        Assertions.assertEquals(3, results.size());
+        Assertions.assertEquals(3, httpClient.tasks.size());
 
         Task curr = httpClient.tasks.get(0);
-        assertEquals(MINIMAL_TASK.getId(), curr.getId());
-        assertEquals(MINIMAL_TASK.getContextId(), curr.getContextId());
-        assertEquals(MINIMAL_TASK.getStatus().state(), curr.getStatus().state());
-        assertEquals(0, curr.getArtifacts() == null ? 0 : curr.getArtifacts().size());
+        Assertions.assertEquals(MINIMAL_TASK.getId(), curr.getId());
+        Assertions.assertEquals(MINIMAL_TASK.getContextId(), curr.getContextId());
+        Assertions.assertEquals(MINIMAL_TASK.getStatus().state(), curr.getStatus().state());
+        Assertions.assertEquals(0, curr.getArtifacts() == null ? 0 : curr.getArtifacts().size());
 
         curr = httpClient.tasks.get(1);
-        assertEquals(MINIMAL_TASK.getId(), curr.getId());
-        assertEquals(MINIMAL_TASK.getContextId(), curr.getContextId());
-        assertEquals(MINIMAL_TASK.getStatus().state(), curr.getStatus().state());
-        assertEquals(1, curr.getArtifacts().size());
-        assertEquals(1, curr.getArtifacts().get(0).parts().size());
-        assertEquals("text", ((TextPart)curr.getArtifacts().get(0).parts().get(0)).getText());
+        Assertions.assertEquals(MINIMAL_TASK.getId(), curr.getId());
+        Assertions.assertEquals(MINIMAL_TASK.getContextId(), curr.getContextId());
+        Assertions.assertEquals(MINIMAL_TASK.getStatus().state(), curr.getStatus().state());
+        Assertions.assertEquals(1, curr.getArtifacts().size());
+        Assertions.assertEquals(1, curr.getArtifacts().get(0).parts().size());
+        Assertions.assertEquals("text", ((TextPart)curr.getArtifacts().get(0).parts().get(0)).getText());
 
         curr = httpClient.tasks.get(2);
-        assertEquals(MINIMAL_TASK.getId(), curr.getId());
-        assertEquals(MINIMAL_TASK.getContextId(), curr.getContextId());
-        assertEquals(TaskState.COMPLETED, curr.getStatus().state());
-        assertEquals(1, curr.getArtifacts().size());
-        assertEquals(1, curr.getArtifacts().get(0).parts().size());
-        assertEquals("text", ((TextPart)curr.getArtifacts().get(0).parts().get(0)).getText());
+        Assertions.assertEquals(MINIMAL_TASK.getId(), curr.getId());
+        Assertions.assertEquals(MINIMAL_TASK.getContextId(), curr.getContextId());
+        Assertions.assertEquals(TaskState.COMPLETED, curr.getStatus().state());
+        Assertions.assertEquals(1, curr.getArtifacts().size());
+        Assertions.assertEquals(1, curr.getArtifacts().get(0).parts().size());
+        Assertions.assertEquals("text", ((TextPart)curr.getArtifacts().get(0).parts().get(0)).getText());
     }
 
     @Test
@@ -713,7 +708,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 handler.onMessageSend(
                         new SendMessageRequest("1", new MessageSendParams(message, null, null)),
                         callContext);
-        assertNull(smr.getError());
+        Assertions.assertNull(smr.getError());
 
 
         List<StreamingEventKind> results = new ArrayList<>();
@@ -747,7 +742,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         // The Python implementation has several events emitted since it uses mocks.
         //
         // See testOnMessageStreamNewMessageExistingTaskSuccessMocks() for a test more similar to the Python implementation
-        assertEquals(1, results.size());
+        Assertions.assertEquals(1, results.size());
     }
 
 
@@ -815,7 +810,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         // The Python implementation has several events emitted since it uses mocks.
         //
         // See testOnMessageStreamNewMessageExistingTaskSuccessMocks() for a test more similar to the Python implementation
-        assertEquals(events, results);
+        Assertions.assertEquals(events, results);
     }
 
     @Test
@@ -855,9 +850,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-        assertEquals(1, results.size());
-        assertNull(results.get(0).getResult());
-        assertInstanceOf(TaskNotFoundError.class, results.get(0).getError());
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertNull(results.get(0).getResult());
+        Assertions.assertInstanceOf(TaskNotFoundError.class, results.get(0).getError());
     }
 
     @Test
@@ -902,11 +897,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-        assertEquals(1, results.size());
+        Assertions.assertEquals(1, results.size());
         if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
-            assertEquals("Streaming is not supported by the agent", ire.getMessage());
+            Assertions.assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
-            fail("Expected a response containing an error");
+            Assertions.fail("Expected a response containing an error");
         }
     }
 
@@ -948,11 +943,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-        assertEquals(1, results.size());
+        Assertions.assertEquals(1, results.size());
         if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
-            assertEquals("Streaming is not supported by the agent", ire.getMessage());
+            Assertions.assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
-            fail("Expected a response containing an error");
+            Assertions.fail("Expected a response containing an error");
         }
     }
 
@@ -974,7 +969,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .params(config)
                 .build();
         SetTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
-        assertInstanceOf(PushNotificationNotSupportedError.class, response.getError());
+        Assertions.assertInstanceOf(PushNotificationNotSupportedError.class, response.getError());
     }
 
     @Test
@@ -991,9 +986,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 new GetTaskPushNotificationConfigRequest("id", new GetTaskPushNotificationConfigParams(MINIMAL_TASK.getId()));
         GetTaskPushNotificationConfigResponse response = handler.getPushNotificationConfig(request, callContext);
 
-        assertNotNull(response.getError());
-        assertInstanceOf(UnsupportedOperationError.class, response.getError());
-        assertEquals("This operation is not supported", response.getError().getMessage());
+        Assertions.assertNotNull(response.getError());
+        Assertions.assertInstanceOf(UnsupportedOperationError.class, response.getError());
+        Assertions.assertEquals("This operation is not supported", response.getError().getMessage());
     }
 
     @Test
@@ -1018,8 +1013,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
         SetTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
 
-        assertInstanceOf(UnsupportedOperationError.class, response.getError());
-        assertEquals("This operation is not supported", response.getError().getMessage());
+        Assertions.assertInstanceOf(UnsupportedOperationError.class, response.getError());
+        Assertions.assertEquals("This operation is not supported", response.getError().getMessage());
     }
 
     @Test
@@ -1033,7 +1028,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(MESSAGE, null, null));
         SendMessageResponse response = handler.onMessageSend(request, callContext);
 
-        assertInstanceOf(InternalError.class, response.getError());
+        Assertions.assertInstanceOf(InternalError.class, response.getError());
     }
 
     @Test
@@ -1077,8 +1072,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-        assertEquals(1, results.size());
-        assertInstanceOf(InternalError.class, results.get(0).getError());
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertInstanceOf(InternalError.class, results.get(0).getError());
     }
 
     @Test
@@ -1114,7 +1109,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             response = handler.onMessageSend(request, callContext);
         }
 
-        assertInstanceOf(UnsupportedOperationError.class, response.getError());
+        Assertions.assertInstanceOf(UnsupportedOperationError.class, response.getError());
 
     }
 
@@ -1129,7 +1124,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageRequest request = new SendMessageRequest("1",
                 new MessageSendParams(MESSAGE, null, null));
         SendMessageResponse response = handler.onMessageSend(request, callContext);
-        assertInstanceOf(InternalError.class, response.getError());
+        Assertions.assertInstanceOf(InternalError.class, response.getError());
 
     }
 
@@ -1174,9 +1169,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-        assertNull(error.get());
-        assertEquals(1, results.size());
-        assertInstanceOf(InternalError.class, results.get(0).getError());
+        Assertions.assertNull(error.get());
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertInstanceOf(InternalError.class, results.get(0).getError());
     }
 
     @Test
@@ -1200,9 +1195,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 new ListTaskPushNotificationConfigRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.getId()));
         ListTaskPushNotificationConfigResponse listResponse = handler.listPushNotificationConfig(listRequest, callContext);
 
-        assertEquals("111", listResponse.getId());
-        assertEquals(1, listResponse.getResult().size());
-        assertEquals(taskPushConfig, listResponse.getResult().get(0));
+        Assertions.assertEquals("111", listResponse.getId());
+        Assertions.assertEquals(1, listResponse.getResult().size());
+        Assertions.assertEquals(taskPushConfig, listResponse.getResult().get(0));
     }
 
     @Test
@@ -1228,9 +1223,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         ListTaskPushNotificationConfigResponse listResponse =
                 handler.listPushNotificationConfig(listRequest, callContext);
 
-        assertEquals("111", listResponse.getId());
-        assertNull(listResponse.getResult());
-        assertInstanceOf(PushNotificationNotSupportedError.class, listResponse.getError());
+        Assertions.assertEquals("111", listResponse.getId());
+        Assertions.assertNull(listResponse.getResult());
+        Assertions.assertInstanceOf(PushNotificationNotSupportedError.class, listResponse.getError());
     }
 
     @Test
@@ -1248,9 +1243,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         ListTaskPushNotificationConfigResponse listResponse =
                 handler.listPushNotificationConfig(listRequest, callContext);
 
-        assertEquals("111", listResponse.getId());
-        assertNull(listResponse.getResult());
-        assertInstanceOf(UnsupportedOperationError.class, listResponse.getError());
+        Assertions.assertEquals("111", listResponse.getId());
+        Assertions.assertNull(listResponse.getResult());
+        Assertions.assertInstanceOf(UnsupportedOperationError.class, listResponse.getError());
     }
 
     @Test
@@ -1265,9 +1260,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         ListTaskPushNotificationConfigResponse listResponse =
                 handler.listPushNotificationConfig(listRequest, callContext);
 
-        assertEquals("111", listResponse.getId());
-        assertNull(listResponse.getResult());
-        assertInstanceOf(TaskNotFoundError.class, listResponse.getError());
+        Assertions.assertEquals("111", listResponse.getId());
+        Assertions.assertNull(listResponse.getResult());
+        Assertions.assertInstanceOf(TaskNotFoundError.class, listResponse.getError());
     }
 
     @Test
@@ -1292,9 +1287,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         DeleteTaskPushNotificationConfigResponse deleteResponse =
                 handler.deletePushNotificationConfig(deleteRequest, callContext);
 
-        assertEquals("111", deleteResponse.getId());
-        assertNull(deleteResponse.getError());
-        assertNull(deleteResponse.getResult());
+        Assertions.assertEquals("111", deleteResponse.getId());
+        Assertions.assertNull(deleteResponse.getError());
+        Assertions.assertNull(deleteResponse.getResult());
     }
 
     @Test
@@ -1320,9 +1315,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         DeleteTaskPushNotificationConfigResponse deleteResponse =
                 handler.deletePushNotificationConfig(deleteRequest, callContext);
 
-        assertEquals("111", deleteResponse.getId());
-        assertNull(deleteResponse.getResult());
-        assertInstanceOf(PushNotificationNotSupportedError.class, deleteResponse.getError());
+        Assertions.assertEquals("111", deleteResponse.getId());
+        Assertions.assertNull(deleteResponse.getResult());
+        Assertions.assertInstanceOf(PushNotificationNotSupportedError.class, deleteResponse.getError());
     }
 
     @Test
@@ -1349,9 +1344,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         DeleteTaskPushNotificationConfigResponse deleteResponse =
                 handler.deletePushNotificationConfig(deleteRequest, callContext);
 
-        assertEquals("111", deleteResponse.getId());
-        assertNull(deleteResponse.getResult());
-        assertInstanceOf(UnsupportedOperationError.class, deleteResponse.getError());
+        Assertions.assertEquals("111", deleteResponse.getId());
+        Assertions.assertNull(deleteResponse.getResult());
+        Assertions.assertInstanceOf(UnsupportedOperationError.class, deleteResponse.getError());
     }
 
 }

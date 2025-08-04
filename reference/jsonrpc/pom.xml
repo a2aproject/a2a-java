@@ -14,13 +14,13 @@
 
     <packaging>jar</packaging>
 
-    <name>Java A2A Reference Server</name>
-    <description>Java SDK for the Agent2Agent Protocol (A2A) - A2A Reference Server (based on Quarkus)</description>
+    <name>Java A2A JSONRPC Reference Server</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - A2A JSONRPC Reference Server (based on Quarkus)</description>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-spec</artifactId>
+            <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

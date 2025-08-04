@@ -4,9 +4,9 @@ import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class QuarkusA2AServerTest extends AbstractA2AServerTest {
+public class QuarkusA2AJSONRPCTest extends AbstractA2AServerTest {
 
-    public QuarkusA2AServerTest() {
+    public QuarkusA2AJSONRPCTest() {
         super(8081);
     }
 }

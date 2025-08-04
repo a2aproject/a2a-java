@@ -279,10 +279,11 @@
         <module>client</module>
         <module>common</module>
         <module>examples/helloworld</module>
-        <module>sdk-server-common</module>
-        <module>spec</module>
         <module>reference/grpc</module>
         <module>reference/jsonrpc</module>
+        <module>sdk-server-common</module>
+        <module>spec</module>
+        <module>spec-grpc</module>
         <module>tck</module>
         <module>tests/server-common</module>
         <module>transport/jsonrpc</module>

@@ -1,8 +1,7 @@
-package io.a2a.server.requesthandlers;
+package io.a2a.jsonrpc.handler;
 
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.concurrent.Flow;
 
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.ServerCallContext;
+import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.CancelTaskResponse;

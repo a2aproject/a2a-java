@@ -10,7 +10,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>reference-grpc</artifactId>
+    <artifactId>a2a-java-sdk-reference-grpc</artifactId>
     <name>Java A2A gRPC Reference Server</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - A2A gRPC Reference Server (based on Quarkus)</description>
 

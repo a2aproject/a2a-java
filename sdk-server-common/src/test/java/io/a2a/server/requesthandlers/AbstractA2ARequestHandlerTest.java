@@ -54,15 +54,15 @@ public class AbstractA2ARequestHandlerTest {
             .parts(new TextPart("test message"))
             .build();
 
-    AgentExecutor executor;
-    TaskStore taskStore;
-    RequestHandler requestHandler;
-    AgentExecutorMethod agentExecutorExecute;
-    AgentExecutorMethod agentExecutorCancel;
-    InMemoryQueueManager queueManager;
-    TestHttpClient httpClient;
+    protected AgentExecutor executor;
+    protected TaskStore taskStore;
+    protected RequestHandler requestHandler;
+    protected AgentExecutorMethod agentExecutorExecute;
+    protected AgentExecutorMethod agentExecutorCancel;
+    protected InMemoryQueueManager queueManager;
+    protected TestHttpClient httpClient;
 
-    final Executor internalExecutor = Executors.newCachedThreadPool();
+    protected final Executor internalExecutor = Executors.newCachedThreadPool();
 
     @BeforeEach
     public void init() {
@@ -123,8 +123,8 @@ public class AbstractA2ARequestHandlerTest {
     @Dependent
     @IfBuildProfile("test")
     protected static class TestHttpClient implements A2AHttpClient {
-        final List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
-        volatile CountDownLatch latch;
+        public final List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
+        public volatile CountDownLatch latch;
 
         @Override
         public GetBuilder createGet() {
@@ -183,6 +183,7 @@ public class AbstractA2ARequestHandlerTest {
             public PostBuilder addHeader(String name, String value) {
                 return this;
             }
+
         }
     }
 }

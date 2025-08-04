@@ -9,41 +9,39 @@
         <artifactId>a2a-java-sdk-parent</artifactId>
         <version>0.2.6.Beta1-SNAPSHOT</version>
     </parent>
-    <artifactId>a2a-java-sdk-client</artifactId>
+    <artifactId>a2a-java-sdk-spec-grpc</artifactId>
 
     <packaging>jar</packaging>
 
-    <name>Java SDK A2A Client</name>
-    <description>Java SDK for the Agent2Agent Protocol (A2A) - Client</description>
+    <name>Java SDK A2A Spec: gRPC</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - Spec: gRPC</description>
 
     <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-spec</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-spec-grpc</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>org.mock-server</groupId>
-            <artifactId>mockserver-netty</artifactId>
-            <scope>test</scope>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
         </dependency>
     </dependencies>
-
+    
 </project>
