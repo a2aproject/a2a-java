@@ -29,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-grpc</artifactId>
+            <artifactId>a2a-java-sdk-transport-grpc</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
