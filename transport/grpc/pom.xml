@@ -14,7 +14,7 @@
 
     <packaging>jar</packaging>
 
-    <name>Java SDK A2A gRPC</name>
+    <name>Java SDK A2A Transport: gRPC</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - gRPC</description>
 
     <dependencies>

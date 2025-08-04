@@ -282,9 +282,10 @@
         <module>sdk-server-common</module>
         <module>spec</module>
         <module>reference/grpc</module>
-        <module>reference/impl</module>
+        <module>reference/jsonrpc</module>
         <module>tck</module>
         <module>tests/server-common</module>
+        <module>transport/jsonrpc</module>
         <module>transport/grpc</module>
     </modules>
 
