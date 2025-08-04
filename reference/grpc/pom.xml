@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>a2a-java-sdk-reference-grpc</artifactId>
-    <name>Java A2A gRPC Reference Server</name>
+    <name>Java A2A Reference Server: gRPC</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - A2A gRPC Reference Server (based on Quarkus)</description>
 
     <dependencies>

@@ -31,7 +31,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-spec-grpc</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -55,16 +55,13 @@
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
-        </dependency>
+<!--
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>test</scope>
         </dependency>
+-->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>

@@ -14,7 +14,7 @@
 
     <packaging>jar</packaging>
 
-    <name>Java A2A JSONRPC Reference Server</name>
+    <name>Java A2A Reference Server: JSONRPC</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - A2A JSONRPC Reference Server (based on Quarkus)</description>
 
     <dependencies>
