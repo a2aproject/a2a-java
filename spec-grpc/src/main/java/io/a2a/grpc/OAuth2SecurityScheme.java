@@ -29,6 +29,7 @@ private static final long serialVersionUID = 0L;
   }
   private OAuth2SecurityScheme() {
     description_ = "";
+    oauth2MetadataUrl_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -130,6 +131,55 @@ private static final long serialVersionUID = 0L;
     return flows_ == null ? io.a2a.grpc.OAuthFlows.getDefaultInstance() : flows_;
   }
 
+  public static final int OAUTH2_METADATA_URL_FIELD_NUMBER = 3;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object oauth2MetadataUrl_ = "";
+  /**
+   * <pre>
+   * URL to the oauth2 authorization server metadata
+   * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+   * </pre>
+   *
+   * <code>string oauth2_metadata_url = 3;</code>
+   * @return The oauth2MetadataUrl.
+   */
+  @java.lang.Override
+  public java.lang.String getOauth2MetadataUrl() {
+    java.lang.Object ref = oauth2MetadataUrl_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      oauth2MetadataUrl_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * URL to the oauth2 authorization server metadata
+   * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+   * </pre>
+   *
+   * <code>string oauth2_metadata_url = 3;</code>
+   * @return The bytes for oauth2MetadataUrl.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getOauth2MetadataUrlBytes() {
+    java.lang.Object ref = oauth2MetadataUrl_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      oauth2MetadataUrl_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -150,6 +200,9 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(2, getFlows());
     }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(oauth2MetadataUrl_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, oauth2MetadataUrl_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -165,6 +218,9 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, getFlows());
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(oauth2MetadataUrl_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, oauth2MetadataUrl_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -188,6 +244,8 @@ private static final long serialVersionUID = 0L;
       if (!getFlows()
           .equals(other.getFlows())) return false;
     }
+    if (!getOauth2MetadataUrl()
+        .equals(other.getOauth2MetadataUrl())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -205,6 +263,8 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + FLOWS_FIELD_NUMBER;
       hash = (53 * hash) + getFlows().hashCode();
     }
+    hash = (37 * hash) + OAUTH2_METADATA_URL_FIELD_NUMBER;
+    hash = (53 * hash) + getOauth2MetadataUrl().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -348,6 +408,7 @@ private static final long serialVersionUID = 0L;
         flowsBuilder_.dispose();
         flowsBuilder_ = null;
       }
+      oauth2MetadataUrl_ = "";
       return this;
     }
 
@@ -391,6 +452,9 @@ private static final long serialVersionUID = 0L;
             : flowsBuilder_.build();
         to_bitField0_ |= 0x00000001;
       }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.oauth2MetadataUrl_ = oauth2MetadataUrl_;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -413,6 +477,11 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasFlows()) {
         mergeFlows(other.getFlows());
+      }
+      if (!other.getOauth2MetadataUrl().isEmpty()) {
+        oauth2MetadataUrl_ = other.oauth2MetadataUrl_;
+        bitField0_ |= 0x00000004;
+        onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -452,6 +521,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000002;
               break;
             } // case 18
+            case 26: {
+              oauth2MetadataUrl_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 26
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -716,6 +790,103 @@ private static final long serialVersionUID = 0L;
         flows_ = null;
       }
       return flowsBuilder_;
+    }
+
+    private java.lang.Object oauth2MetadataUrl_ = "";
+    /**
+     * <pre>
+     * URL to the oauth2 authorization server metadata
+     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * </pre>
+     *
+     * <code>string oauth2_metadata_url = 3;</code>
+     * @return The oauth2MetadataUrl.
+     */
+    public java.lang.String getOauth2MetadataUrl() {
+      java.lang.Object ref = oauth2MetadataUrl_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        oauth2MetadataUrl_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * URL to the oauth2 authorization server metadata
+     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * </pre>
+     *
+     * <code>string oauth2_metadata_url = 3;</code>
+     * @return The bytes for oauth2MetadataUrl.
+     */
+    public com.google.protobuf.ByteString
+        getOauth2MetadataUrlBytes() {
+      java.lang.Object ref = oauth2MetadataUrl_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        oauth2MetadataUrl_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * URL to the oauth2 authorization server metadata
+     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * </pre>
+     *
+     * <code>string oauth2_metadata_url = 3;</code>
+     * @param value The oauth2MetadataUrl to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOauth2MetadataUrl(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      oauth2MetadataUrl_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * URL to the oauth2 authorization server metadata
+     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * </pre>
+     *
+     * <code>string oauth2_metadata_url = 3;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearOauth2MetadataUrl() {
+      oauth2MetadataUrl_ = getDefaultInstance().getOauth2MetadataUrl();
+      bitField0_ = (bitField0_ & ~0x00000004);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * URL to the oauth2 authorization server metadata
+     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * </pre>
+     *
+     * <code>string oauth2_metadata_url = 3;</code>
+     * @param value The bytes for oauth2MetadataUrl to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOauth2MetadataUrlBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      oauth2MetadataUrl_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.OAuth2SecurityScheme)
