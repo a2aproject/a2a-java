@@ -1,5 +1,6 @@
 package io.a2a.tck.server;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,7 +10,9 @@ import jakarta.enterprise.inject.Produces;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
+import io.a2a.spec.TransportProtocol;
 
 @ApplicationScoped
 public class AgentCardProducer {
@@ -37,7 +40,10 @@ public class AgentCardProducer {
                                 .tags(Collections.singletonList("hello world"))
                                 .examples(List.of("hi", "hello world"))
                                 .build()))
-                .protocolVersion("0.2.5")
+                .protocolVersion("0.3.0")
+                .additionalInterfaces(List.of(
+                        new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999"),
+                        new AgentInterface(TransportProtocol.GRPC.asString(), "http://localhost:9000")))
                 .build();
     }
 }
