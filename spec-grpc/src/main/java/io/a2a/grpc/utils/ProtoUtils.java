@@ -427,16 +427,6 @@ public class ProtoUtils {
             return builder.build();
         }
 
-        private static io.a2a.grpc.AgentCardSignature agentCardSignature(AgentCardSignature agentCardSignature) {
-            io.a2a.grpc.AgentCardSignature.Builder builder = io.a2a.grpc.AgentCardSignature.newBuilder();
-            builder.setProtected(agentCardSignature.protectedHeader());
-            builder.setSignature(agentCardSignature.signature());
-            if (agentCardSignature.header() != null) {
-                builder.setHeader(struct(agentCardSignature.header()));
-            }
-            return builder.build();
-        }
-
         private static io.a2a.grpc.SecurityScheme securityScheme(SecurityScheme securityScheme) {
             io.a2a.grpc.SecurityScheme.Builder builder = io.a2a.grpc.SecurityScheme.newBuilder();
             if (securityScheme instanceof APIKeySecurityScheme) {
