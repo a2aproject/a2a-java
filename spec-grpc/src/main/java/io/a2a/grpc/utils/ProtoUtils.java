@@ -40,6 +40,7 @@ import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
+import io.a2a.spec.MutualTLSSecurityScheme;
 import io.a2a.spec.OAuth2SecurityScheme;
 import io.a2a.spec.OAuthFlows;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
@@ -399,6 +400,17 @@ public class ProtoUtils {
             if (agentSkill.outputModes() != null) {
                 builder.addAllOutputModes(agentSkill.outputModes());
             }
+            if (agentSkill.security() != null) {
+                builder.addAllSecurity(agentSkill.security().stream().map(s -> {
+                    io.a2a.grpc.Security.Builder securityBuilder = io.a2a.grpc.Security.newBuilder();
+                    s.forEach((key, value) -> {
+                        io.a2a.grpc.StringList.Builder stringListBuilder = io.a2a.grpc.StringList.newBuilder();
+                        stringListBuilder.addAllList(value);
+                        securityBuilder.putSchemes(key, stringListBuilder.build());
+                    });
+                    return securityBuilder.build();
+                }).collect(Collectors.toList()));
+            }
             return builder.build();
         }
 
@@ -422,6 +434,8 @@ public class ProtoUtils {
                 builder.setOauth2SecurityScheme(oauthSecurityScheme((OAuth2SecurityScheme) securityScheme));
             } else if (securityScheme instanceof OpenIdConnectSecurityScheme) {
                 builder.setOpenIdConnectSecurityScheme(openIdConnectSecurityScheme((OpenIdConnectSecurityScheme) securityScheme));
+            } else if (securityScheme instanceof MutualTLSSecurityScheme) {
+                builder.setMtlsSecurityScheme(mutualTlsSecurityScheme((MutualTLSSecurityScheme) securityScheme));
             }
             return builder.build();
         }
@@ -461,6 +475,9 @@ public class ProtoUtils {
             }
             if (oauth2SecurityScheme.getFlows() != null) {
                 builder.setFlows(oauthFlows(oauth2SecurityScheme.getFlows()));
+            }
+            if (oauth2SecurityScheme.getOauth2MetadataUrl() != null) {
+                builder.setOauth2MetadataUrl(oauth2SecurityScheme.getOauth2MetadataUrl());
             }
             return builder.build();
         }
@@ -548,6 +565,14 @@ public class ProtoUtils {
             }
             if (openIdConnectSecurityScheme.getOpenIdConnectUrl() != null) {
                 builder.setOpenIdConnectUrl(openIdConnectSecurityScheme.getOpenIdConnectUrl());
+            }
+            return builder.build();
+        }
+
+        private static io.a2a.grpc.MutualTlsSecurityScheme mutualTlsSecurityScheme(MutualTLSSecurityScheme mutualTlsSecurityScheme) {
+            io.a2a.grpc.MutualTlsSecurityScheme.Builder builder = io.a2a.grpc.MutualTlsSecurityScheme.newBuilder();
+            if (mutualTlsSecurityScheme.getDescription() != null) {
+                builder.setDescription(mutualTlsSecurityScheme.getDescription());
             }
             return builder.build();
         }
