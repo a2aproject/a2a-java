@@ -88,7 +88,7 @@ public class QuarkusA2AGrpcTest {
             .build();
     public static final String APPLICATION_JSON = "application/json";
 
-    @GrpcClient("a2-a-service")
+    @GrpcClient("a2a-service")
     A2AServiceGrpc.A2AServiceBlockingStub client;
 
     private final int serverPort = 8081;
