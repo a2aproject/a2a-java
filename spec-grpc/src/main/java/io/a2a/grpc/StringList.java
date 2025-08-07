@@ -54,7 +54,7 @@ private static final long serialVersionUID = 0L;
   private com.google.protobuf.LazyStringArrayList list_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
   /**
-   * <code>repeated string list = 1 [json_name = "list"];</code>
+   * <code>repeated string list = 1;</code>
    * @return A list containing the list.
    */
   public com.google.protobuf.ProtocolStringList
@@ -62,14 +62,14 @@ private static final long serialVersionUID = 0L;
     return list_;
   }
   /**
-   * <code>repeated string list = 1 [json_name = "list"];</code>
+   * <code>repeated string list = 1;</code>
    * @return The count of list.
    */
   public int getListCount() {
     return list_.size();
   }
   /**
-   * <code>repeated string list = 1 [json_name = "list"];</code>
+   * <code>repeated string list = 1;</code>
    * @param index The index of the element to return.
    * @return The list at the given index.
    */
@@ -77,7 +77,7 @@ private static final long serialVersionUID = 0L;
     return list_.get(index);
   }
   /**
-   * <code>repeated string list = 1 [json_name = "list"];</code>
+   * <code>repeated string list = 1;</code>
    * @param index The index of the value to return.
    * @return The bytes of the list at the given index.
    */
@@ -408,7 +408,7 @@ private static final long serialVersionUID = 0L;
       bitField0_ |= 0x00000001;
     }
     /**
-     * <code>repeated string list = 1 [json_name = "list"];</code>
+     * <code>repeated string list = 1;</code>
      * @return A list containing the list.
      */
     public com.google.protobuf.ProtocolStringList
@@ -417,14 +417,14 @@ private static final long serialVersionUID = 0L;
       return list_;
     }
     /**
-     * <code>repeated string list = 1 [json_name = "list"];</code>
+     * <code>repeated string list = 1;</code>
      * @return The count of list.
      */
     public int getListCount() {
       return list_.size();
     }
     /**
-     * <code>repeated string list = 1 [json_name = "list"];</code>
+     * <code>repeated string list = 1;</code>
      * @param index The index of the element to return.
      * @return The list at the given index.
      */
@@ -432,7 +432,7 @@ private static final long serialVersionUID = 0L;
       return list_.get(index);
     }
     /**
-     * <code>repeated string list = 1 [json_name = "list"];</code>
+     * <code>repeated string list = 1;</code>
      * @param index The index of the value to return.
      * @return The bytes of the list at the given index.
      */
@@ -441,7 +441,7 @@ private static final long serialVersionUID = 0L;
       return list_.getByteString(index);
     }
     /**
-     * <code>repeated string list = 1 [json_name = "list"];</code>
+     * <code>repeated string list = 1;</code>
      * @param index The index to set the value at.
      * @param value The list to set.
      * @return This builder for chaining.
@@ -456,7 +456,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated string list = 1 [json_name = "list"];</code>
+     * <code>repeated string list = 1;</code>
      * @param value The list to add.
      * @return This builder for chaining.
      */
@@ -470,7 +470,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated string list = 1 [json_name = "list"];</code>
+     * <code>repeated string list = 1;</code>
      * @param values The list to add.
      * @return This builder for chaining.
      */
@@ -484,7 +484,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated string list = 1 [json_name = "list"];</code>
+     * <code>repeated string list = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearList() {
@@ -495,7 +495,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated string list = 1 [json_name = "list"];</code>
+     * <code>repeated string list = 1;</code>
      * @param value The bytes of the list to add.
      * @return This builder for chaining.
      */

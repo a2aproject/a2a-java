@@ -95,14 +95,14 @@ private static final long serialVersionUID = 0L;
 
   public static final int FILE_WITH_URI_FIELD_NUMBER = 1;
   /**
-   * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+   * <code>string file_with_uri = 1;</code>
    * @return Whether the fileWithUri field is set.
    */
   public boolean hasFileWithUri() {
     return fileCase_ == 1;
   }
   /**
-   * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+   * <code>string file_with_uri = 1;</code>
    * @return The fileWithUri.
    */
   public java.lang.String getFileWithUri() {
@@ -123,7 +123,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+   * <code>string file_with_uri = 1;</code>
    * @return The bytes for fileWithUri.
    */
   public com.google.protobuf.ByteString
@@ -147,7 +147,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int FILE_WITH_BYTES_FIELD_NUMBER = 2;
   /**
-   * <code>bytes file_with_bytes = 2 [json_name = "fileWithBytes"];</code>
+   * <code>bytes file_with_bytes = 2;</code>
    * @return Whether the fileWithBytes field is set.
    */
   @java.lang.Override
@@ -155,7 +155,7 @@ private static final long serialVersionUID = 0L;
     return fileCase_ == 2;
   }
   /**
-   * <code>bytes file_with_bytes = 2 [json_name = "fileWithBytes"];</code>
+   * <code>bytes file_with_bytes = 2;</code>
    * @return The fileWithBytes.
    */
   @java.lang.Override
@@ -170,7 +170,7 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings("serial")
   private volatile java.lang.Object mimeType_ = "";
   /**
-   * <code>string mime_type = 3 [json_name = "mimeType"];</code>
+   * <code>string mime_type = 3;</code>
    * @return The mimeType.
    */
   @java.lang.Override
@@ -187,7 +187,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string mime_type = 3 [json_name = "mimeType"];</code>
+   * <code>string mime_type = 3;</code>
    * @return The bytes for mimeType.
    */
   @java.lang.Override
@@ -596,7 +596,7 @@ private static final long serialVersionUID = 0L;
     private int bitField0_;
 
     /**
-     * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+     * <code>string file_with_uri = 1;</code>
      * @return Whether the fileWithUri field is set.
      */
     @java.lang.Override
@@ -604,7 +604,7 @@ private static final long serialVersionUID = 0L;
       return fileCase_ == 1;
     }
     /**
-     * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+     * <code>string file_with_uri = 1;</code>
      * @return The fileWithUri.
      */
     @java.lang.Override
@@ -626,7 +626,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+     * <code>string file_with_uri = 1;</code>
      * @return The bytes for fileWithUri.
      */
     @java.lang.Override
@@ -649,7 +649,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+     * <code>string file_with_uri = 1;</code>
      * @param value The fileWithUri to set.
      * @return This builder for chaining.
      */
@@ -662,7 +662,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+     * <code>string file_with_uri = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearFileWithUri() {
@@ -674,7 +674,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+     * <code>string file_with_uri = 1;</code>
      * @param value The bytes for fileWithUri to set.
      * @return This builder for chaining.
      */
@@ -689,14 +689,14 @@ private static final long serialVersionUID = 0L;
     }
 
     /**
-     * <code>bytes file_with_bytes = 2 [json_name = "fileWithBytes"];</code>
+     * <code>bytes file_with_bytes = 2;</code>
      * @return Whether the fileWithBytes field is set.
      */
     public boolean hasFileWithBytes() {
       return fileCase_ == 2;
     }
     /**
-     * <code>bytes file_with_bytes = 2 [json_name = "fileWithBytes"];</code>
+     * <code>bytes file_with_bytes = 2;</code>
      * @return The fileWithBytes.
      */
     public com.google.protobuf.ByteString getFileWithBytes() {
@@ -706,7 +706,7 @@ private static final long serialVersionUID = 0L;
       return com.google.protobuf.ByteString.EMPTY;
     }
     /**
-     * <code>bytes file_with_bytes = 2 [json_name = "fileWithBytes"];</code>
+     * <code>bytes file_with_bytes = 2;</code>
      * @param value The fileWithBytes to set.
      * @return This builder for chaining.
      */
@@ -718,7 +718,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>bytes file_with_bytes = 2 [json_name = "fileWithBytes"];</code>
+     * <code>bytes file_with_bytes = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearFileWithBytes() {
@@ -732,7 +732,7 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object mimeType_ = "";
     /**
-     * <code>string mime_type = 3 [json_name = "mimeType"];</code>
+     * <code>string mime_type = 3;</code>
      * @return The mimeType.
      */
     public java.lang.String getMimeType() {
@@ -748,7 +748,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string mime_type = 3 [json_name = "mimeType"];</code>
+     * <code>string mime_type = 3;</code>
      * @return The bytes for mimeType.
      */
     public com.google.protobuf.ByteString
@@ -765,7 +765,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string mime_type = 3 [json_name = "mimeType"];</code>
+     * <code>string mime_type = 3;</code>
      * @param value The mimeType to set.
      * @return This builder for chaining.
      */
@@ -778,7 +778,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string mime_type = 3 [json_name = "mimeType"];</code>
+     * <code>string mime_type = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearMimeType() {
@@ -788,7 +788,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string mime_type = 3 [json_name = "mimeType"];</code>
+     * <code>string mime_type = 3;</code>
      * @param value The bytes for mimeType to set.
      * @return This builder for chaining.
      */

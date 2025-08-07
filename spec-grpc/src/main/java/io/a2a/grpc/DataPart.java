@@ -51,7 +51,7 @@ private static final long serialVersionUID = 0L;
   public static final int DATA_FIELD_NUMBER = 1;
   private com.google.protobuf.Struct data_;
   /**
-   * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+   * <code>.google.protobuf.Struct data = 1;</code>
    * @return Whether the data field is set.
    */
   @java.lang.Override
@@ -59,7 +59,7 @@ private static final long serialVersionUID = 0L;
     return ((bitField0_ & 0x00000001) != 0);
   }
   /**
-   * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+   * <code>.google.protobuf.Struct data = 1;</code>
    * @return The data.
    */
   @java.lang.Override
@@ -67,7 +67,7 @@ private static final long serialVersionUID = 0L;
     return data_ == null ? com.google.protobuf.Struct.getDefaultInstance() : data_;
   }
   /**
-   * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+   * <code>.google.protobuf.Struct data = 1;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getDataOrBuilder() {
@@ -397,14 +397,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> dataBuilder_;
     /**
-     * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+     * <code>.google.protobuf.Struct data = 1;</code>
      * @return Whether the data field is set.
      */
     public boolean hasData() {
       return ((bitField0_ & 0x00000001) != 0);
     }
     /**
-     * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+     * <code>.google.protobuf.Struct data = 1;</code>
      * @return The data.
      */
     public com.google.protobuf.Struct getData() {
@@ -415,7 +415,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+     * <code>.google.protobuf.Struct data = 1;</code>
      */
     public Builder setData(com.google.protobuf.Struct value) {
       if (dataBuilder_ == null) {
@@ -431,7 +431,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+     * <code>.google.protobuf.Struct data = 1;</code>
      */
     public Builder setData(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -445,7 +445,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+     * <code>.google.protobuf.Struct data = 1;</code>
      */
     public Builder mergeData(com.google.protobuf.Struct value) {
       if (dataBuilder_ == null) {
@@ -466,7 +466,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+     * <code>.google.protobuf.Struct data = 1;</code>
      */
     public Builder clearData() {
       bitField0_ = (bitField0_ & ~0x00000001);
@@ -479,7 +479,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+     * <code>.google.protobuf.Struct data = 1;</code>
      */
     public com.google.protobuf.Struct.Builder getDataBuilder() {
       bitField0_ |= 0x00000001;
@@ -487,7 +487,7 @@ private static final long serialVersionUID = 0L;
       return internalGetDataFieldBuilder().getBuilder();
     }
     /**
-     * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+     * <code>.google.protobuf.Struct data = 1;</code>
      */
     public com.google.protobuf.StructOrBuilder getDataOrBuilder() {
       if (dataBuilder_ != null) {
@@ -498,7 +498,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+     * <code>.google.protobuf.Struct data = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 

@@ -67,7 +67,7 @@ private static final long serialVersionUID = 0L;
    * form of a URL. The OAuth2 standard requires the use of TLS
    * </pre>
    *
-   * <code>string authorization_url = 1 [json_name = "authorizationUrl"];</code>
+   * <code>string authorization_url = 1;</code>
    * @return The authorizationUrl.
    */
   @java.lang.Override
@@ -89,7 +89,7 @@ private static final long serialVersionUID = 0L;
    * form of a URL. The OAuth2 standard requires the use of TLS
    * </pre>
    *
-   * <code>string authorization_url = 1 [json_name = "authorizationUrl"];</code>
+   * <code>string authorization_url = 1;</code>
    * @return The bytes for authorizationUrl.
    */
   @java.lang.Override
@@ -116,7 +116,7 @@ private static final long serialVersionUID = 0L;
    * The OAuth2 standard requires the use of TLS.
    * </pre>
    *
-   * <code>string token_url = 2 [json_name = "tokenUrl"];</code>
+   * <code>string token_url = 2;</code>
    * @return The tokenUrl.
    */
   @java.lang.Override
@@ -138,7 +138,7 @@ private static final long serialVersionUID = 0L;
    * The OAuth2 standard requires the use of TLS.
    * </pre>
    *
-   * <code>string token_url = 2 [json_name = "tokenUrl"];</code>
+   * <code>string token_url = 2;</code>
    * @return The bytes for tokenUrl.
    */
   @java.lang.Override
@@ -165,7 +165,7 @@ private static final long serialVersionUID = 0L;
    * form of a URL. The OAuth2 standard requires the use of TLS.
    * </pre>
    *
-   * <code>string refresh_url = 3 [json_name = "refreshUrl"];</code>
+   * <code>string refresh_url = 3;</code>
    * @return The refreshUrl.
    */
   @java.lang.Override
@@ -187,7 +187,7 @@ private static final long serialVersionUID = 0L;
    * form of a URL. The OAuth2 standard requires the use of TLS.
    * </pre>
    *
-   * <code>string refresh_url = 3 [json_name = "refreshUrl"];</code>
+   * <code>string refresh_url = 3;</code>
    * @return The bytes for refreshUrl.
    */
   @java.lang.Override
@@ -237,7 +237,7 @@ private static final long serialVersionUID = 0L;
    * scope name and a short description for it. The map MAY be empty.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+   * <code>map&lt;string, string&gt; scopes = 4;</code>
    */
   @java.lang.Override
   public boolean containsScopes(
@@ -259,7 +259,7 @@ private static final long serialVersionUID = 0L;
    * scope name and a short description for it. The map MAY be empty.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+   * <code>map&lt;string, string&gt; scopes = 4;</code>
    */
   @java.lang.Override
   public java.util.Map<java.lang.String, java.lang.String> getScopesMap() {
@@ -271,7 +271,7 @@ private static final long serialVersionUID = 0L;
    * scope name and a short description for it. The map MAY be empty.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+   * <code>map&lt;string, string&gt; scopes = 4;</code>
    */
   @java.lang.Override
   public /* nullable */
@@ -290,7 +290,7 @@ java.lang.String defaultValue) {
    * scope name and a short description for it. The map MAY be empty.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+   * <code>map&lt;string, string&gt; scopes = 4;</code>
    */
   @java.lang.Override
   public java.lang.String getScopesOrThrow(
@@ -714,7 +714,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS
      * </pre>
      *
-     * <code>string authorization_url = 1 [json_name = "authorizationUrl"];</code>
+     * <code>string authorization_url = 1;</code>
      * @return The authorizationUrl.
      */
     public java.lang.String getAuthorizationUrl() {
@@ -735,7 +735,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS
      * </pre>
      *
-     * <code>string authorization_url = 1 [json_name = "authorizationUrl"];</code>
+     * <code>string authorization_url = 1;</code>
      * @return The bytes for authorizationUrl.
      */
     public com.google.protobuf.ByteString
@@ -757,7 +757,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS
      * </pre>
      *
-     * <code>string authorization_url = 1 [json_name = "authorizationUrl"];</code>
+     * <code>string authorization_url = 1;</code>
      * @param value The authorizationUrl to set.
      * @return This builder for chaining.
      */
@@ -775,7 +775,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS
      * </pre>
      *
-     * <code>string authorization_url = 1 [json_name = "authorizationUrl"];</code>
+     * <code>string authorization_url = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearAuthorizationUrl() {
@@ -790,7 +790,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS
      * </pre>
      *
-     * <code>string authorization_url = 1 [json_name = "authorizationUrl"];</code>
+     * <code>string authorization_url = 1;</code>
      * @param value The bytes for authorizationUrl to set.
      * @return This builder for chaining.
      */
@@ -811,7 +811,7 @@ java.lang.String defaultValue) {
      * The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string token_url = 2 [json_name = "tokenUrl"];</code>
+     * <code>string token_url = 2;</code>
      * @return The tokenUrl.
      */
     public java.lang.String getTokenUrl() {
@@ -832,7 +832,7 @@ java.lang.String defaultValue) {
      * The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string token_url = 2 [json_name = "tokenUrl"];</code>
+     * <code>string token_url = 2;</code>
      * @return The bytes for tokenUrl.
      */
     public com.google.protobuf.ByteString
@@ -854,7 +854,7 @@ java.lang.String defaultValue) {
      * The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string token_url = 2 [json_name = "tokenUrl"];</code>
+     * <code>string token_url = 2;</code>
      * @param value The tokenUrl to set.
      * @return This builder for chaining.
      */
@@ -872,7 +872,7 @@ java.lang.String defaultValue) {
      * The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string token_url = 2 [json_name = "tokenUrl"];</code>
+     * <code>string token_url = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearTokenUrl() {
@@ -887,7 +887,7 @@ java.lang.String defaultValue) {
      * The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string token_url = 2 [json_name = "tokenUrl"];</code>
+     * <code>string token_url = 2;</code>
      * @param value The bytes for tokenUrl to set.
      * @return This builder for chaining.
      */
@@ -908,7 +908,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string refresh_url = 3 [json_name = "refreshUrl"];</code>
+     * <code>string refresh_url = 3;</code>
      * @return The refreshUrl.
      */
     public java.lang.String getRefreshUrl() {
@@ -929,7 +929,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string refresh_url = 3 [json_name = "refreshUrl"];</code>
+     * <code>string refresh_url = 3;</code>
      * @return The bytes for refreshUrl.
      */
     public com.google.protobuf.ByteString
@@ -951,7 +951,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string refresh_url = 3 [json_name = "refreshUrl"];</code>
+     * <code>string refresh_url = 3;</code>
      * @param value The refreshUrl to set.
      * @return This builder for chaining.
      */
@@ -969,7 +969,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string refresh_url = 3 [json_name = "refreshUrl"];</code>
+     * <code>string refresh_url = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearRefreshUrl() {
@@ -984,7 +984,7 @@ java.lang.String defaultValue) {
      * form of a URL. The OAuth2 standard requires the use of TLS.
      * </pre>
      *
-     * <code>string refresh_url = 3 [json_name = "refreshUrl"];</code>
+     * <code>string refresh_url = 3;</code>
      * @param value The bytes for refreshUrl to set.
      * @return This builder for chaining.
      */
@@ -1030,7 +1030,7 @@ java.lang.String defaultValue) {
      * scope name and a short description for it. The map MAY be empty.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+     * <code>map&lt;string, string&gt; scopes = 4;</code>
      */
     @java.lang.Override
     public boolean containsScopes(
@@ -1052,7 +1052,7 @@ java.lang.String defaultValue) {
      * scope name and a short description for it. The map MAY be empty.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+     * <code>map&lt;string, string&gt; scopes = 4;</code>
      */
     @java.lang.Override
     public java.util.Map<java.lang.String, java.lang.String> getScopesMap() {
@@ -1064,7 +1064,7 @@ java.lang.String defaultValue) {
      * scope name and a short description for it. The map MAY be empty.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+     * <code>map&lt;string, string&gt; scopes = 4;</code>
      */
     @java.lang.Override
     public /* nullable */
@@ -1083,7 +1083,7 @@ java.lang.String defaultValue) {
      * scope name and a short description for it. The map MAY be empty.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+     * <code>map&lt;string, string&gt; scopes = 4;</code>
      */
     @java.lang.Override
     public java.lang.String getScopesOrThrow(
@@ -1108,7 +1108,7 @@ java.lang.String defaultValue) {
      * scope name and a short description for it. The map MAY be empty.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+     * <code>map&lt;string, string&gt; scopes = 4;</code>
      */
     public Builder removeScopes(
         java.lang.String key) {
@@ -1132,7 +1132,7 @@ java.lang.String defaultValue) {
      * scope name and a short description for it. The map MAY be empty.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+     * <code>map&lt;string, string&gt; scopes = 4;</code>
      */
     public Builder putScopes(
         java.lang.String key,
@@ -1150,7 +1150,7 @@ java.lang.String defaultValue) {
      * scope name and a short description for it. The map MAY be empty.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+     * <code>map&lt;string, string&gt; scopes = 4;</code>
      */
     public Builder putAllScopes(
         java.util.Map<java.lang.String, java.lang.String> values) {

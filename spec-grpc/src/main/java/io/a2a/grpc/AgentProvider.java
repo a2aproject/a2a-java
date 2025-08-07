@@ -58,7 +58,7 @@ private static final long serialVersionUID = 0L;
    * Example: "https://ai.google.dev"
    * </pre>
    *
-   * <code>string url = 1 [json_name = "url"];</code>
+   * <code>string url = 1;</code>
    * @return The url.
    */
   @java.lang.Override
@@ -80,7 +80,7 @@ private static final long serialVersionUID = 0L;
    * Example: "https://ai.google.dev"
    * </pre>
    *
-   * <code>string url = 1 [json_name = "url"];</code>
+   * <code>string url = 1;</code>
    * @return The bytes for url.
    */
   @java.lang.Override
@@ -107,7 +107,7 @@ private static final long serialVersionUID = 0L;
    * Example: "Google"
    * </pre>
    *
-   * <code>string organization = 2 [json_name = "organization"];</code>
+   * <code>string organization = 2;</code>
    * @return The organization.
    */
   @java.lang.Override
@@ -129,7 +129,7 @@ private static final long serialVersionUID = 0L;
    * Example: "Google"
    * </pre>
    *
-   * <code>string organization = 2 [json_name = "organization"];</code>
+   * <code>string organization = 2;</code>
    * @return The bytes for organization.
    */
   @java.lang.Override
@@ -476,7 +476,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @return The url.
      */
     public java.lang.String getUrl() {
@@ -497,7 +497,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @return The bytes for url.
      */
     public com.google.protobuf.ByteString
@@ -519,7 +519,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @param value The url to set.
      * @return This builder for chaining.
      */
@@ -537,7 +537,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearUrl() {
@@ -552,7 +552,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @param value The bytes for url to set.
      * @return This builder for chaining.
      */
@@ -573,7 +573,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2 [json_name = "organization"];</code>
+     * <code>string organization = 2;</code>
      * @return The organization.
      */
     public java.lang.String getOrganization() {
@@ -594,7 +594,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2 [json_name = "organization"];</code>
+     * <code>string organization = 2;</code>
      * @return The bytes for organization.
      */
     public com.google.protobuf.ByteString
@@ -616,7 +616,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2 [json_name = "organization"];</code>
+     * <code>string organization = 2;</code>
      * @param value The organization to set.
      * @return This builder for chaining.
      */
@@ -634,7 +634,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2 [json_name = "organization"];</code>
+     * <code>string organization = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearOrganization() {
@@ -649,7 +649,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2 [json_name = "organization"];</code>
+     * <code>string organization = 2;</code>
      * @param value The bytes for organization to set.
      * @return This builder for chaining.
      */

@@ -53,7 +53,7 @@ private static final long serialVersionUID = 0L;
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The description.
    */
   @java.lang.Override
@@ -74,7 +74,7 @@ private static final long serialVersionUID = 0L;
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The bytes for description.
    */
   @java.lang.Override
@@ -101,7 +101,7 @@ private static final long serialVersionUID = 0L;
    * metadata.
    * </pre>
    *
-   * <code>string open_id_connect_url = 2 [json_name = "openIdConnectUrl"];</code>
+   * <code>string open_id_connect_url = 2;</code>
    * @return The openIdConnectUrl.
    */
   @java.lang.Override
@@ -123,7 +123,7 @@ private static final long serialVersionUID = 0L;
    * metadata.
    * </pre>
    *
-   * <code>string open_id_connect_url = 2 [json_name = "openIdConnectUrl"];</code>
+   * <code>string open_id_connect_url = 2;</code>
    * @return The bytes for openIdConnectUrl.
    */
   @java.lang.Override
@@ -465,7 +465,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return The description.
      */
     public java.lang.String getDescription() {
@@ -485,7 +485,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return The bytes for description.
      */
     public com.google.protobuf.ByteString
@@ -506,7 +506,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @param value The description to set.
      * @return This builder for chaining.
      */
@@ -523,7 +523,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearDescription() {
@@ -537,7 +537,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @param value The bytes for description to set.
      * @return This builder for chaining.
      */
@@ -558,7 +558,7 @@ private static final long serialVersionUID = 0L;
      * metadata.
      * </pre>
      *
-     * <code>string open_id_connect_url = 2 [json_name = "openIdConnectUrl"];</code>
+     * <code>string open_id_connect_url = 2;</code>
      * @return The openIdConnectUrl.
      */
     public java.lang.String getOpenIdConnectUrl() {
@@ -579,7 +579,7 @@ private static final long serialVersionUID = 0L;
      * metadata.
      * </pre>
      *
-     * <code>string open_id_connect_url = 2 [json_name = "openIdConnectUrl"];</code>
+     * <code>string open_id_connect_url = 2;</code>
      * @return The bytes for openIdConnectUrl.
      */
     public com.google.protobuf.ByteString
@@ -601,7 +601,7 @@ private static final long serialVersionUID = 0L;
      * metadata.
      * </pre>
      *
-     * <code>string open_id_connect_url = 2 [json_name = "openIdConnectUrl"];</code>
+     * <code>string open_id_connect_url = 2;</code>
      * @param value The openIdConnectUrl to set.
      * @return This builder for chaining.
      */
@@ -619,7 +619,7 @@ private static final long serialVersionUID = 0L;
      * metadata.
      * </pre>
      *
-     * <code>string open_id_connect_url = 2 [json_name = "openIdConnectUrl"];</code>
+     * <code>string open_id_connect_url = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearOpenIdConnectUrl() {
@@ -634,7 +634,7 @@ private static final long serialVersionUID = 0L;
      * metadata.
      * </pre>
      *
-     * <code>string open_id_connect_url = 2 [json_name = "openIdConnectUrl"];</code>
+     * <code>string open_id_connect_url = 2;</code>
      * @param value The bytes for openIdConnectUrl to set.
      * @return This builder for chaining.
      */

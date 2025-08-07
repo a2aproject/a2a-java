@@ -1,10 +1,6 @@
 package io.a2a.grpc.handler;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.protobuf.Empty;
 import com.google.protobuf.Struct;
-
 import io.a2a.grpc.AuthenticationInfo;
 import io.a2a.grpc.CancelTaskRequest;
 import io.a2a.grpc.CreateTaskPushNotificationConfigRequest;
@@ -53,7 +48,6 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.internal.testing.StreamRecorder;
 import io.grpc.stub.StreamObserver;
 import mutiny.zero.ZeroPublisher;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;

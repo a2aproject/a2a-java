@@ -11,17 +11,17 @@ public interface StreamResponseOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.a2a.v1.Task task = 1 [json_name = "task"];</code>
+   * <code>.a2a.v1.Task task = 1;</code>
    * @return Whether the task field is set.
    */
   boolean hasTask();
   /**
-   * <code>.a2a.v1.Task task = 1 [json_name = "task"];</code>
+   * <code>.a2a.v1.Task task = 1;</code>
    * @return The task.
    */
   io.a2a.grpc.Task getTask();
   /**
-   * <code>.a2a.v1.Task task = 1 [json_name = "task"];</code>
+   * <code>.a2a.v1.Task task = 1;</code>
    */
   io.a2a.grpc.TaskOrBuilder getTaskOrBuilder();
 
@@ -41,32 +41,32 @@ public interface StreamResponseOrBuilder extends
   io.a2a.grpc.MessageOrBuilder getMsgOrBuilder();
 
   /**
-   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3 [json_name = "statusUpdate"];</code>
+   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
    * @return Whether the statusUpdate field is set.
    */
   boolean hasStatusUpdate();
   /**
-   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3 [json_name = "statusUpdate"];</code>
+   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
    * @return The statusUpdate.
    */
   io.a2a.grpc.TaskStatusUpdateEvent getStatusUpdate();
   /**
-   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3 [json_name = "statusUpdate"];</code>
+   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
    */
   io.a2a.grpc.TaskStatusUpdateEventOrBuilder getStatusUpdateOrBuilder();
 
   /**
-   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4 [json_name = "artifactUpdate"];</code>
+   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
    * @return Whether the artifactUpdate field is set.
    */
   boolean hasArtifactUpdate();
   /**
-   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4 [json_name = "artifactUpdate"];</code>
+   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
    * @return The artifactUpdate.
    */
   io.a2a.grpc.TaskArtifactUpdateEvent getArtifactUpdate();
   /**
-   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4 [json_name = "artifactUpdate"];</code>
+   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
    */
   io.a2a.grpc.TaskArtifactUpdateEventOrBuilder getArtifactUpdateOrBuilder();
 

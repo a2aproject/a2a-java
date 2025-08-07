@@ -15,7 +15,7 @@ public interface APIKeySecuritySchemeOrBuilder extends
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The description.
    */
   java.lang.String getDescription();
@@ -24,7 +24,7 @@ public interface APIKeySecuritySchemeOrBuilder extends
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface APIKeySecuritySchemeOrBuilder extends
    * Location of the API key, valid values are "query", "header", or "cookie"
    * </pre>
    *
-   * <code>string location = 2 [json_name = "location"];</code>
+   * <code>string location = 2;</code>
    * @return The location.
    */
   java.lang.String getLocation();
@@ -44,7 +44,7 @@ public interface APIKeySecuritySchemeOrBuilder extends
    * Location of the API key, valid values are "query", "header", or "cookie"
    * </pre>
    *
-   * <code>string location = 2 [json_name = "location"];</code>
+   * <code>string location = 2;</code>
    * @return The bytes for location.
    */
   com.google.protobuf.ByteString
@@ -55,7 +55,7 @@ public interface APIKeySecuritySchemeOrBuilder extends
    * Name of the header, query or cookie parameter to be used.
    * </pre>
    *
-   * <code>string name = 3 [json_name = "name"];</code>
+   * <code>string name = 3;</code>
    * @return The name.
    */
   java.lang.String getName();
@@ -64,7 +64,7 @@ public interface APIKeySecuritySchemeOrBuilder extends
    * Name of the header, query or cookie parameter to be used.
    * </pre>
    *
-   * <code>string name = 3 [json_name = "name"];</code>
+   * <code>string name = 3;</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString

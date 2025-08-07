@@ -15,7 +15,7 @@ public interface AgentSkillOrBuilder extends
    * Unique id of the skill within this agent.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The id.
    */
   java.lang.String getId();
@@ -24,7 +24,7 @@ public interface AgentSkillOrBuilder extends
    * Unique id of the skill within this agent.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The bytes for id.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface AgentSkillOrBuilder extends
    * A human readable name for the skill.
    * </pre>
    *
-   * <code>string name = 2 [json_name = "name"];</code>
+   * <code>string name = 2;</code>
    * @return The name.
    */
   java.lang.String getName();
@@ -44,7 +44,7 @@ public interface AgentSkillOrBuilder extends
    * A human readable name for the skill.
    * </pre>
    *
-   * <code>string name = 2 [json_name = "name"];</code>
+   * <code>string name = 2;</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString
@@ -56,7 +56,7 @@ public interface AgentSkillOrBuilder extends
    * details and behaviors.
    * </pre>
    *
-   * <code>string description = 3 [json_name = "description"];</code>
+   * <code>string description = 3;</code>
    * @return The description.
    */
   java.lang.String getDescription();
@@ -66,7 +66,7 @@ public interface AgentSkillOrBuilder extends
    * details and behaviors.
    * </pre>
    *
-   * <code>string description = 3 [json_name = "description"];</code>
+   * <code>string description = 3;</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -78,7 +78,7 @@ public interface AgentSkillOrBuilder extends
    * Example: ["cooking", "customer support", "billing"]
    * </pre>
    *
-   * <code>repeated string tags = 4 [json_name = "tags"];</code>
+   * <code>repeated string tags = 4;</code>
    * @return A list containing the tags.
    */
   java.util.List<java.lang.String>
@@ -89,7 +89,7 @@ public interface AgentSkillOrBuilder extends
    * Example: ["cooking", "customer support", "billing"]
    * </pre>
    *
-   * <code>repeated string tags = 4 [json_name = "tags"];</code>
+   * <code>repeated string tags = 4;</code>
    * @return The count of tags.
    */
   int getTagsCount();
@@ -99,7 +99,7 @@ public interface AgentSkillOrBuilder extends
    * Example: ["cooking", "customer support", "billing"]
    * </pre>
    *
-   * <code>repeated string tags = 4 [json_name = "tags"];</code>
+   * <code>repeated string tags = 4;</code>
    * @param index The index of the element to return.
    * @return The tags at the given index.
    */
@@ -110,7 +110,7 @@ public interface AgentSkillOrBuilder extends
    * Example: ["cooking", "customer support", "billing"]
    * </pre>
    *
-   * <code>repeated string tags = 4 [json_name = "tags"];</code>
+   * <code>repeated string tags = 4;</code>
    * @param index The index of the value to return.
    * @return The bytes of the tags at the given index.
    */
@@ -125,7 +125,7 @@ public interface AgentSkillOrBuilder extends
    * Example: ["I need a recipe for bread"]
    * </pre>
    *
-   * <code>repeated string examples = 5 [json_name = "examples"];</code>
+   * <code>repeated string examples = 5;</code>
    * @return A list containing the examples.
    */
   java.util.List<java.lang.String>
@@ -138,7 +138,7 @@ public interface AgentSkillOrBuilder extends
    * Example: ["I need a recipe for bread"]
    * </pre>
    *
-   * <code>repeated string examples = 5 [json_name = "examples"];</code>
+   * <code>repeated string examples = 5;</code>
    * @return The count of examples.
    */
   int getExamplesCount();
@@ -150,7 +150,7 @@ public interface AgentSkillOrBuilder extends
    * Example: ["I need a recipe for bread"]
    * </pre>
    *
-   * <code>repeated string examples = 5 [json_name = "examples"];</code>
+   * <code>repeated string examples = 5;</code>
    * @param index The index of the element to return.
    * @return The examples at the given index.
    */
@@ -163,7 +163,7 @@ public interface AgentSkillOrBuilder extends
    * Example: ["I need a recipe for bread"]
    * </pre>
    *
-   * <code>repeated string examples = 5 [json_name = "examples"];</code>
+   * <code>repeated string examples = 5;</code>
    * @param index The index of the value to return.
    * @return The bytes of the examples at the given index.
    */
@@ -175,7 +175,7 @@ public interface AgentSkillOrBuilder extends
    * Possible input modalities supported.
    * </pre>
    *
-   * <code>repeated string input_modes = 6 [json_name = "inputModes"];</code>
+   * <code>repeated string input_modes = 6;</code>
    * @return A list containing the inputModes.
    */
   java.util.List<java.lang.String>
@@ -185,7 +185,7 @@ public interface AgentSkillOrBuilder extends
    * Possible input modalities supported.
    * </pre>
    *
-   * <code>repeated string input_modes = 6 [json_name = "inputModes"];</code>
+   * <code>repeated string input_modes = 6;</code>
    * @return The count of inputModes.
    */
   int getInputModesCount();
@@ -194,7 +194,7 @@ public interface AgentSkillOrBuilder extends
    * Possible input modalities supported.
    * </pre>
    *
-   * <code>repeated string input_modes = 6 [json_name = "inputModes"];</code>
+   * <code>repeated string input_modes = 6;</code>
    * @param index The index of the element to return.
    * @return The inputModes at the given index.
    */
@@ -204,7 +204,7 @@ public interface AgentSkillOrBuilder extends
    * Possible input modalities supported.
    * </pre>
    *
-   * <code>repeated string input_modes = 6 [json_name = "inputModes"];</code>
+   * <code>repeated string input_modes = 6;</code>
    * @param index The index of the value to return.
    * @return The bytes of the inputModes at the given index.
    */
@@ -216,7 +216,7 @@ public interface AgentSkillOrBuilder extends
    * Possible output modalities produced
    * </pre>
    *
-   * <code>repeated string output_modes = 7 [json_name = "outputModes"];</code>
+   * <code>repeated string output_modes = 7;</code>
    * @return A list containing the outputModes.
    */
   java.util.List<java.lang.String>
@@ -226,7 +226,7 @@ public interface AgentSkillOrBuilder extends
    * Possible output modalities produced
    * </pre>
    *
-   * <code>repeated string output_modes = 7 [json_name = "outputModes"];</code>
+   * <code>repeated string output_modes = 7;</code>
    * @return The count of outputModes.
    */
   int getOutputModesCount();
@@ -235,7 +235,7 @@ public interface AgentSkillOrBuilder extends
    * Possible output modalities produced
    * </pre>
    *
-   * <code>repeated string output_modes = 7 [json_name = "outputModes"];</code>
+   * <code>repeated string output_modes = 7;</code>
    * @param index The index of the element to return.
    * @return The outputModes at the given index.
    */
@@ -245,7 +245,7 @@ public interface AgentSkillOrBuilder extends
    * Possible output modalities produced
    * </pre>
    *
-   * <code>repeated string output_modes = 7 [json_name = "outputModes"];</code>
+   * <code>repeated string output_modes = 7;</code>
    * @param index The index of the value to return.
    * @return The bytes of the outputModes at the given index.
    */

@@ -54,7 +54,7 @@ private static final long serialVersionUID = 0L;
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The description.
    */
   @java.lang.Override
@@ -75,7 +75,7 @@ private static final long serialVersionUID = 0L;
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The bytes for description.
    */
   @java.lang.Override
@@ -101,7 +101,7 @@ private static final long serialVersionUID = 0L;
    * Location of the API key, valid values are "query", "header", or "cookie"
    * </pre>
    *
-   * <code>string location = 2 [json_name = "location"];</code>
+   * <code>string location = 2;</code>
    * @return The location.
    */
   @java.lang.Override
@@ -122,7 +122,7 @@ private static final long serialVersionUID = 0L;
    * Location of the API key, valid values are "query", "header", or "cookie"
    * </pre>
    *
-   * <code>string location = 2 [json_name = "location"];</code>
+   * <code>string location = 2;</code>
    * @return The bytes for location.
    */
   @java.lang.Override
@@ -148,7 +148,7 @@ private static final long serialVersionUID = 0L;
    * Name of the header, query or cookie parameter to be used.
    * </pre>
    *
-   * <code>string name = 3 [json_name = "name"];</code>
+   * <code>string name = 3;</code>
    * @return The name.
    */
   @java.lang.Override
@@ -169,7 +169,7 @@ private static final long serialVersionUID = 0L;
    * Name of the header, query or cookie parameter to be used.
    * </pre>
    *
-   * <code>string name = 3 [json_name = "name"];</code>
+   * <code>string name = 3;</code>
    * @return The bytes for name.
    */
   @java.lang.Override
@@ -535,7 +535,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return The description.
      */
     public java.lang.String getDescription() {
@@ -555,7 +555,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return The bytes for description.
      */
     public com.google.protobuf.ByteString
@@ -576,7 +576,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @param value The description to set.
      * @return This builder for chaining.
      */
@@ -593,7 +593,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearDescription() {
@@ -607,7 +607,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @param value The bytes for description to set.
      * @return This builder for chaining.
      */
@@ -627,7 +627,7 @@ private static final long serialVersionUID = 0L;
      * Location of the API key, valid values are "query", "header", or "cookie"
      * </pre>
      *
-     * <code>string location = 2 [json_name = "location"];</code>
+     * <code>string location = 2;</code>
      * @return The location.
      */
     public java.lang.String getLocation() {
@@ -647,7 +647,7 @@ private static final long serialVersionUID = 0L;
      * Location of the API key, valid values are "query", "header", or "cookie"
      * </pre>
      *
-     * <code>string location = 2 [json_name = "location"];</code>
+     * <code>string location = 2;</code>
      * @return The bytes for location.
      */
     public com.google.protobuf.ByteString
@@ -668,7 +668,7 @@ private static final long serialVersionUID = 0L;
      * Location of the API key, valid values are "query", "header", or "cookie"
      * </pre>
      *
-     * <code>string location = 2 [json_name = "location"];</code>
+     * <code>string location = 2;</code>
      * @param value The location to set.
      * @return This builder for chaining.
      */
@@ -685,7 +685,7 @@ private static final long serialVersionUID = 0L;
      * Location of the API key, valid values are "query", "header", or "cookie"
      * </pre>
      *
-     * <code>string location = 2 [json_name = "location"];</code>
+     * <code>string location = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearLocation() {
@@ -699,7 +699,7 @@ private static final long serialVersionUID = 0L;
      * Location of the API key, valid values are "query", "header", or "cookie"
      * </pre>
      *
-     * <code>string location = 2 [json_name = "location"];</code>
+     * <code>string location = 2;</code>
      * @param value The bytes for location to set.
      * @return This builder for chaining.
      */
@@ -719,7 +719,7 @@ private static final long serialVersionUID = 0L;
      * Name of the header, query or cookie parameter to be used.
      * </pre>
      *
-     * <code>string name = 3 [json_name = "name"];</code>
+     * <code>string name = 3;</code>
      * @return The name.
      */
     public java.lang.String getName() {
@@ -739,7 +739,7 @@ private static final long serialVersionUID = 0L;
      * Name of the header, query or cookie parameter to be used.
      * </pre>
      *
-     * <code>string name = 3 [json_name = "name"];</code>
+     * <code>string name = 3;</code>
      * @return The bytes for name.
      */
     public com.google.protobuf.ByteString
@@ -760,7 +760,7 @@ private static final long serialVersionUID = 0L;
      * Name of the header, query or cookie parameter to be used.
      * </pre>
      *
-     * <code>string name = 3 [json_name = "name"];</code>
+     * <code>string name = 3;</code>
      * @param value The name to set.
      * @return This builder for chaining.
      */
@@ -777,7 +777,7 @@ private static final long serialVersionUID = 0L;
      * Name of the header, query or cookie parameter to be used.
      * </pre>
      *
-     * <code>string name = 3 [json_name = "name"];</code>
+     * <code>string name = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearName() {
@@ -791,7 +791,7 @@ private static final long serialVersionUID = 0L;
      * Name of the header, query or cookie parameter to be used.
      * </pre>
      *
-     * <code>string name = 3 [json_name = "name"];</code>
+     * <code>string name = 3;</code>
      * @param value The bytes for name to set.
      * @return This builder for chaining.
      */

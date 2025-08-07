@@ -53,7 +53,7 @@ private static final long serialVersionUID = 0L;
    * name=tasks/{id}/pushNotificationConfigs/{id}
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name"];</code>
+   * <code>string name = 1;</code>
    * @return The name.
    */
   @java.lang.Override
@@ -74,7 +74,7 @@ private static final long serialVersionUID = 0L;
    * name=tasks/{id}/pushNotificationConfigs/{id}
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name"];</code>
+   * <code>string name = 1;</code>
    * @return The bytes for name.
    */
   @java.lang.Override
@@ -95,7 +95,7 @@ private static final long serialVersionUID = 0L;
   public static final int PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER = 2;
   private io.a2a.grpc.PushNotificationConfig pushNotificationConfig_;
   /**
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return Whether the pushNotificationConfig field is set.
    */
   @java.lang.Override
@@ -103,7 +103,7 @@ private static final long serialVersionUID = 0L;
     return ((bitField0_ & 0x00000001) != 0);
   }
   /**
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return The pushNotificationConfig.
    */
   @java.lang.Override
@@ -111,7 +111,7 @@ private static final long serialVersionUID = 0L;
     return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
   }
   /**
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
@@ -463,7 +463,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}/pushNotificationConfigs/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @return The name.
      */
     public java.lang.String getName() {
@@ -483,7 +483,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}/pushNotificationConfigs/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @return The bytes for name.
      */
     public com.google.protobuf.ByteString
@@ -504,7 +504,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}/pushNotificationConfigs/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @param value The name to set.
      * @return This builder for chaining.
      */
@@ -521,7 +521,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}/pushNotificationConfigs/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearName() {
@@ -535,7 +535,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}/pushNotificationConfigs/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @param value The bytes for name to set.
      * @return This builder for chaining.
      */
@@ -553,14 +553,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> pushNotificationConfigBuilder_;
     /**
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      * @return Whether the pushNotificationConfig field is set.
      */
     public boolean hasPushNotificationConfig() {
       return ((bitField0_ & 0x00000002) != 0);
     }
     /**
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      * @return The pushNotificationConfig.
      */
     public io.a2a.grpc.PushNotificationConfig getPushNotificationConfig() {
@@ -571,7 +571,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public Builder setPushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
       if (pushNotificationConfigBuilder_ == null) {
@@ -587,7 +587,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public Builder setPushNotificationConfig(
         io.a2a.grpc.PushNotificationConfig.Builder builderForValue) {
@@ -601,7 +601,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public Builder mergePushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
       if (pushNotificationConfigBuilder_ == null) {
@@ -622,7 +622,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public Builder clearPushNotificationConfig() {
       bitField0_ = (bitField0_ & ~0x00000002);
@@ -635,7 +635,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public io.a2a.grpc.PushNotificationConfig.Builder getPushNotificationConfigBuilder() {
       bitField0_ |= 0x00000002;
@@ -643,7 +643,7 @@ private static final long serialVersionUID = 0L;
       return internalGetPushNotificationConfigFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
       if (pushNotificationConfigBuilder_ != null) {
@@ -654,7 +654,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> 

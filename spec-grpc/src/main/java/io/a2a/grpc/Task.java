@@ -63,7 +63,7 @@ private static final long serialVersionUID = 0L;
    * Unique identifier for a task, created by the A2A server.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The id.
    */
   @java.lang.Override
@@ -84,7 +84,7 @@ private static final long serialVersionUID = 0L;
    * Unique identifier for a task, created by the A2A server.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The bytes for id.
    */
   @java.lang.Override
@@ -111,7 +111,7 @@ private static final long serialVersionUID = 0L;
    * and messages). Created by the A2A server.
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   @java.lang.Override
@@ -133,7 +133,7 @@ private static final long serialVersionUID = 0L;
    * and messages). Created by the A2A server.
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   @java.lang.Override
@@ -158,7 +158,7 @@ private static final long serialVersionUID = 0L;
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    * @return Whether the status field is set.
    */
   @java.lang.Override
@@ -170,7 +170,7 @@ private static final long serialVersionUID = 0L;
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    * @return The status.
    */
   @java.lang.Override
@@ -182,7 +182,7 @@ private static final long serialVersionUID = 0L;
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
@@ -197,7 +197,7 @@ private static final long serialVersionUID = 0L;
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Artifact> getArtifactsList() {
@@ -208,7 +208,7 @@ private static final long serialVersionUID = 0L;
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.ArtifactOrBuilder> 
@@ -220,7 +220,7 @@ private static final long serialVersionUID = 0L;
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public int getArtifactsCount() {
@@ -231,7 +231,7 @@ private static final long serialVersionUID = 0L;
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Artifact getArtifacts(int index) {
@@ -242,7 +242,7 @@ private static final long serialVersionUID = 0L;
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.ArtifactOrBuilder getArtifactsOrBuilder(
@@ -259,7 +259,7 @@ private static final long serialVersionUID = 0L;
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Message> getHistoryList() {
@@ -271,7 +271,7 @@ private static final long serialVersionUID = 0L;
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.MessageOrBuilder> 
@@ -284,7 +284,7 @@ private static final long serialVersionUID = 0L;
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public int getHistoryCount() {
@@ -296,7 +296,7 @@ private static final long serialVersionUID = 0L;
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Message getHistory(int index) {
@@ -308,7 +308,7 @@ private static final long serialVersionUID = 0L;
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.MessageOrBuilder getHistoryOrBuilder(
@@ -324,7 +324,7 @@ private static final long serialVersionUID = 0L;
    * A key/value object to store custom metadata about a task.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return Whether the metadata field is set.
    */
   @java.lang.Override
@@ -337,7 +337,7 @@ private static final long serialVersionUID = 0L;
    * A key/value object to store custom metadata about a task.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return The metadata.
    */
   @java.lang.Override
@@ -350,7 +350,7 @@ private static final long serialVersionUID = 0L;
    * A key/value object to store custom metadata about a task.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
@@ -913,7 +913,7 @@ private static final long serialVersionUID = 0L;
      * Unique identifier for a task, created by the A2A server.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @return The id.
      */
     public java.lang.String getId() {
@@ -933,7 +933,7 @@ private static final long serialVersionUID = 0L;
      * Unique identifier for a task, created by the A2A server.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @return The bytes for id.
      */
     public com.google.protobuf.ByteString
@@ -954,7 +954,7 @@ private static final long serialVersionUID = 0L;
      * Unique identifier for a task, created by the A2A server.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @param value The id to set.
      * @return This builder for chaining.
      */
@@ -971,7 +971,7 @@ private static final long serialVersionUID = 0L;
      * Unique identifier for a task, created by the A2A server.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearId() {
@@ -985,7 +985,7 @@ private static final long serialVersionUID = 0L;
      * Unique identifier for a task, created by the A2A server.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @param value The bytes for id to set.
      * @return This builder for chaining.
      */
@@ -1006,7 +1006,7 @@ private static final long serialVersionUID = 0L;
      * and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return The contextId.
      */
     public java.lang.String getContextId() {
@@ -1027,7 +1027,7 @@ private static final long serialVersionUID = 0L;
      * and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return The bytes for contextId.
      */
     public com.google.protobuf.ByteString
@@ -1049,7 +1049,7 @@ private static final long serialVersionUID = 0L;
      * and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @param value The contextId to set.
      * @return This builder for chaining.
      */
@@ -1067,7 +1067,7 @@ private static final long serialVersionUID = 0L;
      * and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearContextId() {
@@ -1082,7 +1082,7 @@ private static final long serialVersionUID = 0L;
      * and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @param value The bytes for contextId to set.
      * @return This builder for chaining.
      */
@@ -1104,7 +1104,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
@@ -1115,7 +1115,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      * @return The status.
      */
     public io.a2a.grpc.TaskStatus getStatus() {
@@ -1130,7 +1130,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public Builder setStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -1150,7 +1150,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public Builder setStatus(
         io.a2a.grpc.TaskStatus.Builder builderForValue) {
@@ -1168,7 +1168,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public Builder mergeStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -1193,7 +1193,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public Builder clearStatus() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -1210,7 +1210,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public io.a2a.grpc.TaskStatus.Builder getStatusBuilder() {
       bitField0_ |= 0x00000004;
@@ -1222,7 +1222,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
       if (statusBuilder_ != null) {
@@ -1237,7 +1237,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskStatus, io.a2a.grpc.TaskStatus.Builder, io.a2a.grpc.TaskStatusOrBuilder> 
@@ -1270,7 +1270,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public java.util.List<io.a2a.grpc.Artifact> getArtifactsList() {
       if (artifactsBuilder_ == null) {
@@ -1284,7 +1284,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public int getArtifactsCount() {
       if (artifactsBuilder_ == null) {
@@ -1298,7 +1298,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.Artifact getArtifacts(int index) {
       if (artifactsBuilder_ == null) {
@@ -1312,7 +1312,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder setArtifacts(
         int index, io.a2a.grpc.Artifact value) {
@@ -1333,7 +1333,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder setArtifacts(
         int index, io.a2a.grpc.Artifact.Builder builderForValue) {
@@ -1351,7 +1351,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addArtifacts(io.a2a.grpc.Artifact value) {
       if (artifactsBuilder_ == null) {
@@ -1371,7 +1371,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addArtifacts(
         int index, io.a2a.grpc.Artifact value) {
@@ -1392,7 +1392,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addArtifacts(
         io.a2a.grpc.Artifact.Builder builderForValue) {
@@ -1410,7 +1410,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addArtifacts(
         int index, io.a2a.grpc.Artifact.Builder builderForValue) {
@@ -1428,7 +1428,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addAllArtifacts(
         java.lang.Iterable<? extends io.a2a.grpc.Artifact> values) {
@@ -1447,7 +1447,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder clearArtifacts() {
       if (artifactsBuilder_ == null) {
@@ -1464,7 +1464,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder removeArtifacts(int index) {
       if (artifactsBuilder_ == null) {
@@ -1481,7 +1481,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.Artifact.Builder getArtifactsBuilder(
         int index) {
@@ -1492,7 +1492,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.ArtifactOrBuilder getArtifactsOrBuilder(
         int index) {
@@ -1506,7 +1506,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public java.util.List<? extends io.a2a.grpc.ArtifactOrBuilder> 
          getArtifactsOrBuilderList() {
@@ -1521,7 +1521,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.Artifact.Builder addArtifactsBuilder() {
       return internalGetArtifactsFieldBuilder().addBuilder(
@@ -1532,7 +1532,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.Artifact.Builder addArtifactsBuilder(
         int index) {
@@ -1544,7 +1544,7 @@ private static final long serialVersionUID = 0L;
      * A set of output artifacts for a Task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
      */
     public java.util.List<io.a2a.grpc.Artifact.Builder> 
          getArtifactsBuilderList() {
@@ -1583,7 +1583,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public java.util.List<io.a2a.grpc.Message> getHistoryList() {
       if (historyBuilder_ == null) {
@@ -1598,7 +1598,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public int getHistoryCount() {
       if (historyBuilder_ == null) {
@@ -1613,7 +1613,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.Message getHistory(int index) {
       if (historyBuilder_ == null) {
@@ -1628,7 +1628,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public Builder setHistory(
         int index, io.a2a.grpc.Message value) {
@@ -1650,7 +1650,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public Builder setHistory(
         int index, io.a2a.grpc.Message.Builder builderForValue) {
@@ -1669,7 +1669,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public Builder addHistory(io.a2a.grpc.Message value) {
       if (historyBuilder_ == null) {
@@ -1690,7 +1690,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public Builder addHistory(
         int index, io.a2a.grpc.Message value) {
@@ -1712,7 +1712,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public Builder addHistory(
         io.a2a.grpc.Message.Builder builderForValue) {
@@ -1731,7 +1731,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public Builder addHistory(
         int index, io.a2a.grpc.Message.Builder builderForValue) {
@@ -1750,7 +1750,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public Builder addAllHistory(
         java.lang.Iterable<? extends io.a2a.grpc.Message> values) {
@@ -1770,7 +1770,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public Builder clearHistory() {
       if (historyBuilder_ == null) {
@@ -1788,7 +1788,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public Builder removeHistory(int index) {
       if (historyBuilder_ == null) {
@@ -1806,7 +1806,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.Message.Builder getHistoryBuilder(
         int index) {
@@ -1818,7 +1818,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.MessageOrBuilder getHistoryOrBuilder(
         int index) {
@@ -1833,7 +1833,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public java.util.List<? extends io.a2a.grpc.MessageOrBuilder> 
          getHistoryOrBuilderList() {
@@ -1849,7 +1849,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.Message.Builder addHistoryBuilder() {
       return internalGetHistoryFieldBuilder().addBuilder(
@@ -1861,7 +1861,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.Message.Builder addHistoryBuilder(
         int index) {
@@ -1874,7 +1874,7 @@ private static final long serialVersionUID = 0L;
      * The history of interactions from a task.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+     * <code>repeated .a2a.v1.Message history = 5;</code>
      */
     public java.util.List<io.a2a.grpc.Message.Builder> 
          getHistoryBuilderList() {
@@ -1904,7 +1904,7 @@ private static final long serialVersionUID = 0L;
      * A key/value object to store custom metadata about a task.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
@@ -1916,7 +1916,7 @@ private static final long serialVersionUID = 0L;
      * A key/value object to store custom metadata about a task.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      * @return The metadata.
      */
     public com.google.protobuf.Struct getMetadata() {
@@ -1932,7 +1932,7 @@ private static final long serialVersionUID = 0L;
      * A key/value object to store custom metadata about a task.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder setMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1953,7 +1953,7 @@ private static final long serialVersionUID = 0L;
      * A key/value object to store custom metadata about a task.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder setMetadata(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -1972,7 +1972,7 @@ private static final long serialVersionUID = 0L;
      * A key/value object to store custom metadata about a task.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1998,7 +1998,7 @@ private static final long serialVersionUID = 0L;
      * A key/value object to store custom metadata about a task.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder clearMetadata() {
       bitField0_ = (bitField0_ & ~0x00000020);
@@ -2016,7 +2016,7 @@ private static final long serialVersionUID = 0L;
      * A key/value object to store custom metadata about a task.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
       bitField0_ |= 0x00000020;
@@ -2029,7 +2029,7 @@ private static final long serialVersionUID = 0L;
      * A key/value object to store custom metadata about a task.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
       if (metadataBuilder_ != null) {
@@ -2045,7 +2045,7 @@ private static final long serialVersionUID = 0L;
      * A key/value object to store custom metadata about a task.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 

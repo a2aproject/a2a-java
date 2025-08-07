@@ -55,7 +55,7 @@ private static final long serialVersionUID = 0L;
    * Format: tasks/{id}
    * </pre>
    *
-   * <code>string parent = 1 [json_name = "parent", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string parent = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The parent.
    */
   @java.lang.Override
@@ -77,7 +77,7 @@ private static final long serialVersionUID = 0L;
    * Format: tasks/{id}
    * </pre>
    *
-   * <code>string parent = 1 [json_name = "parent", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string parent = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for parent.
    */
   @java.lang.Override
@@ -99,7 +99,7 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings("serial")
   private volatile java.lang.Object configId_ = "";
   /**
-   * <code>string config_id = 2 [json_name = "configId", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The configId.
    */
   @java.lang.Override
@@ -116,7 +116,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string config_id = 2 [json_name = "configId", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for configId.
    */
   @java.lang.Override
@@ -137,7 +137,7 @@ private static final long serialVersionUID = 0L;
   public static final int CONFIG_FIELD_NUMBER = 3;
   private io.a2a.grpc.TaskPushNotificationConfig config_;
   /**
-   * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the config field is set.
    */
   @java.lang.Override
@@ -145,7 +145,7 @@ private static final long serialVersionUID = 0L;
     return ((bitField0_ & 0x00000001) != 0);
   }
   /**
-   * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The config.
    */
   @java.lang.Override
@@ -153,7 +153,7 @@ private static final long serialVersionUID = 0L;
     return config_ == null ? io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance() : config_;
   }
   /**
-   * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigOrBuilder() {
@@ -530,7 +530,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string parent = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The parent.
      */
     public java.lang.String getParent() {
@@ -551,7 +551,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string parent = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for parent.
      */
     public com.google.protobuf.ByteString
@@ -573,7 +573,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string parent = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The parent to set.
      * @return This builder for chaining.
      */
@@ -591,7 +591,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string parent = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearParent() {
@@ -606,7 +606,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string parent = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for parent to set.
      * @return This builder for chaining.
      */
@@ -622,7 +622,7 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object configId_ = "";
     /**
-     * <code>string config_id = 2 [json_name = "configId", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The configId.
      */
     public java.lang.String getConfigId() {
@@ -638,7 +638,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string config_id = 2 [json_name = "configId", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for configId.
      */
     public com.google.protobuf.ByteString
@@ -655,7 +655,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string config_id = 2 [json_name = "configId", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The configId to set.
      * @return This builder for chaining.
      */
@@ -668,7 +668,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string config_id = 2 [json_name = "configId", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearConfigId() {
@@ -678,7 +678,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string config_id = 2 [json_name = "configId", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for configId to set.
      * @return This builder for chaining.
      */
@@ -696,14 +696,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskPushNotificationConfig, io.a2a.grpc.TaskPushNotificationConfig.Builder, io.a2a.grpc.TaskPushNotificationConfigOrBuilder> configBuilder_;
     /**
-     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the config field is set.
      */
     public boolean hasConfig() {
       return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The config.
      */
     public io.a2a.grpc.TaskPushNotificationConfig getConfig() {
@@ -714,7 +714,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setConfig(io.a2a.grpc.TaskPushNotificationConfig value) {
       if (configBuilder_ == null) {
@@ -730,7 +730,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setConfig(
         io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
@@ -744,7 +744,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeConfig(io.a2a.grpc.TaskPushNotificationConfig value) {
       if (configBuilder_ == null) {
@@ -765,7 +765,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearConfig() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -778,7 +778,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfig.Builder getConfigBuilder() {
       bitField0_ |= 0x00000004;
@@ -786,7 +786,7 @@ private static final long serialVersionUID = 0L;
       return internalGetConfigFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigOrBuilder() {
       if (configBuilder_ != null) {
@@ -797,7 +797,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [json_name = "config", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskPushNotificationConfig, io.a2a.grpc.TaskPushNotificationConfig.Builder, io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 

@@ -54,7 +54,7 @@ private static final long serialVersionUID = 0L;
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The description.
    */
   @java.lang.Override
@@ -75,7 +75,7 @@ private static final long serialVersionUID = 0L;
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The bytes for description.
    */
   @java.lang.Override
@@ -104,7 +104,7 @@ private static final long serialVersionUID = 0L;
    * The value is case-insensitive, as defined in RFC7235.
    * </pre>
    *
-   * <code>string scheme = 2 [json_name = "scheme"];</code>
+   * <code>string scheme = 2;</code>
    * @return The scheme.
    */
   @java.lang.Override
@@ -128,7 +128,7 @@ private static final long serialVersionUID = 0L;
    * The value is case-insensitive, as defined in RFC7235.
    * </pre>
    *
-   * <code>string scheme = 2 [json_name = "scheme"];</code>
+   * <code>string scheme = 2;</code>
    * @return The bytes for scheme.
    */
   @java.lang.Override
@@ -156,7 +156,7 @@ private static final long serialVersionUID = 0L;
    * this information is primarily for documentation purposes.
    * </pre>
    *
-   * <code>string bearer_format = 3 [json_name = "bearerFormat"];</code>
+   * <code>string bearer_format = 3;</code>
    * @return The bearerFormat.
    */
   @java.lang.Override
@@ -179,7 +179,7 @@ private static final long serialVersionUID = 0L;
    * this information is primarily for documentation purposes.
    * </pre>
    *
-   * <code>string bearer_format = 3 [json_name = "bearerFormat"];</code>
+   * <code>string bearer_format = 3;</code>
    * @return The bytes for bearerFormat.
    */
   @java.lang.Override
@@ -545,7 +545,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return The description.
      */
     public java.lang.String getDescription() {
@@ -565,7 +565,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return The bytes for description.
      */
     public com.google.protobuf.ByteString
@@ -586,7 +586,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @param value The description to set.
      * @return This builder for chaining.
      */
@@ -603,7 +603,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearDescription() {
@@ -617,7 +617,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @param value The bytes for description to set.
      * @return This builder for chaining.
      */
@@ -640,7 +640,7 @@ private static final long serialVersionUID = 0L;
      * The value is case-insensitive, as defined in RFC7235.
      * </pre>
      *
-     * <code>string scheme = 2 [json_name = "scheme"];</code>
+     * <code>string scheme = 2;</code>
      * @return The scheme.
      */
     public java.lang.String getScheme() {
@@ -663,7 +663,7 @@ private static final long serialVersionUID = 0L;
      * The value is case-insensitive, as defined in RFC7235.
      * </pre>
      *
-     * <code>string scheme = 2 [json_name = "scheme"];</code>
+     * <code>string scheme = 2;</code>
      * @return The bytes for scheme.
      */
     public com.google.protobuf.ByteString
@@ -687,7 +687,7 @@ private static final long serialVersionUID = 0L;
      * The value is case-insensitive, as defined in RFC7235.
      * </pre>
      *
-     * <code>string scheme = 2 [json_name = "scheme"];</code>
+     * <code>string scheme = 2;</code>
      * @param value The scheme to set.
      * @return This builder for chaining.
      */
@@ -707,7 +707,7 @@ private static final long serialVersionUID = 0L;
      * The value is case-insensitive, as defined in RFC7235.
      * </pre>
      *
-     * <code>string scheme = 2 [json_name = "scheme"];</code>
+     * <code>string scheme = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearScheme() {
@@ -724,7 +724,7 @@ private static final long serialVersionUID = 0L;
      * The value is case-insensitive, as defined in RFC7235.
      * </pre>
      *
-     * <code>string scheme = 2 [json_name = "scheme"];</code>
+     * <code>string scheme = 2;</code>
      * @param value The bytes for scheme to set.
      * @return This builder for chaining.
      */
@@ -746,7 +746,7 @@ private static final long serialVersionUID = 0L;
      * this information is primarily for documentation purposes.
      * </pre>
      *
-     * <code>string bearer_format = 3 [json_name = "bearerFormat"];</code>
+     * <code>string bearer_format = 3;</code>
      * @return The bearerFormat.
      */
     public java.lang.String getBearerFormat() {
@@ -768,7 +768,7 @@ private static final long serialVersionUID = 0L;
      * this information is primarily for documentation purposes.
      * </pre>
      *
-     * <code>string bearer_format = 3 [json_name = "bearerFormat"];</code>
+     * <code>string bearer_format = 3;</code>
      * @return The bytes for bearerFormat.
      */
     public com.google.protobuf.ByteString
@@ -791,7 +791,7 @@ private static final long serialVersionUID = 0L;
      * this information is primarily for documentation purposes.
      * </pre>
      *
-     * <code>string bearer_format = 3 [json_name = "bearerFormat"];</code>
+     * <code>string bearer_format = 3;</code>
      * @param value The bearerFormat to set.
      * @return This builder for chaining.
      */
@@ -810,7 +810,7 @@ private static final long serialVersionUID = 0L;
      * this information is primarily for documentation purposes.
      * </pre>
      *
-     * <code>string bearer_format = 3 [json_name = "bearerFormat"];</code>
+     * <code>string bearer_format = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearBearerFormat() {
@@ -826,7 +826,7 @@ private static final long serialVersionUID = 0L;
      * this information is primarily for documentation purposes.
      * </pre>
      *
-     * <code>string bearer_format = 3 [json_name = "bearerFormat"];</code>
+     * <code>string bearer_format = 3;</code>
      * @param value The bytes for bearerFormat to set.
      * @return This builder for chaining.
      */

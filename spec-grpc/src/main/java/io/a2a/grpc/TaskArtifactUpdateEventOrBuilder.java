@@ -15,7 +15,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The id of the task for this artifact
    * </pre>
    *
-   * <code>string task_id = 1 [json_name = "taskId"];</code>
+   * <code>string task_id = 1;</code>
    * @return The taskId.
    */
   java.lang.String getTaskId();
@@ -24,7 +24,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The id of the task for this artifact
    * </pre>
    *
-   * <code>string task_id = 1 [json_name = "taskId"];</code>
+   * <code>string task_id = 1;</code>
    * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The id of the context that this task belongs too
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   java.lang.String getContextId();
@@ -44,7 +44,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The id of the context that this task belongs too
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   com.google.protobuf.ByteString
@@ -55,7 +55,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The artifact itself
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+   * <code>.a2a.v1.Artifact artifact = 3;</code>
    * @return Whether the artifact field is set.
    */
   boolean hasArtifact();
@@ -64,7 +64,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The artifact itself
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+   * <code>.a2a.v1.Artifact artifact = 3;</code>
    * @return The artifact.
    */
   io.a2a.grpc.Artifact getArtifact();
@@ -73,7 +73,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The artifact itself
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+   * <code>.a2a.v1.Artifact artifact = 3;</code>
    */
   io.a2a.grpc.ArtifactOrBuilder getArtifactOrBuilder();
 
@@ -82,7 +82,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * Whether this should be appended to a prior one produced
    * </pre>
    *
-   * <code>bool append = 4 [json_name = "append"];</code>
+   * <code>bool append = 4;</code>
    * @return The append.
    */
   boolean getAppend();
@@ -92,7 +92,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * Whether this represents the last part of an artifact
    * </pre>
    *
-   * <code>bool last_chunk = 5 [json_name = "lastChunk"];</code>
+   * <code>bool last_chunk = 5;</code>
    * @return The lastChunk.
    */
   boolean getLastChunk();
@@ -102,7 +102,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * Optional metadata associated with the artifact update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
@@ -111,7 +111,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * Optional metadata associated with the artifact update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
@@ -120,7 +120,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * Optional metadata associated with the artifact update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 }

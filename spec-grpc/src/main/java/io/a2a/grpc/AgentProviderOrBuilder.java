@@ -16,7 +16,7 @@ public interface AgentProviderOrBuilder extends
    * Example: "https://ai.google.dev"
    * </pre>
    *
-   * <code>string url = 1 [json_name = "url"];</code>
+   * <code>string url = 1;</code>
    * @return The url.
    */
   java.lang.String getUrl();
@@ -26,7 +26,7 @@ public interface AgentProviderOrBuilder extends
    * Example: "https://ai.google.dev"
    * </pre>
    *
-   * <code>string url = 1 [json_name = "url"];</code>
+   * <code>string url = 1;</code>
    * @return The bytes for url.
    */
   com.google.protobuf.ByteString
@@ -38,7 +38,7 @@ public interface AgentProviderOrBuilder extends
    * Example: "Google"
    * </pre>
    *
-   * <code>string organization = 2 [json_name = "organization"];</code>
+   * <code>string organization = 2;</code>
    * @return The organization.
    */
   java.lang.String getOrganization();
@@ -48,7 +48,7 @@ public interface AgentProviderOrBuilder extends
    * Example: "Google"
    * </pre>
    *
-   * <code>string organization = 2 [json_name = "organization"];</code>
+   * <code>string organization = 2;</code>
    * @return The bytes for organization.
    */
   com.google.protobuf.ByteString

@@ -11,49 +11,49 @@ public interface PartOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>string text = 1 [json_name = "text"];</code>
+   * <code>string text = 1;</code>
    * @return Whether the text field is set.
    */
   boolean hasText();
   /**
-   * <code>string text = 1 [json_name = "text"];</code>
+   * <code>string text = 1;</code>
    * @return The text.
    */
   java.lang.String getText();
   /**
-   * <code>string text = 1 [json_name = "text"];</code>
+   * <code>string text = 1;</code>
    * @return The bytes for text.
    */
   com.google.protobuf.ByteString
       getTextBytes();
 
   /**
-   * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+   * <code>.a2a.v1.FilePart file = 2;</code>
    * @return Whether the file field is set.
    */
   boolean hasFile();
   /**
-   * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+   * <code>.a2a.v1.FilePart file = 2;</code>
    * @return The file.
    */
   io.a2a.grpc.FilePart getFile();
   /**
-   * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+   * <code>.a2a.v1.FilePart file = 2;</code>
    */
   io.a2a.grpc.FilePartOrBuilder getFileOrBuilder();
 
   /**
-   * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+   * <code>.a2a.v1.DataPart data = 3;</code>
    * @return Whether the data field is set.
    */
   boolean hasData();
   /**
-   * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+   * <code>.a2a.v1.DataPart data = 3;</code>
    * @return The data.
    */
   io.a2a.grpc.DataPart getData();
   /**
-   * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+   * <code>.a2a.v1.DataPart data = 3;</code>
    */
   io.a2a.grpc.DataPartOrBuilder getDataOrBuilder();
 

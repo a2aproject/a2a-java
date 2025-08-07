@@ -15,7 +15,7 @@ public interface ArtifactOrBuilder extends
    * Unique id for the artifact. It must be at least unique within a task.
    * </pre>
    *
-   * <code>string artifact_id = 1 [json_name = "artifactId"];</code>
+   * <code>string artifact_id = 1;</code>
    * @return The artifactId.
    */
   java.lang.String getArtifactId();
@@ -24,7 +24,7 @@ public interface ArtifactOrBuilder extends
    * Unique id for the artifact. It must be at least unique within a task.
    * </pre>
    *
-   * <code>string artifact_id = 1 [json_name = "artifactId"];</code>
+   * <code>string artifact_id = 1;</code>
    * @return The bytes for artifactId.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface ArtifactOrBuilder extends
    * A human readable name for the artifact.
    * </pre>
    *
-   * <code>string name = 3 [json_name = "name"];</code>
+   * <code>string name = 3;</code>
    * @return The name.
    */
   java.lang.String getName();
@@ -44,7 +44,7 @@ public interface ArtifactOrBuilder extends
    * A human readable name for the artifact.
    * </pre>
    *
-   * <code>string name = 3 [json_name = "name"];</code>
+   * <code>string name = 3;</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString
@@ -55,7 +55,7 @@ public interface ArtifactOrBuilder extends
    * A human readable description of the artifact, optional.
    * </pre>
    *
-   * <code>string description = 4 [json_name = "description"];</code>
+   * <code>string description = 4;</code>
    * @return The description.
    */
   java.lang.String getDescription();
@@ -64,7 +64,7 @@ public interface ArtifactOrBuilder extends
    * A human readable description of the artifact, optional.
    * </pre>
    *
-   * <code>string description = 4 [json_name = "description"];</code>
+   * <code>string description = 4;</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -75,7 +75,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [json_name = "parts"];</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   java.util.List<io.a2a.grpc.Part> 
       getPartsList();
@@ -84,7 +84,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [json_name = "parts"];</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   io.a2a.grpc.Part getParts(int index);
   /**
@@ -92,7 +92,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [json_name = "parts"];</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   int getPartsCount();
   /**
@@ -100,7 +100,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [json_name = "parts"];</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
       getPartsOrBuilderList();
@@ -109,7 +109,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [json_name = "parts"];</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
       int index);
@@ -119,7 +119,7 @@ public interface ArtifactOrBuilder extends
    * Optional metadata included with the artifact.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
@@ -128,7 +128,7 @@ public interface ArtifactOrBuilder extends
    * Optional metadata included with the artifact.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
@@ -137,7 +137,7 @@ public interface ArtifactOrBuilder extends
    * Optional metadata included with the artifact.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 
@@ -146,7 +146,7 @@ public interface ArtifactOrBuilder extends
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @return A list containing the extensions.
    */
   java.util.List<java.lang.String>
@@ -156,7 +156,7 @@ public interface ArtifactOrBuilder extends
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @return The count of extensions.
    */
   int getExtensionsCount();
@@ -165,7 +165,7 @@ public interface ArtifactOrBuilder extends
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @param index The index of the element to return.
    * @return The extensions at the given index.
    */
@@ -175,7 +175,7 @@ public interface ArtifactOrBuilder extends
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @param index The index of the value to return.
    * @return The bytes of the extensions at the given index.
    */

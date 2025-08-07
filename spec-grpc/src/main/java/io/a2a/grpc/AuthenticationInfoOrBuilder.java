@@ -15,7 +15,7 @@ public interface AuthenticationInfoOrBuilder extends
    * Supported authentication schemes - e.g. Basic, Bearer, etc
    * </pre>
    *
-   * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+   * <code>repeated string schemes = 1;</code>
    * @return A list containing the schemes.
    */
   java.util.List<java.lang.String>
@@ -25,7 +25,7 @@ public interface AuthenticationInfoOrBuilder extends
    * Supported authentication schemes - e.g. Basic, Bearer, etc
    * </pre>
    *
-   * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+   * <code>repeated string schemes = 1;</code>
    * @return The count of schemes.
    */
   int getSchemesCount();
@@ -34,7 +34,7 @@ public interface AuthenticationInfoOrBuilder extends
    * Supported authentication schemes - e.g. Basic, Bearer, etc
    * </pre>
    *
-   * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+   * <code>repeated string schemes = 1;</code>
    * @param index The index of the element to return.
    * @return The schemes at the given index.
    */
@@ -44,7 +44,7 @@ public interface AuthenticationInfoOrBuilder extends
    * Supported authentication schemes - e.g. Basic, Bearer, etc
    * </pre>
    *
-   * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+   * <code>repeated string schemes = 1;</code>
    * @param index The index of the value to return.
    * @return The bytes of the schemes at the given index.
    */
@@ -56,7 +56,7 @@ public interface AuthenticationInfoOrBuilder extends
    * Optional credentials
    * </pre>
    *
-   * <code>string credentials = 2 [json_name = "credentials"];</code>
+   * <code>string credentials = 2;</code>
    * @return The credentials.
    */
   java.lang.String getCredentials();
@@ -65,7 +65,7 @@ public interface AuthenticationInfoOrBuilder extends
    * Optional credentials
    * </pre>
    *
-   * <code>string credentials = 2 [json_name = "credentials"];</code>
+   * <code>string credentials = 2;</code>
    * @return The bytes for credentials.
    */
   com.google.protobuf.ByteString

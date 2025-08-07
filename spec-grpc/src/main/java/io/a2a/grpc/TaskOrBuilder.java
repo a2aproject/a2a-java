@@ -15,7 +15,7 @@ public interface TaskOrBuilder extends
    * Unique identifier for a task, created by the A2A server.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The id.
    */
   java.lang.String getId();
@@ -24,7 +24,7 @@ public interface TaskOrBuilder extends
    * Unique identifier for a task, created by the A2A server.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The bytes for id.
    */
   com.google.protobuf.ByteString
@@ -36,7 +36,7 @@ public interface TaskOrBuilder extends
    * and messages). Created by the A2A server.
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   java.lang.String getContextId();
@@ -46,7 +46,7 @@ public interface TaskOrBuilder extends
    * and messages). Created by the A2A server.
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   com.google.protobuf.ByteString
@@ -57,7 +57,7 @@ public interface TaskOrBuilder extends
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    * @return Whether the status field is set.
    */
   boolean hasStatus();
@@ -66,7 +66,7 @@ public interface TaskOrBuilder extends
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    * @return The status.
    */
   io.a2a.grpc.TaskStatus getStatus();
@@ -75,7 +75,7 @@ public interface TaskOrBuilder extends
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    */
   io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder();
 
@@ -84,7 +84,7 @@ public interface TaskOrBuilder extends
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   java.util.List<io.a2a.grpc.Artifact> 
       getArtifactsList();
@@ -93,7 +93,7 @@ public interface TaskOrBuilder extends
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   io.a2a.grpc.Artifact getArtifacts(int index);
   /**
@@ -101,7 +101,7 @@ public interface TaskOrBuilder extends
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   int getArtifactsCount();
   /**
@@ -109,7 +109,7 @@ public interface TaskOrBuilder extends
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   java.util.List<? extends io.a2a.grpc.ArtifactOrBuilder> 
       getArtifactsOrBuilderList();
@@ -118,7 +118,7 @@ public interface TaskOrBuilder extends
    * A set of output artifacts for a Task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4 [json_name = "artifacts"];</code>
+   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
    */
   io.a2a.grpc.ArtifactOrBuilder getArtifactsOrBuilder(
       int index);
@@ -129,7 +129,7 @@ public interface TaskOrBuilder extends
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   java.util.List<io.a2a.grpc.Message> 
       getHistoryList();
@@ -139,7 +139,7 @@ public interface TaskOrBuilder extends
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   io.a2a.grpc.Message getHistory(int index);
   /**
@@ -148,7 +148,7 @@ public interface TaskOrBuilder extends
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   int getHistoryCount();
   /**
@@ -157,7 +157,7 @@ public interface TaskOrBuilder extends
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   java.util.List<? extends io.a2a.grpc.MessageOrBuilder> 
       getHistoryOrBuilderList();
@@ -167,7 +167,7 @@ public interface TaskOrBuilder extends
    * The history of interactions from a task.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5 [json_name = "history"];</code>
+   * <code>repeated .a2a.v1.Message history = 5;</code>
    */
   io.a2a.grpc.MessageOrBuilder getHistoryOrBuilder(
       int index);
@@ -178,7 +178,7 @@ public interface TaskOrBuilder extends
    * A key/value object to store custom metadata about a task.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
@@ -188,7 +188,7 @@ public interface TaskOrBuilder extends
    * A key/value object to store custom metadata about a task.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
@@ -198,7 +198,7 @@ public interface TaskOrBuilder extends
    * A key/value object to store custom metadata about a task.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 }

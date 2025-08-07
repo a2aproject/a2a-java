@@ -16,7 +16,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * form of a URL. The OAuth2 standard requires the use of TLS
    * </pre>
    *
-   * <code>string authorization_url = 1 [json_name = "authorizationUrl"];</code>
+   * <code>string authorization_url = 1;</code>
    * @return The authorizationUrl.
    */
   java.lang.String getAuthorizationUrl();
@@ -26,7 +26,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * form of a URL. The OAuth2 standard requires the use of TLS
    * </pre>
    *
-   * <code>string authorization_url = 1 [json_name = "authorizationUrl"];</code>
+   * <code>string authorization_url = 1;</code>
    * @return The bytes for authorizationUrl.
    */
   com.google.protobuf.ByteString
@@ -38,7 +38,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * The OAuth2 standard requires the use of TLS.
    * </pre>
    *
-   * <code>string token_url = 2 [json_name = "tokenUrl"];</code>
+   * <code>string token_url = 2;</code>
    * @return The tokenUrl.
    */
   java.lang.String getTokenUrl();
@@ -48,7 +48,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * The OAuth2 standard requires the use of TLS.
    * </pre>
    *
-   * <code>string token_url = 2 [json_name = "tokenUrl"];</code>
+   * <code>string token_url = 2;</code>
    * @return The bytes for tokenUrl.
    */
   com.google.protobuf.ByteString
@@ -60,7 +60,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * form of a URL. The OAuth2 standard requires the use of TLS.
    * </pre>
    *
-   * <code>string refresh_url = 3 [json_name = "refreshUrl"];</code>
+   * <code>string refresh_url = 3;</code>
    * @return The refreshUrl.
    */
   java.lang.String getRefreshUrl();
@@ -70,7 +70,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * form of a URL. The OAuth2 standard requires the use of TLS.
    * </pre>
    *
-   * <code>string refresh_url = 3 [json_name = "refreshUrl"];</code>
+   * <code>string refresh_url = 3;</code>
    * @return The bytes for refreshUrl.
    */
   com.google.protobuf.ByteString
@@ -82,7 +82,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * scope name and a short description for it. The map MAY be empty.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+   * <code>map&lt;string, string&gt; scopes = 4;</code>
    */
   int getScopesCount();
   /**
@@ -91,7 +91,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * scope name and a short description for it. The map MAY be empty.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+   * <code>map&lt;string, string&gt; scopes = 4;</code>
    */
   boolean containsScopes(
       java.lang.String key);
@@ -107,7 +107,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * scope name and a short description for it. The map MAY be empty.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+   * <code>map&lt;string, string&gt; scopes = 4;</code>
    */
   java.util.Map<java.lang.String, java.lang.String>
   getScopesMap();
@@ -117,7 +117,7 @@ public interface AuthorizationCodeOAuthFlowOrBuilder extends
    * scope name and a short description for it. The map MAY be empty.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+   * <code>map&lt;string, string&gt; scopes = 4;</code>
    */
   /* nullable */
 java.lang.String getScopesOrDefault(
@@ -130,7 +130,7 @@ java.lang.String defaultValue);
    * scope name and a short description for it. The map MAY be empty.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 4 [json_name = "scopes"];</code>
+   * <code>map&lt;string, string&gt; scopes = 4;</code>
    */
   java.lang.String getScopesOrThrow(
       java.lang.String key);

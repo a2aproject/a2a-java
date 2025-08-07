@@ -15,7 +15,7 @@ public interface PushNotificationConfigOrBuilder extends
    * A unique id for this push notification.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The id.
    */
   java.lang.String getId();
@@ -24,7 +24,7 @@ public interface PushNotificationConfigOrBuilder extends
    * A unique id for this push notification.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The bytes for id.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface PushNotificationConfigOrBuilder extends
    * Url to send the notification too
    * </pre>
    *
-   * <code>string url = 2 [json_name = "url"];</code>
+   * <code>string url = 2;</code>
    * @return The url.
    */
   java.lang.String getUrl();
@@ -44,7 +44,7 @@ public interface PushNotificationConfigOrBuilder extends
    * Url to send the notification too
    * </pre>
    *
-   * <code>string url = 2 [json_name = "url"];</code>
+   * <code>string url = 2;</code>
    * @return The bytes for url.
    */
   com.google.protobuf.ByteString
@@ -55,7 +55,7 @@ public interface PushNotificationConfigOrBuilder extends
    * Token unique for this task/session
    * </pre>
    *
-   * <code>string token = 3 [json_name = "token"];</code>
+   * <code>string token = 3;</code>
    * @return The token.
    */
   java.lang.String getToken();
@@ -64,7 +64,7 @@ public interface PushNotificationConfigOrBuilder extends
    * Token unique for this task/session
    * </pre>
    *
-   * <code>string token = 3 [json_name = "token"];</code>
+   * <code>string token = 3;</code>
    * @return The bytes for token.
    */
   com.google.protobuf.ByteString
@@ -75,7 +75,7 @@ public interface PushNotificationConfigOrBuilder extends
    * Information about the authentication to sent with the notification
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
    * @return Whether the authentication field is set.
    */
   boolean hasAuthentication();
@@ -84,7 +84,7 @@ public interface PushNotificationConfigOrBuilder extends
    * Information about the authentication to sent with the notification
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
    * @return The authentication.
    */
   io.a2a.grpc.AuthenticationInfo getAuthentication();
@@ -93,7 +93,7 @@ public interface PushNotificationConfigOrBuilder extends
    * Information about the authentication to sent with the notification
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
    */
   io.a2a.grpc.AuthenticationInfoOrBuilder getAuthenticationOrBuilder();
 }

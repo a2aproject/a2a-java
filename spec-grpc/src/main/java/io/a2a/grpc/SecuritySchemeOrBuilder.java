@@ -11,62 +11,62 @@ public interface SecuritySchemeOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    * @return Whether the apiKeySecurityScheme field is set.
    */
   boolean hasApiKeySecurityScheme();
   /**
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    * @return The apiKeySecurityScheme.
    */
   io.a2a.grpc.APIKeySecurityScheme getApiKeySecurityScheme();
   /**
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    */
   io.a2a.grpc.APIKeySecuritySchemeOrBuilder getApiKeySecuritySchemeOrBuilder();
 
   /**
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    * @return Whether the httpAuthSecurityScheme field is set.
    */
   boolean hasHttpAuthSecurityScheme();
   /**
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    * @return The httpAuthSecurityScheme.
    */
   io.a2a.grpc.HTTPAuthSecurityScheme getHttpAuthSecurityScheme();
   /**
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    */
   io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder getHttpAuthSecuritySchemeOrBuilder();
 
   /**
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    * @return Whether the oauth2SecurityScheme field is set.
    */
   boolean hasOauth2SecurityScheme();
   /**
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    * @return The oauth2SecurityScheme.
    */
   io.a2a.grpc.OAuth2SecurityScheme getOauth2SecurityScheme();
   /**
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    */
   io.a2a.grpc.OAuth2SecuritySchemeOrBuilder getOauth2SecuritySchemeOrBuilder();
 
   /**
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    * @return Whether the openIdConnectSecurityScheme field is set.
    */
   boolean hasOpenIdConnectSecurityScheme();
   /**
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    * @return The openIdConnectSecurityScheme.
    */
   io.a2a.grpc.OpenIdConnectSecurityScheme getOpenIdConnectSecurityScheme();
   /**
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    */
   io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder getOpenIdConnectSecuritySchemeOrBuilder();
 

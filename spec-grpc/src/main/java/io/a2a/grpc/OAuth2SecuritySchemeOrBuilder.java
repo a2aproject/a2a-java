@@ -15,7 +15,7 @@ public interface OAuth2SecuritySchemeOrBuilder extends
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The description.
    */
   java.lang.String getDescription();
@@ -24,7 +24,7 @@ public interface OAuth2SecuritySchemeOrBuilder extends
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface OAuth2SecuritySchemeOrBuilder extends
    * An object containing configuration information for the flow types supported
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+   * <code>.a2a.v1.OAuthFlows flows = 2;</code>
    * @return Whether the flows field is set.
    */
   boolean hasFlows();
@@ -44,7 +44,7 @@ public interface OAuth2SecuritySchemeOrBuilder extends
    * An object containing configuration information for the flow types supported
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+   * <code>.a2a.v1.OAuthFlows flows = 2;</code>
    * @return The flows.
    */
   io.a2a.grpc.OAuthFlows getFlows();
@@ -53,7 +53,7 @@ public interface OAuth2SecuritySchemeOrBuilder extends
    * An object containing configuration information for the flow types supported
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+   * <code>.a2a.v1.OAuthFlows flows = 2;</code>
    */
   io.a2a.grpc.OAuthFlowsOrBuilder getFlowsOrBuilder();
 }

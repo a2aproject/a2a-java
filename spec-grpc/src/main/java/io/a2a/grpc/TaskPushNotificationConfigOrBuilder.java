@@ -15,7 +15,7 @@ public interface TaskPushNotificationConfigOrBuilder extends
    * name=tasks/{id}/pushNotificationConfigs/{id}
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name"];</code>
+   * <code>string name = 1;</code>
    * @return The name.
    */
   java.lang.String getName();
@@ -24,24 +24,24 @@ public interface TaskPushNotificationConfigOrBuilder extends
    * name=tasks/{id}/pushNotificationConfigs/{id}
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name"];</code>
+   * <code>string name = 1;</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString
       getNameBytes();
 
   /**
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return Whether the pushNotificationConfig field is set.
    */
   boolean hasPushNotificationConfig();
   /**
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return The pushNotificationConfig.
    */
   io.a2a.grpc.PushNotificationConfig getPushNotificationConfig();
   /**
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [json_name = "pushNotificationConfig"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    */
   io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder();
 }

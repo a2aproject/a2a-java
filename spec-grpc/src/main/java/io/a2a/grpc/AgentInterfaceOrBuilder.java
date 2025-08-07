@@ -15,7 +15,7 @@ public interface AgentInterfaceOrBuilder extends
    * The url this interface is found at.
    * </pre>
    *
-   * <code>string url = 1 [json_name = "url"];</code>
+   * <code>string url = 1;</code>
    * @return The url.
    */
   java.lang.String getUrl();
@@ -24,7 +24,7 @@ public interface AgentInterfaceOrBuilder extends
    * The url this interface is found at.
    * </pre>
    *
-   * <code>string url = 1 [json_name = "url"];</code>
+   * <code>string url = 1;</code>
    * @return The bytes for url.
    */
   com.google.protobuf.ByteString
@@ -37,7 +37,7 @@ public interface AgentInterfaceOrBuilder extends
    * supported are JSONRPC, GRPC and HTTP+JSON.
    * </pre>
    *
-   * <code>string transport = 2 [json_name = "transport"];</code>
+   * <code>string transport = 2;</code>
    * @return The transport.
    */
   java.lang.String getTransport();
@@ -48,7 +48,7 @@ public interface AgentInterfaceOrBuilder extends
    * supported are JSONRPC, GRPC and HTTP+JSON.
    * </pre>
    *
-   * <code>string transport = 2 [json_name = "transport"];</code>
+   * <code>string transport = 2;</code>
    * @return The bytes for transport.
    */
   com.google.protobuf.ByteString

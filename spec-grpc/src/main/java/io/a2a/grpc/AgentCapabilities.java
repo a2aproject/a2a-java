@@ -55,7 +55,7 @@ private static final long serialVersionUID = 0L;
    * If the agent will support streaming responses
    * </pre>
    *
-   * <code>bool streaming = 1 [json_name = "streaming"];</code>
+   * <code>bool streaming = 1;</code>
    * @return The streaming.
    */
   @java.lang.Override
@@ -70,7 +70,7 @@ private static final long serialVersionUID = 0L;
    * If the agent can send push notifications to the clients webhook
    * </pre>
    *
-   * <code>bool push_notifications = 2 [json_name = "pushNotifications"];</code>
+   * <code>bool push_notifications = 2;</code>
    * @return The pushNotifications.
    */
   @java.lang.Override
@@ -86,7 +86,7 @@ private static final long serialVersionUID = 0L;
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.AgentExtension> getExtensionsList() {
@@ -97,7 +97,7 @@ private static final long serialVersionUID = 0L;
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.AgentExtensionOrBuilder> 
@@ -109,7 +109,7 @@ private static final long serialVersionUID = 0L;
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public int getExtensionsCount() {
@@ -120,7 +120,7 @@ private static final long serialVersionUID = 0L;
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentExtension getExtensions(int index) {
@@ -131,7 +131,7 @@ private static final long serialVersionUID = 0L;
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentExtensionOrBuilder getExtensionsOrBuilder(
@@ -539,7 +539,7 @@ private static final long serialVersionUID = 0L;
      * If the agent will support streaming responses
      * </pre>
      *
-     * <code>bool streaming = 1 [json_name = "streaming"];</code>
+     * <code>bool streaming = 1;</code>
      * @return The streaming.
      */
     @java.lang.Override
@@ -551,7 +551,7 @@ private static final long serialVersionUID = 0L;
      * If the agent will support streaming responses
      * </pre>
      *
-     * <code>bool streaming = 1 [json_name = "streaming"];</code>
+     * <code>bool streaming = 1;</code>
      * @param value The streaming to set.
      * @return This builder for chaining.
      */
@@ -567,7 +567,7 @@ private static final long serialVersionUID = 0L;
      * If the agent will support streaming responses
      * </pre>
      *
-     * <code>bool streaming = 1 [json_name = "streaming"];</code>
+     * <code>bool streaming = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearStreaming() {
@@ -583,7 +583,7 @@ private static final long serialVersionUID = 0L;
      * If the agent can send push notifications to the clients webhook
      * </pre>
      *
-     * <code>bool push_notifications = 2 [json_name = "pushNotifications"];</code>
+     * <code>bool push_notifications = 2;</code>
      * @return The pushNotifications.
      */
     @java.lang.Override
@@ -595,7 +595,7 @@ private static final long serialVersionUID = 0L;
      * If the agent can send push notifications to the clients webhook
      * </pre>
      *
-     * <code>bool push_notifications = 2 [json_name = "pushNotifications"];</code>
+     * <code>bool push_notifications = 2;</code>
      * @param value The pushNotifications to set.
      * @return This builder for chaining.
      */
@@ -611,7 +611,7 @@ private static final long serialVersionUID = 0L;
      * If the agent can send push notifications to the clients webhook
      * </pre>
      *
-     * <code>bool push_notifications = 2 [json_name = "pushNotifications"];</code>
+     * <code>bool push_notifications = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearPushNotifications() {
@@ -638,7 +638,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public java.util.List<io.a2a.grpc.AgentExtension> getExtensionsList() {
       if (extensionsBuilder_ == null) {
@@ -652,7 +652,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public int getExtensionsCount() {
       if (extensionsBuilder_ == null) {
@@ -666,7 +666,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtension getExtensions(int index) {
       if (extensionsBuilder_ == null) {
@@ -680,7 +680,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder setExtensions(
         int index, io.a2a.grpc.AgentExtension value) {
@@ -701,7 +701,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder setExtensions(
         int index, io.a2a.grpc.AgentExtension.Builder builderForValue) {
@@ -719,7 +719,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addExtensions(io.a2a.grpc.AgentExtension value) {
       if (extensionsBuilder_ == null) {
@@ -739,7 +739,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addExtensions(
         int index, io.a2a.grpc.AgentExtension value) {
@@ -760,7 +760,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addExtensions(
         io.a2a.grpc.AgentExtension.Builder builderForValue) {
@@ -778,7 +778,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addExtensions(
         int index, io.a2a.grpc.AgentExtension.Builder builderForValue) {
@@ -796,7 +796,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addAllExtensions(
         java.lang.Iterable<? extends io.a2a.grpc.AgentExtension> values) {
@@ -815,7 +815,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder clearExtensions() {
       if (extensionsBuilder_ == null) {
@@ -832,7 +832,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder removeExtensions(int index) {
       if (extensionsBuilder_ == null) {
@@ -849,7 +849,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtension.Builder getExtensionsBuilder(
         int index) {
@@ -860,7 +860,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtensionOrBuilder getExtensionsOrBuilder(
         int index) {
@@ -874,7 +874,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public java.util.List<? extends io.a2a.grpc.AgentExtensionOrBuilder> 
          getExtensionsOrBuilderList() {
@@ -889,7 +889,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtension.Builder addExtensionsBuilder() {
       return internalGetExtensionsFieldBuilder().addBuilder(
@@ -900,7 +900,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtension.Builder addExtensionsBuilder(
         int index) {
@@ -912,7 +912,7 @@ private static final long serialVersionUID = 0L;
      * Extensions supported by this agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
      */
     public java.util.List<io.a2a.grpc.AgentExtension.Builder> 
          getExtensionsBuilderList() {

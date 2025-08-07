@@ -11,40 +11,40 @@ public interface FilePartOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+   * <code>string file_with_uri = 1;</code>
    * @return Whether the fileWithUri field is set.
    */
   boolean hasFileWithUri();
   /**
-   * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+   * <code>string file_with_uri = 1;</code>
    * @return The fileWithUri.
    */
   java.lang.String getFileWithUri();
   /**
-   * <code>string file_with_uri = 1 [json_name = "fileWithUri"];</code>
+   * <code>string file_with_uri = 1;</code>
    * @return The bytes for fileWithUri.
    */
   com.google.protobuf.ByteString
       getFileWithUriBytes();
 
   /**
-   * <code>bytes file_with_bytes = 2 [json_name = "fileWithBytes"];</code>
+   * <code>bytes file_with_bytes = 2;</code>
    * @return Whether the fileWithBytes field is set.
    */
   boolean hasFileWithBytes();
   /**
-   * <code>bytes file_with_bytes = 2 [json_name = "fileWithBytes"];</code>
+   * <code>bytes file_with_bytes = 2;</code>
    * @return The fileWithBytes.
    */
   com.google.protobuf.ByteString getFileWithBytes();
 
   /**
-   * <code>string mime_type = 3 [json_name = "mimeType"];</code>
+   * <code>string mime_type = 3;</code>
    * @return The mimeType.
    */
   java.lang.String getMimeType();
   /**
-   * <code>string mime_type = 3 [json_name = "mimeType"];</code>
+   * <code>string mime_type = 3;</code>
    * @return The bytes for mimeType.
    */
   com.google.protobuf.ByteString

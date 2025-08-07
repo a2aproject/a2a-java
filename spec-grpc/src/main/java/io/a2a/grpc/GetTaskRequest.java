@@ -52,7 +52,7 @@ private static final long serialVersionUID = 0L;
    * name=tasks/{id}
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The name.
    */
   @java.lang.Override
@@ -73,7 +73,7 @@ private static final long serialVersionUID = 0L;
    * name=tasks/{id}
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for name.
    */
   @java.lang.Override
@@ -94,7 +94,7 @@ private static final long serialVersionUID = 0L;
   public static final int HISTORY_LENGTH_FIELD_NUMBER = 2;
   private int historyLength_ = 0;
   /**
-   * <code>int32 history_length = 2 [json_name = "historyLength"];</code>
+   * <code>int32 history_length = 2;</code>
    * @return The historyLength.
    */
   @java.lang.Override
@@ -425,7 +425,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The name.
      */
     public java.lang.String getName() {
@@ -445,7 +445,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for name.
      */
     public com.google.protobuf.ByteString
@@ -466,7 +466,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The name to set.
      * @return This builder for chaining.
      */
@@ -483,7 +483,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearName() {
@@ -497,7 +497,7 @@ private static final long serialVersionUID = 0L;
      * name=tasks/{id}
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for name to set.
      * @return This builder for chaining.
      */
@@ -513,7 +513,7 @@ private static final long serialVersionUID = 0L;
 
     private int historyLength_ ;
     /**
-     * <code>int32 history_length = 2 [json_name = "historyLength"];</code>
+     * <code>int32 history_length = 2;</code>
      * @return The historyLength.
      */
     @java.lang.Override
@@ -521,7 +521,7 @@ private static final long serialVersionUID = 0L;
       return historyLength_;
     }
     /**
-     * <code>int32 history_length = 2 [json_name = "historyLength"];</code>
+     * <code>int32 history_length = 2;</code>
      * @param value The historyLength to set.
      * @return This builder for chaining.
      */
@@ -533,7 +533,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>int32 history_length = 2 [json_name = "historyLength"];</code>
+     * <code>int32 history_length = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearHistoryLength() {

@@ -59,7 +59,7 @@ private static final long serialVersionUID = 0L;
    * The id of the task that is changed
    * </pre>
    *
-   * <code>string task_id = 1 [json_name = "taskId"];</code>
+   * <code>string task_id = 1;</code>
    * @return The taskId.
    */
   @java.lang.Override
@@ -80,7 +80,7 @@ private static final long serialVersionUID = 0L;
    * The id of the task that is changed
    * </pre>
    *
-   * <code>string task_id = 1 [json_name = "taskId"];</code>
+   * <code>string task_id = 1;</code>
    * @return The bytes for taskId.
    */
   @java.lang.Override
@@ -106,7 +106,7 @@ private static final long serialVersionUID = 0L;
    * The id of the context that the task belongs to
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   @java.lang.Override
@@ -127,7 +127,7 @@ private static final long serialVersionUID = 0L;
    * The id of the context that the task belongs to
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   @java.lang.Override
@@ -152,7 +152,7 @@ private static final long serialVersionUID = 0L;
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    * @return Whether the status field is set.
    */
   @java.lang.Override
@@ -164,7 +164,7 @@ private static final long serialVersionUID = 0L;
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    * @return The status.
    */
   @java.lang.Override
@@ -176,7 +176,7 @@ private static final long serialVersionUID = 0L;
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
@@ -190,7 +190,7 @@ private static final long serialVersionUID = 0L;
    * Whether this is the last status update expected for this task.
    * </pre>
    *
-   * <code>bool final = 4 [json_name = "final"];</code>
+   * <code>bool final = 4;</code>
    * @return The final.
    */
   @java.lang.Override
@@ -205,7 +205,7 @@ private static final long serialVersionUID = 0L;
    * Optional metadata to associate with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return Whether the metadata field is set.
    */
   @java.lang.Override
@@ -217,7 +217,7 @@ private static final long serialVersionUID = 0L;
    * Optional metadata to associate with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return The metadata.
    */
   @java.lang.Override
@@ -229,7 +229,7 @@ private static final long serialVersionUID = 0L;
    * Optional metadata to associate with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
@@ -672,7 +672,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @return The taskId.
      */
     public java.lang.String getTaskId() {
@@ -692,7 +692,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
      */
     public com.google.protobuf.ByteString
@@ -713,7 +713,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @param value The taskId to set.
      * @return This builder for chaining.
      */
@@ -730,7 +730,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearTaskId() {
@@ -744,7 +744,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @param value The bytes for taskId to set.
      * @return This builder for chaining.
      */
@@ -764,7 +764,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return The contextId.
      */
     public java.lang.String getContextId() {
@@ -784,7 +784,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return The bytes for contextId.
      */
     public com.google.protobuf.ByteString
@@ -805,7 +805,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @param value The contextId to set.
      * @return This builder for chaining.
      */
@@ -822,7 +822,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearContextId() {
@@ -836,7 +836,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @param value The bytes for contextId to set.
      * @return This builder for chaining.
      */
@@ -858,7 +858,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
@@ -869,7 +869,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      * @return The status.
      */
     public io.a2a.grpc.TaskStatus getStatus() {
@@ -884,7 +884,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public Builder setStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -904,7 +904,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public Builder setStatus(
         io.a2a.grpc.TaskStatus.Builder builderForValue) {
@@ -922,7 +922,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public Builder mergeStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -947,7 +947,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public Builder clearStatus() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -964,7 +964,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public io.a2a.grpc.TaskStatus.Builder getStatusBuilder() {
       bitField0_ |= 0x00000004;
@@ -976,7 +976,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
       if (statusBuilder_ != null) {
@@ -991,7 +991,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+     * <code>.a2a.v1.TaskStatus status = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskStatus, io.a2a.grpc.TaskStatus.Builder, io.a2a.grpc.TaskStatusOrBuilder> 
@@ -1013,7 +1013,7 @@ private static final long serialVersionUID = 0L;
      * Whether this is the last status update expected for this task.
      * </pre>
      *
-     * <code>bool final = 4 [json_name = "final"];</code>
+     * <code>bool final = 4;</code>
      * @return The final.
      */
     @java.lang.Override
@@ -1025,7 +1025,7 @@ private static final long serialVersionUID = 0L;
      * Whether this is the last status update expected for this task.
      * </pre>
      *
-     * <code>bool final = 4 [json_name = "final"];</code>
+     * <code>bool final = 4;</code>
      * @param value The final to set.
      * @return This builder for chaining.
      */
@@ -1041,7 +1041,7 @@ private static final long serialVersionUID = 0L;
      * Whether this is the last status update expected for this task.
      * </pre>
      *
-     * <code>bool final = 4 [json_name = "final"];</code>
+     * <code>bool final = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearFinal() {
@@ -1059,7 +1059,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata to associate with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
@@ -1070,7 +1070,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata to associate with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      * @return The metadata.
      */
     public com.google.protobuf.Struct getMetadata() {
@@ -1085,7 +1085,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata to associate with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder setMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1105,7 +1105,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata to associate with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder setMetadata(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -1123,7 +1123,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata to associate with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1148,7 +1148,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata to associate with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder clearMetadata() {
       bitField0_ = (bitField0_ & ~0x00000010);
@@ -1165,7 +1165,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata to associate with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
       bitField0_ |= 0x00000010;
@@ -1177,7 +1177,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata to associate with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
       if (metadataBuilder_ != null) {
@@ -1192,7 +1192,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata to associate with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 

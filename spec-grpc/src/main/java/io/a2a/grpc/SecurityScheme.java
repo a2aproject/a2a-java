@@ -91,7 +91,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int API_KEY_SECURITY_SCHEME_FIELD_NUMBER = 1;
   /**
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    * @return Whether the apiKeySecurityScheme field is set.
    */
   @java.lang.Override
@@ -99,7 +99,7 @@ private static final long serialVersionUID = 0L;
     return schemeCase_ == 1;
   }
   /**
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    * @return The apiKeySecurityScheme.
    */
   @java.lang.Override
@@ -110,7 +110,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.APIKeySecurityScheme.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.APIKeySecuritySchemeOrBuilder getApiKeySecuritySchemeOrBuilder() {
@@ -122,7 +122,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int HTTP_AUTH_SECURITY_SCHEME_FIELD_NUMBER = 2;
   /**
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    * @return Whether the httpAuthSecurityScheme field is set.
    */
   @java.lang.Override
@@ -130,7 +130,7 @@ private static final long serialVersionUID = 0L;
     return schemeCase_ == 2;
   }
   /**
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    * @return The httpAuthSecurityScheme.
    */
   @java.lang.Override
@@ -141,7 +141,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.HTTPAuthSecurityScheme.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder getHttpAuthSecuritySchemeOrBuilder() {
@@ -153,7 +153,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int OAUTH2_SECURITY_SCHEME_FIELD_NUMBER = 3;
   /**
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    * @return Whether the oauth2SecurityScheme field is set.
    */
   @java.lang.Override
@@ -161,7 +161,7 @@ private static final long serialVersionUID = 0L;
     return schemeCase_ == 3;
   }
   /**
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    * @return The oauth2SecurityScheme.
    */
   @java.lang.Override
@@ -172,7 +172,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.OAuth2SecurityScheme.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.OAuth2SecuritySchemeOrBuilder getOauth2SecuritySchemeOrBuilder() {
@@ -184,7 +184,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int OPEN_ID_CONNECT_SECURITY_SCHEME_FIELD_NUMBER = 4;
   /**
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    * @return Whether the openIdConnectSecurityScheme field is set.
    */
   @java.lang.Override
@@ -192,7 +192,7 @@ private static final long serialVersionUID = 0L;
     return schemeCase_ == 4;
   }
   /**
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    * @return The openIdConnectSecurityScheme.
    */
   @java.lang.Override
@@ -203,7 +203,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.OpenIdConnectSecurityScheme.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder getOpenIdConnectSecuritySchemeOrBuilder() {
@@ -655,7 +655,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.APIKeySecurityScheme, io.a2a.grpc.APIKeySecurityScheme.Builder, io.a2a.grpc.APIKeySecuritySchemeOrBuilder> apiKeySecuritySchemeBuilder_;
     /**
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      * @return Whether the apiKeySecurityScheme field is set.
      */
     @java.lang.Override
@@ -663,7 +663,7 @@ private static final long serialVersionUID = 0L;
       return schemeCase_ == 1;
     }
     /**
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      * @return The apiKeySecurityScheme.
      */
     @java.lang.Override
@@ -681,7 +681,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public Builder setApiKeySecurityScheme(io.a2a.grpc.APIKeySecurityScheme value) {
       if (apiKeySecuritySchemeBuilder_ == null) {
@@ -697,7 +697,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public Builder setApiKeySecurityScheme(
         io.a2a.grpc.APIKeySecurityScheme.Builder builderForValue) {
@@ -711,7 +711,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public Builder mergeApiKeySecurityScheme(io.a2a.grpc.APIKeySecurityScheme value) {
       if (apiKeySecuritySchemeBuilder_ == null) {
@@ -734,7 +734,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public Builder clearApiKeySecurityScheme() {
       if (apiKeySecuritySchemeBuilder_ == null) {
@@ -753,13 +753,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public io.a2a.grpc.APIKeySecurityScheme.Builder getApiKeySecuritySchemeBuilder() {
       return internalGetApiKeySecuritySchemeFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.APIKeySecuritySchemeOrBuilder getApiKeySecuritySchemeOrBuilder() {
@@ -773,7 +773,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1 [json_name = "apiKeySecurityScheme"];</code>
+     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.APIKeySecurityScheme, io.a2a.grpc.APIKeySecurityScheme.Builder, io.a2a.grpc.APIKeySecuritySchemeOrBuilder> 
@@ -797,7 +797,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.HTTPAuthSecurityScheme, io.a2a.grpc.HTTPAuthSecurityScheme.Builder, io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder> httpAuthSecuritySchemeBuilder_;
     /**
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      * @return Whether the httpAuthSecurityScheme field is set.
      */
     @java.lang.Override
@@ -805,7 +805,7 @@ private static final long serialVersionUID = 0L;
       return schemeCase_ == 2;
     }
     /**
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      * @return The httpAuthSecurityScheme.
      */
     @java.lang.Override
@@ -823,7 +823,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public Builder setHttpAuthSecurityScheme(io.a2a.grpc.HTTPAuthSecurityScheme value) {
       if (httpAuthSecuritySchemeBuilder_ == null) {
@@ -839,7 +839,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public Builder setHttpAuthSecurityScheme(
         io.a2a.grpc.HTTPAuthSecurityScheme.Builder builderForValue) {
@@ -853,7 +853,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public Builder mergeHttpAuthSecurityScheme(io.a2a.grpc.HTTPAuthSecurityScheme value) {
       if (httpAuthSecuritySchemeBuilder_ == null) {
@@ -876,7 +876,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public Builder clearHttpAuthSecurityScheme() {
       if (httpAuthSecuritySchemeBuilder_ == null) {
@@ -895,13 +895,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public io.a2a.grpc.HTTPAuthSecurityScheme.Builder getHttpAuthSecuritySchemeBuilder() {
       return internalGetHttpAuthSecuritySchemeFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder getHttpAuthSecuritySchemeOrBuilder() {
@@ -915,7 +915,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2 [json_name = "httpAuthSecurityScheme"];</code>
+     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.HTTPAuthSecurityScheme, io.a2a.grpc.HTTPAuthSecurityScheme.Builder, io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder> 
@@ -939,7 +939,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.OAuth2SecurityScheme, io.a2a.grpc.OAuth2SecurityScheme.Builder, io.a2a.grpc.OAuth2SecuritySchemeOrBuilder> oauth2SecuritySchemeBuilder_;
     /**
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      * @return Whether the oauth2SecurityScheme field is set.
      */
     @java.lang.Override
@@ -947,7 +947,7 @@ private static final long serialVersionUID = 0L;
       return schemeCase_ == 3;
     }
     /**
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      * @return The oauth2SecurityScheme.
      */
     @java.lang.Override
@@ -965,7 +965,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public Builder setOauth2SecurityScheme(io.a2a.grpc.OAuth2SecurityScheme value) {
       if (oauth2SecuritySchemeBuilder_ == null) {
@@ -981,7 +981,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public Builder setOauth2SecurityScheme(
         io.a2a.grpc.OAuth2SecurityScheme.Builder builderForValue) {
@@ -995,7 +995,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public Builder mergeOauth2SecurityScheme(io.a2a.grpc.OAuth2SecurityScheme value) {
       if (oauth2SecuritySchemeBuilder_ == null) {
@@ -1018,7 +1018,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public Builder clearOauth2SecurityScheme() {
       if (oauth2SecuritySchemeBuilder_ == null) {
@@ -1037,13 +1037,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public io.a2a.grpc.OAuth2SecurityScheme.Builder getOauth2SecuritySchemeBuilder() {
       return internalGetOauth2SecuritySchemeFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.OAuth2SecuritySchemeOrBuilder getOauth2SecuritySchemeOrBuilder() {
@@ -1057,7 +1057,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3 [json_name = "oauth2SecurityScheme"];</code>
+     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.OAuth2SecurityScheme, io.a2a.grpc.OAuth2SecurityScheme.Builder, io.a2a.grpc.OAuth2SecuritySchemeOrBuilder> 
@@ -1081,7 +1081,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.OpenIdConnectSecurityScheme, io.a2a.grpc.OpenIdConnectSecurityScheme.Builder, io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder> openIdConnectSecuritySchemeBuilder_;
     /**
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      * @return Whether the openIdConnectSecurityScheme field is set.
      */
     @java.lang.Override
@@ -1089,7 +1089,7 @@ private static final long serialVersionUID = 0L;
       return schemeCase_ == 4;
     }
     /**
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      * @return The openIdConnectSecurityScheme.
      */
     @java.lang.Override
@@ -1107,7 +1107,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public Builder setOpenIdConnectSecurityScheme(io.a2a.grpc.OpenIdConnectSecurityScheme value) {
       if (openIdConnectSecuritySchemeBuilder_ == null) {
@@ -1123,7 +1123,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public Builder setOpenIdConnectSecurityScheme(
         io.a2a.grpc.OpenIdConnectSecurityScheme.Builder builderForValue) {
@@ -1137,7 +1137,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public Builder mergeOpenIdConnectSecurityScheme(io.a2a.grpc.OpenIdConnectSecurityScheme value) {
       if (openIdConnectSecuritySchemeBuilder_ == null) {
@@ -1160,7 +1160,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public Builder clearOpenIdConnectSecurityScheme() {
       if (openIdConnectSecuritySchemeBuilder_ == null) {
@@ -1179,13 +1179,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public io.a2a.grpc.OpenIdConnectSecurityScheme.Builder getOpenIdConnectSecuritySchemeBuilder() {
       return internalGetOpenIdConnectSecuritySchemeFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder getOpenIdConnectSecuritySchemeOrBuilder() {
@@ -1199,7 +1199,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4 [json_name = "openIdConnectSecurityScheme"];</code>
+     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.OpenIdConnectSecurityScheme, io.a2a.grpc.OpenIdConnectSecurityScheme.Builder, io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder> 

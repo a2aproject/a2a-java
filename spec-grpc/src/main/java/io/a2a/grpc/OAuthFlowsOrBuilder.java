@@ -11,62 +11,62 @@ public interface OAuthFlowsOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return Whether the authorizationCode field is set.
    */
   boolean hasAuthorizationCode();
   /**
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return The authorizationCode.
    */
   io.a2a.grpc.AuthorizationCodeOAuthFlow getAuthorizationCode();
   /**
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    */
   io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder getAuthorizationCodeOrBuilder();
 
   /**
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return Whether the clientCredentials field is set.
    */
   boolean hasClientCredentials();
   /**
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return The clientCredentials.
    */
   io.a2a.grpc.ClientCredentialsOAuthFlow getClientCredentials();
   /**
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    */
   io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder getClientCredentialsOrBuilder();
 
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
    * @return Whether the implicit field is set.
    */
   boolean hasImplicit();
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
    * @return The implicit.
    */
   io.a2a.grpc.ImplicitOAuthFlow getImplicit();
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
    */
   io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder();
 
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
    * @return Whether the password field is set.
    */
   boolean hasPassword();
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
    * @return The password.
    */
   io.a2a.grpc.PasswordOAuthFlow getPassword();
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
    */
   io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder();
 

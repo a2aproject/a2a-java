@@ -11,17 +11,17 @@ public interface DataPartOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+   * <code>.google.protobuf.Struct data = 1;</code>
    * @return Whether the data field is set.
    */
   boolean hasData();
   /**
-   * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+   * <code>.google.protobuf.Struct data = 1;</code>
    * @return The data.
    */
   com.google.protobuf.Struct getData();
   /**
-   * <code>.google.protobuf.Struct data = 1 [json_name = "data"];</code>
+   * <code>.google.protobuf.Struct data = 1;</code>
    */
   com.google.protobuf.StructOrBuilder getDataOrBuilder();
 }

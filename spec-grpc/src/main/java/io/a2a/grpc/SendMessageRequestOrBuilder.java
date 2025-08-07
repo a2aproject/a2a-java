@@ -11,47 +11,47 @@ public interface SendMessageRequestOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.a2a.v1.Message request = 1 [json_name = "request", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.Message request = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the request field is set.
    */
   boolean hasRequest();
   /**
-   * <code>.a2a.v1.Message request = 1 [json_name = "request", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.Message request = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The request.
    */
   io.a2a.grpc.Message getRequest();
   /**
-   * <code>.a2a.v1.Message request = 1 [json_name = "request", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.Message request = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.MessageOrBuilder getRequestOrBuilder();
 
   /**
-   * <code>.a2a.v1.SendMessageConfiguration configuration = 2 [json_name = "configuration"];</code>
+   * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
    * @return Whether the configuration field is set.
    */
   boolean hasConfiguration();
   /**
-   * <code>.a2a.v1.SendMessageConfiguration configuration = 2 [json_name = "configuration"];</code>
+   * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
    * @return The configuration.
    */
   io.a2a.grpc.SendMessageConfiguration getConfiguration();
   /**
-   * <code>.a2a.v1.SendMessageConfiguration configuration = 2 [json_name = "configuration"];</code>
+   * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
    */
   io.a2a.grpc.SendMessageConfigurationOrBuilder getConfigurationOrBuilder();
 
   /**
-   * <code>.google.protobuf.Struct metadata = 3 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 3;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
   /**
-   * <code>.google.protobuf.Struct metadata = 3 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 3;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
   /**
-   * <code>.google.protobuf.Struct metadata = 3 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 3;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 }

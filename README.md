@@ -19,6 +19,13 @@ You can build the A2A Java SDK using `mvn`:
 mvn clean install
 ```
 
+### Regeneration of gRPC files
+We copy https://github.com/a2aproject/A2A/blob/main/specification/grpc/a2a.proto to the [`spec-grpc/`](./spec-grpc) project, and adjust the `java_package` option to be as follows:
+```
+option java_package = "io.a2a.grpc";
+```
+Then build the `spec-grpc` module with `mvn clean install -Pproto-compile` to regenerate the gRPC classes in the `io.a2a.grpc` package.
+
 ## Examples
 
 You can find an example of how to use the A2A Java SDK in the [a2a-samples repository](https://github.com/a2aproject/a2a-samples/tree/main/samples/multi_language/python_and_java_multiagent/weather_agent).

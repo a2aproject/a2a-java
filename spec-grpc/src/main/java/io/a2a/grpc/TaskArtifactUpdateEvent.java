@@ -59,7 +59,7 @@ private static final long serialVersionUID = 0L;
    * The id of the task for this artifact
    * </pre>
    *
-   * <code>string task_id = 1 [json_name = "taskId"];</code>
+   * <code>string task_id = 1;</code>
    * @return The taskId.
    */
   @java.lang.Override
@@ -80,7 +80,7 @@ private static final long serialVersionUID = 0L;
    * The id of the task for this artifact
    * </pre>
    *
-   * <code>string task_id = 1 [json_name = "taskId"];</code>
+   * <code>string task_id = 1;</code>
    * @return The bytes for taskId.
    */
   @java.lang.Override
@@ -106,7 +106,7 @@ private static final long serialVersionUID = 0L;
    * The id of the context that this task belongs too
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   @java.lang.Override
@@ -127,7 +127,7 @@ private static final long serialVersionUID = 0L;
    * The id of the context that this task belongs too
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   @java.lang.Override
@@ -152,7 +152,7 @@ private static final long serialVersionUID = 0L;
    * The artifact itself
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+   * <code>.a2a.v1.Artifact artifact = 3;</code>
    * @return Whether the artifact field is set.
    */
   @java.lang.Override
@@ -164,7 +164,7 @@ private static final long serialVersionUID = 0L;
    * The artifact itself
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+   * <code>.a2a.v1.Artifact artifact = 3;</code>
    * @return The artifact.
    */
   @java.lang.Override
@@ -176,7 +176,7 @@ private static final long serialVersionUID = 0L;
    * The artifact itself
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+   * <code>.a2a.v1.Artifact artifact = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.ArtifactOrBuilder getArtifactOrBuilder() {
@@ -190,7 +190,7 @@ private static final long serialVersionUID = 0L;
    * Whether this should be appended to a prior one produced
    * </pre>
    *
-   * <code>bool append = 4 [json_name = "append"];</code>
+   * <code>bool append = 4;</code>
    * @return The append.
    */
   @java.lang.Override
@@ -205,7 +205,7 @@ private static final long serialVersionUID = 0L;
    * Whether this represents the last part of an artifact
    * </pre>
    *
-   * <code>bool last_chunk = 5 [json_name = "lastChunk"];</code>
+   * <code>bool last_chunk = 5;</code>
    * @return The lastChunk.
    */
   @java.lang.Override
@@ -220,7 +220,7 @@ private static final long serialVersionUID = 0L;
    * Optional metadata associated with the artifact update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return Whether the metadata field is set.
    */
   @java.lang.Override
@@ -232,7 +232,7 @@ private static final long serialVersionUID = 0L;
    * Optional metadata associated with the artifact update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return The metadata.
    */
   @java.lang.Override
@@ -244,7 +244,7 @@ private static final long serialVersionUID = 0L;
    * Optional metadata associated with the artifact update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
@@ -711,7 +711,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task for this artifact
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @return The taskId.
      */
     public java.lang.String getTaskId() {
@@ -731,7 +731,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task for this artifact
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @return The bytes for taskId.
      */
     public com.google.protobuf.ByteString
@@ -752,7 +752,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task for this artifact
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @param value The taskId to set.
      * @return This builder for chaining.
      */
@@ -769,7 +769,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task for this artifact
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearTaskId() {
@@ -783,7 +783,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task for this artifact
      * </pre>
      *
-     * <code>string task_id = 1 [json_name = "taskId"];</code>
+     * <code>string task_id = 1;</code>
      * @param value The bytes for taskId to set.
      * @return This builder for chaining.
      */
@@ -803,7 +803,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that this task belongs too
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return The contextId.
      */
     public java.lang.String getContextId() {
@@ -823,7 +823,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that this task belongs too
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return The bytes for contextId.
      */
     public com.google.protobuf.ByteString
@@ -844,7 +844,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that this task belongs too
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @param value The contextId to set.
      * @return This builder for chaining.
      */
@@ -861,7 +861,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that this task belongs too
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearContextId() {
@@ -875,7 +875,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that this task belongs too
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @param value The bytes for contextId to set.
      * @return This builder for chaining.
      */
@@ -897,7 +897,7 @@ private static final long serialVersionUID = 0L;
      * The artifact itself
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+     * <code>.a2a.v1.Artifact artifact = 3;</code>
      * @return Whether the artifact field is set.
      */
     public boolean hasArtifact() {
@@ -908,7 +908,7 @@ private static final long serialVersionUID = 0L;
      * The artifact itself
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+     * <code>.a2a.v1.Artifact artifact = 3;</code>
      * @return The artifact.
      */
     public io.a2a.grpc.Artifact getArtifact() {
@@ -923,7 +923,7 @@ private static final long serialVersionUID = 0L;
      * The artifact itself
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+     * <code>.a2a.v1.Artifact artifact = 3;</code>
      */
     public Builder setArtifact(io.a2a.grpc.Artifact value) {
       if (artifactBuilder_ == null) {
@@ -943,7 +943,7 @@ private static final long serialVersionUID = 0L;
      * The artifact itself
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+     * <code>.a2a.v1.Artifact artifact = 3;</code>
      */
     public Builder setArtifact(
         io.a2a.grpc.Artifact.Builder builderForValue) {
@@ -961,7 +961,7 @@ private static final long serialVersionUID = 0L;
      * The artifact itself
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+     * <code>.a2a.v1.Artifact artifact = 3;</code>
      */
     public Builder mergeArtifact(io.a2a.grpc.Artifact value) {
       if (artifactBuilder_ == null) {
@@ -986,7 +986,7 @@ private static final long serialVersionUID = 0L;
      * The artifact itself
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+     * <code>.a2a.v1.Artifact artifact = 3;</code>
      */
     public Builder clearArtifact() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -1003,7 +1003,7 @@ private static final long serialVersionUID = 0L;
      * The artifact itself
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+     * <code>.a2a.v1.Artifact artifact = 3;</code>
      */
     public io.a2a.grpc.Artifact.Builder getArtifactBuilder() {
       bitField0_ |= 0x00000004;
@@ -1015,7 +1015,7 @@ private static final long serialVersionUID = 0L;
      * The artifact itself
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+     * <code>.a2a.v1.Artifact artifact = 3;</code>
      */
     public io.a2a.grpc.ArtifactOrBuilder getArtifactOrBuilder() {
       if (artifactBuilder_ != null) {
@@ -1030,7 +1030,7 @@ private static final long serialVersionUID = 0L;
      * The artifact itself
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3 [json_name = "artifact"];</code>
+     * <code>.a2a.v1.Artifact artifact = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Artifact, io.a2a.grpc.Artifact.Builder, io.a2a.grpc.ArtifactOrBuilder> 
@@ -1052,7 +1052,7 @@ private static final long serialVersionUID = 0L;
      * Whether this should be appended to a prior one produced
      * </pre>
      *
-     * <code>bool append = 4 [json_name = "append"];</code>
+     * <code>bool append = 4;</code>
      * @return The append.
      */
     @java.lang.Override
@@ -1064,7 +1064,7 @@ private static final long serialVersionUID = 0L;
      * Whether this should be appended to a prior one produced
      * </pre>
      *
-     * <code>bool append = 4 [json_name = "append"];</code>
+     * <code>bool append = 4;</code>
      * @param value The append to set.
      * @return This builder for chaining.
      */
@@ -1080,7 +1080,7 @@ private static final long serialVersionUID = 0L;
      * Whether this should be appended to a prior one produced
      * </pre>
      *
-     * <code>bool append = 4 [json_name = "append"];</code>
+     * <code>bool append = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearAppend() {
@@ -1096,7 +1096,7 @@ private static final long serialVersionUID = 0L;
      * Whether this represents the last part of an artifact
      * </pre>
      *
-     * <code>bool last_chunk = 5 [json_name = "lastChunk"];</code>
+     * <code>bool last_chunk = 5;</code>
      * @return The lastChunk.
      */
     @java.lang.Override
@@ -1108,7 +1108,7 @@ private static final long serialVersionUID = 0L;
      * Whether this represents the last part of an artifact
      * </pre>
      *
-     * <code>bool last_chunk = 5 [json_name = "lastChunk"];</code>
+     * <code>bool last_chunk = 5;</code>
      * @param value The lastChunk to set.
      * @return This builder for chaining.
      */
@@ -1124,7 +1124,7 @@ private static final long serialVersionUID = 0L;
      * Whether this represents the last part of an artifact
      * </pre>
      *
-     * <code>bool last_chunk = 5 [json_name = "lastChunk"];</code>
+     * <code>bool last_chunk = 5;</code>
      * @return This builder for chaining.
      */
     public Builder clearLastChunk() {
@@ -1142,7 +1142,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with the artifact update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
@@ -1153,7 +1153,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with the artifact update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      * @return The metadata.
      */
     public com.google.protobuf.Struct getMetadata() {
@@ -1168,7 +1168,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with the artifact update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder setMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1188,7 +1188,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with the artifact update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder setMetadata(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -1206,7 +1206,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with the artifact update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1231,7 +1231,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with the artifact update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder clearMetadata() {
       bitField0_ = (bitField0_ & ~0x00000020);
@@ -1248,7 +1248,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with the artifact update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
       bitField0_ |= 0x00000020;
@@ -1260,7 +1260,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with the artifact update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
       if (metadataBuilder_ != null) {
@@ -1275,7 +1275,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with the artifact update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 

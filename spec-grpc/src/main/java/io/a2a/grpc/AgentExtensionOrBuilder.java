@@ -16,7 +16,7 @@ public interface AgentExtensionOrBuilder extends
    * Example: "https://developers.google.com/identity/protocols/oauth2"
    * </pre>
    *
-   * <code>string uri = 1 [json_name = "uri"];</code>
+   * <code>string uri = 1;</code>
    * @return The uri.
    */
   java.lang.String getUri();
@@ -26,7 +26,7 @@ public interface AgentExtensionOrBuilder extends
    * Example: "https://developers.google.com/identity/protocols/oauth2"
    * </pre>
    *
-   * <code>string uri = 1 [json_name = "uri"];</code>
+   * <code>string uri = 1;</code>
    * @return The bytes for uri.
    */
   com.google.protobuf.ByteString
@@ -38,7 +38,7 @@ public interface AgentExtensionOrBuilder extends
    * Example: "Google OAuth 2.0 authentication"
    * </pre>
    *
-   * <code>string description = 2 [json_name = "description"];</code>
+   * <code>string description = 2;</code>
    * @return The description.
    */
   java.lang.String getDescription();
@@ -48,7 +48,7 @@ public interface AgentExtensionOrBuilder extends
    * Example: "Google OAuth 2.0 authentication"
    * </pre>
    *
-   * <code>string description = 2 [json_name = "description"];</code>
+   * <code>string description = 2;</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -60,7 +60,7 @@ public interface AgentExtensionOrBuilder extends
    * Example: false
    * </pre>
    *
-   * <code>bool required = 3 [json_name = "required"];</code>
+   * <code>bool required = 3;</code>
    * @return The required.
    */
   boolean getRequired();
@@ -70,7 +70,7 @@ public interface AgentExtensionOrBuilder extends
    * Optional configuration for the extension.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+   * <code>.google.protobuf.Struct params = 4;</code>
    * @return Whether the params field is set.
    */
   boolean hasParams();
@@ -79,7 +79,7 @@ public interface AgentExtensionOrBuilder extends
    * Optional configuration for the extension.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+   * <code>.google.protobuf.Struct params = 4;</code>
    * @return The params.
    */
   com.google.protobuf.Struct getParams();
@@ -88,7 +88,7 @@ public interface AgentExtensionOrBuilder extends
    * Optional configuration for the extension.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+   * <code>.google.protobuf.Struct params = 4;</code>
    */
   com.google.protobuf.StructOrBuilder getParamsOrBuilder();
 }

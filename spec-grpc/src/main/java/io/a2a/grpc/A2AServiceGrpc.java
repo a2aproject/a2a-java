@@ -19,10 +19,9 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  * violates AIP-127 and AIP-131.
  * </pre>
  */
-// Temporarily comment this out until https://github.com/grpc/grpc-java/pull/12080 is included in a release
-//@javax.annotation.Generated(
-//    value = "by gRPC proto compiler (version 1.73.0)",
-//    comments = "Source: a2a.proto")
+@javax.annotation.Generated(
+    value = "by gRPC proto compiler (version 1.73.0)",
+    comments = "Source: a2a.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class A2AServiceGrpc {
 

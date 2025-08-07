@@ -82,7 +82,7 @@ private static final long serialVersionUID = 0L;
     return internalGetSchemes().getMap().size();
   }
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
    */
   @java.lang.Override
   public boolean containsSchemes(
@@ -99,14 +99,14 @@ private static final long serialVersionUID = 0L;
     return getSchemesMap();
   }
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
    */
   @java.lang.Override
   public java.util.Map<java.lang.String, io.a2a.grpc.StringList> getSchemesMap() {
     return internalGetSchemes().getMap();
   }
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
    */
   @java.lang.Override
   public /* nullable */
@@ -120,7 +120,7 @@ io.a2a.grpc.StringList defaultValue) {
     return map.containsKey(key) ? map.get(key) : defaultValue;
   }
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.StringList getSchemesOrThrow(
@@ -500,7 +500,7 @@ io.a2a.grpc.StringList defaultValue) {
       return internalGetSchemes().ensureBuilderMap().size();
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
      */
     @java.lang.Override
     public boolean containsSchemes(
@@ -517,14 +517,14 @@ io.a2a.grpc.StringList defaultValue) {
       return getSchemesMap();
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
      */
     @java.lang.Override
     public java.util.Map<java.lang.String, io.a2a.grpc.StringList> getSchemesMap() {
       return internalGetSchemes().getImmutableMap();
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
      */
     @java.lang.Override
     public /* nullable */
@@ -537,7 +537,7 @@ io.a2a.grpc.StringList defaultValue) {
       return map.containsKey(key) ? schemesConverter.build(map.get(key)) : defaultValue;
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.StringList getSchemesOrThrow(
@@ -555,7 +555,7 @@ io.a2a.grpc.StringList defaultValue) {
       return this;
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
      */
     public Builder removeSchemes(
         java.lang.String key) {
@@ -574,7 +574,7 @@ io.a2a.grpc.StringList defaultValue) {
       return internalGetMutableSchemes().ensureMessageMap();
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
      */
     public Builder putSchemes(
         java.lang.String key,
@@ -587,7 +587,7 @@ io.a2a.grpc.StringList defaultValue) {
       return this;
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
      */
     public Builder putAllSchemes(
         java.util.Map<java.lang.String, io.a2a.grpc.StringList> values) {
@@ -602,7 +602,7 @@ io.a2a.grpc.StringList defaultValue) {
       return this;
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
      */
     public io.a2a.grpc.StringList.Builder putSchemesBuilderIfAbsent(
         java.lang.String key) {

@@ -15,7 +15,7 @@ public interface TaskStatusOrBuilder extends
    * The current state of this task
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1 [json_name = "state"];</code>
+   * <code>.a2a.v1.TaskState state = 1;</code>
    * @return The enum numeric value on the wire for state.
    */
   int getStateValue();
@@ -24,7 +24,7 @@ public interface TaskStatusOrBuilder extends
    * The current state of this task
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1 [json_name = "state"];</code>
+   * <code>.a2a.v1.TaskState state = 1;</code>
    * @return The state.
    */
   io.a2a.grpc.TaskState getState();
@@ -62,7 +62,7 @@ public interface TaskStatusOrBuilder extends
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+   * <code>.google.protobuf.Timestamp timestamp = 3;</code>
    * @return Whether the timestamp field is set.
    */
   boolean hasTimestamp();
@@ -72,7 +72,7 @@ public interface TaskStatusOrBuilder extends
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+   * <code>.google.protobuf.Timestamp timestamp = 3;</code>
    * @return The timestamp.
    */
   com.google.protobuf.Timestamp getTimestamp();
@@ -82,7 +82,7 @@ public interface TaskStatusOrBuilder extends
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+   * <code>.google.protobuf.Timestamp timestamp = 3;</code>
    */
   com.google.protobuf.TimestampOrBuilder getTimestampOrBuilder();
 }

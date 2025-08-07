@@ -15,7 +15,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
    * parent=tasks/{id}
    * </pre>
    *
-   * <code>string parent = 1 [json_name = "parent"];</code>
+   * <code>string parent = 1;</code>
    * @return The parent.
    */
   java.lang.String getParent();
@@ -24,7 +24,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
    * parent=tasks/{id}
    * </pre>
    *
-   * <code>string parent = 1 [json_name = "parent"];</code>
+   * <code>string parent = 1;</code>
    * @return The bytes for parent.
    */
   com.google.protobuf.ByteString
@@ -37,7 +37,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
    * If unspecified, all configs will be returned.
    * </pre>
    *
-   * <code>int32 page_size = 2 [json_name = "pageSize"];</code>
+   * <code>int32 page_size = 2;</code>
    * @return The pageSize.
    */
   int getPageSize();
@@ -52,7 +52,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
    * the page token.
    * </pre>
    *
-   * <code>string page_token = 3 [json_name = "pageToken"];</code>
+   * <code>string page_token = 3;</code>
    * @return The pageToken.
    */
   java.lang.String getPageToken();
@@ -66,7 +66,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
    * the page token.
    * </pre>
    *
-   * <code>string page_token = 3 [json_name = "pageToken"];</code>
+   * <code>string page_token = 3;</code>
    * @return The bytes for pageToken.
    */
   com.google.protobuf.ByteString

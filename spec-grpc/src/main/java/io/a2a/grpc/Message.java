@@ -70,7 +70,7 @@ private static final long serialVersionUID = 0L;
    * message creator.
    * </pre>
    *
-   * <code>string message_id = 1 [json_name = "messageId"];</code>
+   * <code>string message_id = 1;</code>
    * @return The messageId.
    */
   @java.lang.Override
@@ -92,7 +92,7 @@ private static final long serialVersionUID = 0L;
    * message creator.
    * </pre>
    *
-   * <code>string message_id = 1 [json_name = "messageId"];</code>
+   * <code>string message_id = 1;</code>
    * @return The bytes for messageId.
    */
   @java.lang.Override
@@ -119,7 +119,7 @@ private static final long serialVersionUID = 0L;
    * will be associated with the given context.
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   @java.lang.Override
@@ -141,7 +141,7 @@ private static final long serialVersionUID = 0L;
    * will be associated with the given context.
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   @java.lang.Override
@@ -168,7 +168,7 @@ private static final long serialVersionUID = 0L;
    * will be associated with the given task.
    * </pre>
    *
-   * <code>string task_id = 3 [json_name = "taskId"];</code>
+   * <code>string task_id = 3;</code>
    * @return The taskId.
    */
   @java.lang.Override
@@ -190,7 +190,7 @@ private static final long serialVersionUID = 0L;
    * will be associated with the given task.
    * </pre>
    *
-   * <code>string task_id = 3 [json_name = "taskId"];</code>
+   * <code>string task_id = 3;</code>
    * @return The bytes for taskId.
    */
   @java.lang.Override
@@ -215,7 +215,7 @@ private static final long serialVersionUID = 0L;
    * A role for the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4 [json_name = "role"];</code>
+   * <code>.a2a.v1.Role role = 4;</code>
    * @return The enum numeric value on the wire for role.
    */
   @java.lang.Override public int getRoleValue() {
@@ -226,7 +226,7 @@ private static final long serialVersionUID = 0L;
    * A role for the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4 [json_name = "role"];</code>
+   * <code>.a2a.v1.Role role = 4;</code>
    * @return The role.
    */
   @java.lang.Override public io.a2a.grpc.Role getRole() {
@@ -243,7 +243,7 @@ private static final long serialVersionUID = 0L;
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Part> getContentList() {
@@ -255,7 +255,7 @@ private static final long serialVersionUID = 0L;
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
@@ -268,7 +268,7 @@ private static final long serialVersionUID = 0L;
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   @java.lang.Override
   public int getContentCount() {
@@ -280,7 +280,7 @@ private static final long serialVersionUID = 0L;
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Part getContent(int index) {
@@ -292,7 +292,7 @@ private static final long serialVersionUID = 0L;
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PartOrBuilder getContentOrBuilder(
@@ -308,7 +308,7 @@ private static final long serialVersionUID = 0L;
    * Any optional metadata to provide along with the message.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return Whether the metadata field is set.
    */
   @java.lang.Override
@@ -321,7 +321,7 @@ private static final long serialVersionUID = 0L;
    * Any optional metadata to provide along with the message.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return The metadata.
    */
   @java.lang.Override
@@ -334,7 +334,7 @@ private static final long serialVersionUID = 0L;
    * Any optional metadata to provide along with the message.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
@@ -350,7 +350,7 @@ private static final long serialVersionUID = 0L;
    * The URIs of extensions that are present or contributed to this Message.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @return A list containing the extensions.
    */
   public com.google.protobuf.ProtocolStringList
@@ -362,7 +362,7 @@ private static final long serialVersionUID = 0L;
    * The URIs of extensions that are present or contributed to this Message.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @return The count of extensions.
    */
   public int getExtensionsCount() {
@@ -373,7 +373,7 @@ private static final long serialVersionUID = 0L;
    * The URIs of extensions that are present or contributed to this Message.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @param index The index of the element to return.
    * @return The extensions at the given index.
    */
@@ -385,7 +385,7 @@ private static final long serialVersionUID = 0L;
    * The URIs of extensions that are present or contributed to this Message.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @param index The index of the value to return.
    * @return The bytes of the extensions at the given index.
    */
@@ -932,7 +932,7 @@ private static final long serialVersionUID = 0L;
      * message creator.
      * </pre>
      *
-     * <code>string message_id = 1 [json_name = "messageId"];</code>
+     * <code>string message_id = 1;</code>
      * @return The messageId.
      */
     public java.lang.String getMessageId() {
@@ -953,7 +953,7 @@ private static final long serialVersionUID = 0L;
      * message creator.
      * </pre>
      *
-     * <code>string message_id = 1 [json_name = "messageId"];</code>
+     * <code>string message_id = 1;</code>
      * @return The bytes for messageId.
      */
     public com.google.protobuf.ByteString
@@ -975,7 +975,7 @@ private static final long serialVersionUID = 0L;
      * message creator.
      * </pre>
      *
-     * <code>string message_id = 1 [json_name = "messageId"];</code>
+     * <code>string message_id = 1;</code>
      * @param value The messageId to set.
      * @return This builder for chaining.
      */
@@ -993,7 +993,7 @@ private static final long serialVersionUID = 0L;
      * message creator.
      * </pre>
      *
-     * <code>string message_id = 1 [json_name = "messageId"];</code>
+     * <code>string message_id = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearMessageId() {
@@ -1008,7 +1008,7 @@ private static final long serialVersionUID = 0L;
      * message creator.
      * </pre>
      *
-     * <code>string message_id = 1 [json_name = "messageId"];</code>
+     * <code>string message_id = 1;</code>
      * @param value The bytes for messageId to set.
      * @return This builder for chaining.
      */
@@ -1029,7 +1029,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given context.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return The contextId.
      */
     public java.lang.String getContextId() {
@@ -1050,7 +1050,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given context.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return The bytes for contextId.
      */
     public com.google.protobuf.ByteString
@@ -1072,7 +1072,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given context.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @param value The contextId to set.
      * @return This builder for chaining.
      */
@@ -1090,7 +1090,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given context.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearContextId() {
@@ -1105,7 +1105,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given context.
      * </pre>
      *
-     * <code>string context_id = 2 [json_name = "contextId"];</code>
+     * <code>string context_id = 2;</code>
      * @param value The bytes for contextId to set.
      * @return This builder for chaining.
      */
@@ -1126,7 +1126,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given task.
      * </pre>
      *
-     * <code>string task_id = 3 [json_name = "taskId"];</code>
+     * <code>string task_id = 3;</code>
      * @return The taskId.
      */
     public java.lang.String getTaskId() {
@@ -1147,7 +1147,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given task.
      * </pre>
      *
-     * <code>string task_id = 3 [json_name = "taskId"];</code>
+     * <code>string task_id = 3;</code>
      * @return The bytes for taskId.
      */
     public com.google.protobuf.ByteString
@@ -1169,7 +1169,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given task.
      * </pre>
      *
-     * <code>string task_id = 3 [json_name = "taskId"];</code>
+     * <code>string task_id = 3;</code>
      * @param value The taskId to set.
      * @return This builder for chaining.
      */
@@ -1187,7 +1187,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given task.
      * </pre>
      *
-     * <code>string task_id = 3 [json_name = "taskId"];</code>
+     * <code>string task_id = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearTaskId() {
@@ -1202,7 +1202,7 @@ private static final long serialVersionUID = 0L;
      * will be associated with the given task.
      * </pre>
      *
-     * <code>string task_id = 3 [json_name = "taskId"];</code>
+     * <code>string task_id = 3;</code>
      * @param value The bytes for taskId to set.
      * @return This builder for chaining.
      */
@@ -1222,7 +1222,7 @@ private static final long serialVersionUID = 0L;
      * A role for the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [json_name = "role"];</code>
+     * <code>.a2a.v1.Role role = 4;</code>
      * @return The enum numeric value on the wire for role.
      */
     @java.lang.Override public int getRoleValue() {
@@ -1233,7 +1233,7 @@ private static final long serialVersionUID = 0L;
      * A role for the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [json_name = "role"];</code>
+     * <code>.a2a.v1.Role role = 4;</code>
      * @param value The enum numeric value on the wire for role to set.
      * @return This builder for chaining.
      */
@@ -1248,7 +1248,7 @@ private static final long serialVersionUID = 0L;
      * A role for the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [json_name = "role"];</code>
+     * <code>.a2a.v1.Role role = 4;</code>
      * @return The role.
      */
     @java.lang.Override
@@ -1261,7 +1261,7 @@ private static final long serialVersionUID = 0L;
      * A role for the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [json_name = "role"];</code>
+     * <code>.a2a.v1.Role role = 4;</code>
      * @param value The role to set.
      * @return This builder for chaining.
      */
@@ -1277,7 +1277,7 @@ private static final long serialVersionUID = 0L;
      * A role for the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [json_name = "role"];</code>
+     * <code>.a2a.v1.Role role = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearRole() {
@@ -1305,7 +1305,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public java.util.List<io.a2a.grpc.Part> getContentList() {
       if (contentBuilder_ == null) {
@@ -1320,7 +1320,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public int getContentCount() {
       if (contentBuilder_ == null) {
@@ -1335,7 +1335,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public io.a2a.grpc.Part getContent(int index) {
       if (contentBuilder_ == null) {
@@ -1350,7 +1350,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public Builder setContent(
         int index, io.a2a.grpc.Part value) {
@@ -1372,7 +1372,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public Builder setContent(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1391,7 +1391,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public Builder addContent(io.a2a.grpc.Part value) {
       if (contentBuilder_ == null) {
@@ -1412,7 +1412,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public Builder addContent(
         int index, io.a2a.grpc.Part value) {
@@ -1434,7 +1434,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public Builder addContent(
         io.a2a.grpc.Part.Builder builderForValue) {
@@ -1453,7 +1453,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public Builder addContent(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1472,7 +1472,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public Builder addAllContent(
         java.lang.Iterable<? extends io.a2a.grpc.Part> values) {
@@ -1492,7 +1492,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public Builder clearContent() {
       if (contentBuilder_ == null) {
@@ -1510,7 +1510,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public Builder removeContent(int index) {
       if (contentBuilder_ == null) {
@@ -1528,7 +1528,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public io.a2a.grpc.Part.Builder getContentBuilder(
         int index) {
@@ -1540,7 +1540,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public io.a2a.grpc.PartOrBuilder getContentOrBuilder(
         int index) {
@@ -1555,7 +1555,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
          getContentOrBuilderList() {
@@ -1571,7 +1571,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public io.a2a.grpc.Part.Builder addContentBuilder() {
       return internalGetContentFieldBuilder().addBuilder(
@@ -1583,7 +1583,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public io.a2a.grpc.Part.Builder addContentBuilder(
         int index) {
@@ -1596,7 +1596,7 @@ private static final long serialVersionUID = 0L;
      * Content is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+     * <code>repeated .a2a.v1.Part content = 5;</code>
      */
     public java.util.List<io.a2a.grpc.Part.Builder> 
          getContentBuilderList() {
@@ -1626,7 +1626,7 @@ private static final long serialVersionUID = 0L;
      * Any optional metadata to provide along with the message.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
@@ -1638,7 +1638,7 @@ private static final long serialVersionUID = 0L;
      * Any optional metadata to provide along with the message.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      * @return The metadata.
      */
     public com.google.protobuf.Struct getMetadata() {
@@ -1654,7 +1654,7 @@ private static final long serialVersionUID = 0L;
      * Any optional metadata to provide along with the message.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder setMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1675,7 +1675,7 @@ private static final long serialVersionUID = 0L;
      * Any optional metadata to provide along with the message.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder setMetadata(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -1694,7 +1694,7 @@ private static final long serialVersionUID = 0L;
      * Any optional metadata to provide along with the message.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1720,7 +1720,7 @@ private static final long serialVersionUID = 0L;
      * Any optional metadata to provide along with the message.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public Builder clearMetadata() {
       bitField0_ = (bitField0_ & ~0x00000020);
@@ -1738,7 +1738,7 @@ private static final long serialVersionUID = 0L;
      * Any optional metadata to provide along with the message.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
       bitField0_ |= 0x00000020;
@@ -1751,7 +1751,7 @@ private static final long serialVersionUID = 0L;
      * Any optional metadata to provide along with the message.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
       if (metadataBuilder_ != null) {
@@ -1767,7 +1767,7 @@ private static final long serialVersionUID = 0L;
      * Any optional metadata to provide along with the message.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+     * <code>.google.protobuf.Struct metadata = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
@@ -1796,7 +1796,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Message.
      * </pre>
      *
-     * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+     * <code>repeated string extensions = 7;</code>
      * @return A list containing the extensions.
      */
     public com.google.protobuf.ProtocolStringList
@@ -1809,7 +1809,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Message.
      * </pre>
      *
-     * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+     * <code>repeated string extensions = 7;</code>
      * @return The count of extensions.
      */
     public int getExtensionsCount() {
@@ -1820,7 +1820,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Message.
      * </pre>
      *
-     * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+     * <code>repeated string extensions = 7;</code>
      * @param index The index of the element to return.
      * @return The extensions at the given index.
      */
@@ -1832,7 +1832,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Message.
      * </pre>
      *
-     * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+     * <code>repeated string extensions = 7;</code>
      * @param index The index of the value to return.
      * @return The bytes of the extensions at the given index.
      */
@@ -1845,7 +1845,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Message.
      * </pre>
      *
-     * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+     * <code>repeated string extensions = 7;</code>
      * @param index The index to set the value at.
      * @param value The extensions to set.
      * @return This builder for chaining.
@@ -1864,7 +1864,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Message.
      * </pre>
      *
-     * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+     * <code>repeated string extensions = 7;</code>
      * @param value The extensions to add.
      * @return This builder for chaining.
      */
@@ -1882,7 +1882,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Message.
      * </pre>
      *
-     * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+     * <code>repeated string extensions = 7;</code>
      * @param values The extensions to add.
      * @return This builder for chaining.
      */
@@ -1900,7 +1900,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Message.
      * </pre>
      *
-     * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+     * <code>repeated string extensions = 7;</code>
      * @return This builder for chaining.
      */
     public Builder clearExtensions() {
@@ -1915,7 +1915,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Message.
      * </pre>
      *
-     * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+     * <code>repeated string extensions = 7;</code>
      * @param value The bytes of the extensions to add.
      * @return This builder for chaining.
      */

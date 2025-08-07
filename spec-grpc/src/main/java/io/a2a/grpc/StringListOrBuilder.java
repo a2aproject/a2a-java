@@ -11,24 +11,24 @@ public interface StringListOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>repeated string list = 1 [json_name = "list"];</code>
+   * <code>repeated string list = 1;</code>
    * @return A list containing the list.
    */
   java.util.List<java.lang.String>
       getListList();
   /**
-   * <code>repeated string list = 1 [json_name = "list"];</code>
+   * <code>repeated string list = 1;</code>
    * @return The count of list.
    */
   int getListCount();
   /**
-   * <code>repeated string list = 1 [json_name = "list"];</code>
+   * <code>repeated string list = 1;</code>
    * @param index The index of the element to return.
    * @return The list at the given index.
    */
   java.lang.String getList(int index);
   /**
-   * <code>repeated string list = 1 [json_name = "list"];</code>
+   * <code>repeated string list = 1;</code>
    * @param index The index of the value to return.
    * @return The bytes of the list at the given index.
    */

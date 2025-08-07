@@ -91,7 +91,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int AUTHORIZATION_CODE_FIELD_NUMBER = 1;
   /**
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return Whether the authorizationCode field is set.
    */
   @java.lang.Override
@@ -99,7 +99,7 @@ private static final long serialVersionUID = 0L;
     return flowCase_ == 1;
   }
   /**
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return The authorizationCode.
    */
   @java.lang.Override
@@ -110,7 +110,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.AuthorizationCodeOAuthFlow.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder getAuthorizationCodeOrBuilder() {
@@ -122,7 +122,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int CLIENT_CREDENTIALS_FIELD_NUMBER = 2;
   /**
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return Whether the clientCredentials field is set.
    */
   @java.lang.Override
@@ -130,7 +130,7 @@ private static final long serialVersionUID = 0L;
     return flowCase_ == 2;
   }
   /**
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return The clientCredentials.
    */
   @java.lang.Override
@@ -141,7 +141,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.ClientCredentialsOAuthFlow.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder getClientCredentialsOrBuilder() {
@@ -153,7 +153,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int IMPLICIT_FIELD_NUMBER = 3;
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
    * @return Whether the implicit field is set.
    */
   @java.lang.Override
@@ -161,7 +161,7 @@ private static final long serialVersionUID = 0L;
     return flowCase_ == 3;
   }
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
    * @return The implicit.
    */
   @java.lang.Override
@@ -172,7 +172,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.ImplicitOAuthFlow.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder() {
@@ -184,7 +184,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int PASSWORD_FIELD_NUMBER = 4;
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
    * @return Whether the password field is set.
    */
   @java.lang.Override
@@ -192,7 +192,7 @@ private static final long serialVersionUID = 0L;
     return flowCase_ == 4;
   }
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
    * @return The password.
    */
   @java.lang.Override
@@ -203,7 +203,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder() {
@@ -655,7 +655,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AuthorizationCodeOAuthFlow, io.a2a.grpc.AuthorizationCodeOAuthFlow.Builder, io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder> authorizationCodeBuilder_;
     /**
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      * @return Whether the authorizationCode field is set.
      */
     @java.lang.Override
@@ -663,7 +663,7 @@ private static final long serialVersionUID = 0L;
       return flowCase_ == 1;
     }
     /**
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      * @return The authorizationCode.
      */
     @java.lang.Override
@@ -681,7 +681,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public Builder setAuthorizationCode(io.a2a.grpc.AuthorizationCodeOAuthFlow value) {
       if (authorizationCodeBuilder_ == null) {
@@ -697,7 +697,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public Builder setAuthorizationCode(
         io.a2a.grpc.AuthorizationCodeOAuthFlow.Builder builderForValue) {
@@ -711,7 +711,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public Builder mergeAuthorizationCode(io.a2a.grpc.AuthorizationCodeOAuthFlow value) {
       if (authorizationCodeBuilder_ == null) {
@@ -734,7 +734,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public Builder clearAuthorizationCode() {
       if (authorizationCodeBuilder_ == null) {
@@ -753,13 +753,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public io.a2a.grpc.AuthorizationCodeOAuthFlow.Builder getAuthorizationCodeBuilder() {
       return internalGetAuthorizationCodeFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder getAuthorizationCodeOrBuilder() {
@@ -773,7 +773,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1 [json_name = "authorizationCode"];</code>
+     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AuthorizationCodeOAuthFlow, io.a2a.grpc.AuthorizationCodeOAuthFlow.Builder, io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder> 
@@ -797,7 +797,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.ClientCredentialsOAuthFlow, io.a2a.grpc.ClientCredentialsOAuthFlow.Builder, io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder> clientCredentialsBuilder_;
     /**
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      * @return Whether the clientCredentials field is set.
      */
     @java.lang.Override
@@ -805,7 +805,7 @@ private static final long serialVersionUID = 0L;
       return flowCase_ == 2;
     }
     /**
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      * @return The clientCredentials.
      */
     @java.lang.Override
@@ -823,7 +823,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public Builder setClientCredentials(io.a2a.grpc.ClientCredentialsOAuthFlow value) {
       if (clientCredentialsBuilder_ == null) {
@@ -839,7 +839,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public Builder setClientCredentials(
         io.a2a.grpc.ClientCredentialsOAuthFlow.Builder builderForValue) {
@@ -853,7 +853,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public Builder mergeClientCredentials(io.a2a.grpc.ClientCredentialsOAuthFlow value) {
       if (clientCredentialsBuilder_ == null) {
@@ -876,7 +876,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public Builder clearClientCredentials() {
       if (clientCredentialsBuilder_ == null) {
@@ -895,13 +895,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public io.a2a.grpc.ClientCredentialsOAuthFlow.Builder getClientCredentialsBuilder() {
       return internalGetClientCredentialsFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder getClientCredentialsOrBuilder() {
@@ -915,7 +915,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2 [json_name = "clientCredentials"];</code>
+     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.ClientCredentialsOAuthFlow, io.a2a.grpc.ClientCredentialsOAuthFlow.Builder, io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder> 
@@ -939,7 +939,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.ImplicitOAuthFlow, io.a2a.grpc.ImplicitOAuthFlow.Builder, io.a2a.grpc.ImplicitOAuthFlowOrBuilder> implicitBuilder_;
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      * @return Whether the implicit field is set.
      */
     @java.lang.Override
@@ -947,7 +947,7 @@ private static final long serialVersionUID = 0L;
       return flowCase_ == 3;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      * @return The implicit.
      */
     @java.lang.Override
@@ -965,7 +965,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      */
     public Builder setImplicit(io.a2a.grpc.ImplicitOAuthFlow value) {
       if (implicitBuilder_ == null) {
@@ -981,7 +981,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      */
     public Builder setImplicit(
         io.a2a.grpc.ImplicitOAuthFlow.Builder builderForValue) {
@@ -995,7 +995,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      */
     public Builder mergeImplicit(io.a2a.grpc.ImplicitOAuthFlow value) {
       if (implicitBuilder_ == null) {
@@ -1018,7 +1018,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      */
     public Builder clearImplicit() {
       if (implicitBuilder_ == null) {
@@ -1037,13 +1037,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      */
     public io.a2a.grpc.ImplicitOAuthFlow.Builder getImplicitBuilder() {
       return internalGetImplicitFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder() {
@@ -1057,7 +1057,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [json_name = "implicit"];</code>
+     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.ImplicitOAuthFlow, io.a2a.grpc.ImplicitOAuthFlow.Builder, io.a2a.grpc.ImplicitOAuthFlowOrBuilder> 
@@ -1081,7 +1081,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PasswordOAuthFlow, io.a2a.grpc.PasswordOAuthFlow.Builder, io.a2a.grpc.PasswordOAuthFlowOrBuilder> passwordBuilder_;
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      * @return Whether the password field is set.
      */
     @java.lang.Override
@@ -1089,7 +1089,7 @@ private static final long serialVersionUID = 0L;
       return flowCase_ == 4;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      * @return The password.
      */
     @java.lang.Override
@@ -1107,7 +1107,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      */
     public Builder setPassword(io.a2a.grpc.PasswordOAuthFlow value) {
       if (passwordBuilder_ == null) {
@@ -1123,7 +1123,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      */
     public Builder setPassword(
         io.a2a.grpc.PasswordOAuthFlow.Builder builderForValue) {
@@ -1137,7 +1137,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      */
     public Builder mergePassword(io.a2a.grpc.PasswordOAuthFlow value) {
       if (passwordBuilder_ == null) {
@@ -1160,7 +1160,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      */
     public Builder clearPassword() {
       if (passwordBuilder_ == null) {
@@ -1179,13 +1179,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      */
     public io.a2a.grpc.PasswordOAuthFlow.Builder getPasswordBuilder() {
       return internalGetPasswordFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder() {
@@ -1199,7 +1199,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [json_name = "password"];</code>
+     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PasswordOAuthFlow, io.a2a.grpc.PasswordOAuthFlow.Builder, io.a2a.grpc.PasswordOAuthFlowOrBuilder> 

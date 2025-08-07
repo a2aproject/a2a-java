@@ -15,7 +15,7 @@ public interface HTTPAuthSecuritySchemeOrBuilder extends
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The description.
    */
   java.lang.String getDescription();
@@ -24,7 +24,7 @@ public interface HTTPAuthSecuritySchemeOrBuilder extends
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -38,7 +38,7 @@ public interface HTTPAuthSecuritySchemeOrBuilder extends
    * The value is case-insensitive, as defined in RFC7235.
    * </pre>
    *
-   * <code>string scheme = 2 [json_name = "scheme"];</code>
+   * <code>string scheme = 2;</code>
    * @return The scheme.
    */
   java.lang.String getScheme();
@@ -50,7 +50,7 @@ public interface HTTPAuthSecuritySchemeOrBuilder extends
    * The value is case-insensitive, as defined in RFC7235.
    * </pre>
    *
-   * <code>string scheme = 2 [json_name = "scheme"];</code>
+   * <code>string scheme = 2;</code>
    * @return The bytes for scheme.
    */
   com.google.protobuf.ByteString
@@ -63,7 +63,7 @@ public interface HTTPAuthSecuritySchemeOrBuilder extends
    * this information is primarily for documentation purposes.
    * </pre>
    *
-   * <code>string bearer_format = 3 [json_name = "bearerFormat"];</code>
+   * <code>string bearer_format = 3;</code>
    * @return The bearerFormat.
    */
   java.lang.String getBearerFormat();
@@ -74,7 +74,7 @@ public interface HTTPAuthSecuritySchemeOrBuilder extends
    * this information is primarily for documentation purposes.
    * </pre>
    *
-   * <code>string bearer_format = 3 [json_name = "bearerFormat"];</code>
+   * <code>string bearer_format = 3;</code>
    * @return The bytes for bearerFormat.
    */
   com.google.protobuf.ByteString

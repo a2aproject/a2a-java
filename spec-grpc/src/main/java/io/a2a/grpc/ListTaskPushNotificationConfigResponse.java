@@ -49,14 +49,14 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings("serial")
   private java.util.List<io.a2a.grpc.TaskPushNotificationConfig> configs_;
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.TaskPushNotificationConfig> getConfigsList() {
     return configs_;
   }
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
@@ -64,21 +64,21 @@ private static final long serialVersionUID = 0L;
     return configs_;
   }
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public int getConfigsCount() {
     return configs_.size();
   }
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskPushNotificationConfig getConfigs(int index) {
     return configs_.get(index);
   }
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigsOrBuilder(
@@ -95,7 +95,7 @@ private static final long serialVersionUID = 0L;
    * If this field is omitted, there are no subsequent pages.
    * </pre>
    *
-   * <code>string next_page_token = 2 [json_name = "nextPageToken"];</code>
+   * <code>string next_page_token = 2;</code>
    * @return The nextPageToken.
    */
   @java.lang.Override
@@ -117,7 +117,7 @@ private static final long serialVersionUID = 0L;
    * If this field is omitted, there are no subsequent pages.
    * </pre>
    *
-   * <code>string next_page_token = 2 [json_name = "nextPageToken"];</code>
+   * <code>string next_page_token = 2;</code>
    * @return The bytes for nextPageToken.
    */
   @java.lang.Override
@@ -514,7 +514,7 @@ private static final long serialVersionUID = 0L;
         io.a2a.grpc.TaskPushNotificationConfig, io.a2a.grpc.TaskPushNotificationConfig.Builder, io.a2a.grpc.TaskPushNotificationConfigOrBuilder> configsBuilder_;
 
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public java.util.List<io.a2a.grpc.TaskPushNotificationConfig> getConfigsList() {
       if (configsBuilder_ == null) {
@@ -524,7 +524,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public int getConfigsCount() {
       if (configsBuilder_ == null) {
@@ -534,7 +534,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfig getConfigs(int index) {
       if (configsBuilder_ == null) {
@@ -544,7 +544,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder setConfigs(
         int index, io.a2a.grpc.TaskPushNotificationConfig value) {
@@ -561,7 +561,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder setConfigs(
         int index, io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
@@ -575,7 +575,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addConfigs(io.a2a.grpc.TaskPushNotificationConfig value) {
       if (configsBuilder_ == null) {
@@ -591,7 +591,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addConfigs(
         int index, io.a2a.grpc.TaskPushNotificationConfig value) {
@@ -608,7 +608,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addConfigs(
         io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
@@ -622,7 +622,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addConfigs(
         int index, io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
@@ -636,7 +636,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addAllConfigs(
         java.lang.Iterable<? extends io.a2a.grpc.TaskPushNotificationConfig> values) {
@@ -651,7 +651,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder clearConfigs() {
       if (configsBuilder_ == null) {
@@ -664,7 +664,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder removeConfigs(int index) {
       if (configsBuilder_ == null) {
@@ -677,14 +677,14 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfig.Builder getConfigsBuilder(
         int index) {
       return internalGetConfigsFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigsOrBuilder(
         int index) {
@@ -694,7 +694,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public java.util.List<? extends io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
          getConfigsOrBuilderList() {
@@ -705,14 +705,14 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfig.Builder addConfigsBuilder() {
       return internalGetConfigsFieldBuilder().addBuilder(
           io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance());
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfig.Builder addConfigsBuilder(
         int index) {
@@ -720,7 +720,7 @@ private static final long serialVersionUID = 0L;
           index, io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance());
     }
     /**
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public java.util.List<io.a2a.grpc.TaskPushNotificationConfig.Builder> 
          getConfigsBuilderList() {
@@ -748,7 +748,7 @@ private static final long serialVersionUID = 0L;
      * If this field is omitted, there are no subsequent pages.
      * </pre>
      *
-     * <code>string next_page_token = 2 [json_name = "nextPageToken"];</code>
+     * <code>string next_page_token = 2;</code>
      * @return The nextPageToken.
      */
     public java.lang.String getNextPageToken() {
@@ -769,7 +769,7 @@ private static final long serialVersionUID = 0L;
      * If this field is omitted, there are no subsequent pages.
      * </pre>
      *
-     * <code>string next_page_token = 2 [json_name = "nextPageToken"];</code>
+     * <code>string next_page_token = 2;</code>
      * @return The bytes for nextPageToken.
      */
     public com.google.protobuf.ByteString
@@ -791,7 +791,7 @@ private static final long serialVersionUID = 0L;
      * If this field is omitted, there are no subsequent pages.
      * </pre>
      *
-     * <code>string next_page_token = 2 [json_name = "nextPageToken"];</code>
+     * <code>string next_page_token = 2;</code>
      * @param value The nextPageToken to set.
      * @return This builder for chaining.
      */
@@ -809,7 +809,7 @@ private static final long serialVersionUID = 0L;
      * If this field is omitted, there are no subsequent pages.
      * </pre>
      *
-     * <code>string next_page_token = 2 [json_name = "nextPageToken"];</code>
+     * <code>string next_page_token = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearNextPageToken() {
@@ -824,7 +824,7 @@ private static final long serialVersionUID = 0L;
      * If this field is omitted, there are no subsequent pages.
      * </pre>
      *
-     * <code>string next_page_token = 2 [json_name = "nextPageToken"];</code>
+     * <code>string next_page_token = 2;</code>
      * @param value The bytes for nextPageToken to set.
      * @return This builder for chaining.
      */

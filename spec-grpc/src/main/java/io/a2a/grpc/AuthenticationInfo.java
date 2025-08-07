@@ -59,7 +59,7 @@ private static final long serialVersionUID = 0L;
    * Supported authentication schemes - e.g. Basic, Bearer, etc
    * </pre>
    *
-   * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+   * <code>repeated string schemes = 1;</code>
    * @return A list containing the schemes.
    */
   public com.google.protobuf.ProtocolStringList
@@ -71,7 +71,7 @@ private static final long serialVersionUID = 0L;
    * Supported authentication schemes - e.g. Basic, Bearer, etc
    * </pre>
    *
-   * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+   * <code>repeated string schemes = 1;</code>
    * @return The count of schemes.
    */
   public int getSchemesCount() {
@@ -82,7 +82,7 @@ private static final long serialVersionUID = 0L;
    * Supported authentication schemes - e.g. Basic, Bearer, etc
    * </pre>
    *
-   * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+   * <code>repeated string schemes = 1;</code>
    * @param index The index of the element to return.
    * @return The schemes at the given index.
    */
@@ -94,7 +94,7 @@ private static final long serialVersionUID = 0L;
    * Supported authentication schemes - e.g. Basic, Bearer, etc
    * </pre>
    *
-   * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+   * <code>repeated string schemes = 1;</code>
    * @param index The index of the value to return.
    * @return The bytes of the schemes at the given index.
    */
@@ -111,7 +111,7 @@ private static final long serialVersionUID = 0L;
    * Optional credentials
    * </pre>
    *
-   * <code>string credentials = 2 [json_name = "credentials"];</code>
+   * <code>string credentials = 2;</code>
    * @return The credentials.
    */
   @java.lang.Override
@@ -132,7 +132,7 @@ private static final long serialVersionUID = 0L;
    * Optional credentials
    * </pre>
    *
-   * <code>string credentials = 2 [json_name = "credentials"];</code>
+   * <code>string credentials = 2;</code>
    * @return The bytes for credentials.
    */
   @java.lang.Override
@@ -500,7 +500,7 @@ private static final long serialVersionUID = 0L;
      * Supported authentication schemes - e.g. Basic, Bearer, etc
      * </pre>
      *
-     * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+     * <code>repeated string schemes = 1;</code>
      * @return A list containing the schemes.
      */
     public com.google.protobuf.ProtocolStringList
@@ -513,7 +513,7 @@ private static final long serialVersionUID = 0L;
      * Supported authentication schemes - e.g. Basic, Bearer, etc
      * </pre>
      *
-     * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+     * <code>repeated string schemes = 1;</code>
      * @return The count of schemes.
      */
     public int getSchemesCount() {
@@ -524,7 +524,7 @@ private static final long serialVersionUID = 0L;
      * Supported authentication schemes - e.g. Basic, Bearer, etc
      * </pre>
      *
-     * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+     * <code>repeated string schemes = 1;</code>
      * @param index The index of the element to return.
      * @return The schemes at the given index.
      */
@@ -536,7 +536,7 @@ private static final long serialVersionUID = 0L;
      * Supported authentication schemes - e.g. Basic, Bearer, etc
      * </pre>
      *
-     * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+     * <code>repeated string schemes = 1;</code>
      * @param index The index of the value to return.
      * @return The bytes of the schemes at the given index.
      */
@@ -549,7 +549,7 @@ private static final long serialVersionUID = 0L;
      * Supported authentication schemes - e.g. Basic, Bearer, etc
      * </pre>
      *
-     * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+     * <code>repeated string schemes = 1;</code>
      * @param index The index to set the value at.
      * @param value The schemes to set.
      * @return This builder for chaining.
@@ -568,7 +568,7 @@ private static final long serialVersionUID = 0L;
      * Supported authentication schemes - e.g. Basic, Bearer, etc
      * </pre>
      *
-     * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+     * <code>repeated string schemes = 1;</code>
      * @param value The schemes to add.
      * @return This builder for chaining.
      */
@@ -586,7 +586,7 @@ private static final long serialVersionUID = 0L;
      * Supported authentication schemes - e.g. Basic, Bearer, etc
      * </pre>
      *
-     * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+     * <code>repeated string schemes = 1;</code>
      * @param values The schemes to add.
      * @return This builder for chaining.
      */
@@ -604,7 +604,7 @@ private static final long serialVersionUID = 0L;
      * Supported authentication schemes - e.g. Basic, Bearer, etc
      * </pre>
      *
-     * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+     * <code>repeated string schemes = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearSchemes() {
@@ -619,7 +619,7 @@ private static final long serialVersionUID = 0L;
      * Supported authentication schemes - e.g. Basic, Bearer, etc
      * </pre>
      *
-     * <code>repeated string schemes = 1 [json_name = "schemes"];</code>
+     * <code>repeated string schemes = 1;</code>
      * @param value The bytes of the schemes to add.
      * @return This builder for chaining.
      */
@@ -640,7 +640,7 @@ private static final long serialVersionUID = 0L;
      * Optional credentials
      * </pre>
      *
-     * <code>string credentials = 2 [json_name = "credentials"];</code>
+     * <code>string credentials = 2;</code>
      * @return The credentials.
      */
     public java.lang.String getCredentials() {
@@ -660,7 +660,7 @@ private static final long serialVersionUID = 0L;
      * Optional credentials
      * </pre>
      *
-     * <code>string credentials = 2 [json_name = "credentials"];</code>
+     * <code>string credentials = 2;</code>
      * @return The bytes for credentials.
      */
     public com.google.protobuf.ByteString
@@ -681,7 +681,7 @@ private static final long serialVersionUID = 0L;
      * Optional credentials
      * </pre>
      *
-     * <code>string credentials = 2 [json_name = "credentials"];</code>
+     * <code>string credentials = 2;</code>
      * @param value The credentials to set.
      * @return This builder for chaining.
      */
@@ -698,7 +698,7 @@ private static final long serialVersionUID = 0L;
      * Optional credentials
      * </pre>
      *
-     * <code>string credentials = 2 [json_name = "credentials"];</code>
+     * <code>string credentials = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearCredentials() {
@@ -712,7 +712,7 @@ private static final long serialVersionUID = 0L;
      * Optional credentials
      * </pre>
      *
-     * <code>string credentials = 2 [json_name = "credentials"];</code>
+     * <code>string credentials = 2;</code>
      * @param value The bytes for credentials to set.
      * @return This builder for chaining.
      */

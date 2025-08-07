@@ -15,7 +15,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The id of the task that is changed
    * </pre>
    *
-   * <code>string task_id = 1 [json_name = "taskId"];</code>
+   * <code>string task_id = 1;</code>
    * @return The taskId.
    */
   java.lang.String getTaskId();
@@ -24,7 +24,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The id of the task that is changed
    * </pre>
    *
-   * <code>string task_id = 1 [json_name = "taskId"];</code>
+   * <code>string task_id = 1;</code>
    * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The id of the context that the task belongs to
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   java.lang.String getContextId();
@@ -44,7 +44,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The id of the context that the task belongs to
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   com.google.protobuf.ByteString
@@ -55,7 +55,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    * @return Whether the status field is set.
    */
   boolean hasStatus();
@@ -64,7 +64,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    * @return The status.
    */
   io.a2a.grpc.TaskStatus getStatus();
@@ -73,7 +73,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [json_name = "status"];</code>
+   * <code>.a2a.v1.TaskStatus status = 3;</code>
    */
   io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder();
 
@@ -82,7 +82,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * Whether this is the last status update expected for this task.
    * </pre>
    *
-   * <code>bool final = 4 [json_name = "final"];</code>
+   * <code>bool final = 4;</code>
    * @return The final.
    */
   boolean getFinal();
@@ -92,7 +92,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * Optional metadata to associate with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
@@ -101,7 +101,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * Optional metadata to associate with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
@@ -110,7 +110,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * Optional metadata to associate with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 }

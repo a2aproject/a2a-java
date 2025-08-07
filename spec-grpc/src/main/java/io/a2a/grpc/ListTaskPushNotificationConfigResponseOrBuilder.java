@@ -11,25 +11,25 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   java.util.List<io.a2a.grpc.TaskPushNotificationConfig> 
       getConfigsList();
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   io.a2a.grpc.TaskPushNotificationConfig getConfigs(int index);
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   int getConfigsCount();
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   java.util.List<? extends io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
       getConfigsOrBuilderList();
   /**
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1 [json_name = "configs"];</code>
+   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigsOrBuilder(
       int index);
@@ -40,7 +40,7 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
    * If this field is omitted, there are no subsequent pages.
    * </pre>
    *
-   * <code>string next_page_token = 2 [json_name = "nextPageToken"];</code>
+   * <code>string next_page_token = 2;</code>
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
@@ -50,7 +50,7 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
    * If this field is omitted, there are no subsequent pages.
    * </pre>
    *
-   * <code>string next_page_token = 2 [json_name = "nextPageToken"];</code>
+   * <code>string next_page_token = 2;</code>
    * @return The bytes for nextPageToken.
    */
   com.google.protobuf.ByteString

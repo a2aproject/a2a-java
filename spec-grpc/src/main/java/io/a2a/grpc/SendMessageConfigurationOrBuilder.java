@@ -15,7 +15,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * The output modes that the agent is expected to respond with.
    * </pre>
    *
-   * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+   * <code>repeated string accepted_output_modes = 1;</code>
    * @return A list containing the acceptedOutputModes.
    */
   java.util.List<java.lang.String>
@@ -25,7 +25,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * The output modes that the agent is expected to respond with.
    * </pre>
    *
-   * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+   * <code>repeated string accepted_output_modes = 1;</code>
    * @return The count of acceptedOutputModes.
    */
   int getAcceptedOutputModesCount();
@@ -34,7 +34,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * The output modes that the agent is expected to respond with.
    * </pre>
    *
-   * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+   * <code>repeated string accepted_output_modes = 1;</code>
    * @param index The index of the element to return.
    * @return The acceptedOutputModes at the given index.
    */
@@ -44,7 +44,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * The output modes that the agent is expected to respond with.
    * </pre>
    *
-   * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+   * <code>repeated string accepted_output_modes = 1;</code>
    * @param index The index of the value to return.
    * @return The bytes of the acceptedOutputModes at the given index.
    */
@@ -56,7 +56,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
    * @return Whether the pushNotification field is set.
    */
   boolean hasPushNotification();
@@ -65,7 +65,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
    * @return The pushNotification.
    */
   io.a2a.grpc.PushNotificationConfig getPushNotification();
@@ -74,7 +74,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
    */
   io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationOrBuilder();
 
@@ -84,7 +84,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * history will be unlimited.
    * </pre>
    *
-   * <code>int32 history_length = 3 [json_name = "historyLength"];</code>
+   * <code>int32 history_length = 3;</code>
    * @return The historyLength.
    */
   int getHistoryLength();
@@ -97,7 +97,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * updates.
    * </pre>
    *
-   * <code>bool blocking = 4 [json_name = "blocking"];</code>
+   * <code>bool blocking = 4;</code>
    * @return The blocking.
    */
   boolean getBlocking();

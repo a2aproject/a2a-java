@@ -16,7 +16,7 @@ public interface MessageOrBuilder extends
    * message creator.
    * </pre>
    *
-   * <code>string message_id = 1 [json_name = "messageId"];</code>
+   * <code>string message_id = 1;</code>
    * @return The messageId.
    */
   java.lang.String getMessageId();
@@ -26,7 +26,7 @@ public interface MessageOrBuilder extends
    * message creator.
    * </pre>
    *
-   * <code>string message_id = 1 [json_name = "messageId"];</code>
+   * <code>string message_id = 1;</code>
    * @return The bytes for messageId.
    */
   com.google.protobuf.ByteString
@@ -38,7 +38,7 @@ public interface MessageOrBuilder extends
    * will be associated with the given context.
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   java.lang.String getContextId();
@@ -48,7 +48,7 @@ public interface MessageOrBuilder extends
    * will be associated with the given context.
    * </pre>
    *
-   * <code>string context_id = 2 [json_name = "contextId"];</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   com.google.protobuf.ByteString
@@ -60,7 +60,7 @@ public interface MessageOrBuilder extends
    * will be associated with the given task.
    * </pre>
    *
-   * <code>string task_id = 3 [json_name = "taskId"];</code>
+   * <code>string task_id = 3;</code>
    * @return The taskId.
    */
   java.lang.String getTaskId();
@@ -70,7 +70,7 @@ public interface MessageOrBuilder extends
    * will be associated with the given task.
    * </pre>
    *
-   * <code>string task_id = 3 [json_name = "taskId"];</code>
+   * <code>string task_id = 3;</code>
    * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
@@ -81,7 +81,7 @@ public interface MessageOrBuilder extends
    * A role for the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4 [json_name = "role"];</code>
+   * <code>.a2a.v1.Role role = 4;</code>
    * @return The enum numeric value on the wire for role.
    */
   int getRoleValue();
@@ -90,7 +90,7 @@ public interface MessageOrBuilder extends
    * A role for the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4 [json_name = "role"];</code>
+   * <code>.a2a.v1.Role role = 4;</code>
    * @return The role.
    */
   io.a2a.grpc.Role getRole();
@@ -101,7 +101,7 @@ public interface MessageOrBuilder extends
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   java.util.List<io.a2a.grpc.Part> 
       getContentList();
@@ -111,7 +111,7 @@ public interface MessageOrBuilder extends
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   io.a2a.grpc.Part getContent(int index);
   /**
@@ -120,7 +120,7 @@ public interface MessageOrBuilder extends
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   int getContentCount();
   /**
@@ -129,7 +129,7 @@ public interface MessageOrBuilder extends
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
       getContentOrBuilderList();
@@ -139,7 +139,7 @@ public interface MessageOrBuilder extends
    * Content is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5 [json_name = "content"];</code>
+   * <code>repeated .a2a.v1.Part content = 5;</code>
    */
   io.a2a.grpc.PartOrBuilder getContentOrBuilder(
       int index);
@@ -150,7 +150,7 @@ public interface MessageOrBuilder extends
    * Any optional metadata to provide along with the message.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
@@ -160,7 +160,7 @@ public interface MessageOrBuilder extends
    * Any optional metadata to provide along with the message.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
@@ -170,7 +170,7 @@ public interface MessageOrBuilder extends
    * Any optional metadata to provide along with the message.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6 [json_name = "metadata"];</code>
+   * <code>.google.protobuf.Struct metadata = 6;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 
@@ -179,7 +179,7 @@ public interface MessageOrBuilder extends
    * The URIs of extensions that are present or contributed to this Message.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @return A list containing the extensions.
    */
   java.util.List<java.lang.String>
@@ -189,7 +189,7 @@ public interface MessageOrBuilder extends
    * The URIs of extensions that are present or contributed to this Message.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @return The count of extensions.
    */
   int getExtensionsCount();
@@ -198,7 +198,7 @@ public interface MessageOrBuilder extends
    * The URIs of extensions that are present or contributed to this Message.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @param index The index of the element to return.
    * @return The extensions at the given index.
    */
@@ -208,7 +208,7 @@ public interface MessageOrBuilder extends
    * The URIs of extensions that are present or contributed to this Message.
    * </pre>
    *
-   * <code>repeated string extensions = 7 [json_name = "extensions"];</code>
+   * <code>repeated string extensions = 7;</code>
    * @param index The index of the value to return.
    * @return The bytes of the extensions at the given index.
    */

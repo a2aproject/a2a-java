@@ -86,7 +86,7 @@ private static final long serialVersionUID = 0L;
    * The version of the A2A protocol this agent supports.
    * </pre>
    *
-   * <code>string protocol_version = 16 [json_name = "protocolVersion"];</code>
+   * <code>string protocol_version = 16;</code>
    * @return The protocolVersion.
    */
   @java.lang.Override
@@ -107,7 +107,7 @@ private static final long serialVersionUID = 0L;
    * The version of the A2A protocol this agent supports.
    * </pre>
    *
-   * <code>string protocol_version = 16 [json_name = "protocolVersion"];</code>
+   * <code>string protocol_version = 16;</code>
    * @return The bytes for protocolVersion.
    */
   @java.lang.Override
@@ -134,7 +134,7 @@ private static final long serialVersionUID = 0L;
    * Example: "Recipe Agent"
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name"];</code>
+   * <code>string name = 1;</code>
    * @return The name.
    */
   @java.lang.Override
@@ -156,7 +156,7 @@ private static final long serialVersionUID = 0L;
    * Example: "Recipe Agent"
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name"];</code>
+   * <code>string name = 1;</code>
    * @return The bytes for name.
    */
   @java.lang.Override
@@ -183,7 +183,7 @@ private static final long serialVersionUID = 0L;
    * Example: "Agent that helps users with recipes and cooking."
    * </pre>
    *
-   * <code>string description = 2 [json_name = "description"];</code>
+   * <code>string description = 2;</code>
    * @return The description.
    */
   @java.lang.Override
@@ -205,7 +205,7 @@ private static final long serialVersionUID = 0L;
    * Example: "Agent that helps users with recipes and cooking."
    * </pre>
    *
-   * <code>string description = 2 [json_name = "description"];</code>
+   * <code>string description = 2;</code>
    * @return The bytes for description.
    */
   @java.lang.Override
@@ -232,7 +232,7 @@ private static final long serialVersionUID = 0L;
    * preferred endpoint as declared by the agent.
    * </pre>
    *
-   * <code>string url = 3 [json_name = "url"];</code>
+   * <code>string url = 3;</code>
    * @return The url.
    */
   @java.lang.Override
@@ -254,7 +254,7 @@ private static final long serialVersionUID = 0L;
    * preferred endpoint as declared by the agent.
    * </pre>
    *
-   * <code>string url = 3 [json_name = "url"];</code>
+   * <code>string url = 3;</code>
    * @return The bytes for url.
    */
   @java.lang.Override
@@ -280,7 +280,7 @@ private static final long serialVersionUID = 0L;
    * The transport of the preferred endpoint. If empty, defaults to JSONRPC.
    * </pre>
    *
-   * <code>string preferred_transport = 14 [json_name = "preferredTransport"];</code>
+   * <code>string preferred_transport = 14;</code>
    * @return The preferredTransport.
    */
   @java.lang.Override
@@ -301,7 +301,7 @@ private static final long serialVersionUID = 0L;
    * The transport of the preferred endpoint. If empty, defaults to JSONRPC.
    * </pre>
    *
-   * <code>string preferred_transport = 14 [json_name = "preferredTransport"];</code>
+   * <code>string preferred_transport = 14;</code>
    * @return The bytes for preferredTransport.
    */
   @java.lang.Override
@@ -328,7 +328,7 @@ private static final long serialVersionUID = 0L;
    * the supported transports.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.AgentInterface> getAdditionalInterfacesList() {
@@ -340,7 +340,7 @@ private static final long serialVersionUID = 0L;
    * the supported transports.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
@@ -353,7 +353,7 @@ private static final long serialVersionUID = 0L;
    * the supported transports.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
    */
   @java.lang.Override
   public int getAdditionalInterfacesCount() {
@@ -365,7 +365,7 @@ private static final long serialVersionUID = 0L;
    * the supported transports.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentInterface getAdditionalInterfaces(int index) {
@@ -377,7 +377,7 @@ private static final long serialVersionUID = 0L;
    * the supported transports.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentInterfaceOrBuilder getAdditionalInterfacesOrBuilder(
@@ -392,7 +392,7 @@ private static final long serialVersionUID = 0L;
    * The service provider of the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+   * <code>.a2a.v1.AgentProvider provider = 4;</code>
    * @return Whether the provider field is set.
    */
   @java.lang.Override
@@ -404,7 +404,7 @@ private static final long serialVersionUID = 0L;
    * The service provider of the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+   * <code>.a2a.v1.AgentProvider provider = 4;</code>
    * @return The provider.
    */
   @java.lang.Override
@@ -416,7 +416,7 @@ private static final long serialVersionUID = 0L;
    * The service provider of the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+   * <code>.a2a.v1.AgentProvider provider = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentProviderOrBuilder getProviderOrBuilder() {
@@ -432,7 +432,7 @@ private static final long serialVersionUID = 0L;
    * Example: "1.0.0"
    * </pre>
    *
-   * <code>string version = 5 [json_name = "version"];</code>
+   * <code>string version = 5;</code>
    * @return The version.
    */
   @java.lang.Override
@@ -454,7 +454,7 @@ private static final long serialVersionUID = 0L;
    * Example: "1.0.0"
    * </pre>
    *
-   * <code>string version = 5 [json_name = "version"];</code>
+   * <code>string version = 5;</code>
    * @return The bytes for version.
    */
   @java.lang.Override
@@ -480,7 +480,7 @@ private static final long serialVersionUID = 0L;
    * A url to provide additional documentation about the agent.
    * </pre>
    *
-   * <code>string documentation_url = 6 [json_name = "documentationUrl"];</code>
+   * <code>string documentation_url = 6;</code>
    * @return The documentationUrl.
    */
   @java.lang.Override
@@ -501,7 +501,7 @@ private static final long serialVersionUID = 0L;
    * A url to provide additional documentation about the agent.
    * </pre>
    *
-   * <code>string documentation_url = 6 [json_name = "documentationUrl"];</code>
+   * <code>string documentation_url = 6;</code>
    * @return The bytes for documentationUrl.
    */
   @java.lang.Override
@@ -526,7 +526,7 @@ private static final long serialVersionUID = 0L;
    * A2A Capability set supported by the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+   * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
    * @return Whether the capabilities field is set.
    */
   @java.lang.Override
@@ -538,7 +538,7 @@ private static final long serialVersionUID = 0L;
    * A2A Capability set supported by the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+   * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
    * @return The capabilities.
    */
   @java.lang.Override
@@ -550,7 +550,7 @@ private static final long serialVersionUID = 0L;
    * A2A Capability set supported by the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+   * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentCapabilitiesOrBuilder getCapabilitiesOrBuilder() {
@@ -588,7 +588,7 @@ private static final long serialVersionUID = 0L;
    * The security scheme details used for authenticating with this agent.
    * </pre>
    *
-   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
    */
   @java.lang.Override
   public boolean containsSecuritySchemes(
@@ -609,7 +609,7 @@ private static final long serialVersionUID = 0L;
    * The security scheme details used for authenticating with this agent.
    * </pre>
    *
-   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
    */
   @java.lang.Override
   public java.util.Map<java.lang.String, io.a2a.grpc.SecurityScheme> getSecuritySchemesMap() {
@@ -620,7 +620,7 @@ private static final long serialVersionUID = 0L;
    * The security scheme details used for authenticating with this agent.
    * </pre>
    *
-   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
    */
   @java.lang.Override
   public /* nullable */
@@ -638,7 +638,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * The security scheme details used for authenticating with this agent.
    * </pre>
    *
-   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.SecurityScheme getSecuritySchemesOrThrow(
@@ -661,7 +661,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+   * <code>repeated .a2a.v1.Security security = 9;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Security> getSecurityList() {
@@ -673,7 +673,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+   * <code>repeated .a2a.v1.Security security = 9;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
@@ -686,7 +686,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+   * <code>repeated .a2a.v1.Security security = 9;</code>
    */
   @java.lang.Override
   public int getSecurityCount() {
@@ -698,7 +698,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+   * <code>repeated .a2a.v1.Security security = 9;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Security getSecurity(int index) {
@@ -710,7 +710,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+   * <code>repeated .a2a.v1.Security security = 9;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
@@ -729,7 +729,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * This can be overridden per skill. Defined as mime types.
    * </pre>
    *
-   * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+   * <code>repeated string default_input_modes = 10;</code>
    * @return A list containing the defaultInputModes.
    */
   public com.google.protobuf.ProtocolStringList
@@ -743,7 +743,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * This can be overridden per skill. Defined as mime types.
    * </pre>
    *
-   * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+   * <code>repeated string default_input_modes = 10;</code>
    * @return The count of defaultInputModes.
    */
   public int getDefaultInputModesCount() {
@@ -756,7 +756,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * This can be overridden per skill. Defined as mime types.
    * </pre>
    *
-   * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+   * <code>repeated string default_input_modes = 10;</code>
    * @param index The index of the element to return.
    * @return The defaultInputModes at the given index.
    */
@@ -770,7 +770,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * This can be overridden per skill. Defined as mime types.
    * </pre>
    *
-   * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+   * <code>repeated string default_input_modes = 10;</code>
    * @param index The index of the value to return.
    * @return The bytes of the defaultInputModes at the given index.
    */
@@ -788,7 +788,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * The mime types supported as outputs from this agent.
    * </pre>
    *
-   * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+   * <code>repeated string default_output_modes = 11;</code>
    * @return A list containing the defaultOutputModes.
    */
   public com.google.protobuf.ProtocolStringList
@@ -800,7 +800,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * The mime types supported as outputs from this agent.
    * </pre>
    *
-   * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+   * <code>repeated string default_output_modes = 11;</code>
    * @return The count of defaultOutputModes.
    */
   public int getDefaultOutputModesCount() {
@@ -811,7 +811,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * The mime types supported as outputs from this agent.
    * </pre>
    *
-   * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+   * <code>repeated string default_output_modes = 11;</code>
    * @param index The index of the element to return.
    * @return The defaultOutputModes at the given index.
    */
@@ -823,7 +823,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * The mime types supported as outputs from this agent.
    * </pre>
    *
-   * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+   * <code>repeated string default_output_modes = 11;</code>
    * @param index The index of the value to return.
    * @return The bytes of the defaultOutputModes at the given index.
    */
@@ -842,7 +842,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.AgentSkill> getSkillsList() {
@@ -855,7 +855,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.AgentSkillOrBuilder> 
@@ -869,7 +869,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
    */
   @java.lang.Override
   public int getSkillsCount() {
@@ -882,7 +882,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentSkill getSkills(int index) {
@@ -895,7 +895,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentSkillOrBuilder getSkillsOrBuilder(
@@ -912,7 +912,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * different than the card from GetAgentCard.
    * </pre>
    *
-   * <code>bool supports_authenticated_extended_card = 13 [json_name = "supportsAuthenticatedExtendedCard"];</code>
+   * <code>bool supports_authenticated_extended_card = 13;</code>
    * @return The supportsAuthenticatedExtendedCard.
    */
   @java.lang.Override
@@ -1828,7 +1828,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The version of the A2A protocol this agent supports.
      * </pre>
      *
-     * <code>string protocol_version = 16 [json_name = "protocolVersion"];</code>
+     * <code>string protocol_version = 16;</code>
      * @return The protocolVersion.
      */
     public java.lang.String getProtocolVersion() {
@@ -1848,7 +1848,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The version of the A2A protocol this agent supports.
      * </pre>
      *
-     * <code>string protocol_version = 16 [json_name = "protocolVersion"];</code>
+     * <code>string protocol_version = 16;</code>
      * @return The bytes for protocolVersion.
      */
     public com.google.protobuf.ByteString
@@ -1869,7 +1869,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The version of the A2A protocol this agent supports.
      * </pre>
      *
-     * <code>string protocol_version = 16 [json_name = "protocolVersion"];</code>
+     * <code>string protocol_version = 16;</code>
      * @param value The protocolVersion to set.
      * @return This builder for chaining.
      */
@@ -1886,7 +1886,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The version of the A2A protocol this agent supports.
      * </pre>
      *
-     * <code>string protocol_version = 16 [json_name = "protocolVersion"];</code>
+     * <code>string protocol_version = 16;</code>
      * @return This builder for chaining.
      */
     public Builder clearProtocolVersion() {
@@ -1900,7 +1900,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The version of the A2A protocol this agent supports.
      * </pre>
      *
-     * <code>string protocol_version = 16 [json_name = "protocolVersion"];</code>
+     * <code>string protocol_version = 16;</code>
      * @param value The bytes for protocolVersion to set.
      * @return This builder for chaining.
      */
@@ -1921,7 +1921,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Recipe Agent"
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @return The name.
      */
     public java.lang.String getName() {
@@ -1942,7 +1942,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Recipe Agent"
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @return The bytes for name.
      */
     public com.google.protobuf.ByteString
@@ -1964,7 +1964,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Recipe Agent"
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @param value The name to set.
      * @return This builder for chaining.
      */
@@ -1982,7 +1982,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Recipe Agent"
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearName() {
@@ -1997,7 +1997,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Recipe Agent"
      * </pre>
      *
-     * <code>string name = 1 [json_name = "name"];</code>
+     * <code>string name = 1;</code>
      * @param value The bytes for name to set.
      * @return This builder for chaining.
      */
@@ -2018,7 +2018,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Agent that helps users with recipes and cooking."
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @return The description.
      */
     public java.lang.String getDescription() {
@@ -2039,7 +2039,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Agent that helps users with recipes and cooking."
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @return The bytes for description.
      */
     public com.google.protobuf.ByteString
@@ -2061,7 +2061,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Agent that helps users with recipes and cooking."
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @param value The description to set.
      * @return This builder for chaining.
      */
@@ -2079,7 +2079,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Agent that helps users with recipes and cooking."
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearDescription() {
@@ -2094,7 +2094,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "Agent that helps users with recipes and cooking."
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @param value The bytes for description to set.
      * @return This builder for chaining.
      */
@@ -2115,7 +2115,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * preferred endpoint as declared by the agent.
      * </pre>
      *
-     * <code>string url = 3 [json_name = "url"];</code>
+     * <code>string url = 3;</code>
      * @return The url.
      */
     public java.lang.String getUrl() {
@@ -2136,7 +2136,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * preferred endpoint as declared by the agent.
      * </pre>
      *
-     * <code>string url = 3 [json_name = "url"];</code>
+     * <code>string url = 3;</code>
      * @return The bytes for url.
      */
     public com.google.protobuf.ByteString
@@ -2158,7 +2158,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * preferred endpoint as declared by the agent.
      * </pre>
      *
-     * <code>string url = 3 [json_name = "url"];</code>
+     * <code>string url = 3;</code>
      * @param value The url to set.
      * @return This builder for chaining.
      */
@@ -2176,7 +2176,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * preferred endpoint as declared by the agent.
      * </pre>
      *
-     * <code>string url = 3 [json_name = "url"];</code>
+     * <code>string url = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearUrl() {
@@ -2191,7 +2191,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * preferred endpoint as declared by the agent.
      * </pre>
      *
-     * <code>string url = 3 [json_name = "url"];</code>
+     * <code>string url = 3;</code>
      * @param value The bytes for url to set.
      * @return This builder for chaining.
      */
@@ -2211,7 +2211,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The transport of the preferred endpoint. If empty, defaults to JSONRPC.
      * </pre>
      *
-     * <code>string preferred_transport = 14 [json_name = "preferredTransport"];</code>
+     * <code>string preferred_transport = 14;</code>
      * @return The preferredTransport.
      */
     public java.lang.String getPreferredTransport() {
@@ -2231,7 +2231,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The transport of the preferred endpoint. If empty, defaults to JSONRPC.
      * </pre>
      *
-     * <code>string preferred_transport = 14 [json_name = "preferredTransport"];</code>
+     * <code>string preferred_transport = 14;</code>
      * @return The bytes for preferredTransport.
      */
     public com.google.protobuf.ByteString
@@ -2252,7 +2252,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The transport of the preferred endpoint. If empty, defaults to JSONRPC.
      * </pre>
      *
-     * <code>string preferred_transport = 14 [json_name = "preferredTransport"];</code>
+     * <code>string preferred_transport = 14;</code>
      * @param value The preferredTransport to set.
      * @return This builder for chaining.
      */
@@ -2269,7 +2269,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The transport of the preferred endpoint. If empty, defaults to JSONRPC.
      * </pre>
      *
-     * <code>string preferred_transport = 14 [json_name = "preferredTransport"];</code>
+     * <code>string preferred_transport = 14;</code>
      * @return This builder for chaining.
      */
     public Builder clearPreferredTransport() {
@@ -2283,7 +2283,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The transport of the preferred endpoint. If empty, defaults to JSONRPC.
      * </pre>
      *
-     * <code>string preferred_transport = 14 [json_name = "preferredTransport"];</code>
+     * <code>string preferred_transport = 14;</code>
      * @param value The bytes for preferredTransport to set.
      * @return This builder for chaining.
      */
@@ -2315,7 +2315,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public java.util.List<io.a2a.grpc.AgentInterface> getAdditionalInterfacesList() {
       if (additionalInterfacesBuilder_ == null) {
@@ -2330,7 +2330,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public int getAdditionalInterfacesCount() {
       if (additionalInterfacesBuilder_ == null) {
@@ -2345,7 +2345,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public io.a2a.grpc.AgentInterface getAdditionalInterfaces(int index) {
       if (additionalInterfacesBuilder_ == null) {
@@ -2360,7 +2360,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public Builder setAdditionalInterfaces(
         int index, io.a2a.grpc.AgentInterface value) {
@@ -2382,7 +2382,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public Builder setAdditionalInterfaces(
         int index, io.a2a.grpc.AgentInterface.Builder builderForValue) {
@@ -2401,7 +2401,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public Builder addAdditionalInterfaces(io.a2a.grpc.AgentInterface value) {
       if (additionalInterfacesBuilder_ == null) {
@@ -2422,7 +2422,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public Builder addAdditionalInterfaces(
         int index, io.a2a.grpc.AgentInterface value) {
@@ -2444,7 +2444,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public Builder addAdditionalInterfaces(
         io.a2a.grpc.AgentInterface.Builder builderForValue) {
@@ -2463,7 +2463,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public Builder addAdditionalInterfaces(
         int index, io.a2a.grpc.AgentInterface.Builder builderForValue) {
@@ -2482,7 +2482,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public Builder addAllAdditionalInterfaces(
         java.lang.Iterable<? extends io.a2a.grpc.AgentInterface> values) {
@@ -2502,7 +2502,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public Builder clearAdditionalInterfaces() {
       if (additionalInterfacesBuilder_ == null) {
@@ -2520,7 +2520,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public Builder removeAdditionalInterfaces(int index) {
       if (additionalInterfacesBuilder_ == null) {
@@ -2538,7 +2538,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public io.a2a.grpc.AgentInterface.Builder getAdditionalInterfacesBuilder(
         int index) {
@@ -2550,7 +2550,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public io.a2a.grpc.AgentInterfaceOrBuilder getAdditionalInterfacesOrBuilder(
         int index) {
@@ -2565,7 +2565,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
          getAdditionalInterfacesOrBuilderList() {
@@ -2581,7 +2581,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public io.a2a.grpc.AgentInterface.Builder addAdditionalInterfacesBuilder() {
       return internalGetAdditionalInterfacesFieldBuilder().addBuilder(
@@ -2593,7 +2593,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public io.a2a.grpc.AgentInterface.Builder addAdditionalInterfacesBuilder(
         int index) {
@@ -2606,7 +2606,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * the supported transports.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [json_name = "additionalInterfaces"];</code>
+     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
      */
     public java.util.List<io.a2a.grpc.AgentInterface.Builder> 
          getAdditionalInterfacesBuilderList() {
@@ -2635,7 +2635,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+     * <code>.a2a.v1.AgentProvider provider = 4;</code>
      * @return Whether the provider field is set.
      */
     public boolean hasProvider() {
@@ -2646,7 +2646,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+     * <code>.a2a.v1.AgentProvider provider = 4;</code>
      * @return The provider.
      */
     public io.a2a.grpc.AgentProvider getProvider() {
@@ -2661,7 +2661,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+     * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder setProvider(io.a2a.grpc.AgentProvider value) {
       if (providerBuilder_ == null) {
@@ -2681,7 +2681,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+     * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder setProvider(
         io.a2a.grpc.AgentProvider.Builder builderForValue) {
@@ -2699,7 +2699,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+     * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder mergeProvider(io.a2a.grpc.AgentProvider value) {
       if (providerBuilder_ == null) {
@@ -2724,7 +2724,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+     * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder clearProvider() {
       bitField0_ = (bitField0_ & ~0x00000040);
@@ -2741,7 +2741,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+     * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public io.a2a.grpc.AgentProvider.Builder getProviderBuilder() {
       bitField0_ |= 0x00000040;
@@ -2753,7 +2753,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+     * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public io.a2a.grpc.AgentProviderOrBuilder getProviderOrBuilder() {
       if (providerBuilder_ != null) {
@@ -2768,7 +2768,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4 [json_name = "provider"];</code>
+     * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AgentProvider, io.a2a.grpc.AgentProvider.Builder, io.a2a.grpc.AgentProviderOrBuilder> 
@@ -2791,7 +2791,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "1.0.0"
      * </pre>
      *
-     * <code>string version = 5 [json_name = "version"];</code>
+     * <code>string version = 5;</code>
      * @return The version.
      */
     public java.lang.String getVersion() {
@@ -2812,7 +2812,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "1.0.0"
      * </pre>
      *
-     * <code>string version = 5 [json_name = "version"];</code>
+     * <code>string version = 5;</code>
      * @return The bytes for version.
      */
     public com.google.protobuf.ByteString
@@ -2834,7 +2834,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "1.0.0"
      * </pre>
      *
-     * <code>string version = 5 [json_name = "version"];</code>
+     * <code>string version = 5;</code>
      * @param value The version to set.
      * @return This builder for chaining.
      */
@@ -2852,7 +2852,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "1.0.0"
      * </pre>
      *
-     * <code>string version = 5 [json_name = "version"];</code>
+     * <code>string version = 5;</code>
      * @return This builder for chaining.
      */
     public Builder clearVersion() {
@@ -2867,7 +2867,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Example: "1.0.0"
      * </pre>
      *
-     * <code>string version = 5 [json_name = "version"];</code>
+     * <code>string version = 5;</code>
      * @param value The bytes for version to set.
      * @return This builder for chaining.
      */
@@ -2887,7 +2887,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A url to provide additional documentation about the agent.
      * </pre>
      *
-     * <code>string documentation_url = 6 [json_name = "documentationUrl"];</code>
+     * <code>string documentation_url = 6;</code>
      * @return The documentationUrl.
      */
     public java.lang.String getDocumentationUrl() {
@@ -2907,7 +2907,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A url to provide additional documentation about the agent.
      * </pre>
      *
-     * <code>string documentation_url = 6 [json_name = "documentationUrl"];</code>
+     * <code>string documentation_url = 6;</code>
      * @return The bytes for documentationUrl.
      */
     public com.google.protobuf.ByteString
@@ -2928,7 +2928,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A url to provide additional documentation about the agent.
      * </pre>
      *
-     * <code>string documentation_url = 6 [json_name = "documentationUrl"];</code>
+     * <code>string documentation_url = 6;</code>
      * @param value The documentationUrl to set.
      * @return This builder for chaining.
      */
@@ -2945,7 +2945,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A url to provide additional documentation about the agent.
      * </pre>
      *
-     * <code>string documentation_url = 6 [json_name = "documentationUrl"];</code>
+     * <code>string documentation_url = 6;</code>
      * @return This builder for chaining.
      */
     public Builder clearDocumentationUrl() {
@@ -2959,7 +2959,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A url to provide additional documentation about the agent.
      * </pre>
      *
-     * <code>string documentation_url = 6 [json_name = "documentationUrl"];</code>
+     * <code>string documentation_url = 6;</code>
      * @param value The bytes for documentationUrl to set.
      * @return This builder for chaining.
      */
@@ -2981,7 +2981,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+     * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
      * @return Whether the capabilities field is set.
      */
     public boolean hasCapabilities() {
@@ -2992,7 +2992,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+     * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
      * @return The capabilities.
      */
     public io.a2a.grpc.AgentCapabilities getCapabilities() {
@@ -3007,7 +3007,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+     * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
      */
     public Builder setCapabilities(io.a2a.grpc.AgentCapabilities value) {
       if (capabilitiesBuilder_ == null) {
@@ -3027,7 +3027,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+     * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
      */
     public Builder setCapabilities(
         io.a2a.grpc.AgentCapabilities.Builder builderForValue) {
@@ -3045,7 +3045,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+     * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
      */
     public Builder mergeCapabilities(io.a2a.grpc.AgentCapabilities value) {
       if (capabilitiesBuilder_ == null) {
@@ -3070,7 +3070,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+     * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
      */
     public Builder clearCapabilities() {
       bitField0_ = (bitField0_ & ~0x00000200);
@@ -3087,7 +3087,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+     * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
      */
     public io.a2a.grpc.AgentCapabilities.Builder getCapabilitiesBuilder() {
       bitField0_ |= 0x00000200;
@@ -3099,7 +3099,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+     * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
      */
     public io.a2a.grpc.AgentCapabilitiesOrBuilder getCapabilitiesOrBuilder() {
       if (capabilitiesBuilder_ != null) {
@@ -3114,7 +3114,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [json_name = "capabilities"];</code>
+     * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AgentCapabilities, io.a2a.grpc.AgentCapabilities.Builder, io.a2a.grpc.AgentCapabilitiesOrBuilder> 
@@ -3170,7 +3170,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     @java.lang.Override
     public boolean containsSecuritySchemes(
@@ -3191,7 +3191,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     @java.lang.Override
     public java.util.Map<java.lang.String, io.a2a.grpc.SecurityScheme> getSecuritySchemesMap() {
@@ -3202,7 +3202,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     @java.lang.Override
     public /* nullable */
@@ -3219,7 +3219,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.SecurityScheme getSecuritySchemesOrThrow(
@@ -3241,7 +3241,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     public Builder removeSecuritySchemes(
         java.lang.String key) {
@@ -3264,7 +3264,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     public Builder putSecuritySchemes(
         java.lang.String key,
@@ -3281,7 +3281,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     public Builder putAllSecuritySchemes(
         java.util.Map<java.lang.String, io.a2a.grpc.SecurityScheme> values) {
@@ -3300,7 +3300,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8 [json_name = "securitySchemes"];</code>
+     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     public io.a2a.grpc.SecurityScheme.Builder putSecuritySchemesBuilderIfAbsent(
         java.lang.String key) {
@@ -3335,7 +3335,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public java.util.List<io.a2a.grpc.Security> getSecurityList() {
       if (securityBuilder_ == null) {
@@ -3350,7 +3350,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public int getSecurityCount() {
       if (securityBuilder_ == null) {
@@ -3365,7 +3365,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public io.a2a.grpc.Security getSecurity(int index) {
       if (securityBuilder_ == null) {
@@ -3380,7 +3380,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public Builder setSecurity(
         int index, io.a2a.grpc.Security value) {
@@ -3402,7 +3402,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public Builder setSecurity(
         int index, io.a2a.grpc.Security.Builder builderForValue) {
@@ -3421,7 +3421,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public Builder addSecurity(io.a2a.grpc.Security value) {
       if (securityBuilder_ == null) {
@@ -3442,7 +3442,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public Builder addSecurity(
         int index, io.a2a.grpc.Security value) {
@@ -3464,7 +3464,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public Builder addSecurity(
         io.a2a.grpc.Security.Builder builderForValue) {
@@ -3483,7 +3483,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public Builder addSecurity(
         int index, io.a2a.grpc.Security.Builder builderForValue) {
@@ -3502,7 +3502,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public Builder addAllSecurity(
         java.lang.Iterable<? extends io.a2a.grpc.Security> values) {
@@ -3522,7 +3522,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public Builder clearSecurity() {
       if (securityBuilder_ == null) {
@@ -3540,7 +3540,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public Builder removeSecurity(int index) {
       if (securityBuilder_ == null) {
@@ -3558,7 +3558,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public io.a2a.grpc.Security.Builder getSecurityBuilder(
         int index) {
@@ -3570,7 +3570,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
         int index) {
@@ -3585,7 +3585,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
          getSecurityOrBuilderList() {
@@ -3601,7 +3601,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public io.a2a.grpc.Security.Builder addSecurityBuilder() {
       return internalGetSecurityFieldBuilder().addBuilder(
@@ -3613,7 +3613,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public io.a2a.grpc.Security.Builder addSecurityBuilder(
         int index) {
@@ -3626,7 +3626,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9 [json_name = "security"];</code>
+     * <code>repeated .a2a.v1.Security security = 9;</code>
      */
     public java.util.List<io.a2a.grpc.Security.Builder> 
          getSecurityBuilderList() {
@@ -3662,7 +3662,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * This can be overridden per skill. Defined as mime types.
      * </pre>
      *
-     * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+     * <code>repeated string default_input_modes = 10;</code>
      * @return A list containing the defaultInputModes.
      */
     public com.google.protobuf.ProtocolStringList
@@ -3677,7 +3677,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * This can be overridden per skill. Defined as mime types.
      * </pre>
      *
-     * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+     * <code>repeated string default_input_modes = 10;</code>
      * @return The count of defaultInputModes.
      */
     public int getDefaultInputModesCount() {
@@ -3690,7 +3690,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * This can be overridden per skill. Defined as mime types.
      * </pre>
      *
-     * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+     * <code>repeated string default_input_modes = 10;</code>
      * @param index The index of the element to return.
      * @return The defaultInputModes at the given index.
      */
@@ -3704,7 +3704,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * This can be overridden per skill. Defined as mime types.
      * </pre>
      *
-     * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+     * <code>repeated string default_input_modes = 10;</code>
      * @param index The index of the value to return.
      * @return The bytes of the defaultInputModes at the given index.
      */
@@ -3719,7 +3719,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * This can be overridden per skill. Defined as mime types.
      * </pre>
      *
-     * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+     * <code>repeated string default_input_modes = 10;</code>
      * @param index The index to set the value at.
      * @param value The defaultInputModes to set.
      * @return This builder for chaining.
@@ -3740,7 +3740,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * This can be overridden per skill. Defined as mime types.
      * </pre>
      *
-     * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+     * <code>repeated string default_input_modes = 10;</code>
      * @param value The defaultInputModes to add.
      * @return This builder for chaining.
      */
@@ -3760,7 +3760,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * This can be overridden per skill. Defined as mime types.
      * </pre>
      *
-     * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+     * <code>repeated string default_input_modes = 10;</code>
      * @param values The defaultInputModes to add.
      * @return This builder for chaining.
      */
@@ -3780,7 +3780,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * This can be overridden per skill. Defined as mime types.
      * </pre>
      *
-     * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+     * <code>repeated string default_input_modes = 10;</code>
      * @return This builder for chaining.
      */
     public Builder clearDefaultInputModes() {
@@ -3797,7 +3797,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * This can be overridden per skill. Defined as mime types.
      * </pre>
      *
-     * <code>repeated string default_input_modes = 10 [json_name = "defaultInputModes"];</code>
+     * <code>repeated string default_input_modes = 10;</code>
      * @param value The bytes of the defaultInputModes to add.
      * @return This builder for chaining.
      */
@@ -3825,7 +3825,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The mime types supported as outputs from this agent.
      * </pre>
      *
-     * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+     * <code>repeated string default_output_modes = 11;</code>
      * @return A list containing the defaultOutputModes.
      */
     public com.google.protobuf.ProtocolStringList
@@ -3838,7 +3838,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The mime types supported as outputs from this agent.
      * </pre>
      *
-     * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+     * <code>repeated string default_output_modes = 11;</code>
      * @return The count of defaultOutputModes.
      */
     public int getDefaultOutputModesCount() {
@@ -3849,7 +3849,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The mime types supported as outputs from this agent.
      * </pre>
      *
-     * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+     * <code>repeated string default_output_modes = 11;</code>
      * @param index The index of the element to return.
      * @return The defaultOutputModes at the given index.
      */
@@ -3861,7 +3861,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The mime types supported as outputs from this agent.
      * </pre>
      *
-     * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+     * <code>repeated string default_output_modes = 11;</code>
      * @param index The index of the value to return.
      * @return The bytes of the defaultOutputModes at the given index.
      */
@@ -3874,7 +3874,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The mime types supported as outputs from this agent.
      * </pre>
      *
-     * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+     * <code>repeated string default_output_modes = 11;</code>
      * @param index The index to set the value at.
      * @param value The defaultOutputModes to set.
      * @return This builder for chaining.
@@ -3893,7 +3893,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The mime types supported as outputs from this agent.
      * </pre>
      *
-     * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+     * <code>repeated string default_output_modes = 11;</code>
      * @param value The defaultOutputModes to add.
      * @return This builder for chaining.
      */
@@ -3911,7 +3911,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The mime types supported as outputs from this agent.
      * </pre>
      *
-     * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+     * <code>repeated string default_output_modes = 11;</code>
      * @param values The defaultOutputModes to add.
      * @return This builder for chaining.
      */
@@ -3929,7 +3929,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The mime types supported as outputs from this agent.
      * </pre>
      *
-     * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+     * <code>repeated string default_output_modes = 11;</code>
      * @return This builder for chaining.
      */
     public Builder clearDefaultOutputModes() {
@@ -3944,7 +3944,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The mime types supported as outputs from this agent.
      * </pre>
      *
-     * <code>repeated string default_output_modes = 11 [json_name = "defaultOutputModes"];</code>
+     * <code>repeated string default_output_modes = 11;</code>
      * @param value The bytes of the defaultOutputModes to add.
      * @return This builder for chaining.
      */
@@ -3978,7 +3978,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public java.util.List<io.a2a.grpc.AgentSkill> getSkillsList() {
       if (skillsBuilder_ == null) {
@@ -3994,7 +3994,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public int getSkillsCount() {
       if (skillsBuilder_ == null) {
@@ -4010,7 +4010,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public io.a2a.grpc.AgentSkill getSkills(int index) {
       if (skillsBuilder_ == null) {
@@ -4026,7 +4026,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public Builder setSkills(
         int index, io.a2a.grpc.AgentSkill value) {
@@ -4049,7 +4049,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public Builder setSkills(
         int index, io.a2a.grpc.AgentSkill.Builder builderForValue) {
@@ -4069,7 +4069,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public Builder addSkills(io.a2a.grpc.AgentSkill value) {
       if (skillsBuilder_ == null) {
@@ -4091,7 +4091,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public Builder addSkills(
         int index, io.a2a.grpc.AgentSkill value) {
@@ -4114,7 +4114,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public Builder addSkills(
         io.a2a.grpc.AgentSkill.Builder builderForValue) {
@@ -4134,7 +4134,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public Builder addSkills(
         int index, io.a2a.grpc.AgentSkill.Builder builderForValue) {
@@ -4154,7 +4154,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public Builder addAllSkills(
         java.lang.Iterable<? extends io.a2a.grpc.AgentSkill> values) {
@@ -4175,7 +4175,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public Builder clearSkills() {
       if (skillsBuilder_ == null) {
@@ -4194,7 +4194,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public Builder removeSkills(int index) {
       if (skillsBuilder_ == null) {
@@ -4213,7 +4213,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public io.a2a.grpc.AgentSkill.Builder getSkillsBuilder(
         int index) {
@@ -4226,7 +4226,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public io.a2a.grpc.AgentSkillOrBuilder getSkillsOrBuilder(
         int index) {
@@ -4242,7 +4242,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public java.util.List<? extends io.a2a.grpc.AgentSkillOrBuilder> 
          getSkillsOrBuilderList() {
@@ -4259,7 +4259,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public io.a2a.grpc.AgentSkill.Builder addSkillsBuilder() {
       return internalGetSkillsFieldBuilder().addBuilder(
@@ -4272,7 +4272,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public io.a2a.grpc.AgentSkill.Builder addSkillsBuilder(
         int index) {
@@ -4286,7 +4286,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * agent is highly likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [json_name = "skills"];</code>
+     * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
      */
     public java.util.List<io.a2a.grpc.AgentSkill.Builder> 
          getSkillsBuilderList() {
@@ -4315,7 +4315,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * different than the card from GetAgentCard.
      * </pre>
      *
-     * <code>bool supports_authenticated_extended_card = 13 [json_name = "supportsAuthenticatedExtendedCard"];</code>
+     * <code>bool supports_authenticated_extended_card = 13;</code>
      * @return The supportsAuthenticatedExtendedCard.
      */
     @java.lang.Override
@@ -4329,7 +4329,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * different than the card from GetAgentCard.
      * </pre>
      *
-     * <code>bool supports_authenticated_extended_card = 13 [json_name = "supportsAuthenticatedExtendedCard"];</code>
+     * <code>bool supports_authenticated_extended_card = 13;</code>
      * @param value The supportsAuthenticatedExtendedCard to set.
      * @return This builder for chaining.
      */
@@ -4347,7 +4347,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * different than the card from GetAgentCard.
      * </pre>
      *
-     * <code>bool supports_authenticated_extended_card = 13 [json_name = "supportsAuthenticatedExtendedCard"];</code>
+     * <code>bool supports_authenticated_extended_card = 13;</code>
      * @return This builder for chaining.
      */
     public Builder clearSupportsAuthenticatedExtendedCard() {

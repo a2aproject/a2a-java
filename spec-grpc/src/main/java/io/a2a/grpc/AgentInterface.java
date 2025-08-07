@@ -57,7 +57,7 @@ private static final long serialVersionUID = 0L;
    * The url this interface is found at.
    * </pre>
    *
-   * <code>string url = 1 [json_name = "url"];</code>
+   * <code>string url = 1;</code>
    * @return The url.
    */
   @java.lang.Override
@@ -78,7 +78,7 @@ private static final long serialVersionUID = 0L;
    * The url this interface is found at.
    * </pre>
    *
-   * <code>string url = 1 [json_name = "url"];</code>
+   * <code>string url = 1;</code>
    * @return The bytes for url.
    */
   @java.lang.Override
@@ -106,7 +106,7 @@ private static final long serialVersionUID = 0L;
    * supported are JSONRPC, GRPC and HTTP+JSON.
    * </pre>
    *
-   * <code>string transport = 2 [json_name = "transport"];</code>
+   * <code>string transport = 2;</code>
    * @return The transport.
    */
   @java.lang.Override
@@ -129,7 +129,7 @@ private static final long serialVersionUID = 0L;
    * supported are JSONRPC, GRPC and HTTP+JSON.
    * </pre>
    *
-   * <code>string transport = 2 [json_name = "transport"];</code>
+   * <code>string transport = 2;</code>
    * @return The bytes for transport.
    */
   @java.lang.Override
@@ -475,7 +475,7 @@ private static final long serialVersionUID = 0L;
      * The url this interface is found at.
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @return The url.
      */
     public java.lang.String getUrl() {
@@ -495,7 +495,7 @@ private static final long serialVersionUID = 0L;
      * The url this interface is found at.
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @return The bytes for url.
      */
     public com.google.protobuf.ByteString
@@ -516,7 +516,7 @@ private static final long serialVersionUID = 0L;
      * The url this interface is found at.
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @param value The url to set.
      * @return This builder for chaining.
      */
@@ -533,7 +533,7 @@ private static final long serialVersionUID = 0L;
      * The url this interface is found at.
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearUrl() {
@@ -547,7 +547,7 @@ private static final long serialVersionUID = 0L;
      * The url this interface is found at.
      * </pre>
      *
-     * <code>string url = 1 [json_name = "url"];</code>
+     * <code>string url = 1;</code>
      * @param value The bytes for url to set.
      * @return This builder for chaining.
      */
@@ -569,7 +569,7 @@ private static final long serialVersionUID = 0L;
      * supported are JSONRPC, GRPC and HTTP+JSON.
      * </pre>
      *
-     * <code>string transport = 2 [json_name = "transport"];</code>
+     * <code>string transport = 2;</code>
      * @return The transport.
      */
     public java.lang.String getTransport() {
@@ -591,7 +591,7 @@ private static final long serialVersionUID = 0L;
      * supported are JSONRPC, GRPC and HTTP+JSON.
      * </pre>
      *
-     * <code>string transport = 2 [json_name = "transport"];</code>
+     * <code>string transport = 2;</code>
      * @return The bytes for transport.
      */
     public com.google.protobuf.ByteString
@@ -614,7 +614,7 @@ private static final long serialVersionUID = 0L;
      * supported are JSONRPC, GRPC and HTTP+JSON.
      * </pre>
      *
-     * <code>string transport = 2 [json_name = "transport"];</code>
+     * <code>string transport = 2;</code>
      * @param value The transport to set.
      * @return This builder for chaining.
      */
@@ -633,7 +633,7 @@ private static final long serialVersionUID = 0L;
      * supported are JSONRPC, GRPC and HTTP+JSON.
      * </pre>
      *
-     * <code>string transport = 2 [json_name = "transport"];</code>
+     * <code>string transport = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearTransport() {
@@ -649,7 +649,7 @@ private static final long serialVersionUID = 0L;
      * supported are JSONRPC, GRPC and HTTP+JSON.
      * </pre>
      *
-     * <code>string transport = 2 [json_name = "transport"];</code>
+     * <code>string transport = 2;</code>
      * @param value The bytes for transport to set.
      * @return This builder for chaining.
      */

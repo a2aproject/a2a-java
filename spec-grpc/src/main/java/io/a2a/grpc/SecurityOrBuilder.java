@@ -11,11 +11,11 @@ public interface SecurityOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
    */
   int getSchemesCount();
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
    */
   boolean containsSchemes(
       java.lang.String key);
@@ -26,12 +26,12 @@ public interface SecurityOrBuilder extends
   java.util.Map<java.lang.String, io.a2a.grpc.StringList>
   getSchemes();
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
    */
   java.util.Map<java.lang.String, io.a2a.grpc.StringList>
   getSchemesMap();
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
    */
   /* nullable */
 io.a2a.grpc.StringList getSchemesOrDefault(
@@ -39,7 +39,7 @@ io.a2a.grpc.StringList getSchemesOrDefault(
       /* nullable */
 io.a2a.grpc.StringList defaultValue);
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1 [json_name = "schemes"];</code>
+   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
    */
   io.a2a.grpc.StringList getSchemesOrThrow(
       java.lang.String key);

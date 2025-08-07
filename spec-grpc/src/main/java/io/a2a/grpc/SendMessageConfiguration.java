@@ -59,7 +59,7 @@ private static final long serialVersionUID = 0L;
    * The output modes that the agent is expected to respond with.
    * </pre>
    *
-   * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+   * <code>repeated string accepted_output_modes = 1;</code>
    * @return A list containing the acceptedOutputModes.
    */
   public com.google.protobuf.ProtocolStringList
@@ -71,7 +71,7 @@ private static final long serialVersionUID = 0L;
    * The output modes that the agent is expected to respond with.
    * </pre>
    *
-   * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+   * <code>repeated string accepted_output_modes = 1;</code>
    * @return The count of acceptedOutputModes.
    */
   public int getAcceptedOutputModesCount() {
@@ -82,7 +82,7 @@ private static final long serialVersionUID = 0L;
    * The output modes that the agent is expected to respond with.
    * </pre>
    *
-   * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+   * <code>repeated string accepted_output_modes = 1;</code>
    * @param index The index of the element to return.
    * @return The acceptedOutputModes at the given index.
    */
@@ -94,7 +94,7 @@ private static final long serialVersionUID = 0L;
    * The output modes that the agent is expected to respond with.
    * </pre>
    *
-   * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+   * <code>repeated string accepted_output_modes = 1;</code>
    * @param index The index of the value to return.
    * @return The bytes of the acceptedOutputModes at the given index.
    */
@@ -110,7 +110,7 @@ private static final long serialVersionUID = 0L;
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
    * @return Whether the pushNotification field is set.
    */
   @java.lang.Override
@@ -122,7 +122,7 @@ private static final long serialVersionUID = 0L;
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
    * @return The pushNotification.
    */
   @java.lang.Override
@@ -134,7 +134,7 @@ private static final long serialVersionUID = 0L;
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationOrBuilder() {
@@ -149,7 +149,7 @@ private static final long serialVersionUID = 0L;
    * history will be unlimited.
    * </pre>
    *
-   * <code>int32 history_length = 3 [json_name = "historyLength"];</code>
+   * <code>int32 history_length = 3;</code>
    * @return The historyLength.
    */
   @java.lang.Override
@@ -167,7 +167,7 @@ private static final long serialVersionUID = 0L;
    * updates.
    * </pre>
    *
-   * <code>bool blocking = 4 [json_name = "blocking"];</code>
+   * <code>bool blocking = 4;</code>
    * @return The blocking.
    */
   @java.lang.Override
@@ -593,7 +593,7 @@ private static final long serialVersionUID = 0L;
      * The output modes that the agent is expected to respond with.
      * </pre>
      *
-     * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+     * <code>repeated string accepted_output_modes = 1;</code>
      * @return A list containing the acceptedOutputModes.
      */
     public com.google.protobuf.ProtocolStringList
@@ -606,7 +606,7 @@ private static final long serialVersionUID = 0L;
      * The output modes that the agent is expected to respond with.
      * </pre>
      *
-     * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+     * <code>repeated string accepted_output_modes = 1;</code>
      * @return The count of acceptedOutputModes.
      */
     public int getAcceptedOutputModesCount() {
@@ -617,7 +617,7 @@ private static final long serialVersionUID = 0L;
      * The output modes that the agent is expected to respond with.
      * </pre>
      *
-     * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+     * <code>repeated string accepted_output_modes = 1;</code>
      * @param index The index of the element to return.
      * @return The acceptedOutputModes at the given index.
      */
@@ -629,7 +629,7 @@ private static final long serialVersionUID = 0L;
      * The output modes that the agent is expected to respond with.
      * </pre>
      *
-     * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+     * <code>repeated string accepted_output_modes = 1;</code>
      * @param index The index of the value to return.
      * @return The bytes of the acceptedOutputModes at the given index.
      */
@@ -642,7 +642,7 @@ private static final long serialVersionUID = 0L;
      * The output modes that the agent is expected to respond with.
      * </pre>
      *
-     * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+     * <code>repeated string accepted_output_modes = 1;</code>
      * @param index The index to set the value at.
      * @param value The acceptedOutputModes to set.
      * @return This builder for chaining.
@@ -661,7 +661,7 @@ private static final long serialVersionUID = 0L;
      * The output modes that the agent is expected to respond with.
      * </pre>
      *
-     * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+     * <code>repeated string accepted_output_modes = 1;</code>
      * @param value The acceptedOutputModes to add.
      * @return This builder for chaining.
      */
@@ -679,7 +679,7 @@ private static final long serialVersionUID = 0L;
      * The output modes that the agent is expected to respond with.
      * </pre>
      *
-     * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+     * <code>repeated string accepted_output_modes = 1;</code>
      * @param values The acceptedOutputModes to add.
      * @return This builder for chaining.
      */
@@ -697,7 +697,7 @@ private static final long serialVersionUID = 0L;
      * The output modes that the agent is expected to respond with.
      * </pre>
      *
-     * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+     * <code>repeated string accepted_output_modes = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearAcceptedOutputModes() {
@@ -712,7 +712,7 @@ private static final long serialVersionUID = 0L;
      * The output modes that the agent is expected to respond with.
      * </pre>
      *
-     * <code>repeated string accepted_output_modes = 1 [json_name = "acceptedOutputModes"];</code>
+     * <code>repeated string accepted_output_modes = 1;</code>
      * @param value The bytes of the acceptedOutputModes to add.
      * @return This builder for chaining.
      */
@@ -735,7 +735,7 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      * @return Whether the pushNotification field is set.
      */
     public boolean hasPushNotification() {
@@ -746,7 +746,7 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      * @return The pushNotification.
      */
     public io.a2a.grpc.PushNotificationConfig getPushNotification() {
@@ -761,7 +761,7 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      */
     public Builder setPushNotification(io.a2a.grpc.PushNotificationConfig value) {
       if (pushNotificationBuilder_ == null) {
@@ -781,7 +781,7 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      */
     public Builder setPushNotification(
         io.a2a.grpc.PushNotificationConfig.Builder builderForValue) {
@@ -799,7 +799,7 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      */
     public Builder mergePushNotification(io.a2a.grpc.PushNotificationConfig value) {
       if (pushNotificationBuilder_ == null) {
@@ -824,7 +824,7 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      */
     public Builder clearPushNotification() {
       bitField0_ = (bitField0_ & ~0x00000002);
@@ -841,7 +841,7 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      */
     public io.a2a.grpc.PushNotificationConfig.Builder getPushNotificationBuilder() {
       bitField0_ |= 0x00000002;
@@ -853,7 +853,7 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      */
     public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationOrBuilder() {
       if (pushNotificationBuilder_ != null) {
@@ -868,7 +868,7 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2 [json_name = "pushNotification"];</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> 
@@ -891,7 +891,7 @@ private static final long serialVersionUID = 0L;
      * history will be unlimited.
      * </pre>
      *
-     * <code>int32 history_length = 3 [json_name = "historyLength"];</code>
+     * <code>int32 history_length = 3;</code>
      * @return The historyLength.
      */
     @java.lang.Override
@@ -904,7 +904,7 @@ private static final long serialVersionUID = 0L;
      * history will be unlimited.
      * </pre>
      *
-     * <code>int32 history_length = 3 [json_name = "historyLength"];</code>
+     * <code>int32 history_length = 3;</code>
      * @param value The historyLength to set.
      * @return This builder for chaining.
      */
@@ -921,7 +921,7 @@ private static final long serialVersionUID = 0L;
      * history will be unlimited.
      * </pre>
      *
-     * <code>int32 history_length = 3 [json_name = "historyLength"];</code>
+     * <code>int32 history_length = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearHistoryLength() {
@@ -940,7 +940,7 @@ private static final long serialVersionUID = 0L;
      * updates.
      * </pre>
      *
-     * <code>bool blocking = 4 [json_name = "blocking"];</code>
+     * <code>bool blocking = 4;</code>
      * @return The blocking.
      */
     @java.lang.Override
@@ -955,7 +955,7 @@ private static final long serialVersionUID = 0L;
      * updates.
      * </pre>
      *
-     * <code>bool blocking = 4 [json_name = "blocking"];</code>
+     * <code>bool blocking = 4;</code>
      * @param value The blocking to set.
      * @return This builder for chaining.
      */
@@ -974,7 +974,7 @@ private static final long serialVersionUID = 0L;
      * updates.
      * </pre>
      *
-     * <code>bool blocking = 4 [json_name = "blocking"];</code>
+     * <code>bool blocking = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearBlocking() {

@@ -59,7 +59,7 @@ private static final long serialVersionUID = 0L;
    * A unique id for this push notification.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The id.
    */
   @java.lang.Override
@@ -80,7 +80,7 @@ private static final long serialVersionUID = 0L;
    * A unique id for this push notification.
    * </pre>
    *
-   * <code>string id = 1 [json_name = "id"];</code>
+   * <code>string id = 1;</code>
    * @return The bytes for id.
    */
   @java.lang.Override
@@ -106,7 +106,7 @@ private static final long serialVersionUID = 0L;
    * Url to send the notification too
    * </pre>
    *
-   * <code>string url = 2 [json_name = "url"];</code>
+   * <code>string url = 2;</code>
    * @return The url.
    */
   @java.lang.Override
@@ -127,7 +127,7 @@ private static final long serialVersionUID = 0L;
    * Url to send the notification too
    * </pre>
    *
-   * <code>string url = 2 [json_name = "url"];</code>
+   * <code>string url = 2;</code>
    * @return The bytes for url.
    */
   @java.lang.Override
@@ -153,7 +153,7 @@ private static final long serialVersionUID = 0L;
    * Token unique for this task/session
    * </pre>
    *
-   * <code>string token = 3 [json_name = "token"];</code>
+   * <code>string token = 3;</code>
    * @return The token.
    */
   @java.lang.Override
@@ -174,7 +174,7 @@ private static final long serialVersionUID = 0L;
    * Token unique for this task/session
    * </pre>
    *
-   * <code>string token = 3 [json_name = "token"];</code>
+   * <code>string token = 3;</code>
    * @return The bytes for token.
    */
   @java.lang.Override
@@ -199,7 +199,7 @@ private static final long serialVersionUID = 0L;
    * Information about the authentication to sent with the notification
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
    * @return Whether the authentication field is set.
    */
   @java.lang.Override
@@ -211,7 +211,7 @@ private static final long serialVersionUID = 0L;
    * Information about the authentication to sent with the notification
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
    * @return The authentication.
    */
   @java.lang.Override
@@ -223,7 +223,7 @@ private static final long serialVersionUID = 0L;
    * Information about the authentication to sent with the notification
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AuthenticationInfoOrBuilder getAuthenticationOrBuilder() {
@@ -627,7 +627,7 @@ private static final long serialVersionUID = 0L;
      * A unique id for this push notification.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @return The id.
      */
     public java.lang.String getId() {
@@ -647,7 +647,7 @@ private static final long serialVersionUID = 0L;
      * A unique id for this push notification.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @return The bytes for id.
      */
     public com.google.protobuf.ByteString
@@ -668,7 +668,7 @@ private static final long serialVersionUID = 0L;
      * A unique id for this push notification.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @param value The id to set.
      * @return This builder for chaining.
      */
@@ -685,7 +685,7 @@ private static final long serialVersionUID = 0L;
      * A unique id for this push notification.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearId() {
@@ -699,7 +699,7 @@ private static final long serialVersionUID = 0L;
      * A unique id for this push notification.
      * </pre>
      *
-     * <code>string id = 1 [json_name = "id"];</code>
+     * <code>string id = 1;</code>
      * @param value The bytes for id to set.
      * @return This builder for chaining.
      */
@@ -719,7 +719,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2 [json_name = "url"];</code>
+     * <code>string url = 2;</code>
      * @return The url.
      */
     public java.lang.String getUrl() {
@@ -739,7 +739,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2 [json_name = "url"];</code>
+     * <code>string url = 2;</code>
      * @return The bytes for url.
      */
     public com.google.protobuf.ByteString
@@ -760,7 +760,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2 [json_name = "url"];</code>
+     * <code>string url = 2;</code>
      * @param value The url to set.
      * @return This builder for chaining.
      */
@@ -777,7 +777,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2 [json_name = "url"];</code>
+     * <code>string url = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearUrl() {
@@ -791,7 +791,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2 [json_name = "url"];</code>
+     * <code>string url = 2;</code>
      * @param value The bytes for url to set.
      * @return This builder for chaining.
      */
@@ -811,7 +811,7 @@ private static final long serialVersionUID = 0L;
      * Token unique for this task/session
      * </pre>
      *
-     * <code>string token = 3 [json_name = "token"];</code>
+     * <code>string token = 3;</code>
      * @return The token.
      */
     public java.lang.String getToken() {
@@ -831,7 +831,7 @@ private static final long serialVersionUID = 0L;
      * Token unique for this task/session
      * </pre>
      *
-     * <code>string token = 3 [json_name = "token"];</code>
+     * <code>string token = 3;</code>
      * @return The bytes for token.
      */
     public com.google.protobuf.ByteString
@@ -852,7 +852,7 @@ private static final long serialVersionUID = 0L;
      * Token unique for this task/session
      * </pre>
      *
-     * <code>string token = 3 [json_name = "token"];</code>
+     * <code>string token = 3;</code>
      * @param value The token to set.
      * @return This builder for chaining.
      */
@@ -869,7 +869,7 @@ private static final long serialVersionUID = 0L;
      * Token unique for this task/session
      * </pre>
      *
-     * <code>string token = 3 [json_name = "token"];</code>
+     * <code>string token = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearToken() {
@@ -883,7 +883,7 @@ private static final long serialVersionUID = 0L;
      * Token unique for this task/session
      * </pre>
      *
-     * <code>string token = 3 [json_name = "token"];</code>
+     * <code>string token = 3;</code>
      * @param value The bytes for token to set.
      * @return This builder for chaining.
      */
@@ -905,7 +905,7 @@ private static final long serialVersionUID = 0L;
      * Information about the authentication to sent with the notification
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
      * @return Whether the authentication field is set.
      */
     public boolean hasAuthentication() {
@@ -916,7 +916,7 @@ private static final long serialVersionUID = 0L;
      * Information about the authentication to sent with the notification
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
      * @return The authentication.
      */
     public io.a2a.grpc.AuthenticationInfo getAuthentication() {
@@ -931,7 +931,7 @@ private static final long serialVersionUID = 0L;
      * Information about the authentication to sent with the notification
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public Builder setAuthentication(io.a2a.grpc.AuthenticationInfo value) {
       if (authenticationBuilder_ == null) {
@@ -951,7 +951,7 @@ private static final long serialVersionUID = 0L;
      * Information about the authentication to sent with the notification
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public Builder setAuthentication(
         io.a2a.grpc.AuthenticationInfo.Builder builderForValue) {
@@ -969,7 +969,7 @@ private static final long serialVersionUID = 0L;
      * Information about the authentication to sent with the notification
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public Builder mergeAuthentication(io.a2a.grpc.AuthenticationInfo value) {
       if (authenticationBuilder_ == null) {
@@ -994,7 +994,7 @@ private static final long serialVersionUID = 0L;
      * Information about the authentication to sent with the notification
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public Builder clearAuthentication() {
       bitField0_ = (bitField0_ & ~0x00000008);
@@ -1011,7 +1011,7 @@ private static final long serialVersionUID = 0L;
      * Information about the authentication to sent with the notification
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public io.a2a.grpc.AuthenticationInfo.Builder getAuthenticationBuilder() {
       bitField0_ |= 0x00000008;
@@ -1023,7 +1023,7 @@ private static final long serialVersionUID = 0L;
      * Information about the authentication to sent with the notification
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public io.a2a.grpc.AuthenticationInfoOrBuilder getAuthenticationOrBuilder() {
       if (authenticationBuilder_ != null) {
@@ -1038,7 +1038,7 @@ private static final long serialVersionUID = 0L;
      * Information about the authentication to sent with the notification
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4 [json_name = "authentication"];</code>
+     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AuthenticationInfo, io.a2a.grpc.AuthenticationInfo.Builder, io.a2a.grpc.AuthenticationInfoOrBuilder> 

@@ -56,7 +56,7 @@ private static final long serialVersionUID = 0L;
    * The current state of this task
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1 [json_name = "state"];</code>
+   * <code>.a2a.v1.TaskState state = 1;</code>
    * @return The enum numeric value on the wire for state.
    */
   @java.lang.Override public int getStateValue() {
@@ -67,7 +67,7 @@ private static final long serialVersionUID = 0L;
    * The current state of this task
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1 [json_name = "state"];</code>
+   * <code>.a2a.v1.TaskState state = 1;</code>
    * @return The state.
    */
   @java.lang.Override public io.a2a.grpc.TaskState getState() {
@@ -121,7 +121,7 @@ private static final long serialVersionUID = 0L;
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+   * <code>.google.protobuf.Timestamp timestamp = 3;</code>
    * @return Whether the timestamp field is set.
    */
   @java.lang.Override
@@ -134,7 +134,7 @@ private static final long serialVersionUID = 0L;
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+   * <code>.google.protobuf.Timestamp timestamp = 3;</code>
    * @return The timestamp.
    */
   @java.lang.Override
@@ -147,7 +147,7 @@ private static final long serialVersionUID = 0L;
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+   * <code>.google.protobuf.Timestamp timestamp = 3;</code>
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getTimestampOrBuilder() {
@@ -539,7 +539,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [json_name = "state"];</code>
+     * <code>.a2a.v1.TaskState state = 1;</code>
      * @return The enum numeric value on the wire for state.
      */
     @java.lang.Override public int getStateValue() {
@@ -550,7 +550,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [json_name = "state"];</code>
+     * <code>.a2a.v1.TaskState state = 1;</code>
      * @param value The enum numeric value on the wire for state to set.
      * @return This builder for chaining.
      */
@@ -565,7 +565,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [json_name = "state"];</code>
+     * <code>.a2a.v1.TaskState state = 1;</code>
      * @return The state.
      */
     @java.lang.Override
@@ -578,7 +578,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [json_name = "state"];</code>
+     * <code>.a2a.v1.TaskState state = 1;</code>
      * @param value The state to set.
      * @return This builder for chaining.
      */
@@ -594,7 +594,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [json_name = "state"];</code>
+     * <code>.a2a.v1.TaskState state = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearState() {
@@ -770,7 +770,7 @@ private static final long serialVersionUID = 0L;
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+     * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      * @return Whether the timestamp field is set.
      */
     public boolean hasTimestamp() {
@@ -782,7 +782,7 @@ private static final long serialVersionUID = 0L;
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+     * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      * @return The timestamp.
      */
     public com.google.protobuf.Timestamp getTimestamp() {
@@ -798,7 +798,7 @@ private static final long serialVersionUID = 0L;
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+     * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      */
     public Builder setTimestamp(com.google.protobuf.Timestamp value) {
       if (timestampBuilder_ == null) {
@@ -819,7 +819,7 @@ private static final long serialVersionUID = 0L;
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+     * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      */
     public Builder setTimestamp(
         com.google.protobuf.Timestamp.Builder builderForValue) {
@@ -838,7 +838,7 @@ private static final long serialVersionUID = 0L;
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+     * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      */
     public Builder mergeTimestamp(com.google.protobuf.Timestamp value) {
       if (timestampBuilder_ == null) {
@@ -864,7 +864,7 @@ private static final long serialVersionUID = 0L;
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+     * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      */
     public Builder clearTimestamp() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -882,7 +882,7 @@ private static final long serialVersionUID = 0L;
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+     * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      */
     public com.google.protobuf.Timestamp.Builder getTimestampBuilder() {
       bitField0_ |= 0x00000004;
@@ -895,7 +895,7 @@ private static final long serialVersionUID = 0L;
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+     * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      */
     public com.google.protobuf.TimestampOrBuilder getTimestampOrBuilder() {
       if (timestampBuilder_ != null) {
@@ -911,7 +911,7 @@ private static final long serialVersionUID = 0L;
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];</code>
+     * <code>.google.protobuf.Timestamp timestamp = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 

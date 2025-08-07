@@ -59,7 +59,7 @@ private static final long serialVersionUID = 0L;
    * Example: "https://developers.google.com/identity/protocols/oauth2"
    * </pre>
    *
-   * <code>string uri = 1 [json_name = "uri"];</code>
+   * <code>string uri = 1;</code>
    * @return The uri.
    */
   @java.lang.Override
@@ -81,7 +81,7 @@ private static final long serialVersionUID = 0L;
    * Example: "https://developers.google.com/identity/protocols/oauth2"
    * </pre>
    *
-   * <code>string uri = 1 [json_name = "uri"];</code>
+   * <code>string uri = 1;</code>
    * @return The bytes for uri.
    */
   @java.lang.Override
@@ -108,7 +108,7 @@ private static final long serialVersionUID = 0L;
    * Example: "Google OAuth 2.0 authentication"
    * </pre>
    *
-   * <code>string description = 2 [json_name = "description"];</code>
+   * <code>string description = 2;</code>
    * @return The description.
    */
   @java.lang.Override
@@ -130,7 +130,7 @@ private static final long serialVersionUID = 0L;
    * Example: "Google OAuth 2.0 authentication"
    * </pre>
    *
-   * <code>string description = 2 [json_name = "description"];</code>
+   * <code>string description = 2;</code>
    * @return The bytes for description.
    */
   @java.lang.Override
@@ -156,7 +156,7 @@ private static final long serialVersionUID = 0L;
    * Example: false
    * </pre>
    *
-   * <code>bool required = 3 [json_name = "required"];</code>
+   * <code>bool required = 3;</code>
    * @return The required.
    */
   @java.lang.Override
@@ -171,7 +171,7 @@ private static final long serialVersionUID = 0L;
    * Optional configuration for the extension.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+   * <code>.google.protobuf.Struct params = 4;</code>
    * @return Whether the params field is set.
    */
   @java.lang.Override
@@ -183,7 +183,7 @@ private static final long serialVersionUID = 0L;
    * Optional configuration for the extension.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+   * <code>.google.protobuf.Struct params = 4;</code>
    * @return The params.
    */
   @java.lang.Override
@@ -195,7 +195,7 @@ private static final long serialVersionUID = 0L;
    * Optional configuration for the extension.
    * </pre>
    *
-   * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+   * <code>.google.protobuf.Struct params = 4;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getParamsOrBuilder() {
@@ -600,7 +600,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://developers.google.com/identity/protocols/oauth2"
      * </pre>
      *
-     * <code>string uri = 1 [json_name = "uri"];</code>
+     * <code>string uri = 1;</code>
      * @return The uri.
      */
     public java.lang.String getUri() {
@@ -621,7 +621,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://developers.google.com/identity/protocols/oauth2"
      * </pre>
      *
-     * <code>string uri = 1 [json_name = "uri"];</code>
+     * <code>string uri = 1;</code>
      * @return The bytes for uri.
      */
     public com.google.protobuf.ByteString
@@ -643,7 +643,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://developers.google.com/identity/protocols/oauth2"
      * </pre>
      *
-     * <code>string uri = 1 [json_name = "uri"];</code>
+     * <code>string uri = 1;</code>
      * @param value The uri to set.
      * @return This builder for chaining.
      */
@@ -661,7 +661,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://developers.google.com/identity/protocols/oauth2"
      * </pre>
      *
-     * <code>string uri = 1 [json_name = "uri"];</code>
+     * <code>string uri = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearUri() {
@@ -676,7 +676,7 @@ private static final long serialVersionUID = 0L;
      * Example: "https://developers.google.com/identity/protocols/oauth2"
      * </pre>
      *
-     * <code>string uri = 1 [json_name = "uri"];</code>
+     * <code>string uri = 1;</code>
      * @param value The bytes for uri to set.
      * @return This builder for chaining.
      */
@@ -697,7 +697,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google OAuth 2.0 authentication"
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @return The description.
      */
     public java.lang.String getDescription() {
@@ -718,7 +718,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google OAuth 2.0 authentication"
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @return The bytes for description.
      */
     public com.google.protobuf.ByteString
@@ -740,7 +740,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google OAuth 2.0 authentication"
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @param value The description to set.
      * @return This builder for chaining.
      */
@@ -758,7 +758,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google OAuth 2.0 authentication"
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearDescription() {
@@ -773,7 +773,7 @@ private static final long serialVersionUID = 0L;
      * Example: "Google OAuth 2.0 authentication"
      * </pre>
      *
-     * <code>string description = 2 [json_name = "description"];</code>
+     * <code>string description = 2;</code>
      * @param value The bytes for description to set.
      * @return This builder for chaining.
      */
@@ -794,7 +794,7 @@ private static final long serialVersionUID = 0L;
      * Example: false
      * </pre>
      *
-     * <code>bool required = 3 [json_name = "required"];</code>
+     * <code>bool required = 3;</code>
      * @return The required.
      */
     @java.lang.Override
@@ -807,7 +807,7 @@ private static final long serialVersionUID = 0L;
      * Example: false
      * </pre>
      *
-     * <code>bool required = 3 [json_name = "required"];</code>
+     * <code>bool required = 3;</code>
      * @param value The required to set.
      * @return This builder for chaining.
      */
@@ -824,7 +824,7 @@ private static final long serialVersionUID = 0L;
      * Example: false
      * </pre>
      *
-     * <code>bool required = 3 [json_name = "required"];</code>
+     * <code>bool required = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearRequired() {
@@ -842,7 +842,7 @@ private static final long serialVersionUID = 0L;
      * Optional configuration for the extension.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+     * <code>.google.protobuf.Struct params = 4;</code>
      * @return Whether the params field is set.
      */
     public boolean hasParams() {
@@ -853,7 +853,7 @@ private static final long serialVersionUID = 0L;
      * Optional configuration for the extension.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+     * <code>.google.protobuf.Struct params = 4;</code>
      * @return The params.
      */
     public com.google.protobuf.Struct getParams() {
@@ -868,7 +868,7 @@ private static final long serialVersionUID = 0L;
      * Optional configuration for the extension.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+     * <code>.google.protobuf.Struct params = 4;</code>
      */
     public Builder setParams(com.google.protobuf.Struct value) {
       if (paramsBuilder_ == null) {
@@ -888,7 +888,7 @@ private static final long serialVersionUID = 0L;
      * Optional configuration for the extension.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+     * <code>.google.protobuf.Struct params = 4;</code>
      */
     public Builder setParams(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -906,7 +906,7 @@ private static final long serialVersionUID = 0L;
      * Optional configuration for the extension.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+     * <code>.google.protobuf.Struct params = 4;</code>
      */
     public Builder mergeParams(com.google.protobuf.Struct value) {
       if (paramsBuilder_ == null) {
@@ -931,7 +931,7 @@ private static final long serialVersionUID = 0L;
      * Optional configuration for the extension.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+     * <code>.google.protobuf.Struct params = 4;</code>
      */
     public Builder clearParams() {
       bitField0_ = (bitField0_ & ~0x00000008);
@@ -948,7 +948,7 @@ private static final long serialVersionUID = 0L;
      * Optional configuration for the extension.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+     * <code>.google.protobuf.Struct params = 4;</code>
      */
     public com.google.protobuf.Struct.Builder getParamsBuilder() {
       bitField0_ |= 0x00000008;
@@ -960,7 +960,7 @@ private static final long serialVersionUID = 0L;
      * Optional configuration for the extension.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+     * <code>.google.protobuf.Struct params = 4;</code>
      */
     public com.google.protobuf.StructOrBuilder getParamsOrBuilder() {
       if (paramsBuilder_ != null) {
@@ -975,7 +975,7 @@ private static final long serialVersionUID = 0L;
      * Optional configuration for the extension.
      * </pre>
      *
-     * <code>.google.protobuf.Struct params = 4 [json_name = "params"];</code>
+     * <code>.google.protobuf.Struct params = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 

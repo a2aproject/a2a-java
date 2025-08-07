@@ -15,7 +15,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * If the agent will support streaming responses
    * </pre>
    *
-   * <code>bool streaming = 1 [json_name = "streaming"];</code>
+   * <code>bool streaming = 1;</code>
    * @return The streaming.
    */
   boolean getStreaming();
@@ -25,7 +25,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * If the agent can send push notifications to the clients webhook
    * </pre>
    *
-   * <code>bool push_notifications = 2 [json_name = "pushNotifications"];</code>
+   * <code>bool push_notifications = 2;</code>
    * @return The pushNotifications.
    */
   boolean getPushNotifications();
@@ -35,7 +35,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   java.util.List<io.a2a.grpc.AgentExtension> 
       getExtensionsList();
@@ -44,7 +44,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   io.a2a.grpc.AgentExtension getExtensions(int index);
   /**
@@ -52,7 +52,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   int getExtensionsCount();
   /**
@@ -60,7 +60,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   java.util.List<? extends io.a2a.grpc.AgentExtensionOrBuilder> 
       getExtensionsOrBuilderList();
@@ -69,7 +69,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * Extensions supported by this agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3 [json_name = "extensions"];</code>
+   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
    */
   io.a2a.grpc.AgentExtensionOrBuilder getExtensionsOrBuilder(
       int index);

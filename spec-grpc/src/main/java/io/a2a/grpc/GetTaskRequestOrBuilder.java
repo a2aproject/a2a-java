@@ -15,7 +15,7 @@ public interface GetTaskRequestOrBuilder extends
    * name=tasks/{id}
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The name.
    */
   java.lang.String getName();
@@ -24,14 +24,14 @@ public interface GetTaskRequestOrBuilder extends
    * name=tasks/{id}
    * </pre>
    *
-   * <code>string name = 1 [json_name = "name", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString
       getNameBytes();
 
   /**
-   * <code>int32 history_length = 2 [json_name = "historyLength"];</code>
+   * <code>int32 history_length = 2;</code>
    * @return The historyLength.
    */
   int getHistoryLength();

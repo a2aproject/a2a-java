@@ -95,14 +95,14 @@ private static final long serialVersionUID = 0L;
 
   public static final int TEXT_FIELD_NUMBER = 1;
   /**
-   * <code>string text = 1 [json_name = "text"];</code>
+   * <code>string text = 1;</code>
    * @return Whether the text field is set.
    */
   public boolean hasText() {
     return partCase_ == 1;
   }
   /**
-   * <code>string text = 1 [json_name = "text"];</code>
+   * <code>string text = 1;</code>
    * @return The text.
    */
   public java.lang.String getText() {
@@ -123,7 +123,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string text = 1 [json_name = "text"];</code>
+   * <code>string text = 1;</code>
    * @return The bytes for text.
    */
   public com.google.protobuf.ByteString
@@ -147,7 +147,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int FILE_FIELD_NUMBER = 2;
   /**
-   * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+   * <code>.a2a.v1.FilePart file = 2;</code>
    * @return Whether the file field is set.
    */
   @java.lang.Override
@@ -155,7 +155,7 @@ private static final long serialVersionUID = 0L;
     return partCase_ == 2;
   }
   /**
-   * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+   * <code>.a2a.v1.FilePart file = 2;</code>
    * @return The file.
    */
   @java.lang.Override
@@ -166,7 +166,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.FilePart.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+   * <code>.a2a.v1.FilePart file = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.FilePartOrBuilder getFileOrBuilder() {
@@ -178,7 +178,7 @@ private static final long serialVersionUID = 0L;
 
   public static final int DATA_FIELD_NUMBER = 3;
   /**
-   * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+   * <code>.a2a.v1.DataPart data = 3;</code>
    * @return Whether the data field is set.
    */
   @java.lang.Override
@@ -186,7 +186,7 @@ private static final long serialVersionUID = 0L;
     return partCase_ == 3;
   }
   /**
-   * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+   * <code>.a2a.v1.DataPart data = 3;</code>
    * @return The data.
    */
   @java.lang.Override
@@ -197,7 +197,7 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.DataPart.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+   * <code>.a2a.v1.DataPart data = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.DataPartOrBuilder getDataOrBuilder() {
@@ -613,7 +613,7 @@ private static final long serialVersionUID = 0L;
     private int bitField0_;
 
     /**
-     * <code>string text = 1 [json_name = "text"];</code>
+     * <code>string text = 1;</code>
      * @return Whether the text field is set.
      */
     @java.lang.Override
@@ -621,7 +621,7 @@ private static final long serialVersionUID = 0L;
       return partCase_ == 1;
     }
     /**
-     * <code>string text = 1 [json_name = "text"];</code>
+     * <code>string text = 1;</code>
      * @return The text.
      */
     @java.lang.Override
@@ -643,7 +643,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string text = 1 [json_name = "text"];</code>
+     * <code>string text = 1;</code>
      * @return The bytes for text.
      */
     @java.lang.Override
@@ -666,7 +666,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string text = 1 [json_name = "text"];</code>
+     * <code>string text = 1;</code>
      * @param value The text to set.
      * @return This builder for chaining.
      */
@@ -679,7 +679,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string text = 1 [json_name = "text"];</code>
+     * <code>string text = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearText() {
@@ -691,7 +691,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string text = 1 [json_name = "text"];</code>
+     * <code>string text = 1;</code>
      * @param value The bytes for text to set.
      * @return This builder for chaining.
      */
@@ -708,7 +708,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.FilePart, io.a2a.grpc.FilePart.Builder, io.a2a.grpc.FilePartOrBuilder> fileBuilder_;
     /**
-     * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+     * <code>.a2a.v1.FilePart file = 2;</code>
      * @return Whether the file field is set.
      */
     @java.lang.Override
@@ -716,7 +716,7 @@ private static final long serialVersionUID = 0L;
       return partCase_ == 2;
     }
     /**
-     * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+     * <code>.a2a.v1.FilePart file = 2;</code>
      * @return The file.
      */
     @java.lang.Override
@@ -734,7 +734,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+     * <code>.a2a.v1.FilePart file = 2;</code>
      */
     public Builder setFile(io.a2a.grpc.FilePart value) {
       if (fileBuilder_ == null) {
@@ -750,7 +750,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+     * <code>.a2a.v1.FilePart file = 2;</code>
      */
     public Builder setFile(
         io.a2a.grpc.FilePart.Builder builderForValue) {
@@ -764,7 +764,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+     * <code>.a2a.v1.FilePart file = 2;</code>
      */
     public Builder mergeFile(io.a2a.grpc.FilePart value) {
       if (fileBuilder_ == null) {
@@ -787,7 +787,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+     * <code>.a2a.v1.FilePart file = 2;</code>
      */
     public Builder clearFile() {
       if (fileBuilder_ == null) {
@@ -806,13 +806,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+     * <code>.a2a.v1.FilePart file = 2;</code>
      */
     public io.a2a.grpc.FilePart.Builder getFileBuilder() {
       return internalGetFileFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+     * <code>.a2a.v1.FilePart file = 2;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.FilePartOrBuilder getFileOrBuilder() {
@@ -826,7 +826,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.FilePart file = 2 [json_name = "file"];</code>
+     * <code>.a2a.v1.FilePart file = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.FilePart, io.a2a.grpc.FilePart.Builder, io.a2a.grpc.FilePartOrBuilder> 
@@ -850,7 +850,7 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.DataPart, io.a2a.grpc.DataPart.Builder, io.a2a.grpc.DataPartOrBuilder> dataBuilder_;
     /**
-     * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+     * <code>.a2a.v1.DataPart data = 3;</code>
      * @return Whether the data field is set.
      */
     @java.lang.Override
@@ -858,7 +858,7 @@ private static final long serialVersionUID = 0L;
       return partCase_ == 3;
     }
     /**
-     * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+     * <code>.a2a.v1.DataPart data = 3;</code>
      * @return The data.
      */
     @java.lang.Override
@@ -876,7 +876,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+     * <code>.a2a.v1.DataPart data = 3;</code>
      */
     public Builder setData(io.a2a.grpc.DataPart value) {
       if (dataBuilder_ == null) {
@@ -892,7 +892,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+     * <code>.a2a.v1.DataPart data = 3;</code>
      */
     public Builder setData(
         io.a2a.grpc.DataPart.Builder builderForValue) {
@@ -906,7 +906,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+     * <code>.a2a.v1.DataPart data = 3;</code>
      */
     public Builder mergeData(io.a2a.grpc.DataPart value) {
       if (dataBuilder_ == null) {
@@ -929,7 +929,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+     * <code>.a2a.v1.DataPart data = 3;</code>
      */
     public Builder clearData() {
       if (dataBuilder_ == null) {
@@ -948,13 +948,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+     * <code>.a2a.v1.DataPart data = 3;</code>
      */
     public io.a2a.grpc.DataPart.Builder getDataBuilder() {
       return internalGetDataFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+     * <code>.a2a.v1.DataPart data = 3;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.DataPartOrBuilder getDataOrBuilder() {
@@ -968,7 +968,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.DataPart data = 3 [json_name = "data"];</code>
+     * <code>.a2a.v1.DataPart data = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.DataPart, io.a2a.grpc.DataPart.Builder, io.a2a.grpc.DataPartOrBuilder> 

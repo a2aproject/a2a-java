@@ -42,6 +42,89 @@
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>proto-google-common-protos</artifactId>
+        </dependency>
+
+        <!-- Annotation dependency for generated code -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
-    
+
+    <build>
+        <extensions>
+            <!--
+                Seems to be needed by the protobuf-maven-plugin.
+                Adding these extensions to the profile is not possible
+            -->
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>${os-maven-plugin.version}</version>
+            </extension>
+        </extensions>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>proto-compile</id>
+                <build>
+
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-clean-plugin</artifactId>
+                            <version>${maven-clean-plugin.version}</version>
+                            <executions>
+                                <execution>
+                                    <id>remove-generated-files</id>
+                                    <phase>initialize</phase>
+                                    <goals>
+                                        <goal>clean</goal>
+                                    </goals>
+                                    <configuration>
+                                        <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                        <filesets>
+                                            <fileset>
+                                                <directory>${project.basedir}/src/main/java/io/a2a/grpc</directory>
+                                                <followSymlinks>false</followSymlinks>
+                                                <includes>
+                                                    <include>*.java</include>
+                                                </includes>
+                                            </fileset>
+                                        </filesets>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <!-- Protocol Buffers Compiler Plugin -->
+                        <plugin>
+                            <groupId>org.xolstice.maven.plugins</groupId>
+                            <artifactId>protobuf-maven-plugin</artifactId>
+                            <version>${protobuf-maven-plugin.version}</version>
+                            <configuration>
+                                <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                                <pluginId>grpc-java</pluginId>
+                                <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                                <outputDirectory>src/main/java</outputDirectory>
+                                <clearOutputDirectory>false</clearOutputDirectory>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <goals>
+                                        <goal>compile</goal>
+                                        <goal>compile-custom</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </build>
+
+        </profile>
+    </profiles>
 </project>

@@ -53,7 +53,7 @@ private static final long serialVersionUID = 0L;
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The description.
    */
   @java.lang.Override
@@ -74,7 +74,7 @@ private static final long serialVersionUID = 0L;
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The bytes for description.
    */
   @java.lang.Override
@@ -99,7 +99,7 @@ private static final long serialVersionUID = 0L;
    * An object containing configuration information for the flow types supported
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+   * <code>.a2a.v1.OAuthFlows flows = 2;</code>
    * @return Whether the flows field is set.
    */
   @java.lang.Override
@@ -111,7 +111,7 @@ private static final long serialVersionUID = 0L;
    * An object containing configuration information for the flow types supported
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+   * <code>.a2a.v1.OAuthFlows flows = 2;</code>
    * @return The flows.
    */
   @java.lang.Override
@@ -123,7 +123,7 @@ private static final long serialVersionUID = 0L;
    * An object containing configuration information for the flow types supported
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+   * <code>.a2a.v1.OAuthFlows flows = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.OAuthFlowsOrBuilder getFlowsOrBuilder() {
@@ -475,7 +475,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return The description.
      */
     public java.lang.String getDescription() {
@@ -495,7 +495,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return The bytes for description.
      */
     public com.google.protobuf.ByteString
@@ -516,7 +516,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @param value The description to set.
      * @return This builder for chaining.
      */
@@ -533,7 +533,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearDescription() {
@@ -547,7 +547,7 @@ private static final long serialVersionUID = 0L;
      * Description of this security scheme.
      * </pre>
      *
-     * <code>string description = 1 [json_name = "description"];</code>
+     * <code>string description = 1;</code>
      * @param value The bytes for description to set.
      * @return This builder for chaining.
      */
@@ -569,7 +569,7 @@ private static final long serialVersionUID = 0L;
      * An object containing configuration information for the flow types supported
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
      * @return Whether the flows field is set.
      */
     public boolean hasFlows() {
@@ -580,7 +580,7 @@ private static final long serialVersionUID = 0L;
      * An object containing configuration information for the flow types supported
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
      * @return The flows.
      */
     public io.a2a.grpc.OAuthFlows getFlows() {
@@ -595,7 +595,7 @@ private static final long serialVersionUID = 0L;
      * An object containing configuration information for the flow types supported
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
      */
     public Builder setFlows(io.a2a.grpc.OAuthFlows value) {
       if (flowsBuilder_ == null) {
@@ -615,7 +615,7 @@ private static final long serialVersionUID = 0L;
      * An object containing configuration information for the flow types supported
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
      */
     public Builder setFlows(
         io.a2a.grpc.OAuthFlows.Builder builderForValue) {
@@ -633,7 +633,7 @@ private static final long serialVersionUID = 0L;
      * An object containing configuration information for the flow types supported
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
      */
     public Builder mergeFlows(io.a2a.grpc.OAuthFlows value) {
       if (flowsBuilder_ == null) {
@@ -658,7 +658,7 @@ private static final long serialVersionUID = 0L;
      * An object containing configuration information for the flow types supported
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
      */
     public Builder clearFlows() {
       bitField0_ = (bitField0_ & ~0x00000002);
@@ -675,7 +675,7 @@ private static final long serialVersionUID = 0L;
      * An object containing configuration information for the flow types supported
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
      */
     public io.a2a.grpc.OAuthFlows.Builder getFlowsBuilder() {
       bitField0_ |= 0x00000002;
@@ -687,7 +687,7 @@ private static final long serialVersionUID = 0L;
      * An object containing configuration information for the flow types supported
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
      */
     public io.a2a.grpc.OAuthFlowsOrBuilder getFlowsOrBuilder() {
       if (flowsBuilder_ != null) {
@@ -702,7 +702,7 @@ private static final long serialVersionUID = 0L;
      * An object containing configuration information for the flow types supported
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2 [json_name = "flows"];</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.OAuthFlows, io.a2a.grpc.OAuthFlows.Builder, io.a2a.grpc.OAuthFlowsOrBuilder> 

@@ -15,7 +15,7 @@ public interface OpenIdConnectSecuritySchemeOrBuilder extends
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The description.
    */
   java.lang.String getDescription();
@@ -24,7 +24,7 @@ public interface OpenIdConnectSecuritySchemeOrBuilder extends
    * Description of this security scheme.
    * </pre>
    *
-   * <code>string description = 1 [json_name = "description"];</code>
+   * <code>string description = 1;</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -36,7 +36,7 @@ public interface OpenIdConnectSecuritySchemeOrBuilder extends
    * metadata.
    * </pre>
    *
-   * <code>string open_id_connect_url = 2 [json_name = "openIdConnectUrl"];</code>
+   * <code>string open_id_connect_url = 2;</code>
    * @return The openIdConnectUrl.
    */
   java.lang.String getOpenIdConnectUrl();
@@ -46,7 +46,7 @@ public interface OpenIdConnectSecuritySchemeOrBuilder extends
    * metadata.
    * </pre>
    *
-   * <code>string open_id_connect_url = 2 [json_name = "openIdConnectUrl"];</code>
+   * <code>string open_id_connect_url = 2;</code>
    * @return The bytes for openIdConnectUrl.
    */
   com.google.protobuf.ByteString

@@ -53,7 +53,7 @@ private static final long serialVersionUID = 0L;
    * parent=tasks/{id}
    * </pre>
    *
-   * <code>string parent = 1 [json_name = "parent"];</code>
+   * <code>string parent = 1;</code>
    * @return The parent.
    */
   @java.lang.Override
@@ -74,7 +74,7 @@ private static final long serialVersionUID = 0L;
    * parent=tasks/{id}
    * </pre>
    *
-   * <code>string parent = 1 [json_name = "parent"];</code>
+   * <code>string parent = 1;</code>
    * @return The bytes for parent.
    */
   @java.lang.Override
@@ -101,7 +101,7 @@ private static final long serialVersionUID = 0L;
    * If unspecified, all configs will be returned.
    * </pre>
    *
-   * <code>int32 page_size = 2 [json_name = "pageSize"];</code>
+   * <code>int32 page_size = 2;</code>
    * @return The pageSize.
    */
   @java.lang.Override
@@ -122,7 +122,7 @@ private static final long serialVersionUID = 0L;
    * the page token.
    * </pre>
    *
-   * <code>string page_token = 3 [json_name = "pageToken"];</code>
+   * <code>string page_token = 3;</code>
    * @return The pageToken.
    */
   @java.lang.Override
@@ -148,7 +148,7 @@ private static final long serialVersionUID = 0L;
    * the page token.
    * </pre>
    *
-   * <code>string page_token = 3 [json_name = "pageToken"];</code>
+   * <code>string page_token = 3;</code>
    * @return The bytes for pageToken.
    */
   @java.lang.Override
@@ -513,7 +513,7 @@ private static final long serialVersionUID = 0L;
      * parent=tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent"];</code>
+     * <code>string parent = 1;</code>
      * @return The parent.
      */
     public java.lang.String getParent() {
@@ -533,7 +533,7 @@ private static final long serialVersionUID = 0L;
      * parent=tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent"];</code>
+     * <code>string parent = 1;</code>
      * @return The bytes for parent.
      */
     public com.google.protobuf.ByteString
@@ -554,7 +554,7 @@ private static final long serialVersionUID = 0L;
      * parent=tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent"];</code>
+     * <code>string parent = 1;</code>
      * @param value The parent to set.
      * @return This builder for chaining.
      */
@@ -571,7 +571,7 @@ private static final long serialVersionUID = 0L;
      * parent=tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent"];</code>
+     * <code>string parent = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearParent() {
@@ -585,7 +585,7 @@ private static final long serialVersionUID = 0L;
      * parent=tasks/{id}
      * </pre>
      *
-     * <code>string parent = 1 [json_name = "parent"];</code>
+     * <code>string parent = 1;</code>
      * @param value The bytes for parent to set.
      * @return This builder for chaining.
      */
@@ -607,7 +607,7 @@ private static final long serialVersionUID = 0L;
      * If unspecified, all configs will be returned.
      * </pre>
      *
-     * <code>int32 page_size = 2 [json_name = "pageSize"];</code>
+     * <code>int32 page_size = 2;</code>
      * @return The pageSize.
      */
     @java.lang.Override
@@ -621,7 +621,7 @@ private static final long serialVersionUID = 0L;
      * If unspecified, all configs will be returned.
      * </pre>
      *
-     * <code>int32 page_size = 2 [json_name = "pageSize"];</code>
+     * <code>int32 page_size = 2;</code>
      * @param value The pageSize to set.
      * @return This builder for chaining.
      */
@@ -639,7 +639,7 @@ private static final long serialVersionUID = 0L;
      * If unspecified, all configs will be returned.
      * </pre>
      *
-     * <code>int32 page_size = 2 [json_name = "pageSize"];</code>
+     * <code>int32 page_size = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearPageSize() {
@@ -660,7 +660,7 @@ private static final long serialVersionUID = 0L;
      * the page token.
      * </pre>
      *
-     * <code>string page_token = 3 [json_name = "pageToken"];</code>
+     * <code>string page_token = 3;</code>
      * @return The pageToken.
      */
     public java.lang.String getPageToken() {
@@ -685,7 +685,7 @@ private static final long serialVersionUID = 0L;
      * the page token.
      * </pre>
      *
-     * <code>string page_token = 3 [json_name = "pageToken"];</code>
+     * <code>string page_token = 3;</code>
      * @return The bytes for pageToken.
      */
     public com.google.protobuf.ByteString
@@ -711,7 +711,7 @@ private static final long serialVersionUID = 0L;
      * the page token.
      * </pre>
      *
-     * <code>string page_token = 3 [json_name = "pageToken"];</code>
+     * <code>string page_token = 3;</code>
      * @param value The pageToken to set.
      * @return This builder for chaining.
      */
@@ -733,7 +733,7 @@ private static final long serialVersionUID = 0L;
      * the page token.
      * </pre>
      *
-     * <code>string page_token = 3 [json_name = "pageToken"];</code>
+     * <code>string page_token = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearPageToken() {
@@ -752,7 +752,7 @@ private static final long serialVersionUID = 0L;
      * the page token.
      * </pre>
      *
-     * <code>string page_token = 3 [json_name = "pageToken"];</code>
+     * <code>string page_token = 3;</code>
      * @param value The bytes for pageToken to set.
      * @return This builder for chaining.
      */

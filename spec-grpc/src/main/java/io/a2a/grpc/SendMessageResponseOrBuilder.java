@@ -11,17 +11,17 @@ public interface SendMessageResponseOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.a2a.v1.Task task = 1 [json_name = "task"];</code>
+   * <code>.a2a.v1.Task task = 1;</code>
    * @return Whether the task field is set.
    */
   boolean hasTask();
   /**
-   * <code>.a2a.v1.Task task = 1 [json_name = "task"];</code>
+   * <code>.a2a.v1.Task task = 1;</code>
    * @return The task.
    */
   io.a2a.grpc.Task getTask();
   /**
-   * <code>.a2a.v1.Task task = 1 [json_name = "task"];</code>
+   * <code>.a2a.v1.Task task = 1;</code>
    */
   io.a2a.grpc.TaskOrBuilder getTaskOrBuilder();
 
