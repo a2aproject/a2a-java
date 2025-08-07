@@ -18,6 +18,7 @@ import io.a2a.grpc.StreamResponse;
 import io.a2a.spec.APIKeySecurityScheme;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentCardSignature;
 import io.a2a.spec.AgentExtension;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentProvider;
@@ -124,6 +125,9 @@ public class ProtoUtils {
                 builder.addAllSkills(agentCard.skills().stream().map(ToProto::agentSkill).collect(Collectors.toList()));
             }
             builder.setSupportsAuthenticatedExtendedCard(agentCard.supportsAuthenticatedExtendedCard());
+            if (agentCard.signatures() != null) {
+                builder.addAllSignatures(agentCard.signatures().stream().map(ToProto::agentCardSignature).collect(Collectors.toList()));
+            }
             return builder.build();
         }
 
@@ -394,6 +398,16 @@ public class ProtoUtils {
             }
             if (agentSkill.outputModes() != null) {
                 builder.addAllOutputModes(agentSkill.outputModes());
+            }
+            return builder.build();
+        }
+
+        private static io.a2a.grpc.AgentCardSignature agentCardSignature(AgentCardSignature agentCardSignature) {
+            io.a2a.grpc.AgentCardSignature.Builder builder = io.a2a.grpc.AgentCardSignature.newBuilder();
+            builder.setProtected(agentCardSignature.protectedHeader());
+            builder.setSignature(agentCardSignature.signature());
+            if (agentCardSignature.header() != null) {
+                builder.setHeader(struct(agentCardSignature.header()));
             }
             return builder.build();
         }
