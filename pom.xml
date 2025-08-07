@@ -281,7 +281,7 @@
         <module>examples/helloworld</module>
         <module>reference/grpc</module>
         <module>reference/jsonrpc</module>
-        <module>sdk-server-common</module>
+        <module>server-common</module>
         <module>spec</module>
         <module>spec-grpc</module>
         <module>tck</module>
