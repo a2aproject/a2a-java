@@ -279,6 +279,7 @@
         <module>client</module>
         <module>common</module>
         <module>examples/helloworld</module>
+        <module>reference/common</module>
         <module>reference/grpc</module>
         <module>reference/jsonrpc</module>
         <module>server-common</module>

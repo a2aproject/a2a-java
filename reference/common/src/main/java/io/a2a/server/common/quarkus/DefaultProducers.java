@@ -1,7 +1,4 @@
-package io.a2a.server.apps.quarkus;
-
-import java.util.ArrayList;
-import java.util.Collections;
+package io.a2a.server.common.quarkus;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Default;
@@ -9,11 +6,7 @@ import jakarta.ws.rs.Produces;
 
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.agentexecution.AgentExecutor;
-import io.a2a.server.agentexecution.RequestContext;
-import io.a2a.server.events.EventQueue;
-import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.JSONRPCError;
 import io.quarkus.arc.DefaultBean;
 
 /**
