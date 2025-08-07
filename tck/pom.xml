@@ -22,6 +22,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-reference-grpc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-jackson</artifactId>
             <scope>provided</scope>
