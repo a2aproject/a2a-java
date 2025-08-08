@@ -558,7 +558,7 @@ public class A2AClient {
         }
 
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
-        SSEEventListener sseEventListener = new SSEEventListener(eventHandler, errorHandler, failureHandler);
+        SSEEventListener sseEventListener = new SSEEventListener(eventHandler, failureHandler);
         SendStreamingMessageRequest sendStreamingMessageRequest = sendStreamingMessageRequestBuilder.build();
         try {
             A2AHttpClient.PostBuilder builder = createPostBuilder(sendStreamingMessageRequest);

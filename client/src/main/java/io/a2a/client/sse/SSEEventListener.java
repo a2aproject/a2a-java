@@ -15,13 +15,12 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 public class SSEEventListener {
     private static final Logger log = Logger.getLogger(SSEEventListener.class.getName());
     private final Consumer<StreamingEventKind> eventHandler;
-    private final Consumer<JSONRPCError> errorHandler;
-    private final Runnable failureHandler;
+    private final Consumer<Throwable> errorHandler;
 
-    public SSEEventListener(Consumer<StreamingEventKind> eventHandler, Consumer<JSONRPCError> errorHandler, Runnable failureHandler) {
+    public SSEEventListener(Consumer<StreamingEventKind> eventHandler,
+                            Consumer<Throwable> errorHandler) {
         this.eventHandler = eventHandler;
         this.errorHandler = errorHandler;
-        this.failureHandler = failureHandler;
     }
 
     public void onMessage(String message, Future<Void> completableFuture) {
@@ -33,7 +32,7 @@ public class SSEEventListener {
     }
 
     public void onError(Throwable throwable, Future<Void> future) {
-        failureHandler.run();
+        errorHandler.accept(throwable);
         future.cancel(true); // close SSE channel
     }
 
