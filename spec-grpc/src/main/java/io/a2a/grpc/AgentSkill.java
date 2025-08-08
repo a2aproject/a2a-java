@@ -47,6 +47,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.LazyStringArrayList.emptyList();
     outputModes_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
+    security_ = java.util.Collections.emptyList();
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -433,6 +434,87 @@ private static final long serialVersionUID = 0L;
     return outputModes_.getByteString(index);
   }
 
+  public static final int SECURITY_FIELD_NUMBER = 8;
+  @SuppressWarnings("serial")
+  private java.util.List<io.a2a.grpc.Security> security_;
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  @java.lang.Override
+  public java.util.List<io.a2a.grpc.Security> getSecurityList() {
+    return security_;
+  }
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
+      getSecurityOrBuilderList() {
+    return security_;
+  }
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  @java.lang.Override
+  public int getSecurityCount() {
+    return security_.size();
+  }
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  @java.lang.Override
+  public io.a2a.grpc.Security getSecurity(int index) {
+    return security_.get(index);
+  }
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  @java.lang.Override
+  public io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
+      int index) {
+    return security_.get(index);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -467,6 +549,9 @@ private static final long serialVersionUID = 0L;
     }
     for (int i = 0; i < outputModes_.size(); i++) {
       com.google.protobuf.GeneratedMessage.writeString(output, 7, outputModes_.getRaw(i));
+    }
+    for (int i = 0; i < security_.size(); i++) {
+      output.writeMessage(8, security_.get(i));
     }
     getUnknownFields().writeTo(output);
   }
@@ -518,6 +603,10 @@ private static final long serialVersionUID = 0L;
       size += dataSize;
       size += 1 * getOutputModesList().size();
     }
+    for (int i = 0; i < security_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(8, security_.get(i));
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -547,6 +636,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getInputModesList())) return false;
     if (!getOutputModesList()
         .equals(other.getOutputModesList())) return false;
+    if (!getSecurityList()
+        .equals(other.getSecurityList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -579,6 +670,10 @@ private static final long serialVersionUID = 0L;
     if (getOutputModesCount() > 0) {
       hash = (37 * hash) + OUTPUT_MODES_FIELD_NUMBER;
       hash = (53 * hash) + getOutputModesList().hashCode();
+    }
+    if (getSecurityCount() > 0) {
+      hash = (37 * hash) + SECURITY_FIELD_NUMBER;
+      hash = (53 * hash) + getSecurityList().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -730,6 +825,13 @@ private static final long serialVersionUID = 0L;
           com.google.protobuf.LazyStringArrayList.emptyList();
       outputModes_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
+      if (securityBuilder_ == null) {
+        security_ = java.util.Collections.emptyList();
+      } else {
+        security_ = null;
+        securityBuilder_.clear();
+      }
+      bitField0_ = (bitField0_ & ~0x00000080);
       return this;
     }
 
@@ -756,9 +858,22 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public io.a2a.grpc.AgentSkill buildPartial() {
       io.a2a.grpc.AgentSkill result = new io.a2a.grpc.AgentSkill(this);
+      buildPartialRepeatedFields(result);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
+    }
+
+    private void buildPartialRepeatedFields(io.a2a.grpc.AgentSkill result) {
+      if (securityBuilder_ == null) {
+        if (((bitField0_ & 0x00000080) != 0)) {
+          security_ = java.util.Collections.unmodifiableList(security_);
+          bitField0_ = (bitField0_ & ~0x00000080);
+        }
+        result.security_ = security_;
+      } else {
+        result.security_ = securityBuilder_.build();
+      }
     }
 
     private void buildPartial0(io.a2a.grpc.AgentSkill result) {
@@ -857,6 +972,32 @@ private static final long serialVersionUID = 0L;
         }
         onChanged();
       }
+      if (securityBuilder_ == null) {
+        if (!other.security_.isEmpty()) {
+          if (security_.isEmpty()) {
+            security_ = other.security_;
+            bitField0_ = (bitField0_ & ~0x00000080);
+          } else {
+            ensureSecurityIsMutable();
+            security_.addAll(other.security_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.security_.isEmpty()) {
+          if (securityBuilder_.isEmpty()) {
+            securityBuilder_.dispose();
+            securityBuilder_ = null;
+            security_ = other.security_;
+            bitField0_ = (bitField0_ & ~0x00000080);
+            securityBuilder_ = 
+              com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                 internalGetSecurityFieldBuilder() : null;
+          } else {
+            securityBuilder_.addAllMessages(other.security_);
+          }
+        }
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -922,6 +1063,19 @@ private static final long serialVersionUID = 0L;
               outputModes_.add(s);
               break;
             } // case 58
+            case 66: {
+              io.a2a.grpc.Security m =
+                  input.readMessage(
+                      io.a2a.grpc.Security.parser(),
+                      extensionRegistry);
+              if (securityBuilder_ == null) {
+                ensureSecurityIsMutable();
+                security_.add(m);
+              } else {
+                securityBuilder_.addMessage(m);
+              }
+              break;
+            } // case 66
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1842,6 +1996,390 @@ private static final long serialVersionUID = 0L;
       bitField0_ |= 0x00000040;
       onChanged();
       return this;
+    }
+
+    private java.util.List<io.a2a.grpc.Security> security_ =
+      java.util.Collections.emptyList();
+    private void ensureSecurityIsMutable() {
+      if (!((bitField0_ & 0x00000080) != 0)) {
+        security_ = new java.util.ArrayList<io.a2a.grpc.Security>(security_);
+        bitField0_ |= 0x00000080;
+       }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilder<
+        io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder> securityBuilder_;
+
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public java.util.List<io.a2a.grpc.Security> getSecurityList() {
+      if (securityBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(security_);
+      } else {
+        return securityBuilder_.getMessageList();
+      }
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public int getSecurityCount() {
+      if (securityBuilder_ == null) {
+        return security_.size();
+      } else {
+        return securityBuilder_.getCount();
+      }
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public io.a2a.grpc.Security getSecurity(int index) {
+      if (securityBuilder_ == null) {
+        return security_.get(index);
+      } else {
+        return securityBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public Builder setSecurity(
+        int index, io.a2a.grpc.Security value) {
+      if (securityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureSecurityIsMutable();
+        security_.set(index, value);
+        onChanged();
+      } else {
+        securityBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public Builder setSecurity(
+        int index, io.a2a.grpc.Security.Builder builderForValue) {
+      if (securityBuilder_ == null) {
+        ensureSecurityIsMutable();
+        security_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        securityBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public Builder addSecurity(io.a2a.grpc.Security value) {
+      if (securityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureSecurityIsMutable();
+        security_.add(value);
+        onChanged();
+      } else {
+        securityBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public Builder addSecurity(
+        int index, io.a2a.grpc.Security value) {
+      if (securityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureSecurityIsMutable();
+        security_.add(index, value);
+        onChanged();
+      } else {
+        securityBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public Builder addSecurity(
+        io.a2a.grpc.Security.Builder builderForValue) {
+      if (securityBuilder_ == null) {
+        ensureSecurityIsMutable();
+        security_.add(builderForValue.build());
+        onChanged();
+      } else {
+        securityBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public Builder addSecurity(
+        int index, io.a2a.grpc.Security.Builder builderForValue) {
+      if (securityBuilder_ == null) {
+        ensureSecurityIsMutable();
+        security_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        securityBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public Builder addAllSecurity(
+        java.lang.Iterable<? extends io.a2a.grpc.Security> values) {
+      if (securityBuilder_ == null) {
+        ensureSecurityIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, security_);
+        onChanged();
+      } else {
+        securityBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public Builder clearSecurity() {
+      if (securityBuilder_ == null) {
+        security_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000080);
+        onChanged();
+      } else {
+        securityBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public Builder removeSecurity(int index) {
+      if (securityBuilder_ == null) {
+        ensureSecurityIsMutable();
+        security_.remove(index);
+        onChanged();
+      } else {
+        securityBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public io.a2a.grpc.Security.Builder getSecurityBuilder(
+        int index) {
+      return internalGetSecurityFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
+        int index) {
+      if (securityBuilder_ == null) {
+        return security_.get(index);  } else {
+        return securityBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
+         getSecurityOrBuilderList() {
+      if (securityBuilder_ != null) {
+        return securityBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(security_);
+      }
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public io.a2a.grpc.Security.Builder addSecurityBuilder() {
+      return internalGetSecurityFieldBuilder().addBuilder(
+          io.a2a.grpc.Security.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public io.a2a.grpc.Security.Builder addSecurityBuilder(
+        int index) {
+      return internalGetSecurityFieldBuilder().addBuilder(
+          index, io.a2a.grpc.Security.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+     * Security schemes necessary for the agent to leverage this skill.
+     * As in the overall AgentCard.security, this list represents a logical OR of
+     * security requirement objects. Each object is a set of security schemes
+     * that must be used together (a logical AND).
+     * </pre>
+     *
+     * <code>repeated .a2a.v1.Security security = 8;</code>
+     */
+    public java.util.List<io.a2a.grpc.Security.Builder> 
+         getSecurityBuilderList() {
+      return internalGetSecurityFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilder<
+        io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder> 
+        internalGetSecurityFieldBuilder() {
+      if (securityBuilder_ == null) {
+        securityBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+            io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder>(
+                security_,
+                ((bitField0_ & 0x00000080) != 0),
+                getParentForChildren(),
+                isClean());
+        security_ = null;
+      }
+      return securityBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.AgentSkill)

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * Configuration for the OAuth Authorization Code flow.
+ * Defines configuration details for the OAuth 2.0 Authorization Code flow.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

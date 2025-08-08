@@ -2,7 +2,6 @@ package io.a2a.spec;
 
 import static io.a2a.util.Utils.defaultIfNull;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -15,7 +14,8 @@ import io.a2a.util.Assert;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permits SendStreamingMessageResponse,
         GetTaskResponse, CancelTaskResponse, SetTaskPushNotificationConfigResponse, GetTaskPushNotificationConfigResponse,
-        SendMessageResponse, DeleteTaskPushNotificationConfigResponse, ListTaskPushNotificationConfigResponse, JSONRPCErrorResponse {
+        SendMessageResponse, DeleteTaskPushNotificationConfigResponse, ListTaskPushNotificationConfigResponse, JSONRPCErrorResponse,
+        GetAuthenticatedExtendedCardResponse {
 
     protected String jsonrpc;
     protected Object id;

@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * Used to specify parameters when creating a message.
+ * Defines the parameters for a request to send a message to an agent. This can be used
+ * to create a new task, continue an existing one, or restart a task.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -251,4 +251,68 @@ public interface AgentSkillOrBuilder extends
    */
   com.google.protobuf.ByteString
       getOutputModesBytes(int index);
+
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  java.util.List<io.a2a.grpc.Security> 
+      getSecurityList();
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  io.a2a.grpc.Security getSecurity(int index);
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  int getSecurityCount();
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
+      getSecurityOrBuilderList();
+  /**
+   * <pre>
+   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * Security schemes necessary for the agent to leverage this skill.
+   * As in the overall AgentCard.security, this list represents a logical OR of
+   * security requirement objects. Each object is a set of security schemes
+   * that must be used together (a logical AND).
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.Security security = 8;</code>
+   */
+  io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
+      int index);
 }

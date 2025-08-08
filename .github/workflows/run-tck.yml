@@ -12,7 +12,7 @@ on:
 
 env:
   # Tag of the TCK
-  TCK_VERSION: v0.2.5
+  TCK_VERSION: v0.3.0
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
 
@@ -57,7 +57,7 @@ jobs:
         working-directory: tck
       - name: Wait for SUT to start
         run: |
-          URL="http://localhost:9999/.well-known/agent.json"
+          URL="http://localhost:9999/.well-known/agent-card.json"
           EXPECTED_STATUS=200
           TIMEOUT=120
           RETRY_INTERVAL=2

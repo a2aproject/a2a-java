@@ -8,23 +8,28 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * An A2A-specific error indicating an incompatibility between the requested
- * content types and the agent's capabilities.
+ * An A2A-specific error indicating that the agent does not have an
+ * Authenticated Extended Card configured
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ContentTypeNotSupportedError extends JSONRPCError {
+public class AuthenticatedExtendedCardNotConfiguredError extends JSONRPCError {
 
-    public final static Integer DEFAULT_CODE = -32005;
+    public final static Integer DEFAULT_CODE = -32007;
 
     @JsonCreator
-    public ContentTypeNotSupportedError(
+    public AuthenticatedExtendedCardNotConfiguredError(
             @JsonProperty("code") Integer code,
             @JsonProperty("message") String message,
             @JsonProperty("data") Object data) {
         super(
                 defaultIfNull(code, DEFAULT_CODE),
-                defaultIfNull(message, "Incompatible content types"),
+                defaultIfNull(message, "Authenticated Extended Card not configured"),
                 data);
     }
+
+    public AuthenticatedExtendedCardNotConfiguredError() {
+        this(null, null, null);
+    }
+
 }

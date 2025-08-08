@@ -8,10 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * Represents the configuration of the message to be sent.
- *
- * If {@code blocking} is true, {@code pushNotification} is ignored.
- * Both {@code blocking} and {@code pushNotification} are ignored in streaming interactions.
+ * Defines configuration options for a `message/send` or `message/stream` request.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -19,7 +16,6 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
                                        PushNotificationConfig pushNotification, boolean blocking) {
 
     public MessageSendConfiguration {
-        Assert.checkNotNullParam("acceptedOutputModes", acceptedOutputModes);
         if (historyLength != null && historyLength < 0) {
             throw new IllegalArgumentException("Invalid history length");
         }
