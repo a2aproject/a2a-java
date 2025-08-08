@@ -15,8 +15,7 @@ import io.a2a.client.ClientCallInterceptor;
 import io.a2a.client.PayloadAndHeaders;
 import io.a2a.grpc.CancelTaskRequest;
 import io.a2a.grpc.GetTaskRequest;
-import io.a2a.grpc.SendMessageRequest;
-import io.a2a.grpc.utils.ProtoUtils;
+import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.http.A2AHttpClient;
 import io.a2a.http.A2AHttpResponse;
 import io.a2a.http.JdkA2AHttpClient;
@@ -30,14 +29,14 @@ import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
-import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
+import io.a2a.grpc.utils.ProtoUtils;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class JSONRestTransport extends ClientTransport {
+public class JSONRestTransport implements ClientTransport {
 
     private final A2AHttpClient httpClient;
     private final String agentUrl;
@@ -63,7 +62,7 @@ public class JSONRestTransport extends ClientTransport {
     @Override
     public EventKind sendMessage(MessageSendParams messageSendParams, ClientCallContext context) throws A2AClientException {
         checkNotNullParam("messageSendParams", messageSendParams);
-        SendMessageRequest.Builder builder = SendMessageRequest.newBuilder();
+        io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder();
         builder.setRequest(ProtoUtils.ToProto.message(messageSendParams.message()));
         if (messageSendParams.configuration() != null) {
             builder.setConfiguration(ProtoUtils.ToProto.messageSendConfiguration(messageSendParams.configuration()));
