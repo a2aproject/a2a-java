@@ -453,7 +453,6 @@ public class JSONRPCTransportTest {
                                 .withStatusCode(200)
                                 .withBody(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE)
                 );
-
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         AgentCard agentCard = client.getAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
@@ -581,7 +580,6 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-
         Map<String, Object> data = new HashMap<>();
         data.put("temperature", 25.5);
         data.put("humidity", 60.2);

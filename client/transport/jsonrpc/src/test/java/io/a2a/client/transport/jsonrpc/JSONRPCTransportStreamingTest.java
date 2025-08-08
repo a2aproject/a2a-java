@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;

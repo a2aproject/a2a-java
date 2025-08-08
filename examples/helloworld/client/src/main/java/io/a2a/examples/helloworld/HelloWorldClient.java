@@ -10,7 +10,6 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
-import io.a2a.spec.SendMessageResponse;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
 
