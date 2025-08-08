@@ -1,4 +1,0 @@
-releaseType: maven
-handleGHRelease: true
-bumpMinorPreMajor: false
-bumpPatchForMinorPreMajor: true
