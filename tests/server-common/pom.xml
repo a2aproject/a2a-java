@@ -53,6 +53,12 @@
             <artifactId>quarkus-arc</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
+            <version>0.2.6.Beta1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

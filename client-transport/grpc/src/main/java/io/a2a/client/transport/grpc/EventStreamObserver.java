@@ -47,7 +47,9 @@ public class EventStreamObserver implements StreamObserver<StreamResponse> {
 
     @Override
     public void onError(Throwable t) {
-        errorHandler.accept(t);
+        if (errorHandler != null) {
+            errorHandler.accept(t);
+        }
     }
 
     @Override

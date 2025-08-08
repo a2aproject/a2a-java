@@ -1,19 +1,30 @@
 package io.a2a.client.transport.jsonrpc;
 
+import static io.a2a.util.Assert.checkNotNullParam;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import io.a2a.client.A2ACardResolver;
+import io.a2a.client.config.ClientCallContext;
+import io.a2a.client.config.ClientCallInterceptor;
+import io.a2a.client.config.PayloadAndHeaders;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.client.http.JdkA2AHttpClient;
-import io.a2a.client.transport.jsonrpc.sse.SSEEventListener;
 import io.a2a.client.transport.spi.ClientTransport;
-import io.a2a.spec.A2AServerException;
+import io.a2a.spec.A2AClientError;
+import io.a2a.spec.A2AClientException;
+import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.CancelTaskResponse;
+
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
-import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
-import io.a2a.spec.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
@@ -23,11 +34,13 @@ import io.a2a.spec.GetTaskResponse;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.JSONRPCMessage;
 import io.a2a.spec.JSONRPCResponse;
+
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigResponse;
+import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
+import io.a2a.spec.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.spec.MessageSendParams;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.SendMessageRequest;
 import io.a2a.spec.SendMessageResponse;
 import io.a2a.spec.SendStreamingMessageRequest;
@@ -39,13 +52,11 @@ import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskResubscriptionRequest;
-import io.a2a.util.Utils;
-
-import java.io.IOException;
-import java.util.List;
+import io.a2a.client.transport.jsonrpc.sse.SSEEventListener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
+
+import io.a2a.util.Utils;
 
 public class JSONRPCTransport implements ClientTransport {
 
@@ -56,228 +67,320 @@ public class JSONRPCTransport implements ClientTransport {
     private static final TypeReference<SetTaskPushNotificationConfigResponse> SET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<ListTaskPushNotificationConfigResponse> LIST_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<DeleteTaskPushNotificationConfigResponse> DELETE_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
+    // TODO: Uncomment once support for v0.3.0 has been merged
+    //private static final TypeReference<GetAuthenticatedExtendedCardResponse> GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE = new TypeReference<>() {};
 
-    private final String agentUrl;
     private final A2AHttpClient httpClient;
+    private final String agentUrl;
+    private final List<ClientCallInterceptor> interceptors;
+    private AgentCard agentCard;
 
     public JSONRPCTransport(String agentUrl) {
-        this(agentUrl, new JdkA2AHttpClient());
+        this(null, null, agentUrl, null);
     }
 
-    public JSONRPCTransport(String agentUrl, A2AHttpClient httpClient) {
+    public JSONRPCTransport(AgentCard agentCard) {
+        this(null, agentCard, agentCard.url(), null);
+    }
+
+    public JSONRPCTransport(A2AHttpClient httpClient, AgentCard agentCard,
+                            String agentUrl, List<ClientCallInterceptor> interceptors) {
+        this.httpClient = httpClient == null ? new JdkA2AHttpClient() : httpClient;
+        this.agentCard = agentCard;
         this.agentUrl = agentUrl;
-        this.httpClient = httpClient;
+        this.interceptors = interceptors;
     }
 
     @Override
-    public EventKind sendMessage(String requestId, MessageSendParams messageSendParams) throws A2AServerException {
-        SendMessageRequest.Builder sendMessageRequestBuilder = new SendMessageRequest.Builder()
+    public EventKind sendMessage(MessageSendParams request, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        SendMessageRequest sendMessageRequest = new SendMessageRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
                 .method(SendMessageRequest.METHOD)
-                .params(messageSendParams);
+                .params(request)
+                .build(); // id will be randomly generated
 
-        if (requestId != null) {
-            sendMessageRequestBuilder.id(requestId);
-        }
-
-        SendMessageRequest sendMessageRequest = sendMessageRequestBuilder.build();
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(SendMessageRequest.METHOD, sendMessageRequest,
+                agentCard, context);
 
         try {
-            String httpResponseBody = sendPostRequest(sendMessageRequest);
-            return unmarshalResponse(httpResponseBody, SEND_MESSAGE_RESPONSE_REFERENCE).getResult();
+            String httpResponseBody = sendPostRequest(payloadAndHeaders);
+            SendMessageResponse response = unmarshalResponse(httpResponseBody, SEND_MESSAGE_RESPONSE_REFERENCE);
+            return response.getResult();
+        } catch (A2AClientException e) {
+            throw e;
         } catch (IOException | InterruptedException e) {
-            throw new A2AServerException("Failed to send message: " + e, e.getCause());
+            throw new A2AClientException("Failed to send message: " + e, e);
         }
     }
 
     @Override
-    public Task getTask(String requestId, TaskQueryParams taskQueryParams) throws A2AServerException {
-        GetTaskRequest.Builder getTaskRequestBuilder = new GetTaskRequest.Builder()
-                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                .method(GetTaskRequest.METHOD)
-                .params(taskQueryParams);
-
-        if (requestId != null) {
-            getTaskRequestBuilder.id(requestId);
-        }
-
-        GetTaskRequest getTaskRequest = getTaskRequestBuilder.build();
-
-        try {
-            String httpResponseBody = sendPostRequest(getTaskRequest);
-            return unmarshalResponse(httpResponseBody, GET_TASK_RESPONSE_REFERENCE).getResult();
-        } catch (IOException | InterruptedException e) {
-            throw new A2AServerException("Failed to get task: " + e, e.getCause());
-        }
-    }
-
-    @Override
-    public Task cancelTask(String requestId, TaskIdParams taskIdParams) throws A2AServerException {
-        CancelTaskRequest.Builder cancelTaskRequestBuilder = new CancelTaskRequest.Builder()
-                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                .method(CancelTaskRequest.METHOD)
-                .params(taskIdParams);
-
-        if (requestId != null) {
-            cancelTaskRequestBuilder.id(requestId);
-        }
-
-        CancelTaskRequest cancelTaskRequest = cancelTaskRequestBuilder.build();
-
-        try {
-            String httpResponseBody = sendPostRequest(cancelTaskRequest);
-            return unmarshalResponse(httpResponseBody, CANCEL_TASK_RESPONSE_REFERENCE).getResult();
-        } catch (IOException | InterruptedException e) {
-            throw new A2AServerException("Failed to cancel task: " + e, e.getCause());
-        }
-    }
-
-    @Override
-    public TaskPushNotificationConfig getTaskPushNotificationConfig(String requestId, GetTaskPushNotificationConfigParams getTaskPushNotificationConfigParams) throws A2AServerException {
-        GetTaskPushNotificationConfigRequest.Builder getTaskPushNotificationRequestBuilder = new GetTaskPushNotificationConfigRequest.Builder()
-                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                .method(GetTaskPushNotificationConfigRequest.METHOD)
-                .params(getTaskPushNotificationConfigParams);
-
-        if (requestId != null) {
-            getTaskPushNotificationRequestBuilder.id(requestId);
-        }
-
-        GetTaskPushNotificationConfigRequest getTaskPushNotificationRequest = getTaskPushNotificationRequestBuilder.build();
-
-        try {
-            String httpResponseBody = sendPostRequest(getTaskPushNotificationRequest);
-            return unmarshalResponse(httpResponseBody, GET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE).getResult();
-        } catch (IOException | InterruptedException e) {
-            throw new A2AServerException("Failed to get task push notification config: " + e, e.getCause());
-        }
-    }
-
-    @Override
-    public TaskPushNotificationConfig setTaskPushNotificationConfig(String requestId, String taskId, PushNotificationConfig pushNotificationConfig) throws A2AServerException {
-        SetTaskPushNotificationConfigRequest.Builder setTaskPushNotificationRequestBuilder = new SetTaskPushNotificationConfigRequest.Builder()
-                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                .method(SetTaskPushNotificationConfigRequest.METHOD)
-                .params(new TaskPushNotificationConfig(taskId, pushNotificationConfig));
-
-        if (requestId != null) {
-            setTaskPushNotificationRequestBuilder.id(requestId);
-        }
-
-        SetTaskPushNotificationConfigRequest setTaskPushNotificationRequest = setTaskPushNotificationRequestBuilder.build();
-
-        try {
-            String httpResponseBody = sendPostRequest(setTaskPushNotificationRequest);
-            return unmarshalResponse(httpResponseBody, SET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE).getResult();
-        } catch (IOException | InterruptedException e) {
-            throw new A2AServerException("Failed to set task push notification config: " + e, e.getCause());
-        }
-    }
-
-    @Override
-    public List<TaskPushNotificationConfig> listTaskPushNotificationConfig(String requestId, ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams) throws A2AServerException {
-        ListTaskPushNotificationConfigRequest.Builder listTaskPushNotificationRequestBuilder = new ListTaskPushNotificationConfigRequest.Builder()
-                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                .method(ListTaskPushNotificationConfigRequest.METHOD)
-                .params(listTaskPushNotificationConfigParams);
-
-        if (requestId != null) {
-            listTaskPushNotificationRequestBuilder.id(requestId);
-        }
-
-        ListTaskPushNotificationConfigRequest listTaskPushNotificationRequest = listTaskPushNotificationRequestBuilder.build();
-
-        try {
-            String httpResponseBody = sendPostRequest(listTaskPushNotificationRequest);
-            return unmarshalResponse(httpResponseBody, LIST_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE).getResult();
-        } catch (IOException | InterruptedException e) {
-            throw new A2AServerException("Failed to list task push notification config: " + e, e.getCause());
-        }
-    }
-
-    @Override
-    public void deleteTaskPushNotificationConfig(String requestId, DeleteTaskPushNotificationConfigParams deleteTaskPushNotificationConfigParams) throws A2AServerException {
-        DeleteTaskPushNotificationConfigRequest.Builder deleteTaskPushNotificationRequestBuilder = new DeleteTaskPushNotificationConfigRequest.Builder()
-                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                .method(DeleteTaskPushNotificationConfigRequest.METHOD)
-                .params(deleteTaskPushNotificationConfigParams);
-
-        if (requestId != null) {
-            deleteTaskPushNotificationRequestBuilder.id(requestId);
-        }
-
-        DeleteTaskPushNotificationConfigRequest deleteTaskPushNotificationRequest = deleteTaskPushNotificationRequestBuilder.build();
-
-        try {
-            String httpResponseBody = sendPostRequest(deleteTaskPushNotificationRequest);
-            unmarshalResponse(httpResponseBody, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE);
-        } catch (IOException | InterruptedException e) {
-            throw new A2AServerException("Failed to delete task push notification config: " + e, e.getCause());
-        }
-    }
-
-    @Override
-    public void sendStreamingMessage(String requestId, MessageSendParams messageSendParams, Consumer<StreamingEventKind> eventHandler, Consumer<JSONRPCError> errorHandler, Runnable failureHandler) throws A2AServerException {
-        SendStreamingMessageRequest.Builder sendStreamingMessageRequestBuilder = new SendStreamingMessageRequest.Builder()
+    public void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer,
+                                     Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        checkNotNullParam("eventConsumer", eventConsumer);
+        SendStreamingMessageRequest sendStreamingMessageRequest = new SendStreamingMessageRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
                 .method(SendStreamingMessageRequest.METHOD)
-                .params(messageSendParams);
+                .params(request)
+                .build(); // id will be randomly generated
 
-        if (requestId != null) {
-            sendStreamingMessageRequestBuilder.id(requestId);
-        }
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(SendStreamingMessageRequest.METHOD,
+                sendStreamingMessageRequest, agentCard, context);
 
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
-        SSEEventListener sseEventListener = new SSEEventListener(eventHandler, errorHandler, failureHandler);
-        SendStreamingMessageRequest sendStreamingMessageRequest = sendStreamingMessageRequestBuilder.build();
+        SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
+
         try {
-            A2AHttpClient.PostBuilder builder = createPostBuilder(sendStreamingMessageRequest);
+            A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders);
             ref.set(builder.postAsyncSSE(
                     msg -> sseEventListener.onMessage(msg, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // We don't need to do anything special on completion
                     }));
-
         } catch (IOException e) {
-            throw new A2AServerException("Failed to send streaming message request: " + e, e.getCause());
+            throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
-            throw new A2AServerException("Send streaming message request timed out: " + e, e.getCause());
+            throw new A2AClientException("Send streaming message request timed out: " + e, e);
         }
     }
 
     @Override
-    public void resubscribeToTask(String requestId, TaskIdParams taskIdParams, Consumer<StreamingEventKind> eventHandler, Consumer<JSONRPCError> errorHandler, Runnable failureHandler) throws A2AServerException {
-        TaskResubscriptionRequest.Builder taskResubscriptionRequestBuilder = new TaskResubscriptionRequest.Builder()
+    public Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        GetTaskRequest getTaskRequest = new GetTaskRequest.Builder()
+                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                .method(GetTaskRequest.METHOD)
+                .params(request)
+                .build(); // id will be randomly generated
+
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetTaskRequest.METHOD, getTaskRequest,
+                agentCard, context);
+
+        try {
+            String httpResponseBody = sendPostRequest(payloadAndHeaders);
+            GetTaskResponse response = unmarshalResponse(httpResponseBody, GET_TASK_RESPONSE_REFERENCE);
+            return response.getResult();
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to get task: " + e, e);
+        }
+    }
+
+    @Override
+    public Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        CancelTaskRequest cancelTaskRequest = new CancelTaskRequest.Builder()
+                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                .method(CancelTaskRequest.METHOD)
+                .params(request)
+                .build(); // id will be randomly generated
+
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(CancelTaskRequest.METHOD, cancelTaskRequest,
+                agentCard, context);
+
+        try {
+            String httpResponseBody = sendPostRequest(payloadAndHeaders);
+            CancelTaskResponse response = unmarshalResponse(httpResponseBody, CANCEL_TASK_RESPONSE_REFERENCE);
+            return response.getResult();
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to cancel task: " + e, e);
+        }
+    }
+
+    @Override
+    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
+                                                                           ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        SetTaskPushNotificationConfigRequest setTaskPushNotificationRequest = new SetTaskPushNotificationConfigRequest.Builder()
+                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                .method(SetTaskPushNotificationConfigRequest.METHOD)
+                .params(request)
+                .build(); // id will be randomly generated
+
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(SetTaskPushNotificationConfigRequest.METHOD,
+                setTaskPushNotificationRequest, agentCard, context);
+
+        try {
+            String httpResponseBody = sendPostRequest(payloadAndHeaders);
+            SetTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody,
+                    SET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE);
+            return response.getResult();
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to set task push notification config: " + e, e);
+        }
+    }
+
+    @Override
+    public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request,
+                                                                           ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        GetTaskPushNotificationConfigRequest getTaskPushNotificationRequest = new GetTaskPushNotificationConfigRequest.Builder()
+                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                .method(GetTaskPushNotificationConfigRequest.METHOD)
+                .params(request)
+                .build(); // id will be randomly generated
+
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetTaskPushNotificationConfigRequest.METHOD,
+                getTaskPushNotificationRequest, agentCard, context);
+
+        try {
+            String httpResponseBody = sendPostRequest(payloadAndHeaders);
+            GetTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody,
+                    GET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE);
+            return response.getResult();
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to get task push notification config: " + e, e);
+        }
+    }
+
+    @Override
+    public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+            ListTaskPushNotificationConfigParams request,
+            ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        ListTaskPushNotificationConfigRequest listTaskPushNotificationRequest = new ListTaskPushNotificationConfigRequest.Builder()
+                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                .method(ListTaskPushNotificationConfigRequest.METHOD)
+                .params(request)
+                .build(); // id will be randomly generated
+
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(ListTaskPushNotificationConfigRequest.METHOD,
+                listTaskPushNotificationRequest, agentCard, context);
+
+        try {
+            String httpResponseBody = sendPostRequest(payloadAndHeaders);
+            ListTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody,
+                    LIST_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE);
+            return response.getResult();
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to list task push notification configs: " + e, e);
+        }
+    }
+
+    @Override
+    public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request,
+                                                         ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        DeleteTaskPushNotificationConfigRequest deleteTaskPushNotificationRequest = new DeleteTaskPushNotificationConfigRequest.Builder()
+                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                .method(DeleteTaskPushNotificationConfigRequest.METHOD)
+                .params(request)
+                .build(); // id will be randomly generated
+
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(DeleteTaskPushNotificationConfigRequest.METHOD,
+                deleteTaskPushNotificationRequest, agentCard, context);
+
+        try {
+            String httpResponseBody = sendPostRequest(payloadAndHeaders);
+            unmarshalResponse(httpResponseBody, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE);
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to delete task push notification configs: " + e, e);
+        }
+    }
+
+    @Override
+    public void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
+                            Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        checkNotNullParam("eventConsumer", eventConsumer);
+        checkNotNullParam("errorConsumer", errorConsumer);
+        TaskResubscriptionRequest taskResubscriptionRequest = new TaskResubscriptionRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
                 .method(TaskResubscriptionRequest.METHOD)
-                .params(taskIdParams);
+                .params(request)
+                .build(); // id will be randomly generated
 
-        if (requestId != null) {
-            taskResubscriptionRequestBuilder.id(requestId);
-        }
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(TaskResubscriptionRequest.METHOD,
+                taskResubscriptionRequest, agentCard, context);
 
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
-        SSEEventListener sseEventListener = new SSEEventListener(eventHandler, errorHandler, failureHandler);
-        TaskResubscriptionRequest taskResubscriptionRequest = taskResubscriptionRequestBuilder.build();
+        SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
+
         try {
-            A2AHttpClient.PostBuilder builder = createPostBuilder(taskResubscriptionRequest);
+            A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders);
             ref.set(builder.postAsyncSSE(
                     msg -> sseEventListener.onMessage(msg, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // We don't need to do anything special on completion
                     }));
-
         } catch (IOException e) {
-            throw new A2AServerException("Failed to send task resubscription request: " + e, e.getCause());
+            throw new A2AClientException("Failed to send task resubscription request: " + e, e);
         } catch (InterruptedException e) {
-            throw new A2AServerException("Task resubscription request timed out: " + e, e.getCause());
+            throw new A2AClientException("Task resubscription request timed out: " + e, e);
         }
     }
 
-    private String sendPostRequest(Object value) throws IOException, InterruptedException {
-        A2AHttpClient.PostBuilder builder = createPostBuilder(value);
+    @Override
+    public AgentCard getAgentCard(ClientCallContext context) throws A2AClientException {
+        A2ACardResolver resolver;
+        try {
+            if (agentCard == null) {
+                resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
+                agentCard = resolver.getAgentCard();
+            }
+            if (!agentCard.supportsAuthenticatedExtendedCard()) {
+                return agentCard;
+            }
+            resolver = new A2ACardResolver(httpClient, agentUrl, "/agent/authenticatedExtendedCard",
+                    getHttpHeaders(context));
+            agentCard = resolver.getAgentCard();
+
+            // TODO: Uncomment this code once support for v0.3.0 has been merged and remove the above 3 lines
+            /*GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = new GetAuthenticatedExtendedCardRequest.Builder()
+                    .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                    .method(GetAuthenticatedExtendedCardRequest.METHOD)
+                    .build(); // id will be randomly generated
+
+            PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest.METHOD,
+                    getExtendedAgentCardRequest, agentCard, context);
+
+            try {
+                String httpResponseBody = sendPostRequest(payloadAndHeaders);
+                GetAuthenticatedExtendedCardResponse response = unmarshalResponse(httpResponseBody,
+                        GET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE);
+                return response.getResult();
+            } catch (IOException | InterruptedException e) {
+                throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
+            }*/
+            return agentCard;
+        } catch(A2AClientError e){
+            throw new A2AClientException("Failed to get agent card: " + e, e);
+        }
+    }
+
+    @Override
+    public void close() {
+        // no-op
+    }
+
+    private PayloadAndHeaders applyInterceptors(String methodName, Object payload,
+                                                AgentCard agentCard, ClientCallContext clientCallContext) {
+        PayloadAndHeaders payloadAndHeaders = new PayloadAndHeaders(payload, getHttpHeaders(clientCallContext));
+        if (interceptors != null && ! interceptors.isEmpty()) {
+            for (ClientCallInterceptor interceptor : interceptors) {
+                payloadAndHeaders = interceptor.intercept(methodName, payloadAndHeaders.getPayload(),
+                        payloadAndHeaders.getHeaders(), agentCard, clientCallContext);
+            }
+        }
+        return payloadAndHeaders;
+    }
+
+    private String sendPostRequest(PayloadAndHeaders payloadAndHeaders) throws IOException, InterruptedException {
+        A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
             throw new IOException("Request failed " + response.status());
@@ -285,21 +388,32 @@ public class JSONRPCTransport implements ClientTransport {
         return response.body();
     }
 
-    private A2AHttpClient.PostBuilder createPostBuilder(Object value) throws JsonProcessingException {
-        return httpClient.createPost()
+    private A2AHttpClient.PostBuilder createPostBuilder(PayloadAndHeaders payloadAndHeaders) throws JsonProcessingException {
+        A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(agentUrl)
                 .addHeader("Content-Type", "application/json")
-                .body(Utils.OBJECT_MAPPER.writeValueAsString(value));
+                .body(Utils.OBJECT_MAPPER.writeValueAsString(payloadAndHeaders.getPayload()));
 
+        if (payloadAndHeaders.getHeaders() != null) {
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                postBuilder.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return postBuilder;
     }
 
-    private <T extends JSONRPCResponse> T unmarshalResponse(String response, TypeReference<T> typeReference)
-            throws A2AServerException, JsonProcessingException {
+    private <T extends JSONRPCResponse<?>> T unmarshalResponse(String response, TypeReference<T> typeReference)
+            throws A2AClientException, JsonProcessingException {
         T value = Utils.unmarshalFrom(response, typeReference);
         JSONRPCError error = value.getError();
         if (error != null) {
-            throw new A2AServerException(error.getMessage() + (error.getData() != null ? ": " + error.getData() : ""), error);
+            throw new A2AClientException(error.getMessage() + (error.getData() != null ? ": " + error.getData() : ""), error);
         }
         return value;
+    }
+
+    private Map<String, String> getHttpHeaders(ClientCallContext context) {
+        return context != null ? context.getHeaders() : null;
     }
 }

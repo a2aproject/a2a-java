@@ -1,170 +1,252 @@
-/*
 package io.a2a.client.transport.grpc;
 
-import io.a2a.grpc.*;
-import io.a2a.grpc.SendMessageRequest;
-import io.a2a.grpc.SendMessageResponse;
-import io.a2a.grpc.utils.ProtoUtils;
-import io.a2a.spec.*;
-import io.a2a.spec.AgentCard;
-import io.a2a.spec.PushNotificationConfig;
-import io.a2a.spec.Task;
-import io.a2a.spec.TaskPushNotificationConfig;
-import io.a2a.client.transport.spi.Transport;
-import io.grpc.Channel;
-import io.grpc.StatusRuntimeException;
-import io.grpc.stub.StreamObserver;
+import static io.a2a.grpc.A2AServiceGrpc.A2AServiceBlockingV2Stub;
+import static io.a2a.grpc.A2AServiceGrpc.A2AServiceStub;
+import static io.a2a.grpc.utils.ProtoUtils.FromProto;
+import static io.a2a.grpc.utils.ProtoUtils.ToProto;
+import static io.a2a.util.Assert.checkNotNullParam;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import static io.a2a.util.Assert.checkNotNullParam;
+import io.a2a.client.config.ClientCallContext;
+import io.a2a.client.transport.spi.ClientTransport;
+import io.a2a.grpc.A2AServiceGrpc;
+import io.a2a.grpc.CancelTaskRequest;
+import io.a2a.grpc.CreateTaskPushNotificationConfigRequest;
+import io.a2a.grpc.DeleteTaskPushNotificationConfigRequest;
+import io.a2a.grpc.GetTaskPushNotificationConfigRequest;
+import io.a2a.grpc.GetTaskRequest;
+import io.a2a.grpc.ListTaskPushNotificationConfigRequest;
+import io.a2a.grpc.SendMessageRequest;
+import io.a2a.grpc.SendMessageResponse;
+import io.a2a.grpc.StreamResponse;
+import io.a2a.grpc.TaskSubscriptionRequest;
 
-*/
-/**
- * @author David BRASSELY (david.brassely at graviteesource.com)
- * @author GraviteeSource Team
- *//*
+import io.a2a.spec.A2AClientException;
+import io.a2a.spec.AgentCard;
+import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
+import io.a2a.spec.EventKind;
+import io.a2a.spec.GetTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.MessageSendParams;
+import io.a2a.spec.StreamingEventKind;
+import io.a2a.spec.Task;
+import io.a2a.spec.TaskIdParams;
+import io.a2a.spec.TaskPushNotificationConfig;
+import io.a2a.spec.TaskQueryParams;
+import io.grpc.Channel;
 
-public class GrpcTransport implements Transport {
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 
-    private A2AServiceGrpc.A2AServiceBlockingV2Stub blockingStub;
-    private A2AServiceGrpc.A2AServiceStub asyncStub;
+public class GrpcTransport implements ClientTransport {
+
+    private final A2AServiceBlockingV2Stub blockingStub;
+    private final A2AServiceStub asyncStub;
     private AgentCard agentCard;
-
-    */
-/**
-     * Create an A2A client for interacting with an A2A agent via gRPC.
-     *
-     * @param channel the gRPC channel
-     * @param agentCard the agent card for the A2A server this client will be communicating with
-     *//*
 
     public GrpcTransport(Channel channel, AgentCard agentCard) {
         checkNotNullParam("channel", channel);
-        checkNotNullParam("agentCard", agentCard);
         this.asyncStub = A2AServiceGrpc.newStub(channel);
         this.blockingStub = A2AServiceGrpc.newBlockingV2Stub(channel);
         this.agentCard = agentCard;
     }
 
     @Override
-    public EventKind sendMessage(String requestId, MessageSendParams messageSendParams) throws A2AServerException {
-        SendMessageRequest request = createGrpcSendMessageRequestFromMessageSendParams(messageSendParams);
+    public EventKind sendMessage(MessageSendParams request, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+
+        SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(request, context);
+
         try {
-            SendMessageResponse response = blockingStub.sendMessage(request);
+            SendMessageResponse response = blockingStub.sendMessage(sendMessageRequest);
             if (response.hasMsg()) {
-                return ProtoUtils.FromProto.message(response.getMsg());
+                return FromProto.message(response.getMsg());
             } else if (response.hasTask()) {
-                return ProtoUtils.FromProto.task(response.getTask());
+                return FromProto.task(response.getTask());
             } else {
-                throw new A2AServerException("Server response did not contain a message or task");
+                throw new A2AClientException("Server response did not contain a message or task");
             }
         } catch (StatusRuntimeException e) {
-            throw new A2AServerException("Failed to send message: " + e, e);
+            throw new A2AClientException("Failed to send message: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public Task getTask(String requestId, TaskQueryParams taskQueryParams) throws A2AServerException {
-        io.a2a.grpc.GetTaskRequest.Builder requestBuilder = io.a2a.grpc.GetTaskRequest.newBuilder();
-        requestBuilder.setName("tasks/" + taskQueryParams.id());
-        if (taskQueryParams.historyLength() != null) {
-            requestBuilder.setHistoryLength(taskQueryParams.historyLength());
-        }
-        io.a2a.grpc.GetTaskRequest getTaskRequest = requestBuilder.build();
+    public void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer,
+                                     Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        checkNotNullParam("eventConsumer", eventConsumer);
+        SendMessageRequest grpcRequest = createGrpcSendMessageRequest(request, context);
+        StreamObserver<StreamResponse> streamObserver = new EventStreamObserver(eventConsumer, errorConsumer);
+
         try {
-            return ProtoUtils.FromProto.task(blockingStub.getTask(getTaskRequest));
+            asyncStub.sendStreamingMessage(grpcRequest, streamObserver);
         } catch (StatusRuntimeException e) {
-            throw new A2AServerException("Failed to get task: " + e, e);
+            throw new A2AClientException("Failed to send streaming message: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public Task cancelTask(String requestId, TaskIdParams taskIdParams) throws A2AServerException {
-        io.a2a.grpc.CancelTaskRequest cancelTaskRequest = io.a2a.grpc.CancelTaskRequest.newBuilder()
-                .setName("tasks/" + taskIdParams.id())
+    public Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+
+        GetTaskRequest.Builder requestBuilder = GetTaskRequest.newBuilder();
+        requestBuilder.setName("tasks/" + request.id());
+        if (request.historyLength() != null) {
+            requestBuilder.setHistoryLength(request.historyLength());
+        }
+        GetTaskRequest getTaskRequest = requestBuilder.build();
+
+        try {
+            return FromProto.task(blockingStub.getTask(getTaskRequest));
+        } catch (StatusRuntimeException e) {
+            throw new A2AClientException("Failed to get task: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+
+        CancelTaskRequest cancelTaskRequest = CancelTaskRequest.newBuilder()
+                .setName("tasks/" + request.id())
                 .build();
+
         try {
-            return ProtoUtils.FromProto.task(blockingStub.cancelTask(cancelTaskRequest));
+            return FromProto.task(blockingStub.cancelTask(cancelTaskRequest));
         } catch (StatusRuntimeException e) {
-            throw new A2AServerException("Failed to cancel task: " + e, e);
+            throw new A2AClientException("Failed to cancel task: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public TaskPushNotificationConfig getTaskPushNotificationConfig(String requestId, GetTaskPushNotificationConfigParams getTaskPushNotificationConfigParams) throws A2AServerException {
-        io.a2a.grpc.GetTaskPushNotificationConfigRequest getTaskPushNotificationConfigRequest = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder()
-                .setName(getTaskPushNotificationConfigName(getTaskPushNotificationConfigParams))
-                .build();
-        try {
-            return ProtoUtils.FromProto.taskPushNotificationConfig(blockingStub.getTaskPushNotificationConfig(getTaskPushNotificationConfigRequest));
-        } catch (StatusRuntimeException e) {
-            throw new A2AServerException("Failed to get the task push notification config: " + e, e);
-        }
-    }
+    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
+                                                                           ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
 
-    public TaskPushNotificationConfig setTaskPushNotificationConfig(String requestId, String taskId, TaskPushNotificationConfig taskPushNotificationConfig) throws A2AServerException {
-        String configId = taskPushNotificationConfig.pushNotificationConfig().id();
-        CreateTaskPushNotificationConfigRequest request = CreateTaskPushNotificationConfigRequest.newBuilder()
-                .setParent("tasks/" + taskPushNotificationConfig.taskId())
-                .setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(taskPushNotificationConfig))
+        String configId = request.pushNotificationConfig().id();
+        CreateTaskPushNotificationConfigRequest grpcRequest = CreateTaskPushNotificationConfigRequest.newBuilder()
+                .setParent("tasks/" + request.taskId())
+                .setConfig(ToProto.taskPushNotificationConfig(request))
                 .setConfigId(configId == null ? "" : configId)
                 .build();
+
         try {
-            return ProtoUtils.FromProto.taskPushNotificationConfig(blockingStub.createTaskPushNotificationConfig(request));
+            return FromProto.taskPushNotificationConfig(blockingStub.createTaskPushNotificationConfig(grpcRequest));
         } catch (StatusRuntimeException e) {
-            throw new A2AServerException("Failed to set the task push notification config: " + e, e);
+            throw new A2AClientException("Failed to set task push notification config: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public List<TaskPushNotificationConfig> listTaskPushNotificationConfig(String requestId, ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams) throws A2AServerException {
-        return List.of();
-    }
+    public TaskPushNotificationConfig getTaskPushNotificationConfiguration(
+            GetTaskPushNotificationConfigParams request,
+            ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
 
-    @Override
-    public void deleteTaskPushNotificationConfig(String requestId, DeleteTaskPushNotificationConfigParams deleteTaskPushNotificationConfigParams) throws A2AServerException {
+        GetTaskPushNotificationConfigRequest grpcRequest = GetTaskPushNotificationConfigRequest.newBuilder()
+                .setName(getTaskPushNotificationConfigName(request))
+                .build();
 
-    }
-
-    @Override
-    public void sendStreamingMessage(String requestId, MessageSendParams messageSendParams, Consumer<StreamingEventKind> eventHandler, Consumer<JSONRPCError> errorHandler, Runnable failureHandler) throws A2AServerException {
-        SendMessageRequest request = createGrpcSendMessageRequestFromMessageSendParams(messageSendParams);
-        StreamObserver<StreamResponse> streamObserver = new EventStreamObserver(eventHandler, errorHandler);
         try {
-            asyncStub.sendStreamingMessage(request, streamObserver);
+            return FromProto.taskPushNotificationConfig(blockingStub.getTaskPushNotificationConfig(grpcRequest));
         } catch (StatusRuntimeException e) {
-            throw new A2AServerException("Failed to send streaming message: " + e, e);
+            throw new A2AClientException("Failed to get task push notification config: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public void resubscribeToTask(String requestId, TaskIdParams taskIdParams, Consumer<StreamingEventKind> eventHandler, Consumer<JSONRPCError> errorHandler, Runnable failureHandler) throws A2AServerException {
+    public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+            ListTaskPushNotificationConfigParams request,
+            ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
 
+        ListTaskPushNotificationConfigRequest grpcRequest = ListTaskPushNotificationConfigRequest.newBuilder()
+                .setParent("tasks/" + request.id())
+                .build();
+
+        try {
+            return blockingStub.listTaskPushNotificationConfig(grpcRequest).getConfigsList().stream()
+                    .map(FromProto::taskPushNotificationConfig)
+                    .collect(Collectors.toList());
+        } catch (StatusRuntimeException e) {
+            throw new A2AClientException("Failed to list task push notification configs: " + e.getMessage(), e);
+        }
     }
 
-    private SendMessageRequest createGrpcSendMessageRequestFromMessageSendParams(MessageSendParams messageSendParams) {
+    @Override
+    public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request,
+                                                         ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+
+        DeleteTaskPushNotificationConfigRequest grpcRequest = DeleteTaskPushNotificationConfigRequest.newBuilder()
+                .setName(getTaskPushNotificationConfigName(request.id(), request.pushNotificationConfigId()))
+                .build();
+
+        try {
+            blockingStub.deleteTaskPushNotificationConfig(grpcRequest);
+        } catch (StatusRuntimeException e) {
+            throw new A2AClientException("Failed to delete task push notification configs: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
+                            Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        checkNotNullParam("eventConsumer", eventConsumer);
+
+        TaskSubscriptionRequest grpcRequest = TaskSubscriptionRequest.newBuilder()
+                .setName("tasks/" + request.id())
+                .build();
+
+        StreamObserver<StreamResponse> streamObserver = new EventStreamObserver(eventConsumer, errorConsumer);
+
+        try {
+            asyncStub.taskSubscription(grpcRequest, streamObserver);
+        } catch (StatusRuntimeException e) {
+            throw new A2AClientException("Failed to resubscribe to task: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public AgentCard getAgentCard(ClientCallContext context) throws A2AClientException {
+        // TODO: Determine how to handle retrieving the authenticated extended agent card
+        return agentCard;
+    }
+
+    @Override
+    public void close() {
+    }
+
+    private SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams, ClientCallContext context) {
         SendMessageRequest.Builder builder = SendMessageRequest.newBuilder();
-        builder.setRequest(ProtoUtils.ToProto.message(messageSendParams.message()));
+        builder.setRequest(ToProto.message(messageSendParams.message()));
         if (messageSendParams.configuration() != null) {
-            builder.setConfiguration(ProtoUtils.ToProto.messageSendConfiguration(messageSendParams.configuration()));
+            builder.setConfiguration(ToProto.messageSendConfiguration(messageSendParams.configuration()));
         }
         if (messageSendParams.metadata() != null) {
-            builder.setMetadata(ProtoUtils.ToProto.struct(messageSendParams.metadata()));
+            builder.setMetadata(ToProto.struct(messageSendParams.metadata()));
         }
         return builder.build();
     }
 
-    private String getTaskPushNotificationConfigName(GetTaskPushNotificationConfigParams getTaskPushNotificationConfigParams) {
+    private String getTaskPushNotificationConfigName(GetTaskPushNotificationConfigParams params) {
+        return getTaskPushNotificationConfigName(params.id(), params.pushNotificationConfigId());
+    }
+
+    private String getTaskPushNotificationConfigName(String taskId, String pushNotificationConfigId) {
         StringBuilder name = new StringBuilder();
         name.append("tasks/");
-        name.append(getTaskPushNotificationConfigParams.id());
-        if (getTaskPushNotificationConfigParams.pushNotificationConfigId() != null) {
+        name.append(taskId);
+        if (pushNotificationConfigId != null) {
             name.append("/pushNotificationConfigs/");
-            name.append(getTaskPushNotificationConfigParams.pushNotificationConfigId());
+            name.append(pushNotificationConfigId);
         }
         return name.toString();
     }
+
 }
-*/
