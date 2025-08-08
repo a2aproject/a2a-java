@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 
 import io.a2a.client.ClientCallContext;
 import io.a2a.spec.A2AClientException;
-import io.a2a.spec.A2AServerException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
@@ -19,9 +18,9 @@ import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 
 /**
- * Abstract base class for a client transport.
+ * Interface for a client transport.
  */
-public abstract class ClientTransport {
+public interface ClientTransport {
 
     /**
      * Send a non-streaming message request to the agent.
@@ -31,20 +30,20 @@ public abstract class ClientTransport {
      * @return the response, either a Task or Message
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public abstract EventKind sendMessage(MessageSendParams request, ClientCallContext context)
+    EventKind sendMessage(MessageSendParams request, ClientCallContext context)
             throws A2AClientException;
 
     /**
      * Send a streaming message request to the agent and receive responses as they arrive.
      *
-     * @param request the message send parameters
+     * @param request       the message send parameters
      * @param eventConsumer consumer that will receive streaming events as they arrive
      * @param errorConsumer consumer that will be called if an error occurs during streaming
-     * @param context optional client call context for the request (may be {@code null})
+     * @param context       optional client call context for the request (may be {@code null})
      * @throws A2AClientException if setting up the streaming connection fails
      */
-    public abstract void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer,
-            Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException;
+    void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer,
+                              Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the current state and history of a specific task.
@@ -54,7 +53,7 @@ public abstract class ClientTransport {
      * @return the task
      * @throws A2AClientException if retrieving the task fails for any reason
      */
-    public abstract Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException;
+    Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException;
 
     /**
      * Request the agent to cancel a specific task.
@@ -64,7 +63,7 @@ public abstract class ClientTransport {
      * @return the cancelled task
      * @throws A2AClientException if cancelling the task fails for any reason
      */
-    public abstract Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException;
+    Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException;
 
     /**
      * Set or update the push notification configuration for a specific task.
@@ -74,8 +73,8 @@ public abstract class ClientTransport {
      * @return the configured TaskPushNotificationConfig
      * @throws A2AClientException if setting the task push notification configuration fails for any reason
      */
-    public abstract TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
-            ClientCallContext context) throws A2AClientException;
+    TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
+                                                                    ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the push notification configuration for a specific task.
@@ -85,7 +84,7 @@ public abstract class ClientTransport {
      * @return the task push notification config
      * @throws A2AClientException if getting the task push notification config fails for any reason
      */
-    public abstract TaskPushNotificationConfig getTaskPushNotificationConfiguration(
+    TaskPushNotificationConfig getTaskPushNotificationConfiguration(
             GetTaskPushNotificationConfigParams request,
             ClientCallContext context) throws A2AClientException;
 
@@ -97,7 +96,7 @@ public abstract class ClientTransport {
      * @return the list of task push notification configs
      * @throws A2AClientException if getting the task push notification configs fails for any reason
      */
-    public abstract List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+    List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request,
             ClientCallContext context) throws A2AClientException;
 
@@ -108,21 +107,21 @@ public abstract class ClientTransport {
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException if deleting the task push notification configs fails for any reason
      */
-    public abstract void deleteTaskPushNotificationConfigurations(
+    void deleteTaskPushNotificationConfigurations(
             DeleteTaskPushNotificationConfigParams request,
             ClientCallContext context) throws A2AClientException;
 
     /**
      * Reconnect to get task updates for an existing task.
      *
-     * @param request the task ID parameters specifying which task to resubscribe to
+     * @param request       the task ID parameters specifying which task to resubscribe to
      * @param eventConsumer consumer that will receive streaming events as they arrive
      * @param errorConsumer consumer that will be called if an error occurs during streaming
-     * @param context optional client call context for the request (may be {@code null})
+     * @param context       optional client call context for the request (may be {@code null})
      * @throws A2AClientException if resubscribing to the task fails for any reason
      */
-    public abstract void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
-            Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException;
+    void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
+                     Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the AgentCard.
@@ -131,10 +130,11 @@ public abstract class ClientTransport {
      * @return the AgentCard
      * @throws A2AClientException if retrieving the agent card fails for any reason
      */
-    public abstract AgentCard getAgentCard(ClientCallContext context) throws A2AClientException;
+    AgentCard getAgentCard(ClientCallContext context) throws A2AClientException;
 
     /**
      * Close the transport and release any associated resources.
      */
-    public abstract void close();
+    void close();
+
 }

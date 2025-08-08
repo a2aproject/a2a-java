@@ -32,7 +32,9 @@ public class SSEEventListener {
     }
 
     public void onError(Throwable throwable, Future<Void> future) {
-        errorHandler.accept(throwable);
+        if (errorHandler != null) {
+            errorHandler.accept(throwable);
+        }
         future.cancel(true); // close SSE channel
     }
 
@@ -40,7 +42,9 @@ public class SSEEventListener {
         try {
             if (jsonNode.has("error")) {
                 JSONRPCError error = OBJECT_MAPPER.treeToValue(jsonNode.get("error"), JSONRPCError.class);
-                errorHandler.accept(error);
+                if (errorHandler != null) {
+                    errorHandler.accept(error);
+                }
             } else if (jsonNode.has("result")) {
                 // result can be a Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent
                 JsonNode result = jsonNode.path("result");

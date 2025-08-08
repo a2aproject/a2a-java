@@ -23,7 +23,6 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.CancelTaskResponse;
 
-
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
@@ -55,9 +54,10 @@ import io.a2a.spec.TaskResubscriptionRequest;
 import io.a2a.client.sse.SSEEventListener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+
 import io.a2a.util.Utils;
 
-public class JSONRPCTransport extends ClientTransport {
+public class JSONRPCTransport implements ClientTransport {
 
     private static final TypeReference<SendMessageResponse> SEND_MESSAGE_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<GetTaskResponse> GET_TASK_RESPONSE_REFERENCE = new TypeReference<>() {};
@@ -118,7 +118,6 @@ public class JSONRPCTransport extends ClientTransport {
                                      Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
-        checkNotNullParam("errorConsumer", errorConsumer);
         SendStreamingMessageRequest sendStreamingMessageRequest = new SendStreamingMessageRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
                 .method(SendStreamingMessageRequest.METHOD)

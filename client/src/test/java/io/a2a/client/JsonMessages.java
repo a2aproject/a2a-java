@@ -148,6 +148,7 @@ public class JsonMessages {
                 "protocolVersion": "0.2.9"
               }""";
 
+
     static final String AUTHENTICATION_EXTENDED_AGENT_CARD = """
             {
                 "name": "GeoSpatial Route Planner Agent Extended",
