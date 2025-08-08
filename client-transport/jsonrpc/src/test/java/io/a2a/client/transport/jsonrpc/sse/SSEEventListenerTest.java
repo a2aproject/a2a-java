@@ -1,5 +1,19 @@
 package io.a2a.client.transport.jsonrpc.sse;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import io.a2a.client.transport.jsonrpc.JsonStreamingMessages;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
@@ -13,15 +27,6 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 public class SSEEventListenerTest {
 
     @Test
@@ -30,8 +35,8 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         SSEEventListener listener = new SSEEventListener(
                 event -> receivedEvent.set(event),
-                error -> {},
-                () -> {});
+                error -> {}
+        );
 
         // Parse the task event JSON
         String eventData = JsonStreamingMessages.STREAMING_TASK_EVENT.substring(
@@ -55,8 +60,8 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         SSEEventListener listener = new SSEEventListener(
                 event -> receivedEvent.set(event),
-                error -> {},
-                () -> {});
+                error -> {}
+        );
 
         // Parse the message event JSON
         String eventData = JsonStreamingMessages.STREAMING_MESSAGE_EVENT.substring(
@@ -83,8 +88,8 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         SSEEventListener listener = new SSEEventListener(
                 event -> receivedEvent.set(event),
-                error -> {},
-                () -> {});
+                error -> {}
+        );
 
         // Parse the message event JSON
         String eventData = JsonStreamingMessages.STREAMING_STATUS_UPDATE_EVENT.substring(
@@ -109,8 +114,8 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         SSEEventListener listener = new SSEEventListener(
                 event -> receivedEvent.set(event),
-                error -> {},
-                () -> {});
+                error -> {}
+        );
 
         // Parse the message event JSON
         String eventData = JsonStreamingMessages.STREAMING_ARTIFACT_UPDATE_EVENT.substring(
@@ -138,11 +143,11 @@ public class SSEEventListenerTest {
     @Test
     public void testOnEventWithError() throws Exception {
         // Set up event handler
-        AtomicReference<JSONRPCError> receivedError = new AtomicReference<>();
+        AtomicReference<Throwable> receivedError = new AtomicReference<>();
         SSEEventListener listener = new SSEEventListener(
                 event -> {},
-                error -> receivedError.set(error),
-                () -> {});
+                error -> receivedError.set(error)
+        );
 
         // Parse the error event JSON
         String eventData = JsonStreamingMessages.STREAMING_ERROR_EVENT.substring(
@@ -153,9 +158,11 @@ public class SSEEventListenerTest {
 
         // Verify the error was processed correctly
         assertNotNull(receivedError.get());
-        assertEquals(-32602, receivedError.get().getCode());
-        assertEquals("Invalid parameters", receivedError.get().getMessage());
-        assertEquals("Missing required field", receivedError.get().getData());
+        assertInstanceOf(JSONRPCError.class, receivedError.get());
+        JSONRPCError jsonrpcError = (JSONRPCError) receivedError.get();
+        assertEquals(-32602, jsonrpcError.getCode());
+        assertEquals("Invalid parameters", jsonrpcError.getMessage());
+        assertEquals("Missing required field", jsonrpcError.getData());
     }
 
     @Test
@@ -163,8 +170,8 @@ public class SSEEventListenerTest {
         AtomicBoolean failureHandlerCalled = new AtomicBoolean(false);
         SSEEventListener listener = new SSEEventListener(
                 event -> {},
-                error -> {},
-                () -> failureHandlerCalled.set(true));
+                error -> failureHandlerCalled.set(true)
+        );
 
         // Simulate a failure
         CancelCapturingFuture future = new CancelCapturingFuture();
@@ -189,8 +196,8 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         SSEEventListener listener = new SSEEventListener(
                 event -> receivedEvent.set(event),
-                error -> {},
-                () -> {});
+                error -> {}
+        );
 
 
     }
@@ -201,8 +208,8 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         SSEEventListener listener = new SSEEventListener(
                 event -> receivedEvent.set(event),
-                error -> {},
-                () -> {});
+                error -> {}
+        );
 
         // Parse the message event JSON
         String eventData = JsonStreamingMessages.STREAMING_STATUS_UPDATE_EVENT_FINAL.substring(

@@ -1,4 +1,4 @@
-package io.a2a.client.transport.jsonrpc.sse;
+package io.a2a.client.transport.jsonrpc;
 
 /**
  * Contains JSON strings for testing SSE streaming.
@@ -106,7 +106,6 @@ public class JsonStreamingMessages {
     public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST = """
             {
              "jsonrpc": "2.0",
-             "id": "request-1234",
              "method": "message/stream",
              "params": {
               "message": {
@@ -139,7 +138,6 @@ public class JsonStreamingMessages {
     public static final String TASK_RESUBSCRIPTION_TEST_REQUEST = """
             {
              "jsonrpc": "2.0",
-             "id": "request-1234",
              "method": "tasks/resubscribe",
              "params": {
                 "id": "task-1234"

@@ -1,109 +1,140 @@
 package io.a2a.client.transport.spi;
 
-import io.a2a.spec.*;
-
 import java.util.List;
 import java.util.function.Consumer;
 
+import io.a2a.client.config.ClientCallContext;
+import io.a2a.spec.A2AClientException;
+import io.a2a.spec.AgentCard;
+import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
+import io.a2a.spec.EventKind;
+import io.a2a.spec.GetTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.MessageSendParams;
+import io.a2a.spec.StreamingEventKind;
+import io.a2a.spec.Task;
+import io.a2a.spec.TaskIdParams;
+import io.a2a.spec.TaskPushNotificationConfig;
+import io.a2a.spec.TaskQueryParams;
+
+/**
+ * Interface for a client transport.
+ */
 public interface ClientTransport {
 
     /**
-     * Send a message to the remote agent.
+     * Send a non-streaming message request to the agent.
      *
-     * @param requestId the request ID to use
-     * @param messageSendParams the parameters for the message to be sent
-     * @return the response, may contain a message or a task
-     * @throws A2AServerException if sending the message fails for any reason
+     * @param request the message send parameters
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the response, either a Task or Message
+     * @throws A2AClientException if sending the message fails for any reason
      */
-    EventKind sendMessage(String requestId, MessageSendParams messageSendParams) throws A2AServerException;
+    EventKind sendMessage(MessageSendParams request, ClientCallContext context)
+            throws A2AClientException;
 
     /**
-     * Retrieve the generated artifacts for a task.
+     * Send a streaming message request to the agent and receive responses as they arrive.
      *
-     * @param requestId the request ID to use
-     * @param taskQueryParams the params for the task to be queried
-     * @return the response containing the task
-     * @throws A2AServerException if retrieving the task fails for any reason
+     * @param request       the message send parameters
+     * @param eventConsumer consumer that will receive streaming events as they arrive
+     * @param errorConsumer consumer that will be called if an error occurs during streaming
+     * @param context       optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if setting up the streaming connection fails
      */
-    Task getTask(String requestId, TaskQueryParams taskQueryParams) throws A2AServerException;
+    void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer,
+                              Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException;
 
     /**
-     * Cancel a task that was previously submitted to the A2A server.
+     * Retrieve the current state and history of a specific task.
      *
-     * @param requestId the request ID to use
-     * @param taskIdParams the params for the task to be cancelled
-     * @return the response indicating if the task was cancelled
-     * @throws A2AServerException if retrieving the task fails for any reason
+     * @param request the task query parameters specifying which task to retrieve
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the task
+     * @throws A2AClientException if retrieving the task fails for any reason
      */
-    Task cancelTask(String requestId, TaskIdParams taskIdParams) throws A2AServerException;
+    Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException;
 
     /**
-     * Get the push notification configuration for a task.
+     * Request the agent to cancel a specific task.
      *
-     * @param requestId the request ID to use
-     * @param getTaskPushNotificationConfigParams the params for the task
-     * @return the response containing the push notification configuration
-     * @throws A2AServerException if getting the push notification configuration fails for any reason
+     * @param request the task ID parameters specifying which task to cancel
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the cancelled task
+     * @throws A2AClientException if cancelling the task fails for any reason
      */
-    TaskPushNotificationConfig getTaskPushNotificationConfig(String requestId, GetTaskPushNotificationConfigParams getTaskPushNotificationConfigParams) throws A2AServerException;
+    Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException;
 
     /**
-     * Set push notification configuration for a task.
+     * Set or update the push notification configuration for a specific task.
      *
-     * @param requestId the request ID to use
-     * @param taskId the task ID
-     * @param pushNotificationConfig the push notification configuration
-     * @return the response indicating whether setting the task push notification configuration succeeded
-     * @throws A2AServerException if setting the push notification configuration fails for any reason
+     * @param request the push notification configuration to set for the task
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the configured TaskPushNotificationConfig
+     * @throws A2AClientException if setting the task push notification configuration fails for any reason
      */
-    TaskPushNotificationConfig setTaskPushNotificationConfig(String requestId, String taskId,
-                                                                               PushNotificationConfig pushNotificationConfig) throws A2AServerException;
+    TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
+                                                                    ClientCallContext context) throws A2AClientException;
 
     /**
-     * Retrieves the push notification configurations for a specified task.
+     * Retrieve the push notification configuration for a specific task.
      *
-     * @param requestId the request ID to use
-     * @param listTaskPushNotificationConfigParams the params for retrieving the push notification configuration
-     * @return the response containing the push notification configuration
-     * @throws A2AServerException if getting the push notification configuration fails for any reason
+     * @param request the parameters specifying which task's notification config to retrieve
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the task push notification config
+     * @throws A2AClientException if getting the task push notification config fails for any reason
      */
-    List<TaskPushNotificationConfig> listTaskPushNotificationConfig(String requestId,
-                                                                    ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams) throws A2AServerException;
+    TaskPushNotificationConfig getTaskPushNotificationConfiguration(
+            GetTaskPushNotificationConfigParams request,
+            ClientCallContext context) throws A2AClientException;
 
     /**
-     * Delete the push notification configuration for a specified task.
+     * Retrieve the list of push notification configurations for a specific task.
      *
-     * @param requestId the request ID to use
-     * @param deleteTaskPushNotificationConfigParams the params for deleting the push notification configuration
-     * @throws A2AServerException if deleting the push notification configuration fails for any reason
+     * @param request the parameters specifying which task's notification configs to retrieve
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the list of task push notification configs
+     * @throws A2AClientException if getting the task push notification configs fails for any reason
      */
-    void deleteTaskPushNotificationConfig(String requestId,
-                                                                                     DeleteTaskPushNotificationConfigParams deleteTaskPushNotificationConfigParams) throws A2AServerException;
+    List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+            ListTaskPushNotificationConfigParams request,
+            ClientCallContext context) throws A2AClientException;
 
     /**
-     * Send a streaming message to the remote agent.
+     * Delete the list of push notification configurations for a specific task.
      *
-     * @param requestId the request ID to use
-     * @param messageSendParams the parameters for the message to be sent
-     * @param eventHandler a consumer that will be invoked for each event received from the remote agent
-     * @param errorHandler a consumer that will be invoked if the remote agent returns an error
-     * @param failureHandler a consumer that will be invoked if a failure occurs when processing events
-     * @throws A2AServerException if sending the streaming message fails for any reason
+     * @param request the parameters specifying which task's notification configs to delete
+     * @param context optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if deleting the task push notification configs fails for any reason
      */
-    void sendStreamingMessage(String requestId, MessageSendParams messageSendParams, Consumer<StreamingEventKind> eventHandler,
-                                     Consumer<JSONRPCError> errorHandler, Runnable failureHandler) throws A2AServerException;
+    void deleteTaskPushNotificationConfigurations(
+            DeleteTaskPushNotificationConfigParams request,
+            ClientCallContext context) throws A2AClientException;
 
     /**
-     * Resubscribe to an ongoing task.
+     * Reconnect to get task updates for an existing task.
      *
-     * @param requestId the request ID to use
-     * @param taskIdParams the params for the task to resubscribe to
-     * @param eventHandler a consumer that will be invoked for each event received from the remote agent
-     * @param errorHandler a consumer that will be invoked if the remote agent returns an error
-     * @param failureHandler a consumer that will be invoked if a failure occurs when processing events
-     * @throws A2AServerException if resubscribing to the task fails for any reason
+     * @param request       the task ID parameters specifying which task to resubscribe to
+     * @param eventConsumer consumer that will receive streaming events as they arrive
+     * @param errorConsumer consumer that will be called if an error occurs during streaming
+     * @param context       optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if resubscribing to the task fails for any reason
      */
-    void resubscribeToTask(String requestId, TaskIdParams taskIdParams, Consumer<StreamingEventKind> eventHandler,
-                                  Consumer<JSONRPCError> errorHandler, Runnable failureHandler) throws A2AServerException;
+    void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
+                     Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Retrieve the AgentCard.
+     *
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the AgentCard
+     * @throws A2AClientException if retrieving the agent card fails for any reason
+     */
+    AgentCard getAgentCard(ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Close the transport and release any associated resources.
+     */
+    void close();
 
 }

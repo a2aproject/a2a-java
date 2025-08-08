@@ -28,7 +28,7 @@
             </dependency>
             <dependency>
                 <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-client</artifactId>
+                <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

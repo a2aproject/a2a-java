@@ -19,10 +19,14 @@
     <dependencies>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-client-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-spec</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
 
 </project>

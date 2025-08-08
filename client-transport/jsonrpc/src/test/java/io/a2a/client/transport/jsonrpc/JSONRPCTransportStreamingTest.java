@@ -1,9 +1,9 @@
-package io.a2a.client;
+package io.a2a.client.transport.jsonrpc;
 
-import static io.a2a.client.JsonStreamingMessages.SEND_MESSAGE_STREAMING_TEST_REQUEST;
-import static io.a2a.client.JsonStreamingMessages.SEND_MESSAGE_STREAMING_TEST_RESPONSE;
-import static io.a2a.client.JsonStreamingMessages.TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE;
-import static io.a2a.client.JsonStreamingMessages.TASK_RESUBSCRIPTION_TEST_REQUEST;
+import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.SEND_MESSAGE_STREAMING_TEST_REQUEST;
+import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.SEND_MESSAGE_STREAMING_TEST_RESPONSE;
+import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE;
+import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.TASK_RESUBSCRIPTION_TEST_REQUEST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.spec.Artifact;
-import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
@@ -37,7 +37,7 @@ import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.MatchType;
 import org.mockserver.model.JsonBody;
 
-public class A2AClientStreamingTest {
+public class JSONRPCTransportStreamingTest {
 
     private ClientAndServer server;
 
@@ -85,7 +85,7 @@ public class A2AClientStreamingTest {
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.STRICT))
+                                .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
 
                 )
                 .respond(
@@ -95,7 +95,7 @@ public class A2AClientStreamingTest {
                                 .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
                 );
 
-        A2AClient client = new A2AClient("http://localhost:4001");
+        JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Message message = new Message.Builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me some jokes")))
@@ -117,9 +117,8 @@ public class A2AClientStreamingTest {
             receivedEvent.set(event);
             latch.countDown();
         };
-        Consumer<JSONRPCError> errorHandler = error -> {};
-        Runnable failureHandler = () -> {};
-        client.sendStreamingMessage("request-1234", params, eventHandler, errorHandler, failureHandler);
+        Consumer<Throwable> errorHandler = error -> {};
+        client.sendMessageStreaming(params, eventHandler, errorHandler, null);
 
         boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
         assertTrue(eventReceived);
@@ -132,7 +131,7 @@ public class A2AClientStreamingTest {
                         request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(TASK_RESUBSCRIPTION_TEST_REQUEST, MatchType.STRICT))
+                                .withBody(JsonBody.json(TASK_RESUBSCRIPTION_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
 
                 )
                 .respond(
@@ -142,7 +141,7 @@ public class A2AClientStreamingTest {
                                 .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE)
                 );
 
-        A2AClient client = new A2AClient("http://localhost:4001");
+        JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         TaskIdParams taskIdParams = new TaskIdParams("task-1234");
 
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
@@ -151,9 +150,8 @@ public class A2AClientStreamingTest {
             receivedEvent.set(event);
             latch.countDown();
         };
-        Consumer<JSONRPCError> errorHandler = error -> {};
-        Runnable failureHandler = () -> {};
-        client.resubscribeToTask("request-1234", taskIdParams, eventHandler, errorHandler, failureHandler);
+        Consumer<Throwable> errorHandler = error -> {};
+        client.resubscribe(taskIdParams, eventHandler, errorHandler, null);
 
         boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
         assertTrue(eventReceived);
