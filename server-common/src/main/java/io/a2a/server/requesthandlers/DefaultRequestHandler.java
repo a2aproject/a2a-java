@@ -44,6 +44,7 @@ import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
+import io.a2a.spec.TaskListParams;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
@@ -112,6 +113,12 @@ public class DefaultRequestHandler implements RequestHandler {
 
         LOGGER.debug("Task found {}", task);
         return task;
+    }
+
+    @Override
+    public List<Task> onListTasks(TaskListParams params, ServerCallContext context) throws JSONRPCError {
+        LOGGER.debug("onListTasks");
+        return taskStore.listAll();
     }
 
     @Override

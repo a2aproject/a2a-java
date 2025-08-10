@@ -292,6 +292,7 @@
         <module>tests/server-common</module>
         <module>transport/jsonrpc</module>
         <module>transport/grpc</module>
+        <module>transport/httprest</module>
     </modules>
 
     <profiles>

@@ -1,5 +1,7 @@
 package io.a2a.server.tasks;
 
+import java.util.List;
+
 import io.a2a.spec.Task;
 
 public interface TaskStore {
@@ -8,4 +10,6 @@ public interface TaskStore {
     Task get(String taskId);
 
     void delete(String taskId);
+
+    List<Task> listAll();
 }
