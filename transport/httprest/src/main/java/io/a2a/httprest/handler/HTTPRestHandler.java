@@ -50,21 +50,19 @@ public class HTTPRestHandler {
     private static final Pattern LIST_PUSH_NOTIFICATION_CONFIG_PATTERN = Pattern.compile("^/v1/tasks/([^/]+)/pushNotificationConfigs$");
     private static final Pattern DELETE_PUSH_NOTIFICATION_CONFIG_PATTERN = Pattern.compile("^/v1/tasks/([^/]+)/pushNotificationConfigs/([^/]+)$");
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
+
     private AgentCard agentCard;
     private RequestHandler requestHandler;
-    private ObjectMapper objectMapper;
 
     protected HTTPRestHandler() {
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
+        // For CDI
     }
 
     @Inject
     public HTTPRestHandler(@PublicAgentCard AgentCard agentCard, RequestHandler requestHandler) {
         this.agentCard = agentCard;
         this.requestHandler = requestHandler;
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
     }
 
     public HTTPRestResponse handleRequest(String method, String path, String body, ServerCallContext context) {
@@ -183,6 +181,9 @@ public class HTTPRestHandler {
             }
             String taskId = listPushConfigMatcher.group(1);
             TaskPushNotificationConfig config = parseRequestBody(body, TaskPushNotificationConfig.class);
+            if (!taskId.equals(config.taskId())) {
+                throw new InvalidParamsError("Task ID in URL path does not match task ID in request body.");
+            }
             TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(config, context);
             return createSuccessResponse(201, result);
         }
@@ -215,7 +216,7 @@ public class HTTPRestHandler {
             if (body == null || body.trim().isEmpty()) {
                 throw new InvalidParamsError("Request body is required");
             }
-            return objectMapper.readValue(body, valueType);
+            return OBJECT_MAPPER.readValue(body, valueType);
         } catch (Exception e) {
             throw new InvalidParamsError("Failed to parse request body: " + e.getMessage());
         }
@@ -223,7 +224,7 @@ public class HTTPRestHandler {
 
     private HTTPRestResponse createSuccessResponse(int statusCode, Object data) {
         try {
-            String jsonBody = data != null ? objectMapper.writeValueAsString(data) : null;
+            String jsonBody = data != null ? OBJECT_MAPPER.writeValueAsString(data) : null;
             return new HTTPRestResponse(statusCode, "application/json", jsonBody);
         } catch (Exception e) {
             return createErrorResponse(500, new InternalError("Failed to serialize response: " + e.getMessage()));
@@ -233,7 +234,7 @@ public class HTTPRestHandler {
     private HTTPRestResponse createErrorResponse(int statusCode, JSONRPCError error) {
         try {
             HTTPRestErrorResponse errorResponse = new HTTPRestErrorResponse(error.getClass().getSimpleName(), error.getMessage());
-            String jsonBody = objectMapper.writeValueAsString(errorResponse);
+            String jsonBody = OBJECT_MAPPER.writeValueAsString(errorResponse);
             return new HTTPRestResponse(statusCode, "application/json", jsonBody);
         } catch (Exception e) {
             String fallbackJson = "{\"error\":\"InternalError\",\"message\":\"Failed to serialize error response\"}";

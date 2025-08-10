@@ -117,7 +117,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public List<Task> onListTasks(TaskListParams params, ServerCallContext context) throws JSONRPCError {
-        LOGGER.debug("onListTasks");
+        LOGGER.debug("onListTasks with params: {}", params);
         return taskStore.listAll();
     }
 
