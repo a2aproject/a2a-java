@@ -1,5 +1,6 @@
 package io.a2a.grpc.utils;
 
+
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -61,6 +62,7 @@ import io.a2a.spec.TextPart;
  * Utility class to convert between GRPC and Spec objects.
  */
 public class ProtoUtils {
+
     public static class ToProto {
 
         public static io.a2a.grpc.AgentCard agentCard(AgentCard agentCard) {
@@ -143,8 +145,12 @@ public class ProtoUtils {
         public static io.a2a.grpc.Message message(Message message) {
             io.a2a.grpc.Message.Builder builder = io.a2a.grpc.Message.newBuilder();
             builder.setMessageId(message.getMessageId());
-            builder.setContextId(message.getContextId());
-            builder.setTaskId(message.getTaskId());
+            if (message.getContextId() != null) {
+                builder.setContextId(message.getContextId());
+            }
+            if (message.getTaskId() != null) {
+                builder.setTaskId(message.getTaskId());
+            }
             builder.setRole(role(message.getRole()));
             if (message.getParts() != null) {
                 builder.addAllContent(message.getParts().stream().map(ToProto::part).collect(Collectors.toList()));
@@ -171,7 +177,7 @@ public class ProtoUtils {
             if (config.authentication() != null) {
                 builder.setAuthentication(authenticationInfo(config.authentication()));
             }
-            if (config.id() !=  null) {
+            if (config.id() != null) {
                 builder.setId(config.id());
             }
             return builder.build();
@@ -182,8 +188,12 @@ public class ProtoUtils {
             builder.setTaskId(event.getTaskId());
             builder.setContextId(event.getContextId());
             builder.setArtifact(artifact(event.getArtifact()));
-            builder.setAppend(event.isAppend() == null ? false : event.isAppend());
-            builder.setLastChunk(event.isLastChunk() == null ? false : event.isLastChunk());
+            if (event.isAppend() != null) {
+                builder.setAppend(event.isAppend());
+            }
+            if (event.isLastChunk() != null) {
+                builder.setLastChunk(event.isLastChunk());
+            }
             if (event.getMetadata() != null) {
                 builder.setMetadata(struct(event.getMetadata()));
             }
@@ -258,8 +268,10 @@ public class ProtoUtils {
                 return io.a2a.grpc.Role.ROLE_UNSPECIFIED;
             }
             return switch (role) {
-                case USER -> io.a2a.grpc.Role.ROLE_USER;
-                case AGENT -> io.a2a.grpc.Role.ROLE_AGENT;
+                case USER ->
+                    io.a2a.grpc.Role.ROLE_USER;
+                case AGENT ->
+                    io.a2a.grpc.Role.ROLE_AGENT;
             };
         }
 
@@ -283,15 +295,24 @@ public class ProtoUtils {
                 return io.a2a.grpc.TaskState.TASK_STATE_UNSPECIFIED;
             }
             return switch (taskState) {
-                case SUBMITTED -> io.a2a.grpc.TaskState.TASK_STATE_SUBMITTED;
-                case WORKING -> io.a2a.grpc.TaskState.TASK_STATE_WORKING;
-                case INPUT_REQUIRED -> io.a2a.grpc.TaskState.TASK_STATE_INPUT_REQUIRED;
-                case AUTH_REQUIRED -> io.a2a.grpc.TaskState.TASK_STATE_AUTH_REQUIRED;
-                case COMPLETED -> io.a2a.grpc.TaskState.TASK_STATE_COMPLETED;
-                case CANCELED -> io.a2a.grpc.TaskState.TASK_STATE_CANCELLED;
-                case FAILED -> io.a2a.grpc.TaskState.TASK_STATE_FAILED;
-                case REJECTED -> io.a2a.grpc.TaskState.TASK_STATE_REJECTED;
-                default -> io.a2a.grpc.TaskState.TASK_STATE_UNSPECIFIED;
+                case SUBMITTED ->
+                    io.a2a.grpc.TaskState.TASK_STATE_SUBMITTED;
+                case WORKING ->
+                    io.a2a.grpc.TaskState.TASK_STATE_WORKING;
+                case INPUT_REQUIRED ->
+                    io.a2a.grpc.TaskState.TASK_STATE_INPUT_REQUIRED;
+                case AUTH_REQUIRED ->
+                    io.a2a.grpc.TaskState.TASK_STATE_AUTH_REQUIRED;
+                case COMPLETED ->
+                    io.a2a.grpc.TaskState.TASK_STATE_COMPLETED;
+                case CANCELED ->
+                    io.a2a.grpc.TaskState.TASK_STATE_CANCELLED;
+                case FAILED ->
+                    io.a2a.grpc.TaskState.TASK_STATE_FAILED;
+                case REJECTED ->
+                    io.a2a.grpc.TaskState.TASK_STATE_REJECTED;
+                default ->
+                    io.a2a.grpc.TaskState.TASK_STATE_UNSPECIFIED;
             };
         }
 
@@ -596,7 +617,6 @@ public class ProtoUtils {
             }
         }
 
-
     }
 
     public static class FromProto {
@@ -734,8 +754,8 @@ public class ProtoUtils {
             return new Message(
                     role(message.getRole()),
                     message.getContentList().stream().map(item -> part(item)).collect(Collectors.toList()),
-                    message.getMessageId(),
-                    message.getContextId(),
+                    message.getMessageId().isEmpty() ? null :  message.getMessageId(),
+                    message.getContextId().isEmpty() ? null :  message.getContextId(),
                     message.getTaskId(),
                     null, // referenceTaskIds is not in grpc message
                     struct(message.getMetadata())
@@ -814,9 +834,12 @@ public class ProtoUtils {
                 return null;
             }
             return switch (role) {
-                case ROLE_USER -> Message.Role.USER;
-                case ROLE_AGENT -> Message.Role.AGENT;
-                default -> null;
+                case ROLE_USER ->
+                    Message.Role.USER;
+                case ROLE_AGENT ->
+                    Message.Role.AGENT;
+                default ->
+                    null;
             };
         }
 
@@ -825,16 +848,26 @@ public class ProtoUtils {
                 return null;
             }
             return switch (taskState) {
-                case TASK_STATE_SUBMITTED -> TaskState.SUBMITTED;
-                case TASK_STATE_WORKING -> TaskState.WORKING;
-                case TASK_STATE_INPUT_REQUIRED -> TaskState.INPUT_REQUIRED;
-                case TASK_STATE_AUTH_REQUIRED -> TaskState.AUTH_REQUIRED;
-                case TASK_STATE_COMPLETED -> TaskState.COMPLETED;
-                case TASK_STATE_CANCELLED -> TaskState.CANCELED;
-                case TASK_STATE_FAILED -> TaskState.FAILED;
-                case TASK_STATE_REJECTED -> TaskState.REJECTED;
-                case TASK_STATE_UNSPECIFIED -> null;
-                case UNRECOGNIZED -> null;
+                case TASK_STATE_SUBMITTED ->
+                    TaskState.SUBMITTED;
+                case TASK_STATE_WORKING ->
+                    TaskState.WORKING;
+                case TASK_STATE_INPUT_REQUIRED ->
+                    TaskState.INPUT_REQUIRED;
+                case TASK_STATE_AUTH_REQUIRED ->
+                    TaskState.AUTH_REQUIRED;
+                case TASK_STATE_COMPLETED ->
+                    TaskState.COMPLETED;
+                case TASK_STATE_CANCELLED ->
+                    TaskState.CANCELED;
+                case TASK_STATE_FAILED ->
+                    TaskState.FAILED;
+                case TASK_STATE_REJECTED ->
+                    TaskState.REJECTED;
+                case TASK_STATE_UNSPECIFIED ->
+                    null;
+                case UNRECOGNIZED ->
+                    null;
             };
         }
 
@@ -866,6 +899,5 @@ public class ProtoUtils {
             }
         }
     }
-
 
 }
