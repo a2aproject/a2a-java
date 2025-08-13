@@ -44,6 +44,11 @@
             <artifactId>mockserver-netty</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
 </project>

@@ -14,9 +14,6 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  * - TaskPushNotificationConfig are a resource whose parent is a task.
  *   They have get, list and create methods.
  * - AgentCard is a static resource with only a get method.
- * fields are not present as they don't comply with AIP rules, and the
- * optional history_length on the get task method is not present as it also
- * violates AIP-127 and AIP-131.
  * </pre>
  */
 @javax.annotation.Generated(
@@ -411,9 +408,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public interface AsyncService {
@@ -538,9 +532,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static abstract class A2AServiceImplBase
@@ -564,9 +555,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static final class A2AServiceStub
@@ -712,9 +700,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static final class A2AServiceBlockingV2Stub
@@ -854,9 +839,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static final class A2AServiceBlockingStub
@@ -994,9 +976,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static final class A2AServiceFutureStub
