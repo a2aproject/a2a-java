@@ -3,6 +3,8 @@ package io.a2a.grpc.handler;
 import static io.a2a.grpc.utils.ProtoUtils.FromProto;
 import static io.a2a.grpc.utils.ProtoUtils.ToProto;
 
+import jakarta.enterprise.inject.Vetoed;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,7 @@ import io.a2a.spec.UnsupportedOperationError;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
+@Vetoed
 public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
     // Hook so testing can wait until streaming subscriptions are established.
