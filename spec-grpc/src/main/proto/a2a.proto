@@ -9,15 +9,11 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
-// Copied from https://github.com/a2aproject/A2A/blob/v0.3.0/specification/grpc/a2a.proto
-// The only change is the 'java_package' update
-
 option csharp_namespace = "A2a.V1";
 option go_package = "google.golang.org/a2a/v1";
 option java_multiple_files = true;
 option java_outer_classname = "A2A";
-// Update package from the spec version
-option java_package = "io.a2a.grpc";
+option java_package = "com.google.a2a.v1";
 
 // A2AService defines the gRPC version of the A2A protocol. This has a slightly
 // different shape than the JSONRPC version to better conform to AIP-127,
@@ -29,9 +25,6 @@ option java_package = "io.a2a.grpc";
 // - TaskPushNotificationConfig are a resource whose parent is a task.
 //   They have get, list and create methods.
 // - AgentCard is a static resource with only a get method.
-// fields are not present as they don't comply with AIP rules, and the
-// optional history_length on the get task method is not present as it also
-// violates AIP-127 and AIP-131.
 service A2AService {
   // Send a message to the agent. This is a blocking call that will return the
   // task once it is completed, or a LRO if requested.
@@ -216,6 +209,7 @@ message FilePart {
     bytes file_with_bytes = 2;
   }
   string mime_type = 3;
+  string name = 4;
 }
 
 // DataPart represents a structured blob. This is most commonly a JSON payload.

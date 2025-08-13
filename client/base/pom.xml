@@ -63,6 +63,11 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
 </project>
