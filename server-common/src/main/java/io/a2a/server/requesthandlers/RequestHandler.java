@@ -14,11 +14,16 @@ import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
+import io.a2a.spec.TaskListParams;
 import io.a2a.spec.TaskQueryParams;
 
 public interface RequestHandler {
     Task onGetTask(
             TaskQueryParams params,
+            ServerCallContext context) throws JSONRPCError;
+
+    List<Task> onListTasks(
+            TaskListParams params,
             ServerCallContext context) throws JSONRPCError;
 
     Task onCancelTask(
