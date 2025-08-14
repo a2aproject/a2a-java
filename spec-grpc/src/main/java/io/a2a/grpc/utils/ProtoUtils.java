@@ -795,7 +795,7 @@ public class ProtoUtils {
                     message.getContentList().stream().map(item -> part(item)).collect(Collectors.toList()),
                     message.getMessageId().isEmpty() ? null :  message.getMessageId(),
                     message.getContextId().isEmpty() ? null :  message.getContextId(),
-                    message.getTaskId(),
+                    message.getTaskId().isEmpty() ? null :  message.getTaskId(),
                     null, // referenceTaskIds is not in grpc message
                     struct(message.getMetadata())
             );
