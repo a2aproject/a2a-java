@@ -1,16 +1,16 @@
-package io.a2a.client.sse;
-
-import static io.a2a.util.Utils.OBJECT_MAPPER;
-
-import java.util.concurrent.Future;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
+package io.a2a.transport.jsonrpc.client.sse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskStatusUpdateEvent;
+
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
+import static io.a2a.util.Utils.OBJECT_MAPPER;
 
 public class SSEEventListener {
     private static final Logger log = Logger.getLogger(SSEEventListener.class.getName());

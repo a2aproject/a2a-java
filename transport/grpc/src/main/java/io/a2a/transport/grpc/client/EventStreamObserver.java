@@ -1,22 +1,22 @@
-package io.a2a.client.sse;
+package io.a2a.transport.grpc.client;
 
-
-import static io.a2a.grpc.utils.ProtoUtils.FromProto;
-
-import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 import io.a2a.grpc.StreamResponse;
 import io.a2a.spec.StreamingEventKind;
 import io.grpc.stub.StreamObserver;
 
-public class SSEStreamObserver implements StreamObserver<StreamResponse> {
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 
-    private static final Logger log = Logger.getLogger(SSEStreamObserver.class.getName());
+import static io.a2a.grpc.utils.ProtoUtils.FromProto;
+
+public class EventStreamObserver implements StreamObserver<StreamResponse> {
+
+    private static final Logger log = Logger.getLogger(EventStreamObserver.class.getName());
     private final Consumer<StreamingEventKind> eventHandler;
     private final Consumer<Throwable> errorHandler;
 
-    public SSEStreamObserver(Consumer<StreamingEventKind> eventHandler, Consumer<Throwable> errorHandler) {
+    public EventStreamObserver(Consumer<StreamingEventKind> eventHandler, Consumer<Throwable> errorHandler) {
         this.eventHandler = eventHandler;
         this.errorHandler = errorHandler;
     }

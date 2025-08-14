@@ -1,4 +1,4 @@
-package io.a2a.grpc.handler;
+package io.a2a.transport.grpc.server.handler;
 
 import static io.a2a.grpc.utils.ProtoUtils.FromProto;
 import static io.a2a.grpc.utils.ProtoUtils.ToProto;
