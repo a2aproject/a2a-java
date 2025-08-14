@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.JsonEOFException;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.a2a.jsonrpc.handler.JSONRPCHandler;
+import io.a2a.transport.jsonrpc.server.handler.JSONRPCHandler;
 import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;

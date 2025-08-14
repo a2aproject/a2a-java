@@ -45,6 +45,7 @@ import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.transport.grpc.server.handler.GrpcHandler;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.internal.testing.StreamRecorder;

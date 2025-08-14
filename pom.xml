@@ -290,6 +290,7 @@
         <module>spec-grpc</module>
         <module>tck</module>
         <module>tests/server-common</module>
+        <module>transport/spi</module>
         <module>transport/jsonrpc</module>
         <module>transport/grpc</module>
     </modules>

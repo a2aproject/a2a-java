@@ -12,8 +12,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-import io.a2a.http.A2AHttpClient;
-import io.a2a.http.A2AHttpResponse;
+import io.a2a.transport.jsonrpc.client.A2AHttpClient;
+import io.a2a.transport.jsonrpc.client.A2AHttpResponse;
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;

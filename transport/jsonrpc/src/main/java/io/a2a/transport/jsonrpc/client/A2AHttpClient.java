@@ -1,4 +1,4 @@
-package io.a2a.http;
+package io.a2a.transport.jsonrpc.client;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;

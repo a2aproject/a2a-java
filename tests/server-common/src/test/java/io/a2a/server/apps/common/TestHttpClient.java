@@ -11,8 +11,8 @@ import java.util.function.Consumer;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Alternative;
 
-import io.a2a.http.A2AHttpClient;
-import io.a2a.http.A2AHttpResponse;
+import io.a2a.transport.jsonrpc.client.A2AHttpClient;
+import io.a2a.transport.jsonrpc.client.A2AHttpResponse;
 import io.a2a.spec.Task;
 import io.a2a.util.Utils;
 
