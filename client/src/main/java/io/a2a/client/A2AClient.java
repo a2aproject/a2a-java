@@ -2,10 +2,10 @@ package io.a2a.client;
 
 import io.a2a.A2A;
 import io.a2a.spec.*;
-import io.a2a.transport.jsonrpc.client.A2AHttpClient;
-import io.a2a.transport.jsonrpc.client.JSONRPCTransport;
-import io.a2a.transport.jsonrpc.client.JdkA2AHttpClient;
-import io.a2a.transport.spi.client.Transport;
+import io.a2a.client.http.A2AHttpClient;
+import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
+import io.a2a.client.transport.spi.Transport;
 
 import java.util.List;
 import java.util.Map;
@@ -71,7 +71,7 @@ public class A2AClient {
      */
     public AgentCard getAgentCard() throws A2AClientError, A2AClientJSONError {
         if (this.agentCard == null) {
-            this.agentCard = A2A.getAgentCard(this.httpClient, this.agentUrl);
+            //this.agentCard = A2A.getAgentCard(this.httpClient, this.agentUrl);
         }
         return this.agentCard;
     }
@@ -87,7 +87,7 @@ public class A2AClient {
      */
     public AgentCard getAgentCard(String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError {
         if (this.agentCard == null) {
-            this.agentCard = A2A.getAgentCard(this.httpClient, this.agentUrl, relativeCardPath, authHeaders);
+            //this.agentCard = A2A.getAgentCard(this.httpClient, this.agentUrl, relativeCardPath, authHeaders);
         }
         return this.agentCard;
     }
