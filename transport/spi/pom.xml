@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.a2asdk</groupId>
+        <artifactId>a2a-java-sdk-parent</artifactId>
+        <version>0.2.6.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+    <artifactId>a2a-java-sdk-transport-spi</artifactId>
+
+    <packaging>jar</packaging>
+
+    <name>Java SDK A2A Transport: SPI</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SPI</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-spec</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+    </dependencies>
+
+</project>

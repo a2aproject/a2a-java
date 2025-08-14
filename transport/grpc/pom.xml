@@ -20,6 +20,11 @@
     <dependencies>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-transport-spi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-server-common</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.Map;
 
 import io.a2a.client.A2ACardResolver;
-import io.a2a.http.A2AHttpClient;
-import io.a2a.http.JdkA2AHttpClient;
+import io.a2a.transport.jsonrpc.client.A2AHttpClient;
+import io.a2a.transport.jsonrpc.client.JdkA2AHttpClient;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientJSONError;
 import io.a2a.spec.AgentCard;

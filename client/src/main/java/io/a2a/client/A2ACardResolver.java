@@ -9,8 +9,8 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.a2a.http.A2AHttpClient;
-import io.a2a.http.A2AHttpResponse;
+import io.a2a.transport.jsonrpc.client.A2AHttpClient;
+import io.a2a.transport.jsonrpc.client.A2AHttpResponse;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientJSONError;
 import io.a2a.spec.AgentCard;

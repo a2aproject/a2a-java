@@ -1,4 +1,4 @@
-package io.a2a.jsonrpc.handler;
+package io.a2a.transport.jsonrpc.server.handler;
 
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import jakarta.enterprise.context.ApplicationScoped;
