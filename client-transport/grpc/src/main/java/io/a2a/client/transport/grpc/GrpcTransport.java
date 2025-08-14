@@ -1,3 +1,4 @@
+/*
 package io.a2a.client.transport.grpc;
 
 import io.a2a.grpc.*;
@@ -19,22 +20,26 @@ import java.util.function.Consumer;
 
 import static io.a2a.util.Assert.checkNotNullParam;
 
+*/
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
- */
+ *//*
+
 public class GrpcTransport implements Transport {
 
     private A2AServiceGrpc.A2AServiceBlockingV2Stub blockingStub;
     private A2AServiceGrpc.A2AServiceStub asyncStub;
     private AgentCard agentCard;
 
-    /**
+    */
+/**
      * Create an A2A client for interacting with an A2A agent via gRPC.
      *
      * @param channel the gRPC channel
      * @param agentCard the agent card for the A2A server this client will be communicating with
-     */
+     *//*
+
     public GrpcTransport(Channel channel, AgentCard agentCard) {
         checkNotNullParam("channel", channel);
         checkNotNullParam("agentCard", agentCard);
@@ -162,3 +167,4 @@ public class GrpcTransport implements Transport {
         return name.toString();
     }
 }
+*/
