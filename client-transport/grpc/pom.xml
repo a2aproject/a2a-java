@@ -7,21 +7,16 @@
     <parent>
         <groupId>io.github.a2asdk</groupId>
         <artifactId>a2a-java-sdk-parent</artifactId>
-        <version>0.3.0.Beta1-SNAPSHOT</version>
+        <version>0.2.6.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
-    <artifactId>a2a-java-sdk-client</artifactId>
-
+    <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
     <packaging>jar</packaging>
 
-    <name>Java SDK A2A Client</name>
-    <description>Java SDK for the Agent2Agent Protocol (A2A) - Client</description>
+    <name>Java SDK A2A Client Transport: gRPC</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - gRPC Client Transport</description>
 
     <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-client-http</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-common</artifactId>
@@ -34,10 +29,14 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
+            <artifactId>a2a-java-sdk-spec-grpc</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-client-transport-spi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
