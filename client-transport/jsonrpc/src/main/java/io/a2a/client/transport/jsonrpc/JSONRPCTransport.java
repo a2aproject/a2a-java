@@ -7,7 +7,7 @@ import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.client.transport.jsonrpc.sse.SSEEventListener;
-import io.a2a.client.transport.spi.Transport;
+import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.CancelTaskResponse;
@@ -47,7 +47,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-public class JSONRPCTransport implements Transport {
+public class JSONRPCTransport implements ClientTransport {
 
     private static final TypeReference<SendMessageResponse> SEND_MESSAGE_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<GetTaskResponse> GET_TASK_RESPONSE_REFERENCE = new TypeReference<>() {};

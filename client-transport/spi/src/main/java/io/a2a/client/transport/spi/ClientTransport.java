@@ -5,7 +5,7 @@ import io.a2a.spec.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-public interface Transport {
+public interface ClientTransport {
 
     /**
      * Send a message to the remote agent.
