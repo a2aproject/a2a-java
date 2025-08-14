@@ -104,7 +104,6 @@ public class JsonRestMessages {
             }
             """;
 
-    
     static final String AGENT_CARD = """
             {
                 "name": "GeoSpatial Route Planner Agent",
@@ -381,62 +380,62 @@ public class JsonRestMessages {
              }
             }""";
 
-
-    static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
-            {
-             "jsonrpc": "2.0",
-             "method": "tasks/pushNotificationConfig/get",
-             "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "metadata": {},
-             }
-            }
-            """;
-
     static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
-             "jsonrpc": "2.0",
-             "result": {
-              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
               "pushNotificationConfig": {
-               "url": "https://example.com/callback",
-               "authentication": {
-                "schemes": ["jwt"]
-               }
+                "url": "https://example.com/callback",
+                "authentication": {
+                  "schemes": ["jwt"]
+                }
               }
-             }
-            }
-            """;
+            }""";
+    static final String LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
+            {
+              "configs":[
+                {
+                  "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
+                  "pushNotificationConfig": {
+                    "url": "https://example.com/callback",
+                    "authentication": {
+                      "schemes": ["jwt"]
+                    }
+                  }
+                },
+                {
+                  "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/5",
+                  "pushNotificationConfig": {
+                    "url": "https://test.com/callback"
+                  }
+                }
+              ]
+            }""";
+
 
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
             {
-             "jsonrpc": "2.0",
-             "method": "tasks/pushNotificationConfig/set",
-             "params": {
-              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "pushNotificationConfig": {
-               "url": "https://example.com/callback",
-               "authentication": {
-                "schemes": ["jwt"]
-               }
+              "parent": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "config": {
+                "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/",
+                "pushNotificationConfig": {
+                  "url": "https://example.com/callback",
+                  "authentication": {
+                    "schemes": ["jwt"]
+                  }
+                }
               }
-             }
             }""";
 
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
-             "jsonrpc": "2.0",
-             "result": {
-              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
               "pushNotificationConfig": {
-               "url": "https://example.com/callback",
-               "authentication": {
-                "schemes": ["jwt"]
-               }
+                "url": "https://example.com/callback",
+                "authentication": {
+                  "schemes": ["jwt"]
+                }
               }
-             }
-            }
-            """;
+            }""";
 
     static final String SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST = """
             {
@@ -620,4 +619,36 @@ public class JsonRestMessages {
              }
             }""";
 
+    public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST = """
+            {
+              "message": {
+                "role": "ROLE_USER",
+                "content": [
+                  {
+                    "text": "tell me some jokes"
+                  }
+                ],
+                "messageId": "message-1234",
+                "contextId": "context-1234",
+              },
+              "configuration": {
+                "acceptedOutputModes": ["text"]
+              }
+            }""";
+    static final String SEND_MESSAGE_STREAMING_TEST_RESPONSE
+            = "event: message\n"
+            + "data: {\"task\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"TASK_STATE_SUBMITTED\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"text\":\"Why did the chicken cross the road? To get to the other side!\"}]}],\"metadata\":{}}}\n\n";
+
+    static final String TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE
+            = "event: message\n"
+            + "data: {\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"id\":\"2\",\"contextId\":\"context-1234\",\"status\":{\"state\":\"completed\"},\"artifacts\":[{\"artifactId\":\"artifact-1\",\"name\":\"joke\",\"parts\":[{\"kind\":\"text\",\"text\":\"Why did the chicken cross the road? To get to the other side!\"}]}],\"metadata\":{},\"kind\":\"task\"}}\n\n";
+
+    public static final String TASK_RESUBSCRIPTION_TEST_REQUEST = """
+            {
+             "jsonrpc": "2.0",
+             "method": "tasks/resubscribe",
+             "params": {
+                "id": "task-1234"
+             }
+            }""";
 }

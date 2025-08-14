@@ -6,11 +6,19 @@ package io.a2a.client.transport;
 
 import static io.a2a.client.transport.JsonRestMessages.CANCEL_TASK_TEST_REQUEST;
 import static io.a2a.client.transport.JsonRestMessages.CANCEL_TASK_TEST_RESPONSE;
+import static io.a2a.client.transport.JsonRestMessages.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static io.a2a.client.transport.JsonRestMessages.GET_TASK_TEST_RESPONSE;
+import static io.a2a.client.transport.JsonRestMessages.LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
+import static io.a2a.client.transport.JsonRestMessages.SEND_MESSAGE_STREAMING_TEST_RESPONSE;
 import static io.a2a.client.transport.JsonRestMessages.SEND_MESSAGE_TEST_REQUEST;
 import static io.a2a.client.transport.JsonRestMessages.SEND_MESSAGE_TEST_RESPONSE;
+import static io.a2a.client.transport.JsonRestMessages.SEND_MESSAGE_STREAMING_TEST_REQUEST;
+import static io.a2a.client.transport.JsonRestMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST;
+import static io.a2a.client.transport.JsonRestMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -20,16 +28,29 @@ import io.a2a.spec.EventKind;
 import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
+import io.a2a.spec.GetTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
+import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.Part.Kind;
+import io.a2a.spec.PushNotificationAuthenticationInfo;
+import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
+import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TextPart;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +63,16 @@ public class JSONRestTransportTest {
     private ClientAndServer server;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
+//        ConfigurationProperties.logLevel("DEBUG");
+//        String loggingConfiguration = ""
+//                + "handlers=org.mockserver.logging.StandardOutConsoleHandler\n"
+//                + "org.mockserver.logging.StandardOutConsoleHandler.level=ALL\n"
+//                + "org.mockserver.logging.StandardOutConsoleHandler.formatter=java.util.logging.SimpleFormatter\n"
+//                + "java.util.logging.SimpleFormatter.format=%1$tF %1$tT  %3$s  %4$s  %5$s %6$s%n\n"
+//                + ".level=" + javaLoggerLogLevel() + "\n"
+//                + "io.netty.handler.ssl.SslHandler.level=WARNING";
+//        LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(loggingConfiguration.getBytes(UTF_8)));
         server = new ClientAndServer(4001);
     }
 
@@ -159,7 +189,7 @@ public class JSONRestTransportTest {
         assertEquals("", artifact.name());
         assertEquals(false, artifact.parts().isEmpty());
         assertEquals(Kind.TEXT, artifact.parts().get(0).getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart)artifact.parts().get(0)).getText());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).getText());
         assertEquals(1, task.getHistory().size());
         Message history = task.getHistory().get(0);
         assertEquals("message", history.getKind());
@@ -171,113 +201,157 @@ public class JSONRestTransportTest {
         assertEquals(Kind.FILE, history.getParts().get(1).getKind());
         FilePart part = (FilePart) history.getParts().get(1);
         assertEquals("text/plain", part.getFile().mimeType());
-        assertEquals("file.txt",part.getFile().name());
-        assertEquals("file:///path/to/file.txt", ((FileWithUri)part.getFile()).uri());
+        assertEquals("file.txt", part.getFile().name());
+        assertEquals("file:///path/to/file.txt", ((FileWithUri) part.getFile()).uri());
         part = (FilePart) history.getParts().get(2);
         assertEquals(Kind.FILE, part.getKind());
         assertEquals("hello.txt", part.getFile().name());
         assertEquals("text/plain", part.getFile().mimeType());
-        assertEquals("hello", ((FileWithBytes)part.getFile()).bytes());
+        assertEquals("hello", ((FileWithBytes) part.getFile()).bytes());
         assertNull(history.getMetadata());
         assertNull(history.getReferenceTaskIds());
     }
-//
-//
-//    /**
-//     * Test of sendMessageStreaming method, of class JSONRestTransport.
-//     */
-//    @Test
-//    public void testSendMessageStreaming() throws Exception {
-//        System.out.println("sendMessageStreaming");
-//        MessageSendParams request = null;
-//        Consumer<StreamingEventKind> eventConsumer = null;
-//        Consumer<Throwable> errorConsumer = null;
-//        ClientCallContext context = null;
-//        JSONRestTransport instance =new JSONRestTransport("http://localhost:4001");
-//        instance.sendMessageStreaming(request, eventConsumer, errorConsumer, context);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getTask method, of class JSONRestTransport.
-//     */
-//    @Test
-//    public void testGetTask() throws Exception {
-//        System.out.println("getTask");
-//        TaskQueryParams request = null;
-//        ClientCallContext context = null;
-//        JSONRestTransport instance =new JSONRestTransport("http://localhost:4001");
-//        Task expResult = null;
-//        Task result = instance.getTask(request, context);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of cancelTask method, of class JSONRestTransport.
-//     */
-//    @Test
-//    public void testCancelTask() throws Exception {
-//        System.out.println("cancelTask");
-//        TaskIdParams request = null;
-//        ClientCallContext context = null;
-//        JSONRestTransport instance =new JSONRestTransport("http://localhost:4001");
-//        Task expResult = null;
-//        Task result = instance.cancelTask(request, context);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of setTaskPushNotificationConfiguration method, of class JSONRestTransport.
-//     */
-//    @Test
-//    public void testSetTaskPushNotificationConfiguration() throws Exception {
-//        System.out.println("setTaskPushNotificationConfiguration");
-//        TaskPushNotificationConfig request = null;
-//        ClientCallContext context = null;
-//        JSONRestTransport instance =new JSONRestTransport("http://localhost:4001");
-//        TaskPushNotificationConfig expResult = null;
-//        TaskPushNotificationConfig result = instance.setTaskPushNotificationConfiguration(request, context);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getTaskPushNotificationConfiguration method, of class JSONRestTransport.
-//     */
-//    @Test
-//    public void testGetTaskPushNotificationConfiguration() throws Exception {
-//        System.out.println("getTaskPushNotificationConfiguration");
-//        GetTaskPushNotificationConfigParams request = null;
-//        ClientCallContext context = null;
-//        JSONRestTransport instance =new JSONRestTransport("http://localhost:4001");
-//        TaskPushNotificationConfig expResult = null;
-//        TaskPushNotificationConfig result = instance.getTaskPushNotificationConfiguration(request, context);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of listTaskPushNotificationConfigurations method, of class JSONRestTransport.
-//     */
-//    @Test
-//    public void testListTaskPushNotificationConfigurations() throws Exception {
-//        System.out.println("listTaskPushNotificationConfigurations");
-//        ListTaskPushNotificationConfigParams request = null;
-//        ClientCallContext context = null;
-//        JSONRestTransport instance =new JSONRestTransport("http://localhost:4001");
-//        List<TaskPushNotificationConfig> expResult = null;
-//        List<TaskPushNotificationConfig> result = instance.listTaskPushNotificationConfigurations(request, context);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+
+    /**
+     * Test of sendMessageStreaming method, of class JSONRestTransport.
+     */
+    @Test
+    public void testSendMessageStreaming() throws Exception {
+        this.server.when(
+                request()
+                        .withMethod("POST")
+                        .withPath("/v1/message:stream")
+                        .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
+                );
+
+        JSONRestTransport client = new JSONRestTransport("http://localhost:4001");
+        Message message = new Message.Builder()
+                .role(Message.Role.USER)
+                .parts(Collections.singletonList(new TextPart("tell me some jokes")))
+                .contextId("context-1234")
+                .messageId("message-1234")
+                .build();
+        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+                .acceptedOutputModes(List.of("text"))
+                .blocking(false)
+                .build();
+        MessageSendParams params = new MessageSendParams.Builder()
+                .message(message)
+                .configuration(configuration)
+                .build();
+        AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
+        CountDownLatch latch = new CountDownLatch(1);
+        Consumer<StreamingEventKind> eventHandler = event -> {
+            receivedEvent.set(event);
+            latch.countDown();
+        };
+        Consumer<Throwable> errorHandler = error -> {
+        };
+        client.sendMessageStreaming(params, eventHandler, errorHandler, null);
+
+        boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
+        assertTrue(eventReceived);
+        assertNotNull(receivedEvent.get());
+        assertEquals("task", receivedEvent.get().getKind());
+        Task task = (Task) receivedEvent.get();
+        assertEquals("2", task.getId());
+    }
+
+    /**
+     * Test of setTaskPushNotificationConfiguration method, of class JSONRestTransport.
+     */
+    @Test
+    public void testSetTaskPushNotificationConfiguration() throws Exception {
+        System.out.println("setTaskPushNotificationConfiguration");
+        this.server.when(
+                request()
+                        .withMethod("POST")
+                        .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
+                        .withBody(JsonBody.json(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
+                );
+        JSONRestTransport client = new JSONRestTransport("http://localhost:4001");
+        TaskPushNotificationConfig pushedConfig = new TaskPushNotificationConfig(
+                "de38c76d-d54c-436c-8b9f-4c2703648d64",
+                new PushNotificationConfig.Builder()
+                        .url("https://example.com/callback")
+                        .authenticationInfo(
+                                new PushNotificationAuthenticationInfo(Collections.singletonList("jwt"), null))
+                        .build());
+        TaskPushNotificationConfig taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(pushedConfig, null);
+        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+        assertNotNull(pushNotificationConfig);
+        assertEquals("https://example.com/callback", pushNotificationConfig.url());
+        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+        assertEquals(1, authenticationInfo.schemes().size());
+        assertEquals("jwt", authenticationInfo.schemes().get(0));
+    }
+
+    /**
+     * Test of getTaskPushNotificationConfiguration method, of class JSONRestTransport.
+     */
+    @Test
+    public void testGetTaskPushNotificationConfiguration() throws Exception {
+        this.server.when(
+                request()
+                        .withMethod("GET")
+                        .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10")
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
+                );
+
+        JSONRestTransport client = new JSONRestTransport("http://localhost:4001");
+        TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
+                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "10",
+                        new HashMap<>()), null);
+        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+        assertNotNull(pushNotificationConfig);
+        assertEquals("https://example.com/callback", pushNotificationConfig.url());
+        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+        assertTrue(authenticationInfo.schemes().size() == 1);
+        assertEquals("jwt", authenticationInfo.schemes().get(0));
+    }
+
+    /**
+     * Test of listTaskPushNotificationConfigurations method, of class JSONRestTransport.
+     */
+    @Test
+    public void testListTaskPushNotificationConfigurations() throws Exception {
+        System.out.println("listTaskPushNotificationConfigurations");
+        this.server.when(
+                request()
+                        .withMethod("GET")
+                        .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
+        )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
+                );
+
+        JSONRestTransport client = new JSONRestTransport("http://localhost:4001");
+        List<TaskPushNotificationConfig> taskPushNotificationConfigs = client.listTaskPushNotificationConfigurations(
+                new ListTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", new HashMap<>()), null);
+        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfigs.get(0).pushNotificationConfig();
+        assertNotNull(pushNotificationConfig);
+        assertEquals("https://example.com/callback", pushNotificationConfig.url());
+        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+        assertTrue(authenticationInfo.schemes().size() == 1);
+        assertEquals("jwt", authenticationInfo.schemes().get(0));
+    }
 //
 //    /**
 //     * Test of deleteTaskPushNotificationConfigurations method, of class JSONRestTransport.

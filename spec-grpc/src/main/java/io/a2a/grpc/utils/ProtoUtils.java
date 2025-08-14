@@ -149,7 +149,9 @@ public class ProtoUtils {
             io.a2a.grpc.Message.Builder builder = io.a2a.grpc.Message.newBuilder();
             builder.setMessageId(message.getMessageId());
             builder.setContextId(message.getContextId());
-            builder.setTaskId(message.getTaskId());
+            if(message.getTaskId() != null) {
+                builder.setTaskId(message.getTaskId());
+            }
             builder.setRole(role(message.getRole()));
             if (message.getParts() != null) {
                 builder.addAllContent(message.getParts().stream().map(ToProto::part).collect(Collectors.toList()));
@@ -159,8 +161,9 @@ public class ProtoUtils {
         }
 
         public static io.a2a.grpc.TaskPushNotificationConfig taskPushNotificationConfig(TaskPushNotificationConfig config) {
+            String id = config.pushNotificationConfig().id();
             io.a2a.grpc.TaskPushNotificationConfig.Builder builder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
-            builder.setName("tasks/" + config.taskId() + "/pushNotificationConfigs/" + config.pushNotificationConfig().id());
+            builder.setName("tasks/" + config.taskId() + "/pushNotificationConfigs/" + (id == null ? "" : id));
             builder.setPushNotificationConfig(pushNotificationConfig(config.pushNotificationConfig()));
             return builder.build();
         }
@@ -341,6 +344,17 @@ public class ProtoUtils {
             return builder.build();
         }
 
+        public static io.a2a.grpc.SendMessageRequest sendMessageRequest(MessageSendParams request) {
+            io.a2a.grpc.SendMessageRequest.Builder builder =  io.a2a.grpc.SendMessageRequest.newBuilder();
+            builder.setRequest(message(request.message()));
+            if (request.configuration() != null) {
+                builder.setConfiguration(messageSendConfiguration(request.configuration()));
+            }
+            if (request.metadata() != null && ! request.metadata().isEmpty()) {
+                builder.setMetadata(struct(request.metadata()));
+            }
+            return builder.build();
+        }
         private static io.a2a.grpc.AgentExtension agentExtension(AgentExtension agentExtension) {
             io.a2a.grpc.AgentExtension.Builder builder = io.a2a.grpc.AgentExtension.newBuilder();
             if (agentExtension.description() != null) {
@@ -695,6 +709,16 @@ public class ProtoUtils {
             String name = request.getName();
             String id = name.substring(name.lastIndexOf('/') + 1);
             return new TaskIdParams(id);
+        }
+        
+        
+        public static List<TaskPushNotificationConfig> listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigResponseOrBuilder response) {
+            List<io.a2a.grpc.TaskPushNotificationConfig> configs = response.getConfigsList();
+            List<TaskPushNotificationConfig> result = new ArrayList<>(configs.size());
+            for(io.a2a.grpc.TaskPushNotificationConfig config : configs) {
+                result.add(taskPushNotificationConfig(config));
+            }
+            return result;
         }
 
         public static ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigRequestOrBuilder request) {

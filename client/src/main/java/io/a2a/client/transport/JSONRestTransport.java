@@ -1,7 +1,3 @@
-/*
- * Copyright The WildFly Authors
- * SPDX-License-Identifier: Apache-2.0
- */
 package io.a2a.client.transport;
 
 import static io.a2a.util.Assert.checkNotNullParam;
@@ -13,8 +9,12 @@ import com.google.protobuf.util.JsonFormat;
 import io.a2a.client.ClientCallContext;
 import io.a2a.client.ClientCallInterceptor;
 import io.a2a.client.PayloadAndHeaders;
+import io.a2a.client.sse.JSONRestSSEEventListener;
 import io.a2a.grpc.CancelTaskRequest;
+import io.a2a.grpc.CreateTaskPushNotificationConfigRequest;
+import io.a2a.grpc.GetTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskRequest;
+import io.a2a.grpc.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.http.A2AHttpClient;
 import io.a2a.http.A2AHttpResponse;
@@ -31,9 +31,13 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.grpc.utils.ProtoUtils;
+import io.a2a.spec.SendStreamingMessageRequest;
+import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class JSONRestTransport implements ClientTransport {
@@ -62,19 +66,11 @@ public class JSONRestTransport implements ClientTransport {
     @Override
     public EventKind sendMessage(MessageSendParams messageSendParams, ClientCallContext context) throws A2AClientException {
         checkNotNullParam("messageSendParams", messageSendParams);
-        io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder();
-        builder.setRequest(ProtoUtils.ToProto.message(messageSendParams.message()));
-        if (messageSendParams.configuration() != null) {
-            builder.setConfiguration(ProtoUtils.ToProto.messageSendConfiguration(messageSendParams.configuration()));
-        }
-        if (messageSendParams.metadata() != null) {
-            builder.setMetadata(ProtoUtils.ToProto.struct(messageSendParams.metadata()));
-        }
+        io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder(ProtoUtils.ToProto.sendMessageRequest(messageSendParams));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SendMessageRequest.METHOD, builder.getRequestOrBuilder(),
                 agentCard, context);
         try {
             String httpResponseBody = sendPostRequest(agentUrl + "/v1/message:send", payloadAndHeaders);
-            System.out.println("Response " + httpResponseBody);
             io.a2a.grpc.SendMessageResponse.Builder responseBuilder = io.a2a.grpc.SendMessageResponse.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             if (responseBuilder.hasMsg()) {
@@ -89,8 +85,28 @@ public class JSONRestTransport implements ClientTransport {
     }
 
     @Override
-    public void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer, Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void sendMessageStreaming(MessageSendParams messageSendParams, Consumer<StreamingEventKind> eventConsumer, Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", messageSendParams);
+        checkNotNullParam("eventConsumer", eventConsumer);
+        checkNotNullParam("messageSendParams", messageSendParams);
+        io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder(ProtoUtils.ToProto.sendMessageRequest(messageSendParams));
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(SendStreamingMessageRequest.METHOD,
+                builder, agentCard, context);
+        AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
+        JSONRestSSEEventListener sseEventListener = new JSONRestSSEEventListener(eventConsumer, errorConsumer);
+        try {
+            A2AHttpClient.PostBuilder postBuilder = createPostBuilder(agentUrl + "/v1/message:stream", payloadAndHeaders);
+            ref.set(postBuilder.postAsyncSSE(
+                    msg -> sseEventListener.onMessage(msg, ref.get()),
+                    throwable -> sseEventListener.onError(throwable, ref.get()),
+                    () -> {
+                        // We don't need to do anything special on completion
+                    }));
+        } catch (IOException e) {
+            throw new A2AClientException("Failed to send streaming message request: " + e, e);
+        } catch (InterruptedException e) {
+            throw new A2AClientException("Send streaming message request timed out: " + e, e);
+        }
     }
 
     @Override
@@ -98,16 +114,15 @@ public class JSONRestTransport implements ClientTransport {
         checkNotNullParam("taskQueryParams", taskQueryParams);
         GetTaskRequest.Builder builder = GetTaskRequest.newBuilder();
         builder.setName("tasks/" + taskQueryParams.id());
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SendMessageRequest.METHOD, builder,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskRequest.METHOD, builder,
                 agentCard, context);
         try {
             String url;
-            if(taskQueryParams.historyLength() != null) {
+            if (taskQueryParams.historyLength() != null) {
                 url = agentUrl + String.format("/v1/tasks/%1s?historyLength=%2d", taskQueryParams.id(), taskQueryParams.historyLength());
             } else {
                 url = agentUrl + String.format("/v1/tasks/%1s", taskQueryParams.id());
             }
-            System.out.println("Getting URL: " + url);
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
             if (payloadAndHeaders.getHttpHeaders() != null) {
                 for (Map.Entry<String, String> entry : payloadAndHeaders.getHttpHeaders().entrySet()) {
@@ -120,7 +135,6 @@ public class JSONRestTransport implements ClientTransport {
                 throw new A2AClientException("Failed to send message: " + e, e);
             }
             String httpResponseBody = response.body();
-            System.out.println("Response " + httpResponseBody);
             io.a2a.grpc.Task.Builder responseBuilder = io.a2a.grpc.Task.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.task(responseBuilder);
@@ -136,11 +150,10 @@ public class JSONRestTransport implements ClientTransport {
         checkNotNullParam("taskIdParams", taskIdParams);
         CancelTaskRequest.Builder builder = CancelTaskRequest.newBuilder();
         builder.setName("tasks/" + taskIdParams.id());
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SendMessageRequest.METHOD, builder,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.CancelTaskRequest.METHOD, builder,
                 agentCard, context);
         try {
             String httpResponseBody = sendPostRequest(agentUrl + String.format("/v1/tasks/%1s:cancel", taskIdParams.id()), payloadAndHeaders);
-            System.out.println("Response " + httpResponseBody);
             io.a2a.grpc.Task.Builder responseBuilder = io.a2a.grpc.Task.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.task(responseBuilder);
@@ -153,17 +166,86 @@ public class JSONRestTransport implements ClientTransport {
 
     @Override
     public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request, ClientCallContext context) throws A2AClientException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        checkNotNullParam("request", request);
+        CreateTaskPushNotificationConfigRequest.Builder builder = CreateTaskPushNotificationConfigRequest.newBuilder();
+        builder.setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(request))
+                .setParent("tasks/" + request.taskId());
+        if (request.pushNotificationConfig().id() != null) {
+            builder.setConfigId(request.pushNotificationConfig().id());
+        }
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(SetTaskPushNotificationConfigRequest.METHOD, builder, agentCard, context);
+        try {
+            String httpResponseBody = sendPostRequest(agentUrl + String.format("/v1/tasks/%1s/pushNotificationConfigs", request.taskId()), payloadAndHeaders);
+            io.a2a.grpc.TaskPushNotificationConfig.Builder reponseBuilder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
+            JsonFormat.parser().merge(httpResponseBody, reponseBuilder);
+            return ProtoUtils.FromProto.taskPushNotificationConfig(reponseBuilder);
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to set task push notification config: " + e, e);
+        }
     }
 
     @Override
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request, ClientCallContext context) throws A2AClientException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        checkNotNullParam("request", request);
+        GetTaskPushNotificationConfigRequest.Builder builder = GetTaskPushNotificationConfigRequest.newBuilder();
+        builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId()));
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskPushNotificationConfigRequest.METHOD, builder,
+                agentCard, context);
+        try {
+            String url = agentUrl + String.format("/v1/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId());
+            A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
+            if (payloadAndHeaders.getHttpHeaders() != null) {
+                for (Map.Entry<String, String> entry : payloadAndHeaders.getHttpHeaders().entrySet()) {
+                    getBuilder.addHeader(entry.getKey(), entry.getValue());
+                }
+            }
+            A2AHttpResponse response = getBuilder.get();
+            if (!response.success()) {
+                IOException e = new IOException("Request failed " + response.status());
+                throw new A2AClientException("Failed to send message: " + e, e);
+            }
+            String httpResponseBody = response.body();
+            io.a2a.grpc.TaskPushNotificationConfig.Builder reponseBuilder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
+            JsonFormat.parser().merge(httpResponseBody, reponseBuilder);
+            return ProtoUtils.FromProto.taskPushNotificationConfig(reponseBuilder);
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to send message: " + e, e);
+        }
     }
 
     @Override
     public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigParams request, ClientCallContext context) throws A2AClientException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        checkNotNullParam("request", request);
+        ListTaskPushNotificationConfigRequest.Builder builder = ListTaskPushNotificationConfigRequest.newBuilder();
+        builder.setParent(String.format("/tasks/%1s/pushNotificationConfigs", request.id()));
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.ListTaskPushNotificationConfigRequest.METHOD, builder,
+                agentCard, context);
+        try {
+            String url = agentUrl + String.format("/v1/tasks/%1s/pushNotificationConfigs", request.id());
+            A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
+            if (payloadAndHeaders.getHttpHeaders() != null) {
+                for (Map.Entry<String, String> entry : payloadAndHeaders.getHttpHeaders().entrySet()) {
+                    getBuilder.addHeader(entry.getKey(), entry.getValue());
+                }
+            }
+            A2AHttpResponse response = getBuilder.get();
+            if (!response.success()) {
+                IOException e = new IOException("Request failed " + response.status());
+                throw new A2AClientException("Failed to send message: " + e, e);
+            }
+            String httpResponseBody = response.body();
+            io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder reponseBuilder = io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder();
+            JsonFormat.parser().merge(httpResponseBody, reponseBuilder);
+            return ProtoUtils.FromProto.listTaskPushNotificationConfigParams(reponseBuilder);
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to send message: " + e, e);
+        }
     }
 
     @Override
@@ -173,7 +255,7 @@ public class JSONRestTransport implements ClientTransport {
 
     @Override
     public void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
-             Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+            Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
@@ -222,7 +304,6 @@ public class JSONRestTransport implements ClientTransport {
                 postBuilder.addHeader(entry.getKey(), entry.getValue());
             }
         }
-
         return postBuilder;
     }
 
