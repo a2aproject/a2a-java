@@ -280,6 +280,11 @@
 
     <modules>
         <module>client</module>
+        <module>client-config</module>
+        <module>client-http</module>
+        <module>client-transport/grpc</module>
+        <module>client-transport/jsonrpc</module>
+        <module>client-transport/spi</module>
         <module>common</module>
         <module>examples/helloworld</module>
         <module>reference/common</module>

@@ -10,8 +10,8 @@ import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import io.a2a.http.A2AHttpClient;
-import io.a2a.http.JdkA2AHttpClient;
+import io.a2a.client.http.A2AHttpClient;
+import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.util.Utils;
