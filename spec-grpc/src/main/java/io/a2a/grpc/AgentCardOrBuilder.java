@@ -319,6 +319,18 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
+   * This list can be seen as an OR of ANDs. Each object in the list describes
+   * one possible set of security requirements that must be present on a
+   * request. This allows specifying, for example, "callers must either use
+   * OAuth OR an API Key AND mTLS."
+   * Example:
+   * security {
+   * schemes { key: "oauth" value { list: ["read"] } }
+   * }
+   * security {
+   * schemes { key: "api-key" }
+   * schemes { key: "mtls" }
+   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -329,6 +341,18 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
+   * This list can be seen as an OR of ANDs. Each object in the list describes
+   * one possible set of security requirements that must be present on a
+   * request. This allows specifying, for example, "callers must either use
+   * OAuth OR an API Key AND mTLS."
+   * Example:
+   * security {
+   * schemes { key: "oauth" value { list: ["read"] } }
+   * }
+   * security {
+   * schemes { key: "api-key" }
+   * schemes { key: "mtls" }
+   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -338,6 +362,18 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
+   * This list can be seen as an OR of ANDs. Each object in the list describes
+   * one possible set of security requirements that must be present on a
+   * request. This allows specifying, for example, "callers must either use
+   * OAuth OR an API Key AND mTLS."
+   * Example:
+   * security {
+   * schemes { key: "oauth" value { list: ["read"] } }
+   * }
+   * security {
+   * schemes { key: "api-key" }
+   * schemes { key: "mtls" }
+   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -347,6 +383,18 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
+   * This list can be seen as an OR of ANDs. Each object in the list describes
+   * one possible set of security requirements that must be present on a
+   * request. This allows specifying, for example, "callers must either use
+   * OAuth OR an API Key AND mTLS."
+   * Example:
+   * security {
+   * schemes { key: "oauth" value { list: ["read"] } }
+   * }
+   * security {
+   * schemes { key: "api-key" }
+   * schemes { key: "mtls" }
+   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -357,6 +405,18 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
+   * This list can be seen as an OR of ANDs. Each object in the list describes
+   * one possible set of security requirements that must be present on a
+   * request. This allows specifying, for example, "callers must either use
+   * OAuth OR an API Key AND mTLS."
+   * Example:
+   * security {
+   * schemes { key: "oauth" value { list: ["read"] } }
+   * }
+   * security {
+   * schemes { key: "api-key" }
+   * schemes { key: "mtls" }
+   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -519,4 +579,48 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * @return The supportsAuthenticatedExtendedCard.
    */
   boolean getSupportsAuthenticatedExtendedCard();
+
+  /**
+   * <pre>
+   * JSON Web Signatures computed for this AgentCard.
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   */
+  java.util.List<io.a2a.grpc.AgentCardSignature> 
+      getSignaturesList();
+  /**
+   * <pre>
+   * JSON Web Signatures computed for this AgentCard.
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   */
+  io.a2a.grpc.AgentCardSignature getSignatures(int index);
+  /**
+   * <pre>
+   * JSON Web Signatures computed for this AgentCard.
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   */
+  int getSignaturesCount();
+  /**
+   * <pre>
+   * JSON Web Signatures computed for this AgentCard.
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   */
+  java.util.List<? extends io.a2a.grpc.AgentCardSignatureOrBuilder> 
+      getSignaturesOrBuilderList();
+  /**
+   * <pre>
+   * JSON Web Signatures computed for this AgentCard.
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   */
+  io.a2a.grpc.AgentCardSignatureOrBuilder getSignaturesOrBuilder(
+      int index);
 }

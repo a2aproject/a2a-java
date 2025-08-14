@@ -34,10 +34,13 @@ import io.a2a.client.A2AClient;
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.Artifact;
+import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.CancelTaskResponse;
 import io.a2a.spec.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.spec.Event;
+import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
+import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
@@ -425,7 +428,7 @@ public abstract class AbstractA2AServerTest {
         AgentCard agentCard = given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .when()
-                .get("/.well-known/agent.json")
+                .get("/.well-known/agent-card.json")
                 .then()
                 .statusCode(200)
                 .extract()
@@ -444,13 +447,20 @@ public abstract class AbstractA2AServerTest {
 
     @Test
     public void testGetExtendAgentCardNotSupported() {
-        given()
+        GetAuthenticatedExtendedCardRequest request = new GetAuthenticatedExtendedCardRequest("1");
+        GetAuthenticatedExtendedCardResponse response = given()
                 .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
                 .when()
-                .get("/agent/authenticatedExtendedCard")
+                .post("/")
                 .then()
-                .statusCode(404)
-                .body("error", equalTo("Extended agent card not supported or not enabled."));
+                .statusCode(200)
+                .extract()
+                .as(GetAuthenticatedExtendedCardResponse.class);
+        assertEquals("1", response.getId());
+        assertInstanceOf(JSONRPCError.class, response.getError());
+        assertEquals(new AuthenticatedExtendedCardNotConfiguredError().getCode(), response.getError().getCode());
+        assertNull(response.getResult());
     }
 
     @Test

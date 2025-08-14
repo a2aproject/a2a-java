@@ -24,6 +24,8 @@ import io.a2a.spec.CancelTaskResponse;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.spec.DeleteTaskPushNotificationConfigResponse;
+import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
+import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
@@ -61,6 +63,7 @@ public class A2AClient {
     private static final TypeReference<SetTaskPushNotificationConfigResponse> SET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<ListTaskPushNotificationConfigResponse> LIST_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<DeleteTaskPushNotificationConfigResponse> DELETE_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
+    private static final TypeReference<GetAuthenticatedExtendedCardResponse> GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE = new TypeReference<>() {};
     private final A2AHttpClient httpClient;
     private final String agentUrl;
     private AgentCard agentCard;
@@ -632,8 +635,51 @@ public class A2AClient {
         }
     }
 
+    /**
+     * Retrieve the authenticated extended agent card.
+     *
+     * @param authHeaders the HTTP authentication headers to use
+     * @return the response
+     * @throws A2AServerException if retrieving the authenticated extended agent card fails for any reason
+     */
+    public GetAuthenticatedExtendedCardResponse getAuthenticatedExtendedCard(Map<String, String> authHeaders) throws A2AServerException {
+        return getAuthenticatedExtendedCard(null, authHeaders);
+    }
+
+    /**
+     * Retrieve the authenticated extended agent card.
+     *
+     * @param requestId the request ID to use
+     * @param authHeaders the HTTP authentication headers to use
+     * @return the response
+     * @throws A2AServerException if retrieving the authenticated extended agent card fails for any reason
+     */
+    public GetAuthenticatedExtendedCardResponse getAuthenticatedExtendedCard(String requestId,
+                                                                             Map<String, String> authHeaders) throws A2AServerException {
+        GetAuthenticatedExtendedCardRequest.Builder requestBuilder = new GetAuthenticatedExtendedCardRequest.Builder()
+                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                .method(GetAuthenticatedExtendedCardRequest.METHOD);
+
+        if (requestId != null) {
+            requestBuilder.id(requestId);
+        }
+
+        GetAuthenticatedExtendedCardRequest request = requestBuilder.build();
+
+        try {
+            String httpResponseBody = sendPostRequest(request, authHeaders);
+            return unmarshalResponse(httpResponseBody, GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE);
+        } catch (IOException | InterruptedException e) {
+            throw new A2AServerException("Failed to get authenticated extended agent card: " + e, e);
+        }
+    }
+
     private String sendPostRequest(Object value) throws IOException, InterruptedException {
-        A2AHttpClient.PostBuilder builder = createPostBuilder(value);
+        return sendPostRequest(value, null);
+    }
+
+    private String sendPostRequest(Object value, Map<String, String> authHeaders) throws IOException, InterruptedException {
+        A2AHttpClient.PostBuilder builder = createPostBuilder(value, authHeaders);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
             throw new IOException("Request failed " + response.status());
@@ -642,11 +688,20 @@ public class A2AClient {
     }
 
     private A2AHttpClient.PostBuilder createPostBuilder(Object value) throws JsonProcessingException {
-        return httpClient.createPost()
+        return createPostBuilder(value, null);
+    }
+
+    private A2AHttpClient.PostBuilder createPostBuilder(Object value, Map<String, String> authHeaders) throws JsonProcessingException {
+        A2AHttpClient.PostBuilder builder =  httpClient.createPost()
                 .url(agentUrl)
                 .addHeader("Content-Type", "application/json")
                 .body(Utils.OBJECT_MAPPER.writeValueAsString(value));
-
+        if (authHeaders != null) {
+            for (Map.Entry<String, String> entry : authHeaders.entrySet()) {
+                builder.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder;
     }
 
     private <T extends JSONRPCResponse> T unmarshalResponse(String response, TypeReference<T> typeReference)

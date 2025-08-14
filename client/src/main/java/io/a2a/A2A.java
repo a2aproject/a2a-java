@@ -101,7 +101,7 @@ public class A2A {
      *
      * @param agentUrl the base URL for the agent whose agent card we want to retrieve
      * @param relativeCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent.json"
+     *                         agent URL, defaults to ".well-known/agent-card.json"
      * @param authHeaders the HTTP authentication headers to use
      * @return the agent card
      * @throws A2AClientError If an HTTP error occurs fetching the card
@@ -117,7 +117,7 @@ public class A2A {
      * @param httpClient the http client to use
      * @param agentUrl the base URL for the agent whose agent card we want to retrieve
      * @param relativeCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent.json"
+     *                         agent URL, defaults to ".well-known/agent-card.json"
      * @param authHeaders the HTTP authentication headers to use
      * @return the agent card
      * @throws A2AClientError If an HTTP error occurs fetching the card
