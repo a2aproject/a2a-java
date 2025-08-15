@@ -10,14 +10,28 @@ import io.a2a.util.Utils;
 import java.util.UUID;
 
 /**
- * A get task push notification request.
+ * A JSON-RPC request to retrieve the push notification configuration for a specific task.
+ * This request is used to get the current webhook configuration that the server uses
+ * to send asynchronous task updates to the client. Push notifications are useful for
+ * long-running tasks where the client may not maintain a persistent connection.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<GetTaskPushNotificationConfigParams> {
 
+    /** The JSON-RPC method name for getting push notification configuration. */
     public static final String METHOD = "tasks/pushNotificationConfig/get";
 
+    /**
+     * Creates a new GetTaskPushNotificationConfigRequest with full parameter specification.
+     * This constructor is primarily used by Jackson for JSON deserialization.
+     * 
+     * @param jsonrpc the JSON-RPC protocol version (must be "2.0")
+     * @param id the request identifier (string, number, or null)
+     * @param method the method name (must be "tasks/pushNotificationConfig/get")
+     * @param params the task parameters containing the task ID
+     * @throws IllegalArgumentException if the JSON-RPC version is invalid, method is incorrect, or required parameters are null
+     */
     @JsonCreator
     public GetTaskPushNotificationConfigRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
                                                 @JsonProperty("method") String method, @JsonProperty("params") GetTaskPushNotificationConfigParams params) {

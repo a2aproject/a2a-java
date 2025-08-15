@@ -55,10 +55,27 @@ public final class APIKeySecurityScheme implements SecurityScheme {
         }
     }
 
+    /**
+     * Constructs a new APIKeySecurityScheme with the specified parameters.
+     *
+     * @param in the location of the API key (header, query, or cookie)
+     * @param name the name of the API key parameter
+     * @param description a description of the security scheme
+     */
     public APIKeySecurityScheme(String in, String name, String description) {
         this(in, name, description, API_KEY);
     }
 
+    /**
+     * Constructs a new APIKeySecurityScheme with the specified parameters.
+     * This constructor is used for JSON deserialization.
+     *
+     * @param in the location of the API key (header, query, or cookie)
+     * @param name the name of the API key parameter
+     * @param description a description of the security scheme
+     * @param type the type of security scheme (must be "apiKey")
+     * @throws IllegalArgumentException if the type is not "apiKey"
+     */
     @JsonCreator
     public APIKeySecurityScheme(@JsonProperty("in") String in, @JsonProperty("name") String name,
                                 @JsonProperty("description") String description, @JsonProperty("type") String type) {
@@ -79,38 +96,79 @@ public final class APIKeySecurityScheme implements SecurityScheme {
     }
 
 
+    /**
+     * Gets the location of the API key.
+     *
+     * @return the location where the API key should be placed (header, query, or cookie)
+     */
     public String getIn() {
         return in;
     }
 
+    /**
+     * Gets the name of the API key parameter.
+     *
+     * @return the parameter name for the API key
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the type of this security scheme.
+     *
+     * @return the security scheme type (always "apiKey")
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * Builder class for constructing APIKeySecurityScheme instances.
+     */
     public static class Builder {
         private String in;
         private String name;
         private String description;
 
+        /**
+         * Sets the location of the API key.
+         *
+         * @param in the location where the API key should be placed (header, query, or cookie)
+         * @return this builder instance for method chaining
+         */
         public Builder in(String in) {
             this.in = in;
             return this;
         }
 
+        /**
+         * Sets the name of the API key parameter.
+         *
+         * @param name the parameter name for the API key
+         * @return this builder instance for method chaining
+         */
         public Builder name(String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Sets the description of the security scheme.
+         *
+         * @param description a description of the security scheme
+         * @return this builder instance for method chaining
+         */
         public Builder description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Builds and returns a new APIKeySecurityScheme instance.
+         *
+         * @return a new APIKeySecurityScheme with the configured parameters
+         */
         public APIKeySecurityScheme build() {
             return new APIKeySecurityScheme(in, name, description);
         }
