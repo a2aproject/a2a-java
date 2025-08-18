@@ -280,7 +280,7 @@
 
     <modules>
         <module>client/base</module>
-        <module>client-config</module>
+        <module>client/config</module>
         <module>http-client</module>
         <module>client-transport/grpc</module>
         <module>client-transport/jsonrpc</module>
