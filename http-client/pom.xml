@@ -9,7 +9,7 @@
         <artifactId>a2a-java-sdk-parent</artifactId>
         <version>0.2.6.Beta1-SNAPSHOT</version>
     </parent>
-    <artifactId>a2a-java-sdk-client-http</artifactId>
+    <artifactId>a2a-java-sdk-http-client</artifactId>
 
     <packaging>jar</packaging>
 

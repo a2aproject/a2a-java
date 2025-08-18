@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-client-http</artifactId>
+            <artifactId>a2a-java-sdk-http-client</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
