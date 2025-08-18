@@ -279,7 +279,7 @@
     </build>
 
     <modules>
-        <module>client</module>
+        <module>client/base</module>
         <module>client-config</module>
         <module>http-client</module>
         <module>client-transport/grpc</module>
