@@ -36,6 +36,8 @@ import io.a2a.spec.FileWithUri;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.HTTPAuthSecurityScheme;
 import io.a2a.spec.ImplicitOAuthFlow;
+import io.a2a.spec.InvalidParamsError;
+import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
@@ -790,6 +792,9 @@ public class ProtoUtils {
         }
 
         public static Message message(io.a2a.grpc.Message message) {
+            if (message.getMessageId().isEmpty()) {
+                throw new InvalidParamsError();
+            }
             return new Message(
                     role(message.getRole()),
                     message.getContentList().stream().map(item -> part(item)).collect(Collectors.toList()),
@@ -840,7 +845,7 @@ public class ProtoUtils {
             } else if (part.hasData()) {
                 return dataPart(part.getData());
             }
-            return null;
+            throw new InvalidRequestError();
         }
 
         private static TextPart textPart(String text) {
@@ -853,7 +858,7 @@ public class ProtoUtils {
             } else if (filePart.hasFileWithUri()) {
                 return new FilePart(new FileWithUri(filePart.getMimeType(), null, filePart.getFileWithUri()));
             }
-            return null;
+            throw new InvalidRequestError();
         }
 
         private static DataPart dataPart(io.a2a.grpc.DataPart dataPart) {
@@ -878,7 +883,7 @@ public class ProtoUtils {
                 case ROLE_AGENT ->
                     Message.Role.AGENT;
                 default ->
-                    null;
+                    throw new InvalidRequestError();
             };
         }
 
@@ -934,7 +939,7 @@ public class ProtoUtils {
                     return value.getStringValue();
                 case NULL_VALUE:
                 default:
-                    return null;
+                    throw new InvalidRequestError();
             }
         }
     }
