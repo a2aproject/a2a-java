@@ -3,9 +3,7 @@ package io.a2a.client.config;
 import java.util.List;
 import java.util.Map;
 
-import io.a2a.client.http.A2AHttpClient;
 import io.a2a.spec.PushNotificationConfig;
-import io.grpc.Channel;
 
 /**
  * Configuration for the A2A client factory.
@@ -14,8 +12,7 @@ public class ClientConfig {
 
     private final Boolean streaming;
     private final Boolean polling;
-    private final A2AHttpClient httpClient;
-    private final Channel channel;
+    private final List<ClientTransportConfig> clientTransportConfigs;
     private final List<String> supportedTransports;
     private final Boolean useClientPreference;
     private final List<String> acceptedOutputModes;
@@ -23,14 +20,13 @@ public class ClientConfig {
     private final Integer historyLength;
     private final Map<String, Object> metadata;
 
-    public ClientConfig(Boolean streaming, Boolean polling, A2AHttpClient httpClient, Channel channel,
+    public ClientConfig(Boolean streaming, Boolean polling, List<ClientTransportConfig> clientTransportConfigs,
                         List<String> supportedTransports, Boolean useClientPreference,
                         List<String> acceptedOutputModes, PushNotificationConfig pushNotificationConfig,
                         Integer historyLength, Map<String, Object> metadata) {
         this.streaming = streaming == null ? true : streaming;
         this.polling = polling == null ? false : polling;
-        this.httpClient = httpClient;
-        this.channel = channel;
+        this.clientTransportConfigs = clientTransportConfigs;
         this.supportedTransports = supportedTransports;
         this.useClientPreference = useClientPreference == null ? false : useClientPreference;
         this.acceptedOutputModes = acceptedOutputModes;
@@ -47,12 +43,8 @@ public class ClientConfig {
         return polling;
     }
 
-    public A2AHttpClient getHttpClient() {
-        return httpClient;
-    }
-
-    public Channel getChannel() {
-        return channel;
+    public List<ClientTransportConfig> getClientTransportConfigs() {
+        return clientTransportConfigs;
     }
 
     public List<String> getSupportedTransports() {
@@ -82,8 +74,7 @@ public class ClientConfig {
     public static class Builder {
         private Boolean streaming;
         private Boolean polling;
-        private A2AHttpClient httpClient;
-        private Channel channel;
+        private List<ClientTransportConfig> clientTransportConfigs;
         private List<String> supportedTransports;
         private Boolean useClientPreference;
         private List<String> acceptedOutputModes;
@@ -101,13 +92,8 @@ public class ClientConfig {
             return this;
         }
 
-        public Builder setHttpClient(A2AHttpClient httpClient) {
-            this.httpClient = httpClient;
-            return this;
-        }
-
-        public Builder setChannel(Channel channel) {
-            this.channel = channel;
+        public Builder setClientTransportConfigs(List<ClientTransportConfig> clientTransportConfigs) {
+            this.clientTransportConfigs = clientTransportConfigs;
             return this;
         }
 
@@ -142,7 +128,7 @@ public class ClientConfig {
         }
 
         public ClientConfig build() {
-            return new ClientConfig(streaming, polling, httpClient, channel,
+            return new ClientConfig(streaming, polling, clientTransportConfigs,
                     supportedTransports, useClientPreference, acceptedOutputModes,
                     pushNotificationConfig, historyLength, metadata);
         }
