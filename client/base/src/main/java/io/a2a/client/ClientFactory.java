@@ -42,10 +42,11 @@ public class ClientFactory {
      * @param agentCard the agent card for the remote agent
      * @param consumers a list of consumers to pass responses from the remote agent to
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
+     * @return the client to use
      * @throws A2AClientException if the client cannot be created for any reason
      */
-    public AbstractClient create(AgentCard agentCard, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                 Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
+    public Client create(AgentCard agentCard, List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                         Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
         return create(agentCard, consumers, streamingErrorHandler, null);
     }
 
@@ -56,10 +57,11 @@ public class ClientFactory {
      * @param consumers a list of consumers to pass responses from the remote agent to
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
      * @param interceptors the optional list of client call interceptors (may be {@code null})
+     * @return the client to use
      * @throws A2AClientException if the client cannot be created for any reason
      */
-    public AbstractClient create(AgentCard agentCard, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                 Consumer<Throwable> streamingErrorHandler, List<ClientCallInterceptor> interceptors) throws A2AClientException {
+    public Client create(AgentCard agentCard, List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                         Consumer<Throwable> streamingErrorHandler, List<ClientCallInterceptor> interceptors) throws A2AClientException {
         checkNotNullParam("agentCard", agentCard);
         checkNotNullParam("consumers", consumers);
         LinkedHashMap<String, String> serverPreferredTransports = getServerPreferredTransports(agentCard);

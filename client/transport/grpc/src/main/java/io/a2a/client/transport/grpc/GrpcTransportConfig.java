@@ -1,17 +1,20 @@
 package io.a2a.client.transport.grpc;
 
+import java.util.function.Function;
+
 import io.a2a.client.config.ClientTransportConfig;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.Channel;
 
 public class GrpcTransportConfig implements ClientTransportConfig {
 
-    private final ManagedChannelBuilder<?> channelBuilder;
+    private final Function<String, Channel> channelFactory;
 
-    public GrpcTransportConfig(ManagedChannelBuilder<?> channelBuilder) {
-        this.channelBuilder = channelBuilder;
+    public GrpcTransportConfig(Function<String, Channel> channelFactory) {
+        this.channelFactory = channelFactory;
     }
 
-    public ManagedChannelBuilder<?> getManagedChannelBuilder() {
-        return channelBuilder;
+    public Function<String, Channel> getChannelFactory() {
+        return channelFactory;
     }
+
 }

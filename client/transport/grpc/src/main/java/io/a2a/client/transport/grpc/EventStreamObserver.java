@@ -48,7 +48,12 @@ public class EventStreamObserver implements StreamObserver<StreamResponse> {
     @Override
     public void onError(Throwable t) {
         if (errorHandler != null) {
-            errorHandler.accept(t);
+            // Map gRPC errors to proper A2A exceptions
+            if (t instanceof io.grpc.StatusRuntimeException) {
+                errorHandler.accept(GrpcErrorMapper.mapGrpcError((io.grpc.StatusRuntimeException) t));
+            } else {
+                errorHandler.accept(t);
+            }
         }
     }
 

@@ -45,7 +45,7 @@ public abstract class AbstractClient {
      * Send a message to the remote agent. This method will automatically use
      * the streaming or non-streaming approach as determined by the server's
      * agent card and the client configuration. The configured client consumers
-     * and will be used to handle messages, tasks, and update events received
+     * will be used to handle messages, tasks, and update events received
      * from the remote agent. The configured streaming error handler will be used
      * if an error occurs during streaming. The configured client push notification
      * configuration will get used for streaming.
@@ -55,6 +55,26 @@ public abstract class AbstractClient {
      * @throws A2AClientException if sending the message fails for any reason
      */
     public abstract void sendMessage(Message request, ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Send a message to the remote agent. This method will automatically use
+     * the streaming or non-streaming approach as determined by the server's
+     * agent card and the client configuration. The specified client consumers
+     * will be used to handle messages, tasks, and update events received
+     * from the remote agent. The specified streaming error handler will be used
+     * if an error occurs during streaming. The configured client push notification
+     * configuration will get used for streaming.
+     *
+     * @param request the message
+     * @param consumers a list of consumers to pass responses from the remote agent to
+     * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
+     * @param context optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if sending the message fails for any reason
+     */
+    public abstract void sendMessage(Message request,
+                                     List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                                     Consumer<Throwable> streamingErrorHandler,
+                                     ClientCallContext context) throws A2AClientException;
 
     /**
      * Send a message to the remote agent. This method will automatically use
@@ -143,12 +163,32 @@ public abstract class AbstractClient {
     /**
      * Resubscribe to a task's event stream.
      * This is only available if both the client and server support streaming.
+     * The configured client consumers will be used to handle messages, tasks,
+     * and update events received from the remote agent. The configured streaming
+     * error handler will be used if an error occurs during streaming.
      *
      * @param request the parameters specifying which task's notification configs to delete
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException if resubscribing fails for any reason
      */
     public abstract void resubscribe(TaskIdParams request, ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Resubscribe to a task's event stream.
+     * This is only available if both the client and server support streaming.
+     * The specified client consumers will be used to handle messages, tasks, and
+     * update events received from the remote agent. The specified streaming error
+     * handler will be used if an error occurs during streaming.
+     *
+     * @param request the parameters specifying which task's notification configs to delete
+     * @param consumers a list of consumers to pass responses from the remote agent to
+     * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
+     * @param context optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if resubscribing fails for any reason
+     */
+    public abstract void resubscribe(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                                     Consumer<Throwable> streamingErrorHandler, ClientCallContext context) throws A2AClientException;
+
 
     /**
      * Retrieve the AgentCard.
@@ -167,7 +207,7 @@ public abstract class AbstractClient {
     /**
      * Process the event using all configured consumers.
      */
-    public void consume(ClientEvent clientEventOrMessage, AgentCard agentCard) {
+    void consume(ClientEvent clientEventOrMessage, AgentCard agentCard) {
         for (BiConsumer<ClientEvent, AgentCard> consumer : consumers) {
             consumer.accept(clientEventOrMessage, agentCard);
         }

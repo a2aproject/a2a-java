@@ -58,7 +58,26 @@ public class Client extends AbstractClient {
                 .metadata(clientConfig.getMetadata())
                 .build();
 
-        sendMessage(messageSendParams, context);
+        sendMessage(messageSendParams, null, null, context);
+    }
+
+    @Override
+    public void sendMessage(Message request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                            Consumer<Throwable> streamingErrorHandler, ClientCallContext context) throws A2AClientException {
+        MessageSendConfiguration messageSendConfiguration = new MessageSendConfiguration.Builder()
+                .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
+                .blocking(clientConfig.isPolling())
+                .historyLength(clientConfig.getHistoryLength())
+                .pushNotification(clientConfig.getPushNotificationConfig())
+                .build();
+
+        MessageSendParams messageSendParams = new MessageSendParams.Builder()
+                .message(request)
+                .configuration(messageSendConfiguration)
+                .metadata(clientConfig.getMetadata())
+                .build();
+
+        sendMessage(messageSendParams, consumers, streamingErrorHandler, context);
     }
 
     @Override
@@ -77,7 +96,7 @@ public class Client extends AbstractClient {
                 .metadata(metatadata)
                 .build();
 
-        sendMessage(messageSendParams, context);
+        sendMessage(messageSendParams, null, null, context);
     }
 
     @Override
@@ -116,19 +135,13 @@ public class Client extends AbstractClient {
 
     @Override
     public void resubscribe(TaskIdParams request, ClientCallContext context) throws A2AClientException {
-        if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
-            throw new A2AClientException("Client and/or server does not support resubscription");
-        }
-        ClientTaskManager tracker = new ClientTaskManager();
-        Consumer<StreamingEventKind> eventHandler = event -> {
-            try {
-                ClientEvent clientEvent = getClientEvent(event, tracker);
-                consume(clientEvent, agentCard);
-            } catch (A2AClientError e) {
-                getStreamingErrorHandler().accept(e);
-            }
-        };
-        clientTransport.resubscribe(request, eventHandler, getStreamingErrorHandler(), context);
+       resubscribeToTask(request, null, null, context);
+    }
+
+    @Override
+    public void resubscribe(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                            Consumer<Throwable> streamingErrorHandler, ClientCallContext context) throws A2AClientException {
+        resubscribeToTask(request, consumers, streamingErrorHandler, context);
     }
 
     @Override
@@ -159,7 +172,8 @@ public class Client extends AbstractClient {
         }
     }
 
-    private void sendMessage(MessageSendParams messageSendParams, ClientCallContext context) throws A2AClientException {
+    private void sendMessage(MessageSendParams messageSendParams, List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                             Consumer<Throwable> errorHandler, ClientCallContext context) throws A2AClientException {
         if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
             EventKind eventKind = clientTransport.sendMessage(messageSendParams, context);
             ClientEvent clientEvent;
@@ -169,18 +183,61 @@ public class Client extends AbstractClient {
                 // must be a message
                 clientEvent = new MessageEvent((Message) eventKind);
             }
-            consume(clientEvent, agentCard);
+            consume(clientEvent, agentCard, consumers);
         } else {
             ClientTaskManager tracker = new ClientTaskManager();
+            Consumer<Throwable> overriddenErrorHandler = getOverriddenErrorHandler(errorHandler);
             Consumer<StreamingEventKind> eventHandler = event -> {
                 try {
                     ClientEvent clientEvent = getClientEvent(event, tracker);
-                    consume(clientEvent, agentCard);
+                    consume(clientEvent, agentCard, consumers);
                 } catch (A2AClientError e) {
-                    getStreamingErrorHandler().accept(e);
+                    overriddenErrorHandler.accept(e);
                 }
             };
-            clientTransport.sendMessageStreaming(messageSendParams, eventHandler, getStreamingErrorHandler(), context);
+            clientTransport.sendMessageStreaming(messageSendParams, eventHandler, overriddenErrorHandler, context);
+        }
+    }
+
+    private void resubscribeToTask(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                                   Consumer<Throwable> errorHandler, ClientCallContext context) throws A2AClientException {
+        if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
+            throw new A2AClientException("Client and/or server does not support resubscription");
+        }
+        ClientTaskManager tracker = new ClientTaskManager();
+        Consumer<Throwable> overriddenErrorHandler = getOverriddenErrorHandler(errorHandler);
+        Consumer<StreamingEventKind> eventHandler = event -> {
+            try {
+                ClientEvent clientEvent = getClientEvent(event, tracker);
+                consume(clientEvent, agentCard, consumers);
+            } catch (A2AClientError e) {
+                overriddenErrorHandler.accept(e);
+            }
+        };
+        clientTransport.resubscribe(request, eventHandler, overriddenErrorHandler, context);
+    }
+
+    private Consumer<Throwable> getOverriddenErrorHandler(Consumer<Throwable> errorHandler) {
+        return e -> {
+            if (errorHandler != null) {
+                errorHandler.accept(e);
+            } else {
+                if (getStreamingErrorHandler() != null) {
+                    getStreamingErrorHandler().accept(e);
+                }
+            }
+        };
+    }
+
+    private void consume(ClientEvent clientEvent, AgentCard agentCard, List<BiConsumer<ClientEvent, AgentCard>> consumers) {
+        if (consumers != null) {
+            // use specified consumers
+            for (BiConsumer<ClientEvent, AgentCard> consumer : consumers) {
+                consumer.accept(clientEvent, agentCard);
+            }
+        } else {
+            // use configured consumers
+            consume(clientEvent, agentCard);
         }
     }
 }

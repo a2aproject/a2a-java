@@ -21,18 +21,18 @@ public class GrpcTransportProvider implements ClientTransportProvider {
     public ClientTransport create(ClientConfig clientConfig, AgentCard agentCard,
                                   String agentUrl, List<ClientCallInterceptor> interceptors) {
         // not making use of the interceptors for gRPC for now
-        ManagedChannelBuilder<?> managedChannelBuilder = null;
+        Channel channel;
         List<ClientTransportConfig> clientTransportConfigs = clientConfig.getClientTransportConfigs();
         if (clientTransportConfigs != null) {
             for (ClientTransportConfig clientTransportConfig : clientTransportConfigs) {
                 if (clientTransportConfig instanceof GrpcTransportConfig grpcTransportConfig) {
-                    managedChannelBuilder = grpcTransportConfig.getManagedChannelBuilder();
-                    break;
+                    channel = grpcTransportConfig.getChannelFactory().apply(agentUrl);
+                    return new GrpcTransport(channel, agentCard);
                 }
             }
         }
-        Channel channel = managedChannelBuilder == null ? ManagedChannelBuilder.forTarget(agentUrl).build()
-                : managedChannelBuilder.forTarget(agentUrl).build();
+        // no channel factory configured
+        channel = ManagedChannelBuilder.forTarget(agentUrl).build();
         return new GrpcTransport(channel, agentCard);
     }
 

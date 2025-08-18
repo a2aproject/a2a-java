@@ -26,6 +26,8 @@ import io.a2a.spec.CancelTaskResponse;
 
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
+import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
@@ -67,8 +69,7 @@ public class JSONRPCTransport implements ClientTransport {
     private static final TypeReference<SetTaskPushNotificationConfigResponse> SET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<ListTaskPushNotificationConfigResponse> LIST_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<DeleteTaskPushNotificationConfigResponse> DELETE_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
-    // TODO: Uncomment once support for v0.3.0 has been merged
-    //private static final TypeReference<GetAuthenticatedExtendedCardResponse> GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE = new TypeReference<>() {};
+    private static final TypeReference<GetAuthenticatedExtendedCardResponse> GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE = new TypeReference<>() {};
 
     private final A2AHttpClient httpClient;
     private final String agentUrl;
@@ -335,12 +336,8 @@ public class JSONRPCTransport implements ClientTransport {
             if (!agentCard.supportsAuthenticatedExtendedCard()) {
                 return agentCard;
             }
-            resolver = new A2ACardResolver(httpClient, agentUrl, "/agent/authenticatedExtendedCard",
-                    getHttpHeaders(context));
-            agentCard = resolver.getAgentCard();
 
-            // TODO: Uncomment this code once support for v0.3.0 has been merged and remove the above 3 lines
-            /*GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = new GetAuthenticatedExtendedCardRequest.Builder()
+            GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = new GetAuthenticatedExtendedCardRequest.Builder()
                     .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
                     .method(GetAuthenticatedExtendedCardRequest.METHOD)
                     .build(); // id will be randomly generated
@@ -351,12 +348,11 @@ public class JSONRPCTransport implements ClientTransport {
             try {
                 String httpResponseBody = sendPostRequest(payloadAndHeaders);
                 GetAuthenticatedExtendedCardResponse response = unmarshalResponse(httpResponseBody,
-                        GET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE);
+                        GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE);
                 return response.getResult();
             } catch (IOException | InterruptedException e) {
                 throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
-            }*/
-            return agentCard;
+            }
         } catch(A2AClientError e){
             throw new A2AClientException("Failed to get agent card: " + e, e);
         }

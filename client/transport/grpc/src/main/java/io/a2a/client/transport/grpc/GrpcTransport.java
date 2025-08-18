@@ -70,7 +70,7 @@ public class GrpcTransport implements ClientTransport {
                 throw new A2AClientException("Server response did not contain a message or task");
             }
         } catch (StatusRuntimeException e) {
-            throw new A2AClientException("Failed to send message: " + e.getMessage(), e);
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to send message: ");
         }
     }
 
@@ -85,7 +85,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             asyncStub.sendStreamingMessage(grpcRequest, streamObserver);
         } catch (StatusRuntimeException e) {
-            throw new A2AClientException("Failed to send streaming message: " + e.getMessage(), e);
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to send streaming message request: ");
         }
     }
 
@@ -103,7 +103,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             return FromProto.task(blockingStub.getTask(getTaskRequest));
         } catch (StatusRuntimeException e) {
-            throw new A2AClientException("Failed to get task: " + e.getMessage(), e);
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to get task: ");
         }
     }
 
@@ -118,7 +118,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             return FromProto.task(blockingStub.cancelTask(cancelTaskRequest));
         } catch (StatusRuntimeException e) {
-            throw new A2AClientException("Failed to cancel task: " + e.getMessage(), e);
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to cancel task: ");
         }
     }
 
@@ -131,13 +131,13 @@ public class GrpcTransport implements ClientTransport {
         CreateTaskPushNotificationConfigRequest grpcRequest = CreateTaskPushNotificationConfigRequest.newBuilder()
                 .setParent("tasks/" + request.taskId())
                 .setConfig(ToProto.taskPushNotificationConfig(request))
-                .setConfigId(configId == null ? "" : configId)
+                .setConfigId(configId != null ? configId : request.taskId())
                 .build();
 
         try {
             return FromProto.taskPushNotificationConfig(blockingStub.createTaskPushNotificationConfig(grpcRequest));
         } catch (StatusRuntimeException e) {
-            throw new A2AClientException("Failed to set task push notification config: " + e.getMessage(), e);
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to create task push notification config: ");
         }
     }
 
@@ -154,7 +154,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             return FromProto.taskPushNotificationConfig(blockingStub.getTaskPushNotificationConfig(grpcRequest));
         } catch (StatusRuntimeException e) {
-            throw new A2AClientException("Failed to get task push notification config: " + e.getMessage(), e);
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to get task push notification config: ");
         }
     }
 
@@ -173,7 +173,7 @@ public class GrpcTransport implements ClientTransport {
                     .map(FromProto::taskPushNotificationConfig)
                     .collect(Collectors.toList());
         } catch (StatusRuntimeException e) {
-            throw new A2AClientException("Failed to list task push notification configs: " + e.getMessage(), e);
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to list task push notification config: ");
         }
     }
 
@@ -189,7 +189,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             blockingStub.deleteTaskPushNotificationConfig(grpcRequest);
         } catch (StatusRuntimeException e) {
-            throw new A2AClientException("Failed to delete task push notification configs: " + e.getMessage(), e);
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to delete task push notification config: ");
         }
     }
 
@@ -208,7 +208,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             asyncStub.taskSubscription(grpcRequest, streamObserver);
         } catch (StatusRuntimeException e) {
-            throw new A2AClientException("Failed to resubscribe to task: " + e.getMessage(), e);
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to resubscribe task push notification config: ");
         }
     }
 
@@ -246,6 +246,9 @@ public class GrpcTransport implements ClientTransport {
             name.append("/pushNotificationConfigs/");
             name.append(pushNotificationConfigId);
         }
+        //name.append("/pushNotificationConfigs/");
+        // Use taskId as default config ID if none provided
+        //name.append(pushNotificationConfigId != null ? pushNotificationConfigId : taskId);
         return name.toString();
     }
 

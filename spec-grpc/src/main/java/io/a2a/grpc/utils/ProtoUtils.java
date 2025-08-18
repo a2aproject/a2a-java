@@ -168,7 +168,8 @@ public class ProtoUtils {
 
         public static io.a2a.grpc.TaskPushNotificationConfig taskPushNotificationConfig(TaskPushNotificationConfig config) {
             io.a2a.grpc.TaskPushNotificationConfig.Builder builder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
-            builder.setName("tasks/" + config.taskId() + "/pushNotificationConfigs/" + config.pushNotificationConfig().id());
+            String configId = config.pushNotificationConfig().id();
+            builder.setName("tasks/" + config.taskId() + "/pushNotificationConfigs/" + (configId != null ? configId : config.taskId()));
             builder.setPushNotificationConfig(pushNotificationConfig(config.pushNotificationConfig()));
             return builder.build();
         }
@@ -703,13 +704,17 @@ public class ProtoUtils {
         }
 
         public static GetTaskPushNotificationConfigParams getTaskPushNotificationConfigParams(io.a2a.grpc.GetTaskPushNotificationConfigRequest request) {
-            String name = request.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}"
+            String name = request.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}" or /tasks/{id}
             String[] parts = name.split("/");
-            if (parts.length < 4) {
-                throw new IllegalArgumentException("Invalid name format for GetTaskPushNotificationConfigRequest: " + name);
-            }
             String taskId = parts[1];
-            String configId = parts[3];
+            String configId;
+            if (parts.length == 2) {
+                configId = taskId;
+            } else if (parts.length < 4) {
+                throw new IllegalArgumentException("Invalid name format for GetTaskPushNotificationConfigRequest: " + name);
+            } else {
+                configId = parts[3];
+            }
             return new GetTaskPushNotificationConfigParams(taskId, configId);
         }
 
@@ -763,13 +768,16 @@ public class ProtoUtils {
         private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfig pushNotification, String configId) {
             return new PushNotificationConfig(
                     pushNotification.getUrl(),
-                    pushNotification.getToken(),
-                    authenticationInfo(pushNotification.getAuthentication()),
+                    pushNotification.getToken().isEmpty() ? null : pushNotification.getToken(),
+                    pushNotification.hasAuthentication() ? authenticationInfo(pushNotification.getAuthentication()) : null,
                     pushNotification.getId().isEmpty() ? configId : pushNotification.getId()
             );
         }
 
         private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfig pushNotification) {
+            /*if (pushNotification == null) {
+                return null;
+            }*/
             return pushNotification(pushNotification, pushNotification.getId());
         }
 
@@ -795,6 +803,7 @@ public class ProtoUtils {
             if (message.getMessageId().isEmpty()) {
                 throw new InvalidParamsError();
             }
+
             return new Message(
                     role(message.getRole()),
                     message.getContentList().stream().map(item -> part(item)).collect(Collectors.toList()),
@@ -868,7 +877,7 @@ public class ProtoUtils {
         private static TaskStatus taskStatus(io.a2a.grpc.TaskStatus taskStatus) {
             return new TaskStatus(
                     taskState(taskStatus.getState()),
-                    message(taskStatus.getUpdate()),
+                    taskStatus.hasUpdate() ? message(taskStatus.getUpdate()) : null,
                     LocalDateTime.ofInstant(Instant.ofEpochSecond(taskStatus.getTimestamp().getSeconds(), taskStatus.getTimestamp().getNanos()), ZoneOffset.UTC)
             );
         }
