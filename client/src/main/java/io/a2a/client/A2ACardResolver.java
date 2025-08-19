@@ -55,7 +55,13 @@ public class A2ACardResolver {
     public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, String agentCardPath,
                            Map<String, String> authHeaders) throws A2AClientError {
         this.httpClient = httpClient;
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
+        }
         agentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
+        if (agentCardPath.startsWith("/")) {
+            agentCardPath = agentCardPath.substring(1);
+        }
         try {
             this.url = new URI(baseUrl).resolve(agentCardPath).toString();
         } catch (URISyntaxException e) {
