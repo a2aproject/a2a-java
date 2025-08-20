@@ -1,7 +1,5 @@
 package io.a2a.server.apps.common;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -21,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,8 +41,6 @@ import io.a2a.client.config.ClientTransportConfig;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfig;
 import io.a2a.client.transport.grpc.GrpcTransportConfig;
 import io.a2a.client.http.JdkA2AHttpClient;
-import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
-import io.a2a.spec.JSONRPCError;
 import io.grpc.ManagedChannelBuilder;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
@@ -474,7 +468,9 @@ public abstract class AbstractA2AServerTest {
 
             // Create error handler
             Consumer<Throwable> errorHandler = error -> {
-                errorRef.set(error);
+                if (!isStreamClosedError(error)) {
+                    errorRef.set(error);
+                }
                 eventLatch.countDown();
             };
 
@@ -484,8 +480,7 @@ public abstract class AbstractA2AServerTest {
                     .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
 
             // Resubscribe to the task with specific consumer and error handler
-            List<BiConsumer<ClientEvent, AgentCard>> consumers = consumer != null ? List.of(consumer) : List.of();
-            getClient().resubscribe(new TaskIdParams(MINIMAL_TASK.getId()), consumers, errorHandler, null);
+            getClient().resubscribe(new TaskIdParams(MINIMAL_TASK.getId()), List.of(consumer), errorHandler, null);
 
             // Wait for subscription to be established
             assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
@@ -544,7 +539,9 @@ public abstract class AbstractA2AServerTest {
 
         // Create error handler to capture the TaskNotFoundError
         Consumer<Throwable> errorHandler = error -> {
-            errorRef.set(error);
+            if (!isStreamClosedError(error)) {
+                errorRef.set(error);
+            }
             errorLatch.countDown();
         };
 
@@ -578,8 +575,7 @@ public abstract class AbstractA2AServerTest {
                 fail("Expected error for non-existent task resubscription");
             }
         } catch (A2AClientException e) {
-            // Also acceptable - the client might throw an exception immediately
-            assertInstanceOf(TaskNotFoundError.class, e.getCause());
+            fail("Expected error for non-existent task resubscription");
         }
     }
 
