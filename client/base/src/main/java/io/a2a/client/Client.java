@@ -45,38 +45,14 @@ public class Client extends AbstractClient {
 
     @Override
     public void sendMessage(Message request, ClientCallContext context) throws A2AClientException {
-        MessageSendConfiguration messageSendConfiguration = new MessageSendConfiguration.Builder()
-                .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
-                .blocking(clientConfig.isPolling())
-                .historyLength(clientConfig.getHistoryLength())
-                .pushNotification(clientConfig.getPushNotificationConfig())
-                .build();
-
-        MessageSendParams messageSendParams = new MessageSendParams.Builder()
-                .message(request)
-                .configuration(messageSendConfiguration)
-                .metadata(clientConfig.getMetadata())
-                .build();
-
+        MessageSendParams messageSendParams = getMessageSendParams(request, clientConfig);
         sendMessage(messageSendParams, null, null, context);
     }
 
     @Override
     public void sendMessage(Message request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
                             Consumer<Throwable> streamingErrorHandler, ClientCallContext context) throws A2AClientException {
-        MessageSendConfiguration messageSendConfiguration = new MessageSendConfiguration.Builder()
-                .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
-                .blocking(clientConfig.isPolling())
-                .historyLength(clientConfig.getHistoryLength())
-                .pushNotification(clientConfig.getPushNotificationConfig())
-                .build();
-
-        MessageSendParams messageSendParams = new MessageSendParams.Builder()
-                .message(request)
-                .configuration(messageSendConfiguration)
-                .metadata(clientConfig.getMetadata())
-                .build();
-
+        MessageSendParams messageSendParams = getMessageSendParams(request, clientConfig);
         sendMessage(messageSendParams, consumers, streamingErrorHandler, context);
     }
 
@@ -239,5 +215,20 @@ public class Client extends AbstractClient {
             // use configured consumers
             consume(clientEvent, agentCard);
         }
+    }
+
+    private MessageSendParams getMessageSendParams(Message request, ClientConfig clientConfig) {
+        MessageSendConfiguration messageSendConfiguration = new MessageSendConfiguration.Builder()
+                .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
+                .blocking(clientConfig.isPolling())
+                .historyLength(clientConfig.getHistoryLength())
+                .pushNotification(clientConfig.getPushNotificationConfig())
+                .build();
+
+        return new MessageSendParams.Builder()
+                .message(request)
+                .configuration(messageSendConfiguration)
+                .metadata(clientConfig.getMetadata())
+                .build();
     }
 }

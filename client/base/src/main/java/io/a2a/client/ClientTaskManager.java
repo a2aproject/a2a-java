@@ -70,18 +70,15 @@ public class ClientTaskManager {
             if (task.getHistory() == null) {
                 taskBuilder.history(taskStatusUpdateEvent.getStatus().message());
             } else {
-                List<Message> history = task.getHistory();
+                List<Message> history = new ArrayList<>(task.getHistory());
                 history.add(taskStatusUpdateEvent.getStatus().message());
                 taskBuilder.history(history);
             }
         }
         if (taskStatusUpdateEvent.getMetadata() != null) {
-            Map<String, Object> metadata = taskStatusUpdateEvent.getMetadata();
-            if (metadata == null) {
-                metadata = new HashMap<>();
-            }
-            metadata.putAll(taskStatusUpdateEvent.getMetadata());
-            taskBuilder.metadata(metadata);
+            Map<String, Object> newMetadata = task.getMetadata() != null ? new HashMap<>(task.getMetadata()) : new HashMap<>();
+            newMetadata.putAll(taskStatusUpdateEvent.getMetadata());
+            taskBuilder.metadata(newMetadata);
         }
         taskBuilder.status(taskStatusUpdateEvent.getStatus());
         currentTask = taskBuilder.build();
