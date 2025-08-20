@@ -273,9 +273,8 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new TaskNotFoundError();
         }
 
-        pushConfigStore.setInfo(params.taskId(), params.pushNotificationConfig());
-
-        return params;
+        PushNotificationConfig pushNotificationConfig = pushConfigStore.setInfo(params.taskId(), params.pushNotificationConfig());
+        return new TaskPushNotificationConfig(params.taskId(), pushNotificationConfig);
     }
 
     @Override

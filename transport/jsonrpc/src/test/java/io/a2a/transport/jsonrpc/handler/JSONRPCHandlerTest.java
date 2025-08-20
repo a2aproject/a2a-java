@@ -557,7 +557,10 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().url("http://example.com").build());
         SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
         SetTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
-        Assertions.assertSame(taskPushConfig, response.getResult());
+        TaskPushNotificationConfig taskPushConfigResult =
+                new TaskPushNotificationConfig(
+                        MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().url("http://example.com").id(MINIMAL_TASK.getId()).build());
+        Assertions.assertEquals(taskPushConfigResult, response.getResult());
     }
 
     @Test

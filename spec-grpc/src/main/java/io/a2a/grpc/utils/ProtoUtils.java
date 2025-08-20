@@ -687,24 +687,38 @@ public class ProtoUtils {
             return builder.build();
         }
 
-        public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request) {
-            return taskPushNotificationConfig(request.getConfig());
+        public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequestOrBuilder request) {
+            return taskPushNotificationConfig(request.getConfig(), true);
         }
 
-        public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfig config) {
+        public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfigOrBuilder config) {
+            return taskPushNotificationConfig(config, false);
+        }
+
+        private static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfigOrBuilder config, boolean create) {
             String name = config.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}"
             String[] parts = name.split("/");
-            if (parts.length < 4) {
-                throw new IllegalArgumentException("Invalid name format for TaskPushNotificationConfig: " + name);
+            String configId = "";
+            if (create) {
+                if (parts.length < 3) {
+                    throw new IllegalArgumentException("Invalid name format for TaskPushNotificationConfig: " + name);
+                }
+                if (parts.length == 4) {
+                    configId = parts[3];
+                }
+            } else {
+                if (parts.length < 4) {
+                    throw new IllegalArgumentException("Invalid name format for TaskPushNotificationConfig: " + name);
+                }
+                configId = parts[3];
             }
             String taskId = parts[1];
-            String configId = parts[3];
             PushNotificationConfig pnc = pushNotification(config.getPushNotificationConfig(), configId);
             return new TaskPushNotificationConfig(taskId, pnc);
         }
 
         public static GetTaskPushNotificationConfigParams getTaskPushNotificationConfigParams(io.a2a.grpc.GetTaskPushNotificationConfigRequest request) {
-            String name = request.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}" or /tasks/{id}
+            String name = request.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}"
             String[] parts = name.split("/");
             String taskId = parts[1];
             String configId;
@@ -775,9 +789,6 @@ public class ProtoUtils {
         }
 
         private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfig pushNotification) {
-            /*if (pushNotification == null) {
-                return null;
-            }*/
             return pushNotification(pushNotification, pushNotification.getId());
         }
 
