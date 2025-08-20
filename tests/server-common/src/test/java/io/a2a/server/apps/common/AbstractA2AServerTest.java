@@ -383,24 +383,7 @@ public abstract class AbstractA2AServerTest {
         assertTrue(agentCard.capabilities().streaming());
         assertTrue(agentCard.capabilities().stateTransitionHistory());
         assertTrue(agentCard.skills().isEmpty());
-    }
-
-    @Test
-    public void testGetExtendAgentCardNotSupported() {
-        GetAuthenticatedExtendedCardRequest request = new GetAuthenticatedExtendedCardRequest("1");
-        GetAuthenticatedExtendedCardResponse response = given()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(request)
-                .when()
-                .post("/")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(GetAuthenticatedExtendedCardResponse.class);
-        assertEquals("1", response.getId());
-        assertInstanceOf(JSONRPCError.class, response.getError());
-        assertEquals(new AuthenticatedExtendedCardNotConfiguredError().getCode(), response.getError().getCode());
-        assertNull(response.getResult());
+        assertFalse(agentCard.supportsAuthenticatedExtendedCard());
     }
 
     @Test
@@ -459,10 +442,7 @@ public abstract class AbstractA2AServerTest {
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void testResubscribeExistingTaskSuccess() throws Exception {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
         saveTaskInTaskStore(MINIMAL_TASK);
-        Client client = null;
-
         try {
             // attempting to send a streaming message instead of explicitly calling queueManager#createOrTap
             // does not work because after the message is sent, the queue becomes null but task resubscription
@@ -498,9 +478,6 @@ public abstract class AbstractA2AServerTest {
                 eventLatch.countDown();
             };
 
-            // Get client for resubscription
-            client = getClient();
-
             // Count down when the streaming subscription is established
             CountDownLatch subscriptionLatch = new CountDownLatch(1);
             awaitStreamingSubscription()
@@ -508,7 +485,7 @@ public abstract class AbstractA2AServerTest {
 
             // Resubscribe to the task with specific consumer and error handler
             List<BiConsumer<ClientEvent, AgentCard>> consumers = consumer != null ? List.of(consumer) : List.of();
-            client.resubscribe(new TaskIdParams(MINIMAL_TASK.getId()), consumers, errorHandler, null);
+            getClient().resubscribe(new TaskIdParams(MINIMAL_TASK.getId()), consumers, errorHandler, null);
 
             // Wait for subscription to be established
             assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
@@ -556,18 +533,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals(TaskState.COMPLETED, receivedStatusEvent.getStatus().state());
             assertNotNull(receivedStatusEvent.getStatus().timestamp());
         } finally {
-            try {
-                if (client != null) {
-                    client.close();
-                }
-            } catch (Exception e) {
-                // Ignore cleanup errors
-            }
             deleteTaskInTaskStore(MINIMAL_TASK.getId());
-            executorService.shutdown();
-            if (!executorService.awaitTermination(10, TimeUnit.SECONDS)) {
-                executorService.shutdownNow();
-            }
         }
     }
 
@@ -582,11 +548,8 @@ public abstract class AbstractA2AServerTest {
             errorLatch.countDown();
         };
 
-        // Get client for resubscription
-        Client client = getClient();
-
         try {
-            client.resubscribe(new TaskIdParams("non-existent-task"), List.of(), errorHandler, null);
+            getClient().resubscribe(new TaskIdParams("non-existent-task"), List.of(), errorHandler, null);
             
             // Wait for error to be captured (may come via error handler for streaming)
             boolean errorReceived = errorLatch.await(10, TimeUnit.SECONDS);
@@ -617,14 +580,6 @@ public abstract class AbstractA2AServerTest {
         } catch (A2AClientException e) {
             // Also acceptable - the client might throw an exception immediately
             assertInstanceOf(TaskNotFoundError.class, e.getCause());
-        } finally {
-            try {
-                if (client != null) {
-                    client.close();
-                }
-            } catch (Exception e) {
-                // Ignore cleanup errors
-            }
         }
     }
 

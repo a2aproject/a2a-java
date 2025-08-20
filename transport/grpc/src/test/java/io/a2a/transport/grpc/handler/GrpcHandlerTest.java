@@ -50,6 +50,7 @@ import io.grpc.internal.testing.StreamRecorder;
 import io.grpc.stub.StreamObserver;
 import mutiny.zero.ZeroPublisher;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
@@ -736,6 +737,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         StreamRecorder<Empty> streamRecorder = StreamRecorder.create();
         handler.deleteTaskPushNotificationConfig(request, streamRecorder);
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+    }
+
+    @Disabled
+    public void testOnGetAuthenticatedExtendedAgentCard() throws Exception {
+        // TODO - getting the authenticated extended agent card isn't support for gRPC right now
     }
 
     private StreamRecorder<SendMessageResponse> sendMessageRequest(GrpcHandler handler) throws Exception {
