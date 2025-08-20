@@ -30,7 +30,7 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     public PushNotificationConfig setInfo(String taskId, PushNotificationConfig notificationConfig) {
         List<PushNotificationConfig> notificationConfigList = pushNotificationInfos.getOrDefault(taskId, new ArrayList<>());
         PushNotificationConfig.Builder builder = new PushNotificationConfig.Builder(notificationConfig);
-        if (notificationConfig.id() == null) {
+        if (notificationConfig.id() == null || notificationConfig.id().isEmpty()) {
             builder.id(taskId);
         }
         notificationConfig = builder.build();
