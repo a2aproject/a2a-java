@@ -7,10 +7,10 @@ import io.a2a.client.config.ClientConfig;
 import io.a2a.client.config.ClientTransportConfig;
 import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.client.transport.spi.ClientTransportProvider;
+import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.TransportProtocol;
 import io.grpc.Channel;
-import io.grpc.ManagedChannelBuilder;
 
 /**
  * Provider for gRPC transport implementation.
@@ -19,21 +19,18 @@ public class GrpcTransportProvider implements ClientTransportProvider {
 
     @Override
     public ClientTransport create(ClientConfig clientConfig, AgentCard agentCard,
-                                  String agentUrl, List<ClientCallInterceptor> interceptors) {
+                                  String agentUrl, List<ClientCallInterceptor> interceptors) throws A2AClientException {
         // not making use of the interceptors for gRPC for now
-        Channel channel;
         List<ClientTransportConfig> clientTransportConfigs = clientConfig.getClientTransportConfigs();
         if (clientTransportConfigs != null) {
             for (ClientTransportConfig clientTransportConfig : clientTransportConfigs) {
                 if (clientTransportConfig instanceof GrpcTransportConfig grpcTransportConfig) {
-                    channel = grpcTransportConfig.getChannelFactory().apply(agentUrl);
+                    Channel channel = grpcTransportConfig.getChannelFactory().apply(agentUrl);
                     return new GrpcTransport(channel, agentCard);
                 }
             }
         }
-        // no channel factory configured
-        channel = ManagedChannelBuilder.forTarget(agentUrl).build();
-        return new GrpcTransport(channel, agentCard);
+        throw new A2AClientException("Missing required GrpcTransportConfig");
     }
 
     @Override

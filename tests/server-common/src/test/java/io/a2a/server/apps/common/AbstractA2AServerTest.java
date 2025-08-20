@@ -134,6 +134,13 @@ public abstract class AbstractA2AServerTest {
      */
     protected abstract String getTransportUrl();
 
+    /**
+     * Get the transport configs to use for this test.
+     */
+    protected List<ClientTransportConfig> getClientTransportConfigs() {
+        return new ArrayList<>();
+    }
+
     @Test
     public void testTaskStoreMethodsSanityTest() throws Exception {
         Task task = new Task.Builder(MINIMAL_TASK).id("abcde").build();
@@ -1143,14 +1150,7 @@ public abstract class AbstractA2AServerTest {
                 .setAcceptedOutputModes(List.of("text"));
 
         // Set transport-specific configuration
-        List<ClientTransportConfig> transportConfigs = new ArrayList<>();
-        if (TransportProtocol.JSONRPC.asString().equals(getTransportProtocol())) {
-            transportConfigs.add(new JSONRPCTransportConfig(new JdkA2AHttpClient()));
-        } else if (TransportProtocol.GRPC.asString().equals(getTransportProtocol())) {
-            // For gRPC, use a function that creates a channel with plaintext communication
-            transportConfigs.add(new GrpcTransportConfig(
-                target -> ManagedChannelBuilder.forTarget(target).usePlaintext().build()));
-        }
+        List<ClientTransportConfig> transportConfigs = getClientTransportConfigs();
         
         if (!transportConfigs.isEmpty()) {
             builder.setClientTransportConfigs(transportConfigs);
