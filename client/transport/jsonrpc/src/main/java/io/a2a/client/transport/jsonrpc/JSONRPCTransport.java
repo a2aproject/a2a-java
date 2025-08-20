@@ -75,6 +75,7 @@ public class JSONRPCTransport implements ClientTransport {
     private final String agentUrl;
     private final List<ClientCallInterceptor> interceptors;
     private AgentCard agentCard;
+    private boolean needsExtendedCard = false;
 
     public JSONRPCTransport(String agentUrl) {
         this(null, null, agentUrl, null);
@@ -90,6 +91,7 @@ public class JSONRPCTransport implements ClientTransport {
         this.agentCard = agentCard;
         this.agentUrl = agentUrl;
         this.interceptors = interceptors;
+        this.needsExtendedCard = agentCard == null || agentCard.supportsAuthenticatedExtendedCard();
     }
 
     @Override
@@ -332,8 +334,9 @@ public class JSONRPCTransport implements ClientTransport {
             if (agentCard == null) {
                 resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
                 agentCard = resolver.getAgentCard();
+                needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
             }
-            if (!agentCard.supportsAuthenticatedExtendedCard()) {
+            if (!needsExtendedCard) {
                 return agentCard;
             }
 
@@ -349,7 +352,9 @@ public class JSONRPCTransport implements ClientTransport {
                 String httpResponseBody = sendPostRequest(payloadAndHeaders);
                 GetAuthenticatedExtendedCardResponse response = unmarshalResponse(httpResponseBody,
                         GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE);
-                return response.getResult();
+                agentCard = response.getResult();
+                needsExtendedCard = false;
+                return agentCard;
             } catch (IOException | InterruptedException e) {
                 throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
             }
