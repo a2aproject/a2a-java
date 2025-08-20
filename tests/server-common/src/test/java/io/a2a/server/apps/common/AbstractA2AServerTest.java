@@ -239,7 +239,7 @@ public abstract class AbstractA2AServerTest {
 
         // testing the non-streaming send message
         getNonStreamingClient().sendMessage(message, List.of(consumer), null, null);
-        
+
         assertTrue(latch.await(10, TimeUnit.SECONDS));
         assertFalse(wasUnexpectedEvent.get());
         Message messageResponse = receivedMessage.get();
@@ -344,7 +344,7 @@ public abstract class AbstractA2AServerTest {
 
         try {
             getNonStreamingClient().sendMessage(message, null);
-            
+
             // For non-streaming clients, the error should still be thrown as an exception
             fail("Expected A2AClientException for unsupported send message operation");
         } catch (A2AClientException e) {
@@ -407,7 +407,7 @@ public abstract class AbstractA2AServerTest {
             assertTrue(latch.await(10, TimeUnit.SECONDS));
             assertFalse(wasUnexpectedEvent.get());
             assertNull(errorRef.get());
-            
+
             Message messageResponse = receivedMessage.get();
             assertNotNull(messageResponse);
             assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
@@ -536,10 +536,10 @@ public abstract class AbstractA2AServerTest {
 
         try {
             getClient().resubscribe(new TaskIdParams("non-existent-task"), List.of(), errorHandler, null);
-            
+
             // Wait for error to be captured (may come via error handler for streaming)
             boolean errorReceived = errorLatch.await(10, TimeUnit.SECONDS);
-            
+
             if (errorReceived) {
                 // Error came via error handler
                 Throwable error = errorRef.get();
@@ -1028,7 +1028,7 @@ public abstract class AbstractA2AServerTest {
 
         // Set transport-specific configuration
         List<ClientTransportConfig> transportConfigs = getClientTransportConfigs();
-        
+
         if (!transportConfigs.isEmpty()) {
             builder.setClientTransportConfigs(transportConfigs);
         }
@@ -1036,7 +1036,4 @@ public abstract class AbstractA2AServerTest {
         return builder.build();
     }
 
-    private static class BreakException extends RuntimeException {
-
-    }
 }
