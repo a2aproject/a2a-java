@@ -780,6 +780,9 @@ public class ProtoUtils {
         }
 
         private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfig pushNotification, String configId) {
+            if (pushNotification == null || pushNotification.getDefaultInstanceForType().equals(pushNotification)) {
+                return null;
+            }
             return new PushNotificationConfig(
                     pushNotification.getUrl(),
                     pushNotification.getToken().isEmpty() ? null : pushNotification.getToken(),
