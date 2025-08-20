@@ -23,13 +23,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
-import jakarta.ws.rs.core.MediaType;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.a2a.client.Client;
 import io.a2a.client.ClientEvent;
@@ -38,29 +33,18 @@ import io.a2a.client.MessageEvent;
 import io.a2a.client.TaskUpdateEvent;
 import io.a2a.client.config.ClientConfig;
 import io.a2a.client.config.ClientTransportConfig;
-import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfig;
-import io.a2a.client.transport.grpc.GrpcTransportConfig;
-import io.a2a.client.http.JdkA2AHttpClient;
-import io.grpc.ManagedChannelBuilder;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentInterface;
-import io.a2a.spec.TransportProtocol;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
-import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
-import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
-import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.Part;
 import io.a2a.spec.PushNotificationConfig;
-import io.a2a.spec.SendStreamingMessageRequest;
-import io.a2a.spec.SendStreamingMessageResponse;
-import io.a2a.spec.StreamingJSONRPCRequest;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskIdParams;
@@ -74,8 +58,6 @@ import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.util.Utils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -109,14 +91,14 @@ public abstract class AbstractA2AServerTest {
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    private static final Message MESSAGE = new Message.Builder()
+    protected static final Message MESSAGE = new Message.Builder()
             .messageId("111")
             .role(Message.Role.AGENT)
             .parts(new TextPart("test message"))
             .build();
     public static final String APPLICATION_JSON = "application/json";
 
-    private final int serverPort;
+    protected final int serverPort;
     private Client client;
     private Client nonStreamingClient;
 
@@ -587,72 +569,6 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
-    public void testStreamingMethodWithAcceptHeader() throws Exception {
-        // Skip this test for gRPC transport as it uses HTTP SSE which is JSONRPC-specific
-        Assumptions.assumeTrue(TransportProtocol.JSONRPC.asString().equals(getTransportProtocol()),
-                "HTTP streaming tests are only supported for JSONRPC transport");
-        testSendStreamingMessage(MediaType.SERVER_SENT_EVENTS);
-    }
-
-    @Test
-    public void testSendMessageStreamNewMessageSuccess() throws Exception {
-        // Skip this test for gRPC transport as it uses HTTP SSE which is JSONRPC-specific
-        Assumptions.assumeTrue(TransportProtocol.JSONRPC.asString().equals(getTransportProtocol()),
-                "HTTP streaming tests are only supported for JSONRPC transport");
-        testSendStreamingMessage(null);
-    }
-
-    private void testSendStreamingMessage(String mediaType) throws Exception {
-        Message message = new Message.Builder(MESSAGE)
-                .taskId(MINIMAL_TASK.getId())
-                .contextId(MINIMAL_TASK.getContextId())
-                .build();
-        SendStreamingMessageRequest request = new SendStreamingMessageRequest(
-                "1", new MessageSendParams(message, null, null));
-
-        CompletableFuture<HttpResponse<Stream<String>>> responseFuture = initialiseStreamingRequest(request, mediaType);
-
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<Throwable> errorRef = new AtomicReference<>();
-
-        responseFuture.thenAccept(response -> {
-            if (response.statusCode() != 200) {
-                //errorRef.set(new IllegalStateException("Status code was " + response.statusCode()));
-                throw new IllegalStateException("Status code was " + response.statusCode());
-            }
-            response.body().forEach(line -> {
-                try {
-                    SendStreamingMessageResponse jsonResponse = extractJsonResponseFromSseLine(line);
-                    if (jsonResponse != null) {
-                        assertNull(jsonResponse.getError());
-                        Message messageResponse =  (Message) jsonResponse.getResult();
-                        assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
-                        assertEquals(MESSAGE.getRole(), messageResponse.getRole());
-                        Part<?> part = messageResponse.getParts().get(0);
-                        assertEquals(Part.Kind.TEXT, part.getKind());
-                        assertEquals("test message", ((TextPart) part).getText());
-                        latch.countDown();
-                    }
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }).exceptionally(t -> {
-            if (!isStreamClosedError(t)) {
-                errorRef.set(t);
-            }
-            latch.countDown();
-            return null;
-        });
-
-
-        boolean dataRead = latch.await(20, TimeUnit.SECONDS);
-        Assertions.assertTrue(dataRead);
-        Assertions.assertNull(errorRef.get());
-
-    }
-
-    @Test
     public void testListPushNotificationConfigWithConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig notificationConfig1 =
@@ -871,23 +787,7 @@ public abstract class AbstractA2AServerTest {
         }
     }
 
-    private SendStreamingMessageResponse extractJsonResponseFromSseLine(String line) throws JsonProcessingException {
-        line = extractSseData(line);
-        if (line != null) {
-            return Utils.OBJECT_MAPPER.readValue(line, SendStreamingMessageResponse.class);
-        }
-        return null;
-    }
-
-    private static String extractSseData(String line) {
-        if (line.startsWith("data:")) {
-            line =  line.substring(5).trim();
-            return line;
-        }
-        return null;
-    }
-
-    private boolean isStreamClosedError(Throwable throwable) {
+    protected boolean isStreamClosedError(Throwable throwable) {
         // Unwrap the CompletionException
         Throwable cause = throwable;
 
@@ -898,29 +798,6 @@ public abstract class AbstractA2AServerTest {
             cause = cause.getCause();
         }
         return false;
-    }
-
-    private CompletableFuture<HttpResponse<Stream<String>>> initialiseStreamingRequest(
-            StreamingJSONRPCRequest<?> request, String mediaType) throws Exception {
-
-        // Create the client
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .build();
-
-        // Create the request
-        HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/"))
-                .POST(HttpRequest.BodyPublishers.ofString(Utils.OBJECT_MAPPER.writeValueAsString(request)))
-                .header("Content-Type", APPLICATION_JSON);
-        if (mediaType != null) {
-            builder.header("Accept", mediaType);
-        }
-        HttpRequest httpRequest = builder.build();
-
-
-        // Send request async and return the CompletableFuture
-        return client.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofLines());
     }
 
     protected void saveTaskInTaskStore(Task task) throws Exception {
