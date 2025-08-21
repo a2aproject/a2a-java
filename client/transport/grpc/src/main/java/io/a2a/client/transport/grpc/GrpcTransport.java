@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import io.a2a.client.config.ClientCallContext;
+import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.grpc.A2AServiceGrpc;
 import io.a2a.grpc.CancelTaskRequest;

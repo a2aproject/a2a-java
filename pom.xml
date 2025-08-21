@@ -91,6 +91,16 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -315,7 +325,6 @@
 
     <modules>
         <module>client/base</module>
-        <module>client/config</module>
         <module>client/transport/grpc</module>
         <module>client/transport/jsonrpc</module>
         <module>client/transport/spi</module>

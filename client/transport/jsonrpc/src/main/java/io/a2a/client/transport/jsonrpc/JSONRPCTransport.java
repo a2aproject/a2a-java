@@ -10,10 +10,10 @@ import java.util.function.Consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.a2a.client.A2ACardResolver;
-import io.a2a.client.config.ClientCallContext;
-import io.a2a.client.config.ClientCallInterceptor;
-import io.a2a.client.config.PayloadAndHeaders;
+import io.a2a.client.http.A2ACardResolver;
+import io.a2a.client.transport.spi.interceptors.ClientCallContext;
+import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
+import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.client.http.JdkA2AHttpClient;

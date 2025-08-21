@@ -31,16 +31,6 @@
                 <artifactId>a2a-java-sdk-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
-                <version>${project.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

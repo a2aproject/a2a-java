@@ -10,6 +10,12 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.wildfly.common.Assert.assertNotNull;
 import static org.wildfly.common.Assert.assertTrue;
 
+import io.a2a.client.Client;
+import io.a2a.client.ClientBuilder;
+import io.a2a.client.config.ClientConfig;
+import io.a2a.client.ClientEvent;
+import io.a2a.client.MessageEvent;
+import io.a2a.client.TaskUpdateEvent;
 import jakarta.ws.rs.core.MediaType;
 
 import java.io.EOFException;
@@ -19,7 +25,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -33,13 +38,6 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import io.a2a.client.Client;
-import io.a2a.client.ClientEvent;
-import io.a2a.client.ClientFactory;
-import io.a2a.client.MessageEvent;
-import io.a2a.client.TaskUpdateEvent;
-import io.a2a.client.config.ClientConfig;
-import io.a2a.client.config.ClientTransportConfig;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentCapabilities;
@@ -137,9 +135,7 @@ public abstract class AbstractA2AServerTest {
     /**
      * Get the transport configs to use for this test.
      */
-    protected List<ClientTransportConfig> getClientTransportConfigs() {
-        return new ArrayList<>();
-    }
+    protected abstract void configureTransport(ClientBuilder builder);
 
     @Test
     public void testTaskStoreMethodsSanityTest() throws Exception {
@@ -1265,11 +1261,15 @@ public abstract class AbstractA2AServerTest {
     private Client createClient(boolean streaming) throws A2AClientException {
         AgentCard agentCard = createTestAgentCard();
         ClientConfig clientConfig = createClientConfig(streaming);
-        ClientFactory clientFactory = new ClientFactory(clientConfig);
-        return clientFactory.create(agentCard, List.of(), null, null);
+
+        ClientBuilder clientBuilder = Client
+                .builder(agentCard)
+                .clientConfig(clientConfig);
+
+        configureTransport(clientBuilder);
+
+        return clientBuilder.build();
     }
-
-
 
     /**
      * Create a test agent card with the appropriate transport configuration.
@@ -1299,19 +1299,10 @@ public abstract class AbstractA2AServerTest {
      * Create client configuration with transport-specific settings.
      */
     private ClientConfig createClientConfig(boolean streaming) {
-        ClientConfig.Builder builder = new ClientConfig.Builder()
+        return new ClientConfig.Builder()
                 .setStreaming(streaming)
-                .setSupportedTransports(List.of(getTransportProtocol()))
-                .setAcceptedOutputModes(List.of("text"));
-
-        // Set transport-specific configuration
-        List<ClientTransportConfig> transportConfigs = getClientTransportConfigs();
-
-        if (!transportConfigs.isEmpty()) {
-            builder.setClientTransportConfigs(transportConfigs);
-        }
-
-        return builder.build();
+                .setAcceptedOutputModes(List.of("text"))
+                .build();
     }
 
 }

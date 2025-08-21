@@ -27,7 +27,6 @@ public class DefaultProducers {
     }
 
     @Produces
-    @Default
     @DefaultBean
     public AgentExecutor createDefaultAgentExecutor() {
         throw new IllegalStateException(wrap("Please provide your own AgentExecutor implementation"));

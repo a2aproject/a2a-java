@@ -3,7 +3,7 @@ package io.a2a.client.transport.spi;
 import java.util.List;
 import java.util.function.Consumer;
 
-import io.a2a.client.config.ClientCallContext;
+import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;

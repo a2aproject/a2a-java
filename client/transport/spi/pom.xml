@@ -19,10 +19,6 @@
     <dependencies>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
-            <artifactId>a2a-java-sdk-client-config</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-spec</artifactId>
         </dependency>
     </dependencies>

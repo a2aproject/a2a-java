@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import io.a2a.client.config.ClientCallContext;
 import io.a2a.client.config.ClientConfig;
+import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientException;
@@ -28,20 +28,27 @@ import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskStatusUpdateEvent;
 
+import static io.a2a.util.Assert.checkNotNullParam;
+
 public class Client extends AbstractClient {
 
     private final ClientConfig clientConfig;
     private final ClientTransport clientTransport;
     private AgentCard agentCard;
 
-    public Client(AgentCard agentCard, ClientConfig clientConfig, ClientTransport clientTransport,
+    Client(AgentCard agentCard, ClientConfig clientConfig, ClientTransport clientTransport,
                   List<BiConsumer<ClientEvent, AgentCard>> consumers, Consumer<Throwable> streamingErrorHandler) {
         super(consumers, streamingErrorHandler);
+        checkNotNullParam("agentCard", agentCard);
+
         this.agentCard = agentCard;
         this.clientConfig = clientConfig;
         this.clientTransport = clientTransport;
     }
 
+    public static ClientBuilder builder(AgentCard agentCard) {
+        return new ClientBuilder(agentCard);
+    }
 
     @Override
     public void sendMessage(Message request, ClientCallContext context) throws A2AClientException {

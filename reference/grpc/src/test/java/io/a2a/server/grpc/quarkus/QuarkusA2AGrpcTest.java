@@ -1,11 +1,10 @@
 package io.a2a.server.grpc.quarkus;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.a2a.client.config.ClientTransportConfig;
-import io.a2a.client.transport.grpc.GrpcTransportConfig;
+import io.a2a.client.ClientBuilder;
+import io.a2a.client.transport.grpc.GrpcTransport;
+import io.a2a.client.transport.grpc.GrpcTransportConfigBuilder;
 import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.a2a.spec.TransportProtocol;
 import io.grpc.ManagedChannel;
@@ -34,14 +33,11 @@ public class QuarkusA2AGrpcTest extends AbstractA2AServerTest {
     }
 
     @Override
-    protected List<ClientTransportConfig> getClientTransportConfigs() {
-        List<ClientTransportConfig> transportConfigs = new ArrayList<>();
-        transportConfigs.add(new GrpcTransportConfig(
-                target -> {
-                    channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-                    return channel;
-                }));
-        return transportConfigs;
+    protected void configureTransport(ClientBuilder builder) {
+        builder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder().channelFactory(target -> {
+            channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+            return channel;
+        }));
     }
 
     @AfterAll

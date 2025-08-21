@@ -1,4 +1,4 @@
-package io.a2a.client;
+package io.a2a.client.http;
 
 import static io.a2a.util.Utils.unmarshalFrom;
 
@@ -9,9 +9,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.A2AHttpResponse;
-import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientJSONError;
 import io.a2a.spec.AgentCard;

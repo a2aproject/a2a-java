@@ -20,10 +20,6 @@
             <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-client</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.github.a2asdk</groupId>
-            <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

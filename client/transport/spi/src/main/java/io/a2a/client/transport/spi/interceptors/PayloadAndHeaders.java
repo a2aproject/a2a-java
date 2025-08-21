@@ -1,4 +1,4 @@
-package io.a2a.client.config;
+package io.a2a.client.transport.spi.interceptors;
 
 import java.util.Map;
 
