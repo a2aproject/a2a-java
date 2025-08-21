@@ -11,8 +11,8 @@ import java.util.function.Consumer;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Alternative;
 
-import io.a2a.http.A2AHttpClient;
-import io.a2a.http.A2AHttpResponse;
+import io.a2a.client.http.A2AHttpClient;
+import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.spec.Task;
 import io.a2a.util.Utils;
 
@@ -30,6 +30,11 @@ public class TestHttpClient implements A2AHttpClient {
     @Override
     public PostBuilder createPost() {
         return new TestPostBuilder();
+    }
+
+    @Override
+    public DeleteBuilder createDelete() {
+        return null;
     }
 
     class TestPostBuilder implements A2AHttpClient.PostBuilder {

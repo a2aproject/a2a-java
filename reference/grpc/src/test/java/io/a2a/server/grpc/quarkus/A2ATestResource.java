@@ -19,11 +19,11 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import io.a2a.server.apps.common.TestUtilsBean;
-import io.a2a.grpc.handler.GrpcHandler;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
+import io.a2a.transport.grpc.handler.GrpcHandler;
 import io.a2a.util.Utils;
 
 @Path("/test")

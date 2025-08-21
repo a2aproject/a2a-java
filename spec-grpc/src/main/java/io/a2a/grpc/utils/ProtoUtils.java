@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
+import io.a2a.grpc.ListTaskPushNotificationConfigResponse;
 
 import io.a2a.grpc.StreamResponse;
 import io.a2a.spec.APIKeySecurityScheme;
@@ -167,8 +168,9 @@ public class ProtoUtils {
         }
 
         public static io.a2a.grpc.TaskPushNotificationConfig taskPushNotificationConfig(TaskPushNotificationConfig config) {
+            String id = config.pushNotificationConfig().id();
             io.a2a.grpc.TaskPushNotificationConfig.Builder builder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
-            builder.setName("tasks/" + config.taskId() + "/pushNotificationConfigs/" + config.pushNotificationConfig().id());
+            builder.setName("tasks/" + config.taskId() + "/pushNotificationConfigs" + (id == null ? "" : ('/' + id)));
             builder.setPushNotificationConfig(pushNotificationConfig(config.pushNotificationConfig()));
             return builder.build();
         }
@@ -364,6 +366,17 @@ public class ProtoUtils {
             return builder.build();
         }
 
+        public static io.a2a.grpc.SendMessageRequest sendMessageRequest(MessageSendParams request) {
+            io.a2a.grpc.SendMessageRequest.Builder builder =  io.a2a.grpc.SendMessageRequest.newBuilder();
+            builder.setRequest(message(request.message()));
+            if (request.configuration() != null) {
+                builder.setConfiguration(messageSendConfiguration(request.configuration()));
+            }
+            if (request.metadata() != null && ! request.metadata().isEmpty()) {
+                builder.setMetadata(struct(request.metadata()));
+            }
+            return builder.build();
+        }
         private static io.a2a.grpc.AgentExtension agentExtension(AgentExtension agentExtension) {
             io.a2a.grpc.AgentExtension.Builder builder = io.a2a.grpc.AgentExtension.newBuilder();
             if (agentExtension.description() != null) {
@@ -518,6 +531,15 @@ public class ProtoUtils {
             return builder.build();
         }
 
+        public static io.a2a.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfigResponse(List<TaskPushNotificationConfig> configs) {
+            List<io.a2a.grpc.TaskPushNotificationConfig> confs = new ArrayList<>(configs.size());
+            ListTaskPushNotificationConfigResponse.Builder response = ListTaskPushNotificationConfigResponse.newBuilder();
+            for(TaskPushNotificationConfig config: configs) {
+                confs.add(taskPushNotificationConfig(config));
+            }
+            return io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder().addAllConfigs(confs).build();
+        }
+
         private static io.a2a.grpc.ClientCredentialsOAuthFlow clientCredentialsOAuthFlow(ClientCredentialsOAuthFlow clientCredentialsOAuthFlow) {
             io.a2a.grpc.ClientCredentialsOAuthFlow.Builder builder = io.a2a.grpc.ClientCredentialsOAuthFlow.newBuilder();
             if (clientCredentialsOAuthFlow.refreshUrl() != null) {
@@ -662,19 +684,19 @@ public class ProtoUtils {
 
     public static class FromProto {
 
-        public static TaskQueryParams taskQueryParams(io.a2a.grpc.GetTaskRequest request) {
+        public static TaskQueryParams taskQueryParams(io.a2a.grpc.GetTaskRequestOrBuilder request) {
             String name = request.getName();
             String id = name.substring(name.lastIndexOf('/') + 1);
             return new TaskQueryParams(id, request.getHistoryLength());
         }
 
-        public static TaskIdParams taskIdParams(io.a2a.grpc.CancelTaskRequest request) {
+        public static TaskIdParams taskIdParams(io.a2a.grpc.CancelTaskRequestOrBuilder request) {
             String name = request.getName();
             String id = name.substring(name.lastIndexOf('/') + 1);
             return new TaskIdParams(id);
         }
 
-        public static MessageSendParams messageSendParams(io.a2a.grpc.SendMessageRequest request) {
+        public static MessageSendParams messageSendParams(io.a2a.grpc.SendMessageRequestOrBuilder request) {
             MessageSendParams.Builder builder = new MessageSendParams.Builder();
             builder.message(message(request.getRequest()));
             if (request.hasConfiguration()) {
@@ -686,46 +708,75 @@ public class ProtoUtils {
             return builder.build();
         }
 
-        public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request) {
-            return taskPushNotificationConfig(request.getConfig());
+        public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequestOrBuilder request) {
+            return taskPushNotificationConfig(request.getConfig(), true);
         }
 
-        public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfig config) {
+        public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfigOrBuilder config) {
+            return taskPushNotificationConfig(config, false);
+        }
+
+        private static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfigOrBuilder config, boolean create) {
             String name = config.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}"
             String[] parts = name.split("/");
-            if (parts.length < 4) {
-                throw new IllegalArgumentException("Invalid name format for TaskPushNotificationConfig: " + name);
-            }
             String taskId = parts[1];
-            String configId = parts[3];
+            String configId = "";
+            if (create) {
+                if (parts.length < 3) {
+                    throw new IllegalArgumentException("Invalid name format for TaskPushNotificationConfig: " + name);
+                }
+                if (parts.length == 4) {
+                    configId = parts[3];
+                } else {
+                    configId = taskId;
+                }
+            } else {
+                if (parts.length < 4) {
+                    throw new IllegalArgumentException("Invalid name format for TaskPushNotificationConfig: " + name);
+                }
+                configId = parts[3];
+            }
             PushNotificationConfig pnc = pushNotification(config.getPushNotificationConfig(), configId);
             return new TaskPushNotificationConfig(taskId, pnc);
         }
 
-        public static GetTaskPushNotificationConfigParams getTaskPushNotificationConfigParams(io.a2a.grpc.GetTaskPushNotificationConfigRequest request) {
+        public static GetTaskPushNotificationConfigParams getTaskPushNotificationConfigParams(io.a2a.grpc.GetTaskPushNotificationConfigRequestOrBuilder request) {
             String name = request.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}"
             String[] parts = name.split("/");
-            if (parts.length < 4) {
-                throw new IllegalArgumentException("Invalid name format for GetTaskPushNotificationConfigRequest: " + name);
-            }
             String taskId = parts[1];
-            String configId = parts[3];
+            String configId;
+            if (parts.length == 2) {
+                configId = taskId;
+            } else if (parts.length < 4) {
+                throw new IllegalArgumentException("Invalid name format for GetTaskPushNotificationConfigRequest: " + name);
+            } else {
+                configId = parts[3];
+            }
             return new GetTaskPushNotificationConfigParams(taskId, configId);
         }
 
-        public static TaskIdParams taskIdParams(io.a2a.grpc.TaskSubscriptionRequest request) {
+        public static TaskIdParams taskIdParams(io.a2a.grpc.TaskSubscriptionRequestOrBuilder request) {
             String name = request.getName();
             String id = name.substring(name.lastIndexOf('/') + 1);
             return new TaskIdParams(id);
         }
 
-        public static ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigRequest request) {
+        public static List<TaskPushNotificationConfig> listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigResponseOrBuilder response) {
+            List<io.a2a.grpc.TaskPushNotificationConfig> configs = response.getConfigsList();
+            List<TaskPushNotificationConfig> result = new ArrayList<>(configs.size());
+            for(io.a2a.grpc.TaskPushNotificationConfig config : configs) {
+                result.add(taskPushNotificationConfig(config, false));
+            }
+            return result;
+        }
+
+        public static ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigRequestOrBuilder request) {
             String parent = request.getParent();
             String id = parent.substring(parent.lastIndexOf('/') + 1);
             return new ListTaskPushNotificationConfigParams(id);
         }
 
-        public static DeleteTaskPushNotificationConfigParams deleteTaskPushNotificationConfigParams(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest request) {
+        public static DeleteTaskPushNotificationConfigParams deleteTaskPushNotificationConfigParams(io.a2a.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder request) {
             String name = request.getName(); // "tasks/{id}/pushNotificationConfigs/{push_id}"
             String[] parts = name.split("/");
             if (parts.length < 4) {
@@ -736,13 +787,13 @@ public class ProtoUtils {
             return new DeleteTaskPushNotificationConfigParams(taskId, configId);
         }
 
-        private static AgentCapabilities agentCapabilities(io.a2a.grpc.AgentCapabilities agentCapabilities) {
+        private static AgentCapabilities agentCapabilities(io.a2a.grpc.AgentCapabilitiesOrBuilder agentCapabilities) {
             return new AgentCapabilities(agentCapabilities.getStreaming(), agentCapabilities.getPushNotifications(), false,
                     agentCapabilities.getExtensionsList().stream().map(item -> agentExtension(item)).collect(Collectors.toList())
             );
         }
 
-        private static AgentExtension agentExtension(io.a2a.grpc.AgentExtension agentExtension) {
+        private static AgentExtension agentExtension(io.a2a.grpc.AgentExtensionOrBuilder agentExtension) {
             return new AgentExtension(
                     agentExtension.getDescription(),
                     struct(agentExtension.getParams()),
@@ -751,7 +802,7 @@ public class ProtoUtils {
             );
         }
 
-        private static MessageSendConfiguration messageSendConfiguration(io.a2a.grpc.SendMessageConfiguration sendMessageConfiguration) {
+        private static MessageSendConfiguration messageSendConfiguration(io.a2a.grpc.SendMessageConfigurationOrBuilder sendMessageConfiguration) {
             return new MessageSendConfiguration(
                     new ArrayList<>(sendMessageConfiguration.getAcceptedOutputModesList()),
                     sendMessageConfiguration.getHistoryLength(),
@@ -760,27 +811,30 @@ public class ProtoUtils {
             );
         }
 
-        private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfig pushNotification, String configId) {
+        private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfigOrBuilder pushNotification, String configId) {
+            if(pushNotification == null || pushNotification.getDefaultInstanceForType().equals(pushNotification)) {
+                return null;
+            }
             return new PushNotificationConfig(
                     pushNotification.getUrl(),
-                    pushNotification.getToken(),
-                    authenticationInfo(pushNotification.getAuthentication()),
+                    pushNotification.getToken().isEmpty() ? null : pushNotification.getToken(),
+                    pushNotification.hasAuthentication() ? authenticationInfo(pushNotification.getAuthentication()) : null,
                     pushNotification.getId().isEmpty() ? configId : pushNotification.getId()
             );
         }
 
-        private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfig pushNotification) {
+        private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfigOrBuilder pushNotification) {
             return pushNotification(pushNotification, pushNotification.getId());
         }
 
-        private static PushNotificationAuthenticationInfo authenticationInfo(io.a2a.grpc.AuthenticationInfo authenticationInfo) {
+        private static PushNotificationAuthenticationInfo authenticationInfo(io.a2a.grpc.AuthenticationInfoOrBuilder authenticationInfo) {
             return new PushNotificationAuthenticationInfo(
                     new ArrayList<>(authenticationInfo.getSchemesList()),
                     authenticationInfo.getCredentials()
             );
         }
 
-        public static Task task(io.a2a.grpc.Task task) {
+        public static Task task(io.a2a.grpc.TaskOrBuilder task) {
             return new Task(
                     task.getId(),
                     task.getContextId(),
@@ -791,10 +845,11 @@ public class ProtoUtils {
             );
         }
 
-        public static Message message(io.a2a.grpc.Message message) {
+        public static Message message(io.a2a.grpc.MessageOrBuilder message) {
             if (message.getMessageId().isEmpty()) {
                 throw new InvalidParamsError();
             }
+
             return new Message(
                     role(message.getRole()),
                     message.getContentList().stream().map(item -> part(item)).collect(Collectors.toList()),
@@ -806,7 +861,7 @@ public class ProtoUtils {
             );
         }
 
-        public static TaskStatusUpdateEvent taskStatusUpdateEvent(io.a2a.grpc.TaskStatusUpdateEvent taskStatusUpdateEvent) {
+        public static TaskStatusUpdateEvent taskStatusUpdateEvent(io.a2a.grpc.TaskStatusUpdateEventOrBuilder taskStatusUpdateEvent) {
             return new TaskStatusUpdateEvent.Builder()
                     .taskId(taskStatusUpdateEvent.getTaskId())
                     .status(taskStatus(taskStatusUpdateEvent.getStatus()))
@@ -816,7 +871,7 @@ public class ProtoUtils {
                     .build();
         }
 
-        public static TaskArtifactUpdateEvent taskArtifactUpdateEvent(io.a2a.grpc.TaskArtifactUpdateEvent taskArtifactUpdateEvent) {
+        public static TaskArtifactUpdateEvent taskArtifactUpdateEvent(io.a2a.grpc.TaskArtifactUpdateEventOrBuilder taskArtifactUpdateEvent) {
             return new TaskArtifactUpdateEvent.Builder()
                     .taskId(taskArtifactUpdateEvent.getTaskId())
                     .append(taskArtifactUpdateEvent.getAppend())
@@ -827,7 +882,7 @@ public class ProtoUtils {
                     .build();
         }
 
-        private static Artifact artifact(io.a2a.grpc.Artifact artifact) {
+        private static Artifact artifact(io.a2a.grpc.ArtifactOrBuilder artifact) {
             return new Artifact(
                     artifact.getArtifactId(),
                     artifact.getName(),
@@ -837,7 +892,7 @@ public class ProtoUtils {
             );
         }
 
-        private static Part<?> part(io.a2a.grpc.Part part) {
+        private static Part<?> part(io.a2a.grpc.PartOrBuilder part) {
             if (part.hasText()) {
                 return textPart(part.getText());
             } else if (part.hasFile()) {
@@ -852,23 +907,23 @@ public class ProtoUtils {
             return new TextPart(text);
         }
 
-        private static FilePart filePart(io.a2a.grpc.FilePart filePart) {
+        private static FilePart filePart(io.a2a.grpc.FilePartOrBuilder filePart) {
             if (filePart.hasFileWithBytes()) {
-                return new FilePart(new FileWithBytes(filePart.getMimeType(), null, filePart.getFileWithBytes().toStringUtf8()));
+                return new FilePart(new FileWithBytes(filePart.getMimeType(), filePart.getName(), filePart.getFileWithBytes().toStringUtf8()));
             } else if (filePart.hasFileWithUri()) {
-                return new FilePart(new FileWithUri(filePart.getMimeType(), null, filePart.getFileWithUri()));
+                return new FilePart(new FileWithUri(filePart.getMimeType(), filePart.getName(), filePart.getFileWithUri()));
             }
             throw new InvalidRequestError();
         }
 
-        private static DataPart dataPart(io.a2a.grpc.DataPart dataPart) {
+        private static DataPart dataPart(io.a2a.grpc.DataPartOrBuilder dataPart) {
             return new DataPart(struct(dataPart.getData()));
         }
 
-        private static TaskStatus taskStatus(io.a2a.grpc.TaskStatus taskStatus) {
+        private static TaskStatus taskStatus(io.a2a.grpc.TaskStatusOrBuilder taskStatus) {
             return new TaskStatus(
                     taskState(taskStatus.getState()),
-                    message(taskStatus.getUpdate()),
+                    taskStatus.hasUpdate() ? message(taskStatus.getUpdateOrBuilder()) : null,
                     LocalDateTime.ofInstant(Instant.ofEpochSecond(taskStatus.getTimestamp().getSeconds(), taskStatus.getTimestamp().getNanos()), ZoneOffset.UTC)
             );
         }

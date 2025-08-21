@@ -12,8 +12,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-import io.a2a.http.A2AHttpClient;
-import io.a2a.http.A2AHttpResponse;
+import io.a2a.client.http.A2AHttpClient;
+import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
@@ -134,6 +134,11 @@ public class AbstractA2ARequestHandlerTest {
         @Override
         public PostBuilder createPost() {
             return new TestHttpClient.TestPostBuilder();
+        }
+
+        @Override
+        public DeleteBuilder createDelete() {
+            return null;
         }
 
         class TestPostBuilder implements A2AHttpClient.PostBuilder {

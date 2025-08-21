@@ -3,9 +3,9 @@ package io.a2a.server.grpc.quarkus;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
-import io.a2a.grpc.handler.GrpcHandler;
+import io.a2a.transport.grpc.handler.CallContextFactory;
+import io.a2a.transport.grpc.handler.GrpcHandler;
 import io.a2a.server.PublicAgentCard;
-import io.a2a.server.requesthandlers.CallContextFactory;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.spec.AgentCard;
 import io.quarkus.grpc.GrpcService;

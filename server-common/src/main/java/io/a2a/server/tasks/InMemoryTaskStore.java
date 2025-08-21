@@ -1,7 +1,9 @@
 package io.a2a.server.tasks;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -28,5 +30,10 @@ public class InMemoryTaskStore implements TaskStore {
     @Override
     public void delete(String taskId) {
         tasks.remove(taskId);
+    }
+
+    @Override
+    public List<Task> listAll() {
+        return new ArrayList<>(tasks.values());
     }
 }
