@@ -10,12 +10,11 @@ import java.util.function.Consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.a2a.A2A;
-import io.a2a.client.A2ACardResolver;
+
 import io.a2a.client.Client;
 import io.a2a.client.ClientEvent;
-import io.a2a.client.ClientFactory;
 import io.a2a.client.MessageEvent;
-import io.a2a.client.config.ClientConfig;
+import io.a2a.client.http.A2ACardResolver;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
@@ -81,8 +80,11 @@ public class HelloWorldClient {
                 messageResponse.completeExceptionally(error);
             };
 
-            ClientFactory clientFactory = new ClientFactory(new ClientConfig.Builder().build());
-            Client client = clientFactory.create(finalAgentCard, consumers, streamingErrorHandler);
+            Client client = Client
+                    .from(finalAgentCard)
+                    .addStreamConsumers(consumers)
+                    .streamErrorHandler(streamingErrorHandler).build();
+
             Message message = A2A.toUserMessage(MESSAGE_TEXT); // the message ID will be automatically generated for you
             
             System.out.println("Sending message: " + MESSAGE_TEXT);

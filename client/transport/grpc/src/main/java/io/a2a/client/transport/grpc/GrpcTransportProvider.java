@@ -1,36 +1,28 @@
 package io.a2a.client.transport.grpc;
 
-import java.util.List;
-
-import io.a2a.client.config.ClientCallInterceptor;
-import io.a2a.client.config.ClientConfig;
-import io.a2a.client.config.ClientTransportConfig;
-import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.client.transport.spi.ClientTransportProvider;
-import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.TransportProtocol;
 import io.grpc.Channel;
+import io.grpc.ManagedChannelBuilder;
 
 /**
  * Provider for gRPC transport implementation.
  */
-public class GrpcTransportProvider implements ClientTransportProvider {
+public class GrpcTransportProvider implements ClientTransportProvider<GrpcTransport, GrpcTransportConfig> {
 
     @Override
-    public ClientTransport create(ClientConfig clientConfig, AgentCard agentCard,
-                                  String agentUrl, List<ClientCallInterceptor> interceptors) throws A2AClientException {
+    public GrpcTransport create(GrpcTransportConfig grpcTransportConfig, AgentCard agentCard, String agentUrl) {
         // not making use of the interceptors for gRPC for now
-        List<ClientTransportConfig> clientTransportConfigs = clientConfig.getClientTransportConfigs();
-        if (clientTransportConfigs != null) {
-            for (ClientTransportConfig clientTransportConfig : clientTransportConfigs) {
-                if (clientTransportConfig instanceof GrpcTransportConfig grpcTransportConfig) {
-                    Channel channel = grpcTransportConfig.getChannelFactory().apply(agentUrl);
-                    return new GrpcTransport(channel, agentCard);
-                }
-            }
+
+        Channel channel = grpcTransportConfig.getChannel();
+
+        // no channel factory configured
+        if (channel == null) {
+            channel = ManagedChannelBuilder.forTarget(agentUrl).build();
         }
-        throw new A2AClientException("Missing required GrpcTransportConfig");
+
+        return new GrpcTransport(channel, agentCard);
     }
 
     @Override
@@ -38,4 +30,8 @@ public class GrpcTransportProvider implements ClientTransportProvider {
         return TransportProtocol.GRPC.asString();
     }
 
+    @Override
+    public Class<GrpcTransport> getTransportProtocolClass() {
+        return GrpcTransport.class;
+    }
 }

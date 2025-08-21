@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
@@ -61,17 +60,17 @@ public class JSONRPCTransportStreamingTest {
                 .contextId("context-test")
                 .messageId("message-test")
                 .build();
-        
+
         MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(false)
                 .build();
-        
+
         MessageSendParams params = new MessageSendParams.Builder()
                 .message(message)
                 .configuration(configuration)
                 .build();
-        
+
         assertNotNull(params);
         assertEquals(message, params.message());
         assertEquals(configuration, params.configuration());

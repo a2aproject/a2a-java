@@ -3,7 +3,7 @@ package io.a2a;
 import java.util.Collections;
 import java.util.Map;
 
-import io.a2a.client.A2ACardResolver;
+import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.spec.A2AClientError;
