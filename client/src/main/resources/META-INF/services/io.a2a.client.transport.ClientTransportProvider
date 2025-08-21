@@ -1,2 +1,0 @@
-io.a2a.client.transport.JSONRPCTransportProvider
-io.a2a.client.transport.GrpcTransportProvider

@@ -128,6 +128,11 @@ public class A2ACardResolverTest {
             return null;
         }
 
+        @Override
+        public DeleteBuilder createDelete() {
+            return null;
+        }
+
         class TestGetBuilder implements A2AHttpClient.GetBuilder {
 
             @Override

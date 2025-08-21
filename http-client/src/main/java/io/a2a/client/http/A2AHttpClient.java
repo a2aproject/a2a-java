@@ -10,6 +10,8 @@ public interface A2AHttpClient {
 
     PostBuilder createPost();
 
+    DeleteBuilder createDelete();
+
     interface Builder<T extends Builder<T>> {
         T url(String s);
         T addHeader(String name, String value);
@@ -30,5 +32,9 @@ public interface A2AHttpClient {
                 Consumer<String> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException;
+    }
+
+    interface DeleteBuilder extends Builder<DeleteBuilder> {
+        A2AHttpResponse delete() throws IOException, InterruptedException;
     }
 }

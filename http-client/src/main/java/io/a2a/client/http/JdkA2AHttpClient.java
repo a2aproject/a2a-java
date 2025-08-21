@@ -35,6 +35,11 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         return new JdkPostBuilder();
     }
 
+    @Override
+    public DeleteBuilder createDelete() {
+        return new JdkDeleteBuilder();
+    }
+
     private abstract class JdkBuilder<T extends Builder<T>> implements Builder<T> {
         private String url;
         private Map<String, String> headers = new HashMap<>();
@@ -145,6 +150,18 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                     .build();
             return super.asyncRequest(request, messageConsumer, errorConsumer, completeRunnable);
         }
+    }
+
+    private class JdkDeleteBuilder extends JdkBuilder<DeleteBuilder> implements A2AHttpClient.DeleteBuilder {
+
+        @Override
+        public A2AHttpResponse delete() throws IOException, InterruptedException {
+            HttpRequest request = super.createRequestBuilder().DELETE().build();
+            HttpResponse<String> response =
+                    httpClient.send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
+            return new JdkHttpResponse(response);
+        }
+
     }
 
     private class JdkPostBuilder extends JdkBuilder<PostBuilder> implements A2AHttpClient.PostBuilder {

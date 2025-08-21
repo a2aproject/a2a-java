@@ -136,6 +136,11 @@ public class AbstractA2ARequestHandlerTest {
             return new TestHttpClient.TestPostBuilder();
         }
 
+        @Override
+        public DeleteBuilder createDelete() {
+            return null;
+        }
+
         class TestPostBuilder implements A2AHttpClient.PostBuilder {
             private volatile String body;
             @Override

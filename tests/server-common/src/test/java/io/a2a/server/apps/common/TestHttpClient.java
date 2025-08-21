@@ -32,6 +32,11 @@ public class TestHttpClient implements A2AHttpClient {
         return new TestPostBuilder();
     }
 
+    @Override
+    public DeleteBuilder createDelete() {
+        return null;
+    }
+
     class TestPostBuilder implements A2AHttpClient.PostBuilder {
         private volatile String body;
         @Override

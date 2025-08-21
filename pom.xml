@@ -204,7 +204,27 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-client-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-client-transport-spi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-transport-jsonrest</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
@@ -323,6 +343,7 @@
         <module>client/config</module>
         <module>client/transport/grpc</module>
         <module>client/transport/jsonrpc</module>
+        <module>client/transport/jsonrest</module>
         <module>client/transport/spi</module>
         <module>common</module>
         <module>examples/helloworld</module>
@@ -337,6 +358,7 @@
         <module>tests/server-common</module>
         <module>transport/jsonrpc</module>
         <module>transport/grpc</module>
+        <module>transport/jsonrest</module>
     </modules>
 
     <profiles>
