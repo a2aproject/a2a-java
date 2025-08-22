@@ -8,10 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Flow;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.a2a.server.ServerCallContext;
@@ -276,7 +273,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testOnMessageStreamNewMessageSuccess() {
+    public void testOnMessageStreamNewMessageSuccess() throws InterruptedException {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler);
         agentExecutorExecute = (context, eventQueue) -> {
             eventQueue.enqueueEvent(context.getTask() != null ? context.getTask() : context.getMessage());
@@ -320,6 +317,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 subscription.cancel();
             }
         });
+
+        latch.await();
 
         // The Python implementation has several events emitted since it uses mocks. Also, in the
         // implementation, a Message is considered a 'final' Event in EventConsumer.consumeAll()
@@ -366,6 +365,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             response = handler.onMessageSendStream(request, callContext);
         }
 
+        CompletableFuture<Void> future = new CompletableFuture<>();
         List<Event> results = new ArrayList<>();
 
         response.subscribe(new Flow.Subscriber<SendStreamingMessageResponse>() {
@@ -385,14 +385,16 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
             @Override
             public void onError(Throwable throwable) {
-
+                future.completeExceptionally(throwable);
             }
 
             @Override
             public void onComplete() {
-
+                future.complete(null);
             }
         });
+
+        future.join();
 
         assertEquals(events, results);
     }
@@ -511,6 +513,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             response = handler.onMessageSendStream(request, callContext);
         }
 
+        CompletableFuture<Void> future = new CompletableFuture<>();
         List<Event> results = new ArrayList<>();
 
         // Unlike testOnMessageStreamNewMessageExistingTaskSuccess() the ZeroPublisher.fromIterable()
@@ -533,14 +536,16 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
             @Override
             public void onError(Throwable throwable) {
-
+                future.completeExceptionally(throwable);
             }
 
             @Override
             public void onComplete() {
-
+                future.complete(null);
             }
         });
+
+        future.join();
 
         assertEquals(events, results);
     }
@@ -717,7 +722,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         callContext);
         assertNull(smr.getError());
 
-
+        CompletableFuture<Void> future = new CompletableFuture<>();
         List<StreamingEventKind> results = new ArrayList<>();
 
         response.subscribe(new Flow.Subscriber<>() {
@@ -738,13 +743,17 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             @Override
             public void onError(Throwable throwable) {
                 subscription.cancel();
+                future.completeExceptionally(throwable);
             }
 
             @Override
             public void onComplete() {
                 subscription.cancel();
+                future.complete(null);
             }
         });
+
+        future.join();
 
         // The Python implementation has several events emitted since it uses mocks.
         //
@@ -783,6 +792,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             response = handler.onResubscribeToTask(request, callContext);
         }
 
+        CompletableFuture<Void> future = new CompletableFuture<>();
         List<StreamingEventKind> results = new ArrayList<>();
 
         // Unlike testOnResubscribeExistingTaskSuccess() the ZeroPublisher.fromIterable()
@@ -806,13 +816,17 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             @Override
             public void onError(Throwable throwable) {
                 subscription.cancel();
+                future.completeExceptionally(throwable);
             }
 
             @Override
             public void onComplete() {
                 subscription.cancel();
+                future.complete(null);
             }
         });
+
+        future.join();
 
         // The Python implementation has several events emitted since it uses mocks.
         //
@@ -1147,6 +1161,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null));
         Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
 
+        CompletableFuture<Void> future = new CompletableFuture<>();
         List<SendStreamingMessageResponse> results = new ArrayList<>();
         AtomicReference<Throwable> error = new AtomicReference<>();
 
@@ -1168,13 +1183,17 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             public void onError(Throwable throwable) {
                 error.set(throwable);
                 subscription.cancel();
+                future.completeExceptionally(throwable);
             }
 
             @Override
             public void onComplete() {
                 subscription.cancel();
+                future.complete(null);
             }
         });
+
+        future.join();
 
         assertNull(error.get());
         assertEquals(1, results.size());
