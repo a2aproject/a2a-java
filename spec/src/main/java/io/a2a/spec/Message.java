@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.util.Assert;
 
 /**
- * An A2A message.
+ * Represents a single message in the conversation between a user and an agent.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

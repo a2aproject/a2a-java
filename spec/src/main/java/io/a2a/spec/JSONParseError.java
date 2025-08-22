@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static io.a2a.util.Utils.defaultIfNull;
 
+/**
+ * An error indicating that the server received invalid JSON.
+ */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JSONParseError extends JSONRPCError implements A2AError {

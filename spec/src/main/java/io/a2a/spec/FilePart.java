@@ -9,7 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.a2a.util.Assert;
 
 /**
- * A fundamental file unit within a Message or Artifact.
+ * Represents a file segment within a message or artifact. The file content can be
+ * provided either directly as bytes or as a URI.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

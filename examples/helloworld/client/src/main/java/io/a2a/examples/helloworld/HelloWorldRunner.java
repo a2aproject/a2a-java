@@ -1,5 +1,5 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.github.a2asdk:a2a-java-sdk-client:0.2.6.Beta1-SNAPSHOT
+//DEPS io.github.a2asdk:a2a-java-sdk-client:0.3.0.Beta1-SNAPSHOT
 //SOURCES HelloWorldClient.java
 
 /**

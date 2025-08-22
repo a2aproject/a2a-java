@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.util.Assert;
 
 /**
- * A central unit of work.
+ * Represents a single, stateful operation or conversation between a client and an agent.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

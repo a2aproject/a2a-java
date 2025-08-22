@@ -11,17 +11,17 @@ public interface SendMessageRequestOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.a2a.v1.Message request = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the request field is set.
    */
   boolean hasRequest();
   /**
-   * <code>.a2a.v1.Message request = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
    * @return The request.
    */
   io.a2a.grpc.Message getRequest();
   /**
-   * <code>.a2a.v1.Message request = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.MessageOrBuilder getRequestOrBuilder();
 

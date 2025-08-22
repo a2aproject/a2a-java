@@ -4,6 +4,8 @@ import static io.a2a.client.JsonMessages.AGENT_CARD;
 import static io.a2a.client.JsonMessages.AUTHENTICATION_EXTENDED_AGENT_CARD;
 import static io.a2a.client.JsonMessages.CANCEL_TASK_TEST_REQUEST;
 import static io.a2a.client.JsonMessages.CANCEL_TASK_TEST_RESPONSE;
+import static io.a2a.client.JsonMessages.GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST;
+import static io.a2a.client.JsonMessages.GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE;
 import static io.a2a.client.JsonMessages.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST;
 import static io.a2a.client.JsonMessages.GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static io.a2a.client.JsonMessages.GET_TASK_TEST_REQUEST;
@@ -38,6 +40,8 @@ import java.util.Map;
 
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentCardSignature;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.CancelTaskResponse;
@@ -46,6 +50,7 @@ import io.a2a.spec.FileContent;
 import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
+import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetTaskResponse;
@@ -65,6 +70,8 @@ import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TextPart;
+import io.a2a.spec.TransportProtocol;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -382,7 +389,7 @@ public class A2AClientTest {
         this.server.when(
                         request()
                                 .withMethod("GET")
-                                .withPath("/.well-known/agent.json")
+                                .withPath("/.well-known/agent-card.json")
                 )
                 .respond(
                         response()
@@ -443,24 +450,36 @@ public class A2AClientTest {
         assertEquals(outputModes, skills.get(1).outputModes());
         assertTrue(agentCard.supportsAuthenticatedExtendedCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals("0.2.5", agentCard.protocolVersion());
+        assertEquals("0.2.9", agentCard.protocolVersion());
+        assertEquals("JSONRPC", agentCard.preferredTransport());
+        List<AgentInterface> additionalInterfaces = agentCard.additionalInterfaces();
+        assertEquals(3, additionalInterfaces.size());
+        AgentInterface jsonrpc = new AgentInterface(TransportProtocol.JSONRPC.asString(), "https://georoute-agent.example.com/a2a/v1");
+        AgentInterface grpc = new AgentInterface(TransportProtocol.GRPC.asString(), "https://georoute-agent.example.com/a2a/grpc");
+        AgentInterface httpJson = new AgentInterface(TransportProtocol.HTTP_JSON.asString(), "https://georoute-agent.example.com/a2a/json");
+        assertEquals(jsonrpc, additionalInterfaces.get(0));
+        assertEquals(grpc, additionalInterfaces.get(1));
+        assertEquals(httpJson, additionalInterfaces.get(2));
     }
 
     @Test
     public void testA2AClientGetAuthenticatedExtendedAgentCard() throws Exception {
         this.server.when(
                         request()
-                                .withMethod("GET")
-                                .withPath("/agent/authenticatedExtendedCard")
+                                .withMethod("POST")
+                                .withPath("/")
+                                .withBody(JsonBody.json(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST, MatchType.STRICT))
+
                 )
                 .respond(
                         response()
                                 .withStatusCode(200)
-                                .withBody(AUTHENTICATION_EXTENDED_AGENT_CARD)
+                                .withBody(GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE)
                 );
 
         A2AClient client = new A2AClient("http://localhost:4001");
-        AgentCard agentCard = client.getAgentCard("/agent/authenticatedExtendedCard", null);
+        GetAuthenticatedExtendedCardResponse response = client.getAuthenticatedExtendedCard("1", null);
+        AgentCard agentCard = response.getResult();
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
         assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());
@@ -516,7 +535,13 @@ public class A2AClientTest {
         assertEquals(List.of("extended"), skills.get(2).tags());
         assertTrue(agentCard.supportsAuthenticatedExtendedCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals("0.2.5", agentCard.protocolVersion());
+        assertEquals("0.2.9", agentCard.protocolVersion());
+        List<AgentCardSignature> signatures = agentCard.signatures();
+        assertEquals(1, signatures.size());
+        AgentCardSignature signature = new AgentCardSignature(null,
+                "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJrZXktMSIsImprdSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWdlbnQvandrcy5qc29uIn0",
+                "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ");
+        assertEquals(signature, signatures.get(0));
     }
 
     @Test

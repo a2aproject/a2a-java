@@ -29,6 +29,7 @@ import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
+import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.IdJsonMappingException;
@@ -71,10 +72,6 @@ public class A2AServerRoutes {
 
     @Inject
     JSONRPCHandler jsonRpcHandler;
-
-    @Inject
-    @ExtendedAgentCard
-    Instance<AgentCard> extendedAgentCard;
 
     // Hook so testing can wait until the MultiSseSupport is subscribed.
     // Without this we get intermittent failures
@@ -159,38 +156,9 @@ public class A2AServerRoutes {
      *
      * @return the agent card
      */
-    @Route(path = "/.well-known/agent.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
+    @Route(path = "/.well-known/agent-card.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
     public AgentCard getAgentCard() {
         return jsonRpcHandler.getAgentCard();
-    }
-
-    /**
-     * Handles incoming GET requests to the authenticated extended agent card endpoint.
-     * Returns the agent card in JSON format.
-     *
-     */
-    @Route(path = "/agent/authenticatedExtendedCard", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
-    public void getAuthenticatedExtendedAgentCard(RoutingExchange re) {
-        // TODO need to add authentication for this endpoint
-        // https://github.com/a2aproject/a2a-java/issues/77
-        try {
-            if (! jsonRpcHandler.getAgentCard().supportsAuthenticatedExtendedCard()) {
-                JSONErrorResponse errorResponse = new JSONErrorResponse("Extended agent card not supported or not enabled.");
-                re.response().setStatusCode(Response.Status.NOT_FOUND.getStatusCode())
-                        .end(Utils.OBJECT_MAPPER.writeValueAsString(errorResponse));
-                return;
-            }
-            if (! extendedAgentCard.isResolvable()) {
-                JSONErrorResponse errorResponse = new JSONErrorResponse("Authenticated extended agent card is supported but not configured on the server.");
-                re.response().setStatusCode(Response.Status.NOT_FOUND.getStatusCode())
-                        .end(Utils.OBJECT_MAPPER.writeValueAsString(errorResponse));
-                return;
-            }
-
-            re.response().end(Utils.OBJECT_MAPPER.writeValueAsString(extendedAgentCard.get()));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private JSONRPCResponse<?> processNonStreamingRequest(
@@ -209,6 +177,8 @@ public class A2AServerRoutes {
             return jsonRpcHandler.listPushNotificationConfig(req, context);
         } else if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.deletePushNotificationConfig(req, context);
+        } else if (request instanceof GetAuthenticatedExtendedCardRequest req) {
+            return jsonRpcHandler.onGetAuthenticatedExtendedCardRequest(req, context);
         } else {
             return generateErrorResponse(request, new UnsupportedOperationError());
         }

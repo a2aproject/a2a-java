@@ -9,7 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.a2a.util.Assert;
 
 /**
- * A task status update event.
+ * An event sent by the agent to notify the client of a change in a task's status.
+ * This is typically used in streaming or subscription models.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

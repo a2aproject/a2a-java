@@ -4,6 +4,9 @@ import java.util.Map;
 
 import io.a2a.util.Assert;
 
+/**
+ * A declaration of a protocol extension supported by an Agent.
+ */
 public record AgentExtension (String description, Map<String, Object> params, boolean required, String uri) {
 
     public AgentExtension {

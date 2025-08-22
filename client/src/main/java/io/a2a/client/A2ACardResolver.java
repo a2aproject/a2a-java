@@ -20,7 +20,7 @@ public class A2ACardResolver {
     private final String url;
     private final Map<String, String> authHeaders;
 
-    private static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent.json";
+    private static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
 
     private static final TypeReference<AgentCard> AGENT_CARD_TYPE_REFERENCE = new TypeReference<>() {};
 
@@ -37,7 +37,7 @@ public class A2ACardResolver {
      * @param httpClient the http client to use
      * @param baseUrl the base URL for the agent whose agent card we want to retrieve
      * @param agentCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent.json"
+     *                         agent URL, defaults to ".well-known/agent-card.json"
      * @throws A2AClientError if the URL for the agent is invalid
      */
     public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, String agentCardPath) throws A2AClientError {
@@ -48,7 +48,7 @@ public class A2ACardResolver {
      * @param httpClient the http client to use
      * @param baseUrl the base URL for the agent whose agent card we want to retrieve
      * @param agentCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent.json"
+     *                         agent URL, defaults to ".well-known/agent-card.json"
      * @param authHeaders the HTTP authentication headers to use. May be {@code null}
      * @throws A2AClientError if the URL for the agent is invalid
      */
