@@ -1,20 +1,17 @@
 package io.a2a.client.transport.grpc;
 
-import java.util.function.Function;
-
-import io.a2a.client.config.ClientTransportConfig;
+import io.a2a.client.transport.spi.ClientTransportConfig;
 import io.grpc.Channel;
 
-public class GrpcTransportConfig implements ClientTransportConfig {
+public class GrpcTransportConfig extends ClientTransportConfig<GrpcTransport> {
 
-    private final Function<String, Channel> channelFactory;
+    private final Channel channel;
 
-    public GrpcTransportConfig(Function<String, Channel> channelFactory) {
-        this.channelFactory = channelFactory;
+    public GrpcTransportConfig(Channel channel) {
+        this.channel = channel;
     }
 
-    public Function<String, Channel> getChannelFactory() {
-        return channelFactory;
+    public Channel getChannel() {
+        return channel;
     }
-
 }

@@ -1,4 +1,4 @@
-package io.a2a.client;
+package io.a2a.client.http;
 
 /**
  * Request and response messages used by the tests. These have been created following examples from

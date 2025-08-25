@@ -243,20 +243,13 @@ that you can use to create your A2A `Client`.
 
 ### 2. Add one or more dependencies on the A2A Java SDK Client Transport(s) you'd like to use
 
-You need to add a dependency on at least one of the following client transport modules:
+By default, the sdk-client is coming with the JSONRPC transport.
+
+If you want to use another transport (such as GRPC or HTTP+JSON), you'll need to add a relevant dependency:
 
 ----
 > *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
 ----
-
-```xml
-<dependency>
-    <groupId>io.github.a2asdk</groupId>
-    <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
-    <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
-    <version>${io.a2a.sdk.version}</version>
-</dependency>
-```
 
 ```xml
 <dependency>
@@ -305,14 +298,18 @@ Consumer<Throwable> errorHandler = error -> {
     ...
 };
 
-// Create the client using ClientFactory
-ClientFactory clientFactory = new ClientFactory(clientConfig);
-Client client = clientFactory.create(agentCard, consumers, errorHandler);
+// Create the client using the builder
+Client client = Client
+        .from(finalAgentCard)
+        .clientConfig(clientConfig)
+        .addStreamConsumers(consumers)
+        .streamErrorHandler(errorHandler)
+        .build();
 ```
 
 #### Configuring Transport-Specific Settings
 
-Different transport protocols can be configured with specific settings using `ClientTransportConfig` implementations. The A2A Java SDK provides `JSONRPCTransportConfig` for the JSON-RPC transport and `GrpcTransportConfig` for the gRPC transport.
+Different transport protocols can be configured with specific settings using specific `ClientTransportConfig` implementations. The A2A Java SDK provides `JSONRPCTransportConfig` for the JSON-RPC transport and `GrpcTransportConfig` for the gRPC transport.
 
 ##### JSON-RPC Transport Configuration
 
@@ -324,13 +321,16 @@ as follows:
 // Create a custom HTTP client
 A2AHttpClient customHttpClient = ...
 
-// Create JSON-RPC transport configuration
-JSONRPCTransportConfig jsonrpcConfig = new JSONRPCTransportConfig(customHttpClient);
-
-// Configure the client with transport-specific settings
+// Configure the client settings
 ClientConfig clientConfig = new ClientConfig.Builder()
         .setAcceptedOutputModes(List.of("text"))
-        .setClientTransportConfigs(List.of(jsonrpcConfig))
+        .build();
+
+Client client = Client
+        .from(agentCard)
+        .clientConfig(clientConfig)
+        .withJsonRpcTransport(new JSONRPCTransportConfigBuilder()
+                .httpClient(customHttpClient).build())
         .build();
 ```
 
@@ -339,20 +339,19 @@ ClientConfig clientConfig = new ClientConfig.Builder()
 For the gRPC transport, you must configure a channel factory:
 
 ```java
-// Create a channel factory function that takes the agent URL and returns a Channel
-Function<String, Channel> channelFactory = agentUrl -> {
-    return ManagedChannelBuilder.forTarget(agentUrl)
-            ...
-            .build();
-};
-
-// Create gRPC transport configuration
-GrpcTransportConfig grpcConfig = new GrpcTransportConfig(channelFactory);
+// Create a channel from agent URL
+Channel channel = ManagedChannelBuilder.forTarget(agentUrl).build();
 
 // Configure the client with transport-specific settings
 ClientConfig clientConfig = new ClientConfig.Builder()
         .setAcceptedOutputModes(List.of("text"))
-        .setClientTransportConfigs(List.of(grpcConfig))
+        .build();
+
+Client client = Client
+        .from(agentCard)
+        .clientConfig(clientConfig)
+        .withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder()
+                .channel(channel).build())
         .build();
 ```
 
@@ -363,15 +362,11 @@ will be used based on the selected transport:
 
 ```java
 // Configure both JSON-RPC and gRPC transports
-List<ClientTransportConfig> transportConfigs = List.of(
-    new JSONRPCTransportConfig(...),
-    new GrpcTransportConfig(...)
-);
-
-ClientConfig clientConfig = new ClientConfig.Builder()
-        .setAcceptedOutputModes(List.of("text"))
-        .setClientTransportConfigs(transportConfigs)
-        .build();
+Client client = Client
+                .from(agentCard)
+                .withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder().build())
+                .withJsonRpcTransport(new JSONRPCTransportConfigBuilder().build())
+                .build();
 ```
 
 #### Send a message to the A2A server agent
