@@ -15,6 +15,10 @@ env:
   TCK_VERSION: 0.3.0.alpha
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
+  # SUT_JSONRPC_URL to use for the TCK
+  SUT_JSONRPC_URL: http://localhost:9999
+  # SUT_GRPC_URL to use for the TCK
+  SUT_GRPC_URL: http://localhost:9000
 
 # Only run the latest job
 concurrency:
@@ -57,7 +61,7 @@ jobs:
         working-directory: tck
       - name: Wait for SUT to start
         run: |
-          URL="http://localhost:9999/.well-known/agent-card.json"
+          URL="${{ env.SUT_JSONRPC_URL }}/.well-known/agent-card.json"
           EXPECTED_STATUS=200
           TIMEOUT=120
           RETRY_INTERVAL=2
@@ -91,5 +95,5 @@ jobs:
           
       - name: Run TCK
         run: |
-          ./run_tck.py --sut-url http://localhost:9999 --category all --compliance-report report.json
+          ./run_tck.py --sut-url ${{ env.SUT_JSONRPC_URL }} --category all --transports jsonrpc,grpc --compliance-report report.json
         working-directory: tck/a2a-tck
