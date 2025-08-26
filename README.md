@@ -28,7 +28,7 @@ Then build the `spec-grpc` module with `mvn clean install -Pproto-compile` to re
 
 ## Examples
 
-You can find an example of how to use the A2A Java SDK in the [a2a-samples repository](https://github.com/a2aproject/a2a-samples/tree/main/samples/multi_language/python_and_java_multiagent/weather_agent).
+You can find examples of how to use the A2A Java SDK in the [a2a-samples repository](https://github.com/a2aproject/a2a-samples/tree/main/samples/java/agents).
 
 More examples will be added soon.
 
