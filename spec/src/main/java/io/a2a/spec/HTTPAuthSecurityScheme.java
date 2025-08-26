@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.a2a.util.Assert;
 
 /**
- * Represents an HTTP authentication security scheme.
+ * Defines a security scheme using HTTP authentication.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

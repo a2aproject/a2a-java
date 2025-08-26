@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * An A2A-specific error indicating that the task is in a state where it cannot be canceled.
+ */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TaskNotCancelableError extends JSONRPCError {

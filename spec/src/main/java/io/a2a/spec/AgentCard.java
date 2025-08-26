@@ -1,5 +1,6 @@
 package io.a2a.spec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -8,8 +9,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * A public metadata file that describes an agent's capabilities, skills, endpoint URL, and
- * authentication requirements. Clients use this for discovery.
+ * The AgentCard is a self-describing manifest for an agent. It provides essential
+ * metadata including the agent's identity, capabilities, skills, supported
+ * communication methods, and security requirements.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -18,9 +20,11 @@ public record AgentCard(String name, String description, String url, AgentProvid
                         List<String> defaultInputModes, List<String> defaultOutputModes, List<AgentSkill> skills,
                         boolean supportsAuthenticatedExtendedCard, Map<String, SecurityScheme> securitySchemes,
                         List<Map<String, List<String>>> security, String iconUrl, List<AgentInterface> additionalInterfaces,
-                        String preferredTransport, String protocolVersion) {
+                        String preferredTransport, String protocolVersion, List<AgentCardSignature> signatures) {
 
     private static final String TEXT_MODE = "text";
+    private static final String DEFAULT_PROTOCOL_VERSION = "0.3.0";
+    private static final TransportProtocol DEFAULT_TRANSPORT = TransportProtocol.JSONRPC;
 
     public AgentCard {
         Assert.checkNotNullParam("capabilities", capabilities);
@@ -31,7 +35,12 @@ public record AgentCard(String name, String description, String url, AgentProvid
         Assert.checkNotNullParam("skills", skills);
         Assert.checkNotNullParam("url", url);
         Assert.checkNotNullParam("version", version);
-        Assert.checkNotNullParam("protocolVersion", protocolVersion);
+        if (protocolVersion == null) {
+            protocolVersion = DEFAULT_PROTOCOL_VERSION;
+        }
+        if (preferredTransport == null) {
+            preferredTransport = DEFAULT_TRANSPORT.asString();
+        }
     }
 
     public static class Builder {
@@ -50,8 +59,10 @@ public record AgentCard(String name, String description, String url, AgentProvid
         private List<Map<String, List<String>>> security;
         private String iconUrl;
         private List<AgentInterface> additionalInterfaces;
-        String preferredTransport;
-        String protocolVersion;
+        private String preferredTransport;
+        private String protocolVersion;
+        private List<AgentCardSignature> signatures;
+
 
         public Builder name(String name) {
             this.name = name;
@@ -138,11 +149,24 @@ public record AgentCard(String name, String description, String url, AgentProvid
             return this;
         }
 
+        public Builder signatures(List<AgentCardSignature> signatures) {
+            this.signatures = signatures;
+            return this;
+        }
+
         public AgentCard build() {
+            if (preferredTransport == null) {
+                preferredTransport = DEFAULT_TRANSPORT.asString();
+            }
+            if (additionalInterfaces == null) {
+                // should include an entry matching the main 'url' and 'preferredTransport'
+                additionalInterfaces = new ArrayList<>();
+                additionalInterfaces.add(new AgentInterface(preferredTransport, url));
+            }
             return new AgentCard(name, description, url, provider, version, documentationUrl,
                     capabilities, defaultInputModes, defaultOutputModes, skills,
                     supportsAuthenticatedExtendedCard, securitySchemes, security, iconUrl,
-                    additionalInterfaces, preferredTransport, protocolVersion);
+                    additionalInterfaces, preferredTransport, protocolVersion, signatures);
         }
     }
 }

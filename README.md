@@ -40,16 +40,19 @@ The A2A Java SDK provides a Java server implementation of the [Agent2Agent (A2A)
 - [Add a class that creates an A2A Agent Card](#2-add-a-class-that-creates-an-a2a-agent-card)
 - [Add a class that creates an A2A Agent Executor](#3-add-a-class-that-creates-an-a2a-agent-executor)
 
-### 1. Add the A2A Java SDK Server Maven dependency to your project
+### 1. Add an A2A Java SDK Reference Server dependency to your project
 
-Adding a dependency on an A2A Java SDK Server will provide access to the core classes that make up the A2A specification
-and allow you to run your agentic Java application as an A2A server agent.
+Adding a dependency on an A2A Java SDK Reference Server will provide access to the core classes
+that make up the A2A specification and allow you to run your agentic Java application as an A2A server agent.
 
-The A2A Java SDK provides a [reference A2A server implementation](reference-impl/README.md) based on [Quarkus](https://quarkus.io) for use with our tests and examples. However, the project is designed in such a way that it is trivial to integrate with various Java runtimes.
+The A2A Java SDK provides [reference A2A server implementations](reference) based on [Quarkus](https://quarkus.io) for use with our tests and examples. However, the project is designed in such a way that it is trivial to integrate with various Java runtimes.
 
 [Server Integrations](#server-integrations) contains a list of community contributed integrations of the server with various runtimes. You might be able to use one of these for your target runtime, or you can use them as inspiration to create your own.
 
-To use the reference implementation with the JSONRPC protocol add the following dependency to your project:
+#### Server Transports 
+The A2A Java SDK Reference Server implementations support a couple transports: JSON-RPC 2.0 and gRPC.
+
+To use the reference implementation with the JSON-RPC protocol, add the following dependency to your project:
 
 > *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
 
@@ -62,7 +65,7 @@ To use the reference implementation with the JSONRPC protocol add the following 
 </dependency>
 ```
 
-To use the reference implementation with the gRPC protocol add the following dependency to your project:
+To use the reference implementation with the gRPC protocol, add the following dependency to your project:
 
 > *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
 
@@ -74,6 +77,11 @@ To use the reference implementation with the gRPC protocol add the following dep
     <version>${io.a2a.sdk.version}</version>
 </dependency>
 ```
+
+Note that you can add more than one of the above dependencies to your project depending on the transports
+you'd like to support.
+
+Support for the HTTP+JSON/REST transport will be coming soon.
 
 ### 2. Add a class that creates an A2A Agent Card
 
@@ -211,8 +219,14 @@ public class WeatherAgentExecutorProducer {
 
 ## A2A Client
 
-The A2A Java SDK provides a Java client implementation of the [Agent2Agent (A2A) Protocol](https://google-a2a.github.io/A2A), allowing communication with A2A servers.
-To make use of the Java `A2AClient`, simply add the following dependency:
+The A2A Java SDK provides a Java client implementation of the [Agent2Agent (A2A) Protocol](https://google-a2a.github.io/A2A), allowing communication with A2A servers. The Java client implementation currently supports two transport protocols: JSON-RPC 2.0 and gRPC.
+
+To make use of the Java `Client`:
+
+### 1. Add the A2A Java SDK Client dependency to your project
+
+Adding a dependency on `a2a-java-sdk-client` will provide access to a `ClientFactory`
+that you can use to create your A2A `Client`.
 
 ----
 > *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
@@ -227,67 +241,222 @@ To make use of the Java `A2AClient`, simply add the following dependency:
 </dependency>
 ```
 
+### 2. Add one or more dependencies on the A2A Java SDK Client Transport(s) you'd like to use
+
+You need to add a dependency on at least one of the following client transport modules:
+
+----
+> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
+----
+
+```xml
+<dependency>
+    <groupId>io.github.a2asdk</groupId>
+    <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
+    <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
+    <version>${io.a2a.sdk.version}</version>
+</dependency>
+```
+
+```xml
+<dependency>
+    <groupId>io.github.a2asdk</groupId>
+    <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
+    <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
+    <version>${io.a2a.sdk.version}</version>
+</dependency>
+```
+
+Support for the HTTP+JSON/REST transport will be coming soon.
+
 ### Sample Usage
 
-#### Create an A2A client
+#### Create a Client using the ClientFactory
 
 ```java
-// Create an A2AClient (the URL specified is the server agent's URL, be sure to replace it with the actual URL of the A2A server you want to connect to)
-A2AClient client = new A2AClient("http://localhost:1234");
+// First, get the agent card for the A2A server agent you want to connect to
+AgentCard agentCard = new A2ACardResolver("http://localhost:1234").getAgentCard();
+
+// Specify configuration for the ClientFactory
+ClientConfig clientConfig = new ClientConfig.Builder()
+        .setAcceptedOutputModes(List.of("text"))
+        .build();
+
+// Create event consumers to handle responses that will be received from the A2A server
+// (these consumers will be used for both streaming and non-streaming responses)
+List<BiConsumer<ClientEvent, AgentCard>> consumers = List.of(
+    (event, card) -> {
+        if (event instanceof MessageEvent messageEvent) {
+            // handle the messageEvent.getMessage()
+            ...
+        } else if (event instanceof TaskEvent taskEvent) {
+            // handle the taskEvent.getTask()
+            ...
+        } else if (event instanceof TaskUpdateEvent updateEvent) {
+            // handle the updateEvent.getTask()
+            ...
+        }
+    }
+);
+
+// Create a handler that will be used for any errors that occur during streaming
+Consumer<Throwable> errorHandler = error -> {
+    // handle the error.getMessage()
+    ...
+};
+
+// Create the client using ClientFactory
+ClientFactory clientFactory = new ClientFactory(clientConfig);
+Client client = clientFactory.create(agentCard, consumers, errorHandler);
+```
+
+#### Configuring Transport-Specific Settings
+
+Different transport protocols can be configured with specific settings using `ClientTransportConfig` implementations. The A2A Java SDK provides `JSONRPCTransportConfig` for the JSON-RPC transport and `GrpcTransportConfig` for the gRPC transport.
+
+##### JSON-RPC Transport Configuration
+
+For the JSON-RPC transport, if you'd like to use the default `JdkA2AHttpClient`, no additional
+configuration is needed. To use a custom HTTP client instead, simply create a `JSONRPCTransportConfig`
+as follows:
+
+```java
+// Create a custom HTTP client
+A2AHttpClient customHttpClient = ...
+
+// Create JSON-RPC transport configuration
+JSONRPCTransportConfig jsonrpcConfig = new JSONRPCTransportConfig(customHttpClient);
+
+// Configure the client with transport-specific settings
+ClientConfig clientConfig = new ClientConfig.Builder()
+        .setAcceptedOutputModes(List.of("text"))
+        .setClientTransportConfigs(List.of(jsonrpcConfig))
+        .build();
+```
+
+##### gRPC Transport Configuration
+
+For the gRPC transport, you must configure a channel factory:
+
+```java
+// Create a channel factory function that takes the agent URL and returns a Channel
+Function<String, Channel> channelFactory = agentUrl -> {
+    return ManagedChannelBuilder.forTarget(agentUrl)
+            ...
+            .build();
+};
+
+// Create gRPC transport configuration
+GrpcTransportConfig grpcConfig = new GrpcTransportConfig(channelFactory);
+
+// Configure the client with transport-specific settings
+ClientConfig clientConfig = new ClientConfig.Builder()
+        .setAcceptedOutputModes(List.of("text"))
+        .setClientTransportConfigs(List.of(grpcConfig))
+        .build();
+```
+
+##### Multiple Transport Configurations
+
+You can specify configuration for multiple transports, the appropriate configuration
+will be used based on the selected transport:
+
+```java
+// Configure both JSON-RPC and gRPC transports
+List<ClientTransportConfig> transportConfigs = List.of(
+    new JSONRPCTransportConfig(...),
+    new GrpcTransportConfig(...)
+);
+
+ClientConfig clientConfig = new ClientConfig.Builder()
+        .setAcceptedOutputModes(List.of("text"))
+        .setClientTransportConfigs(transportConfigs)
+        .build();
 ```
 
 #### Send a message to the A2A server agent
 
 ```java
 // Send a text message to the A2A server agent
-Message message = A2A.toUserMessage("tell me a joke"); // the message ID will be automatically generated for you
-MessageSendParams params = new MessageSendParams.Builder()
-        .message(message)
-        .build();
-SendMessageResponse response = client.sendMessage(params);        
+Message message = A2A.toUserMessage("tell me a joke");
+
+// Send the message (uses configured consumers to handle responses)
+// Streaming will automatically be used if supported by both client and server,
+// otherwise the non-streaming send message method will be used automatically
+client.sendMessage(message);
+
+// You can also optionally specify a ClientCallContext with call-specific config to use
+client.sendMessage(message, clientCallContext);
 ```
 
-Note that `A2A#toUserMessage` will automatically generate a message ID for you when creating the `Message` 
-if you don't specify it. You can also explicitly specify a message ID like this:
+#### Send a message with custom event handling
 
 ```java
-Message message = A2A.toUserMessage("tell me a joke", "message-1234"); // messageId is message-1234
+// Create custom consumers for this specific message
+List<BiConsumer<ClientEvent, AgentCard>> customConsumers = List.of(
+    (event, card) -> {
+        // handle this specific message's responses
+        ...
+    }
+);
+
+// Create custom error handler
+Consumer<Throwable> customErrorHandler = error -> {
+    // handle the error
+    ...
+};
+
+Message message = A2A.toUserMessage("tell me a joke");
+client.sendMessage(message, customConsumers, customErrorHandler);
 ```
 
 #### Get the current state of a task
 
 ```java
 // Retrieve the task with id "task-1234"
-GetTaskResponse response = client.getTask("task-1234");
+Task task = client.getTask(new TaskQueryParams("task-1234"));
 
 // You can also specify the maximum number of items of history for the task
-// to include in the response
-GetTaskResponse response = client.getTask(new TaskQueryParams("task-1234", 10));
+// to include in the response and 
+Task task = client.getTask(new TaskQueryParams("task-1234", 10));
+
+// You can also optionally specify a ClientCallContext with call-specific config to use
+Task task = client.getTask(new TaskQueryParams("task-1234"), clientCallContext);
 ```
 
 #### Cancel an ongoing task
 
 ```java
 // Cancel the task we previously submitted with id "task-1234"
-CancelTaskResponse response = client.cancelTask("task-1234");
+Task cancelledTask = client.cancelTask(new TaskIdParams("task-1234"));
 
 // You can also specify additional properties using a map
-Map<String, Object> metadata = ...        
-CancelTaskResponse response = client.cancelTask(new TaskIdParams("task-1234", metadata));
+Map<String, Object> metadata = Map.of("reason", "user_requested");
+Task cancelledTask = client.cancelTask(new TaskIdParams("task-1234", metadata));
+
+// You can also optionally specify a ClientCallContext with call-specific config to use
+Task cancelledTask = client.cancelTask(new TaskIdParams("task-1234"), clientCallContext);
 ```
 
 #### Get a push notification configuration for a task
 
 ```java
 // Get task push notification configuration
-GetTaskPushNotificationConfigResponse response = client.getTaskPushNotificationConfig("task-1234");
+TaskPushNotificationConfig config = client.getTaskPushNotificationConfiguration(
+    new GetTaskPushNotificationConfigParams("task-1234"));
 
 // The push notification configuration ID can also be optionally specified
-GetTaskPushNotificationConfigResponse response = client.getTaskPushNotificationConfig("task-1234", "config-4567");
+TaskPushNotificationConfig config = client.getTaskPushNotificationConfiguration(
+    new GetTaskPushNotificationConfigParams("task-1234", "config-4567"));
 
 // Additional properties can be specified using a map
-Map<String, Object> metadata = ...
-GetTaskPushNotificationConfigResponse response = client.getTaskPushNotificationConfig(new GetTaskPushNotificationConfigParams("task-1234", "config-1234", metadata));
+Map<String, Object> metadata = Map.of("source", "client");
+TaskPushNotificationConfig config = client.getTaskPushNotificationConfiguration(
+    new GetTaskPushNotificationConfigParams("task-1234", "config-1234", metadata));
+
+// You can also optionally specify a ClientCallContext with call-specific config to use
+TaskPushNotificationConfig config = client.getTaskPushNotificationConfiguration(
+        new GetTaskPushNotificationConfigParams("task-1234"), clientCallContext);
 ```
 
 #### Set a push notification configuration for a task
@@ -298,77 +467,73 @@ PushNotificationConfig pushNotificationConfig = new PushNotificationConfig.Build
         .url("https://example.com/callback")
         .authenticationInfo(new AuthenticationInfo(Collections.singletonList("jwt"), null))
         .build();
-SetTaskPushNotificationResponse response = client.setTaskPushNotificationConfig("task-1234", pushNotificationConfig);
+
+TaskPushNotificationConfig taskConfig = new TaskPushNotificationConfig.Builder()
+        .taskId("task-1234")
+        .pushNotificationConfig(pushNotificationConfig)
+        .build();
+
+TaskPushNotificationConfig result = client.setTaskPushNotificationConfiguration(taskConfig);
+
+// You can also optionally specify a ClientCallContext with call-specific config to use
+TaskPushNotificationConfig result = client.setTaskPushNotificationConfiguration(taskConfig, clientCallContext);
 ```
 
 #### List the push notification configurations for a task
 
 ```java
-ListTaskPushNotificationConfigResponse response = client.listTaskPushNotificationConfig("task-1234");
+List<TaskPushNotificationConfig> configs = client.listTaskPushNotificationConfigurations(
+    new ListTaskPushNotificationConfigParams("task-1234"));
 
 // Additional properties can be specified using a map
-Map<String, Object> metadata = ...
-ListTaskPushNotificationConfigResponse response = client.listTaskPushNotificationConfig(new ListTaskPushNotificationConfigParams("task-123", metadata));
+Map<String, Object> metadata = Map.of("filter", "active");
+List<TaskPushNotificationConfig> configs = client.listTaskPushNotificationConfigurations(
+    new ListTaskPushNotificationConfigParams("task-1234", metadata));
+
+// You can also optionally specify a ClientCallContext with call-specific config to use
+List<TaskPushNotificationConfig> configs = client.listTaskPushNotificationConfigurations(
+        new ListTaskPushNotificationConfigParams("task-1234"), clientCallContext);
 ```
 
 #### Delete a push notification configuration for a task
 
 ```java
-DeleteTaskPushNotificationConfigResponse response = client.deleteTaskPushNotificationConfig("task-1234", "config-4567");
+client.deleteTaskPushNotificationConfigurations(
+    new DeleteTaskPushNotificationConfigParams("task-1234", "config-4567"));
 
 // Additional properties can be specified using a map
-Map<String, Object> metadata = ...
-DeleteTaskPushNotificationConfigResponse response = client.deleteTaskPushNotificationConfig(new DeleteTaskPushNotificationConfigParams("task-1234", "config-4567", metadata));
-```
+Map<String, Object> metadata = Map.of("reason", "cleanup");
+client.deleteTaskPushNotificationConfigurations(
+    new DeleteTaskPushNotificationConfigParams("task-1234", "config-4567", metadata));
 
-#### Send a streaming message
-
-```java
-// Send a text message to the remote agent
-Message message = A2A.toUserMessage("tell me some jokes"); // the message ID will be automatically generated for you
-MessageSendParams params = new MessageSendParams.Builder()
-        .message(message)
-        .build();
-
-// Create a handler that will be invoked for Task, Message, TaskStatusUpdateEvent, and TaskArtifactUpdateEvent
-Consumer<StreamingEventKind> eventHandler = event -> {...};
-
-// Create a handler that will be invoked if an error is received
-Consumer<JSONRPCError> errorHandler = error -> {...};
-
-// Create a handler that will be invoked in the event of a failure
-Runnable failureHandler = () -> {...};
-
-// Send the streaming message to the remote agent
-client.sendStreamingMessage(params, eventHandler, errorHandler, failureHandler);
+// You can also optionally specify a ClientCallContext with call-specific config to use
+client.deleteTaskPushNotificationConfigurations(
+    new DeleteTaskPushNotificationConfigParams("task-1234", "config-4567", clientCallContext);
 ```
 
 #### Resubscribe to a task
 
 ```java
-// Create a handler that will be invoked for Task, Message, TaskStatusUpdateEvent, and TaskArtifactUpdateEvent
-Consumer<StreamingEventKind> eventHandler = event -> {...};
-
-// Create a handler that will be invoked if an error is received
-Consumer<JSONRPCError> errorHandler = error -> {...};
-
-// Create a handler that will be invoked in the event of a failure
-Runnable failureHandler = () -> {...};
-
-// Resubscribe to an ongoing task with id "task-1234"
+// Resubscribe to an ongoing task with id "task-1234" using configured consumers
 TaskIdParams taskIdParams = new TaskIdParams("task-1234");
-client.resubscribeToTask("request-1234", taskIdParams, eventHandler, errorHandler, failureHandler);
+client.resubscribe(taskIdParams);
+
+// Or resubscribe with custom consumers and error handler
+List<BiConsumer<ClientEvent, AgentCard>> customConsumers = List.of(
+    (event, card) -> System.out.println("Resubscribe event: " + event)
+);
+Consumer<Throwable> customErrorHandler = error -> 
+    System.err.println("Resubscribe error: " + error.getMessage());
+
+client.resubscribe(taskIdParams, customConsumers, customErrorHandler);
+
+// You can also optionally specify a ClientCallContext with call-specific config to use
+client.resubscribe(taskIdParams, clientCallContext);
 ```
 
 #### Retrieve details about the server agent that this client agent is communicating with
 ```java
 AgentCard serverAgentCard = client.getAgentCard();
-```
-
-An agent card can also be retrieved using the `A2A#getAgentCard` method:
-```java
-// http://localhost:1234 is the base URL for the agent whose card we want to retrieve
-AgentCard agentCard = A2A.getAgentCard("http://localhost:1234");
 ```
 
 ## Additional Examples
@@ -412,7 +577,8 @@ The following list contains community contributed integrations with various Java
 
 To contribute an integration, please see [CONTRIBUTING_INTEGRATIONS.md](CONTRIBUTING_INTEGRATIONS.md).
 
-* [reference-impl/README.md](reference-impl/README.md) - Reference implementation, based on Quarkus.
+* [reference/jsonrpc/README.md](reference/jsonrpc/README.md) - JSON-RPC 2.0 Reference implementation, based on Quarkus.
+* [reference/grpc/README.md](reference/grpc/README.md) - gRPC Reference implementation, based on Quarkus.
 * https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta - This integration is based on Jakarta EE, and should work in all runtimes supporting the [Jakarta EE Web Profile](https://jakarta.ee/specifications/webprofile/).
 
 

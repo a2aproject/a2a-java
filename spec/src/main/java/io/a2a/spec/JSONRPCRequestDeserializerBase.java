@@ -82,7 +82,8 @@ public abstract class JSONRPCRequestDeserializerBase<T> extends StdDeserializer<
                 || methodName.equals(SendMessageRequest.METHOD)
                 || methodName.equals(SendStreamingMessageRequest.METHOD)
                 || methodName.equals(ListTaskPushNotificationConfigRequest.METHOD)
-                || methodName.equals(DeleteTaskPushNotificationConfigRequest.METHOD));
+                || methodName.equals(DeleteTaskPushNotificationConfigRequest.METHOD)
+                || methodName.equals(GetAuthenticatedExtendedCardRequest.METHOD));
 
     }
 }

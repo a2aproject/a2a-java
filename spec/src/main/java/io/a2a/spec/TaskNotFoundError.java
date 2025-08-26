@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static io.a2a.util.Utils.defaultIfNull;
 
+/**
+ * An A2A-specific error indicating that the requested task ID was not found.
+ */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TaskNotFoundError extends JSONRPCError {

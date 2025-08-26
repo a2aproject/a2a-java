@@ -7,6 +7,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * An A2A-specific error indicating an incompatibility between the requested
+ * content types and the agent's capabilities.
+ */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContentTypeNotSupportedError extends JSONRPCError {

@@ -56,4 +56,26 @@ public interface OAuth2SecuritySchemeOrBuilder extends
    * <code>.a2a.v1.OAuthFlows flows = 2;</code>
    */
   io.a2a.grpc.OAuthFlowsOrBuilder getFlowsOrBuilder();
+
+  /**
+   * <pre>
+   * URL to the oauth2 authorization server metadata
+   * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+   * </pre>
+   *
+   * <code>string oauth2_metadata_url = 3;</code>
+   * @return The oauth2MetadataUrl.
+   */
+  java.lang.String getOauth2MetadataUrl();
+  /**
+   * <pre>
+   * URL to the oauth2 authorization server metadata
+   * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+   * </pre>
+   *
+   * <code>string oauth2_metadata_url = 3;</code>
+   * @return The bytes for oauth2MetadataUrl.
+   */
+  com.google.protobuf.ByteString
+      getOauth2MetadataUrlBytes();
 }

@@ -6,7 +6,7 @@
 
     <groupId>io.github.a2asdk</groupId>
     <artifactId>a2a-java-sdk-parent</artifactId>
-    <version>0.2.6.Beta1-SNAPSHOT</version>
+    <version>0.3.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -74,6 +74,41 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-client-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-client-transport-spi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-http-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-spec</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-spec-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-bom</artifactId>
@@ -279,9 +314,14 @@
     </build>
 
     <modules>
-        <module>client</module>
+        <module>client/base</module>
+        <module>client/config</module>
+        <module>client/transport/grpc</module>
+        <module>client/transport/jsonrpc</module>
+        <module>client/transport/spi</module>
         <module>common</module>
         <module>examples/helloworld</module>
+        <module>http-client</module>
         <module>reference/common</module>
         <module>reference/grpc</module>
         <module>reference/jsonrpc</module>

@@ -27,10 +27,10 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     }
 
     @Override
-    public void setInfo(String taskId, PushNotificationConfig notificationConfig) {
+    public PushNotificationConfig setInfo(String taskId, PushNotificationConfig notificationConfig) {
         List<PushNotificationConfig> notificationConfigList = pushNotificationInfos.getOrDefault(taskId, new ArrayList<>());
         PushNotificationConfig.Builder builder = new PushNotificationConfig.Builder(notificationConfig);
-        if (notificationConfig.id() == null) {
+        if (notificationConfig.id() == null || notificationConfig.id().isEmpty()) {
             builder.id(taskId);
         }
         notificationConfig = builder.build();
@@ -45,6 +45,7 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
         }
         notificationConfigList.add(notificationConfig);
         pushNotificationInfos.put(taskId, notificationConfigList);
+        return notificationConfig;
     }
 
     @Override

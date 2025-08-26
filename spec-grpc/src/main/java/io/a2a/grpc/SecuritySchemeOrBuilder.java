@@ -70,5 +70,20 @@ public interface SecuritySchemeOrBuilder extends
    */
   io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder getOpenIdConnectSecuritySchemeOrBuilder();
 
+  /**
+   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * @return Whether the mtlsSecurityScheme field is set.
+   */
+  boolean hasMtlsSecurityScheme();
+  /**
+   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * @return The mtlsSecurityScheme.
+   */
+  io.a2a.grpc.MutualTlsSecurityScheme getMtlsSecurityScheme();
+  /**
+   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   */
+  io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder getMtlsSecuritySchemeOrBuilder();
+
   io.a2a.grpc.SecurityScheme.SchemeCase getSchemeCase();
 }

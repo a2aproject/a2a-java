@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.a2asdk</groupId>
         <artifactId>a2a-java-sdk-parent</artifactId>
-        <version>0.2.6.Beta1-SNAPSHOT</version>
+        <version>0.3.0.Beta1-SNAPSHOT</version>
     </parent>
     <artifactId>a2a-java-sdk-server-common</artifactId>
 
@@ -24,7 +24,12 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-client</artifactId>
+            <artifactId>a2a-java-sdk-http-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

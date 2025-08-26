@@ -2,6 +2,7 @@ package io.a2a.server.tasks;
 
 import static io.a2a.spec.TaskState.SUBMITTED;
 import static io.a2a.util.Assert.checkNotNullParam;
+import static io.a2a.util.Utils.appendArtifactToTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,60 +83,7 @@ public class TaskManager {
     Task saveTaskEvent(TaskArtifactUpdateEvent event) throws A2AServerException {
         checkIdsAndUpdateIfNecessary(event.getTaskId(), event.getContextId());
         Task task = ensureTask(event.getTaskId(), event.getContextId());
-
-        // Append artifacts
-        List<Artifact> artifacts = task.getArtifacts() == null ? new ArrayList<>() : new ArrayList<>(task.getArtifacts());
-
-        Artifact newArtifact = event.getArtifact();
-        String artifactId = newArtifact.artifactId();
-        boolean appendParts = event.isAppend() != null && event.isAppend();
-
-        Artifact existingArtifact = null;
-        int existingArtifactIndex = -1;
-
-        for (int i = 0; i < artifacts.size(); i++) {
-            Artifact curr = artifacts.get(i);
-            if (curr.artifactId() != null && curr.artifactId().equals(artifactId)) {
-                existingArtifact = curr;
-                existingArtifactIndex = i;
-                break;
-            }
-        }
-
-        if (!appendParts) {
-            // This represents the first chunk for this artifact index
-            if (existingArtifactIndex >= 0) {
-                // Replace the existing artifact entirely with the new artifact
-                LOGGER.debug("Replacing artifact at id {} for task {}", artifactId, taskId);
-                artifacts.set(existingArtifactIndex, newArtifact);
-            } else {
-                // Append the new artifact since no artifact with this id/index exists yet
-                LOGGER.debug("Adding artifact at id {} for task {}", artifactId, taskId);
-                artifacts.add(newArtifact);
-            }
-
-        } else if (existingArtifact != null) {
-            // Append new parts to the existing artifact's parts list
-            // Do this to a copy
-            LOGGER.debug("Appending parts to artifact id {} for task {}", artifactId, taskId);
-            List<Part<?>> parts = new ArrayList<>(existingArtifact.parts());
-            parts.addAll(newArtifact.parts());
-            Artifact updated = new Artifact.Builder(existingArtifact)
-                    .parts(parts)
-                    .build();
-            artifacts.set(existingArtifactIndex, updated);
-        } else {
-            // We received a chunk to append, but we don't have an existing artifact.
-            // We will ignore this chunk
-            LOGGER.warn(
-                    "Received append=true for nonexistent artifact index for artifact {} in task {}. Ignoring chunk.",
-                    artifactId, taskId);
-        }
-
-        task = new Task.Builder(task)
-                .artifacts(artifacts)
-                .build();
-
+        task = appendArtifactToTask(task, event, taskId);
         return saveTask(task);
     }
 

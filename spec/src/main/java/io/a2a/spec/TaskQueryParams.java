@@ -7,12 +7,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * Task query parameters.
+ * Defines parameters for querying a task, with an option to limit history length.
  *
  * @param id the ID for the task to be queried
  * @param historyLength the maximum number of items of history for the task to include in the response
  * @param metadata additional properties
  */
+
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TaskQueryParams(String id, Integer historyLength, Map<String, Object> metadata) {

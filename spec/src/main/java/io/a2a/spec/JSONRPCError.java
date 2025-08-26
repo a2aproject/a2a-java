@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.a2a.util.Assert;
 
 /**
- * Represents a JSONRPC error.
+ * Represents a JSON-RPC 2.0 Error object, included in an error response.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(using = JSONRPCErrorDeserializer.class)

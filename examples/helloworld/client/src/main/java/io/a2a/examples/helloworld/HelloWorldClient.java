@@ -1,16 +1,23 @@
 package io.a2a.examples.helloworld;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.a2a.client.A2AClient;
 import io.a2a.A2A;
+import io.a2a.client.A2ACardResolver;
+import io.a2a.client.Client;
+import io.a2a.client.ClientEvent;
+import io.a2a.client.ClientFactory;
+import io.a2a.client.MessageEvent;
+import io.a2a.client.config.ClientConfig;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.EventKind;
 import io.a2a.spec.Message;
-import io.a2a.spec.MessageSendParams;
-import io.a2a.spec.SendMessageResponse;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
 
@@ -27,7 +34,7 @@ public class HelloWorldClient {
     public static void main(String[] args) {
         try {
             AgentCard finalAgentCard = null;
-            AgentCard publicAgentCard = A2A.getAgentCard("http://localhost:9999");
+            AgentCard publicAgentCard = new A2ACardResolver("http://localhost:9999").getAgentCard();
             System.out.println("Successfully fetched public agent card:");
             System.out.println(OBJECT_MAPPER.writeValueAsString(publicAgentCard));
             System.out.println("Using public agent card for client initialization (default).");
@@ -46,25 +53,47 @@ public class HelloWorldClient {
                 System.out.println("Public card does not indicate support for an extended card. Using public card.");
             }
 
-            A2AClient client = new A2AClient(finalAgentCard);
-            Message message = A2A.toUserMessage(MESSAGE_TEXT); // the message ID will be automatically generated for you
-            MessageSendParams params = new MessageSendParams.Builder()
-                .message(message)
-                .build();
-            SendMessageResponse response = client.sendMessage(params);
-            System.out.println("Message sent with ID: " + response.getId());
-            
-            EventKind result = response.getResult();
-            if (result instanceof Message responseMessage) {
-                StringBuilder textBuilder = new StringBuilder();
-                if (responseMessage.getParts() != null) {
-                    for (Part<?> part : responseMessage.getParts()) {
-                        if (part instanceof TextPart textPart) {
-                            textBuilder.append(textPart.getText());
+            final CompletableFuture<String> messageResponse = new CompletableFuture<>();
+
+            // Create consumers list for handling client events
+            List<BiConsumer<ClientEvent, AgentCard>> consumers = new ArrayList<>();
+            consumers.add((event, agentCard) -> {
+                if (event instanceof MessageEvent messageEvent) {
+                    Message responseMessage = messageEvent.getMessage();
+                    StringBuilder textBuilder = new StringBuilder();
+                    if (responseMessage.getParts() != null) {
+                        for (Part<?> part : responseMessage.getParts()) {
+                            if (part instanceof TextPart textPart) {
+                                textBuilder.append(textPart.getText());
+                            }
                         }
                     }
+                    messageResponse.complete(textBuilder.toString());
+                } else {
+                    System.out.println("Received client event: " + event.getClass().getSimpleName());
                 }
-                System.out.println("Response: " + textBuilder.toString());
+            });
+
+            // Create error handler for streaming errors
+            Consumer<Throwable> streamingErrorHandler = (error) -> {
+                System.err.println("Streaming error occurred: " + error.getMessage());
+                error.printStackTrace();
+                messageResponse.completeExceptionally(error);
+            };
+
+            ClientFactory clientFactory = new ClientFactory(new ClientConfig.Builder().build());
+            Client client = clientFactory.create(finalAgentCard, consumers, streamingErrorHandler);
+            Message message = A2A.toUserMessage(MESSAGE_TEXT); // the message ID will be automatically generated for you
+            
+            System.out.println("Sending message: " + MESSAGE_TEXT);
+            client.sendMessage(message);
+            System.out.println("Message sent successfully. Responses will be handled by the configured consumers.");
+
+            try {
+                String responseText = messageResponse.get();
+                System.out.println("Response: " + responseText);
+            } catch (Exception e) {
+                System.err.println("Failed to get response: " + e.getMessage());
             }
         } catch (Exception e) {
             System.err.println("An error occurred: " + e.getMessage());

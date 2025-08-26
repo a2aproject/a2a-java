@@ -53,6 +53,7 @@ private static final long serialVersionUID = 0L;
     HTTP_AUTH_SECURITY_SCHEME(2),
     OAUTH2_SECURITY_SCHEME(3),
     OPEN_ID_CONNECT_SECURITY_SCHEME(4),
+    MTLS_SECURITY_SCHEME(5),
     SCHEME_NOT_SET(0);
     private final int value;
     private SchemeCase(int value) {
@@ -74,6 +75,7 @@ private static final long serialVersionUID = 0L;
         case 2: return HTTP_AUTH_SECURITY_SCHEME;
         case 3: return OAUTH2_SECURITY_SCHEME;
         case 4: return OPEN_ID_CONNECT_SECURITY_SCHEME;
+        case 5: return MTLS_SECURITY_SCHEME;
         case 0: return SCHEME_NOT_SET;
         default: return null;
       }
@@ -213,6 +215,37 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.OpenIdConnectSecurityScheme.getDefaultInstance();
   }
 
+  public static final int MTLS_SECURITY_SCHEME_FIELD_NUMBER = 5;
+  /**
+   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * @return Whether the mtlsSecurityScheme field is set.
+   */
+  @java.lang.Override
+  public boolean hasMtlsSecurityScheme() {
+    return schemeCase_ == 5;
+  }
+  /**
+   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * @return The mtlsSecurityScheme.
+   */
+  @java.lang.Override
+  public io.a2a.grpc.MutualTlsSecurityScheme getMtlsSecurityScheme() {
+    if (schemeCase_ == 5) {
+       return (io.a2a.grpc.MutualTlsSecurityScheme) scheme_;
+    }
+    return io.a2a.grpc.MutualTlsSecurityScheme.getDefaultInstance();
+  }
+  /**
+   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   */
+  @java.lang.Override
+  public io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder getMtlsSecuritySchemeOrBuilder() {
+    if (schemeCase_ == 5) {
+       return (io.a2a.grpc.MutualTlsSecurityScheme) scheme_;
+    }
+    return io.a2a.grpc.MutualTlsSecurityScheme.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -239,6 +272,9 @@ private static final long serialVersionUID = 0L;
     if (schemeCase_ == 4) {
       output.writeMessage(4, (io.a2a.grpc.OpenIdConnectSecurityScheme) scheme_);
     }
+    if (schemeCase_ == 5) {
+      output.writeMessage(5, (io.a2a.grpc.MutualTlsSecurityScheme) scheme_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -263,6 +299,10 @@ private static final long serialVersionUID = 0L;
     if (schemeCase_ == 4) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(4, (io.a2a.grpc.OpenIdConnectSecurityScheme) scheme_);
+    }
+    if (schemeCase_ == 5) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(5, (io.a2a.grpc.MutualTlsSecurityScheme) scheme_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -297,6 +337,10 @@ private static final long serialVersionUID = 0L;
         if (!getOpenIdConnectSecurityScheme()
             .equals(other.getOpenIdConnectSecurityScheme())) return false;
         break;
+      case 5:
+        if (!getMtlsSecurityScheme()
+            .equals(other.getMtlsSecurityScheme())) return false;
+        break;
       case 0:
       default:
     }
@@ -327,6 +371,10 @@ private static final long serialVersionUID = 0L;
       case 4:
         hash = (37 * hash) + OPEN_ID_CONNECT_SECURITY_SCHEME_FIELD_NUMBER;
         hash = (53 * hash) + getOpenIdConnectSecurityScheme().hashCode();
+        break;
+      case 5:
+        hash = (37 * hash) + MTLS_SECURITY_SCHEME_FIELD_NUMBER;
+        hash = (53 * hash) + getMtlsSecurityScheme().hashCode();
         break;
       case 0:
       default:
@@ -474,6 +522,9 @@ private static final long serialVersionUID = 0L;
       if (openIdConnectSecuritySchemeBuilder_ != null) {
         openIdConnectSecuritySchemeBuilder_.clear();
       }
+      if (mtlsSecuritySchemeBuilder_ != null) {
+        mtlsSecuritySchemeBuilder_.clear();
+      }
       schemeCase_ = 0;
       scheme_ = null;
       return this;
@@ -531,6 +582,10 @@ private static final long serialVersionUID = 0L;
           openIdConnectSecuritySchemeBuilder_ != null) {
         result.scheme_ = openIdConnectSecuritySchemeBuilder_.build();
       }
+      if (schemeCase_ == 5 &&
+          mtlsSecuritySchemeBuilder_ != null) {
+        result.scheme_ = mtlsSecuritySchemeBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -560,6 +615,10 @@ private static final long serialVersionUID = 0L;
         }
         case OPEN_ID_CONNECT_SECURITY_SCHEME: {
           mergeOpenIdConnectSecurityScheme(other.getOpenIdConnectSecurityScheme());
+          break;
+        }
+        case MTLS_SECURITY_SCHEME: {
+          mergeMtlsSecurityScheme(other.getMtlsSecurityScheme());
           break;
         }
         case SCHEME_NOT_SET: {
@@ -620,6 +679,13 @@ private static final long serialVersionUID = 0L;
               schemeCase_ = 4;
               break;
             } // case 34
+            case 42: {
+              input.readMessage(
+                  internalGetMtlsSecuritySchemeFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              schemeCase_ = 5;
+              break;
+            } // case 42
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1218,6 +1284,148 @@ private static final long serialVersionUID = 0L;
       schemeCase_ = 4;
       onChanged();
       return openIdConnectSecuritySchemeBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilder<
+        io.a2a.grpc.MutualTlsSecurityScheme, io.a2a.grpc.MutualTlsSecurityScheme.Builder, io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder> mtlsSecuritySchemeBuilder_;
+    /**
+     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * @return Whether the mtlsSecurityScheme field is set.
+     */
+    @java.lang.Override
+    public boolean hasMtlsSecurityScheme() {
+      return schemeCase_ == 5;
+    }
+    /**
+     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * @return The mtlsSecurityScheme.
+     */
+    @java.lang.Override
+    public io.a2a.grpc.MutualTlsSecurityScheme getMtlsSecurityScheme() {
+      if (mtlsSecuritySchemeBuilder_ == null) {
+        if (schemeCase_ == 5) {
+          return (io.a2a.grpc.MutualTlsSecurityScheme) scheme_;
+        }
+        return io.a2a.grpc.MutualTlsSecurityScheme.getDefaultInstance();
+      } else {
+        if (schemeCase_ == 5) {
+          return mtlsSecuritySchemeBuilder_.getMessage();
+        }
+        return io.a2a.grpc.MutualTlsSecurityScheme.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     */
+    public Builder setMtlsSecurityScheme(io.a2a.grpc.MutualTlsSecurityScheme value) {
+      if (mtlsSecuritySchemeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        scheme_ = value;
+        onChanged();
+      } else {
+        mtlsSecuritySchemeBuilder_.setMessage(value);
+      }
+      schemeCase_ = 5;
+      return this;
+    }
+    /**
+     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     */
+    public Builder setMtlsSecurityScheme(
+        io.a2a.grpc.MutualTlsSecurityScheme.Builder builderForValue) {
+      if (mtlsSecuritySchemeBuilder_ == null) {
+        scheme_ = builderForValue.build();
+        onChanged();
+      } else {
+        mtlsSecuritySchemeBuilder_.setMessage(builderForValue.build());
+      }
+      schemeCase_ = 5;
+      return this;
+    }
+    /**
+     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     */
+    public Builder mergeMtlsSecurityScheme(io.a2a.grpc.MutualTlsSecurityScheme value) {
+      if (mtlsSecuritySchemeBuilder_ == null) {
+        if (schemeCase_ == 5 &&
+            scheme_ != io.a2a.grpc.MutualTlsSecurityScheme.getDefaultInstance()) {
+          scheme_ = io.a2a.grpc.MutualTlsSecurityScheme.newBuilder((io.a2a.grpc.MutualTlsSecurityScheme) scheme_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          scheme_ = value;
+        }
+        onChanged();
+      } else {
+        if (schemeCase_ == 5) {
+          mtlsSecuritySchemeBuilder_.mergeFrom(value);
+        } else {
+          mtlsSecuritySchemeBuilder_.setMessage(value);
+        }
+      }
+      schemeCase_ = 5;
+      return this;
+    }
+    /**
+     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     */
+    public Builder clearMtlsSecurityScheme() {
+      if (mtlsSecuritySchemeBuilder_ == null) {
+        if (schemeCase_ == 5) {
+          schemeCase_ = 0;
+          scheme_ = null;
+          onChanged();
+        }
+      } else {
+        if (schemeCase_ == 5) {
+          schemeCase_ = 0;
+          scheme_ = null;
+        }
+        mtlsSecuritySchemeBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     */
+    public io.a2a.grpc.MutualTlsSecurityScheme.Builder getMtlsSecuritySchemeBuilder() {
+      return internalGetMtlsSecuritySchemeFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     */
+    @java.lang.Override
+    public io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder getMtlsSecuritySchemeOrBuilder() {
+      if ((schemeCase_ == 5) && (mtlsSecuritySchemeBuilder_ != null)) {
+        return mtlsSecuritySchemeBuilder_.getMessageOrBuilder();
+      } else {
+        if (schemeCase_ == 5) {
+          return (io.a2a.grpc.MutualTlsSecurityScheme) scheme_;
+        }
+        return io.a2a.grpc.MutualTlsSecurityScheme.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        io.a2a.grpc.MutualTlsSecurityScheme, io.a2a.grpc.MutualTlsSecurityScheme.Builder, io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder> 
+        internalGetMtlsSecuritySchemeFieldBuilder() {
+      if (mtlsSecuritySchemeBuilder_ == null) {
+        if (!(schemeCase_ == 5)) {
+          scheme_ = io.a2a.grpc.MutualTlsSecurityScheme.getDefaultInstance();
+        }
+        mtlsSecuritySchemeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            io.a2a.grpc.MutualTlsSecurityScheme, io.a2a.grpc.MutualTlsSecurityScheme.Builder, io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder>(
+                (io.a2a.grpc.MutualTlsSecurityScheme) scheme_,
+                getParentForChildren(),
+                isClean());
+        scheme_ = null;
+      }
+      schemeCase_ = 5;
+      onChanged();
+      return mtlsSecuritySchemeBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.SecurityScheme)

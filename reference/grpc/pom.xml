@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.a2asdk</groupId>
         <artifactId>a2a-java-sdk-parent</artifactId>
-        <version>0.2.6.Beta1-SNAPSHOT</version>
+        <version>0.3.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -43,6 +43,12 @@
             <scope>test</scope>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -78,6 +84,11 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
