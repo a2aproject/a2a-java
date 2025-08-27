@@ -22,6 +22,8 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
+
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -268,5 +270,23 @@ public class ToProtoTest {
         assertEquals(false, result.getBlocking());
         assertEquals(1, result.getAcceptedOutputModesCount());
         assertEquals("text", result.getAcceptedOutputModesBytes(0).toStringUtf8());
+    }
+
+    @Test
+    public void convertTaskTimestampStatus() {
+        OffsetDateTime expectedTimestamp = OffsetDateTime.parse("2024-10-05T12:34:56Z");
+        TaskStatus testStatus = new TaskStatus(TaskState.COMPLETED, null, expectedTimestamp);
+        Task task = new Task.Builder()
+                .id("task-123")
+                .contextId("context-456")
+                .status(testStatus)
+                .build();
+
+        io.a2a.grpc.Task grpcTask = ProtoUtils.ToProto.task(task);
+        task = ProtoUtils.FromProto.task(grpcTask);
+        TaskStatus status = task.getStatus();
+        assertEquals(TaskState.COMPLETED, status.state());
+        assertNotNull(status.timestamp());
+        assertEquals(expectedTimestamp, status.timestamp());
     }
 }
