@@ -5,11 +5,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
+
+import static io.a2a.spec.HTTPAuthSecurityScheme.HTTP;
 
 /**
  * Defines a security scheme using HTTP authentication.
  */
+@JsonTypeName(HTTP)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class HTTPAuthSecurityScheme implements SecurityScheme {
@@ -28,6 +32,7 @@ public final class HTTPAuthSecurityScheme implements SecurityScheme {
     public HTTPAuthSecurityScheme(@JsonProperty("bearerFormat") String bearerFormat, @JsonProperty("scheme") String scheme,
                                   @JsonProperty("description") String description, @JsonProperty("type") String type) {
         Assert.checkNotNullParam("scheme", scheme);
+        Assert.checkNotNullParam("type", type);
         if (! type.equals(HTTP)) {
             throw new IllegalArgumentException("Invalid type for HTTPAuthSecurityScheme");
         }

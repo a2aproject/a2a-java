@@ -6,12 +6,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
+
+import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
 
 /**
  * An event sent by the agent to notify the client that an artifact has been
  * generated or updated. This is typically used in streaming models.
  */
+@JsonTypeName(ARTIFACT_UPDATE)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventKind, UpdateEvent {

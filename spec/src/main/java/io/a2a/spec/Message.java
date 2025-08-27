@@ -8,13 +8,17 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.util.Assert;
 
+import static io.a2a.spec.Message.MESSAGE;
+
 /**
  * Represents a single message in the conversation between a user and an agent.
  */
+@JsonTypeName(MESSAGE)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class Message implements EventKind, StreamingEventKind {

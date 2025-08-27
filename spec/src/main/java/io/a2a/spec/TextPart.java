@@ -6,14 +6,20 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
+
+import static io.a2a.spec.TextPart.TEXT;
 
 /**
  * Represents a text segment within a message or artifact.
  */
+@JsonTypeName(TEXT)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TextPart extends Part<String> {
+
+    public static final String TEXT = "text";
     private final String text;
     private final Map<String, Object> metadata;
     private final Kind kind;

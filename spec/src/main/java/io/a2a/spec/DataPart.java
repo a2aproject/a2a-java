@@ -6,15 +6,20 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
+
+import static io.a2a.spec.DataPart.DATA;
 
 /**
  * Represents a structured data segment (e.g., JSON) within a message or artifact.
  */
+@JsonTypeName(DATA)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DataPart extends Part<Map<String, Object>> {
 
+    public static final String DATA = "data";
     private final Map<String, Object> data;
     private final Map<String, Object> metadata;
     private final Kind kind;

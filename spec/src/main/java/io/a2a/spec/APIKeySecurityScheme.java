@@ -4,13 +4,17 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import io.a2a.util.Assert;
 
+import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
+
 /**
  * Defines a security scheme using an API key.
  */
+@JsonTypeName(API_KEY)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class APIKeySecurityScheme implements SecurityScheme {
@@ -64,6 +68,7 @@ public final class APIKeySecurityScheme implements SecurityScheme {
                                 @JsonProperty("description") String description, @JsonProperty("type") String type) {
         Assert.checkNotNullParam("in", in);
         Assert.checkNotNullParam("name", name);
+        Assert.checkNotNullParam("type", type);
         if (! type.equals(API_KEY)) {
             throw new IllegalArgumentException("Invalid type for APIKeySecurityScheme");
         }

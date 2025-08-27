@@ -5,11 +5,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
+
+import static io.a2a.spec.OAuth2SecurityScheme.OAUTH2;
 
 /**
  * Defines a security scheme using OAuth 2.0.
  */
+@JsonTypeName(OAUTH2)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class OAuth2SecurityScheme implements SecurityScheme {
@@ -28,6 +32,7 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
     public OAuth2SecurityScheme(@JsonProperty("flows") OAuthFlows flows, @JsonProperty("description") String description,
                                 @JsonProperty("oauth2MetadataUrl") String oauth2MetadataUrl, @JsonProperty("type") String type) {
         Assert.checkNotNullParam("flows", flows);
+        Assert.checkNotNullParam("type", type);
         if (!type.equals(OAUTH2)) {
             throw new IllegalArgumentException("Invalid type for OAuth2SecurityScheme");
         }

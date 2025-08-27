@@ -6,12 +6,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
+
+import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
 
 /**
  * An event sent by the agent to notify the client of a change in a task's status.
  * This is typically used in streaming or subscription models.
  */
+@JsonTypeName(STATUS_UPDATE)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKind, UpdateEvent {
