@@ -15,10 +15,8 @@ env:
   TCK_VERSION: 0.3.0.alpha
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
-  # SUT_JSONRPC_URL to use for the TCK
+  # SUT_JSONRPC_URL to use for the TCK and the server agent
   SUT_JSONRPC_URL: http://localhost:9999
-  # SUT_GRPC_URL to use for the TCK
-  SUT_GRPC_URL: http://localhost:9000
 
 # Only run the latest job
 concurrency:
@@ -57,7 +55,7 @@ jobs:
       - name: Build with Maven, skipping tests
         run: mvn -B install -DskipTests
       - name: Start SUT
-        run: mvn -B quarkus:dev &
+        run: SUT_GRPC_URL=http://localhost:9000 mvn -B quarkus:dev & #SUT_JSONRPC_URL already set
         working-directory: tck
       - name: Wait for SUT to start
         run: |
