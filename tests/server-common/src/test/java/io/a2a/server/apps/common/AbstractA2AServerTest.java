@@ -384,56 +384,13 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
+    public void testSendMessageStreamNewMessageSuccess() throws Exception {
+        testSendStreamingMessage(false);
+    }
+
+    @Test
     public void testSendMessageStreamExistingTaskSuccess() throws Exception {
-        saveTaskInTaskStore(MINIMAL_TASK);
-        try {
-            Message message = new Message.Builder(MESSAGE)
-                    .taskId(MINIMAL_TASK.getId())
-                    .contextId(MINIMAL_TASK.getContextId())
-                    .build();
-
-            CountDownLatch latch = new CountDownLatch(1);
-            AtomicReference<Message> receivedMessage = new AtomicReference<>();
-            AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
-            AtomicReference<Throwable> errorRef = new AtomicReference<>();
-
-            BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
-                if (event instanceof MessageEvent messageEvent) {
-                    if (latch.getCount() > 0) {
-                        receivedMessage.set(messageEvent.getMessage());
-                        latch.countDown();
-                    } else {
-                        wasUnexpectedEvent.set(true);
-                    }
-                } else {
-                    wasUnexpectedEvent.set(true);
-                }
-            };
-
-            Consumer<Throwable> errorHandler = error -> {
-                errorRef.set(error);
-                latch.countDown();
-            };
-
-            // testing the streaming send message
-            getClient().sendMessage(message, List.of(consumer), errorHandler);
-
-            assertTrue(latch.await(10, TimeUnit.SECONDS));
-            assertFalse(wasUnexpectedEvent.get());
-            assertNull(errorRef.get());
-
-            Message messageResponse = receivedMessage.get();
-            assertNotNull(messageResponse);
-            assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
-            assertEquals(MESSAGE.getRole(), messageResponse.getRole());
-            Part<?> part = messageResponse.getParts().get(0);
-            assertEquals(Part.Kind.TEXT, part.getKind());
-            assertEquals("test message", ((TextPart) part).getText());
-        } catch (A2AClientException e) {
-            fail("Unexpected exception during sendMessage: " + e.getMessage(), e);
-        } finally {
-            deleteTaskInTaskStore(MINIMAL_TASK.getId());
-        }
+        testSendStreamingMessage(true);
     }
 
     @Test
@@ -955,19 +912,19 @@ public abstract class AbstractA2AServerTest {
         assumeTrue(TransportProtocol.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
         
-        testSendStreamingMessage(MediaType.SERVER_SENT_EVENTS);
+        testSendStreamingMessageWithHttpClient(MediaType.SERVER_SENT_EVENTS);
     }
 
     @Test
-    public void testSendMessageStreamNewMessageSuccess() throws Exception {
+    public void testStreamingMethodWithoutAcceptHeader() throws Exception {
         // skip this test for non-JSONRPC transports
         assumeTrue(TransportProtocol.JSONRPC.asString().equals(getTransportProtocol()),
                 "JSONRPC-specific test");
-        
-        testSendStreamingMessage(null);
+
+        testSendStreamingMessageWithHttpClient(null);
     }
 
-    private void testSendStreamingMessage(String mediaType) throws Exception {
+    private void testSendStreamingMessageWithHttpClient(String mediaType) throws Exception {
         Message message = new Message.Builder(MESSAGE)
                 .taskId(MINIMAL_TASK.getId())
                 .contextId(MINIMAL_TASK.getContextId())
@@ -1015,6 +972,62 @@ public abstract class AbstractA2AServerTest {
         Assertions.assertTrue(dataRead);
         Assertions.assertNull(errorRef.get());
 
+    }
+
+    public void testSendStreamingMessage(boolean createTask) throws Exception {
+        if (createTask) {
+            saveTaskInTaskStore(MINIMAL_TASK);
+        }
+        try {
+            Message message = new Message.Builder(MESSAGE)
+                    .taskId(MINIMAL_TASK.getId())
+                    .contextId(MINIMAL_TASK.getContextId())
+                    .build();
+
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<Message> receivedMessage = new AtomicReference<>();
+            AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
+            AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+            BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
+                if (event instanceof MessageEvent messageEvent) {
+                    if (latch.getCount() > 0) {
+                        receivedMessage.set(messageEvent.getMessage());
+                        latch.countDown();
+                    } else {
+                        wasUnexpectedEvent.set(true);
+                    }
+                } else {
+                    wasUnexpectedEvent.set(true);
+                }
+            };
+
+            Consumer<Throwable> errorHandler = error -> {
+                errorRef.set(error);
+                latch.countDown();
+            };
+
+            // testing the streaming send message
+            getClient().sendMessage(message, List.of(consumer), errorHandler);
+
+            assertTrue(latch.await(10, TimeUnit.SECONDS));
+            assertFalse(wasUnexpectedEvent.get());
+            assertNull(errorRef.get());
+
+            Message messageResponse = receivedMessage.get();
+            assertNotNull(messageResponse);
+            assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
+            assertEquals(MESSAGE.getRole(), messageResponse.getRole());
+            Part<?> part = messageResponse.getParts().get(0);
+            assertEquals(Part.Kind.TEXT, part.getKind());
+            assertEquals("test message", ((TextPart) part).getText());
+        } catch (A2AClientException e) {
+            fail("Unexpected exception during sendMessage: " + e.getMessage(), e);
+        } finally {
+            if (createTask) {
+                deleteTaskInTaskStore(MINIMAL_TASK.getId());
+            }
+        }
     }
 
     private CompletableFuture<HttpResponse<Stream<String>>> initialiseStreamingRequest(
