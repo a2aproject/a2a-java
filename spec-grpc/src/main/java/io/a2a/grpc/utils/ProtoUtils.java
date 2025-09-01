@@ -3,8 +3,8 @@ package io.a2a.grpc.utils;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -292,7 +292,7 @@ public class ProtoUtils {
                 builder.setUpdate(message(taskStatus.message()));
             }
             if (taskStatus.timestamp() != null) {
-                Instant instant = taskStatus.timestamp().toInstant(ZoneOffset.UTC);
+                Instant instant = taskStatus.timestamp().toInstant();
                 builder.setTimestamp(com.google.protobuf.Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build());
             }
             return builder.build();
@@ -889,10 +889,13 @@ public class ProtoUtils {
         }
 
         private static TaskStatus taskStatus(io.a2a.grpc.TaskStatus taskStatus) {
-            return new TaskStatus(
-                    taskState(taskStatus.getState()),
+            TaskState state = taskState(taskStatus.getState());
+            if (state == null) {
+                return null;
+            }
+            return new TaskStatus(state,
                     taskStatus.hasUpdate() ? message(taskStatus.getUpdate()) : null,
-                    LocalDateTime.ofInstant(Instant.ofEpochSecond(taskStatus.getTimestamp().getSeconds(), taskStatus.getTimestamp().getNanos()), ZoneOffset.UTC)
+                    OffsetDateTime.ofInstant(Instant.ofEpochSecond(taskStatus.getTimestamp().getSeconds(), taskStatus.getTimestamp().getNanos()), ZoneOffset.UTC)
             );
         }
 
