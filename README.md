@@ -316,9 +316,9 @@ Different transport protocols can be configured with specific settings using spe
 
 ##### JSON-RPC Transport Configuration
 
-For the JSON-RPC transport, if you'd like to use the default `JdkA2AHttpClient`, no additional
-configuration is needed. To use a custom HTTP client implementation, simply create a `JSONRPCTransportConfig`
-as follows:
+For the JSON-RPC transport, to use the default `JdkA2AHttpClient`, provide a `JSONRPCTransportConfig` created with its default constructor.
+
+To use a custom HTTP client implementation, simply create a `JSONRPCTransportConfig` as follows:
 
 ```java
 // Create a custom HTTP client
