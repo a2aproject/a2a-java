@@ -1,6 +1,5 @@
 package io.a2a.tck.server;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,6 +21,7 @@ public class AgentCardProducer {
     public AgentCard agentCard() {
         String sutJsonRpcUrl = getEnvOrDefault("SUT_JSONRPC_URL", "http://localhost:9999");
         String sutGrpcUrl = getEnvOrDefault("SUT_GRPC_URL", "http://localhost:9000");
+        String sutRestcUrl = getEnvOrDefault("SUT_REST_URL", "http://localhost:9999");
         return new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
@@ -45,7 +45,8 @@ public class AgentCardProducer {
                 .protocolVersion("0.3.0")
                 .additionalInterfaces(List.of(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), sutJsonRpcUrl),
-                        new AgentInterface(TransportProtocol.GRPC.asString(), sutGrpcUrl)))
+                        new AgentInterface(TransportProtocol.GRPC.asString(), sutGrpcUrl),
+                        new AgentInterface(TransportProtocol.HTTP_JSON.asString(), sutRestcUrl)))
                 .build();
     }
 

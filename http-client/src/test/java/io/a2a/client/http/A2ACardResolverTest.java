@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientJSONError;
 import io.a2a.spec.AgentCard;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class A2ACardResolverTest {
@@ -126,6 +127,11 @@ public class A2ACardResolverTest {
             return null;
         }
 
+        @Override
+        public DeleteBuilder createDelete() {
+            return null;
+        }
+
         class TestGetBuilder implements A2AHttpClient.GetBuilder {
 
             @Override
@@ -161,7 +167,11 @@ public class A2ACardResolverTest {
 
             @Override
             public GetBuilder addHeader(String name, String value) {
+                return this;
+            }
 
+            @Override
+            public GetBuilder addHeaders(Map<String, String> headers) {
                 return this;
             }
         }

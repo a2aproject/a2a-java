@@ -81,11 +81,6 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>a2a-java-sdk-client-config</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-client-transport-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -97,6 +92,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -117,6 +117,46 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-spec-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-server-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-transport-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-transport-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-reference-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-reference-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-reference-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -212,6 +252,25 @@
                 <version>${logback.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-tests-server-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-tests-server-common</artifactId>
+                <type>test-jar</type>
+                <scope>test</scope>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-server-common</artifactId>
+                <type>test-jar</type>
+                <scope>test</scope>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -302,7 +361,7 @@
                             <goals>
                                 <goal>sign</goal>
                             </goals>
-                            </execution>
+                        </execution>
                     </executions>
                 </plugin>
             </plugins>
@@ -327,6 +386,7 @@
         <module>client/base</module>
         <module>client/transport/grpc</module>
         <module>client/transport/jsonrpc</module>
+        <module>client/transport/rest</module>
         <module>client/transport/spi</module>
         <module>common</module>
         <module>examples/helloworld</module>
@@ -334,6 +394,7 @@
         <module>reference/common</module>
         <module>reference/grpc</module>
         <module>reference/jsonrpc</module>
+        <module>reference/rest</module>
         <module>server-common</module>
         <module>spec</module>
         <module>spec-grpc</module>
@@ -341,6 +402,7 @@
         <module>tests/server-common</module>
         <module>transport/jsonrpc</module>
         <module>transport/grpc</module>
+        <module>transport/rest</module>
     </modules>
 
     <profiles>
