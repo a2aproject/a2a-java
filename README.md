@@ -81,7 +81,18 @@ To use the reference implementation with the gRPC protocol, add the following de
 Note that you can add more than one of the above dependencies to your project depending on the transports
 you'd like to support.
 
-Support for the HTTP+JSON/REST transport will be coming soon.
+To use the reference implementation with the HTTP+JSON/REST protocol, add the following dependency to your project:
+
+> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
+
+```xml
+<dependency>
+    <groupId>io.github.a2asdk</groupId>
+    <artifactId>a2a-java-sdk-reference-rest</artifactId>
+    <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
+    <version>${io.a2a.sdk.version}</version>
+</dependency>
+```
 
 ### 2. Add a class that creates an A2A Agent Card
 
@@ -117,7 +128,7 @@ public class WeatherAgentCardProducer {
                         .tags(Collections.singletonList("weather"))
                         .examples(List.of("weather in LA, CA"))
                         .build()))
-                .protocolVersion("0.2.5")
+                .protocolVersion("0.3.0")
                 .build();
     }
 }
@@ -247,7 +258,7 @@ By default, the sdk-client is coming with the JSONRPC transport dependency. Desp
 dependency is included by default, you still need to add the transport to the Client as described in [JSON-RPC Transport section](#json-rpc-transport-configuration).
 
 
-If you want to use another transport (such as GRPC or HTTP+JSON), you'll need to add a relevant dependency:
+If you want to use the gRPC transport, you'll need to add a relevant dependency:
 
 ----
 > *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
@@ -262,7 +273,21 @@ If you want to use another transport (such as GRPC or HTTP+JSON), you'll need to
 </dependency>
 ```
 
-Support for the HTTP+JSON/REST transport will be coming soon.
+
+If you want to use the HTTP+JSON/REST transport, you'll need to add a relevant dependency:
+
+----
+> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
+----
+
+```xml
+<dependency>
+    <groupId>io.github.a2asdk</groupId>
+    <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
+    <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
+    <version>${io.a2a.sdk.version}</version>
+</dependency>
+```
 
 ### Sample Usage
 
@@ -360,6 +385,29 @@ Client client = Client
         .build();
 ```
 
+
+##### HTTP+JSON/REST Transport Configuration
+
+For the HTTP+JSON/REST transport, if you'd like to use the default `JdkA2AHttpClient`, provide a `RestTransportConfig` created with its default constructor.
+
+To use a custom HTTP client implementation, simply create a `RestTransportConfig` as follows:
+
+```java
+// Create a custom HTTP client
+A2AHttpClient customHttpClient = ...
+
+// Configure the client settings
+ClientConfig clientConfig = new ClientConfig.Builder()
+        .setAcceptedOutputModes(List.of("text"))
+        .build();
+
+Client client = Client
+        .builder(agentCard)
+        .clientConfig(clientConfig)
+        .withTransport(RestTransport.class, new RestTransportConfig(customHttpClient))
+        .build();
+```
+
 ##### Multiple Transport Configurations
 
 You can specify configuration for multiple transports, the appropriate configuration
@@ -371,6 +419,7 @@ Client client = Client
                 .builder(agentCard)
                 .withTransport(GrpcTransport.class, new GrpcTransportConfig(channelFactory))
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig())
+                .withTransport(RestTransport.class, new RestTransportConfig())
                 .build();
 ```
 

@@ -37,6 +37,7 @@ import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TextPart;
 import io.a2a.util.Utils;
 import io.quarkus.arc.profile.IfBuildProfile;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -161,6 +162,11 @@ public class AbstractA2ARequestHandlerTest {
             return new TestHttpClient.TestPostBuilder();
         }
 
+        @Override
+        public DeleteBuilder createDelete() {
+            return null;
+        }
+
         class TestPostBuilder implements A2AHttpClient.PostBuilder {
             private volatile String body;
             @Override
@@ -206,6 +212,11 @@ public class AbstractA2ARequestHandlerTest {
 
             @Override
             public PostBuilder addHeader(String name, String value) {
+                return this;
+            }
+
+            @Override
+            public PostBuilder addHeaders(Map<String, String> headers) {
                 return this;
             }
 

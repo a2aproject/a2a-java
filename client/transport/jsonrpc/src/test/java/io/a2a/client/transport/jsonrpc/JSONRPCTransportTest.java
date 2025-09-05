@@ -2,7 +2,6 @@ package io.a2a.client.transport.jsonrpc;
 
 import static io.a2a.client.transport.jsonrpc.JsonMessages.AGENT_CARD;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.AGENT_CARD_SUPPORTS_EXTENDED;
-import static io.a2a.client.transport.jsonrpc.JsonMessages.AUTHENTICATION_EXTENDED_AGENT_CARD;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.CANCEL_TASK_TEST_REQUEST;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.CANCEL_TASK_TEST_RESPONSE;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST;
@@ -50,7 +49,6 @@ import io.a2a.spec.FileContent;
 import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
-import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
