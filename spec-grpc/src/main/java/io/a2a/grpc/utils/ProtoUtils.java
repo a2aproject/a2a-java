@@ -337,7 +337,9 @@ public class ProtoUtils {
 
         public static io.a2a.grpc.SendMessageConfiguration messageSendConfiguration(MessageSendConfiguration messageSendConfiguration) {
             io.a2a.grpc.SendMessageConfiguration.Builder builder = io.a2a.grpc.SendMessageConfiguration.newBuilder();
-            builder.addAllAcceptedOutputModes(messageSendConfiguration.acceptedOutputModes());
+            if (messageSendConfiguration.acceptedOutputModes() != null) {
+                builder.addAllAcceptedOutputModes(messageSendConfiguration.acceptedOutputModes());
+            }
             if (messageSendConfiguration.historyLength() != null) {
                 builder.setHistoryLength(messageSendConfiguration.historyLength());
             }
@@ -772,7 +774,8 @@ public class ProtoUtils {
 
         private static MessageSendConfiguration messageSendConfiguration(io.a2a.grpc.SendMessageConfiguration sendMessageConfiguration) {
             return new MessageSendConfiguration(
-                    new ArrayList<>(sendMessageConfiguration.getAcceptedOutputModesList()),
+                    sendMessageConfiguration.getAcceptedOutputModesList().isEmpty() ? null :
+                            new ArrayList<>(sendMessageConfiguration.getAcceptedOutputModesList()),
                     sendMessageConfiguration.getHistoryLength(),
                     pushNotification(sendMessageConfiguration.getPushNotification()),
                     sendMessageConfiguration.getBlocking()

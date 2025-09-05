@@ -1314,7 +1314,6 @@ public abstract class AbstractA2AServerTest {
     private ClientConfig createClientConfig(boolean streaming) {
         return new ClientConfig.Builder()
                 .setStreaming(streaming)
-                .setAcceptedOutputModes(List.of("text"))
                 .build();
     }
 
