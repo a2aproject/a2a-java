@@ -17,11 +17,13 @@ import io.a2a.spec.TransportProtocol;
 @ApplicationScoped
 public class AgentCardProducer {
 
+    private static final String DEFAULT_SUT_URL = "http://localhost:9999";
+
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
-        String sutJsonRpcUrl = getEnvOrDefault("SUT_JSONRPC_URL", "http://localhost:9999");
-        String sutGrpcUrl = getEnvOrDefault("SUT_GRPC_URL", "http://localhost:9000");
+        String sutJsonRpcUrl = getEnvOrDefault("SUT_JSONRPC_URL", DEFAULT_SUT_URL);
+        String sutGrpcUrl = getEnvOrDefault("SUT_GRPC_URL", DEFAULT_SUT_URL);
         return new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
