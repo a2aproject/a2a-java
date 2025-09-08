@@ -718,6 +718,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         // We need to send some events in order for those to end up in the queue
         Message message = new Message.Builder()
+                .messageId("123")
                 .taskId(MINIMAL_TASK.getId())
                 .contextId(MINIMAL_TASK.getContextId())
                 .role(Message.Role.AGENT)

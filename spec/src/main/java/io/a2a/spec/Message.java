@@ -55,9 +55,10 @@ public final class Message implements EventKind, StreamingEventKind {
         if (! kind.equals(MESSAGE)) {
             throw new IllegalArgumentException("Invalid Message");
         }
+        Assert.checkNotNullParam("messageId", messageId);
         this.role = role;
         this.parts = parts;
-        this.messageId = messageId == null ? UUID.randomUUID().toString() : messageId;
+        this.messageId = messageId;
         this.contextId = contextId;
         this.taskId = taskId;
         this.referenceTaskIds = referenceTaskIds;

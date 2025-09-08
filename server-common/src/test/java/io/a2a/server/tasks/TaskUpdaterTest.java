@@ -25,8 +25,10 @@ import org.junit.jupiter.api.Test;
 public class TaskUpdaterTest {
     public static final String TEST_TASK_ID = "test-task-id";
     public static final String TEST_TASK_CONTEXT_ID = "test-task-context-id";
+    private static final String TEST_MESSAGE_ID = "123";
 
     private static final Message SAMPLE_MESSAGE = new Message.Builder()
+            .messageId(TEST_MESSAGE_ID)
             .taskId(TEST_TASK_ID)
             .contextId(TEST_TASK_CONTEXT_ID)
             .parts(new TextPart("Test message"))
