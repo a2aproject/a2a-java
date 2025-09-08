@@ -2,6 +2,8 @@ package io.a2a.server.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,19 +15,26 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import io.a2a.client.http.HttpClient;
+import io.a2a.client.http.HttpResponse;
+import io.a2a.client.http.sse.Event;
+import io.a2a.server.http.HttpClientManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.common.A2AHeaders;
 import io.a2a.util.Utils;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 public class PushNotificationSenderTest {
+
+    @Mock
+    private HttpClientManager clientManager;
 
     private TestHttpClient testHttpClient;
     private InMemoryPushNotificationConfigStore configStore;
@@ -34,7 +43,7 @@ public class PushNotificationSenderTest {
     /**
      * Simple test implementation of A2AHttpClient that captures HTTP calls for verification
      */
-    private static class TestHttpClient implements A2AHttpClient {
+    private static class TestHttpClient implements HttpClient {
         final List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
         final List<String> urls = Collections.synchronizedList(new ArrayList<>());
         final List<Map<String, String>> headers = Collections.synchronizedList(new ArrayList<>());
@@ -42,85 +51,85 @@ public class PushNotificationSenderTest {
         volatile boolean shouldThrowException = false;
 
         @Override
-        public GetBuilder createGet() {
+        public GetRequestBuilder get(String path) {
             return null;
         }
 
         @Override
-        public PostBuilder createPost() {
+        public PostRequestBuilder post(String path) {
             return new TestPostBuilder();
         }
 
         @Override
-        public DeleteBuilder createDelete() {
+        public DeleteRequestBuilder delete(String path) {
             return null;
         }
 
-        class TestPostBuilder implements A2AHttpClient.PostBuilder {
+        class TestPostBuilder implements HttpClient.PostRequestBuilder {
             private volatile String body;
-            private volatile String url;
             private final Map<String, String> requestHeaders = new java.util.HashMap<>();
 
             @Override
-            public PostBuilder body(String body) {
+            public PostRequestBuilder body(String body) {
                 this.body = body;
                 return this;
             }
 
             @Override
-            public A2AHttpResponse post() throws IOException, InterruptedException {
+            public CompletableFuture<HttpResponse> send() {
+                CompletableFuture<HttpResponse> future = new CompletableFuture<>();
+
                 if (shouldThrowException) {
-                    throw new IOException("Simulated network error");
+                    future.completeExceptionally(new IOException("Simulated network error"));
+                    return future;
                 }
                 
                 try {
                     Task task = Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE);
                     tasks.add(task);
-                    urls.add(url);
                     headers.add(new java.util.HashMap<>(requestHeaders));
-                    
-                    return new A2AHttpResponse() {
-                        @Override
-                        public int status() {
-                            return 200;
-                        }
 
-                        @Override
-                        public boolean success() {
-                            return true;
-                        }
+                    future.complete(
+                        new HttpResponse() {
+                            @Override
+                            public int statusCode() {
+                                return 200;
+                            }
 
-                        @Override
-                        public String body() {
-                            return "";
-                        }
-                    };
+                            @Override
+                            public boolean success() {
+                                return true;
+                            }
+
+                            @Override
+                            public String body() {
+                                return "";
+                            }
+
+                            @Override
+                            public void bodyAsSse(Consumer<Event> eventConsumer, Consumer<Throwable> errorConsumer) {
+
+                            }
+                        });
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
                 } finally {
                     if (latch != null) {
                         latch.countDown();
                     }
                 }
+
+                return future;
             }
 
             @Override
-            public CompletableFuture<Void> postAsyncSSE(Consumer<String> messageConsumer, Consumer<Throwable> errorConsumer, Runnable completeRunnable) throws IOException, InterruptedException {
-                return null;
-            }
-
-            @Override
-            public PostBuilder url(String url) {
-                this.url = url;
-                return this;
-            }
-
-            @Override
-            public PostBuilder addHeader(String name, String value) {
+            public PostRequestBuilder addHeader(String name, String value) {
                 requestHeaders.put(name, value);
                 return this;
             }
 
             @Override
-            public PostBuilder addHeaders(Map<String, String> headers) {
+            public PostRequestBuilder addHeaders(Map<String, String> headers) {
                 requestHeaders.putAll(headers);
                 return this;
             }
@@ -129,9 +138,10 @@ public class PushNotificationSenderTest {
 
     @BeforeEach
     public void setUp() {
+        MockitoAnnotations.openMocks(this);
         testHttpClient = new TestHttpClient();
         configStore = new InMemoryPushNotificationConfigStore();
-        sender = new BasePushNotificationSender(configStore, testHttpClient);
+        sender = new BasePushNotificationSender(configStore, clientManager);
     }
 
     private void testSendNotificationWithInvalidToken(String token, String testName) throws InterruptedException {
@@ -141,7 +151,9 @@ public class PushNotificationSenderTest {
         
         // Set up the configuration in the store
         configStore.setInfo(taskId, config);
-        
+
+        when(clientManager.getOrCreate(any())).thenReturn(testHttpClient);
+
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 
@@ -185,7 +197,9 @@ public class PushNotificationSenderTest {
         
         // Set up the configuration in the store
         configStore.setInfo(taskId, config);
-        
+
+        when(clientManager.getOrCreate(any())).thenReturn(testHttpClient);
+
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 
@@ -210,7 +224,9 @@ public class PushNotificationSenderTest {
         
         // Set up the configuration in the store
         configStore.setInfo(taskId, config);
-        
+
+        when(clientManager.getOrCreate(any())).thenReturn(testHttpClient);
+
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 
@@ -263,22 +279,27 @@ public class PushNotificationSenderTest {
         // Set up multiple configurations in the store
         configStore.setInfo(taskId, config1);
         configStore.setInfo(taskId, config2);
-        
+
+        TestHttpClient httpClient = spy(testHttpClient);
+        when(clientManager.getOrCreate(any())).thenReturn(httpClient);
+
         // Set up latch to wait for async completion (2 calls expected)
-        testHttpClient.latch = new CountDownLatch(2);
+        httpClient.latch = new CountDownLatch(2);
 
         sender.sendNotification(taskData);
 
         // Wait for the async operations to complete
-        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP calls should complete within 5 seconds");
+        assertTrue(httpClient.latch.await(5, TimeUnit.SECONDS), "HTTP calls should complete within 5 seconds");
         
         // Verify both tasks were sent via HTTP
-        assertEquals(2, testHttpClient.tasks.size());
-        assertEquals(2, testHttpClient.urls.size());
-        assertTrue(testHttpClient.urls.containsAll(java.util.List.of("http://notify.me/cfg1", "http://notify.me/cfg2")));
+        assertEquals(2, httpClient.tasks.size());
+        //assertEquals(2, testHttpClient.urls.size());
+        verify(httpClient).post("/cfg1");
+        verify(httpClient).post("/cfg2");
+        // assertTrue(testHttpClient.urls.containsAll(java.util.List.of("http://notify.me/cfg1", "http://notify.me/cfg2")));
         
         // Both tasks should be identical (same task sent to different endpoints)
-        for (Task sentTask : testHttpClient.tasks) {
+        for (Task sentTask : httpClient.tasks) {
             assertEquals(taskData.getId(), sentTask.getId());
             assertEquals(taskData.getContextId(), sentTask.getContextId());
             assertEquals(taskData.getStatus().state(), sentTask.getStatus().state());

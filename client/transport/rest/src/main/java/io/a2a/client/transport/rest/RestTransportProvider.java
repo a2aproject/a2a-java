@@ -1,6 +1,7 @@
 package io.a2a.client.transport.rest;
 
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.http.HttpClient;
+import io.a2a.client.http.HttpClientBuilder;
 import io.a2a.client.transport.spi.ClientTransportProvider;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
@@ -14,12 +15,20 @@ public class RestTransportProvider implements ClientTransportProvider<RestTransp
     }
 
     @Override
-    public RestTransport create(RestTransportConfig clientTransportConfig, AgentCard agentCard, String agentUrl) throws A2AClientException {
-        RestTransportConfig transportConfig = clientTransportConfig;
-         if (transportConfig == null) {
-            transportConfig = new RestTransportConfig(new JdkA2AHttpClient());
+    public RestTransport create(RestTransportConfig transportConfig, AgentCard agentCard, String agentUrl) throws A2AClientException {
+        if (transportConfig == null) {
+            transportConfig = new RestTransportConfig();
         }
-        return new RestTransport(clientTransportConfig.getHttpClient(), agentCard, agentUrl, transportConfig.getInterceptors());
+
+        HttpClientBuilder httpClientBuilder = transportConfig.getHttpClientBuilder();
+
+        try {
+            final HttpClient httpClient = httpClientBuilder.create(agentUrl);
+
+            return new RestTransport(httpClient, agentCard, agentUrl, transportConfig.getInterceptors());
+        } catch (Exception ex) {
+            throw new A2AClientException("Failed to create REST transport", ex);
+        }
     }
 
     @Override

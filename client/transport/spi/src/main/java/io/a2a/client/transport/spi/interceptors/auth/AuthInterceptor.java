@@ -33,7 +33,7 @@ public class AuthInterceptor extends ClientCallInterceptor {
 
     @Override
     public PayloadAndHeaders intercept(String methodName, @Nullable Object payload, Map<String, String> headers,
-                                       AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
+                                       @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         Map<String, String> updatedHeaders = new HashMap<>(headers == null ? new HashMap<>() : headers);
         if (agentCard == null || agentCard.security() == null || agentCard.securitySchemes() == null) {
             return new PayloadAndHeaders(payload, updatedHeaders);

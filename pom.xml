@@ -55,6 +55,7 @@
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
         <junit.version>5.13.4</junit.version>
         <mockito-core.version>5.17.0</mockito-core.version>
+        <wiremock.version>3.13.1</wiremock.version>
         <mockserver.version>5.15.0</mockserver.version>
         <mutiny-zero.version>1.1.1</mutiny-zero.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
@@ -248,6 +249,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock</artifactId>
+                <version>${wiremock.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
@@ -261,6 +268,18 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-tests-server-common</artifactId>
+                <type>test-jar</type>
+                <scope>test</scope>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-tests-client-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-tests-client-common</artifactId>
                 <type>test-jar</type>
                 <scope>test</scope>
                 <version>${project.version}</version>
@@ -437,6 +456,7 @@
         <module>extras/task-store-database-jpa</module>
         <module>extras/push-notification-config-store-database-jpa</module>
         <module>extras/queue-manager-replicated</module>
+        <module>extras/http-client-vertx</module>
         <module>http-client</module>
         <module>reference/common</module>
         <module>reference/grpc</module>
@@ -447,6 +467,7 @@
         <module>spec-grpc</module>
         <module>tck</module>
         <module>tests/server-common</module>
+        <module>tests/client-common</module>
         <module>transport/jsonrpc</module>
         <module>transport/grpc</module>
         <module>transport/rest</module>

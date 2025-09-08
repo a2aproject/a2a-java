@@ -1,22 +1,23 @@
 package io.a2a.client.transport.rest;
 
-import io.a2a.client.http.A2AHttpClient;
+import io.a2a.client.http.HttpClientBuilder;
 import io.a2a.client.transport.spi.ClientTransportConfig;
-import org.jspecify.annotations.Nullable;
+import io.a2a.util.Assert;
 
 public class RestTransportConfig extends ClientTransportConfig<RestTransport>  {
 
-    private final @Nullable A2AHttpClient httpClient;
+    private final HttpClientBuilder httpClientBuilder;
+
+    public RestTransportConfig(HttpClientBuilder httpClientBuilder) {
+        Assert.checkNotNullParam("httpClientBuilder", httpClientBuilder);
+        this.httpClientBuilder = httpClientBuilder;
+    }
 
     public RestTransportConfig() {
-        this.httpClient = null;
+        this.httpClientBuilder = HttpClientBuilder.DEFAULT_FACTORY;
     }
 
-    public RestTransportConfig(A2AHttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
-
-    public @Nullable A2AHttpClient getHttpClient() {
-        return httpClient;
+    public HttpClientBuilder getHttpClientBuilder() {
+        return httpClientBuilder;
     }
 }

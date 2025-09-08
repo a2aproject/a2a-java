@@ -23,5 +23,5 @@ public abstract class ClientCallInterceptor {
      * @return the potentially modified payload and headers
      */
     public abstract PayloadAndHeaders intercept(String methodName, @Nullable Object payload, Map<String, String> headers,
-                                                AgentCard agentCard, @Nullable ClientCallContext clientCallContext);
+                                                @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext);
 }
