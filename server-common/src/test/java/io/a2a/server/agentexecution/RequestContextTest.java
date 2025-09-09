@@ -1,6 +1,8 @@
 package io.a2a.server.agentexecution;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -244,5 +246,24 @@ public class RequestContextTest {
 
         assertEquals(mockTask.getContextId(), context.getContextId());
         assertEquals(mockTask, context.getTask());
+    }
+
+    @Test
+    void testMessageBuilderGeneratesId() {
+        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
+        var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
+
+        RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
+        assertNotNull(mockMessage.getMessageId());
+        assertFalse(mockMessage.getMessageId().isEmpty());
+    }
+
+    @Test
+    void testMessageBuilderUsesProvidedId() {
+        var mockMessage = new Message.Builder().messageId("123").role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
+        var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
+
+        RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
+        assertEquals("123", mockMessage.getMessageId());
     }
 }

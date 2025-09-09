@@ -55,9 +55,10 @@ public final class Message implements EventKind, StreamingEventKind {
         if (! kind.equals(MESSAGE)) {
             throw new IllegalArgumentException("Invalid Message");
         }
+        Assert.checkNotNullParam("messageId", messageId);
         this.role = role;
         this.parts = parts;
-        this.messageId = messageId == null ? UUID.randomUUID().toString() : messageId;
+        this.messageId = messageId;
         this.contextId = contextId;
         this.taskId = taskId;
         this.referenceTaskIds = referenceTaskIds;
@@ -186,7 +187,8 @@ public final class Message implements EventKind, StreamingEventKind {
         }
 
         public Message build() {
-            return new Message(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata);
+            return new Message(role, parts, messageId == null ? UUID.randomUUID().toString() : messageId,
+                    contextId, taskId, referenceTaskIds, metadata);
         }
     }
 }
