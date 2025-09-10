@@ -1,5 +1,6 @@
 package io.a2a.server.tasks;
 
+
 import io.a2a.spec.Task;
 
 public interface TaskStore {

@@ -15,6 +15,7 @@ import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.spec.Task;
 import io.a2a.util.Utils;
+import java.util.Map;
 
 @Dependent
 @Alternative
@@ -30,6 +31,11 @@ public class TestHttpClient implements A2AHttpClient {
     @Override
     public PostBuilder createPost() {
         return new TestPostBuilder();
+    }
+
+    @Override
+    public DeleteBuilder createDelete() {
+        return null;
     }
 
     class TestPostBuilder implements A2AHttpClient.PostBuilder {
@@ -77,6 +83,11 @@ public class TestHttpClient implements A2AHttpClient {
 
         @Override
         public PostBuilder addHeader(String name, String value) {
+            return this;
+        }
+
+        @Override
+        public PostBuilder addHeaders(Map<String, String> headers) {
             return this;
         }
     }

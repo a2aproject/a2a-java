@@ -17,6 +17,8 @@ env:
   UV_SYSTEM_PYTHON: 1
   # SUT_JSONRPC_URL to use for the TCK and the server agent
   SUT_JSONRPC_URL: http://localhost:9999
+  # Slow system on CI
+  TCK_STREAMING_TIMEOUT: 5.0
 
 # Only run the latest job
 concurrency:
@@ -55,7 +57,7 @@ jobs:
       - name: Build with Maven, skipping tests
         run: mvn -B install -DskipTests
       - name: Start SUT
-        run: SUT_GRPC_URL=${{ env.SUT_JSONRPC_URL }} mvn -B quarkus:dev & #SUT_JSONRPC_URL already set
+        run: SUT_GRPC_URL=${{ env.SUT_JSONRPC_URL }} SUT_REST_URL=${{ env.SUT_JSONRPC_URL }} mvn -B quarkus:dev & #SUT_JSONRPC_URL already set
         working-directory: tck
       - name: Wait for SUT to start
         run: |
@@ -93,5 +95,5 @@ jobs:
           
       - name: Run TCK
         run: |
-          ./run_tck.py --sut-url ${{ env.SUT_JSONRPC_URL }} --category all --transports jsonrpc,grpc --compliance-report report.json
+          ./run_tck.py --sut-url ${{ env.SUT_JSONRPC_URL }} --category all --transports jsonrpc,grpc,rest --compliance-report report.json
         working-directory: tck/a2a-tck

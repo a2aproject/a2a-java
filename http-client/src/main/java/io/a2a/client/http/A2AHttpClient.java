@@ -1,6 +1,7 @@
 package io.a2a.client.http;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -10,8 +11,11 @@ public interface A2AHttpClient {
 
     PostBuilder createPost();
 
+    DeleteBuilder createDelete();
+
     interface Builder<T extends Builder<T>> {
         T url(String s);
+        T addHeaders(Map<String, String> headers);
         T addHeader(String name, String value);
     }
 
@@ -30,5 +34,9 @@ public interface A2AHttpClient {
                 Consumer<String> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException;
+    }
+
+    interface DeleteBuilder extends Builder<DeleteBuilder> {
+        A2AHttpResponse delete() throws IOException, InterruptedException;
     }
 }
