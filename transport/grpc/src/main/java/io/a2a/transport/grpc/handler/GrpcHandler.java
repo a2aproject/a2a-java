@@ -380,10 +380,33 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     private AgentCard getAgentCardInternal() {
         AgentCard agentCard = getAgentCard();
         if (initialised.compareAndSet(false, true)) {
-            // Validate transport configuration
-            AgentCardValidator.validateTransportConfiguration(agentCard);
+            // Validate transport configuration with proper classloader context
+            validateTransportConfigurationWithCorrectClassLoader(agentCard);
         }
         return agentCard;
+    }
+
+    private void validateTransportConfigurationWithCorrectClassLoader(AgentCard agentCard) {
+        ClassLoader originalTccl = Thread.currentThread().getContextClassLoader();
+        ClassLoader deploymentCl = getDeploymentClassLoader();
+        boolean switchCl = deploymentCl != null && deploymentCl != originalTccl;
+
+        try {
+            if (switchCl) {
+                // Set TCCL to the classloader that loaded this class, which should have access
+                // to the deployment classpath containing META-INF/services files
+                Thread.currentThread().setContextClassLoader(deploymentCl);
+            }
+            AgentCardValidator.validateTransportConfiguration(agentCard);
+        } finally {
+            if (switchCl) {
+                Thread.currentThread().setContextClassLoader(originalTccl);
+            }
+        }
+    }
+
+    protected ClassLoader getDeploymentClassLoader() {
+        return this.getClass().getClassLoader();
     }
 
     public static void setStreamingSubscribedRunnable(Runnable runnable) {
