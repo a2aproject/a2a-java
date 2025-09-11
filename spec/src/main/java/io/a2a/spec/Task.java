@@ -51,8 +51,8 @@ public final class Task implements EventKind, StreamingEventKind {
         this.id = id;
         this.contextId = contextId;
         this.status = status;
-        this.artifacts = artifacts;
-        this.history = history;
+        this.artifacts = artifacts != null ? List.copyOf(artifacts) : List.of();
+        this.history = history != null ? List.copyOf(history) : List.of();
         this.metadata = metadata;
         this.kind = kind;
     }
