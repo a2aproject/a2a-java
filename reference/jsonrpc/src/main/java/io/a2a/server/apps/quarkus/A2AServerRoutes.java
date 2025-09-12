@@ -54,6 +54,7 @@ import io.a2a.spec.TaskResubscriptionRequest;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
 import io.a2a.util.Utils;
+import io.quarkus.security.Authenticated;
 import io.quarkus.vertx.web.Body;
 import io.quarkus.vertx.web.ReactiveRoutes;
 import io.quarkus.vertx.web.Route;
@@ -84,6 +85,7 @@ public class A2AServerRoutes {
     Instance<CallContextFactory> callContextFactory;
 
     @Route(path = "/", methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
+    @Authenticated
     public void invokeJSONRPCHandler(@Body String body, RoutingContext rc) {
         boolean streaming = false;
         ServerCallContext context = createCallContext(rc);

@@ -8,6 +8,7 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -24,6 +25,7 @@ import io.a2a.spec.MethodNotFoundError;
 import io.a2a.transport.rest.handler.RestHandler;
 import io.a2a.transport.rest.handler.RestHandler.HTTPRestResponse;
 import io.a2a.transport.rest.handler.RestHandler.HTTPRestStreamingResponse;
+import io.quarkus.security.Authenticated;
 import io.quarkus.vertx.web.Body;
 import io.quarkus.vertx.web.ReactiveRoutes;
 import io.quarkus.vertx.web.Route;
@@ -43,6 +45,7 @@ import java.util.Set;
 import io.a2a.server.extensions.A2AExtensions;
 
 @Singleton
+@Authenticated
 public class A2AServerRoutes {
 
     @Inject
@@ -254,6 +257,7 @@ public class A2AServerRoutes {
      * @param rc
      */
     @Route(path = "/.well-known/agent-card.json", order = 1, methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
+    @PermitAll
     public void getAgentCard(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.getAgentCard();
         rc.response()

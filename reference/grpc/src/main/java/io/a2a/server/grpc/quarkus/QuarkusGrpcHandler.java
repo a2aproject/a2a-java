@@ -10,9 +10,11 @@ import io.a2a.transport.grpc.handler.CallContextFactory;
 import io.a2a.transport.grpc.handler.GrpcHandler;
 import io.quarkus.grpc.GrpcService;
 import io.quarkus.grpc.RegisterInterceptor;
+import io.quarkus.security.Authenticated;
 
 @GrpcService
 @RegisterInterceptor(A2AExtensionsInterceptor.class)
+@Authenticated
 public class QuarkusGrpcHandler extends GrpcHandler {
 
     private final AgentCard agentCard;
