@@ -50,7 +50,11 @@ The A2A Java SDK provides [reference A2A server implementations](reference) base
 [Server Integrations](#server-integrations) contains a list of community contributed integrations of the server with various runtimes. You might be able to use one of these for your target runtime, or you can use them as inspiration to create your own.
 
 #### Server Transports 
-The A2A Java SDK Reference Server implementations support a couple transports: JSON-RPC 2.0 and gRPC.
+The A2A Java SDK Reference Server implementations support the following transports:
+
+* JSON-RPC 2.0
+* gRPC
+* HTTP+JSON/REST
 
 To use the reference implementation with the JSON-RPC protocol, add the following dependency to your project:
 
@@ -78,9 +82,6 @@ To use the reference implementation with the gRPC protocol, add the following de
 </dependency>
 ```
 
-Note that you can add more than one of the above dependencies to your project depending on the transports
-you'd like to support.
-
 To use the reference implementation with the HTTP+JSON/REST protocol, add the following dependency to your project:
 
 > *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
@@ -93,6 +94,9 @@ To use the reference implementation with the HTTP+JSON/REST protocol, add the fo
     <version>${io.a2a.sdk.version}</version>
 </dependency>
 ```
+
+Note that you can add more than one of the above dependencies to your project depending on the transports
+you'd like to support.
 
 ### 2. Add a class that creates an A2A Agent Card
 
@@ -230,7 +234,11 @@ public class WeatherAgentExecutorProducer {
 
 ## A2A Client
 
-The A2A Java SDK provides a Java client implementation of the [Agent2Agent (A2A) Protocol](https://google-a2a.github.io/A2A), allowing communication with A2A servers. The Java client implementation currently supports two transport protocols: JSON-RPC 2.0 and gRPC.
+The A2A Java SDK provides a Java client implementation of the [Agent2Agent (A2A) Protocol](https://google-a2a.github.io/A2A), allowing communication with A2A servers. The Java client implementation supports the following transports:
+
+* JSON-RPC 2.0
+* gRPC
+* HTTP+JSON/REST
 
 To make use of the Java `Client`:
 
