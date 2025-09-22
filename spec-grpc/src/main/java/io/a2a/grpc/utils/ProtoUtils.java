@@ -344,8 +344,8 @@ public class ProtoUtils {
             if (messageSendConfiguration.historyLength() != null) {
                 builder.setHistoryLength(messageSendConfiguration.historyLength());
             }
-            if (messageSendConfiguration.pushNotification() != null) {
-                builder.setPushNotification(pushNotificationConfig(messageSendConfiguration.pushNotification()));
+            if (messageSendConfiguration.pushNotificationConfig() != null) {
+                builder.setPushNotification(pushNotificationConfig(messageSendConfiguration.pushNotificationConfig()));
             }
             builder.setBlocking(messageSendConfiguration.blocking());
             return builder.build();

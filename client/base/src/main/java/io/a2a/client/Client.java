@@ -70,7 +70,7 @@ public class Client extends AbstractClient {
                 .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
                 .blocking(clientConfig.isPolling())
                 .historyLength(clientConfig.getHistoryLength())
-                .pushNotification(pushNotificationConfiguration)
+                .pushNotificationConfig(pushNotificationConfiguration)
                 .build();
 
         MessageSendParams messageSendParams = new MessageSendParams.Builder()
@@ -229,7 +229,7 @@ public class Client extends AbstractClient {
                 .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
                 .blocking(clientConfig.isPolling())
                 .historyLength(clientConfig.getHistoryLength())
-                .pushNotification(clientConfig.getPushNotificationConfig())
+                .pushNotificationConfig(clientConfig.getPushNotificationConfig())
                 .build();
 
         return new MessageSendParams.Builder()

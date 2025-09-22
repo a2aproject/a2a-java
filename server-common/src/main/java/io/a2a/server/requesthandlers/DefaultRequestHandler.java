@@ -241,11 +241,11 @@ public class DefaultRequestHandler implements RequestHandler {
                     }
                     if (pushConfigStore != null &&
                             params.configuration() != null &&
-                            params.configuration().pushNotification() != null) {
+                            params.configuration().pushNotificationConfig() != null) {
 
                         pushConfigStore.setInfo(
                                 createdTask.getId(),
-                                params.configuration().pushNotification());
+                                params.configuration().pushNotificationConfig());
                     }
 
                 }
@@ -372,7 +372,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     private boolean shouldAddPushInfo(MessageSendParams params) {
-        return pushConfigStore != null && params.configuration() != null && params.configuration().pushNotification() != null;
+        return pushConfigStore != null && params.configuration() != null && params.configuration().pushNotificationConfig() != null;
     }
 
     private EnhancedRunnable registerAndExecuteAgentAsync(String taskId, RequestContext requestContext, EventQueue queue) {
@@ -441,7 +441,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
             if (shouldAddPushInfo(params)) {
                 LOGGER.debug("Adding push info");
-                pushConfigStore.setInfo(task.getId(), params.configuration().pushNotification());
+                pushConfigStore.setInfo(task.getId(), params.configuration().pushNotificationConfig());
             }
         }
 
