@@ -76,6 +76,11 @@ public class TaskManager {
             builder.history(newHistory);
         }
 
+        // Handle metadata from the event
+        if (event.getMetadata() != null) {
+            builder.metadata(event.getMetadata());
+        }
+
         task = builder.build();
         return saveTask(task);
     }

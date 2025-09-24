@@ -3,8 +3,10 @@ package io.a2a.server.tasks;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -528,5 +530,166 @@ public class TaskManagerTest {
                 .anyMatch(a -> "artifact-id-2".equals(a.artifactId()) 
                 && "content 2".equals(((TextPart) a.parts().get(0)).getText()))
                 , "Artifact 2 should be present");
+    }
+
+    @Test
+    public void testInvalidTaskIdValidation() {
+        // Test that creating TaskManager with null taskId is allowed (Python allows None)
+        TaskManager taskManagerWithNullId = new TaskManager(null, "context", taskStore, null);
+        assertNull(taskManagerWithNullId.getTaskId());
+
+        // Test that empty string task ID is handled (Java doesn't have explicit validation like Python)
+        TaskManager taskManagerWithEmptyId = new TaskManager("", "context", taskStore, null);
+        assertEquals("", taskManagerWithEmptyId.getTaskId());
+    }
+
+    @Test
+    public void testSaveTaskEventMetadataUpdate() throws A2AServerException {
+        // Test that metadata from TaskStatusUpdateEvent gets saved to the task
+        Task initialTask = minimalTask;
+        taskStore.save(initialTask);
+
+        Map<String, Object> newMetadata = new HashMap<>();
+        newMetadata.put("meta_key_test", "meta_value_test");
+
+        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                .taskId(minimalTask.getId())
+                .contextId(minimalTask.getContextId())
+                .status(new TaskStatus(TaskState.WORKING))
+                .isFinal(false)
+                .metadata(newMetadata)
+                .build();
+
+        taskManager.saveTaskEvent(event);
+
+        Task updatedTask = taskManager.getTask();
+        assertEquals(newMetadata, updatedTask.getMetadata());
+    }
+
+    @Test
+    public void testSaveTaskEventMetadataUpdateNull() throws A2AServerException {
+        // Test that null metadata in TaskStatusUpdateEvent doesn't affect task
+        Task initialTask = minimalTask;
+        taskStore.save(initialTask);
+
+        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                .taskId(minimalTask.getId())
+                .contextId(minimalTask.getContextId())
+                .status(new TaskStatus(TaskState.WORKING))
+                .isFinal(false)
+                .metadata(null)
+                .build();
+
+        taskManager.saveTaskEvent(event);
+
+        Task updatedTask = taskManager.getTask();
+        // Should preserve original task's metadata (which is likely null for minimal task)
+        assertNull(updatedTask.getMetadata());
+    }
+
+    @Test
+    public void testSaveTaskEventMetadataUpdateOverwritesExisting() throws A2AServerException {
+        // Test that metadata update overwrites existing metadata
+        Map<String, Object> originalMetadata = new HashMap<>();
+        originalMetadata.put("original_key", "original_value");
+        
+        Task taskWithMetadata = new Task.Builder(minimalTask)
+                .metadata(originalMetadata)
+                .build();
+        taskStore.save(taskWithMetadata);
+
+        Map<String, Object> newMetadata = new HashMap<>();
+        newMetadata.put("new_key", "new_value");
+
+        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                .taskId(minimalTask.getId())
+                .contextId(minimalTask.getContextId())
+                .status(new TaskStatus(TaskState.WORKING))
+                .isFinal(false)
+                .metadata(newMetadata)
+                .build();
+
+        taskManager.saveTaskEvent(event);
+
+        Task updatedTask = taskManager.getTask();
+        assertEquals(newMetadata, updatedTask.getMetadata());
+        assertNotEquals(originalMetadata, updatedTask.getMetadata());
+    }
+
+    @Test
+    public void testCreateTaskWithInitialMessage() throws A2AServerException {
+        // Test equivalent of _init_task_obj functionality
+        Message initialMessage = new Message.Builder()
+                .role(Message.Role.USER)
+                .parts(Collections.singletonList(new TextPart("initial message")))
+                .messageId("initial-msg-id")
+                .build();
+
+        TaskManager taskManagerWithMessage = new TaskManager(null, null, taskStore, initialMessage);
+
+        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                .taskId("new-task-id")
+                .contextId("some-context")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .isFinal(false)
+                .build();
+
+        Task savedTask = taskManagerWithMessage.saveTaskEvent(event);
+
+        // Verify task was created properly
+        assertNotNull(savedTask);
+        assertEquals("new-task-id", savedTask.getId());
+        assertEquals("some-context", savedTask.getContextId());
+        assertEquals(TaskState.SUBMITTED, savedTask.getStatus().state());
+
+        // Verify initial message is in history
+        assertNotNull(savedTask.getHistory());
+        assertEquals(1, savedTask.getHistory().size());
+        Message historyMessage = savedTask.getHistory().get(0);
+        assertEquals("initial-msg-id", historyMessage.getMessageId());
+        assertEquals("initial message", ((TextPart) historyMessage.getParts().get(0)).getText());
+    }
+
+    @Test
+    public void testCreateTaskWithoutInitialMessage() throws A2AServerException {
+        // Test task creation without initial message
+        TaskManager taskManagerWithoutMessage = new TaskManager(null, null, taskStore, null);
+
+        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                .taskId("new-task-id")
+                .contextId("some-context")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .isFinal(false)
+                .build();
+
+        Task savedTask = taskManagerWithoutMessage.saveTaskEvent(event);
+
+        // Verify task was created properly
+        assertNotNull(savedTask);
+        assertEquals("new-task-id", savedTask.getId());
+        assertEquals("some-context", savedTask.getContextId());
+        assertEquals(TaskState.SUBMITTED, savedTask.getStatus().state());
+
+        // Verify no history since there was no initial message
+        assertTrue(savedTask.getHistory() == null || savedTask.getHistory().isEmpty());
+    }
+
+    @Test
+    public void testSaveTaskInternal() throws A2AServerException {
+        // Test equivalent of _save_task functionality through saveTaskEvent
+        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
+        
+        Task newTask = new Task.Builder()
+                .id("test-task-id")
+                .contextId("test-context")
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+
+        Task savedTask = taskManagerWithoutId.saveTaskEvent(newTask);
+
+        // Verify internal state was updated
+        assertEquals("test-task-id", taskManagerWithoutId.getTaskId());
+        assertEquals("test-context", taskManagerWithoutId.getContextId());
+        assertSame(savedTask, taskManagerWithoutId.getTask());
     }
 }

@@ -3,6 +3,7 @@ package io.a2a.server.tasks;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
@@ -18,6 +19,7 @@ public class TaskUpdater {
     private final EventQueue eventQueue;
     private final String taskId;
     private final String contextId;
+    private final AtomicBoolean terminalStateReached = new AtomicBoolean(false);
 
     public TaskUpdater(RequestContext context, EventQueue eventQueue) {
         this.eventQueue = eventQueue;
@@ -26,20 +28,39 @@ public class TaskUpdater {
     }
 
     private void updateStatus(TaskState taskState) {
-        updateStatus(taskState, null);
+        updateStatus(taskState, null, taskState.isFinal());
     }
 
-    private void updateStatus(TaskState state, Message message) {
+    private void updateStatus(TaskState taskState, Message message) {
+        updateStatus(taskState, message, taskState.isFinal());
+    }
+
+    private void updateStatus(TaskState state, Message message, boolean isFinal) {
+        // Check if we're already in a terminal state
+        if (terminalStateReached.get()) {
+            throw new RuntimeException("Cannot update task status - terminal state already reached");
+        }
+
+        // If this is a final state, try to set the flag atomically
+        if (isFinal && !terminalStateReached.compareAndSet(false, true)) {
+            throw new RuntimeException("Cannot update task status - terminal state already reached");
+        }
+
         TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
                 .taskId(taskId)
                 .contextId(contextId)
-                .isFinal(state.isFinal())
+                .isFinal(isFinal)
                 .status(new TaskStatus(state, message, null))
                 .build();
         eventQueue.enqueueEvent(event);
     }
 
     public void addArtifact(List<Part<?>> parts, String artifactId, String name, Map<String, Object> metadata) {
+        addArtifact(parts, artifactId, name, metadata, null, null);
+    }
+
+    public void addArtifact(List<Part<?>> parts, String artifactId, String name, Map<String, Object> metadata, 
+                            Boolean append, Boolean lastChunk) {
         if (artifactId == null) {
             artifactId = UUID.randomUUID().toString();
         }
@@ -54,6 +75,8 @@ public class TaskUpdater {
                                 .metadata(metadata)
                                 .build()
                 )
+                .append(append)
+                .lastChunk(lastChunk)
                 .build();
         eventQueue.enqueueEvent(event);
     }
@@ -96,6 +119,46 @@ public class TaskUpdater {
 
     public void cancel(Message message) {
         updateStatus(TaskState.CANCELED, message);
+    }
+
+    public void reject() {
+        reject(null);
+    }
+
+    public void reject(Message message) {
+        updateStatus(TaskState.REJECTED, message);
+    }
+
+    public void requiresInput() {
+        requiresInput(null, false);
+    }
+
+    public void requiresInput(Message message) {
+        requiresInput(message, false);
+    }
+
+    public void requiresInput(boolean isFinal) {
+        requiresInput(null, isFinal);
+    }
+
+    public void requiresInput(Message message, boolean isFinal) {
+        updateStatus(TaskState.INPUT_REQUIRED, message, isFinal);
+    }
+
+    public void requiresAuth() {
+        requiresAuth(null, false);
+    }
+
+    public void requiresAuth(Message message) {
+        requiresAuth(message, false);
+    }
+
+    public void requiresAuth(boolean isFinal) {
+        requiresAuth(null, isFinal);
+    }
+
+    public void requiresAuth(Message message, boolean isFinal) {
+        updateStatus(TaskState.AUTH_REQUIRED, message, isFinal);
     }
 
     public Message newAgentMessage(List<Part<?>> parts, Map<String, Object> metadata) {
