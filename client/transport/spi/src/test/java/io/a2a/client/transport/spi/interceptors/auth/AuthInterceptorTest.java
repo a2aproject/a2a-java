@@ -1,15 +1,26 @@
 package io.a2a.client.transport.spi.interceptors.auth;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
 import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
-import io.a2a.spec.*;
+import io.a2a.spec.APIKeySecurityScheme;
+import io.a2a.spec.AgentCapabilities;
+import io.a2a.spec.AgentCard;
+import io.a2a.spec.HTTPAuthSecurityScheme;
+import io.a2a.spec.OAuth2SecurityScheme;
+import io.a2a.spec.OAuthFlows;
+import io.a2a.spec.OpenIdConnectSecurityScheme;
+import io.a2a.spec.SecurityScheme;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthInterceptorTest {
 
@@ -33,7 +44,7 @@ public class AuthInterceptorTest {
 
         @Override
         public PayloadAndHeaders intercept(String methodName, Object payload, Map<String, String> headers,
-                                          AgentCard agentCard, ClientCallContext clientCallContext) {
+                                           AgentCard agentCard, ClientCallContext clientCallContext) {
             Map<String, String> updatedHeaders = new HashMap<>(headers);
             updatedHeaders.put(headerName, headerValue);
             return new PayloadAndHeaders(payload, updatedHeaders);

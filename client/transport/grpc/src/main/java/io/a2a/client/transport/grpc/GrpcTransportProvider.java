@@ -17,7 +17,7 @@ public class GrpcTransportProvider implements ClientTransportProvider<GrpcTransp
 
         Channel channel = grpcTransportConfig.getChannelFactory().apply(agentUrl);
         if (channel != null) {
-            return new GrpcTransport(channel, agentCard);
+            return new GrpcTransport(channel, agentCard, grpcTransportConfig.getInterceptors());
         }
 
         throw new A2AClientException("Missing required GrpcTransportConfig");

@@ -1,6 +1,5 @@
 package io.a2a.client.transport.spi.interceptors.auth;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -31,7 +30,11 @@ public class InMemoryContextCredentialService implements CredentialService {
             return null;
         }
 
-        String sessionId = (String) clientCallContext.getState().get(SESSION_ID);
+        Object sessionIdObj = clientCallContext.getState().get(SESSION_ID);
+        if (! (sessionIdObj instanceof String)) {
+            return null;
+        }
+        String sessionId = (String) sessionIdObj;
         Map<String, String> sessionCredentials = credentialStore.get(sessionId);
         if (sessionCredentials == null) {
             return null;

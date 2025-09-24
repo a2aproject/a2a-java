@@ -20,6 +20,8 @@ public class GrpcTransportConfigBuilder extends ClientTransportConfigBuilder<Grp
 
     @Override
     public GrpcTransportConfig build() {
-        return new GrpcTransportConfig(channelFactory);
+        GrpcTransportConfig config = new GrpcTransportConfig(channelFactory);
+        config.setInterceptors(interceptors);
+        return config;
     }
 }

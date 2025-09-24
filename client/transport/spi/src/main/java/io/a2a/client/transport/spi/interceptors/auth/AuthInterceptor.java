@@ -22,7 +22,7 @@ import io.a2a.spec.SecurityScheme;
 public class AuthInterceptor extends ClientCallInterceptor {
 
     private static final String BEARER_SCHEME = "bearer";
-    private static final String AUTHORIZATION = "Authorization";
+    public static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
     private final CredentialService credentialService;
 
@@ -56,6 +56,7 @@ public class AuthInterceptor extends ClientCallInterceptor {
                         return new PayloadAndHeaders(payload, updatedHeaders);
                     } else if (securityScheme instanceof APIKeySecurityScheme apiKeySecurityScheme) {
                         updatedHeaders.put(apiKeySecurityScheme.getName(), credential);
+                        return new PayloadAndHeaders(payload, updatedHeaders);
                     }
                 }
             }
