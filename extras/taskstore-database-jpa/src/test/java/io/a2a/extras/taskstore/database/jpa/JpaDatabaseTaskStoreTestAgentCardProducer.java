@@ -16,7 +16,7 @@ import io.quarkus.arc.profile.IfBuildProfile;
  */
 @ApplicationScoped
 @IfBuildProfile("test")
-public class TestAgentCardProducer {
+public class JpaDatabaseTaskStoreTestAgentCardProducer {
 
     @Produces
     @PublicAgentCard

@@ -391,6 +391,7 @@
         <module>common</module>
         <module>examples/helloworld</module>
         <module>extras/taskstore-database-jpa</module>
+        <module>extras/pushnotificationconfigstore-database-jpa</module>
         <module>http-client</module>
         <module>reference/common</module>
         <module>reference/grpc</module>

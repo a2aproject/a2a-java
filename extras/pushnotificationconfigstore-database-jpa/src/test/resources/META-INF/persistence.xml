@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+             https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <!-- Test persistence unit for JPA TaskStore -->
+    <persistence-unit name="a2a-java" transaction-type="JTA">
+        <description>A2A Java SDK JPA TaskStore Test Configuration</description>
+        
+        <!-- Include our JPA entities -->
+        <class>io.a2a.extras.pushnotificationconfigstore.database.jpa.JpaPushNotificationConfig</class>
+        
+        <!-- Exclude unlisted classes to avoid scanning issues in tests -->
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        
+        <properties>
+            <!-- Database connection (H2 in-memory for tests) -->
+            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"/>
+            <property name="jakarta.persistence.jdbc.user" value="sa"/>
+            <property name="jakarta.persistence.jdbc.password" value=""/>
+            
+            <!-- Schema generation -->
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+            <property name="jakarta.persistence.schema-generation.create-source" value="metadata"/>
+            <property name="jakarta.persistence.schema-generation.drop-source" value="metadata"/>
+            
+            <!-- Hibernate specific properties (if using Hibernate) -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            
+            <!-- Connection pool settings -->
+            <property name="hibernate.connection.pool_size" value="5"/>
+            
+            <!-- Optional: Enable L2 cache for better performance -->
+            <property name="hibernate.cache.use_second_level_cache" value="false"/>
+            <property name="hibernate.cache.use_query_cache" value="false"/>
+        </properties>
+    </persistence-unit>
+    
+</persistence>
