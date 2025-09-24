@@ -69,7 +69,9 @@ public class BasePushNotificationSender implements PushNotificationSender {
     private boolean dispatchNotification(Task task, PushNotificationConfig pushInfo) {
         String url = pushInfo.url();
 
-        // TODO auth
+        // TODO: Implement authentication and token header support
+        // The Python implementation adds X-A2A-Notification-Token header when pushInfo.token is present
+        // See: https://github.com/a2aproject/a2a-python/blob/main/src/a2a/server/tasks/base_push_notification_sender.py#L55-57
 
         String body;
         try {
