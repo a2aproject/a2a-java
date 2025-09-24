@@ -196,8 +196,8 @@ public class PushNotificationSenderTest {
         Task sentTask = testHttpClient.tasks.get(0);
         assertEquals(taskData.getId(), sentTask.getId());
         
-        // TODO: When authentication is implemented, verify that X-A2A-Notification-Token header was sent
-        // The TestHttpClient currently doesn't capture headers, but this could be enhanced
+        // TODO: When authentication is implemented in BasePushNotificationSender, verify that the
+        // X-A2A-Notification-Token header is sent.
     }
 
     @Test
