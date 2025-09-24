@@ -9,7 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Flow;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -297,12 +299,15 @@ public class EventConsumerTest {
     }
 
     @Test
-    public void testConsumeAllRaisesStoredException() {
+    public void testConsumeAllRaisesStoredException() throws InterruptedException {
         // Set an error in the event consumer
         setEventConsumerError(new RuntimeException("Stored error"));
 
         Flow.Publisher<Event> publisher = eventConsumer.consumeAll();
         final AtomicReference<Throwable> receivedError = new AtomicReference<>();
+
+        final CountDownLatch errorLatch = new CountDownLatch(1);
+
 
         publisher.subscribe(new Flow.Subscriber<>() {
             @Override
@@ -313,18 +318,24 @@ public class EventConsumerTest {
             @Override
             public void onNext(Event item) {
                 // Should not be called
+                errorLatch.countDown();
             }
 
             @Override
             public void onError(Throwable throwable) {
                 receivedError.set(throwable);
+                errorLatch.countDown();
             }
 
             @Override
             public void onComplete() {
                 // Should not be called
+                errorLatch.countDown();
             }
         });
+
+        // Wait for error callback with timeout
+        assertTrue(errorLatch.await(5, TimeUnit.SECONDS), "Test timed out waiting for onError callback.");
 
         assertNotNull(receivedError.get());
         assertEquals("Stored error", receivedError.get().getMessage());
@@ -341,6 +352,7 @@ public class EventConsumerTest {
         Flow.Publisher<Event> publisher = consumer.consumeAll();
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Boolean> completed = new AtomicReference<>(false);
+        final CountDownLatch completionLatch = new CountDownLatch(1);
 
         publisher.subscribe(new Flow.Subscriber<>() {
             @Override
@@ -356,13 +368,18 @@ public class EventConsumerTest {
             @Override
             public void onError(Throwable throwable) {
                 // Should not be called
+                completionLatch.countDown();
             }
 
             @Override
             public void onComplete() {
                 completed.set(true);
+                completionLatch.countDown();
             }
         });
+
+        // Wait for completion with timeout
+        assertTrue(completionLatch.await(5, TimeUnit.SECONDS), "Test timed out waiting for onComplete callback.");
 
         // Should complete immediately with no events
         assertTrue(completed.get());
@@ -385,6 +402,7 @@ public class EventConsumerTest {
         Flow.Publisher<Event> publisher = consumer.consumeAll();
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Boolean> completed = new AtomicReference<>(false);
+        final CountDownLatch completionLatch = new CountDownLatch(1);
 
         publisher.subscribe(new Flow.Subscriber<>() {
             @Override
@@ -400,13 +418,18 @@ public class EventConsumerTest {
             @Override
             public void onError(Throwable throwable) {
                 // Should not be called
+                completionLatch.countDown();
             }
 
             @Override
             public void onComplete() {
                 completed.set(true);
+                completionLatch.countDown();
             }
         });
+
+        // Wait for completion with timeout
+        assertTrue(completionLatch.await(5, TimeUnit.SECONDS), "Test timed out waiting for onComplete callback.");
 
         // Should have received the message and completed
         assertTrue(completed.get());
@@ -426,7 +449,7 @@ public class EventConsumerTest {
             java.lang.reflect.Field errorField = EventConsumer.class.getDeclaredField("error");
             errorField.setAccessible(true);
             return (Throwable) errorField.get(eventConsumer);
-        } catch (Exception e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Failed to access error field", e);
         }
     }
@@ -436,7 +459,7 @@ public class EventConsumerTest {
             java.lang.reflect.Field errorField = EventConsumer.class.getDeclaredField("error");
             errorField.setAccessible(true);
             errorField.set(eventConsumer, error);
-        } catch (Exception e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Failed to set error field", e);
         }
     }

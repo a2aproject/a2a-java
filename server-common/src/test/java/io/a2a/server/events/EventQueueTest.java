@@ -183,12 +183,8 @@ public class EventQueueTest {
         assertTrue(childQueue.isClosed());
 
         // Child queue should be cleared due to immediate close
-        try {
-            Event result = childQueue.dequeueEvent(-1);
-            assertNull(result);
-        } catch (EventQueueClosedException e) {
-            // This is expected when queue is closed
-        }
+        // Child queue should be cleared and closed, so dequeueing should throw
+        assertThrows(EventQueueClosedException.class, () -> childQueue.dequeueEvent(-1));
     }
 
     @Test
@@ -203,12 +199,8 @@ public class EventQueueTest {
         queue.enqueueEvent(event);
 
         // Verify the queue is still empty
-        try {
-            Event dequeuedEvent = queue.dequeueEvent(-1);
-            assertNull(dequeuedEvent);
-        } catch (EventQueueClosedException e) {
-            // This is expected when queue is closed and empty
-        }
+        // Verify the queue is still empty and dequeueing from a closed, empty queue throws
+        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEvent(-1));
     }
 
     @Test

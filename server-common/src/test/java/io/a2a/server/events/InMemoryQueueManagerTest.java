@@ -76,6 +76,9 @@ public class InMemoryQueueManagerTest {
         EventQueue tappedQueue = queueManager.tap(taskId);
 
         assertNotNull(tappedQueue);
+
+        // Tapped queue should be different from original
+        // (it's a child queue in Java implementation)
         assertNotSame(queue, tappedQueue, "Tapped queue should be a different instance from the original.");
     }
 
@@ -205,9 +208,11 @@ public class InMemoryQueueManagerTest {
         EventQueue managerQueue = queueManager.get(taskId);
         assertNotNull(managerQueue);
 
-        // One of the results should be the main queue instance, and the rest should be
-        // different (tapped) queue instances.
+        // One of the results should be the main queue instance, the others should be tapped child queues.
         long mainQueueCount = results.stream().filter(q -> q == managerQueue).count();
-        assertEquals(1, mainQueueCount, "Exactly one returned queue should be the main queue instance.");
+        assertEquals(1, mainQueueCount, "Exactly one thread should have created the main queue.");
+
+        long childQueueCount = results.stream().filter(q -> q != managerQueue).count();
+        assertEquals(results.size() - 1, childQueueCount, "All other threads should have received a tapped queue.");
     }
 }
