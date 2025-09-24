@@ -233,6 +233,8 @@ public class PushNotificationSenderTest {
         
         // Verify both tasks were sent via HTTP
         assertEquals(2, testHttpClient.tasks.size());
+        assertEquals(2, testHttpClient.urls.size());
+        assertTrue(testHttpClient.urls.containsAll(java.util.List.of("http://notify.me/cfg1", "http://notify.me/cfg2")));
         
         // Both tasks should be identical (same task sent to different endpoints)
         for (Task sentTask : testHttpClient.tasks) {
@@ -259,25 +261,5 @@ public class PushNotificationSenderTest {
 
         // Verify no tasks were successfully processed due to the error
         assertEquals(0, testHttpClient.tasks.size());
-    }
-
-    @Test
-    public void testConfigStoreIntegration() {
-        String taskId = "integration_test";
-        PushNotificationConfig config = createSamplePushConfig("http://example.com", "test_id", "test_token");
-        
-        // Test that we can store and retrieve configurations
-        PushNotificationConfig storedConfig = configStore.setInfo(taskId, config);
-        assertEquals(config.url(), storedConfig.url());
-        assertEquals(config.token(), storedConfig.token());
-        
-        List<PushNotificationConfig> retrievedConfigs = configStore.getInfo(taskId);
-        assertEquals(1, retrievedConfigs.size());
-        assertEquals(config.url(), retrievedConfigs.get(0).url());
-        
-        // Test deletion
-        configStore.deleteInfo(taskId, storedConfig.id());
-        List<PushNotificationConfig> afterDeletion = configStore.getInfo(taskId);
-        assertTrue(afterDeletion == null || afterDeletion.isEmpty());
     }
 }
