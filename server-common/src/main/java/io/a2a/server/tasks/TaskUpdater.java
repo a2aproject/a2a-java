@@ -20,6 +20,7 @@ public class TaskUpdater {
     private final String taskId;
     private final String contextId;
     private final AtomicBoolean terminalStateReached = new AtomicBoolean(false);
+    private final Object stateLock = new Object();
 
     public TaskUpdater(RequestContext context, EventQueue eventQueue) {
         this.eventQueue = eventQueue;
@@ -36,23 +37,25 @@ public class TaskUpdater {
     }
 
     private void updateStatus(TaskState state, Message message, boolean isFinal) {
-        // Check if we're already in a terminal state
-        if (terminalStateReached.get()) {
-            throw new RuntimeException("Cannot update task status - terminal state already reached");
+        synchronized (stateLock) {
+            // Check if we're already in a terminal state
+            if (terminalStateReached.get()) {
+                throw new IllegalStateException("Cannot update task status - terminal state already reached");
+            }
+            
+            // If this is a final state, set the flag
+            if (isFinal) {
+                terminalStateReached.set(true);
+            }
+            
+            TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                    .taskId(taskId)
+                    .contextId(contextId)
+                    .isFinal(isFinal)
+                    .status(new TaskStatus(state, message, null))
+                    .build();
+            eventQueue.enqueueEvent(event);
         }
-
-        // If this is a final state, try to set the flag atomically
-        if (isFinal && !terminalStateReached.compareAndSet(false, true)) {
-            throw new RuntimeException("Cannot update task status - terminal state already reached");
-        }
-
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
-                .taskId(taskId)
-                .contextId(contextId)
-                .isFinal(isFinal)
-                .status(new TaskStatus(state, message, null))
-                .build();
-        eventQueue.enqueueEvent(event);
     }
 
     public void addArtifact(List<Part<?>> parts, String artifactId, String name, Map<String, Object> metadata) {

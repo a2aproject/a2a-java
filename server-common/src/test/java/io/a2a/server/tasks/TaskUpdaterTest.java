@@ -307,8 +307,8 @@ public class TaskUpdaterTest {
         checkTaskStatusUpdateEventOnQueue(true, TaskState.COMPLETED, null);
 
         // Try to update status again - should throw RuntimeException
-        assertThrows(RuntimeException.class, () -> taskUpdater.startWork(), 
-                    "Cannot update task status - terminal state already reached");
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> taskUpdater.startWork());
+        assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
 
         // Verify no additional events were queued
         assertNull(eventQueue.dequeueEvent(0));
@@ -321,8 +321,8 @@ public class TaskUpdaterTest {
         checkTaskStatusUpdateEventOnQueue(true, TaskState.FAILED, null);
 
         // Try to update status again - should throw RuntimeException
-        assertThrows(RuntimeException.class, () -> taskUpdater.complete(), 
-                    "Cannot update task status - terminal state already reached");
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> taskUpdater.complete());
+        assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
 
         // Verify no additional events were queued
         assertNull(eventQueue.dequeueEvent(0));
@@ -335,8 +335,8 @@ public class TaskUpdaterTest {
         checkTaskStatusUpdateEventOnQueue(true, TaskState.REJECTED, null);
 
         // Try to update status again - should throw RuntimeException
-        assertThrows(RuntimeException.class, () -> taskUpdater.startWork(), 
-                    "Cannot update task status - terminal state already reached");
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> taskUpdater.startWork());
+        assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
 
         // Verify no additional events were queued
         assertNull(eventQueue.dequeueEvent(0));
@@ -349,8 +349,8 @@ public class TaskUpdaterTest {
         checkTaskStatusUpdateEventOnQueue(true, TaskState.CANCELED, null);
 
         // Try to update status again - should throw RuntimeException
-        assertThrows(RuntimeException.class, () -> taskUpdater.submit(), 
-                    "Cannot update task status - terminal state already reached");
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> taskUpdater.submit());
+        assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
 
         // Verify no additional events were queued
         assertNull(eventQueue.dequeueEvent(0));

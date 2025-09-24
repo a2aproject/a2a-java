@@ -17,26 +17,43 @@ public abstract class EventQueue implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventQueue.class);
 
-    // TODO decide on a capacity
-    private static final int queueSize = 1000;
+    public static final int DEFAULT_QUEUE_SIZE = 1000;
 
+    private final int queueSize;
     private final BlockingQueue<Event> queue = new LinkedBlockingDeque<>();
-    private final Semaphore semaphore = new Semaphore(queueSize, true);
+    private final Semaphore semaphore;
     private volatile boolean closed = false;
 
 
 
     protected EventQueue() {
-        this(null);
+        this(DEFAULT_QUEUE_SIZE);
+    }
+
+    protected EventQueue(int queueSize) {
+        if (queueSize <= 0) {
+            throw new IllegalArgumentException("Queue size must be greater than 0");
+        }
+        this.queueSize = queueSize;
+        this.semaphore = new Semaphore(queueSize, true);
+        LOGGER.trace("Creating {} with queue size: {}", this, queueSize);
     }
 
     protected EventQueue(EventQueue parent) {
+        this(DEFAULT_QUEUE_SIZE);
         LOGGER.trace("Creating {}, parent: {}", this, parent);
     }
 
     public static EventQueue create() {
-        
         return new MainQueue();
+    }
+
+    public static EventQueue create(int queueSize) {
+        return new MainQueue(queueSize);
+    }
+
+    public int getQueueSize() {
+        return queueSize;
     }
 
     public abstract void awaitQueuePollerStart() throws InterruptedException ;
@@ -131,6 +148,14 @@ public abstract class EventQueue implements AutoCloseable {
         private final List<ChildQueue> children = new CopyOnWriteArrayList<>();
         private final CountDownLatch pollingStartedLatch = new CountDownLatch(1);
         private final AtomicBoolean pollingStarted = new AtomicBoolean(false);
+
+        MainQueue() {
+            super();
+        }
+
+        MainQueue(int queueSize) {
+            super(queueSize);
+        }
 
         EventQueue tap() {
             ChildQueue child = new ChildQueue(this);

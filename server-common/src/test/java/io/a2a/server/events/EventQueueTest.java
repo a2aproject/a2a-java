@@ -1,7 +1,12 @@
 package io.a2a.server.events;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -48,6 +53,189 @@ public class EventQueueTest {
     public void init() {
         eventQueue = EventQueue.create();
 
+    }
+
+    @Test
+    public void testConstructorDefaultQueueSize() {
+        EventQueue queue = EventQueue.create();
+        assertEquals(EventQueue.DEFAULT_QUEUE_SIZE, queue.getQueueSize());
+    }
+
+    @Test
+    public void testConstructorCustomQueueSize() {
+        int customSize = 500;
+        EventQueue queue = EventQueue.create(customSize);
+        assertEquals(customSize, queue.getQueueSize());
+    }
+
+    @Test
+    public void testConstructorInvalidQueueSize() {
+        // Test zero queue size
+        assertThrows(IllegalArgumentException.class, () -> EventQueue.create(0));
+
+        // Test negative queue size
+        assertThrows(IllegalArgumentException.class, () -> EventQueue.create(-10));
+    }
+
+    @Test
+    public void testTapCreatesChildQueue() {
+        EventQueue parentQueue = EventQueue.create();
+        EventQueue childQueue = parentQueue.tap();
+
+        assertNotNull(childQueue);
+        assertNotSame(parentQueue, childQueue);
+        assertEquals(EventQueue.DEFAULT_QUEUE_SIZE, childQueue.getQueueSize());
+    }
+
+    @Test
+    public void testTapOnChildQueueThrowsException() {
+        EventQueue parentQueue = EventQueue.create();
+        EventQueue childQueue = parentQueue.tap();
+
+        assertThrows(IllegalStateException.class, () -> childQueue.tap());
+    }
+
+    @Test
+    public void testEnqueueEventPropagagesToChildren() throws Exception {
+        EventQueue parentQueue = EventQueue.create();
+        EventQueue childQueue = parentQueue.tap();
+
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        parentQueue.enqueueEvent(event);
+
+        // Event should be available in both parent and child queues
+        Event parentEvent = parentQueue.dequeueEvent(-1);
+        Event childEvent = childQueue.dequeueEvent(-1);
+
+        assertSame(event, parentEvent);
+        assertSame(event, childEvent);
+    }
+
+    @Test
+    public void testMultipleChildQueuesReceiveEvents() throws Exception {
+        EventQueue parentQueue = EventQueue.create();
+        EventQueue childQueue1 = parentQueue.tap();
+        EventQueue childQueue2 = parentQueue.tap();
+
+        Event event1 = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Event event2 = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.TYPE_REFERENCE);
+
+        parentQueue.enqueueEvent(event1);
+        parentQueue.enqueueEvent(event2);
+
+        // All queues should receive both events
+        assertSame(event1, parentQueue.dequeueEvent(-1));
+        assertSame(event2, parentQueue.dequeueEvent(-1));
+
+        assertSame(event1, childQueue1.dequeueEvent(-1));
+        assertSame(event2, childQueue1.dequeueEvent(-1));
+
+        assertSame(event1, childQueue2.dequeueEvent(-1));
+        assertSame(event2, childQueue2.dequeueEvent(-1));
+    }
+
+    @Test
+    public void testChildQueueDequeueIndependently() throws Exception {
+        EventQueue parentQueue = EventQueue.create();
+        EventQueue childQueue1 = parentQueue.tap();
+        EventQueue childQueue2 = parentQueue.tap();
+
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        parentQueue.enqueueEvent(event);
+
+        // Dequeue from child1 first
+        Event child1Event = childQueue1.dequeueEvent(-1);
+        assertSame(event, child1Event);
+
+        // child2 should still have the event available
+        Event child2Event = childQueue2.dequeueEvent(-1);
+        assertSame(event, child2Event);
+
+        // Parent should still have the event available
+        Event parentEvent = parentQueue.dequeueEvent(-1);
+        assertSame(event, parentEvent);
+    }
+
+
+    @Test
+    public void testCloseImmediatePropagationToChildren() throws Exception {
+        EventQueue parentQueue = EventQueue.create();
+        EventQueue childQueue = parentQueue.tap();
+
+        // Add events to both parent and child
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        parentQueue.enqueueEvent(event);
+
+        assertFalse(childQueue.isClosed());
+        try {
+            assertNotNull(childQueue.dequeueEvent(-1)); // Child has the event
+        } catch (EventQueueClosedException e) {
+            // This is fine if queue closed before dequeue
+        }
+
+        // Add event again for immediate close test
+        parentQueue.enqueueEvent(event);
+
+        // Close with immediate=true
+        parentQueue.close(true);
+
+        assertTrue(parentQueue.isClosed());
+        assertTrue(childQueue.isClosed());
+
+        // Child queue should be cleared due to immediate close
+        try {
+            Event result = childQueue.dequeueEvent(-1);
+            assertNull(result);
+        } catch (EventQueueClosedException e) {
+            // This is expected when queue is closed
+        }
+    }
+
+    @Test
+    public void testEnqueueEventWhenClosed() throws Exception {
+        EventQueue queue = EventQueue.create();
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+
+        queue.close(); // Close the queue first
+        assertTrue(queue.isClosed());
+
+        // Attempt to enqueue should be ignored (no exception thrown)
+        queue.enqueueEvent(event);
+
+        // Verify the queue is still empty
+        try {
+            Event dequeuedEvent = queue.dequeueEvent(-1);
+            assertNull(dequeuedEvent);
+        } catch (EventQueueClosedException e) {
+            // This is expected when queue is closed and empty
+        }
+    }
+
+    @Test
+    public void testDequeueEventWhenClosedAndEmpty() throws Exception {
+        EventQueue queue = EventQueue.create();
+        queue.close();
+        assertTrue(queue.isClosed());
+
+        // Dequeue from closed empty queue should throw exception
+        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEvent(-1));
+    }
+
+    @Test
+    public void testDequeueEventWhenClosedButHasEvents() throws Exception {
+        EventQueue queue = EventQueue.create();
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        queue.enqueueEvent(event);
+
+        queue.close(); // Graceful close - events should remain
+        assertTrue(queue.isClosed());
+
+        // Should still be able to dequeue existing events
+        Event dequeuedEvent = queue.dequeueEvent(-1);
+        assertSame(event, dequeuedEvent);
+
+        // Now queue is closed and empty, should throw exception
+        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEvent(-1));
     }
 
     @Test

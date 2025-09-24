@@ -1,9 +1,11 @@
 package io.a2a.server.events;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -256,9 +258,186 @@ public class EventConsumerTest {
         assertSame(message, receivedEvents.get(0));
     }
 
+    @Test
+    public void testCreateAgentRunnableDoneCallbackSetsError() {
+        EnhancedRunnable mockRunnable = new EnhancedRunnable() {
+            @Override
+            public void run() {
+                // Mock implementation
+            }
+        };
+
+        Throwable testError = new RuntimeException("Test error");
+        mockRunnable.setError(testError);
+
+        EnhancedRunnable.DoneCallback callback = eventConsumer.createAgentRunnableDoneCallback();
+        callback.done(mockRunnable);
+
+        // The error should be stored in the event consumer
+        assertEquals(testError, getEventConsumerError());
+    }
+
+    @Test
+    public void testCreateAgentRunnableDoneCallbackNoError() {
+        EnhancedRunnable mockRunnable = new EnhancedRunnable() {
+            @Override
+            public void run() {
+                // Mock implementation
+            }
+        };
+
+        // No error set on runnable
+        assertNull(mockRunnable.getError());
+
+        EnhancedRunnable.DoneCallback callback = eventConsumer.createAgentRunnableDoneCallback();
+        callback.done(mockRunnable);
+
+        // The error should remain null
+        assertNull(getEventConsumerError());
+    }
+
+    @Test
+    public void testConsumeAllRaisesStoredException() {
+        // Set an error in the event consumer
+        setEventConsumerError(new RuntimeException("Stored error"));
+
+        Flow.Publisher<Event> publisher = eventConsumer.consumeAll();
+        final AtomicReference<Throwable> receivedError = new AtomicReference<>();
+
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(Event item) {
+                // Should not be called
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                receivedError.set(throwable);
+            }
+
+            @Override
+            public void onComplete() {
+                // Should not be called
+            }
+        });
+
+        assertNotNull(receivedError.get());
+        assertEquals("Stored error", receivedError.get().getMessage());
+    }
+
+    @Test
+    public void testConsumeAllStopsOnQueueClosed() throws Exception {
+        EventQueue queue = EventQueue.create();
+        EventConsumer consumer = new EventConsumer(queue);
+
+        // Close the queue immediately
+        queue.close();
+
+        Flow.Publisher<Event> publisher = consumer.consumeAll();
+        final List<Event> receivedEvents = new ArrayList<>();
+        final AtomicReference<Boolean> completed = new AtomicReference<>(false);
+
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Event item) {
+                receivedEvents.add(item);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                // Should not be called
+            }
+
+            @Override
+            public void onComplete() {
+                completed.set(true);
+            }
+        });
+
+        // Should complete immediately with no events
+        assertTrue(completed.get());
+        assertEquals(0, receivedEvents.size());
+    }
+
+
+    @Test
+    public void testConsumeAllHandlesQueueClosedException() throws Exception {
+        EventQueue queue = EventQueue.create();
+        EventConsumer consumer = new EventConsumer(queue);
+
+        // Add a message event (which will complete the stream)
+        Event message = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.TYPE_REFERENCE);
+        queue.enqueueEvent(message);
+
+        // Close the queue before consuming
+        queue.close();
+
+        Flow.Publisher<Event> publisher = consumer.consumeAll();
+        final List<Event> receivedEvents = new ArrayList<>();
+        final AtomicReference<Boolean> completed = new AtomicReference<>(false);
+
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Event item) {
+                receivedEvents.add(item);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                // Should not be called
+            }
+
+            @Override
+            public void onComplete() {
+                completed.set(true);
+            }
+        });
+
+        // Should have received the message and completed
+        assertTrue(completed.get());
+        assertEquals(1, receivedEvents.size());
+        assertSame(message, receivedEvents.get(0));
+    }
+
     private void enqueueAndConsumeOneEvent(Event event) throws Exception {
         eventQueue.enqueueEvent(event);
         Event result = eventConsumer.consumeOne();
         assertSame(event, result);
+    }
+
+    // Helper methods to access private error field via reflection
+    private Throwable getEventConsumerError() {
+        try {
+            java.lang.reflect.Field errorField = EventConsumer.class.getDeclaredField("error");
+            errorField.setAccessible(true);
+            return (Throwable) errorField.get(eventConsumer);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to access error field", e);
+        }
+    }
+
+    private void setEventConsumerError(Throwable error) {
+        try {
+            java.lang.reflect.Field errorField = EventConsumer.class.getDeclaredField("error");
+            errorField.setAccessible(true);
+            errorField.set(eventConsumer, error);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set error field", e);
+        }
     }
 }

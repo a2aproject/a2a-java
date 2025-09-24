@@ -671,7 +671,7 @@ public class TaskManagerTest {
         assertEquals(TaskState.SUBMITTED, savedTask.getStatus().state());
 
         // Verify no history since there was no initial message
-        assertTrue(savedTask.getHistory() == null || savedTask.getHistory().isEmpty());
+        assertTrue(savedTask.getHistory().isEmpty());
     }
 
     @Test
