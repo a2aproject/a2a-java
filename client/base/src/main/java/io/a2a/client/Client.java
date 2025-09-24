@@ -66,12 +66,7 @@ public class Client extends AbstractClient {
     @Override
     public void sendMessage(Message request, PushNotificationConfig pushNotificationConfiguration,
                             Map<String, Object> metatadata, ClientCallContext context) throws A2AClientException {
-        MessageSendConfiguration messageSendConfiguration = new MessageSendConfiguration.Builder()
-                .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
-                .blocking(clientConfig.isPolling())
-                .historyLength(clientConfig.getHistoryLength())
-                .pushNotificationConfig(pushNotificationConfiguration)
-                .build();
+        MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(pushNotificationConfiguration);
 
         MessageSendParams messageSendParams = new MessageSendParams.Builder()
                 .message(request)
@@ -155,6 +150,15 @@ public class Client extends AbstractClient {
         }
     }
 
+    private MessageSendConfiguration createMessageSendConfiguration(PushNotificationConfig pushNotificationConfig) {
+        return new MessageSendConfiguration.Builder()
+                .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
+                .blocking(!clientConfig.isPolling())
+                .historyLength(clientConfig.getHistoryLength())
+                .pushNotificationConfig(pushNotificationConfig)
+                .build();
+    }
+
     private void sendMessage(MessageSendParams messageSendParams, List<BiConsumer<ClientEvent, AgentCard>> consumers,
                              Consumer<Throwable> errorHandler, ClientCallContext context) throws A2AClientException {
         if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
@@ -225,12 +229,7 @@ public class Client extends AbstractClient {
     }
 
     private MessageSendParams getMessageSendParams(Message request, ClientConfig clientConfig) {
-        MessageSendConfiguration messageSendConfiguration = new MessageSendConfiguration.Builder()
-                .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
-                .blocking(clientConfig.isPolling())
-                .historyLength(clientConfig.getHistoryLength())
-                .pushNotificationConfig(clientConfig.getPushNotificationConfig())
-                .build();
+        MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(clientConfig.getPushNotificationConfig());
 
         return new MessageSendParams.Builder()
                 .message(request)
