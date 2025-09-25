@@ -84,6 +84,22 @@ public class AgentCardValidator {
             // Following the GitHub issue suggestion to use an error instead of warning
             throw new IllegalStateException(errorMessage);
         }
+
+        // check that the primary URL matches the URL for the preferred transport
+        if (agentCard.additionalInterfaces() != null) {
+            agentCard.additionalInterfaces().stream()
+                    .filter(agentInterface -> agentInterface.transport().equals(agentCard.preferredTransport()))
+                    .findFirst()
+                    .ifPresent(preferredTransportAgentInterface -> {
+                if (!preferredTransportAgentInterface.url().equals(agentCard.url())) {
+                    LOGGER.warning(String.format(
+                            "AgentCard's URL=%s does not correspond to the URL of the preferred transport=%s.",
+                            agentCard.url(),
+                            preferredTransportAgentInterface.url()
+                    ));
+                }
+            });
+        }
     }
     
     /**

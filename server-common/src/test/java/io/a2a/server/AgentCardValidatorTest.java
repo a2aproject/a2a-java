@@ -229,6 +229,37 @@ public class AgentCardValidatorTest {
         }
     }
 
+    @Test
+    void testPrimaryURLMatchesPreferredTransport() {
+        // Create a simple AgentCard (with preferred HTTP_JSON transport even though primary URL points to JSONRPC transport)
+        AgentCard agentCard = createTestAgentCardBuilder()
+                .preferredTransport(TransportProtocol.HTTP_JSON.asString())
+                .additionalInterfaces(List.of(
+                        new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999"),
+                        new AgentInterface(TransportProtocol.GRPC.asString(), "http://localhost:9000"),
+                        new AgentInterface(TransportProtocol.HTTP_JSON.asString(), "http://localhost:8000")
+                ))
+                .build();
+
+        // Define available transports
+        Set<String> availableTransports = Set.of(TransportProtocol.JSONRPC.asString(), TransportProtocol.GRPC.asString(), TransportProtocol.HTTP_JSON.asString());
+
+        // Capture logs
+        Logger logger = Logger.getLogger(AgentCardValidator.class.getName());
+        TestLogHandler testLogHandler = new TestLogHandler();
+        logger.addHandler(testLogHandler);
+
+        try {
+            AgentCardValidator.validateTransportConfiguration(agentCard, availableTransports);
+        } finally {
+            logger.removeHandler(testLogHandler);
+        }
+
+        // Test that the warning was logged
+        assertTrue(testLogHandler.getLogMessages().stream()
+                .anyMatch(msg -> msg.contains("AgentCard's URL=http://localhost:9999 does not correspond to the URL of the preferred transport=http://localhost:8000.")));
+    }
+
     // A simple log handler for testing
     private static class TestLogHandler extends Handler {
         private final List<String> logMessages = new java.util.ArrayList<>();
