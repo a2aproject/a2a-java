@@ -14,13 +14,13 @@ import org.mockito.ArgumentCaptor;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.common.A2AHeaders;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
@@ -45,6 +45,29 @@ class InMemoryPushNotificationConfigStoreTest {
         MockitoAnnotations.openMocks(this);
         configStore = new InMemoryPushNotificationConfigStore();
         notificationSender = new BasePushNotificationSender(configStore, mockHttpClient);
+    }
+
+    private void setupBasicMockHttpResponse() throws Exception {
+        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.success()).thenReturn(true);
+    }
+
+    private void verifyHttpCallWithoutToken(PushNotificationConfig config, Task task, String expectedToken) throws Exception {
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mockHttpClient).createPost();
+        verify(mockPostBuilder).url(config.url());
+        verify(mockPostBuilder).body(bodyCaptor.capture());
+        verify(mockPostBuilder).post();
+        // Verify that addHeader was never called for authentication token
+        verify(mockPostBuilder, never()).addHeader(A2AHeaders.X_A2A_NOTIFICATION_TOKEN, expectedToken);
+        
+        // Verify the request body contains the task data
+        String sentBody = bodyCaptor.getValue();
+        assertTrue(sentBody.contains(task.getId()));
+        assertTrue(sentBody.contains(task.getStatus().state().asString()));
     }
 
     private Task createSampleTask(String taskId, TaskState state) {
@@ -229,7 +252,6 @@ class InMemoryPushNotificationConfigStoreTest {
     }
 
     @Test
-    @Disabled("Token authentication is not yet implemented in BasePushNotificationSender (TODO auth)")
     public void testSendNotificationWithToken() throws Exception {
         String taskId = "task_send_with_token";
         Task task = createSampleTask(taskId, TaskState.COMPLETED);
@@ -240,21 +262,19 @@ class InMemoryPushNotificationConfigStoreTest {
         when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
         when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.addHeader(any(String.class), any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
         when(mockHttpResponse.success()).thenReturn(true);
 
         notificationSender.sendNotification(task);
 
-        // TODO: Once token authentication is implemented, verify that:
-        // 1. The token is included in request headers (e.g., X-A2A-Notification-Token)
-        // 2. The HTTP client is called with proper authentication
-        // 3. The token from the config is actually used
-        
-        // For now, just verify basic HTTP client interaction
+        // Verify HTTP client was called with proper authentication
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockHttpClient).createPost();
         verify(mockPostBuilder).url(config.url());
         verify(mockPostBuilder).body(bodyCaptor.capture());
+        // Verify that the token is included in request headers as X-A2A-Notification-Token
+        verify(mockPostBuilder).addHeader(A2AHeaders.X_A2A_NOTIFICATION_TOKEN, config.token());
         verify(mockPostBuilder).post();
         
         // Verify the request body contains the task data
@@ -272,6 +292,30 @@ class InMemoryPushNotificationConfigStoreTest {
 
         // Verify HTTP client was never called
         verify(mockHttpClient, never()).createPost();
+    }
+
+    @Test
+    public void testSendNotificationWithEmptyToken() throws Exception {
+        String taskId = "task_send_empty_token";
+        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "");
+        configStore.setInfo(taskId, config);
+
+        setupBasicMockHttpResponse();
+        notificationSender.sendNotification(task);
+        verifyHttpCallWithoutToken(config, task, "");
+    }
+
+    @Test
+    public void testSendNotificationWithBlankToken() throws Exception {
+        String taskId = "task_send_blank_token";
+        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "   ");
+        configStore.setInfo(taskId, config);
+
+        setupBasicMockHttpResponse();
+        notificationSender.sendNotification(task);
+        verifyHttpCallWithoutToken(config, task, "   ");
     }
 
     @Test
