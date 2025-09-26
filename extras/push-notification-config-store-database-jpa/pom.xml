@@ -10,7 +10,7 @@
         <version>0.3.0.Beta2-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <artifactId>a2a-java-extras-pushnotificationconfigstore-database-jpa</artifactId>
+    <artifactId>a2a-java-extras-push-notification-config-store-database-jpa</artifactId>
 
     <packaging>jar</packaging>
 

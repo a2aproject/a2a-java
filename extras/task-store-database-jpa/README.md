@@ -13,7 +13,7 @@ Add this module to your project's `pom.xml`:
 ```xml
 <dependency>
     <groupId>io.github.a2asdk</groupId>
-    <artifactId>a2a-java-extras-taskstore-database-jpa</artifactId>
+    <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
     <version>${a2a.version}</version>
 </dependency>
 ```

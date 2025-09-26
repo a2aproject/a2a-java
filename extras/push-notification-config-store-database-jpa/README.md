@@ -13,7 +13,7 @@ Add this module to your project's `pom.xml`:
 ```xml
 <dependency>
     <groupId>io.github.a2asdk</groupId>
-    <artifactId>a2a-java-extras-pushnotificationconfigstore-database-jpa</artifactId>
+    <artifactId>a2a-java-extras-push-notification-config-store-database-jpa</artifactId>
     <version>${a2a.version}</version>
 </dependency>
 ```
