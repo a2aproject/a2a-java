@@ -44,13 +44,13 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
 
             if (existingJpaConfig != null) {
                 // Update existing entity
-                existingJpaConfig.setConfig(taskId, notificationConfig);
+                existingJpaConfig.setConfig(notificationConfig);
                 LOGGER.debug("Updated existing PushNotificationConfig for Task '{}' with ID: {}",
                         taskId, notificationConfig.id());
             } else {
                 // Create new entity
                 JpaPushNotificationConfig jpaConfig = JpaPushNotificationConfig.createFromConfig(taskId, notificationConfig);
-                em.merge(jpaConfig);
+                em.persist(jpaConfig);
                 LOGGER.debug("Persisted new PushNotificationConfig for Task '{}' with ID: {}",
                         taskId, notificationConfig.id());
             }

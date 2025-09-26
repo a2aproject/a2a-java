@@ -51,11 +51,12 @@ public class JpaPushNotificationConfig {
         return config;
     }
 
-    public void setConfig(String taskId, PushNotificationConfig config) throws JsonProcessingException {
-        configJson = Utils.OBJECT_MAPPER.writeValueAsString(config);
-        if (this.id == null) {
-            this.id = new TaskConfigId(taskId, config.id());
+    public void setConfig(PushNotificationConfig config) throws JsonProcessingException {
+        if (config.id() == null || !config.id().equals(id.getConfigId())) {
+            throw new IllegalArgumentException("Mismatched config id. " +
+                    "Expected '" + id.getConfigId() + "'. Got: '" + config.id() + "'");
         }
+        configJson = Utils.OBJECT_MAPPER.writeValueAsString(config);
         this.config = config;
     }
 
