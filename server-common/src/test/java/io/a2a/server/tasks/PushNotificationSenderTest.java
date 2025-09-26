@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.common.A2AHeaders;
 import io.a2a.util.Utils;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
@@ -133,6 +134,33 @@ public class PushNotificationSenderTest {
         sender = new BasePushNotificationSender(configStore, testHttpClient);
     }
 
+    private void testSendNotificationWithInvalidToken(String token, String testName) throws InterruptedException {
+        String taskId = testName;
+        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", token);
+        
+        // Set up the configuration in the store
+        configStore.setInfo(taskId, config);
+        
+        // Set up latch to wait for async completion
+        testHttpClient.latch = new CountDownLatch(1);
+
+        sender.sendNotification(taskData);
+
+        // Wait for the async operation to complete
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
+        
+        // Verify the task was sent via HTTP
+        assertEquals(1, testHttpClient.tasks.size());
+        Task sentTask = testHttpClient.tasks.get(0);
+        assertEquals(taskData.getId(), sentTask.getId());
+        
+        // Verify that no authentication header was sent (invalid token should not add header)
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertTrue(sentHeaders.isEmpty(), "No headers should be sent when token is invalid");
+    }
+
     private Task createSampleTask(String taskId, TaskState state) {
         return new Task.Builder()
                 .id(taskId)
@@ -196,8 +224,11 @@ public class PushNotificationSenderTest {
         Task sentTask = testHttpClient.tasks.get(0);
         assertEquals(taskData.getId(), sentTask.getId());
         
-        // TODO: When authentication is implemented in BasePushNotificationSender, verify that the
-        // X-A2A-Notification-Token header is sent.
+        // Verify that the X-A2A-Notification-Token header is sent with the correct token
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertTrue(sentHeaders.containsKey(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        assertEquals(config.token(), sentHeaders.get(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
     }
 
     @Test
@@ -210,6 +241,16 @@ public class PushNotificationSenderTest {
 
         // Verify no HTTP calls were made
         assertEquals(0, testHttpClient.tasks.size());
+    }
+
+    @Test
+    public void testSendNotificationWithEmptyToken() throws InterruptedException {
+        testSendNotificationWithInvalidToken("", "task_send_empty_token");
+    }
+
+    @Test
+    public void testSendNotificationWithBlankToken() throws InterruptedException {
+        testSendNotificationWithInvalidToken("   ", "task_send_blank_token");
     }
 
     @Test

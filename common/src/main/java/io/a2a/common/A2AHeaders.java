@@ -10,6 +10,11 @@ public final class A2AHeaders {
      * Used to communicate which extensions are requested by the client.
      */
     public static final String X_A2A_EXTENSIONS = "X-A2A-Extensions";
+
+    /**
+     * HTTP header name for a push notification token.
+     */
+    public static final String X_A2A_NOTIFICATION_TOKEN = "X-A2A-Notification-Token";
     
     private A2AHeaders() {
         // Utility class

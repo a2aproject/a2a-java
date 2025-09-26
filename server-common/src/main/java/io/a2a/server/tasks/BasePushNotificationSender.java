@@ -1,5 +1,6 @@
 package io.a2a.server.tasks;
 
+import static io.a2a.common.A2AHeaders.X_A2A_NOTIFICATION_TOKEN;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -68,10 +69,12 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     private boolean dispatchNotification(Task task, PushNotificationConfig pushInfo) {
         String url = pushInfo.url();
+        String token = pushInfo.token();
 
-        // TODO: Implement authentication and token header support
-        // The Python implementation adds X-A2A-Notification-Token header when pushInfo.token is present
-        // See: https://github.com/a2aproject/a2a-python/blob/main/src/a2a/server/tasks/base_push_notification_sender.py#L55-57
+        A2AHttpClient.PostBuilder postBuilder = httpClient.createPost();
+        if (token != null && !token.isBlank()) {
+            postBuilder.addHeader(X_A2A_NOTIFICATION_TOKEN, token);
+        }
 
         String body;
         try {
@@ -85,7 +88,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
         }
 
         try {
-            httpClient.createPost()
+            postBuilder
                     .url(url)
                     .body(body)
                     .post();
