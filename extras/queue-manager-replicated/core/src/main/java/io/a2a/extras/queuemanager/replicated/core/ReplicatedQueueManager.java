@@ -29,7 +29,7 @@ public class ReplicatedQueueManager implements QueueManager {
     }
 
     // For testing
-    public ReplicatedQueueManager(ReplicationStrategy replicationStrategy) {
+    ReplicatedQueueManager(ReplicationStrategy replicationStrategy) {
         this.delegate = new InMemoryQueueManager(new ReplicatingEventQueueFactory());
         this.replicationStrategy = replicationStrategy;
     }
