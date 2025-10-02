@@ -1,5 +1,6 @@
 package io.a2a.client.transport.grpc;
 
+import io.a2a.common.A2AErrorMessages;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.InvalidAgentResponseError;
@@ -64,6 +65,10 @@ public class GrpcErrorMapper {
                 return new A2AClientException(errorPrefix + (description != null ? description : e.getMessage()), new InvalidParamsError());
             case INTERNAL:
                 return new A2AClientException(errorPrefix + (description != null ? description : e.getMessage()), new io.a2a.spec.InternalError(null, e.getMessage(), null));
+            case UNAUTHENTICATED:
+                return new A2AClientException(errorPrefix + A2AErrorMessages.AUTHENTICATION_FAILED);
+            case PERMISSION_DENIED:
+                return new A2AClientException(errorPrefix + A2AErrorMessages.AUTHORIZATION_FAILED);
             default:
                 return new A2AClientException(errorPrefix + e.getMessage(), e);
         }
