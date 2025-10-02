@@ -71,6 +71,31 @@
 
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>java24-exclude-vertx-incompatible-tests</id>
+            <activation>
+                <jdk>[24,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                            <excludes>
+                                <!-- TODO: Remove this profile when Quarkus is updated to a version using Vert.x 4.6.0+.
+                                     These tests are excluded on Java 24+ due to a Vert.x ServiceLoader incompatibility with Quarkus streaming.
+                                     Current Quarkus versions (e.g., 3.28.x) use Vert.x 4.5.x, which is not fully compatible with Java 24+. -->
+                                <exclude>**/KafkaReplicationIntegrationTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>

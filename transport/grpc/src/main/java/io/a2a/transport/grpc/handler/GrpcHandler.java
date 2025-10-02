@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import com.google.protobuf.Empty;
-import io.a2a.common.A2AErrorMessages;
 import io.a2a.grpc.A2AServiceGrpc;
 import io.a2a.grpc.StreamResponse;
 import io.a2a.server.AgentCardValidator;
@@ -81,8 +80,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             responseObserver.onCompleted();
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
-        } catch (SecurityException e) {
-            handleSecurityException(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -103,8 +100,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             }
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
-        } catch (SecurityException e) {
-            handleSecurityException(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -125,8 +120,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             }
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
-        } catch (SecurityException e) {
-            handleSecurityException(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -148,8 +141,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             responseObserver.onCompleted();
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
-        } catch (SecurityException e) {
-            handleSecurityException(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -171,8 +162,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             responseObserver.onCompleted();
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
-        } catch (SecurityException e) {
-            handleSecurityException(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -190,7 +179,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             ServerCallContext context = createCallContext(responseObserver);
             ListTaskPushNotificationConfigParams params = FromProto.listTaskPushNotificationConfigParams(request);
             List<TaskPushNotificationConfig> configList = getRequestHandler().onListTaskPushNotificationConfig(params, context);
-            io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder responseBuilder =
+            io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder responseBuilder = 
                 io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder();
             for (TaskPushNotificationConfig config : configList) {
                 responseBuilder.addConfigs(ToProto.taskPushNotificationConfig(config));
@@ -199,8 +188,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             responseObserver.onCompleted();
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
-        } catch (SecurityException e) {
-            handleSecurityException(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -221,8 +208,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             convertToStreamResponse(publisher, responseObserver);
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
-        } catch (SecurityException e) {
-            handleSecurityException(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -243,8 +228,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             convertToStreamResponse(publisher, responseObserver);
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
-        } catch (SecurityException e) {
-            handleSecurityException(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -325,8 +308,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             responseObserver.onCompleted();
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
-        } catch (SecurityException e) {
-            handleSecurityException(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -429,32 +410,6 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             status = Status.UNKNOWN;
             description = "Unknown error type: " + error.getMessage();
         }
-        responseObserver.onError(status.withDescription(description).asRuntimeException());
-    }
-
-    private <V> void handleSecurityException(StreamObserver<V> responseObserver, SecurityException e) {
-        Status status;
-        String description;
-
-        String exceptionClassName = e.getClass().getName();
-
-        // Attempt to detect common authentication and authorization related exceptions
-        if (exceptionClassName.contains("Unauthorized") ||
-            exceptionClassName.contains("Unauthenticated") ||
-            exceptionClassName.contains("Authentication")) {
-            status = Status.UNAUTHENTICATED;
-            description = A2AErrorMessages.AUTHENTICATION_FAILED;
-        } else if (exceptionClassName.contains("Forbidden") ||
-                 exceptionClassName.contains("AccessDenied") ||
-                 exceptionClassName.contains("Authorization")) {
-            status = Status.PERMISSION_DENIED;
-            description = A2AErrorMessages.AUTHORIZATION_FAILED;
-        } else {
-            // If the security exception type cannot be detected, default to PERMISSION_DENIED
-            status = Status.PERMISSION_DENIED;
-            description = "Authorization failed: " + (e.getMessage() != null ? e.getMessage() : "Access denied");
-        }
-
         responseObserver.onError(status.withDescription(description).asRuntimeException());
     }
 
