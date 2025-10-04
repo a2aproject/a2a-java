@@ -336,6 +336,108 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
+    public void testOnMessageStreamNewMessageMultipleEventsSuccess() throws InterruptedException {
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler);
+
+        // Create multiple events to be sent during streaming
+        Task taskEvent = new Task.Builder(MINIMAL_TASK)
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+
+        TaskArtifactUpdateEvent artifactEvent = new TaskArtifactUpdateEvent.Builder()
+                .taskId(MINIMAL_TASK.getId())
+                .contextId(MINIMAL_TASK.getContextId())
+                .artifact(new Artifact.Builder()
+                        .artifactId("artifact-1")
+                        .parts(new TextPart("Generated artifact content"))
+                        .build())
+                .build();
+
+        TaskStatusUpdateEvent statusEvent = new TaskStatusUpdateEvent.Builder()
+                .taskId(MINIMAL_TASK.getId())
+                .contextId(MINIMAL_TASK.getContextId())
+                .status(new TaskStatus(TaskState.COMPLETED))
+                .build();
+
+        // Configure the agent executor to enqueue multiple events
+        agentExecutorExecute = (context, eventQueue) -> {
+            // Enqueue the task with WORKING state
+            eventQueue.enqueueEvent(taskEvent);
+            // Enqueue an artifact update event
+            eventQueue.enqueueEvent(artifactEvent);
+            // Enqueue a status update event to complete the task (this is the "final" event)
+            eventQueue.enqueueEvent(statusEvent);
+        };
+
+        Message message = new Message.Builder(MESSAGE)
+                .taskId(MINIMAL_TASK.getId())
+                .contextId(MINIMAL_TASK.getContextId())
+                .build();
+
+        SendStreamingMessageRequest request = new SendStreamingMessageRequest(
+                "1", new MessageSendParams(message, null, null));
+        Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
+
+        List<StreamingEventKind> results = new ArrayList<>();
+        CountDownLatch latch = new CountDownLatch(3); // Expect 3 events
+
+        response.subscribe(new Flow.Subscriber<>() {
+            private Flow.Subscription subscription;
+
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(SendStreamingMessageResponse item) {
+                results.add(item.getResult());
+                subscription.request(1);
+                latch.countDown();
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                subscription.cancel();
+            }
+
+            @Override
+            public void onComplete() {
+                subscription.cancel();
+            }
+        });
+
+        // Wait for all events to be received
+        Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS),
+                "Expected to receive 3 events within timeout");
+
+        // Verify that all 3 events were received
+        assertEquals(3, results.size(), "Should have received exactly 3 events");
+
+        // Verify the first event is the task
+        assertInstanceOf(Task.class, results.get(0), "First event should be a Task");
+        Task receivedTask = (Task) results.get(0);
+        assertEquals(MINIMAL_TASK.getId(), receivedTask.getId());
+        assertEquals(MINIMAL_TASK.getContextId(), receivedTask.getContextId());
+        assertEquals(TaskState.WORKING, receivedTask.getStatus().state());
+
+        // Verify the second event is the artifact update
+        assertInstanceOf(TaskArtifactUpdateEvent.class, results.get(1),
+                "Second event should be a TaskArtifactUpdateEvent");
+        TaskArtifactUpdateEvent receivedArtifact = (TaskArtifactUpdateEvent) results.get(1);
+        assertEquals(MINIMAL_TASK.getId(), receivedArtifact.getTaskId());
+        assertEquals("artifact-1", receivedArtifact.getArtifact().artifactId());
+
+        // Verify the third event is the status update
+        assertInstanceOf(TaskStatusUpdateEvent.class, results.get(2),
+                "Third event should be a TaskStatusUpdateEvent");
+        TaskStatusUpdateEvent receivedStatus = (TaskStatusUpdateEvent) results.get(2);
+        assertEquals(MINIMAL_TASK.getId(), receivedStatus.getTaskId());
+        assertEquals(TaskState.COMPLETED, receivedStatus.getStatus().state());
+    }
+
+    @Test
     public void testOnMessageStreamNewMessageSuccessMocks() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler);
 
