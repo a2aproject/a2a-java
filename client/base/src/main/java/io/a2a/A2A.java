@@ -64,112 +64,66 @@ public class A2A {
     }
 
     /**
-     * Create a user message with additional configuration options.
+     * Create a user message with text content and optional context and task IDs.
      *
-     * @param text the message text
+     * @param text the message text (required)
      * @param contextId the context ID to use (optional)
      * @param taskId the task ID to use (optional)
-     * @param parts the message parts (optional, defaults to a TextPart with the given text)
-     * @param metadata the message metadata (optional)
-     * @param referenceTaskIds the reference task IDs (optional)
      * @return the user message
      */
-    public static Message createUserMessage(String text, String contextId, String taskId, 
-                                           List<Part<?>> parts, Map<String, Object> metadata,
-                                           List<String> referenceTaskIds) {
-        return createMessage(text, Message.Role.USER, null, contextId, taskId, parts, metadata, referenceTaskIds);
+    public static Message createUserTextMessage(String text, String contextId, String taskId) {
+        return toMessage(text, Message.Role.USER, null, contextId, taskId);
     }
 
     /**
-     * Create a user message with additional configuration options.
+     * Create an agent message with text content and optional context and task IDs.
      *
-     * @param text the message text
-     * @param messageId the message ID to use
+     * @param text the message text (required)
      * @param contextId the context ID to use (optional)
      * @param taskId the task ID to use (optional)
-     * @param parts the message parts (optional, defaults to a TextPart with the given text)
-     * @param metadata the message metadata (optional)
-     * @param referenceTaskIds the reference task IDs (optional)
-     * @return the user message
-     */
-    public static Message createUserMessage(String text, String messageId, String contextId, String taskId, 
-                                           List<Part<?>> parts, Map<String, Object> metadata,
-                                           List<String> referenceTaskIds) {
-        return createMessage(text, Message.Role.USER, messageId, contextId, taskId, parts, metadata, referenceTaskIds);
-    }
-
-    /**
-     * Create an agent message with additional configuration options.
-     *
-     * @param text the message text
-     * @param contextId the context ID to use (optional)
-     * @param taskId the task ID to use (optional)
-     * @param parts the message parts (optional, defaults to a TextPart with the given text)
-     * @param metadata the message metadata (optional)
-     * @param referenceTaskIds the reference task IDs (optional)
      * @return the agent message
      */
-    public static Message createAgentMessage(String text, String contextId, String taskId, 
-                                            List<Part<?>> parts, Map<String, Object> metadata,
-                                            List<String> referenceTaskIds) {
-        return createMessage(text, Message.Role.AGENT, null, contextId, taskId, parts, metadata, referenceTaskIds);
+    public static Message createAgentTextMessage(String text, String contextId, String taskId) {
+        return toMessage(text, Message.Role.AGENT, null, contextId, taskId);
     }
 
     /**
-     * Create an agent message with additional configuration options.
+     * Create an agent message with custom parts and optional context and task IDs.
      *
-     * @param text the message text
-     * @param messageId the message ID to use
+     * @param parts the message parts (required)
      * @param contextId the context ID to use (optional)
      * @param taskId the task ID to use (optional)
-     * @param parts the message parts (optional, defaults to a TextPart with the given text)
-     * @param metadata the message metadata (optional)
-     * @param referenceTaskIds the reference task IDs (optional)
      * @return the agent message
      */
-    public static Message createAgentMessage(String text, String messageId, String contextId, String taskId, 
-                                            List<Part<?>> parts, Map<String, Object> metadata,
-                                            List<String> referenceTaskIds) {
-        return createMessage(text, Message.Role.AGENT, messageId, contextId, taskId, parts, metadata, referenceTaskIds);
-    }
-
-    /**
-     * Create a message with the specified role and additional configuration options.
-     *
-     * @param text the message text (used if parts is null)
-     * @param role the message role
-     * @param messageId the message ID to use (optional, generated if null)
-     * @param contextId the context ID to use (optional)
-     * @param taskId the task ID to use (optional)
-     * @param parts the message parts (optional, defaults to a TextPart with the given text)
-     * @param metadata the message metadata (optional)
-     * @param referenceTaskIds the reference task IDs (optional)
-     * @return the configured message
-     */
-    public static Message createMessage(String text, Message.Role role, String messageId, String contextId, 
-                                       String taskId, List<Part<?>> parts, Map<String, Object> metadata,
-                                       List<String> referenceTaskIds) {
-        Message.Builder builder = new Message.Builder()
-                .role(role)
-                .messageId(messageId != null ? messageId : UUID.randomUUID().toString())
-                .contextId(contextId)
-                .taskId(taskId)
-                .metadata(metadata)
-                .referenceTaskIds(referenceTaskIds);
-        
-        if (parts != null && !parts.isEmpty()) {
-            builder.parts(parts);
-        } else {
-            builder.parts(Collections.singletonList(new TextPart(text)));
+    public static Message createAgentPartsMessage(List<Part<?>> parts, String contextId, String taskId) {
+        if (parts == null || parts.isEmpty()) {
+            throw new IllegalArgumentException("Parts cannot be null or empty");
         }
-        
-        return builder.build();
+        return toMessage(parts, Message.Role.AGENT, null, contextId, taskId);
     }
 
     private static Message toMessage(String text, Message.Role role, String messageId) {
+        return toMessage(text, role, messageId, null, null);
+    }
+
+    private static Message toMessage(String text, Message.Role role, String messageId, String contextId, String taskId) {
         Message.Builder messageBuilder = new Message.Builder()
                 .role(role)
-                .parts(Collections.singletonList(new TextPart(text)));
+                .parts(Collections.singletonList(new TextPart(text)))
+                .contextId(contextId)
+                .taskId(taskId);
+        if (messageId != null) {
+            messageBuilder.messageId(messageId);
+        }
+        return messageBuilder.build();
+    }
+
+    private static Message toMessage(List<Part<?>> parts, Message.Role role, String messageId, String contextId, String taskId) {
+        Message.Builder messageBuilder = new Message.Builder()
+                .role(role)
+                .parts(parts)
+                .contextId(contextId)
+                .taskId(taskId);
         if (messageId != null) {
             messageBuilder.messageId(messageId);
         }
