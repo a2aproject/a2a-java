@@ -111,11 +111,14 @@ public abstract class EventQueue implements AutoCloseable {
                 return event;
             }
             try {
+                LOGGER.trace("Polling queue {} (wait={}ms)", System.identityHashCode(this), waitMilliSeconds);
                 Event event = queue.poll(waitMilliSeconds, TimeUnit.MILLISECONDS);
                 if (event != null) {
                     // Call toString() since for errors we don't really want the full stacktrace
                     LOGGER.debug("Dequeued event (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
                     semaphore.release();
+                } else {
+                    LOGGER.trace("Dequeue timeout (null) from queue {}", System.identityHashCode(this));
                 }
                 return event;
             } catch (InterruptedException e) {
@@ -135,6 +138,17 @@ public abstract class EventQueue implements AutoCloseable {
     public abstract void close();
 
     public abstract void close(boolean immediate);
+
+    /**
+     * Close this queue with control over parent notification (ChildQueue only).
+     *
+     * @param immediate If true, clear all pending events immediately
+     * @param notifyParent If true, notify parent (standard behavior). If false, close this queue
+     *                     without decrementing parent's reference count (used for non-blocking
+     *                     non-final tasks to keep MainQueue alive for resubscription)
+     * @throws UnsupportedOperationException if called on MainQueue
+     */
+    public abstract void close(boolean immediate, boolean notifyParent);
 
     public boolean isClosed() {
         return closed;
@@ -218,6 +232,28 @@ public abstract class EventQueue implements AutoCloseable {
             pollingStarted.set(true);
           }
 
+        void childClosing(ChildQueue child, boolean immediate) {
+            children.remove(child);  // Remove the closing child
+
+            // Only close MainQueue if immediate OR no children left
+            if (immediate || children.isEmpty()) {
+                LOGGER.debug("MainQueue closing: immediate={}, children.isEmpty()={}", immediate, children.isEmpty());
+                this.doClose(immediate);
+            } else {
+                LOGGER.debug("MainQueue staying open: {} children remaining", children.size());
+            }
+        }
+
+        /**
+         * Get the count of active child queues.
+         * Used for testing to verify reference counting mechanism.
+         *
+         * @return number of active child queues
+         */
+        public int getActiveChildCount() {
+            return children.size();
+        }
+
         @Override
         public void close() {
             close(false);
@@ -226,7 +262,16 @@ public abstract class EventQueue implements AutoCloseable {
         @Override
         public void close(boolean immediate) {
             doClose(immediate);
-            children.forEach(child -> child.doClose(immediate));
+            if (immediate) {
+                // Force-close all remaining children
+                children.forEach(child -> child.doClose(immediate));
+            }
+            children.clear();
+        }
+
+        @Override
+        public void close(boolean immediate, boolean notifyParent) {
+            throw new UnsupportedOperationException("MainQueue does not support notifyParent parameter - use close(boolean) instead");
         }
     }
 
@@ -263,12 +308,22 @@ public abstract class EventQueue implements AutoCloseable {
 
         @Override
         public void close() {
-            parent.close();
+            close(false);
         }
 
         @Override
         public void close(boolean immediate) {
-            parent.close(immediate);
+            close(immediate, true);
+        }
+
+        @Override
+        public void close(boolean immediate, boolean notifyParent) {
+            this.doClose(immediate);           // Close self first
+            if (notifyParent) {
+                parent.childClosing(this, immediate);  // Notify parent
+            } else {
+                LOGGER.debug("Closing {} without notifying parent (keeping MainQueue alive)", this);
+            }
         }
     }
 }

@@ -201,7 +201,7 @@ public class DefaultRequestHandler implements RequestHandler {
             // any errors thrown by the producerRunnable are not picked up by the consumer
             producerRunnable.addDoneCallback(consumer.createAgentRunnableDoneCallback());
             etai = resultAggregator.consumeAndBreakOnInterrupt(consumer, blocking, pushNotificationCallback);
-            
+
             if (etai == null) {
                 LOGGER.debug("No result, throwing InternalError");
                 throw new InternalError("No result");
@@ -218,10 +218,10 @@ public class DefaultRequestHandler implements RequestHandler {
             pushNotificationCallback.run();
         } finally {
             if (interruptedOrNonBlocking) {
-                CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId), executor);
+                CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId, queue, false), executor);
                 trackBackgroundTask(cleanupTask);
             } else {
-                cleanupProducer(taskId);
+                cleanupProducer(taskId, queue, false);
             }
         }
 
@@ -342,7 +342,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 }
             });
         } finally {
-            CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId.get()), executor);
+            CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId.get(), queue, true), executor);
             trackBackgroundTask(cleanupTask);
         }
     }
@@ -406,7 +406,14 @@ public class DefaultRequestHandler implements RequestHandler {
         EventQueue queue = queueManager.tap(task.getId());
 
         if (queue == null) {
-            throw new TaskNotFoundError();
+            // If task is in final state, queue legitimately doesn't exist anymore
+            if (task.getStatus().state().isFinal()) {
+                throw new TaskNotFoundError();
+            }
+            // For non-final tasks, recreate the queue so client can receive future events
+            // (Note: historical events from before queue closed are not available)
+            LOGGER.debug("Queue not found for active task {}, creating new queue for future events", task.getId());
+            queue = queueManager.createOrTap(task.getId());
         }
 
         EventConsumer consumer = new EventConsumer(queue);
@@ -473,8 +480,17 @@ public class DefaultRequestHandler implements RequestHandler {
                 .whenComplete((v, err) -> {
                     if (err != null) {
                         runnable.setError(err);
+                        // Close queue on error
+                        queue.close();
+                    } else {
+                        // Only close queue if task is in a final state
+                        Task task = taskStore.get(taskId);
+                        if (task != null && task.getStatus().state().isFinal()) {
+                            queue.close();
+                        } else {
+                            LOGGER.debug("Task {} not in final state or not yet created, keeping queue open", taskId);
+                        }
                     }
-                    queue.close();
                     runnable.invokeDoneCallbacks();
                 });
         runningAgents.put(taskId, cf);
@@ -499,13 +515,36 @@ public class DefaultRequestHandler implements RequestHandler {
         });
     }
 
-    private void cleanupProducer(String taskId) {
-        // TODO the Python implementation waits for the producerRunnable
-        runningAgents.get(taskId)
-                .whenComplete((v, t) -> {
-                    queueManager.close(taskId);
-                    runningAgents.remove(taskId);
-                });
+    private void cleanupProducer(String taskId, EventQueue queue, boolean isStreaming) {
+        LOGGER.debug("Starting cleanup for task {} (streaming={})", taskId, isStreaming);
+        CompletableFuture<Void> agentFuture = runningAgents.get(taskId);
+        if (agentFuture == null) {
+            LOGGER.debug("No running agent found for task {}", taskId);
+            return;
+        }
+        agentFuture.whenComplete((v, t) -> {
+            LOGGER.debug("Agent completed for task {}", taskId);
+
+            // Determine if we should keep the MainQueue alive
+            // For non-streaming, non-blocking requests with non-final tasks, we close the ChildQueue
+            // but keep the MainQueue alive to support resubscription
+            boolean keepMainQueueAlive = false;
+            if (!isStreaming) {
+                Task task = taskStore.get(taskId);
+                if (task != null && !task.getStatus().state().isFinal()) {
+                    keepMainQueueAlive = true;
+                    LOGGER.debug("Non-streaming call with non-final task {}, closing ChildQueue but keeping MainQueue alive for resubscription", taskId);
+                }
+            }
+
+            LOGGER.debug("{} call, closing queue for task {}", isStreaming ? "Streaming" : "Non-streaming", taskId);
+
+            // Close the ChildQueue, optionally keeping MainQueue alive
+            queue.close(false, !keepMainQueueAlive);
+
+            // Always remove from running agents
+            runningAgents.remove(taskId, agentFuture);
+        });
     }
 
     private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) {
