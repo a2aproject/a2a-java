@@ -123,12 +123,9 @@ public class AuthenticationAuthorizationTest {
                         .withStatusCode(401)
         );
 
-        Client client = Client.builder(agentCard)
-                .clientConfig(new ClientConfig.Builder().setStreaming(false).build())
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .build();
+        Client client = getJSONRPCClientBuilder(false).build();
 
-        IOException exception = assertThrows(IOException.class, () -> {
+        A2AClientException exception = assertThrows(A2AClientException.class, () -> {
             client.sendMessage(MESSAGE);
         });
 
@@ -147,12 +144,9 @@ public class AuthenticationAuthorizationTest {
                         .withStatusCode(403)
         );
 
-        Client client = Client.builder(agentCard)
-                .clientConfig(new ClientConfig.Builder().setStreaming(false).build())
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .build();
+        Client client = getJSONRPCClientBuilder(false).build();
 
-        IOException exception = assertThrows(IOException.class, () -> {
+        A2AClientException exception = assertThrows(A2AClientException.class, () -> {
             client.sendMessage(MESSAGE);
         });
 
@@ -172,9 +166,7 @@ public class AuthenticationAuthorizationTest {
         );
 
         assertStreamingError(
-                Client.builder(agentCard)
-                        .clientConfig(new ClientConfig.Builder().setStreaming(true).build())
-                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder()),
+                getJSONRPCClientBuilder(true),
                 AUTHENTICATION_FAILED_MESSAGE);
     }
 
@@ -191,9 +183,7 @@ public class AuthenticationAuthorizationTest {
         );
 
         assertStreamingError(
-                Client.builder(agentCard)
-                        .clientConfig(new ClientConfig.Builder().setStreaming(true).build())
-                        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder()),
+                getJSONRPCClientBuilder(true),
                 AUTHORIZATION_FAILED_MESSAGE);
     }
 
@@ -211,10 +201,7 @@ public class AuthenticationAuthorizationTest {
                         .withStatusCode(401)
         );
 
-        Client client = Client.builder(agentCard)
-                .clientConfig(new ClientConfig.Builder().setStreaming(false).build())
-                .withTransport(RestTransport.class, new RestTransportConfigBuilder())
-                .build();
+        Client client = getRestClientBuilder(false).build();
 
         A2AClientException exception = assertThrows(A2AClientException.class, () -> {
             client.sendMessage(MESSAGE);
@@ -235,10 +222,7 @@ public class AuthenticationAuthorizationTest {
                         .withStatusCode(403)
         );
 
-        Client client = Client.builder(agentCard)
-                .clientConfig(new ClientConfig.Builder().setStreaming(false).build())
-                .withTransport(RestTransport.class, new RestTransportConfigBuilder())
-                .build();
+        Client client = getRestClientBuilder(false).build();
 
         A2AClientException exception = assertThrows(A2AClientException.class, () -> {
             client.sendMessage(MESSAGE);
@@ -260,9 +244,7 @@ public class AuthenticationAuthorizationTest {
         );
 
         assertStreamingError(
-                Client.builder(agentCard)
-                        .clientConfig(new ClientConfig.Builder().setStreaming(true).build())
-                        .withTransport(RestTransport.class, new RestTransportConfigBuilder()),
+                getRestClientBuilder(true),
                 AUTHENTICATION_FAILED_MESSAGE);
     }
 
@@ -279,9 +261,7 @@ public class AuthenticationAuthorizationTest {
         );
 
         assertStreamingError(
-                Client.builder(agentCard)
-                        .clientConfig(new ClientConfig.Builder().setStreaming(true).build())
-                        .withTransport(RestTransport.class, new RestTransportConfigBuilder()),
+                getRestClientBuilder(true),
                 AUTHORIZATION_FAILED_MESSAGE);
     }
 
@@ -291,11 +271,7 @@ public class AuthenticationAuthorizationTest {
     public void testGrpcNonStreamingUnauthenticated() throws Exception {
         setupGrpcServer(Status.UNAUTHENTICATED);
 
-        Client client = Client.builder(agentCard)
-                .clientConfig(new ClientConfig.Builder().setStreaming(false).build())
-                .withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder()
-                        .channelFactory(target -> grpcChannel))
-                .build();
+        Client client = getGrpcClientBuilder(false).build();
 
         A2AClientException exception = assertThrows(A2AClientException.class, () -> {
             client.sendMessage(MESSAGE);
@@ -308,11 +284,7 @@ public class AuthenticationAuthorizationTest {
     public void testGrpcNonStreamingUnauthorized() throws Exception {
         setupGrpcServer(Status.PERMISSION_DENIED);
 
-        Client client = Client.builder(agentCard)
-                .clientConfig(new ClientConfig.Builder().setStreaming(false).build())
-                .withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder()
-                        .channelFactory(target -> grpcChannel))
-                .build();
+        Client client = getGrpcClientBuilder(false).build();
 
         A2AClientException exception = assertThrows(A2AClientException.class, () -> {
             client.sendMessage(MESSAGE);
@@ -326,10 +298,7 @@ public class AuthenticationAuthorizationTest {
         setupGrpcServer(Status.UNAUTHENTICATED);
 
         assertStreamingError(
-                Client.builder(agentCard)
-                        .clientConfig(new ClientConfig.Builder().setStreaming(true).build())
-                        .withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder()
-                                .channelFactory(target -> grpcChannel)),
+                getGrpcClientBuilder(true),
                 AUTHENTICATION_FAILED_MESSAGE);
     }
 
@@ -338,11 +307,27 @@ public class AuthenticationAuthorizationTest {
         setupGrpcServer(Status.PERMISSION_DENIED);
 
         assertStreamingError(
-                Client.builder(agentCard)
-                        .clientConfig(new ClientConfig.Builder().setStreaming(true).build())
-                        .withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder()
-                                .channelFactory(target -> grpcChannel)),
+                getGrpcClientBuilder(true),
                 AUTHORIZATION_FAILED_MESSAGE);
+    }
+
+    private ClientBuilder getJSONRPCClientBuilder(boolean streaming) {
+        return Client.builder(agentCard)
+                .clientConfig(new ClientConfig.Builder().setStreaming(streaming).build())
+                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder());
+    }
+
+    private ClientBuilder getRestClientBuilder(boolean streaming) {
+        return Client.builder(agentCard)
+                .clientConfig(new ClientConfig.Builder().setStreaming(streaming).build())
+                .withTransport(RestTransport.class, new RestTransportConfigBuilder());
+    }
+
+    private ClientBuilder getGrpcClientBuilder(boolean streaming) {
+        return Client.builder(agentCard)
+                .clientConfig(new ClientConfig.Builder().setStreaming(streaming).build())
+                .withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder()
+                        .channelFactory(target -> grpcChannel));
     }
 
     private void assertStreamingError(ClientBuilder clientBuilder, String expectedErrorMessage) throws Exception {
