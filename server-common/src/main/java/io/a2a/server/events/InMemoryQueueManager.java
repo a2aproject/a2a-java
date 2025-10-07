@@ -4,9 +4,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class InMemoryQueueManager implements QueueManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryQueueManager.class);
+
     private final ConcurrentMap<String, EventQueue> queues = new ConcurrentHashMap<>();
     private final EventQueueFactory factory;
 
@@ -43,6 +47,9 @@ public class InMemoryQueueManager implements QueueManager {
         if (existing == null) {
             throw new NoTaskQueueException();
         }
+        // Close the queue to stop EventConsumer polling loop
+        LOGGER.debug("Closing queue {} for task {}", System.identityHashCode(existing), taskId);
+        existing.close();
     }
 
     @Override
@@ -57,7 +64,14 @@ public class InMemoryQueueManager implements QueueManager {
             // Make sure an existing queue has not been added in the meantime
             existing = queues.putIfAbsent(taskId, newQueue);
         }
-        return existing == null ? newQueue : existing.tap();
+        EventQueue result = existing == null ? newQueue : existing.tap();
+        if (existing == null) {
+            LOGGER.debug("Created new queue {} for task {}", System.identityHashCode(result), taskId);
+        } else {
+            LOGGER.debug("Tapped existing queue {} -> child {} for task {}",
+                System.identityHashCode(existing), System.identityHashCode(result), taskId);
+        }
+        return result;
     }
 
     @Override

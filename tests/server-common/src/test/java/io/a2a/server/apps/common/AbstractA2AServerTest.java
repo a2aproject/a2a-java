@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -15,6 +16,7 @@ import io.a2a.client.ClientBuilder;
 import io.a2a.client.config.ClientConfig;
 import io.a2a.client.ClientEvent;
 import io.a2a.client.MessageEvent;
+import io.a2a.client.TaskEvent;
 import io.a2a.client.TaskUpdateEvent;
 import jakarta.ws.rs.core.MediaType;
 
@@ -27,6 +29,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +48,7 @@ import io.a2a.spec.AgentInterface;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
+import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
@@ -52,6 +56,7 @@ import io.a2a.spec.JSONParseError;
 import io.a2a.spec.JSONRPCErrorResponse;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
+import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.Part;
@@ -117,6 +122,7 @@ public abstract class AbstractA2AServerTest {
     protected final int serverPort;
     private Client client;
     private Client nonStreamingClient;
+    private Client pollingClient;
 
     protected AbstractA2AServerTest(int serverPort) {
         this.serverPort = serverPort;
@@ -755,6 +761,157 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
+    @Timeout(value = 1, unit = TimeUnit.MINUTES)
+    public void testNonBlockingWithMultipleMessages() throws Exception {
+        // 1. Send first non-blocking message to create task in WORKING state
+        Message message1 = new Message.Builder(MESSAGE)
+            .taskId("multi-event-test")
+            .contextId("test-context")
+            .parts(new TextPart("First request"))
+            .build();
+
+        AtomicReference<String> taskIdRef = new AtomicReference<>();
+        CountDownLatch firstTaskLatch = new CountDownLatch(1);
+
+        BiConsumer<ClientEvent, AgentCard> firstMessageConsumer = (event, agentCard) -> {
+            System.out.println("First message consumer received: " + event.getClass().getSimpleName());
+            if (event instanceof TaskEvent te) {
+                System.out.println("  Task state: " + te.getTask().getStatus().state());
+                taskIdRef.set(te.getTask().getId());
+                firstTaskLatch.countDown();
+            } else if (event instanceof TaskUpdateEvent tue && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
+                System.out.println("  Task status: " + status.getStatus().state());
+                taskIdRef.set(status.getTaskId());
+                firstTaskLatch.countDown();
+            }
+        };
+
+        // Non-blocking message creates task in WORKING state and returns immediately
+        // Queue stays open because task is not in final state
+        getPollingClient().sendMessage(message1, List.of(firstMessageConsumer), null);
+
+        assertTrue(firstTaskLatch.await(10, TimeUnit.SECONDS));
+        String taskId = taskIdRef.get();
+        assertNotNull(taskId);
+        assertEquals("multi-event-test", taskId);
+
+        // 2. Resubscribe to task (queue should still be open)
+        CountDownLatch resubEventLatch = new CountDownLatch(2);  // artifact-2 + completion
+        List<io.a2a.spec.UpdateEvent> resubReceivedEvents = new CopyOnWriteArrayList<>();
+        AtomicBoolean resubUnexpectedEvent = new AtomicBoolean(false);
+        AtomicReference<Throwable> resubErrorRef = new AtomicReference<>();
+
+        BiConsumer<ClientEvent, AgentCard> resubConsumer = (event, agentCard) -> {
+            System.out.println("Resubscription received event: " + event.getClass().getSimpleName() +
+                             (event instanceof TaskUpdateEvent tue ? " - " + tue.getUpdateEvent().getClass().getSimpleName() : ""));
+            if (event instanceof TaskUpdateEvent tue) {
+                resubReceivedEvents.add(tue.getUpdateEvent());
+                resubEventLatch.countDown();
+                System.out.println("Resub event latch count: " + resubEventLatch.getCount());
+            } else {
+                resubUnexpectedEvent.set(true);
+            }
+        };
+
+        Consumer<Throwable> resubErrorHandler = error -> {
+            if (!isStreamClosedError(error)) {
+                resubErrorRef.set(error);
+            }
+        };
+
+        // Wait for subscription to be active
+        CountDownLatch subscriptionLatch = new CountDownLatch(1);
+        awaitStreamingSubscription()
+            .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
+
+        getClient().resubscribe(new TaskIdParams(taskId),
+                               List.of(resubConsumer),
+                               resubErrorHandler);
+
+        assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
+
+        // 3. Send second streaming message to same taskId
+        Message message2 = new Message.Builder(MESSAGE)
+            .taskId("multi-event-test")  // Same taskId
+            .contextId("test-context")
+            .parts(new TextPart("Second request"))
+            .build();
+
+        CountDownLatch streamEventLatch = new CountDownLatch(2);  // artifact-2 + completion
+        List<io.a2a.spec.UpdateEvent> streamReceivedEvents = new CopyOnWriteArrayList<>();
+        AtomicBoolean streamUnexpectedEvent = new AtomicBoolean(false);
+
+        BiConsumer<ClientEvent, AgentCard> streamConsumer = (event, agentCard) -> {
+            System.out.println("Streaming consumer received event: " + event.getClass().getSimpleName() +
+                             (event instanceof TaskUpdateEvent tue ? " - " + tue.getUpdateEvent().getClass().getSimpleName() : ""));
+            if (event instanceof TaskUpdateEvent tue) {
+                streamReceivedEvents.add(tue.getUpdateEvent());
+                streamEventLatch.countDown();
+                System.out.println("Stream event latch count: " + streamEventLatch.getCount());
+            } else {
+                streamUnexpectedEvent.set(true);
+            }
+        };
+
+        // Streaming message adds artifact-2 and completes task
+        getClient().sendMessage(message2, List.of(streamConsumer), null);
+
+        // 4. Verify both consumers received artifact-2 and completion
+        assertTrue(resubEventLatch.await(10, TimeUnit.SECONDS));
+        assertTrue(streamEventLatch.await(10, TimeUnit.SECONDS));
+
+        assertFalse(resubUnexpectedEvent.get());
+        assertFalse(streamUnexpectedEvent.get());
+        assertNull(resubErrorRef.get());
+
+        // Both should have received 2 events: artifact-2 and completion
+        assertEquals(2, resubReceivedEvents.size());
+        assertEquals(2, streamReceivedEvents.size());
+
+        // Verify resubscription events
+        long resubArtifactCount = resubReceivedEvents.stream()
+            .filter(e -> e instanceof TaskArtifactUpdateEvent)
+            .count();
+        assertEquals(1, resubArtifactCount);
+
+        long resubCompletionCount = resubReceivedEvents.stream()
+            .filter(e -> e instanceof TaskStatusUpdateEvent)
+            .filter(e -> ((TaskStatusUpdateEvent) e).isFinal())
+            .count();
+        assertEquals(1, resubCompletionCount);
+
+        // Verify streaming events
+        long streamArtifactCount = streamReceivedEvents.stream()
+            .filter(e -> e instanceof TaskArtifactUpdateEvent)
+            .count();
+        assertEquals(1, streamArtifactCount);
+
+        long streamCompletionCount = streamReceivedEvents.stream()
+            .filter(e -> e instanceof TaskStatusUpdateEvent)
+            .filter(e -> ((TaskStatusUpdateEvent) e).isFinal())
+            .count();
+        assertEquals(1, streamCompletionCount);
+
+        // Verify artifact-2 details from resubscription
+        TaskArtifactUpdateEvent resubArtifact = (TaskArtifactUpdateEvent) resubReceivedEvents.stream()
+            .filter(e -> e instanceof TaskArtifactUpdateEvent)
+            .findFirst()
+            .orElseThrow();
+        assertEquals("artifact-2", resubArtifact.getArtifact().artifactId());
+        assertEquals("Second message artifact",
+                     ((TextPart) resubArtifact.getArtifact().parts().get(0)).getText());
+
+        // Verify artifact-2 details from streaming
+        TaskArtifactUpdateEvent streamArtifact = (TaskArtifactUpdateEvent) streamReceivedEvents.stream()
+            .filter(e -> e instanceof TaskArtifactUpdateEvent)
+            .findFirst()
+            .orElseThrow();
+        assertEquals("artifact-2", streamArtifact.getArtifact().artifactId());
+        assertEquals("Second message artifact",
+                     ((TextPart) streamArtifact.getArtifact().parts().get(0)).getText());
+    }
+
+    @Test
     public void testMalformedJSONRPCRequest() {
         // skip this test for non-JSONRPC transports
         assumeTrue(TransportProtocol.JSONRPC.asString().equals(getTransportProtocol()),
@@ -1269,6 +1426,16 @@ public abstract class AbstractA2AServerTest {
     }
 
     /**
+     * Get a client configured for polling (non-blocking) operations.
+     */
+    protected Client getPollingClient() throws A2AClientException {
+        if (pollingClient == null) {
+            pollingClient = createPollingClient();
+        }
+        return pollingClient;
+    }
+
+    /**
      * Create a client with the specified streaming configuration.
      */
     private Client createClient(boolean streaming) throws A2AClientException {
@@ -1315,6 +1482,25 @@ public abstract class AbstractA2AServerTest {
         return new ClientConfig.Builder()
                 .setStreaming(streaming)
                 .build();
+    }
+
+    /**
+     * Create a client configured for polling (non-blocking) operations.
+     */
+    private Client createPollingClient() throws A2AClientException {
+        AgentCard agentCard = createTestAgentCard();
+        ClientConfig clientConfig = new ClientConfig.Builder()
+                .setStreaming(false)  // Non-streaming
+                .setPolling(true)     // Polling mode (translates to blocking=false on server)
+                .build();
+
+        ClientBuilder clientBuilder = Client
+                .builder(agentCard)
+                .clientConfig(clientConfig);
+
+        configureTransport(clientBuilder);
+
+        return clientBuilder.build();
     }
 
 }

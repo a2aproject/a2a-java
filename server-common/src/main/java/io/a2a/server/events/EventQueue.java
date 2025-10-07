@@ -111,11 +111,14 @@ public abstract class EventQueue implements AutoCloseable {
                 return event;
             }
             try {
+                LOGGER.trace("Polling queue {} (wait={}ms)", System.identityHashCode(this), waitMilliSeconds);
                 Event event = queue.poll(waitMilliSeconds, TimeUnit.MILLISECONDS);
                 if (event != null) {
                     // Call toString() since for errors we don't really want the full stacktrace
                     LOGGER.debug("Dequeued event (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
                     semaphore.release();
+                } else {
+                    LOGGER.trace("Dequeue timeout (null) from queue {}", System.identityHashCode(this));
                 }
                 return event;
             } catch (InterruptedException e) {
