@@ -94,5 +94,12 @@ public class Utils {
 
     }
 
-    
+    public static String toJsonString(Object o) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(o);
+        } catch (JsonProcessingException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
 }

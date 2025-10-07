@@ -64,7 +64,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
 @Singleton
@@ -111,19 +110,19 @@ public class A2AServerRoutes {
                 rc.response()
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .end(Json.encodeToBuffer(error));
+                        .end(Utils.toJsonString(error));
             } else if (streaming) {
                 final Multi<? extends JSONRPCResponse<?>> finalStreamingResponse = streamingResponse;
                 executor.execute(() -> {
-                        MultiSseSupport.subscribeObject(
-                                finalStreamingResponse.map(i -> (Object)i), rc);
+                    MultiSseSupport.subscribeObject(
+                            finalStreamingResponse.map(i -> (Object) i), rc);
                 });
 
             } else {
                 rc.response()
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .end(Json.encodeToBuffer(nonStreamingResponse));
+                        .end(Utils.toJsonString(nonStreamingResponse));
             }
         }
     }
@@ -151,7 +150,7 @@ public class A2AServerRoutes {
     }
 
     /**
-    /**
+     * /**
      * Handles incoming GET requests to the agent card endpoint.
      * Returns the agent card in JSON format.
      *
@@ -331,10 +330,9 @@ public class A2AServerRoutes {
                         ReactiveRoutes.ServerSentEvent<?> ev = (ReactiveRoutes.ServerSentEvent<?>) o;
                         long id = ev.id() != -1 ? ev.id() : count.getAndIncrement();
                         String e = ev.event() == null ? "" : "event: " + ev.event() + "\n";
-                        return Buffer.buffer(e + "data: " + Json.encodeToBuffer(ev.data()) + "\nid: " + id + "\n\n");
-                    } else {
-                        return Buffer.buffer("data: " + Json.encodeToBuffer(o) + "\nid: " + count.getAndIncrement() + "\n\n");
+                        return Buffer.buffer(e + "data: " + Utils.toJsonString(ev.data()) + "\nid: " + id + "\n\n");
                     }
+                    return Buffer.buffer("data: " + Utils.toJsonString(o) + "\nid: " + count.getAndIncrement() + "\n\n");
                 }
             }), rc);
         }
@@ -350,4 +348,3 @@ public class A2AServerRoutes {
         }
     }
 }
-

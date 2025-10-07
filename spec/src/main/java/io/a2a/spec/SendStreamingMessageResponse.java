@@ -1,12 +1,10 @@
 package io.a2a.spec;
 
-import static io.a2a.util.Utils.defaultIfNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.a2a.util.Assert;
 
 /**
  * The response after receiving a request to initiate a task with streaming.

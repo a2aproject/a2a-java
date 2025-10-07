@@ -104,31 +104,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>java24-exclude-vertx-incompatible-tests</id>
-            <activation>
-                <jdk>[24,)</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
-                            <excludes>
-                                <!-- TODO: Remove this profile when Quarkus is updated to a version using Vert.x 4.6.0+.
-                                     This test is excluded on Java 24+ due to a Vert.x ServiceLoader incompatibility with SSE streaming.
-                                     Current Quarkus versions (e.g., 3.25.x, 2.28.1) use Vert.x 4.5.x, which is not compatible with Java 24. -->
-                                <exclude>**/JpaDatabasePushNotificationConfigStoreIntegrationTest.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
-
 </project>
