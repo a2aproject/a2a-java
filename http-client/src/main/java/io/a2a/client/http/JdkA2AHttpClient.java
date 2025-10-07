@@ -143,15 +143,13 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
             // Create a custom body handler that checks status before processing body
             BodyHandler<Void> bodyHandler = responseInfo -> {
-                // Check status code first, before creating the subscriber
-                if (!isSuccessStatus(responseInfo.statusCode())) {
+                // Check for authentication/authorization errors only
+                if (responseInfo.statusCode() == HTTP_UNAUTHORIZED || responseInfo.statusCode() == HTTP_FORBIDDEN) {
                     final String errorMessage;
                     if (responseInfo.statusCode() == HTTP_UNAUTHORIZED) {
                         errorMessage = A2AErrorMessages.AUTHENTICATION_FAILED;
-                    } else if (responseInfo.statusCode() == HTTP_FORBIDDEN) {
-                        errorMessage = A2AErrorMessages.AUTHORIZATION_FAILED;
                     } else {
-                        errorMessage = "Request failed with status " + responseInfo.statusCode();
+                        errorMessage = A2AErrorMessages.AUTHORIZATION_FAILED;
                     }
                     // Return a body subscriber that immediately signals error
                     return BodySubscribers.fromSubscriber(new Flow.Subscriber<List<ByteBuffer>>() {
@@ -176,7 +174,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                         }
                     });
                 } else {
-                    // Status is OK, proceed with normal line subscriber
+                    // For all other status codes (including other errors), proceed with normal line subscriber
                     return BodyHandlers.fromLineSubscriber(subscriber).apply(responseInfo);
                 }
             };
@@ -184,12 +182,12 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             // Send the response async, and let the subscriber handle the lines.
             return httpClient.sendAsync(request, bodyHandler)
                     .thenAccept(response -> {
-                        // Status checking is now handled in the body handler
-                    })
-                    .exceptionally(throwable -> {
-                        // handle any other async errors (network issues, etc.)
-                        subscriber.onError(new IOException("Request failed: " + throwable.getMessage(), throwable));
-                        return null;
+                        // Handle non-authentication/non-authorization errors here
+                        if (!isSuccessStatus(response.statusCode()) && 
+                            response.statusCode() != HTTP_UNAUTHORIZED && 
+                            response.statusCode() != HTTP_FORBIDDEN) {
+                            subscriber.onError(new IOException("Request failed with status " + response.statusCode()));
+                        }
                     });
         }
     }
