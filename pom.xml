@@ -41,7 +41,7 @@
         <grpc.version>1.73.0</grpc.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
@@ -64,6 +64,7 @@
         <rest-assured.version>5.5.1</rest-assured.version>
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.18</logback.version>
+        <error-prone.version>2.42.0</error-prone.version>
 
         <!-- Redirect test output to file -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
@@ -271,10 +272,20 @@
                 <scope>test</scope>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jspecify</groupId>
+                <artifactId>jspecify</artifactId>
+                <version>1.0.0</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+        </dependency>
 
     </dependencies>
 
@@ -288,9 +299,41 @@
                     <configuration>
                         <source>17</source>
                         <target>17</target>
-                        <compilerArgs>
+                        <encoding>UTF-8</encoding>
+                        <fork>true</fork>
+                        <compilerArgs combine.children="append">
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+                            <arg>-XDcompilePolicy=simple</arg>
+                            <arg>--should-stop=ifError=FLOW</arg>
                             <arg>-parameters</arg>
+                            <arg>-Xplugin:ErrorProne -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true</arg>
                         </compilerArgs>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>com.google.errorprone</groupId>
+                                <artifactId>error_prone_core</artifactId>
+                                <version>${error-prone.version}</version>
+                            </path>
+                            <path>
+                                <groupId>com.uber.nullaway</groupId>
+                                <artifactId>nullaway</artifactId>
+                                <version>0.12.10</version>
+                            </path>
+                            <!-- Other annotation processors go here.
+
+                            If 'annotationProcessorPaths' is set, processors will no longer be
+                            discovered on the regular -classpath; see also 'Using Error Prone
+                            together with other annotation processors' below. -->
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 <plugin>

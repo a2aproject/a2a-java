@@ -19,6 +19,8 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Abstract class representing an A2A client. Provides a standard set
@@ -29,13 +31,13 @@ import io.a2a.spec.TaskQueryParams;
 public abstract class AbstractClient {
 
     private final List<BiConsumer<ClientEvent, AgentCard>> consumers;
-    private final Consumer<Throwable> streamingErrorHandler;
+    private final @Nullable Consumer<Throwable> streamingErrorHandler;
 
     public AbstractClient(List<BiConsumer<ClientEvent, AgentCard>> consumers) {
         this(consumers, null);
     }
 
-    public AbstractClient(List<BiConsumer<ClientEvent, AgentCard>> consumers, Consumer<Throwable> streamingErrorHandler) {
+    public AbstractClient(@NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers, @Nullable Consumer<Throwable> streamingErrorHandler) {
         checkNotNullParam("consumers", consumers);
         this.consumers = consumers;
         this.streamingErrorHandler = streamingErrorHandler;
@@ -70,7 +72,7 @@ public abstract class AbstractClient {
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public abstract void sendMessage(Message request, ClientCallContext context) throws A2AClientException;
+    public abstract void sendMessage(Message request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Send a message to the remote agent. This method will automatically use
@@ -110,7 +112,7 @@ public abstract class AbstractClient {
     public abstract void sendMessage(Message request,
                                      List<BiConsumer<ClientEvent, AgentCard>> consumers,
                                      Consumer<Throwable> streamingErrorHandler,
-                                     ClientCallContext context) throws A2AClientException;
+                                     @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Send a message to the remote agent. This method will automatically use
@@ -147,7 +149,7 @@ public abstract class AbstractClient {
      * @throws A2AClientException if sending the message fails for any reason
      */
     public abstract void sendMessage(Message request, PushNotificationConfig pushNotificationConfiguration,
-                                     Map<String, Object> metadata, ClientCallContext context) throws A2AClientException;
+                                     Map<String, Object> metadata, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the current state and history of a specific task.
@@ -168,7 +170,7 @@ public abstract class AbstractClient {
      * @return the task
      * @throws A2AClientException if retrieving the task fails for any reason
      */
-    public abstract Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException;
+    public abstract Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Request the agent to cancel a specific task.
@@ -189,7 +191,7 @@ public abstract class AbstractClient {
      * @return the cancelled task
      * @throws A2AClientException if cancelling the task fails for any reason
      */
-    public abstract Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException;
+    public abstract Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Set or update the push notification configuration for a specific task.
@@ -213,7 +215,7 @@ public abstract class AbstractClient {
      */
     public abstract TaskPushNotificationConfig setTaskPushNotificationConfiguration(
             TaskPushNotificationConfig request,
-            ClientCallContext context) throws A2AClientException;
+            @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the push notification configuration for a specific task.
@@ -237,7 +239,7 @@ public abstract class AbstractClient {
      */
     public abstract TaskPushNotificationConfig getTaskPushNotificationConfiguration(
             GetTaskPushNotificationConfigParams request,
-            ClientCallContext context) throws A2AClientException;
+            @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the list of push notification configurations for a specific task.
@@ -261,7 +263,7 @@ public abstract class AbstractClient {
      */
     public abstract List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request,
-            ClientCallContext context) throws A2AClientException;
+            @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Delete the list of push notification configurations for a specific task.
@@ -283,7 +285,7 @@ public abstract class AbstractClient {
      */
     public abstract void deleteTaskPushNotificationConfigurations(
             DeleteTaskPushNotificationConfigParams request,
-            ClientCallContext context) throws A2AClientException;
+            @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Resubscribe to a task's event stream.
@@ -310,7 +312,7 @@ public abstract class AbstractClient {
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public abstract void resubscribe(TaskIdParams request, ClientCallContext context) throws A2AClientException;
+    public abstract void resubscribe(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Resubscribe to a task's event stream.
@@ -343,7 +345,7 @@ public abstract class AbstractClient {
      * @throws A2AClientException if resubscribing fails for any reason
      */
     public abstract void resubscribe(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                     Consumer<Throwable> streamingErrorHandler, ClientCallContext context) throws A2AClientException;
+                                     Consumer<Throwable> streamingErrorHandler, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the AgentCard.
@@ -362,7 +364,7 @@ public abstract class AbstractClient {
      * @return the AgentCard
      * @throws A2AClientException if retrieving the agent card fails for any reason
      */
-    public abstract AgentCard getAgentCard(ClientCallContext context) throws A2AClientException;
+    public abstract AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Close the transport and release any associated resources.
@@ -383,7 +385,7 @@ public abstract class AbstractClient {
      *
      * @return the streaming error handler
      */
-    public Consumer<Throwable> getStreamingErrorHandler() {
+    public @Nullable Consumer<Throwable> getStreamingErrorHandler() {
         return streamingErrorHandler;
     }
 

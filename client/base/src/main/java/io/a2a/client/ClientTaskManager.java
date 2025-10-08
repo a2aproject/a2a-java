@@ -16,6 +16,7 @@ import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Helps manage a task's lifecycle during the execution of a request.
@@ -24,9 +25,9 @@ import io.a2a.spec.TaskStatusUpdateEvent;
  */
 public class ClientTaskManager {
 
-    private Task currentTask;
-    private String taskId;
-    private String contextId;
+    private @Nullable Task currentTask;
+    private @Nullable String taskId;
+    private @Nullable String contextId;
 
     public ClientTaskManager() {
         this.currentTask = null;

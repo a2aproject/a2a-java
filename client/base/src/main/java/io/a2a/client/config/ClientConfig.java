@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import io.a2a.spec.PushNotificationConfig;
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Configuration for the A2A client factory.
@@ -14,20 +17,18 @@ public class ClientConfig {
     private final Boolean polling;
     private final Boolean useClientPreference;
     private final List<String> acceptedOutputModes;
-    private final PushNotificationConfig pushNotificationConfig;
-    private final Integer historyLength;
+    private final @Nullable PushNotificationConfig pushNotificationConfig;
+    private final @Nullable Integer historyLength;
     private final Map<String, Object> metadata;
 
-    public ClientConfig(Boolean streaming, Boolean polling, Boolean useClientPreference,
-                        List<String> acceptedOutputModes, PushNotificationConfig pushNotificationConfig,
-                        Integer historyLength, Map<String, Object> metadata) {
-        this.streaming = streaming == null ? true : streaming;
-        this.polling = polling == null ? false : polling;
-        this.useClientPreference = useClientPreference == null ? false : useClientPreference;
-        this.acceptedOutputModes = acceptedOutputModes;
-        this.pushNotificationConfig = pushNotificationConfig;
-        this.historyLength = historyLength;
-        this.metadata = metadata;
+    private ClientConfig(Builder builder) {
+        this.streaming = builder.streaming == null ? true : builder.streaming;
+        this.polling = builder.polling == null ? false : builder.polling;
+        this.useClientPreference = builder.useClientPreference == null ? false : builder.useClientPreference;
+        this.acceptedOutputModes = builder.acceptedOutputModes;
+        this.pushNotificationConfig = builder.pushNotificationConfig;
+        this.historyLength = builder.historyLength;
+        this.metadata = builder.metadata;
     }
 
     public boolean isStreaming() {
@@ -46,11 +47,11 @@ public class ClientConfig {
         return acceptedOutputModes;
     }
 
-    public PushNotificationConfig getPushNotificationConfig() {
+    public @Nullable PushNotificationConfig getPushNotificationConfig() {
         return pushNotificationConfig;
     }
 
-    public Integer getHistoryLength() {
+    public @Nullable Integer getHistoryLength() {
         return historyLength;
     }
 
@@ -58,32 +59,36 @@ public class ClientConfig {
         return metadata;
     }
 
-    public static class Builder {
-        private Boolean streaming;
-        private Boolean polling;
-        private Boolean useClientPreference;
-        private List<String> acceptedOutputModes;
-        private PushNotificationConfig pushNotificationConfig;
-        private Integer historyLength;
-        private Map<String, Object> metadata;
+    public static Builder builder() {
+        return new Builder();
+    }
 
-        public Builder setStreaming(Boolean streaming) {
+    public static class Builder {
+        private @Nullable Boolean streaming;
+        private @Nullable Boolean polling;
+        private @Nullable Boolean useClientPreference;
+        private List<String> acceptedOutputModes = new ArrayList<>();
+        private @Nullable PushNotificationConfig pushNotificationConfig;
+        private @Nullable Integer historyLength;
+        private Map<String, Object> metadata = new HashMap<>();
+
+        public Builder setStreaming(@Nullable Boolean streaming) {
             this.streaming = streaming;
             return this;
         }
 
-        public Builder setPolling(Boolean polling) {
+        public Builder setPolling(@Nullable Boolean polling) {
             this.polling = polling;
             return this;
         }
 
-        public Builder setUseClientPreference(Boolean useClientPreference) {
+        public Builder setUseClientPreference(@Nullable Boolean useClientPreference) {
             this.useClientPreference = useClientPreference;
             return this;
         }
 
         public Builder setAcceptedOutputModes(List<String> acceptedOutputModes) {
-            this.acceptedOutputModes = acceptedOutputModes;
+            this.acceptedOutputModes = new ArrayList<>(acceptedOutputModes);
             return this;
         }
 
@@ -103,9 +108,7 @@ public class ClientConfig {
         }
 
         public ClientConfig build() {
-            return new ClientConfig(streaming, polling,
-                    useClientPreference, acceptedOutputModes,
-                    pushNotificationConfig, historyLength, metadata);
+            return new ClientConfig(this);
         }
     }
 }

@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines configuration options for a `message/send` or `message/stream` request.
@@ -11,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer historyLength,
-                                       PushNotificationConfig pushNotificationConfig, Boolean blocking) {
+        PushNotificationConfig pushNotificationConfig, Boolean blocking) {
 
     public MessageSendConfiguration {
         if (historyLength != null && historyLength < 0) {
@@ -20,6 +22,7 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
     }
 
     public static class Builder {
+
         List<String> acceptedOutputModes;
         Integer historyLength;
         PushNotificationConfig pushNotificationConfig;
@@ -30,17 +33,20 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
             return this;
         }
 
-        public Builder pushNotificationConfig(PushNotificationConfig pushNotificationConfig) {
+        public Builder pushNotificationConfig(@Nullable PushNotificationConfig pushNotificationConfig) {
             this.pushNotificationConfig = pushNotificationConfig;
             return this;
         }
 
-        public Builder historyLength(Integer historyLength) {
+        public Builder historyLength(@Nullable Integer historyLength) {
+            if (historyLength != null && historyLength < 0) {
+                throw new IllegalArgumentException("Invalid history length");
+            }
             this.historyLength = historyLength;
             return this;
         }
 
-        public Builder blocking(Boolean blocking) {
+        public Builder blocking(@NonNull Boolean blocking) {
             this.blocking = blocking;
             return this;
         }

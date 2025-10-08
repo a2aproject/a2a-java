@@ -112,7 +112,7 @@ public class ReplicatedQueueManager implements QueueManager {
         @Override
         public void onEnqueue(Event event) {
             // Only replicate if this isn't already a replicated event being processed
-            if (isHandlingReplicatedEvent.get() != Boolean.TRUE) {
+            if (!Boolean.TRUE.equals(isHandlingReplicatedEvent.get())) {
                 if (replicationStrategy != null && taskId != null) {
                     replicationStrategy.send(taskId, event);
                 }

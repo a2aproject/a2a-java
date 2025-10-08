@@ -30,6 +30,9 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 
 import static io.a2a.util.Assert.checkNotNullParam;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public class Client extends AbstractClient {
 
     private final ClientConfig clientConfig;
@@ -37,7 +40,7 @@ public class Client extends AbstractClient {
     private AgentCard agentCard;
 
     Client(AgentCard agentCard, ClientConfig clientConfig, ClientTransport clientTransport,
-                  List<BiConsumer<ClientEvent, AgentCard>> consumers, Consumer<Throwable> streamingErrorHandler) {
+                  List<BiConsumer<ClientEvent, AgentCard>> consumers, @Nullable Consumer<Throwable> streamingErrorHandler) {
         super(consumers, streamingErrorHandler);
         checkNotNullParam("agentCard", agentCard);
 
@@ -51,21 +54,21 @@ public class Client extends AbstractClient {
     }
 
     @Override
-    public void sendMessage(Message request, ClientCallContext context) throws A2AClientException {
+    public void sendMessage(Message request, @Nullable ClientCallContext context) throws A2AClientException {
         MessageSendParams messageSendParams = getMessageSendParams(request, clientConfig);
         sendMessage(messageSendParams, null, null, context);
     }
 
     @Override
     public void sendMessage(Message request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                            Consumer<Throwable> streamingErrorHandler, ClientCallContext context) throws A2AClientException {
+                            Consumer<Throwable> streamingErrorHandler, @Nullable ClientCallContext context) throws A2AClientException {
         MessageSendParams messageSendParams = getMessageSendParams(request, clientConfig);
         sendMessage(messageSendParams, consumers, streamingErrorHandler, context);
     }
 
     @Override
     public void sendMessage(Message request, PushNotificationConfig pushNotificationConfiguration,
-                            Map<String, Object> metatadata, ClientCallContext context) throws A2AClientException {
+                            Map<String, Object> metatadata, @Nullable ClientCallContext context) throws A2AClientException {
         MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(pushNotificationConfiguration);
 
         MessageSendParams messageSendParams = new MessageSendParams.Builder()
@@ -78,52 +81,52 @@ public class Client extends AbstractClient {
     }
 
     @Override
-    public Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException {
+    public Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException {
         return clientTransport.getTask(request, context);
     }
 
     @Override
-    public Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException {
+    public Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
         return clientTransport.cancelTask(request, context);
     }
 
     @Override
     public TaskPushNotificationConfig setTaskPushNotificationConfiguration(
-            TaskPushNotificationConfig request, ClientCallContext context) throws A2AClientException {
+            TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
         return clientTransport.setTaskPushNotificationConfiguration(request, context);
     }
 
     @Override
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(
-            GetTaskPushNotificationConfigParams request, ClientCallContext context) throws A2AClientException {
+            GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         return clientTransport.getTaskPushNotificationConfiguration(request, context);
     }
 
     @Override
     public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
-            ListTaskPushNotificationConfigParams request, ClientCallContext context) throws A2AClientException {
+            ListTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         return clientTransport.listTaskPushNotificationConfigurations(request, context);
     }
 
     @Override
     public void deleteTaskPushNotificationConfigurations(
-            DeleteTaskPushNotificationConfigParams request, ClientCallContext context) throws A2AClientException {
+            DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         clientTransport.deleteTaskPushNotificationConfigurations(request, context);
     }
 
     @Override
-    public void resubscribe(TaskIdParams request, ClientCallContext context) throws A2AClientException {
+    public void resubscribe(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
        resubscribeToTask(request, null, null, context);
     }
 
     @Override
-    public void resubscribe(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                            Consumer<Throwable> streamingErrorHandler, ClientCallContext context) throws A2AClientException {
+    public void resubscribe(TaskIdParams request, @Nullable List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                            @Nullable Consumer<Throwable> streamingErrorHandler, @Nullable ClientCallContext context) throws A2AClientException {
         resubscribeToTask(request, consumers, streamingErrorHandler, context);
     }
 
     @Override
-    public AgentCard getAgentCard(ClientCallContext context) throws A2AClientException {
+    public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
         agentCard = clientTransport.getAgentCard(context);
         return agentCard;
     }
@@ -150,7 +153,7 @@ public class Client extends AbstractClient {
         }
     }
 
-    private MessageSendConfiguration createMessageSendConfiguration(PushNotificationConfig pushNotificationConfig) {
+    private MessageSendConfiguration createMessageSendConfiguration(@Nullable PushNotificationConfig pushNotificationConfig) {
         return new MessageSendConfiguration.Builder()
                 .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
                 .blocking(!clientConfig.isPolling())
@@ -159,8 +162,8 @@ public class Client extends AbstractClient {
                 .build();
     }
 
-    private void sendMessage(MessageSendParams messageSendParams, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                             Consumer<Throwable> errorHandler, ClientCallContext context) throws A2AClientException {
+    private void sendMessage(MessageSendParams messageSendParams, @Nullable List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                             @Nullable Consumer<Throwable> errorHandler, @Nullable ClientCallContext context) throws A2AClientException {
         if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
             EventKind eventKind = clientTransport.sendMessage(messageSendParams, context);
             ClientEvent clientEvent;
@@ -186,8 +189,8 @@ public class Client extends AbstractClient {
         }
     }
 
-    private void resubscribeToTask(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                   Consumer<Throwable> errorHandler, ClientCallContext context) throws A2AClientException {
+    private void resubscribeToTask(TaskIdParams request, @Nullable List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                                   @Nullable Consumer<Throwable> errorHandler, @Nullable ClientCallContext context) throws A2AClientException {
         if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
             throw new A2AClientException("Client and/or server does not support resubscription");
         }
@@ -204,7 +207,7 @@ public class Client extends AbstractClient {
         clientTransport.resubscribe(request, eventHandler, overriddenErrorHandler, context);
     }
 
-    private Consumer<Throwable> getOverriddenErrorHandler(Consumer<Throwable> errorHandler) {
+    private @NonNull Consumer<Throwable> getOverriddenErrorHandler(@Nullable Consumer<Throwable> errorHandler) {
         return e -> {
             if (errorHandler != null) {
                 errorHandler.accept(e);
@@ -216,7 +219,7 @@ public class Client extends AbstractClient {
         };
     }
 
-    private void consume(ClientEvent clientEvent, AgentCard agentCard, List<BiConsumer<ClientEvent, AgentCard>> consumers) {
+    private void consume(ClientEvent clientEvent, AgentCard agentCard, @Nullable List<BiConsumer<ClientEvent, AgentCard>> consumers) {
         if (consumers != null) {
             // use specified consumers
             for (BiConsumer<ClientEvent, AgentCard> consumer : consumers) {

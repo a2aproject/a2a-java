@@ -46,7 +46,7 @@ public class ClientBuilderTest {
             new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
             .build();
 
-    @Test()
+    @Test
     public void shouldNotFindCompatibleTransport() throws A2AClientException {
         A2AClientException exception = Assertions.assertThrows(A2AClientException.class,
                 () -> Client
@@ -56,10 +56,10 @@ public class ClientBuilderTest {
                                 .channelFactory(s -> null))
                         .build());
 
-        Assertions.assertTrue(exception.getMessage().contains("No compatible transport found"));
+        Assertions.assertTrue(exception.getMessage() != null && exception.getMessage().contains("No compatible transport found"));
     }
 
-    @Test()
+    @Test
     public void shouldNotFindConfigurationTransport() throws A2AClientException {
         A2AClientException exception = Assertions.assertThrows(A2AClientException.class,
                 () -> Client
@@ -67,7 +67,7 @@ public class ClientBuilderTest {
                         .clientConfig(new ClientConfig.Builder().setUseClientPreference(true).build())
                         .build());
 
-        Assertions.assertTrue(exception.getMessage().startsWith("Missing required TransportConfig for"));
+        Assertions.assertTrue(exception.getMessage() != null && exception.getMessage().startsWith("Missing required TransportConfig for"));
     }
 
     @Test

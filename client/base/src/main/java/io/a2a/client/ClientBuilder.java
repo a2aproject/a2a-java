@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class ClientBuilder {
 
@@ -35,12 +37,12 @@ public class ClientBuilder {
     private final AgentCard agentCard;
 
     private final List<BiConsumer<ClientEvent, AgentCard>> consumers = new ArrayList<>();
-    private Consumer<Throwable> streamErrorHandler;
-    private ClientConfig clientConfig;
+    private @Nullable Consumer<Throwable> streamErrorHandler;
+    private ClientConfig clientConfig = new ClientConfig.Builder().build();
 
     private final Map<Class<? extends ClientTransport>, ClientTransportConfig<? extends ClientTransport>> clientTransports = new LinkedHashMap<>();
 
-    ClientBuilder(AgentCard agentCard) {
+    ClientBuilder(@NonNull AgentCard agentCard) {
         this.agentCard = agentCard;
     }
 
@@ -69,7 +71,7 @@ public class ClientBuilder {
         return this;
     }
 
-    public ClientBuilder clientConfig(ClientConfig clientConfig) {
+    public ClientBuilder clientConfig(@NonNull ClientConfig clientConfig) {
         this.clientConfig = clientConfig;
         return this;
     }
@@ -88,10 +90,10 @@ public class ClientBuilder {
     private ClientTransport buildClientTransport() throws A2AClientException {
         // Get the preferred transport
         AgentInterface agentInterface = findBestClientTransport();
-        Class<? extends ClientTransport> transportProtocolClass = transportProviderRegistry.get(agentInterface.transport()).getTransportProtocolClass();
 
         // Get the transport provider associated to the protocol
         ClientTransportProvider clientTransportProvider = transportProviderRegistry.get(agentInterface.transport());
+        Class<? extends ClientTransport> transportProtocolClass = clientTransportProvider.getTransportProtocolClass();
 
         // Retrieve the configuration associated to the preferred transport
         ClientTransportConfig<? extends ClientTransport> clientTransportConfig = clientTransports.get(transportProtocolClass);
