@@ -479,7 +479,7 @@ public class DefaultRequestHandler implements RequestHandler {
                     } else {
                         // Only close queue if task is in a final state
                         Task task = taskStore.get(taskId);
-                        if (task != null && task.getStatus() != null && task.getStatus().state().isFinal()) {
+                        if (task != null && task.getStatus().state().isFinal()) {
                             queue.close();
                         } else {
                             LOGGER.debug("Task {} not in final state or not yet created, keeping queue open", taskId);
@@ -531,7 +531,7 @@ public class DefaultRequestHandler implements RequestHandler {
                         // For non-final states, queue must stay open for potential future messages to same taskId
                         // so we can handle the "fire and forget' case used e.g. in the TCK
                         Task task = taskStore.get(taskId);
-                        if (task != null && task.getStatus() != null && task.getStatus().state().isFinal()) {
+                        if (task != null && task.getStatus().state().isFinal()) {
                             LOGGER.debug("Task in final state, closing queue for task {}", taskId);
                             closeQueue = true;
                         } else {
@@ -590,6 +590,11 @@ public class DefaultRequestHandler implements RequestHandler {
                 pushSender.sendNotification(latestTask);
             }
         }
+    }
+
+    private boolean isTaskFinalInTaskStore(String taskId) {
+        Task task = taskStore.get(taskId);
+        return task != null && task.getStatus().state().isFinal();
     }
 
     private record MessageSendSetup(TaskManager taskManager, Task task, RequestContext requestContext) {}
