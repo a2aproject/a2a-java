@@ -519,31 +519,33 @@ public class DefaultRequestHandler implements RequestHandler {
         agentFuture.whenComplete((v, t) -> {
                     LOGGER.debug("Agent completed for task {}", taskId);
 
-                    // For streaming calls, always close queue when agent completes
-                    // Each streaming call is independent and doesn't support multi-message reuse
+                    boolean closeQueue = false;
                     if (isStreaming) {
+                        // For streaming calls, always close queue when agent completes
+                        // Each streaming call is independent and doesn't support multi-message reuse
                         LOGGER.debug("Streaming call, closing queue for task {}", taskId);
-                        try {
-                            queueManager.close(taskId);
-                        } catch (Exception e) {
-                            LOGGER.debug("Error closing queue for task {}: {}", taskId, e.getMessage());
-                        }
+                        closeQueue = true;
                     } else {
-                        // For non-blocking calls, only close queue if task is in final state
+                        // For non-streaming calls, only close queue if task is in final state
                         // For non-final states, queue must stay open for potential future messages to same taskId
                         // so we can handle the "fire and forget' case used e.g. in the TCK
                         Task task = taskStore.get(taskId);
                         if (task != null && task.getStatus() != null && task.getStatus().state().isFinal()) {
                             LOGGER.debug("Task in final state, closing queue for task {}", taskId);
-                            try {
-                                queueManager.close(taskId);
-                            } catch (Exception e) {
-                                LOGGER.debug("Error closing queue for task {}: {}", taskId, e.getMessage());
-                            }
+                            closeQueue = true;
                         } else {
                             LOGGER.debug("Task not in final state, keeping queue open for task {}", taskId);
                         }
                     }
+
+                    if (closeQueue) {
+                        try {
+                            queueManager.close(taskId);
+                        } catch (Exception e) {
+                            LOGGER.debug("Error closing queue for task {}: {}", taskId, e.getMessage());
+                        }
+                    }
+
                     // Always remove from running agents
                     runningAgents.remove(taskId);
                 });
