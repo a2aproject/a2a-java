@@ -380,6 +380,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         List<StreamingEventKind> results = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(3); // Expect 3 events
+        AtomicReference<Throwable> error = new AtomicReference<>();
 
         response.subscribe(new Flow.Subscriber<>() {
             private Flow.Subscription subscription;
@@ -399,7 +400,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
             @Override
             public void onError(Throwable throwable) {
+                error.set(throwable);
                 subscription.cancel();
+                // Release latch to prevent timeout
+                while (latch.getCount() > 0) {
+                    latch.countDown();
+                }
             }
 
             @Override
@@ -412,27 +418,27 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS),
                 "Expected to receive 3 events within timeout");
 
+        // Assert no error occurred during streaming
+        Assertions.assertNull(error.get(), "No error should occur during streaming");
+
         // Verify that all 3 events were received
         assertEquals(3, results.size(), "Should have received exactly 3 events");
 
         // Verify the first event is the task
-        assertInstanceOf(Task.class, results.get(0), "First event should be a Task");
-        Task receivedTask = (Task) results.get(0);
+        Task receivedTask = assertInstanceOf(Task.class, results.get(0), "First event should be a Task");
         assertEquals(MINIMAL_TASK.getId(), receivedTask.getId());
         assertEquals(MINIMAL_TASK.getContextId(), receivedTask.getContextId());
         assertEquals(TaskState.WORKING, receivedTask.getStatus().state());
 
         // Verify the second event is the artifact update
-        assertInstanceOf(TaskArtifactUpdateEvent.class, results.get(1),
+        TaskArtifactUpdateEvent receivedArtifact = assertInstanceOf(TaskArtifactUpdateEvent.class, results.get(1),
                 "Second event should be a TaskArtifactUpdateEvent");
-        TaskArtifactUpdateEvent receivedArtifact = (TaskArtifactUpdateEvent) results.get(1);
         assertEquals(MINIMAL_TASK.getId(), receivedArtifact.getTaskId());
         assertEquals("artifact-1", receivedArtifact.getArtifact().artifactId());
 
         // Verify the third event is the status update
-        assertInstanceOf(TaskStatusUpdateEvent.class, results.get(2),
+        TaskStatusUpdateEvent receivedStatus = assertInstanceOf(TaskStatusUpdateEvent.class, results.get(2),
                 "Third event should be a TaskStatusUpdateEvent");
-        TaskStatusUpdateEvent receivedStatus = (TaskStatusUpdateEvent) results.get(2);
         assertEquals(MINIMAL_TASK.getId(), receivedStatus.getTaskId());
         assertEquals(TaskState.COMPLETED, receivedStatus.getStatus().state());
     }
