@@ -28,6 +28,7 @@ import io.a2a.server.agentexecution.SimpleRequestContextBuilder;
 import io.a2a.server.events.EnhancedRunnable;
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueue;
+import io.a2a.server.events.NoTaskQueueException;
 import io.a2a.server.events.QueueManager;
 import io.a2a.server.events.TaskQueueExistsException;
 import io.a2a.server.tasks.PushNotificationConfigStore;
@@ -541,6 +542,9 @@ public class DefaultRequestHandler implements RequestHandler {
                     if (closeQueue) {
                         try {
                             queueManager.close(taskId);
+                        } catch (NoTaskQueueException e) {
+                            // This can happen if the queue was already closed and removed, which is not an error in this cleanup context.
+                            LOGGER.debug("Queue for task {} was already closed or does not exist.", taskId);
                         } catch (Exception e) {
                             LOGGER.debug("Error closing queue for task {}: {}", taskId, e.getMessage());
                         }
