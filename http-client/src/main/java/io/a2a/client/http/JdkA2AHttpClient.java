@@ -1,6 +1,12 @@
 package io.a2a.client.http;
 
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
+import static java.net.HttpURLConnection.HTTP_MULT_CHOICE;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
+
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -21,11 +27,6 @@ import io.a2a.common.A2AErrorMessages;
 import io.a2a.spec.A2AClientException;
 
 public class JdkA2AHttpClient implements A2AHttpClient {
-
-    private static final int HTTP_OK = 200;
-    private static final int HTTP_MULTIPLE_CHOICES = 300;
-    private static final int HTTP_UNAUTHORIZED = 401;
-    private static final int HTTP_FORBIDDEN = 403;
 
     private final HttpClient httpClient;
 
@@ -186,7 +187,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                         if (!isSuccessStatus(response.statusCode()) && 
                             response.statusCode() != HTTP_UNAUTHORIZED && 
                             response.statusCode() != HTTP_FORBIDDEN) {
-                            subscriber.onError(new IOException("Request failed with status " + response.statusCode()));
+                            subscriber.onError(new IOException("Request failed with status " + response.statusCode() + ":" + response.body()));
                         }
                     });
         }
@@ -294,7 +295,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         }
 
         static boolean success(HttpResponse<?> response) {
-            return response.statusCode() >= HTTP_OK && response.statusCode() < HTTP_MULTIPLE_CHOICES;
+            return response.statusCode() >= HTTP_OK && response.statusCode() < HTTP_MULT_CHOICE;
         }
 
         @Override
@@ -304,6 +305,6 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     }
 
     private static boolean isSuccessStatus(int statusCode) {
-        return statusCode >= HTTP_OK && statusCode < HTTP_MULTIPLE_CHOICES;
+        return statusCode >= HTTP_OK && statusCode <  HTTP_MULT_CHOICE;
     }
 }
