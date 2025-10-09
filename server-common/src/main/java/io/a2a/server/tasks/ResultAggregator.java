@@ -155,7 +155,12 @@ public class ResultAggregator {
                     }
                     // For blocking calls, interrupt when we get any task-related event (EventKind except Message)
                     // Cancel subscription to free resources (client can resubscribe if needed)
-                    else if (blocking && (event instanceof EventKind && !(event instanceof Message))) {
+                    else {
+                        // Note: The initial version of this change only triggered this block with
+                        //  else if (blocking && (event instanceof EventKind && !(event instanceof Message)))
+                        // However, a review comment indicated this might not be necessary, and everything passes
+                        // with this simpler catch-all else block. Keeping this comment here for a while (added
+                        // 9 Oct 2025) just in case.
                         shouldInterrupt = true;
                         continueInBackground = false;
                     }
