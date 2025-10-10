@@ -58,6 +58,14 @@ public class TaskUpdater {
         }
     }
 
+    public String getContextId() {
+        return this.contextId;
+    }
+
+    public void addArtifact(List<Part<?>> parts) {
+        addArtifact(parts, null, null, null);
+    }
+
     public void addArtifact(List<Part<?>> parts, String artifactId, String name, Map<String, Object> metadata) {
         addArtifact(parts, artifactId, name, metadata, null, null);
     }
