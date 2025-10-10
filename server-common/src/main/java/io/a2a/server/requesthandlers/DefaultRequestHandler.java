@@ -480,16 +480,8 @@ public class DefaultRequestHandler implements RequestHandler {
                 .whenComplete((v, err) -> {
                     if (err != null) {
                         runnable.setError(err);
-                        // Close queue on error
+                        // Close queue on agent execution error
                         queue.close();
-                    } else {
-                        // Only close queue if task is in a final state
-                        Task task = taskStore.get(taskId);
-                        if (task != null && task.getStatus().state().isFinal()) {
-                            queue.close();
-                        } else {
-                            LOGGER.debug("Task {} not in final state or not yet created, keeping queue open", taskId);
-                        }
                     }
                     runnable.invokeDoneCallbacks();
                 });
