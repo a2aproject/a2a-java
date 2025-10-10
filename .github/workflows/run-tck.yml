@@ -100,3 +100,10 @@ jobs:
         run: |
           ./run_tck.py --sut-url ${{ env.SUT_JSONRPC_URL }} --category all --transports jsonrpc,grpc,rest --compliance-report report.json
         working-directory: tck/a2a-tck
+      - name: Upload TCK Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tck-test-log-java-${{ matrix.java-version }}
+          path: tck/target/tck-test.log
+          retention-days: 7
