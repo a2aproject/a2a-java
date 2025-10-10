@@ -42,10 +42,12 @@ public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permit
         this.error = error;
     }
 
+    @Override
     public String getJsonrpc() {
         return this.jsonrpc;
     }
 
+    @Override
     public Object getId() {
         return this.id;
     }

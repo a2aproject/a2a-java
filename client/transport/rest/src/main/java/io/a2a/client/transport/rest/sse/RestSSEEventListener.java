@@ -15,6 +15,7 @@ import io.a2a.client.transport.rest.RestErrorMapper;
 import io.a2a.grpc.StreamResponse;
 import io.a2a.grpc.utils.ProtoUtils;
 import io.a2a.spec.StreamingEventKind;
+import org.jspecify.annotations.Nullable;
 
 public class RestSSEEventListener {
 
@@ -28,43 +29,42 @@ public class RestSSEEventListener {
         this.errorHandler = errorHandler;
     }
 
-    public void onMessage(String message, Future<Void> completableFuture) {
+    public void onMessage(String message, @Nullable Future<Void> completableFuture) {
         try {
-            System.out.println("Streaming message received: " + message);
+            log.fine("Streaming message received: " + message);
             io.a2a.grpc.StreamResponse.Builder builder = io.a2a.grpc.StreamResponse.newBuilder();
             JsonFormat.parser().merge(message, builder);
-            handleMessage(builder.build(), completableFuture);
+            handleMessage(builder.build());
         } catch (InvalidProtocolBufferException e) {
             errorHandler.accept(RestErrorMapper.mapRestError(message, 500));
         }
     }
 
-    public void onError(Throwable throwable, Future<Void> future) {
+    public void onError(Throwable throwable, @Nullable Future<Void> future) {
         if (errorHandler != null) {
             errorHandler.accept(throwable);
         }
-        future.cancel(true); // close SSE channel
+        if (future != null) {
+            future.cancel(true); // close SSE channel
+        }
     }
 
-    private void handleMessage(StreamResponse response, Future<Void> future) {
+    private void handleMessage(StreamResponse response) {
         StreamingEventKind event;
         switch (response.getPayloadCase()) {
-            case MSG:
+            case MSG ->
                 event = ProtoUtils.FromProto.message(response.getMsg());
-                break;
-            case TASK:
+            case TASK ->
                 event = ProtoUtils.FromProto.task(response.getTask());
-                break;
-            case STATUS_UPDATE:
+            case STATUS_UPDATE ->
                 event = ProtoUtils.FromProto.taskStatusUpdateEvent(response.getStatusUpdate());
-                break;
-            case ARTIFACT_UPDATE:
+            case ARTIFACT_UPDATE ->
                 event = ProtoUtils.FromProto.taskArtifactUpdateEvent(response.getArtifactUpdate());
-                break;
-            default:
+            default -> {
                 log.warning("Invalid stream response " + response.getPayloadCase());
                 errorHandler.accept(new IllegalStateException("Invalid stream response from server: " + response.getPayloadCase()));
                 return;
+            }
         }
         eventHandler.accept(event);
     }

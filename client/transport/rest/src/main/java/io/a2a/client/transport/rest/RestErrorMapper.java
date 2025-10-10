@@ -48,33 +48,20 @@ public class RestErrorMapper {
     }
 
     public static A2AClientException mapRestError(String className, String errorMessage, int code) {
-        switch (className) {
-            case "io.a2a.spec.TaskNotFoundError":
-                return new A2AClientException(errorMessage, new TaskNotFoundError());
-            case "io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError":
-                return new A2AClientException(errorMessage, new AuthenticatedExtendedCardNotConfiguredError());
-            case "io.a2a.spec.ContentTypeNotSupportedError":
-                return new A2AClientException(errorMessage, new ContentTypeNotSupportedError(null, null, errorMessage));
-            case "io.a2a.spec.InternalError":
-                return new A2AClientException(errorMessage, new InternalError(errorMessage));
-            case "io.a2a.spec.InvalidAgentResponseError":
-                return new A2AClientException(errorMessage, new InvalidAgentResponseError(null, null, errorMessage));
-            case "io.a2a.spec.InvalidParamsError":
-                return new A2AClientException(errorMessage, new InvalidParamsError());
-            case "io.a2a.spec.InvalidRequestError":
-                return new A2AClientException(errorMessage, new InvalidRequestError());
-            case "io.a2a.spec.JSONParseError":
-                return new A2AClientException(errorMessage, new JSONParseError());
-            case "io.a2a.spec.MethodNotFoundError":
-                return new A2AClientException(errorMessage, new MethodNotFoundError());
-            case "io.a2a.spec.PushNotificationNotSupportedError":
-                return new A2AClientException(errorMessage, new PushNotificationNotSupportedError());
-            case "io.a2a.spec.TaskNotCancelableError":
-                return new A2AClientException(errorMessage, new TaskNotCancelableError());
-            case "io.a2a.spec.UnsupportedOperationError":
-                return new A2AClientException(errorMessage, new UnsupportedOperationError());
-            default:
-                return new A2AClientException(errorMessage);
-        }
+        return switch (className) {
+            case "io.a2a.spec.TaskNotFoundError" -> new A2AClientException(errorMessage, new TaskNotFoundError());
+            case "io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError" -> new A2AClientException(errorMessage, new AuthenticatedExtendedCardNotConfiguredError());
+            case "io.a2a.spec.ContentTypeNotSupportedError" -> new A2AClientException(errorMessage, new ContentTypeNotSupportedError(null, null, errorMessage));
+            case "io.a2a.spec.InternalError" -> new A2AClientException(errorMessage, new InternalError(errorMessage));
+            case "io.a2a.spec.InvalidAgentResponseError" -> new A2AClientException(errorMessage, new InvalidAgentResponseError(null, null, errorMessage));
+            case "io.a2a.spec.InvalidParamsError" -> new A2AClientException(errorMessage, new InvalidParamsError());
+            case "io.a2a.spec.InvalidRequestError" -> new A2AClientException(errorMessage, new InvalidRequestError());
+            case "io.a2a.spec.JSONParseError" -> new A2AClientException(errorMessage, new JSONParseError());
+            case "io.a2a.spec.MethodNotFoundError" -> new A2AClientException(errorMessage, new MethodNotFoundError());
+            case "io.a2a.spec.PushNotificationNotSupportedError" -> new A2AClientException(errorMessage, new PushNotificationNotSupportedError());
+            case "io.a2a.spec.TaskNotCancelableError" -> new A2AClientException(errorMessage, new TaskNotCancelableError());
+            case "io.a2a.spec.UnsupportedOperationError" -> new A2AClientException(errorMessage, new UnsupportedOperationError());
+            default -> new A2AClientException(errorMessage);
+        };
     }
 }

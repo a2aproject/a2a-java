@@ -6,7 +6,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -22,9 +21,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
 import java.util.function.Consumer;
+import org.jspecify.annotations.Nullable;
 
 import io.a2a.common.A2AErrorMessages;
-import io.a2a.spec.A2AClientException;
 
 public class JdkA2AHttpClient implements A2AHttpClient {
 
@@ -53,7 +52,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     }
 
     private abstract class JdkBuilder<T extends Builder<T>> implements Builder<T> {
-        private String url;
+        private String url = "";
         private Map<String, String> headers = new HashMap<>();
 
         @Override
@@ -99,13 +98,13 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 Runnable completeRunnable
         ) {
             Flow.Subscriber<String> subscriber = new Flow.Subscriber<String>() {
-                private Flow.Subscription subscription;
+                private Flow.@Nullable Subscription subscription;
                 private volatile boolean errorRaised = false;
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
                     this.subscription = subscription;
-                    subscription.request(1);
+                    this.subscription.request(1);
                 }
 
                 @Override
@@ -117,7 +116,9 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                             messageConsumer.accept(item);
                         }
                     }
-                    subscription.request(1);
+                    if (subscription != null) {
+                        subscription.request(1);
+                    }
                 }
 
                 @Override

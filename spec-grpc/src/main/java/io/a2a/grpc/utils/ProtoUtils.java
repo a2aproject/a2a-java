@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
-import io.a2a.grpc.ListTaskPushNotificationConfigResponse;
 
 import io.a2a.grpc.StreamResponse;
 import io.a2a.spec.APIKeySecurityScheme;
@@ -62,6 +61,7 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Utility class to convert between GRPC and Spec objects.
@@ -535,7 +535,6 @@ public class ProtoUtils {
 
         public static io.a2a.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfigResponse(List<TaskPushNotificationConfig> configs) {
             List<io.a2a.grpc.TaskPushNotificationConfig> confs = new ArrayList<>(configs.size());
-            ListTaskPushNotificationConfigResponse.Builder response = ListTaskPushNotificationConfigResponse.newBuilder();
             for(TaskPushNotificationConfig config: configs) {
                 confs.add(taskPushNotificationConfig(config));
             }
@@ -811,12 +810,6 @@ public class ProtoUtils {
             return new DeleteTaskPushNotificationConfigParams(taskId, configId);
         }
 
-        private static AgentCapabilities agentCapabilities(io.a2a.grpc.AgentCapabilitiesOrBuilder agentCapabilities) {
-            return new AgentCapabilities(agentCapabilities.getStreaming(), agentCapabilities.getPushNotifications(), false,
-                    agentCapabilities.getExtensionsList().stream().map(item -> agentExtension(item)).collect(Collectors.toList())
-            );
-        }
-
         private static AgentExtension agentExtension(io.a2a.grpc.AgentExtensionOrBuilder agentExtension) {
             return new AgentExtension(
                     agentExtension.getDescription(),
@@ -836,7 +829,7 @@ public class ProtoUtils {
             );
         }
 
-        private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfigOrBuilder pushNotification, String configId) {
+        private static @Nullable PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfigOrBuilder pushNotification, String configId) {
             if(pushNotification == null || pushNotification.getDefaultInstanceForType().equals(pushNotification)) {
                 return null;
             }
@@ -848,7 +841,7 @@ public class ProtoUtils {
             );
         }
 
-        private static PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfigOrBuilder pushNotification) {
+        private static @Nullable PushNotificationConfig pushNotification(io.a2a.grpc.PushNotificationConfigOrBuilder pushNotification) {
             return pushNotification(pushNotification, pushNotification.getId());
         }
 
@@ -945,7 +938,7 @@ public class ProtoUtils {
             return new DataPart(struct(dataPart.getData()));
         }
 
-        private static TaskStatus taskStatus(io.a2a.grpc.TaskStatusOrBuilder taskStatus) {
+        private static @Nullable TaskStatus taskStatus(io.a2a.grpc.TaskStatusOrBuilder taskStatus) {
             TaskState state = taskState(taskStatus.getState());
             if (state == null) {
                 return null;
@@ -957,7 +950,7 @@ public class ProtoUtils {
             );
         }
 
-        private static Message.Role role(io.a2a.grpc.Role role) {
+        private static Message.@Nullable Role role(io.a2a.grpc.Role role) {
             if (role == null) {
                 return null;
             }
@@ -971,7 +964,7 @@ public class ProtoUtils {
             };
         }
 
-        private static TaskState taskState(io.a2a.grpc.TaskState taskState) {
+        private static @Nullable  TaskState taskState(io.a2a.grpc.TaskState taskState) {
             if (taskState == null) {
                 return null;
             }
@@ -999,7 +992,7 @@ public class ProtoUtils {
             };
         }
 
-        private static Map<String, Object> struct(Struct struct) {
+        private static @Nullable Map<String, Object> struct(Struct struct) {
             if (struct == null || struct.getFieldsCount() == 0) {
                 return null;
             }
@@ -1007,7 +1000,7 @@ public class ProtoUtils {
                     .collect(Collectors.toMap(Map.Entry::getKey, e -> value(e.getValue())));
         }
 
-        private static Object value(Value value) {
+        private static @Nullable Object value(Value value) {
             switch (value.getKindCase()) {
                 case STRUCT_VALUE:
                     return struct(value.getStructValue());

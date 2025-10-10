@@ -81,6 +81,7 @@ public final class Task implements EventKind, StreamingEventKind {
         return metadata;
     }
 
+    @Override
     public String getKind() {
         return kind;
     }

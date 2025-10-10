@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A simple in-memory store for session-keyed credentials.
@@ -23,18 +24,17 @@ public class InMemoryContextCredentialService implements CredentialService {
     }
 
     @Override
-    public String getCredential(String securitySchemeName,
-                                ClientCallContext clientCallContext) {
+    public @Nullable String getCredential(String securitySchemeName,
+                                @Nullable ClientCallContext clientCallContext) {
         if (clientCallContext == null || !clientCallContext.getState().containsKey(SESSION_ID)) {
             // no credential to retrieve
             return null;
         }
 
         Object sessionIdObj = clientCallContext.getState().get(SESSION_ID);
-        if (! (sessionIdObj instanceof String)) {
+        if (! (sessionIdObj instanceof String sessionId)) {
             return null;
         }
-        String sessionId = (String) sessionIdObj;
         Map<String, String> sessionCredentials = credentialStore.get(sessionId);
         if (sessionCredentials == null) {
             return null;

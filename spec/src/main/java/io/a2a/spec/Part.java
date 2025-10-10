@@ -27,7 +27,7 @@ public abstract class Part<T> {
         FILE("file"),
         DATA("data");
 
-        private String kind;
+        private final String kind;
 
         Kind(String kind) {
             this.kind = kind;

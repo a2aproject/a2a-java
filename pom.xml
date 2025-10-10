@@ -299,6 +299,7 @@
                     <configuration>
                         <source>17</source>
                         <target>17</target>
+                        <release>17</release>
                         <encoding>UTF-8</encoding>
                         <fork>true</fork>
                         <compilerArgs combine.children="append">
@@ -315,7 +316,7 @@
                             <arg>-XDcompilePolicy=simple</arg>
                             <arg>--should-stop=ifError=FLOW</arg>
                             <arg>-parameters</arg>
-                            <arg>-Xplugin:ErrorProne -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true</arg>
+                            <arg>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode </arg>
                         </compilerArgs>
                         <annotationProcessorPaths>
                             <path>

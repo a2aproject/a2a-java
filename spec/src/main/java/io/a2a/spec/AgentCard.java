@@ -22,7 +22,6 @@ public record AgentCard(String name, String description, String url, AgentProvid
                         List<Map<String, List<String>>> security, String iconUrl, List<AgentInterface> additionalInterfaces,
                         String preferredTransport, String protocolVersion, List<AgentCardSignature> signatures) {
 
-    private static final String TEXT_MODE = "text";
     private static final String DEFAULT_PROTOCOL_VERSION = "0.3.0";
     private static final TransportProtocol DEFAULT_TRANSPORT = TransportProtocol.JSONRPC;
 

@@ -24,15 +24,11 @@ public enum TransportProtocol {
 
     @JsonCreator
     public static TransportProtocol fromString(String transport) {
-        switch (transport) {
-            case "JSONRPC":
-                return JSONRPC;
-            case "GRPC":
-                return GRPC;
-            case "HTTP+JSON":
-                return HTTP_JSON;
-            default:
-                throw new IllegalArgumentException("Invalid transport: " + transport);
-        }
+        return switch (transport) {
+            case "JSONRPC" -> JSONRPC;
+            case "GRPC" -> GRPC;
+            case "HTTP+JSON" -> HTTP_JSON;
+            default -> throw new IllegalArgumentException("Invalid transport: " + transport);
+        };
     }
 }

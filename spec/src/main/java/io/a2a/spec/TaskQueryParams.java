@@ -1,10 +1,11 @@
 package io.a2a.spec;
 
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
+import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines parameters for querying a task, with an option to limit history length.
@@ -16,7 +17,7 @@ import io.a2a.util.Assert;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TaskQueryParams(String id, Integer historyLength, Map<String, Object> metadata) {
+public record TaskQueryParams(String id, @Nullable Integer historyLength, @Nullable Map<String, Object> metadata) {
 
     public TaskQueryParams {
         Assert.checkNotNullParam("id", id);
@@ -29,7 +30,7 @@ public record TaskQueryParams(String id, Integer historyLength, Map<String, Obje
         this(id, null, null);
     }
 
-    public TaskQueryParams(String id, Integer historyLength) {
+    public TaskQueryParams(String id, @Nullable Integer historyLength) {
         this(id, historyLength, null);
     }
 }

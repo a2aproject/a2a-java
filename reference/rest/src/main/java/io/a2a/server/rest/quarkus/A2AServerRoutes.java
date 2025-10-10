@@ -37,12 +37,12 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import io.a2a.server.extensions.A2AExtensions;
+import org.jspecify.annotations.Nullable;
 
 @Singleton
 @Authenticated
@@ -53,7 +53,8 @@ public class A2AServerRoutes {
 
     // Hook so testing can wait until the MultiSseSupport is subscribed.
     // Without this we get intermittent failures
-    private static volatile Runnable streamingMultiSseSupportSubscribedRunnable;
+    private static volatile @Nullable
+    Runnable streamingMultiSseSupportSubscribedRunnable;
 
     @Inject
     @Internal
@@ -71,10 +72,7 @@ public class A2AServerRoutes {
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
-            rc.response()
-                    .setStatusCode(response.getStatusCode())
-                    .putHeader(CONTENT_TYPE, response.getContentType())
-                    .end(response.getBody());
+            sendResponse(rc, response);
         }
     }
 
@@ -85,18 +83,15 @@ public class A2AServerRoutes {
         HTTPRestResponse error = null;
         try {
             HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(body, context);
-            if (response instanceof HTTPRestStreamingResponse) {
-                streamingResponse = (HTTPRestStreamingResponse) response;
+            if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
+                streamingResponse = hTTPRestStreamingResponse;
             } else {
                 error = response;
             }
         } finally {
             if (error != null) {
-                rc.response()
-                        .setStatusCode(error.getStatusCode())
-                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .end(error.getBody());
-            } else {
+                sendResponse(rc, error);
+            } else if (streamingResponse != null) {
                 Multi<String> events = Multi.createFrom().publisher(streamingResponse.getPublisher());
                 executor.execute(() -> {
                     MultiSseSupport.subscribeObject(
@@ -112,20 +107,21 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc);
         HTTPRestResponse response = null;
         try {
-            Integer historyLength = null;
-            if (rc.request().params().contains("history_length")) {
-                historyLength = Integer.valueOf(rc.request().params().get("history_length"));
+            if (taskId == null || taskId.isEmpty()) {
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            } else {
+                Integer historyLength = null;
+                if (rc.request().params().contains("history_length")) {
+                    historyLength = Integer.valueOf(rc.request().params().get("history_length"));
+                }
+                response = jsonRestHandler.getTask(taskId, historyLength, context);
             }
-            response = jsonRestHandler.getTask(taskId, historyLength, context);
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad history_length"));
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
-            rc.response()
-                    .setStatusCode(response.getStatusCode())
-                    .putHeader(CONTENT_TYPE, response.getContentType())
-                    .end(response.getBody());
+            sendResponse(rc, response);
         }
     }
 
@@ -135,7 +131,11 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.cancelTask(taskId, context);
+            if (taskId == null || taskId.isEmpty()) {
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            } else {
+                response = jsonRestHandler.cancelTask(taskId, context);
+            }
         } catch (Throwable t) {
             if (t instanceof JSONRPCError error) {
                 response = jsonRestHandler.createErrorResponse(error);
@@ -143,10 +143,18 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
             }
         } finally {
+            sendResponse(rc, response);
+        }
+    }
+
+    private void sendResponse(RoutingContext rc, @Nullable HTTPRestResponse response) {
+        if (response != null) {
             rc.response()
                     .setStatusCode(response.getStatusCode())
                     .putHeader(CONTENT_TYPE, response.getContentType())
                     .end(response.getBody());
+        } else {
+            rc.response().end();
         }
     }
 
@@ -157,19 +165,20 @@ public class A2AServerRoutes {
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
-            HTTPRestResponse response = jsonRestHandler.resubscribeTask(taskId, context);
-            if (response instanceof HTTPRestStreamingResponse) {
-                streamingResponse = (HTTPRestStreamingResponse) response;
+            if (taskId == null || taskId.isEmpty()) {
+                error = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                error = response;
+                HTTPRestResponse response = jsonRestHandler.resubscribeTask(taskId, context);
+                if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
+                    streamingResponse = hTTPRestStreamingResponse;
+                } else {
+                    error = response;
+                }
             }
         } finally {
             if (error != null) {
-                rc.response()
-                        .setStatusCode(error.getStatusCode())
-                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .end(error.getBody());
-            } else {
+                sendResponse(rc, error);
+            } else if (streamingResponse != null) {
                 Multi<String> events = Multi.createFrom().publisher(streamingResponse.getPublisher());
                 executor.execute(() -> {
                     MultiSseSupport.subscribeObject(
@@ -185,14 +194,15 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, context);
+            if (taskId == null || taskId.isEmpty()) {
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            } else {
+                response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, context);
+            }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
-            rc.response()
-                    .setStatusCode(response.getStatusCode())
-                    .putHeader(CONTENT_TYPE, response.getContentType())
-                    .end(response.getBody());
+            sendResponse(rc, response);
         }
     }
 
@@ -203,14 +213,15 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, context);
+            if (taskId == null || taskId.isEmpty()) {
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            } else {
+                response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, context);
+            }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
-            rc.response()
-                    .setStatusCode(response.getStatusCode())
-                    .putHeader(CONTENT_TYPE, response.getContentType())
-                    .end(response.getBody());
+            sendResponse(rc, response);
         }
     }
 
@@ -220,14 +231,15 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, context);
+            if (taskId == null || taskId.isEmpty()) {
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            } else {
+                response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, context);
+            }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
-            rc.response()
-                    .setStatusCode(response.getStatusCode())
-                    .putHeader(CONTENT_TYPE, response.getContentType())
-                    .end(response.getBody());
+            sendResponse(rc, response);
         }
     }
 
@@ -238,14 +250,17 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, context);
+            if (taskId == null || taskId.isEmpty()) {
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            } else if (configId == null || configId.isEmpty()) {
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad config id"));
+            } else {
+                response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, context);
+            }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
-            rc.response()
-                    .setStatusCode(response.getStatusCode())
-                    .putHeader(CONTENT_TYPE, response.getContentType())
-                    .end(response.getBody());
+            sendResponse(rc, response);
         }
     }
 
@@ -254,34 +269,25 @@ public class A2AServerRoutes {
      * Handles incoming GET requests to the agent card endpoint.
      * Returns the agent card in JSON format.
      *
-     * @param rc
+     * @param rc the routing context
      */
     @Route(path = "/.well-known/agent-card.json", order = 1, methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
     @PermitAll
     public void getAgentCard(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.getAgentCard();
-        rc.response()
-                .setStatusCode(response.getStatusCode())
-                .putHeader(CONTENT_TYPE, response.getContentType())
-                .end(response.getBody());
+        sendResponse(rc, response);
     }
 
     @Route(path = "/v1/card", order = 1, methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
     public void getAuthenticatedExtendedCard(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.getAuthenticatedExtendedCard();
-        rc.response()
-                .setStatusCode(response.getStatusCode())
-                .putHeader(CONTENT_TYPE, response.getContentType())
-                .end(response.getBody());
+        sendResponse(rc, response);
     }
 
     @Route(path = "^/v1/.*", order = 100, methods = {Route.HttpMethod.DELETE, Route.HttpMethod.GET, Route.HttpMethod.HEAD, Route.HttpMethod.OPTIONS, Route.HttpMethod.POST, Route.HttpMethod.PUT}, produces = APPLICATION_JSON)
     public void methodNotFoundMessage(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.createErrorResponse(new MethodNotFoundError());
-        rc.response()
-                .setStatusCode(response.getStatusCode())
-                .putHeader(CONTENT_TYPE, response.getContentType())
-                .end(response.getBody());
+        sendResponse(rc, response);
     }
 
     static void setStreamingMultiSseSupportSubscribedRunnable(Runnable runnable) {
@@ -298,12 +304,19 @@ public class A2AServerRoutes {
                 user = new User() {
                     @Override
                     public boolean isAuthenticated() {
-                        return rc.userContext().authenticated();
+                        if (rc.userContext() != null) {
+                            return rc.userContext().authenticated();
+                        }
+                        return false;
                     }
 
                     @Override
-                    public String getUsername() {
-                        return rc.user().subject();
+                    public @Nullable
+                    String getUsername() {
+                        if (rc.user() != null) {
+                            return rc.user().subject();
+                        }
+                        return null;
                     }
                 };
             }
@@ -345,18 +358,18 @@ public class A2AServerRoutes {
             }
         }
 
-        private static void onWriteDone(Flow.Subscription subscription, AsyncResult<Void> ar, RoutingContext rc) {
+        private static void onWriteDone(Flow.@Nullable Subscription subscription, AsyncResult<Void> ar, RoutingContext rc) {
             if (ar.failed()) {
                 rc.fail(ar.cause());
-            } else {
+            } else if (subscription != null) {
                 subscription.request(1);
             }
         }
 
-        public static void write(Multi<Buffer> multi, RoutingContext rc) {
+        private static void write(Multi<Buffer> multi, RoutingContext rc) {
             HttpServerResponse response = rc.response();
             multi.subscribe().withSubscriber(new Flow.Subscriber<Buffer>() {
-                Flow.Subscription upstream;
+                Flow.@Nullable Subscription upstream;
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
@@ -393,7 +406,7 @@ public class A2AServerRoutes {
             });
         }
 
-        public static void subscribeObject(Multi<Object> multi, RoutingContext rc) {
+        private static void subscribeObject(Multi<Object> multi, RoutingContext rc) {
             AtomicLong count = new AtomicLong();
             write(multi.map(new Function<Object, Buffer>() {
                 @Override

@@ -111,7 +111,7 @@ public final class Message implements EventKind, StreamingEventKind {
         USER("user"),
         AGENT("agent");
 
-        private String role;
+        private final String role;
 
         Role(String role) {
             this.role = role;

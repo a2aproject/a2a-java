@@ -14,6 +14,7 @@ import io.a2a.spec.HTTPAuthSecurityScheme;
 import io.a2a.spec.OAuth2SecurityScheme;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
 import io.a2a.spec.SecurityScheme;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An interceptor that automatically adds authentication details to requests
@@ -31,8 +32,8 @@ public class AuthInterceptor extends ClientCallInterceptor {
     }
 
     @Override
-    public PayloadAndHeaders intercept(String methodName, Object payload, Map<String, String> headers,
-                                       AgentCard agentCard, ClientCallContext clientCallContext) {
+    public PayloadAndHeaders intercept(String methodName, @Nullable Object payload, Map<String, String> headers,
+                                       AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         Map<String, String> updatedHeaders = new HashMap<>(headers == null ? new HashMap<>() : headers);
         if (agentCard == null || agentCard.security() == null || agentCard.securitySchemes() == null) {
             return new PayloadAndHeaders(payload, updatedHeaders);

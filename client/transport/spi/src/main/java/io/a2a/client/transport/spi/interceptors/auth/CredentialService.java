@@ -1,6 +1,7 @@
 package io.a2a.client.transport.spi.interceptors.auth;
 
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Used to retrieve credentials.
@@ -14,5 +15,5 @@ public interface CredentialService {
      * @param clientCallContext the client call context, which may be {@code null}.
      * @return the credential or {@code null} if the credential could not be retrieved
      */
-    String getCredential(String securitySchemeName, ClientCallContext clientCallContext);
+    @Nullable String getCredential(String securitySchemeName, @Nullable ClientCallContext clientCallContext);
 }

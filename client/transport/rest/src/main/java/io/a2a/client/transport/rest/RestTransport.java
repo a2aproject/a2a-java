@@ -38,32 +38,30 @@ import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import io.a2a.util.Utils;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import org.jspecify.annotations.Nullable;
 
 public class RestTransport implements ClientTransport {
 
     private static final Logger log = Logger.getLogger(RestTransport.class.getName());
     private final A2AHttpClient httpClient;
     private final String agentUrl;
-    private final List<ClientCallInterceptor> interceptors;
+    private @Nullable final List<ClientCallInterceptor> interceptors;
     private AgentCard agentCard;
     private boolean needsExtendedCard = false;
-
-    public RestTransport(String agentUrl) {
-        this(null, null, agentUrl, null);
-    }
 
     public RestTransport(AgentCard agentCard) {
         this(null, agentCard, agentCard.url(), null);
     }
 
-    public RestTransport(A2AHttpClient httpClient, AgentCard agentCard,
-            String agentUrl, List<ClientCallInterceptor> interceptors) {
+    public RestTransport(@Nullable A2AHttpClient httpClient, AgentCard agentCard,
+            String agentUrl, @Nullable List<ClientCallInterceptor> interceptors) {
         this.httpClient = httpClient == null ? new JdkA2AHttpClient() : httpClient;
         this.agentCard = agentCard;
         this.agentUrl = agentUrl.endsWith("/") ? agentUrl.substring(0, agentUrl.length() - 1) : agentUrl;
@@ -71,7 +69,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public EventKind sendMessage(MessageSendParams messageSendParams, ClientCallContext context) throws A2AClientException {
+    public EventKind sendMessage(MessageSendParams messageSendParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("messageSendParams", messageSendParams);
         io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder(ProtoUtils.ToProto.sendMessageRequest(messageSendParams));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SendMessageRequest.METHOD, builder, agentCard, context);
@@ -94,7 +92,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public void sendMessageStreaming(MessageSendParams messageSendParams, Consumer<StreamingEventKind> eventConsumer, Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+    public void sendMessageStreaming(MessageSendParams messageSendParams, Consumer<StreamingEventKind> eventConsumer, Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", messageSendParams);
         checkNotNullParam("eventConsumer", eventConsumer);
         checkNotNullParam("messageSendParams", messageSendParams);
@@ -119,7 +117,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public Task getTask(TaskQueryParams taskQueryParams, ClientCallContext context) throws A2AClientException {
+    public Task getTask(TaskQueryParams taskQueryParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("taskQueryParams", taskQueryParams);
         GetTaskRequest.Builder builder = GetTaskRequest.newBuilder();
         builder.setName("tasks/" + taskQueryParams.id());
@@ -154,7 +152,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public Task cancelTask(TaskIdParams taskIdParams, ClientCallContext context) throws A2AClientException {
+    public Task cancelTask(TaskIdParams taskIdParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("taskIdParams", taskIdParams);
         CancelTaskRequest.Builder builder = CancelTaskRequest.newBuilder();
         builder.setName("tasks/" + taskIdParams.id());
@@ -173,7 +171,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request, ClientCallContext context) throws A2AClientException {
+    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         CreateTaskPushNotificationConfigRequest.Builder builder = CreateTaskPushNotificationConfigRequest.newBuilder();
         builder.setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(request))
@@ -195,7 +193,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request, ClientCallContext context) throws A2AClientException {
+    public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         GetTaskPushNotificationConfigRequest.Builder builder = GetTaskPushNotificationConfigRequest.newBuilder();
         builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId()));
@@ -225,7 +223,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigParams request, ClientCallContext context) throws A2AClientException {
+    public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         ListTaskPushNotificationConfigRequest.Builder builder = ListTaskPushNotificationConfigRequest.newBuilder();
         builder.setParent(String.format("/tasks/%1s/pushNotificationConfigs", request.id()));
@@ -255,7 +253,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request, ClientCallContext context) throws A2AClientException {
+    public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         io.a2a.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder builder = io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.DeleteTaskPushNotificationConfigRequest.METHOD, builder,
@@ -281,7 +279,7 @@ public class RestTransport implements ClientTransport {
 
     @Override
     public void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
-            Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+            Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         io.a2a.grpc.TaskSubscriptionRequest.Builder builder = io.a2a.grpc.TaskSubscriptionRequest.newBuilder();
         builder.setName("tasks/" + request.id());
@@ -306,7 +304,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getAgentCard(ClientCallContext context) throws A2AClientException {
+    public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
         A2ACardResolver resolver;
         try {
             if (agentCard == null) {
@@ -346,8 +344,8 @@ public class RestTransport implements ClientTransport {
         // no-op
     }
 
-    private PayloadAndHeaders applyInterceptors(String methodName, MessageOrBuilder payload,
-            AgentCard agentCard, ClientCallContext clientCallContext) {
+    private PayloadAndHeaders applyInterceptors(String methodName, @Nullable MessageOrBuilder payload,
+            AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         PayloadAndHeaders payloadAndHeaders = new PayloadAndHeaders(payload, getHttpHeaders(clientCallContext));
         if (interceptors != null && !interceptors.isEmpty()) {
             for (ClientCallInterceptor interceptor : interceptors) {
@@ -383,7 +381,7 @@ public class RestTransport implements ClientTransport {
         return postBuilder;
     }
 
-    private Map<String, String> getHttpHeaders(ClientCallContext context) {
-        return context != null ? context.getHeaders() : null;
+    private Map<String, String> getHttpHeaders(@Nullable ClientCallContext context) {
+        return context != null ? context.getHeaders() : Collections.emptyMap();
     }
 }

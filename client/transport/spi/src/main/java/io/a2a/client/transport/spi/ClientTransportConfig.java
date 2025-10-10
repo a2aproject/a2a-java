@@ -1,6 +1,7 @@
 package io.a2a.client.transport.spi;
 
 import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -9,10 +10,10 @@ import java.util.List;
  */
 public abstract class ClientTransportConfig<T extends ClientTransport> {
 
-    protected List<ClientCallInterceptor> interceptors;
+    protected List<ClientCallInterceptor> interceptors = new ArrayList<>();
 
     public void setInterceptors(List<ClientCallInterceptor> interceptors) {
-        this.interceptors = interceptors;
+        this.interceptors = new ArrayList<>(interceptors);
     }
 
     public List<ClientCallInterceptor> getInterceptors() {

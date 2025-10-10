@@ -47,14 +47,16 @@ public final class APIKeySecurityScheme implements SecurityScheme {
         @JsonCreator
         public static Location fromString(String location) {
             switch (location) {
-                case "cookie":
+                case "cookie" -> {
                     return COOKIE;
-                case "header":
+                }
+                case "header" -> {
                     return HEADER;
-                case "query":
+                }
+                case "query" -> {
                     return QUERY;
-                default:
-                    throw new IllegalArgumentException("Invalid API key location: " + location);
+                }
+                default -> throw new IllegalArgumentException("Invalid API key location: " + location);
             }
         }
     }

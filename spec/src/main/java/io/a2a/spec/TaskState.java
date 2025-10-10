@@ -40,27 +40,17 @@ public enum TaskState {
 
     @JsonCreator
     public static TaskState fromString(String state) {
-        switch (state) {
-            case "submitted":
-                return SUBMITTED;
-            case "working":
-                return WORKING;
-            case "input-required":
-                return INPUT_REQUIRED;
-            case "auth-required":
-                return AUTH_REQUIRED;
-            case "completed":
-                return COMPLETED;
-            case "canceled":
-                return CANCELED;
-            case "failed":
-                return FAILED;
-            case "rejected":
-                return REJECTED;
-            case "unknown":
-                return UNKNOWN;
-            default:
-                throw new IllegalArgumentException("Invalid TaskState: " + state);
-        }
+        return switch (state) {
+            case "submitted" -> SUBMITTED;
+            case "working" -> WORKING;
+            case "input-required" -> INPUT_REQUIRED;
+            case "auth-required" -> AUTH_REQUIRED;
+            case "completed" -> COMPLETED;
+            case "canceled" -> CANCELED;
+            case "failed" -> FAILED;
+            case "rejected" -> REJECTED;
+            case "unknown" -> UNKNOWN;
+            default -> throw new IllegalArgumentException("Invalid TaskState: " + state);
+        };
     }
 }

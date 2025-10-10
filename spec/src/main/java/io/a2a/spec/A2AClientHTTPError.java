@@ -27,6 +27,7 @@ public class A2AClientHTTPError extends A2AClientError {
      *
      * @return the error message
      */
+    @Override
     public String getMessage() {
         return message;
     }

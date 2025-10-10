@@ -22,6 +22,9 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
+import io.a2a.spec.AgentCapabilities;
+import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
@@ -64,6 +67,28 @@ public class RestTransportTest {
 
     private static final Logger log = Logger.getLogger(RestTransportTest.class.getName());
     private ClientAndServer server;
+    private static final AgentCard CARD = new AgentCard.Builder()
+                .name("Hello World Agent")
+                .description("Just a hello world agent")
+                .url("http://localhost:4001")
+                .version("1.0.0")
+                .documentationUrl("http://example.com/docs")
+                .capabilities(new AgentCapabilities.Builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .stateTransitionHistory(true)
+                        .build())
+                .defaultInputModes(Collections.singletonList("text"))
+                .defaultOutputModes(Collections.singletonList("text"))
+                .skills(Collections.singletonList(new AgentSkill.Builder()
+                                .id("hello_world")
+                                .name("Returns hello world")
+                                .description("just returns hello world")
+                                .tags(Collections.singletonList("hello world"))
+                                .examples(List.of("hi", "hello world"))
+                                .build()))
+                .protocolVersion("0.3.0")
+                .build();
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -103,7 +128,8 @@ public class RestTransportTest {
                 );
         MessageSendParams messageSendParams = new MessageSendParams(message, null, null);
         ClientCallContext context = null;
-        RestTransport instance = new RestTransport("http://localhost:4001");
+        
+        RestTransport instance = new RestTransport(CARD);
         EventKind result = instance.sendMessage(messageSendParams, context);
         assertEquals("task", result.getKind());
         Task task = (Task) result;
@@ -144,7 +170,7 @@ public class RestTransportTest {
                                 .withBody(CANCEL_TASK_TEST_RESPONSE)
                 );
         ClientCallContext context = null;
-        RestTransport instance = new RestTransport("http://localhost:4001");
+        RestTransport instance = new RestTransport(CARD);
         Task task = instance.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
                 new HashMap<>()), context);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
@@ -170,7 +196,7 @@ public class RestTransportTest {
                 );
         ClientCallContext context = null;
         TaskQueryParams request = new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64", 10);
-        RestTransport instance = new RestTransport("http://localhost:4001");
+        RestTransport instance = new RestTransport(CARD);
         Task task = instance.getTask(request, context);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
         assertEquals(TaskState.COMPLETED, task.getStatus().state());
@@ -222,7 +248,7 @@ public class RestTransportTest {
                                 .withBody(SEND_MESSAGE_STREAMING_TEST_RESPONSE)
                 );
 
-        RestTransport client = new RestTransport("http://localhost:4001");
+        RestTransport client = new RestTransport(CARD);
         Message message = new Message.Builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me some jokes")))
@@ -272,7 +298,7 @@ public class RestTransportTest {
                                 .withStatusCode(200)
                                 .withBody(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
                 );
-        RestTransport client = new RestTransport("http://localhost:4001");
+        RestTransport client = new RestTransport(CARD);
         TaskPushNotificationConfig pushedConfig = new TaskPushNotificationConfig(
                 "de38c76d-d54c-436c-8b9f-4c2703648d64",
                 new PushNotificationConfig.Builder()
@@ -305,7 +331,7 @@ public class RestTransportTest {
                                 .withBody(GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
                 );
 
-        RestTransport client = new RestTransport("http://localhost:4001");
+        RestTransport client = new RestTransport(CARD);
         TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
                 new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "10",
                         new HashMap<>()), null);
@@ -333,7 +359,7 @@ public class RestTransportTest {
                                 .withBody(LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
                 );
 
-        RestTransport client = new RestTransport("http://localhost:4001");
+        RestTransport client = new RestTransport(CARD);
         List<TaskPushNotificationConfig> taskPushNotificationConfigs = client.listTaskPushNotificationConfigurations(
                 new ListTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", new HashMap<>()), null);
         assertEquals(2, taskPushNotificationConfigs.size());
@@ -369,7 +395,7 @@ public class RestTransportTest {
                                 .withStatusCode(200)
                 );
         ClientCallContext context = null;
-        RestTransport instance = new RestTransport("http://localhost:4001");
+        RestTransport instance = new RestTransport(CARD);
         instance.deleteTaskPushNotificationConfigurations(new DeleteTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "10"), context);
     }
 
@@ -392,7 +418,7 @@ public class RestTransportTest {
                                 .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE)
                 );
 
-        RestTransport client = new RestTransport("http://localhost:4001");
+        RestTransport client = new RestTransport(CARD);
         TaskIdParams taskIdParams = new TaskIdParams("task-1234");
 
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();

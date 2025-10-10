@@ -46,15 +46,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mutiny.zero.ZeroPublisher;
+import org.jspecify.annotations.Nullable;
 
 @ApplicationScoped
 public class RestHandler {
 
     private static final Logger log = Logger.getLogger(RestHandler.class.getName());
     private AgentCard agentCard;
-    private Instance<AgentCard> extendedAgentCard;
+    private @Nullable
+    Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
 
+    @SuppressWarnings("NullAway")
     protected RestHandler() {
         // For CDI
     }
@@ -106,7 +109,7 @@ public class RestHandler {
 
     public HTTPRestResponse cancelTask(String taskId, ServerCallContext context) {
         try {
-            if(taskId == null || taskId.isEmpty()) {
+            if (taskId == null || taskId.isEmpty()) {
                 throw new InvalidParamsError();
             }
             TaskIdParams params = new TaskIdParams(taskId);
@@ -153,9 +156,9 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse getTask(String taskId, Integer historyLength, ServerCallContext context) {
+    public HTTPRestResponse getTask(String taskId, @Nullable Integer historyLength, ServerCallContext context) {
         try {
-            TaskQueryParams params = new TaskQueryParams(taskId,historyLength);
+            TaskQueryParams params = new TaskQueryParams(taskId, historyLength);
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
@@ -168,7 +171,7 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, String configId, ServerCallContext context) {
+    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
@@ -258,6 +261,7 @@ public class RestHandler {
         return new HTTPRestStreamingResponse(convertToSendStreamingMessageResponse(publisher));
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     private Flow.Publisher<String> convertToSendStreamingMessageResponse(
             Flow.Publisher<StreamingEventKind> publisher) {
         // We can't use the normal convertingProcessor since that propagates any errors as an error handled
@@ -265,7 +269,7 @@ public class RestHandler {
         return ZeroPublisher.create(createTubeConfig(), tube -> {
             CompletableFuture.runAsync(() -> {
                 publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
-                    Flow.Subscription subscription;
+                    Flow.@Nullable Subscription subscription;
 
                     @Override
                     public void onSubscribe(Flow.Subscription subscription) {
@@ -278,7 +282,9 @@ public class RestHandler {
                         try {
                             String payload = JsonFormat.printer().omittingInsignificantWhitespace().print(ProtoUtils.ToProto.taskOrMessageStream(item));
                             tube.send(payload);
-                            subscription.request(1);
+                            if (subscription != null) {
+                                subscription.request(1);
+                            }
                         } catch (InvalidProtocolBufferException ex) {
                             onError(ex);
                         }
@@ -325,7 +331,7 @@ public class RestHandler {
         if (error instanceof InvalidAgentResponseError) {
             return 502;
         }
-        if (error instanceof InternalError ) {
+        if (error instanceof InternalError) {
             return 500;
         }
         return 500;
@@ -333,7 +339,7 @@ public class RestHandler {
 
     public HTTPRestResponse getAuthenticatedExtendedCard() {
         try {
-            if (!agentCard.supportsAuthenticatedExtendedCard() || !extendedAgentCard.isResolvable()) {
+            if (!agentCard.supportsAuthenticatedExtendedCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
                 throw new AuthenticatedExtendedCardNotConfiguredError();
             }
             return new HTTPRestResponse(200, "application/json", Utils.OBJECT_MAPPER.writeValueAsString(extendedAgentCard.get()));
@@ -387,7 +393,7 @@ public class RestHandler {
         private final Flow.Publisher<String> publisher;
 
         public HTTPRestStreamingResponse(Flow.Publisher<String> publisher) {
-            super(200, "text/event-stream", null);
+            super(200, "text/event-stream", "");
             this.publisher = publisher;
         }
 
@@ -399,27 +405,15 @@ public class RestHandler {
     private static class HTTPRestErrorResponse {
 
         private final String error;
-        private final String message;
+        private final @Nullable
+        String message;
 
-        public HTTPRestErrorResponse(String error, String message) {
-            this.error = error;
-            this.message = message;
-        }
-
-        public HTTPRestErrorResponse(JSONRPCError jsonRpcError) {
+        private HTTPRestErrorResponse(JSONRPCError jsonRpcError) {
             this.error = jsonRpcError.getClass().getName();
             this.message = jsonRpcError.getMessage();
         }
 
-        public String getError() {
-            return error;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public String toJson() {
+        private String toJson() {
             return "{\"error\": \"" + error + "\", \"message\": \"" + message + "\"}";
         }
 

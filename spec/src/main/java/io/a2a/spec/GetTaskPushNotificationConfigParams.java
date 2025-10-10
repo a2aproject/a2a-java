@@ -6,13 +6,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Parameters for fetching a pushNotificationConfiguration associated with a Task.
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record GetTaskPushNotificationConfigParams(String id, String pushNotificationConfigId, Map<String, Object> metadata) {
+public record GetTaskPushNotificationConfigParams(String id, @Nullable String pushNotificationConfigId, @Nullable Map<String, Object> metadata) {
 
     public GetTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("id", id);

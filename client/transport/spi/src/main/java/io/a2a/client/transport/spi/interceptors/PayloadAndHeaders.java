@@ -1,18 +1,21 @@
 package io.a2a.client.transport.spi.interceptors;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 public class PayloadAndHeaders {
 
-    private final Object payload;
+    private final  @Nullable Object payload;
     private final Map<String, String> headers;
 
-    public PayloadAndHeaders(Object payload, Map<String, String> headers) {
+    public PayloadAndHeaders(@Nullable Object payload, Map<String, String> headers) {
         this.payload = payload;
-        this.headers = headers;
+        this.headers = headers == null ? Collections.emptyMap() : new HashMap<>(headers);
     }
 
-    public Object getPayload() {
+    public @Nullable Object getPayload() {
         return payload;
     }
 

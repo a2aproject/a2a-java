@@ -12,11 +12,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientJSONError;
 import io.a2a.spec.AgentCard;
+import org.jspecify.annotations.Nullable;
 
 public class A2ACardResolver {
     private final A2AHttpClient httpClient;
     private final String url;
-    private final Map<String, String> authHeaders;
+    private final @Nullable Map<String, String> authHeaders;
 
     private static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
 
@@ -63,12 +64,12 @@ public class A2ACardResolver {
      * @param authHeaders the HTTP authentication headers to use. May be {@code null}
      * @throws A2AClientError if the URL for the agent is invalid
      */
-    public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, String agentCardPath,
-                           Map<String, String> authHeaders) throws A2AClientError {
+    public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, @Nullable String agentCardPath,
+                           @Nullable Map<String, String> authHeaders) throws A2AClientError {
         this.httpClient = httpClient;
-        agentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
+        String effectiveAgentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
         try {
-            this.url = new URI(baseUrl).resolve(agentCardPath).toString();
+            this.url = new URI(baseUrl).resolve(effectiveAgentCardPath).toString();
         } catch (URISyntaxException e) {
             throw new A2AClientError("Invalid agent URL", e);
         }

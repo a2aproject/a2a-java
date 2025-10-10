@@ -93,6 +93,9 @@ public class ClientBuilder {
 
         // Get the transport provider associated to the protocol
         ClientTransportProvider clientTransportProvider = transportProviderRegistry.get(agentInterface.transport());
+        if (clientTransportProvider == null) {
+            throw new A2AClientException("No client available for " + agentInterface.transport());
+        }
         Class<? extends ClientTransport> transportProtocolClass = clientTransportProvider.getTransportProtocolClass();
 
         // Retrieve the configuration associated to the preferred transport
