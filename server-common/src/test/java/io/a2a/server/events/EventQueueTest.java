@@ -354,15 +354,50 @@ public class EventQueueTest {
     }
 
     /**
-     * Test that child queues are closed when parent closes.
+     * Test that child queues are NOT automatically closed when parent closes gracefully.
+     * Children must close themselves, which then notifies parent via reference counting.
      */
     @Test
     public void testCloseChildQueues() throws Exception {
         EventQueue childQueue = eventQueue.tap();
         assertTrue(childQueue != null);
 
+        // Graceful close - parent closes but children remain open
         eventQueue.close();
         assertTrue(eventQueue.isClosed());
-        assertTrue(childQueue.isClosed());
+        assertFalse(childQueue.isClosed());  // Child NOT closed on graceful parent close
+
+        // Immediate close - parent force-closes all children
+        EventQueue parentQueue2 = EventQueue.builder().build();
+        EventQueue childQueue2 = parentQueue2.tap();
+        parentQueue2.close(true);  // immediate=true
+        assertTrue(parentQueue2.isClosed());
+        assertTrue(childQueue2.isClosed());  // Child IS closed on immediate parent close
+    }
+
+    /**
+     * Test reference counting: MainQueue stays open while children are active,
+     * closes automatically when last child closes.
+     */
+    @Test
+    public void testMainQueueReferenceCountingStaysOpenWithActiveChildren() throws Exception {
+        EventQueue mainQueue = EventQueue.builder().build();
+        EventQueue child1 = mainQueue.tap();
+        EventQueue child2 = mainQueue.tap();
+
+        // Close child1
+        child1.close();
+
+        // MainQueue should still be open (child2 active)
+        assertFalse(mainQueue.isClosed());
+        assertTrue(child1.isClosed());
+        assertFalse(child2.isClosed());
+
+        // Close child2
+        child2.close();
+
+        // Now MainQueue should auto-close (no children left)
+        assertTrue(mainQueue.isClosed());
+        assertTrue(child2.isClosed());
     }
 }

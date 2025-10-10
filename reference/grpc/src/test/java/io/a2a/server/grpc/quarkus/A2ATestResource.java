@@ -105,6 +105,14 @@ public class A2ATestResource {
         return Response.ok(String.valueOf(streamingSubscribedCount.get()), TEXT_PLAIN).build();
     }
 
+    @GET
+    @Path("/queue/childCount/{taskId}")
+    @Produces(TEXT_PLAIN)
+    public Response getChildQueueCount(@PathParam("taskId") String taskId) {
+        int count = testUtilsBean.getChildQueueCount(taskId);
+        return Response.ok(String.valueOf(count), TEXT_PLAIN).build();
+    }
+
     @DELETE
     @Path("/task/{taskId}/config/{configId}")
     public Response deleteTaskPushNotificationConfig(@PathParam("taskId") String taskId, @PathParam("configId") String configId) {

@@ -50,6 +50,10 @@ public class TestUtilsBean {
         queueManager.get(taskId).enqueueEvent(event);
     }
 
+    public int getChildQueueCount(String taskId) {
+        return queueManager.getActiveChildQueueCount(taskId);
+    }
+
     public void deleteTaskPushNotificationConfig(String taskId, String configId) {
         pushNotificationConfigStore.deleteInfo(taskId, configId);
     }

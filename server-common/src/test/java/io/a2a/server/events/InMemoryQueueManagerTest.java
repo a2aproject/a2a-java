@@ -115,9 +115,12 @@ public class InMemoryQueueManagerTest {
         EventQueue result = queueManager.createOrTap(taskId);
 
         assertNotNull(result);
-        // Should be added to manager
+        // createOrTap now returns ChildQueue, not MainQueue
+        // MainQueue should be stored in manager
         EventQueue retrievedQueue = queueManager.get(taskId);
-        assertSame(result, retrievedQueue);
+        assertNotNull(retrievedQueue);
+        // Result should be a ChildQueue (cannot be tapped)
+        assertThrows(IllegalStateException.class, () -> result.tap());
     }
 
     @Test
@@ -204,15 +207,17 @@ public class InMemoryQueueManagerTest {
             assertNotNull(result);
         }
 
-        // There should be exactly one queue in the manager
+        // There should be exactly one MainQueue in the manager
         EventQueue managerQueue = queueManager.get(taskId);
         assertNotNull(managerQueue);
 
-        // One of the results should be the main queue instance, the others should be tapped child queues.
-        long mainQueueCount = results.stream().filter(q -> q == managerQueue).count();
-        assertEquals(1, mainQueueCount, "Exactly one thread should have created the main queue.");
+        // ALL results should be ChildQueues (cannot tap a ChildQueue)
+        for (EventQueue result : results) {
+            assertThrows(IllegalStateException.class, () -> result.tap());
+        }
 
-        long childQueueCount = results.stream().filter(q -> q != managerQueue).count();
-        assertEquals(results.size() - 1, childQueueCount, "All other threads should have received a tapped queue.");
+        // All ChildQueues should be distinct instances
+        long distinctCount = results.stream().distinct().count();
+        assertEquals(results.size(), distinctCount, "All ChildQueues should be distinct instances");
     }
 }

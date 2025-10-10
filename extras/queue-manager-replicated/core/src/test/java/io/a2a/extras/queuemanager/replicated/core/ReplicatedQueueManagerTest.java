@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.EventQueueClosedException;
+import io.a2a.server.events.EventQueueTestHelper;
 import io.a2a.spec.Event;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskState;
@@ -147,8 +149,11 @@ class ReplicatedQueueManagerTest {
         EventQueue queue = queueManager.createOrTap(taskId);
         assertNotNull(queue);
 
+        // createOrTap now returns ChildQueue, get returns MainQueue
         EventQueue retrievedQueue = queueManager.get(taskId);
-        assertEquals(queue, retrievedQueue);
+        assertNotNull(retrievedQueue);
+        // queue should be a ChildQueue (cannot be tapped)
+        assertThrows(IllegalStateException.class, () -> EventQueueTestHelper.tapQueue(queue));
 
         EventQueue tappedQueue = queueManager.tap(taskId);
         assertNotNull(tappedQueue);
