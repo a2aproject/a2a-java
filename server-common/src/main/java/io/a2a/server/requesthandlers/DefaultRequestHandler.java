@@ -218,8 +218,7 @@ public class DefaultRequestHandler implements RequestHandler {
             pushNotificationCallback.run();
         } finally {
             if (interruptedOrNonBlocking) {
-                CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId, queue, false), executor);
-                trackBackgroundTask(cleanupTask);
+                trackBackgroundTask(cleanupProducer(taskId, queue, false));
             } else {
                 cleanupProducer(taskId, queue, false);
             }
@@ -342,8 +341,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 }
             });
         } finally {
-            CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId.get(), queue, true), executor);
-            trackBackgroundTask(cleanupTask);
+            trackBackgroundTask(cleanupProducer(taskId.get(), queue, true));
         }
     }
 
@@ -480,8 +478,16 @@ public class DefaultRequestHandler implements RequestHandler {
                 .whenComplete((v, err) -> {
                     if (err != null) {
                         runnable.setError(err);
-                        // Close queue on agent execution error
+                        // Close queue on error
                         queue.close();
+                    } else {
+                        // Only close queue if task is in a final state
+                        Task task = taskStore.get(taskId);
+                        if (task != null && task.getStatus().state().isFinal()) {
+                            queue.close();
+                        } else {
+                            LOGGER.debug("Task {} not in final state or not yet created, keeping queue open", taskId);
+                        }
                     }
                     runnable.invokeDoneCallbacks();
                 });
@@ -507,14 +513,14 @@ public class DefaultRequestHandler implements RequestHandler {
         });
     }
 
-    private void cleanupProducer(String taskId, EventQueue queue, boolean isStreaming) {
+    private CompletableFuture<Void> cleanupProducer(String taskId, EventQueue queue, boolean isStreaming) {
         LOGGER.debug("Starting cleanup for task {} (streaming={})", taskId, isStreaming);
         CompletableFuture<Void> agentFuture = runningAgents.get(taskId);
         if (agentFuture == null) {
             LOGGER.debug("No running agent found for task {}", taskId);
-            return;
+            return CompletableFuture.completedFuture(null);  // Return completed future
         }
-        agentFuture.whenComplete((v, t) -> {
+        return agentFuture.whenComplete((v, t) -> {
             LOGGER.debug("Agent completed for task {}", taskId);
 
             // Determine if we should keep the MainQueue alive
