@@ -11,7 +11,6 @@ import io.a2a.server.tasks.TaskUpdater;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskNotCancelableError;
-import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
