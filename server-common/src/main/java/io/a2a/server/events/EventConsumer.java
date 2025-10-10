@@ -10,8 +10,11 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 import mutiny.zero.BackpressureStrategy;
 import mutiny.zero.TubeConfiguration;
 import mutiny.zero.ZeroPublisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventConsumer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventConsumer.class);
     private final EventQueue queue;
     private Throwable error;
 
@@ -21,6 +24,7 @@ public class EventConsumer {
 
     public EventConsumer(EventQueue queue) {
         this.queue = queue;
+        LOGGER.debug("EventConsumer created with queue {}", System.identityHashCode(queue));
     }
 
     public Event consumeOne() throws A2AServerException, EventQueueClosedException {
@@ -106,5 +110,12 @@ public class EventConsumer {
                 error = agentRunnable.getError();
             }
         };
+    }
+
+    public void close() {
+        // Close the queue to stop the polling loop in consumeAll()
+        // This will cause EventQueueClosedException and exit the while(true) loop
+        LOGGER.debug("EventConsumer closing queue {}", System.identityHashCode(queue));
+        queue.close();
     }
 }

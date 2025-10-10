@@ -94,7 +94,7 @@ public class TaskManager {
 
     public Event process(Event event) throws A2AServerException {
         if (event instanceof Task task) {
-            saveTask(task);
+            saveTaskEvent(task);
         } else if (event instanceof TaskStatusUpdateEvent taskStatusUpdateEvent) {
             saveTaskEvent(taskStatusUpdateEvent);
         } else if (event instanceof TaskArtifactUpdateEvent taskArtifactUpdateEvent) {

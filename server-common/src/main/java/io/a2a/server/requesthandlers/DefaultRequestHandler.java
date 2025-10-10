@@ -28,6 +28,7 @@ import io.a2a.server.agentexecution.SimpleRequestContextBuilder;
 import io.a2a.server.events.EnhancedRunnable;
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueue;
+import io.a2a.server.events.NoTaskQueueException;
 import io.a2a.server.events.QueueManager;
 import io.a2a.server.events.TaskQueueExistsException;
 import io.a2a.server.tasks.PushNotificationConfigStore;
@@ -201,7 +202,7 @@ public class DefaultRequestHandler implements RequestHandler {
             // any errors thrown by the producerRunnable are not picked up by the consumer
             producerRunnable.addDoneCallback(consumer.createAgentRunnableDoneCallback());
             etai = resultAggregator.consumeAndBreakOnInterrupt(consumer, blocking, pushNotificationCallback);
-            
+
             if (etai == null) {
                 LOGGER.debug("No result, throwing InternalError");
                 throw new InternalError("No result");
@@ -218,10 +219,10 @@ public class DefaultRequestHandler implements RequestHandler {
             pushNotificationCallback.run();
         } finally {
             if (interruptedOrNonBlocking) {
-                CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId), executor);
+                CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId, false), executor);
                 trackBackgroundTask(cleanupTask);
             } else {
-                cleanupProducer(taskId);
+                cleanupProducer(taskId, false);
             }
         }
 
@@ -342,7 +343,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 }
             });
         } finally {
-            CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId.get()), executor);
+            CompletableFuture<Void> cleanupTask = CompletableFuture.runAsync(() -> cleanupProducer(taskId.get(), true), executor);
             trackBackgroundTask(cleanupTask);
         }
     }
@@ -473,8 +474,17 @@ public class DefaultRequestHandler implements RequestHandler {
                 .whenComplete((v, err) -> {
                     if (err != null) {
                         runnable.setError(err);
+                        // Close queue on error
+                        queue.close();
+                    } else {
+                        // Only close queue if task is in a final state
+                        Task task = taskStore.get(taskId);
+                        if (task != null && task.getStatus().state().isFinal()) {
+                            queue.close();
+                        } else {
+                            LOGGER.debug("Task {} not in final state or not yet created, keeping queue open", taskId);
+                        }
                     }
-                    queue.close();
                     runnable.invokeDoneCallbacks();
                 });
         runningAgents.put(taskId, cf);
@@ -499,11 +509,48 @@ public class DefaultRequestHandler implements RequestHandler {
         });
     }
 
-    private void cleanupProducer(String taskId) {
+    private void cleanupProducer(String taskId, boolean isStreaming) {
+        LOGGER.debug("Starting cleanup for task {} (streaming={})", taskId, isStreaming);
         // TODO the Python implementation waits for the producerRunnable
-        runningAgents.get(taskId)
-                .whenComplete((v, t) -> {
-                    queueManager.close(taskId);
+        CompletableFuture<Void> agentFuture = runningAgents.get(taskId);
+        if (agentFuture == null) {
+            LOGGER.debug("No running agent found for task {}", taskId);
+            return;
+        }
+        agentFuture.whenComplete((v, t) -> {
+                    LOGGER.debug("Agent completed for task {}", taskId);
+
+                    boolean closeQueue = false;
+                    if (isStreaming) {
+                        // For streaming calls, always close queue when agent completes
+                        // Each streaming call is independent and doesn't support multi-message reuse
+                        LOGGER.debug("Streaming call, closing queue for task {}", taskId);
+                        closeQueue = true;
+                    } else {
+                        // For non-streaming calls, only close queue if task is in final state
+                        // For non-final states, queue must stay open for potential future messages to same taskId
+                        // so we can handle the "fire and forget' case used e.g. in the TCK
+                        Task task = taskStore.get(taskId);
+                        if (task != null && task.getStatus().state().isFinal()) {
+                            LOGGER.debug("Task in final state, closing queue for task {}", taskId);
+                            closeQueue = true;
+                        } else {
+                            LOGGER.debug("Task not in final state, keeping queue open for task {}", taskId);
+                        }
+                    }
+
+                    if (closeQueue) {
+                        try {
+                            queueManager.close(taskId);
+                        } catch (NoTaskQueueException e) {
+                            // This can happen if the queue was already closed and removed, which is not an error in this cleanup context.
+                            LOGGER.debug("Queue for task {} was already closed or does not exist.", taskId);
+                        } catch (Exception e) {
+                            LOGGER.debug("Error closing queue for task {}: {}", taskId, e.getMessage());
+                        }
+                    }
+
+                    // Always remove from running agents
                     runningAgents.remove(taskId);
                 });
     }
@@ -543,6 +590,11 @@ public class DefaultRequestHandler implements RequestHandler {
                 pushSender.sendNotification(latestTask);
             }
         }
+    }
+
+    private boolean isTaskFinalInTaskStore(String taskId) {
+        Task task = taskStore.get(taskId);
+        return task != null && task.getStatus().state().isFinal();
     }
 
     private record MessageSendSetup(TaskManager taskManager, Task task, RequestContext requestContext) {}
