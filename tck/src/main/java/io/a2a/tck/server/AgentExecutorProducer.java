@@ -4,6 +4,8 @@ import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
@@ -26,7 +28,7 @@ public class AgentExecutorProducer {
     
     private static class FireAndForgetAgentExecutor implements AgentExecutor {
         @Override
-        public void execute(RequestContext context, EventQueue eventQueue) throws JSONRPCError {
+        public void execute(@Nullable RequestContext context, EventQueue eventQueue) throws JSONRPCError {
             Task task = context.getTask();
 
             if (task == null) {
