@@ -12,6 +12,7 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.TransportProtocol;
+import org.jspecify.annotations.Nullable;
 
 @ApplicationScoped
 public class AgentCardProducer {
