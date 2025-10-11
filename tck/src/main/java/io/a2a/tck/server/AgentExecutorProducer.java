@@ -28,7 +28,7 @@ public class AgentExecutorProducer {
     
     private static class FireAndForgetAgentExecutor implements AgentExecutor {
         @Override
-        public void execute(@Nullable RequestContext context, EventQueue eventQueue) throws JSONRPCError {
+        public void execute(RequestContext context, EventQueue eventQueue) throws JSONRPCError {
             Task task = context.getTask();
 
             if (task == null) {
