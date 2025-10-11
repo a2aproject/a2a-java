@@ -54,7 +54,7 @@ public class AgentCardProducer {
                 .build();
     }
 
-    private static String getEnvOrDefault(@Nullable String envVar, String defaultValue) {
+    private static String getEnvOrDefault(String envVar, String defaultValue) {
         String value = System.getenv(envVar);
         return value == null || value.isBlank() ? defaultValue : value;
     }
