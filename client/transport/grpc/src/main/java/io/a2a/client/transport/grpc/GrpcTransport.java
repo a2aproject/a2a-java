@@ -49,6 +49,7 @@ import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
+import org.jspecify.annotations.Nullable;
 
 public class GrpcTransport implements ClientTransport {
 
@@ -60,14 +61,14 @@ public class GrpcTransport implements ClientTransport {
             Metadata.ASCII_STRING_MARSHALLER);
     private final A2AServiceBlockingV2Stub blockingStub;
     private final A2AServiceStub asyncStub;
-    private final List<ClientCallInterceptor> interceptors;
+    private final @Nullable List<ClientCallInterceptor> interceptors;
     private AgentCard agentCard;
 
     public GrpcTransport(Channel channel, AgentCard agentCard) {
         this(channel, agentCard, null);
     }
 
-    public GrpcTransport(Channel channel, AgentCard agentCard, List<ClientCallInterceptor> interceptors) {
+    public GrpcTransport(Channel channel, AgentCard agentCard, @Nullable List<ClientCallInterceptor> interceptors) {
         checkNotNullParam("channel", channel);
         this.asyncStub = A2AServiceGrpc.newStub(channel);
         this.blockingStub = A2AServiceGrpc.newBlockingV2Stub(channel);
@@ -76,7 +77,7 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public EventKind sendMessage(MessageSendParams request, ClientCallContext context) throws A2AClientException {
+    public EventKind sendMessage(MessageSendParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(request, context);
@@ -100,7 +101,7 @@ public class GrpcTransport implements ClientTransport {
 
     @Override
     public void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer,
-                                     Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+                                     Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
         SendMessageRequest grpcRequest = createGrpcSendMessageRequest(request, context);
@@ -117,7 +118,7 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException {
+    public Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         GetTaskRequest.Builder requestBuilder = GetTaskRequest.newBuilder();
@@ -138,7 +139,7 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException {
+    public Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         CancelTaskRequest cancelTaskRequest = CancelTaskRequest.newBuilder()
@@ -157,7 +158,7 @@ public class GrpcTransport implements ClientTransport {
 
     @Override
     public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
-                                                                           ClientCallContext context) throws A2AClientException {
+                                                                           @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         String configId = request.pushNotificationConfig().id();
@@ -180,7 +181,7 @@ public class GrpcTransport implements ClientTransport {
     @Override
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(
             GetTaskPushNotificationConfigParams request,
-            ClientCallContext context) throws A2AClientException {
+            @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         GetTaskPushNotificationConfigRequest grpcRequest = GetTaskPushNotificationConfigRequest.newBuilder()
@@ -200,7 +201,7 @@ public class GrpcTransport implements ClientTransport {
     @Override
     public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request,
-            ClientCallContext context) throws A2AClientException {
+            @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         ListTaskPushNotificationConfigRequest grpcRequest = ListTaskPushNotificationConfigRequest.newBuilder()
@@ -221,7 +222,7 @@ public class GrpcTransport implements ClientTransport {
 
     @Override
     public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request,
-                                                         ClientCallContext context) throws A2AClientException {
+                                                         @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         DeleteTaskPushNotificationConfigRequest grpcRequest = DeleteTaskPushNotificationConfigRequest.newBuilder()
@@ -240,7 +241,7 @@ public class GrpcTransport implements ClientTransport {
 
     @Override
     public void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
-                            Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+                            Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
 
@@ -261,7 +262,7 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getAgentCard(ClientCallContext context) throws A2AClientException {
+    public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
         // TODO: Determine how to handle retrieving the authenticated extended agent card
         return agentCard;
     }
@@ -270,7 +271,7 @@ public class GrpcTransport implements ClientTransport {
     public void close() {
     }
 
-    private SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams, ClientCallContext context) {
+    private SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams, @Nullable ClientCallContext context) {
         SendMessageRequest.Builder builder = SendMessageRequest.newBuilder();
         builder.setRequest(ToProto.message(messageSendParams.message()));
         if (messageSendParams.configuration() != null) {
@@ -286,7 +287,7 @@ public class GrpcTransport implements ClientTransport {
      * Creates gRPC metadata from ClientCallContext headers.
      * Extracts headers like X-A2A-Extensions and sets them as gRPC metadata.
      */
-    private Metadata createGrpcMetadata(ClientCallContext context, PayloadAndHeaders payloadAndHeaders) {
+    private Metadata createGrpcMetadata(@Nullable ClientCallContext context, @Nullable PayloadAndHeaders payloadAndHeaders) {
         Metadata metadata = new Metadata();
         
         if (context != null && context.getHeaders() != null) {
@@ -328,7 +329,7 @@ public class GrpcTransport implements ClientTransport {
      * @param payloadAndHeaders the payloadAndHeaders after applying any interceptors
      * @return blocking stub with metadata interceptor
      */
-    private A2AServiceBlockingV2Stub createBlockingStubWithMetadata(ClientCallContext context,
+    private A2AServiceBlockingV2Stub createBlockingStubWithMetadata(@Nullable ClientCallContext context,
                                                                     PayloadAndHeaders payloadAndHeaders) {
         Metadata metadata = createGrpcMetadata(context, payloadAndHeaders);
         return blockingStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata));
@@ -341,7 +342,7 @@ public class GrpcTransport implements ClientTransport {
      * @param payloadAndHeaders the payloadAndHeaders after applying any interceptors
      * @return async stub with metadata interceptor
      */
-    private A2AServiceStub createAsyncStubWithMetadata(ClientCallContext context,
+    private A2AServiceStub createAsyncStubWithMetadata(@Nullable ClientCallContext context,
                                                        PayloadAndHeaders payloadAndHeaders) {
         Metadata metadata = createGrpcMetadata(context, payloadAndHeaders);
         return asyncStub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata));
@@ -351,7 +352,7 @@ public class GrpcTransport implements ClientTransport {
         return getTaskPushNotificationConfigName(params.id(), params.pushNotificationConfigId());
     }
 
-    private String getTaskPushNotificationConfigName(String taskId, String pushNotificationConfigId) {
+    private String getTaskPushNotificationConfigName(String taskId, @Nullable String pushNotificationConfigId) {
         StringBuilder name = new StringBuilder();
         name.append("tasks/");
         name.append(taskId);
@@ -366,7 +367,7 @@ public class GrpcTransport implements ClientTransport {
     }
 
     private PayloadAndHeaders applyInterceptors(String methodName, Object payload,
-                                                AgentCard agentCard, ClientCallContext clientCallContext) {
+                                                AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         PayloadAndHeaders payloadAndHeaders = new PayloadAndHeaders(payload,
                 clientCallContext != null ? clientCallContext.getHeaders() : null);
         if (interceptors != null && ! interceptors.isEmpty()) {

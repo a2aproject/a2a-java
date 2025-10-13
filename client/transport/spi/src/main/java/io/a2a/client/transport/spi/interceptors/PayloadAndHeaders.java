@@ -10,7 +10,7 @@ public class PayloadAndHeaders {
     private final  @Nullable Object payload;
     private final Map<String, String> headers;
 
-    public PayloadAndHeaders(@Nullable Object payload, Map<String, String> headers) {
+    public PayloadAndHeaders(@Nullable Object payload, @Nullable Map<String, String> headers) {
         this.payload = payload;
         this.headers = headers == null ? Collections.emptyMap() : new HashMap<>(headers);
     }
