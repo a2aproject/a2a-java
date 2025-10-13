@@ -35,7 +35,7 @@ public class A2ACardResolver {
     }
 
     /**
-     /**Get the agent card for an A2A agent.
+     * Get the agent card for an A2A agent.
      *
      * @param httpClient the http client to use
      * @param baseUrl the base URL for the agent whose agent card we want to retrieve
@@ -81,7 +81,7 @@ public class A2ACardResolver {
      *
      * @return the agent card
      * @throws A2AClientError If an HTTP error occurs fetching the card
-     * @throws A2AClientJSONError f the response body cannot be decoded as JSON or validated against the AgentCard schema
+     * @throws A2AClientJSONError If the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public AgentCard getAgentCard() throws A2AClientError, A2AClientJSONError {
         A2AHttpClient.GetBuilder builder = httpClient.createGet()

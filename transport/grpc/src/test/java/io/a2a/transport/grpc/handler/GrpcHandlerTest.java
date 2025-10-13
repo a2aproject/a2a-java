@@ -742,7 +742,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Disabled
     public void testOnGetAuthenticatedExtendedAgentCard() throws Exception {
-        // TODO - getting the authenticated extended agent card isn't support for gRPC right now
+        // TODO - getting the authenticated extended agent card isn't supported for gRPC right now
     }
 
     @Test

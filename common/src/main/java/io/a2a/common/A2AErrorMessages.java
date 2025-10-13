@@ -3,7 +3,7 @@ package io.a2a.common;
 public final class A2AErrorMessages {
 
     private A2AErrorMessages() {
-        // prevent instantiation
+        // Prevent instantiation
     }
 
     public static final String AUTHENTICATION_FAILED = "Authentication failed: Client credentials are missing or invalid";

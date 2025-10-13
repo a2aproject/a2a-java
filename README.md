@@ -40,9 +40,9 @@ The A2A Java SDK provides a Java server implementation of the [Agent2Agent (A2A)
 - [Add a class that creates an A2A Agent Card](#2-add-a-class-that-creates-an-a2a-agent-card)
 - [Add a class that creates an A2A Agent Executor](#3-add-a-class-that-creates-an-a2a-agent-executor)
 
-### 1. Add an A2A Java SDK Reference Server dependency to your project
+### 1. Add an A2A Java SDK Server Maven dependency to your project
 
-Adding a dependency on an A2A Java SDK Reference Server will provide access to the core classes
+Adding a dependency on an A2A Java SDK Server will provide access to the core classes
 that make up the A2A specification and allow you to run your agentic Java application as an A2A server agent.
 
 The A2A Java SDK provides [reference A2A server implementations](reference) based on [Quarkus](https://quarkus.io) for use with our tests and examples. However, the project is designed in such a way that it is trivial to integrate with various Java runtimes.
@@ -128,7 +128,7 @@ public class WeatherAgentCardProducer {
                 .skills(Collections.singletonList(new AgentSkill.Builder()
                         .id("weather_search")
                         .name("Search weather")
-                        .description("Helps with weather in city, or states")
+                        .description("Helps with weather in cities or states")
                         .tags(Collections.singletonList("weather"))
                         .examples(List.of("weather in LA, CA"))
                         .build()))
@@ -262,8 +262,8 @@ that you can use to create your A2A `Client`.
 
 ### 2. Add one or more dependencies on the A2A Java SDK Client Transport(s) you'd like to use
 
-By default, the sdk-client is coming with the JSONRPC transport dependency. Despite the fact that the JSONRPC transport 
-dependency is included by default, you still need to add the transport to the Client as described in [JSON-RPC Transport section](#json-rpc-transport-configuration).
+By default, the sdk-client comes with the JSONRPC transport dependency. Despite the fact that the JSONRPC transport
+dependency is included by default, you still need to add the transport to the Client as described in the [JSON-RPC Transport section](#json-rpc-transport-configuration).
 
 
 If you want to use the gRPC transport, you'll need to add a relevant dependency:
@@ -473,8 +473,8 @@ client.sendMessage(message, customConsumers, customErrorHandler);
 // Retrieve the task with id "task-1234"
 Task task = client.getTask(new TaskQueryParams("task-1234"));
 
-// You can also specify the maximum number of items of history for the task
-// to include in the response and 
+// You can also specify the maximum number of history items for the task
+// to include in the response 
 Task task = client.getTask(new TaskQueryParams("task-1234", 10));
 
 // You can also optionally specify a ClientCallContext with call-specific config to use

@@ -19,7 +19,7 @@ This can be done by looking in the top-right corner of the repository page and c
 
 The next step is to clone your newly forked repository onto your local workspace. This can be done by going to your newly forked repository, which should be at `https://github.com/USERNAME/a2a-java`.
 
-Then, there will be a green button that says "Code". Click on that and copy the URL.
+Then, there will be a green button that says "Code". Click on it and copy the URL.
 
 Then, in your terminal, paste the following command:
 ```bash

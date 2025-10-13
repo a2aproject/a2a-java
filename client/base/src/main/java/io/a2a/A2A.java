@@ -136,7 +136,7 @@ public class A2A {
      * @param agentUrl the base URL for the agent whose agent card we want to retrieve
      * @return the agent card
      * @throws A2AClientError If an HTTP error occurs fetching the card
-     * @throws A2AClientJSONError f the response body cannot be decoded as JSON or validated against the AgentCard schema
+     * @throws A2AClientJSONError If the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(String agentUrl) throws A2AClientError, A2AClientJSONError {
         return getAgentCard(new JdkA2AHttpClient(), agentUrl);
@@ -149,7 +149,7 @@ public class A2A {
      * @param agentUrl the base URL for the agent whose agent card we want to retrieve
      * @return the agent card
      * @throws A2AClientError If an HTTP error occurs fetching the card
-     * @throws A2AClientJSONError f the response body cannot be decoded as JSON or validated against the AgentCard schema
+     * @throws A2AClientJSONError If the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl) throws A2AClientError, A2AClientJSONError  {
         return getAgentCard(httpClient, agentUrl, null, null);
@@ -164,7 +164,7 @@ public class A2A {
      * @param authHeaders the HTTP authentication headers to use
      * @return the agent card
      * @throws A2AClientError If an HTTP error occurs fetching the card
-     * @throws A2AClientJSONError f the response body cannot be decoded as JSON or validated against the AgentCard schema
+     * @throws A2AClientJSONError If the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError {
         return getAgentCard(new JdkA2AHttpClient(), agentUrl, relativeCardPath, authHeaders);
@@ -180,7 +180,7 @@ public class A2A {
      * @param authHeaders the HTTP authentication headers to use
      * @return the agent card
      * @throws A2AClientError If an HTTP error occurs fetching the card
-     * @throws A2AClientJSONError f the response body cannot be decoded as JSON or validated against the AgentCard schema
+     * @throws A2AClientJSONError If the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError  {
         A2ACardResolver resolver = new A2ACardResolver(httpClient, agentUrl, relativeCardPath, authHeaders);

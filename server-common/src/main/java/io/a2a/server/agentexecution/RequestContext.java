@@ -38,7 +38,7 @@ public class RequestContext {
         this.relatedTasks = relatedTasks == null ? new ArrayList<>() : relatedTasks;
         this.callContext = callContext;
 
-        // if the taskId and contextId were specified, they must match the params
+        // If the taskId and contextId were specified, they must match the params
         if (params != null) {
             if (taskId != null && !taskId.equals(params.message().getTaskId())) {
                 throw new InvalidParamsError("bad task id");
