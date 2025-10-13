@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 
 import io.a2a.server.AgentCardValidator;
@@ -44,6 +45,7 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.server.util.async.Internal;
 import mutiny.zero.ZeroPublisher;
 
 @ApplicationScoped
@@ -52,23 +54,26 @@ public class JSONRPCHandler {
     private AgentCard agentCard;
     private Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
+    private final Executor executor;
 
     protected JSONRPCHandler() {
+        this.executor = null;
     }
 
     @Inject
     public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-                          RequestHandler requestHandler) {
+                          RequestHandler requestHandler, @Internal Executor executor) {
         this.agentCard = agentCard;
         this.extendedAgentCard = extendedAgentCard;
         this.requestHandler = requestHandler;
-        
+        this.executor = executor;
+
         // Validate transport configuration
         AgentCardValidator.validateTransportConfiguration(agentCard);
     }
 
-    public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, RequestHandler requestHandler) {
-        this(agentCard, null, requestHandler);
+    public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
+        this(agentCard, null, requestHandler, executor);
     }
 
     public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
@@ -278,7 +283,7 @@ public class JSONRPCHandler {
                             tube.complete();
                         }
                     });
-                });
+                }, executor);
             });
     }
 }

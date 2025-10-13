@@ -3,11 +3,14 @@ package io.a2a.server.apps.common;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
+import java.util.List;
+
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.tasks.TaskUpdater;
 import io.a2a.spec.JSONRPCError;
+import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
 import io.quarkus.arc.profile.IfBuildProfile;
 
@@ -20,6 +23,26 @@ public class AgentExecutorProducer {
         return new AgentExecutor() {
             @Override
             public void execute(RequestContext context, EventQueue eventQueue) throws JSONRPCError {
+                TaskUpdater updater = new TaskUpdater(context, eventQueue);
+                String taskId = context.getTaskId();
+
+                // Special handling for multi-event test
+                if ("multi-event-test".equals(taskId)) {
+                    // First call: context.getTask() == null (new task)
+                    if (context.getTask() == null) {
+                        updater.startWork();
+                        // Return immediately - queue stays open because task is in WORKING state
+                        return;
+                    } else {
+                        // Second call: context.getTask() != null (existing task)
+                        updater.addArtifact(
+                            List.of(new TextPart("Second message artifact", null)),
+                            "artifact-2", "Second Artifact", null);
+                        updater.complete();
+                        return;
+                    }
+                }
+
                 if (context.getTaskId().equals("task-not-supported-123")) {
                     eventQueue.enqueueEvent(new UnsupportedOperationError());
                 }

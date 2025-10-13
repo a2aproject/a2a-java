@@ -232,6 +232,38 @@ public class WeatherAgentExecutorProducer {
 }
 ```
 
+### 4. Configure Executor Settings (Optional)
+
+The A2A Java SDK uses a dedicated executor for handling asynchronous operations like streaming subscriptions. By default, this executor is configured with a core pool size of 5 threads and a maximum pool size of 50 threads, optimized for I/O-bound operations.
+
+You can customize the executor settings in your `application.properties`:
+
+```properties
+# Core thread pool size for the @Internal executor (default: 5)
+a2a.executor.core-pool-size=5
+
+# Maximum thread pool size (default: 50)
+a2a.executor.max-pool-size=50
+
+# Thread keep-alive time in seconds (default: 60)
+a2a.executor.keep-alive-seconds=60
+```
+
+**Why this matters:**
+- **Streaming Performance**: The executor handles streaming subscriptions. Too few threads can cause timeouts under concurrent load.
+- **Resource Management**: The dedicated executor prevents streaming operations from competing with the ForkJoinPool used by other async tasks.
+- **Concurrency**: In production environments with high concurrent streaming requests, increase the pool sizes accordingly.
+
+**Default Configuration:**
+```properties
+# These are the defaults - no need to set unless you want different values
+a2a.executor.core-pool-size=5
+a2a.executor.max-pool-size=50
+a2a.executor.keep-alive-seconds=60
+```
+
+**Note:** The reference server implementations automatically configure this executor. If you're creating a custom server integration, ensure you provide an `@Internal Executor` bean for optimal streaming performance.
+
 ## A2A Client
 
 The A2A Java SDK provides a Java client implementation of the [Agent2Agent (A2A) Protocol](https://google-a2a.github.io/A2A), allowing communication with A2A servers. The Java client implementation supports the following transports:

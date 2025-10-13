@@ -94,6 +94,11 @@ public class ReplicatedQueueManager implements QueueManager {
                 .hook(new ReplicationHook(taskId));
     }
 
+    @Override
+    public int getActiveChildQueueCount(String taskId) {
+        return delegate.getActiveChildQueueCount(taskId);
+    }
+
     private class ReplicatingEventQueueFactory implements EventQueueFactory {
         @Override
         public EventQueue.EventQueueBuilder builder(String taskId) {

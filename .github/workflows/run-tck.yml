@@ -97,6 +97,87 @@ jobs:
           done
           
       - name: Run TCK
+        timeout-minutes: 5
         run: |
           ./run_tck.py --sut-url ${{ env.SUT_JSONRPC_URL }} --category all --transports jsonrpc,grpc,rest --compliance-report report.json
         working-directory: tck/a2a-tck
+      - name: Capture Thread Dump
+        if: always()
+        run: |
+          # Find the actual Quarkus JVM (child of Maven process), not the Maven parent
+          # Look for the dev.jar process which is the actual application
+          QUARKUS_PID=$(pgrep -f "a2a-tck-server-dev.jar" || echo "")
+          if [ -n "$QUARKUS_PID" ]; then
+            echo "📊 Capturing thread dump for Quarkus JVM PID $QUARKUS_PID"
+            jstack $QUARKUS_PID > tck/target/thread-dump.txt || echo "Failed to capture thread dump"
+            if [ -f tck/target/thread-dump.txt ]; then
+              echo "✅ Thread dump captured ($(wc -l < tck/target/thread-dump.txt) lines)"
+            fi
+          else
+            echo "⚠️ No Quarkus JVM process found for thread dump"
+            echo "Available Java processes:"
+            ps aux | grep java || true
+          fi
+      - name: Capture Heap Dump
+        if: always()
+        run: |
+          # Find the actual Quarkus JVM (child of Maven process), not the Maven parent
+          QUARKUS_PID=$(pgrep -f "a2a-tck-server-dev.jar" || echo "")
+          if [ -n "$QUARKUS_PID" ]; then
+            echo "📊 Capturing heap dump for Quarkus JVM PID $QUARKUS_PID"
+            jmap -dump:live,format=b,file=tck/target/heap-dump.hprof $QUARKUS_PID || echo "Failed to capture heap dump"
+            if [ -f tck/target/heap-dump.hprof ]; then
+              SIZE=$(du -h tck/target/heap-dump.hprof | cut -f1)
+              echo "✅ Heap dump captured ($SIZE)"
+              # Compress to reduce artifact size
+              gzip tck/target/heap-dump.hprof
+              COMPRESSED_SIZE=$(du -h tck/target/heap-dump.hprof.gz | cut -f1)
+              echo "✅ Compressed heap dump ($COMPRESSED_SIZE)"
+            fi
+          else
+            echo "⚠️ No Quarkus JVM process found for heap dump"
+            echo "Available Java processes:"
+            ps aux | grep java || true
+          fi
+      - name: Stop Quarkus Server
+        if: always()
+        run: |
+          # Find and kill the Quarkus process to ensure logs are flushed
+          pkill -f "quarkus:dev" || true
+          sleep 2
+      - name: Verify and Upload TCK Log
+        if: always()
+        run: |
+          echo "Checking for log file..."
+          if [ -f tck/target/tck-test.log ]; then
+            echo "✅ Log file exists ($(wc -l < tck/target/tck-test.log) lines)"
+            ls -lh tck/target/tck-test.log
+          else
+            echo "❌ Log file not found at tck/target/tck-test.log"
+            echo "Contents of tck/target/:"
+            ls -la tck/target/ || echo "tck/target/ does not exist"
+          fi
+      - name: Upload TCK Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tck-test-log-java-${{ matrix.java-version }}
+          path: tck/target/tck-test.log
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Upload Thread Dump
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: thread-dump-java-${{ matrix.java-version }}
+          path: tck/target/thread-dump.txt
+          retention-days: 1
+          if-no-files-found: warn
+      - name: Upload Heap Dump
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heap-dump-java-${{ matrix.java-version }}
+          path: tck/target/heap-dump.hprof.gz
+          retention-days: 1
+          if-no-files-found: warn

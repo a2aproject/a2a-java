@@ -23,7 +23,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetTaskSuccess() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
         RestHandler.HTTPRestResponse response = handler.getTask(MINIMAL_TASK.getId(),null,  callContext);
@@ -41,7 +41,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetTaskNotFound() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
         RestHandler.HTTPRestResponse response = handler.getTask("nonexistent", null, callContext);
 
@@ -52,7 +52,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessage() throws InvalidProtocolBufferException {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         agentExecutorExecute = (context, eventQueue) -> {
             eventQueue.enqueueEvent(context.getMessage());
         };
@@ -83,7 +83,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessageInvalidBody() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
         String invalidBody = "invalid json";
         RestHandler.HTTPRestResponse response = handler.sendMessage(invalidBody, callContext);
@@ -95,7 +95,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessageWrongValueBody() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         String requestBody = """
                     {
                       "message":
@@ -119,7 +119,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessageEmptyBody() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
         RestHandler.HTTPRestResponse response = handler.sendMessage("", callContext);
 
@@ -130,7 +130,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskSuccess() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
         agentExecutorCancel = (context, eventQueue) -> {
@@ -151,7 +151,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskNotFound() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
         RestHandler.HTTPRestResponse response = handler.cancelTask("nonexistent", callContext);
 
@@ -162,7 +162,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendStreamingMessageSuccess() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         agentExecutorExecute = (context, eventQueue) -> {
             eventQueue.enqueueEvent(context.getMessage());
         };
@@ -194,7 +194,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testSendStreamingMessageNotSupported() {
         AgentCard card = createAgentCard(false, true, true);
-        RestHandler handler = new RestHandler(card, requestHandler);
+        RestHandler handler = new RestHandler(card, requestHandler, internalExecutor);
 
         String requestBody = """
             {
@@ -214,7 +214,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testPushNotificationConfigSuccess() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
         String requestBody = """
@@ -241,7 +241,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testPushNotificationConfigNotSupported() {
         AgentCard card = createAgentCard(true, false, true);
-        RestHandler handler = new RestHandler(card, requestHandler);
+        RestHandler handler = new RestHandler(card, requestHandler, internalExecutor);
 
         String requestBody = """
             {
@@ -260,7 +260,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetPushNotificationConfig() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
         // First, create a push notification config
@@ -288,7 +288,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testDeletePushNotificationConfig() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
         RestHandler.HTTPRestResponse response = handler.deleteTaskPushNotificationConfiguration(MINIMAL_TASK.getId(), "default-config-id", callContext);
         Assertions.assertEquals(204, response.getStatusCode());
@@ -296,7 +296,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListPushNotificationConfigs() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
         RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(MINIMAL_TASK.getId(), callContext);
@@ -308,7 +308,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testHttpStatusCodeMapping() {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
         // Test 400 for invalid request
         RestHandler.HTTPRestResponse response = handler.sendMessage("", callContext);
@@ -321,7 +321,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testStreamingDoesNotBlockMainThread() throws Exception {
-        RestHandler handler = new RestHandler(CARD, requestHandler);
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
         // Track if the main thread gets blocked during streaming
         AtomicBoolean eventReceived = new AtomicBoolean(false);

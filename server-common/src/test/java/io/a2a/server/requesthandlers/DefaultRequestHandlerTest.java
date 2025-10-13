@@ -61,6 +61,65 @@ public class DefaultRequestHandlerTest {
     }
 
     /**
+     * Test that multiple blocking messages to the same task work correctly
+     * when agent doesn't emit final events (fire-and-forget pattern).
+     * This replicates TCK test: test_message_send_continue_task
+     */
+    @Test
+    @Timeout(10)
+    void testBlockingMessageContinueTask() throws Exception {
+        String taskId = "continue-task-1";
+        String contextId = "continue-ctx-1";
+
+        // Configure agent to NOT complete tasks (like TCK fire-and-forget agent)
+        agentExecutor.setExecuteCallback((context, queue) -> {
+            Task task = context.getTask();
+            if (task == null) {
+                // First message: create SUBMITTED task
+                task = new Task.Builder()
+                    .id(context.getTaskId())
+                    .contextId(context.getContextId())
+                    .status(new TaskStatus(TaskState.SUBMITTED))
+                    .build();
+                queue.enqueueEvent(task);
+            }
+            // Don't complete - just return (fire-and-forget)
+        });
+
+        // First blocking message - should return SUBMITTED task
+        Message message1 = new Message.Builder()
+            .messageId("msg-1")
+            .role(Message.Role.USER)
+            .parts(new TextPart("first message"))
+            .taskId(taskId)
+            .contextId(contextId)
+            .build();
+
+        MessageSendParams params1 = new MessageSendParams(message1, null, null);
+        Object result1 = requestHandler.onMessageSend(params1, serverCallContext);
+
+        assertTrue(result1 instanceof Task);
+        Task task1 = (Task) result1;
+        assertTrue(task1.getId().equals(taskId));
+        assertTrue(task1.getStatus().state() == TaskState.SUBMITTED);
+
+        // Second blocking message to SAME taskId - should not hang
+        Message message2 = new Message.Builder()
+            .messageId("msg-2")
+            .role(Message.Role.USER)
+            .parts(new TextPart("second message"))
+            .taskId(taskId)
+            .contextId(contextId)
+            .build();
+
+        MessageSendParams params2 = new MessageSendParams(message2, null, null);
+        Object result2 = requestHandler.onMessageSend(params2, serverCallContext);
+
+        // Should complete successfully (not timeout)
+        assertTrue(result2 instanceof Task);
+    }
+
+    /**
      * Test that background cleanup tasks are properly tracked and cleared.
      * Backported from Python test: test_background_cleanup_task_is_tracked_and_cleared
      */
