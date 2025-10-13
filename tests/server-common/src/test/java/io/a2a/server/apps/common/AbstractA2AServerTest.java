@@ -936,13 +936,10 @@ public abstract class AbstractA2AServerTest {
         CountDownLatch firstTaskLatch = new CountDownLatch(1);
 
         BiConsumer<ClientEvent, AgentCard> firstMessageConsumer = (event, agentCard) -> {
-            System.out.println("First message consumer received: " + event.getClass().getSimpleName());
             if (event instanceof TaskEvent te) {
-                System.out.println("  Task state: " + te.getTask().getStatus().state());
                 taskIdRef.set(te.getTask().getId());
                 firstTaskLatch.countDown();
             } else if (event instanceof TaskUpdateEvent tue && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
-                System.out.println("  Task status: " + status.getStatus().state());
                 taskIdRef.set(status.getTaskId());
                 firstTaskLatch.countDown();
             }
@@ -964,12 +961,9 @@ public abstract class AbstractA2AServerTest {
         AtomicReference<Throwable> resubErrorRef = new AtomicReference<>();
 
         BiConsumer<ClientEvent, AgentCard> resubConsumer = (event, agentCard) -> {
-            System.out.println("Resubscription received event: " + event.getClass().getSimpleName() +
-                             (event instanceof TaskUpdateEvent tue ? " - " + tue.getUpdateEvent().getClass().getSimpleName() : ""));
             if (event instanceof TaskUpdateEvent tue) {
                 resubReceivedEvents.add(tue.getUpdateEvent());
                 resubEventLatch.countDown();
-                System.out.println("Resub event latch count: " + resubEventLatch.getCount());
             } else {
                 resubUnexpectedEvent.set(true);
             }
@@ -1004,12 +998,9 @@ public abstract class AbstractA2AServerTest {
         AtomicBoolean streamUnexpectedEvent = new AtomicBoolean(false);
 
         BiConsumer<ClientEvent, AgentCard> streamConsumer = (event, agentCard) -> {
-            System.out.println("Streaming consumer received event: " + event.getClass().getSimpleName() +
-                             (event instanceof TaskUpdateEvent tue ? " - " + tue.getUpdateEvent().getClass().getSimpleName() : ""));
             if (event instanceof TaskUpdateEvent tue) {
                 streamReceivedEvents.add(tue.getUpdateEvent());
                 streamEventLatch.countDown();
-                System.out.println("Stream event latch count: " + streamEventLatch.getCount());
             } else {
                 streamUnexpectedEvent.set(true);
             }
