@@ -3,13 +3,14 @@ package io.a2a.client.transport.grpc;
 import io.a2a.client.transport.spi.ClientTransportConfigBuilder;
 import io.a2a.util.Assert;
 import io.grpc.Channel;
-import org.jspecify.annotations.Nullable;
 
 import java.util.function.Function;
 
 public class GrpcTransportConfigBuilder extends ClientTransportConfigBuilder<GrpcTransportConfig, GrpcTransportConfigBuilder> {
 
-    private @Nullable Function<String, Channel> channelFactory;
+    private Function<String, Channel> channelFactory = s -> { 
+        throw new IllegalStateException("channelFactory must be set"); 
+    };
 
     public GrpcTransportConfigBuilder channelFactory(Function<String, Channel> channelFactory) {
         Assert.checkNotNullParam("channelFactory", channelFactory);
@@ -21,9 +22,6 @@ public class GrpcTransportConfigBuilder extends ClientTransportConfigBuilder<Grp
 
     @Override
     public GrpcTransportConfig build() {
-        if (channelFactory == null) {
-            throw new IllegalStateException("Channel factory must be provided");
-        }
         GrpcTransportConfig config = new GrpcTransportConfig(channelFactory);
         config.setInterceptors(interceptors);
         return config;
