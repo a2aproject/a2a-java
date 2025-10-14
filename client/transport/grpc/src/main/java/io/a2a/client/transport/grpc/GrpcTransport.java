@@ -83,7 +83,7 @@ public class GrpcTransport implements ClientTransport {
     public EventKind sendMessage(MessageSendParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(request, context);
+        SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(request);
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SendMessageRequest.METHOD, sendMessageRequest,
                 agentCard, context);
 
@@ -107,7 +107,7 @@ public class GrpcTransport implements ClientTransport {
                                      Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
-        SendMessageRequest grpcRequest = createGrpcSendMessageRequest(request, context);
+        SendMessageRequest grpcRequest = createGrpcSendMessageRequest(request);
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SendStreamingMessageRequest.METHOD,
                 grpcRequest, agentCard, context);
         StreamObserver<StreamResponse> streamObserver = new EventStreamObserver(eventConsumer, errorConsumer);
@@ -274,7 +274,7 @@ public class GrpcTransport implements ClientTransport {
     public void close() {
     }
 
-    private SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams, @Nullable ClientCallContext context) {
+    private SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams) {
         SendMessageRequest.Builder builder = SendMessageRequest.newBuilder();
         builder.setRequest(ToProto.message(messageSendParams.message()));
         if (messageSendParams.configuration() != null) {
