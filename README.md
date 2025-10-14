@@ -262,8 +262,7 @@ that you can use to create your A2A `Client`.
 
 ### 2. Add one or more dependencies on the A2A Java SDK Client Transport(s) you'd like to use
 
-By default, the sdk-client comes with the JSONRPC transport dependency. Despite the fact that the JSONRPC transport
-dependency is included by default, you still need to add the transport to the Client as described in the [JSON-RPC Transport section](#json-rpc-transport-configuration).
+By default, the `sdk-client` artifact includes the JSONRPC transport dependency. However, you must still explicitly configure this transport when building the `Client` as described in the [JSON-RPC Transport section](#json-rpc-transport-configuration).
 
 
 If you want to use the gRPC transport, you'll need to add a relevant dependency:
