@@ -35,7 +35,7 @@ public class A2ACardResolver {
     }
 
     /**
-     * Get the agent card for an A2A agent.
+     * Constructs an A2ACardResolver with a specific HTTP client and base URL.
      *
      * @param httpClient the http client to use
      * @param baseUrl the base URL for the agent whose agent card we want to retrieve
