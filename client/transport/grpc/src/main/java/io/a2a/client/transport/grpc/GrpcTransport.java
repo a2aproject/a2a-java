@@ -8,9 +8,14 @@ import static io.a2a.util.Assert.checkNotNullParam;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.google.protobuf.Empty;
 import io.a2a.client.transport.spi.AbstractClientTransport;
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
@@ -25,25 +30,10 @@ import io.a2a.grpc.GetTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskRequest;
 import io.a2a.grpc.ListTaskPushNotificationConfigRequest;
 import io.a2a.grpc.SendMessageRequest;
-import io.a2a.grpc.SendMessageResponse;
 import io.a2a.grpc.StreamResponse;
 import io.a2a.grpc.TaskSubscriptionRequest;
 
-import io.a2a.spec.A2AClientException;
-import io.a2a.spec.AgentCard;
-import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
-import io.a2a.spec.EventKind;
-import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.MessageSendParams;
-import io.a2a.spec.SendStreamingMessageRequest;
-import io.a2a.spec.SetTaskPushNotificationConfigRequest;
-import io.a2a.spec.StreamingEventKind;
-import io.a2a.spec.Task;
-import io.a2a.spec.TaskIdParams;
-import io.a2a.spec.TaskPushNotificationConfig;
-import io.a2a.spec.TaskQueryParams;
-import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.spec.*;
 import io.grpc.Channel;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
@@ -75,26 +65,30 @@ public class GrpcTransport extends AbstractClientTransport {
     }
 
     @Override
-    public EventKind sendMessage(MessageSendParams request, ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<EventKind> sendMessage(MessageSendParams request, ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(request, context);
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SendMessageRequest.METHOD, sendMessageRequest,
                 agentCard, context);
 
-        try {
-            A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            SendMessageResponse response = stubWithMetadata.sendMessage(sendMessageRequest);
-            if (response.hasMsg()) {
-                return FromProto.message(response.getMsg());
-            } else if (response.hasTask()) {
-                return FromProto.task(response.getTask());
-            } else {
-                throw new A2AClientException("Server response did not contain a message or task");
-            }
-        } catch (StatusRuntimeException e) {
-            throw GrpcErrorMapper.mapGrpcError(e, "Failed to send message: ");
-        }
+            A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
+            SingleValueStreamObserver<io.a2a.grpc.SendMessageResponse> observer = new SingleValueStreamObserver<>();
+            stubWithMetadata.sendMessage(sendMessageRequest, observer);
+
+            return observer.completionStage()
+                    .thenCompose(new Function<io.a2a.grpc.SendMessageResponse, CompletionStage<EventKind>>() {
+                @Override
+                public CompletionStage<EventKind> apply(io.a2a.grpc.SendMessageResponse response) {
+                    if (response.hasMsg()) {
+                        return CompletableFuture.completedFuture(FromProto.message(response.getMsg()));
+                    } else if (response.hasTask()) {
+                        return CompletableFuture.completedFuture(FromProto.task(response.getTask()));
+                    } else {
+                        return CompletableFuture.failedFuture(new A2AClientException("Server response did not contain a message or task"));
+                    }
+                }
+            }).toCompletableFuture();
     }
 
     @Override
@@ -116,7 +110,7 @@ public class GrpcTransport extends AbstractClientTransport {
     }
 
     @Override
-    public Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<Task> getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         GetTaskRequest.Builder requestBuilder = GetTaskRequest.newBuilder();
@@ -128,16 +122,17 @@ public class GrpcTransport extends AbstractClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskRequest.METHOD, getTaskRequest,
                 agentCard, context);
 
-        try {
-            A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.task(stubWithMetadata.getTask(getTaskRequest));
-        } catch (StatusRuntimeException e) {
-            throw GrpcErrorMapper.mapGrpcError(e, "Failed to get task: ");
-        }
+        A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
+        SingleValueStreamObserver<io.a2a.grpc.Task> observer = new SingleValueStreamObserver<>();
+        stubWithMetadata.getTask(getTaskRequest, observer);
+
+        return observer.completionStage()
+                .thenCompose(task -> CompletableFuture.completedFuture(FromProto.task(task)))
+                .toCompletableFuture();
     }
 
     @Override
-    public Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<Task> cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         CancelTaskRequest cancelTaskRequest = CancelTaskRequest.newBuilder()
@@ -146,16 +141,17 @@ public class GrpcTransport extends AbstractClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.CancelTaskRequest.METHOD, cancelTaskRequest,
                 agentCard, context);
 
-        try {
-            A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.task(stubWithMetadata.cancelTask(cancelTaskRequest));
-        } catch (StatusRuntimeException e) {
-            throw GrpcErrorMapper.mapGrpcError(e, "Failed to cancel task: ");
-        }
+        A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
+        SingleValueStreamObserver<io.a2a.grpc.Task> observer = new SingleValueStreamObserver<>();
+        stubWithMetadata.cancelTask(cancelTaskRequest, observer);
+
+        return observer.completionStage()
+                .thenCompose(task -> CompletableFuture.completedFuture(FromProto.task(task)))
+                .toCompletableFuture();
     }
 
     @Override
-    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
+    public CompletableFuture<TaskPushNotificationConfig> setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
                                                                            ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
@@ -168,16 +164,17 @@ public class GrpcTransport extends AbstractClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SetTaskPushNotificationConfigRequest.METHOD,
                 grpcRequest, agentCard, context);
 
-        try {
-            A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.taskPushNotificationConfig(stubWithMetadata.createTaskPushNotificationConfig(grpcRequest));
-        } catch (StatusRuntimeException e) {
-            throw GrpcErrorMapper.mapGrpcError(e, "Failed to create task push notification config: ");
-        }
+        A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
+        SingleValueStreamObserver<io.a2a.grpc.TaskPushNotificationConfig> observer = new SingleValueStreamObserver<>();
+        stubWithMetadata.createTaskPushNotificationConfig(grpcRequest, observer);
+
+        return observer.completionStage()
+                .thenCompose(taskPushNotificationConfig -> CompletableFuture.completedFuture(FromProto.taskPushNotificationConfig(taskPushNotificationConfig)))
+                .toCompletableFuture();
     }
 
     @Override
-    public TaskPushNotificationConfig getTaskPushNotificationConfiguration(
+    public CompletableFuture<TaskPushNotificationConfig> getTaskPushNotificationConfiguration(
             GetTaskPushNotificationConfigParams request,
             ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
@@ -188,16 +185,17 @@ public class GrpcTransport extends AbstractClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskPushNotificationConfigRequest.METHOD,
                 grpcRequest, agentCard, context);
 
-        try {
-            A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.taskPushNotificationConfig(stubWithMetadata.getTaskPushNotificationConfig(grpcRequest));
-        } catch (StatusRuntimeException e) {
-            throw GrpcErrorMapper.mapGrpcError(e, "Failed to get task push notification config: ");
-        }
+        A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
+        SingleValueStreamObserver<io.a2a.grpc.TaskPushNotificationConfig> observer = new SingleValueStreamObserver<>();
+        stubWithMetadata.getTaskPushNotificationConfig(grpcRequest, observer);
+
+        return observer.completionStage()
+                .thenCompose(taskPushNotificationConfig -> CompletableFuture.completedFuture(FromProto.taskPushNotificationConfig(taskPushNotificationConfig)))
+                .toCompletableFuture();
     }
 
     @Override
-    public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+    public CompletableFuture<List<TaskPushNotificationConfig>> listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request,
             ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
@@ -208,18 +206,35 @@ public class GrpcTransport extends AbstractClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.ListTaskPushNotificationConfigRequest.METHOD,
                 grpcRequest, agentCard, context);
 
+        A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
+        SingleValueStreamObserver<io.a2a.grpc.ListTaskPushNotificationConfigResponse> observer = new SingleValueStreamObserver<>();
+        stubWithMetadata.listTaskPushNotificationConfig(grpcRequest, observer);
+
+        return observer.completionStage()
+                .thenCompose(new Function<io.a2a.grpc.ListTaskPushNotificationConfigResponse, CompletionStage<List<TaskPushNotificationConfig>>>() {
+                    @Override
+                    public CompletionStage<List<TaskPushNotificationConfig>> apply(io.a2a.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfigResponse) {
+                        return CompletableFuture.completedFuture(
+                                listTaskPushNotificationConfigResponse.getConfigsList().stream()
+                                        .map(FromProto::taskPushNotificationConfig).collect(Collectors.toList()));
+                    }
+                })
+                .toCompletableFuture();
+
+        /*
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             return stubWithMetadata.listTaskPushNotificationConfig(grpcRequest).getConfigsList().stream()
                     .map(FromProto::taskPushNotificationConfig)
-                    .collect(Collectors.toList());
+                    ;
         } catch (StatusRuntimeException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to list task push notification config: ");
         }
+         */
     }
 
     @Override
-    public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request,
+    public CompletableFuture<Void> deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request,
                                                          ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
@@ -229,12 +244,13 @@ public class GrpcTransport extends AbstractClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.DeleteTaskPushNotificationConfigRequest.METHOD,
                 grpcRequest, agentCard, context);
 
-        try {
-            A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            stubWithMetadata.deleteTaskPushNotificationConfig(grpcRequest);
-        } catch (StatusRuntimeException e) {
-            throw GrpcErrorMapper.mapGrpcError(e, "Failed to delete task push notification config: ");
-        }
+        A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
+        SingleValueStreamObserver<Empty> observer = new SingleValueStreamObserver<>();
+        stubWithMetadata.deleteTaskPushNotificationConfig(grpcRequest, observer);
+
+        return observer.completionStage()
+                .thenApply((Function<Empty, Void>) empty -> null)
+                .toCompletableFuture();
     }
 
     @Override
@@ -260,9 +276,9 @@ public class GrpcTransport extends AbstractClientTransport {
     }
 
     @Override
-    public AgentCard getAgentCard(ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<AgentCard> getAgentCard(ClientCallContext context) throws A2AClientException {
         // TODO: Determine how to handle retrieving the authenticated extended agent card
-        return agentCard;
+        return CompletableFuture.completedFuture(agentCard);
     }
 
     @Override

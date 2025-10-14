@@ -76,14 +76,34 @@ public class ClientBuilder {
         return this;
     }
 
-    public Client build() throws A2AClientException {
+    /**
+     * Keep this method to maintain backward compatibility.
+     * @return A synchronous version of the A2AClient
+     * @throws A2AClientException
+     * @deprecated Instead use {@link ClientBuilder#sync()}
+     */
+    public SyncClient build() throws A2AClientException {
+        return sync();
+    }
+
+    public SyncClient sync() throws A2AClientException {
         if (this.clientConfig == null) {
             this.clientConfig = new ClientConfig.Builder().build();
         }
 
         ClientTransport clientTransport = buildClientTransport();
 
-        return new Client(agentCard, clientConfig, clientTransport, consumers, streamErrorHandler);
+        return new SyncClient(agentCard, clientConfig, clientTransport, consumers, streamErrorHandler);
+    }
+
+    public AsyncClient async() throws A2AClientException {
+        if (this.clientConfig == null) {
+            this.clientConfig = new ClientConfig.Builder().build();
+        }
+
+        ClientTransport clientTransport = buildClientTransport();
+
+        return new AsyncClient(agentCard, clientConfig, clientTransport, consumers, streamErrorHandler);
     }
 
     @SuppressWarnings("unchecked")

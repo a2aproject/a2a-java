@@ -1,5 +1,7 @@
 package io.a2a.client.http;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,7 +30,7 @@ public interface HttpClient {
     }
 
     interface PostRequestBuilder extends RequestBuilder<PostRequestBuilder> {
-        PostRequestBuilder body(String body);
+        PostRequestBuilder body(@Nullable String body);
 
         default PostRequestBuilder asSSE() {
             return addHeader("Accept", "text/event-stream");

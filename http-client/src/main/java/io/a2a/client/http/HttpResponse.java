@@ -2,6 +2,7 @@ package io.a2a.client.http;
 
 import io.a2a.client.http.sse.Event;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public interface HttpResponse {
@@ -11,7 +12,7 @@ public interface HttpResponse {
         return statusCode() >= 200 && statusCode() < 300;
     }
 
-    String body();
+    CompletableFuture<String> body();
 
     void bodyAsSse(Consumer<Event> eventConsumer, Consumer<Throwable> errorConsumer);
 }

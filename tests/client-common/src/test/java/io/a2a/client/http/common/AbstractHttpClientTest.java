@@ -48,7 +48,6 @@ public abstract class AbstractHttpClientTest {
      * This test is disabled until we can make the http-client layer fully async
      */
     @Test
-    @Disabled
     public void testGetWithBodyResponse() throws Exception {
         givenThat(get(urlPathEqualTo(AGENT_CARD_PATH))
                 .willReturn(okForContentType("application/json", JsonMessages.AGENT_CARD)));
@@ -58,12 +57,12 @@ public abstract class AbstractHttpClientTest {
                 .create(getServerUrl())
                 .get(AGENT_CARD_PATH)
                 .send()
-                .thenAccept(new Consumer<HttpResponse>() {
+                .thenCompose(HttpResponse::body)
+                .thenAccept(new Consumer<String>() {
                     @Override
-                    public void accept(HttpResponse httpResponse) {
-                        String body = httpResponse.body();
+                    public void accept(String responseBody) {
+                        Assertions.assertEquals(JsonMessages.AGENT_CARD, responseBody);
 
-                        Assertions.assertEquals(JsonMessages.AGENT_CARD, body);
                         latch.countDown();
                     }
                 });

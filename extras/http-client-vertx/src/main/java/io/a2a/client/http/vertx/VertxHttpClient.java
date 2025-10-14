@@ -8,6 +8,7 @@ import io.a2a.common.A2AErrorMessages;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.*;
 
 import java.io.IOException;
@@ -16,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -189,15 +189,8 @@ public class VertxHttpClient implements HttpClient {
         }
 
         @Override
-        public String body() {
-            try {
-                return response.body().toCompletionStage().toCompletableFuture().get().toString();
-
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            }
+        public CompletableFuture<String> body() {
+                return response.body().map(Buffer::toString).toCompletionStage().toCompletableFuture();
         }
 
         @Override

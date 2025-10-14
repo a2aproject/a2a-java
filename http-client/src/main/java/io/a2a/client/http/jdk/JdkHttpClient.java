@@ -127,7 +127,7 @@ class JdkHttpClient implements HttpClient {
             HttpRequest request = super.createRequestBuilder().GET().build();
             return httpClient
                     .sendAsync(request, BodyHandlers.ofString(StandardCharsets.UTF_8))
-                    .thenCompose(RESPONSE_MAPPER);
+                    .thenApply((Function<java.net.http.HttpResponse<?>, HttpResponse>) JdkHttpResponse::new);
         }
     }
 
@@ -142,7 +142,7 @@ class JdkHttpClient implements HttpClient {
             HttpRequest request = super.createRequestBuilder().DELETE().build();
             return httpClient
                     .sendAsync(request, BodyHandlers.ofString(StandardCharsets.UTF_8))
-                    .thenCompose(RESPONSE_MAPPER);
+                    .thenApply((Function<java.net.http.HttpResponse<?>, HttpResponse>) JdkHttpResponse::new);
         }
     }
 
@@ -174,7 +174,8 @@ class JdkHttpClient implements HttpClient {
                 bodyHandler = BodyHandlers.ofString(StandardCharsets.UTF_8);
             }
 
-            return httpClient.sendAsync(request, bodyHandler).thenCompose(RESPONSE_MAPPER);
+            return httpClient.sendAsync(request, bodyHandler)
+                    .thenApply((Function<java.net.http.HttpResponse<?>, HttpResponse>) JdkHttpResponse::new);
         }
     }
 
@@ -200,12 +201,12 @@ class JdkHttpClient implements HttpClient {
             }
 
             @Override
-            public String body() {
+            public CompletableFuture<String> body() {
                 if (response.body() instanceof String) {
-                    return (String) response.body();
+                    return CompletableFuture.completedFuture((String) response.body());
                 }
 
-                throw new IllegalStateException();
+                return CompletableFuture.failedFuture(new IllegalStateException());
             }
 
             @Override

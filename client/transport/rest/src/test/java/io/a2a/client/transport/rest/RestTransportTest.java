@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
@@ -105,27 +106,42 @@ public class RestTransportTest {
         ClientCallContext context = null;
         
         RestTransport instance = new RestTransport(AGENT_URL);
-        EventKind result = instance.sendMessage(messageSendParams, context);
-        assertEquals("task", result.getKind());
-        Task task = (Task) result;
-        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", task.getId());
-        assertEquals("context-1234", task.getContextId());
-        assertEquals(TaskState.SUBMITTED, task.getStatus().state());
-        assertNull(task.getStatus().message());
-        assertNull(task.getMetadata());
-        assertEquals(true, task.getArtifacts().isEmpty());
-        assertEquals(1, task.getHistory().size());
-        Message history = task.getHistory().get(0);
-        assertEquals("message", history.getKind());
-        assertEquals(Message.Role.USER, history.getRole());
-        assertEquals("context-1234", history.getContextId());
-        assertEquals("message-1234", history.getMessageId());
-        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.getTaskId());
-        assertEquals(1, history.getParts().size());
-        assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
-        assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).getText());
-        assertNull(history.getMetadata());
-        assertNull(history.getReferenceTaskIds());
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        instance.sendMessage(messageSendParams, context)
+                        .whenComplete(new BiConsumer<EventKind, Throwable>() {
+                            @Override
+                            public void accept(EventKind result, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertEquals("task", result.getKind());
+                                Task task = (Task) result;
+                                assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", task.getId());
+                                assertEquals("context-1234", task.getContextId());
+                                assertEquals(TaskState.SUBMITTED, task.getStatus().state());
+                                assertNull(task.getStatus().message());
+                                assertNull(task.getMetadata());
+                                assertEquals(true, task.getArtifacts().isEmpty());
+                                assertEquals(1, task.getHistory().size());
+                                Message history = task.getHistory().get(0);
+                                assertEquals("message", history.getKind());
+                                assertEquals(Message.Role.USER, history.getRole());
+                                assertEquals("context-1234", history.getContextId());
+                                assertEquals("message-1234", history.getMessageId());
+                                assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.getTaskId());
+                                assertEquals(1, history.getParts().size());
+                                assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
+                                assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).getText());
+                                assertNull(history.getMetadata());
+                                assertNull(history.getReferenceTaskIds());
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean callCompleted = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(callCompleted);
     }
 
     /**
@@ -146,12 +162,27 @@ public class RestTransportTest {
                 );
         ClientCallContext context = null;
         RestTransport instance = new RestTransport(AGENT_URL);
-        Task task = instance.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
-                new HashMap<>()), context);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals(TaskState.CANCELED, task.getStatus().state());
-        assertNull(task.getStatus().message());
-        assertNull(task.getMetadata());
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        instance.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
+                new HashMap<>()), context)
+                        .whenComplete(new BiConsumer<Task, Throwable>() {
+                            @Override
+                            public void accept(Task task, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
+                                assertEquals(TaskState.CANCELED, task.getStatus().state());
+                                assertNull(task.getStatus().message());
+                                assertNull(task.getMetadata());
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean callCompleted = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(callCompleted);
     }
 
     /**
@@ -172,37 +203,52 @@ public class RestTransportTest {
         ClientCallContext context = null;
         TaskQueryParams request = new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64", 10);
         RestTransport instance = new RestTransport(AGENT_URL);
-        Task task = instance.getTask(request, context);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertNull(task.getStatus().message());
-        assertNull(task.getMetadata());
-        assertEquals(false, task.getArtifacts().isEmpty());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
-        assertEquals("artifact-1", artifact.artifactId());
-        assertEquals("", artifact.name());
-        assertEquals(false, artifact.parts().isEmpty());
-        assertEquals(Kind.TEXT, artifact.parts().get(0).getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).getText());
-        assertEquals(1, task.getHistory().size());
-        Message history = task.getHistory().get(0);
-        assertEquals("message", history.getKind());
-        assertEquals(Message.Role.USER, history.getRole());
-        assertEquals("message-123", history.getMessageId());
-        assertEquals(3, history.getParts().size());
-        assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
-        assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).getText());
-        assertEquals(Kind.FILE, history.getParts().get(1).getKind());
-        FilePart part = (FilePart) history.getParts().get(1);
-        assertEquals("text/plain", part.getFile().mimeType());
-        assertEquals("file:///path/to/file.txt", ((FileWithUri) part.getFile()).uri());
-        part = (FilePart) history.getParts().get(2);
-        assertEquals(Kind.FILE, part.getKind());
-        assertEquals("text/plain", part.getFile().mimeType());
-        assertEquals("hello", ((FileWithBytes) part.getFile()).bytes());
-        assertNull(history.getMetadata());
-        assertNull(history.getReferenceTaskIds());
+        CountDownLatch latch = new CountDownLatch(1);
+
+        instance.getTask(request, context)
+                        .whenComplete(new BiConsumer<Task, Throwable>() {
+                            @Override
+                            public void accept(Task task, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
+                                assertEquals(TaskState.COMPLETED, task.getStatus().state());
+                                assertNull(task.getStatus().message());
+                                assertNull(task.getMetadata());
+                                assertEquals(false, task.getArtifacts().isEmpty());
+                                assertEquals(1, task.getArtifacts().size());
+                                Artifact artifact = task.getArtifacts().get(0);
+                                assertEquals("artifact-1", artifact.artifactId());
+                                assertEquals("", artifact.name());
+                                assertEquals(false, artifact.parts().isEmpty());
+                                assertEquals(Kind.TEXT, artifact.parts().get(0).getKind());
+                                assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).getText());
+                                assertEquals(1, task.getHistory().size());
+                                Message history = task.getHistory().get(0);
+                                assertEquals("message", history.getKind());
+                                assertEquals(Message.Role.USER, history.getRole());
+                                assertEquals("message-123", history.getMessageId());
+                                assertEquals(3, history.getParts().size());
+                                assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
+                                assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).getText());
+                                assertEquals(Kind.FILE, history.getParts().get(1).getKind());
+                                FilePart part = (FilePart) history.getParts().get(1);
+                                assertEquals("text/plain", part.getFile().mimeType());
+                                assertEquals("file:///path/to/file.txt", ((FileWithUri) part.getFile()).uri());
+                                part = (FilePart) history.getParts().get(2);
+                                assertEquals(Kind.FILE, part.getKind());
+                                assertEquals("text/plain", part.getFile().mimeType());
+                                assertEquals("hello", ((FileWithBytes) part.getFile()).bytes());
+                                assertNull(history.getMetadata());
+                                assertNull(history.getReferenceTaskIds());
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean callCompleted = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(callCompleted);
+
     }
 
     /**
@@ -274,6 +320,9 @@ public class RestTransportTest {
                                 .withBody(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE)
                 );
         RestTransport client = new RestTransport(AGENT_URL);
+
+        CountDownLatch latch = new CountDownLatch(1);
+
         TaskPushNotificationConfig pushedConfig = new TaskPushNotificationConfig(
                 "de38c76d-d54c-436c-8b9f-4c2703648d64",
                 new PushNotificationConfig.Builder()
@@ -281,13 +330,26 @@ public class RestTransportTest {
                         .authenticationInfo(
                                 new PushNotificationAuthenticationInfo(Collections.singletonList("jwt"), null))
                         .build());
-        TaskPushNotificationConfig taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(pushedConfig, null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
-        assertNotNull(pushNotificationConfig);
-        assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertEquals(1, authenticationInfo.schemes().size());
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
+
+        client.setTaskPushNotificationConfiguration(pushedConfig, null)
+                .whenComplete(new BiConsumer<TaskPushNotificationConfig, Throwable>() {
+                    @Override
+                    public void accept(TaskPushNotificationConfig taskPushNotificationConfig, Throwable throwable) {
+                        assertNull(throwable);
+
+                        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+                        assertNotNull(pushNotificationConfig);
+                        assertEquals("https://example.com/callback", pushNotificationConfig.url());
+                        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+                        assertEquals(1, authenticationInfo.schemes().size());
+                        assertEquals("jwt", authenticationInfo.schemes().get(0));
+
+                        latch.countDown();
+                    }
+                });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     /**
@@ -307,15 +369,30 @@ public class RestTransportTest {
                 );
 
         RestTransport client = new RestTransport(AGENT_URL);
-        TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        client.getTaskPushNotificationConfiguration(
                 new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "10",
-                        new HashMap<>()), null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
-        assertNotNull(pushNotificationConfig);
-        assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertTrue(authenticationInfo.schemes().size() == 1);
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
+                        new HashMap<>()), null)
+                .whenComplete(new BiConsumer<TaskPushNotificationConfig, Throwable>() {
+                    @Override
+                    public void accept(TaskPushNotificationConfig taskPushNotificationConfig, Throwable throwable) {
+                        assertNull(throwable);
+
+                        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+                        assertNotNull(pushNotificationConfig);
+                        assertEquals("https://example.com/callback", pushNotificationConfig.url());
+                        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+                        assertTrue(authenticationInfo.schemes().size() == 1);
+                        assertEquals("jwt", authenticationInfo.schemes().get(0));
+
+                        latch.countDown();
+                    }
+                });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     /**
@@ -335,23 +412,37 @@ public class RestTransportTest {
                 );
 
         RestTransport client = new RestTransport(AGENT_URL);
-        List<TaskPushNotificationConfig> taskPushNotificationConfigs = client.listTaskPushNotificationConfigurations(
-                new ListTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", new HashMap<>()), null);
-        assertEquals(2, taskPushNotificationConfigs.size());
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfigs.get(0).pushNotificationConfig();
-        assertNotNull(pushNotificationConfig);
-        assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        assertEquals("10", pushNotificationConfig.id());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertTrue(authenticationInfo.schemes().size() == 1);
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
-        assertEquals("", authenticationInfo.credentials());
-        pushNotificationConfig = taskPushNotificationConfigs.get(1).pushNotificationConfig();
-        assertNotNull(pushNotificationConfig);
-        assertEquals("https://test.com/callback", pushNotificationConfig.url());
-        assertEquals("5", pushNotificationConfig.id());
-        authenticationInfo = pushNotificationConfig.authentication();
-        assertNull(authenticationInfo);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        client.listTaskPushNotificationConfigurations(
+                new ListTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", new HashMap<>()), null)
+                        .whenComplete(new BiConsumer<List<TaskPushNotificationConfig>, Throwable>() {
+                            @Override
+                            public void accept(List<TaskPushNotificationConfig> taskPushNotificationConfigs, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertEquals(2, taskPushNotificationConfigs.size());
+                                PushNotificationConfig pushNotificationConfig = taskPushNotificationConfigs.get(0).pushNotificationConfig();
+                                assertNotNull(pushNotificationConfig);
+                                assertEquals("https://example.com/callback", pushNotificationConfig.url());
+                                assertEquals("10", pushNotificationConfig.id());
+                                PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+                                assertTrue(authenticationInfo.schemes().size() == 1);
+                                assertEquals("jwt", authenticationInfo.schemes().get(0));
+                                assertEquals("", authenticationInfo.credentials());
+                                pushNotificationConfig = taskPushNotificationConfigs.get(1).pushNotificationConfig();
+                                assertNotNull(pushNotificationConfig);
+                                assertEquals("https://test.com/callback", pushNotificationConfig.url());
+                                assertEquals("5", pushNotificationConfig.id());
+                                authenticationInfo = pushNotificationConfig.authentication();
+                                assertNull(authenticationInfo);
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     /**

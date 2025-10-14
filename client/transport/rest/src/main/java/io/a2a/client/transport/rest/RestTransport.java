@@ -4,7 +4,6 @@ import static io.a2a.util.Assert.checkNotNullParam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
 import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.http.HttpClient;
@@ -19,29 +18,15 @@ import io.a2a.grpc.CreateTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskRequest;
 import io.a2a.grpc.ListTaskPushNotificationConfigRequest;
-import io.a2a.spec.TaskPushNotificationConfig;
-import io.a2a.spec.A2AClientException;
-import io.a2a.spec.AgentCard;
-import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
-import io.a2a.spec.EventKind;
-import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.MessageSendParams;
-import io.a2a.spec.StreamingEventKind;
-import io.a2a.spec.Task;
-import io.a2a.spec.TaskIdParams;
-import io.a2a.spec.TaskQueryParams;
+import io.a2a.spec.*;
 import io.a2a.grpc.utils.ProtoUtils;
-import io.a2a.spec.A2AClientError;
-import io.a2a.spec.SendStreamingMessageRequest;
-import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import io.a2a.util.Utils;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -77,26 +62,31 @@ public class RestTransport extends AbstractClientTransport {
     }
 
     @Override
-    public EventKind sendMessage(MessageSendParams messageSendParams, @Nullable ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<EventKind> sendMessage(MessageSendParams messageSendParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("messageSendParams", messageSendParams);
         io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder(ProtoUtils.ToProto.sendMessageRequest(messageSendParams));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SendMessageRequest.METHOD, builder, agentCard, context);
-        try {
-            String httpResponseBody = sendPostRequest("/v1/message:send", payloadAndHeaders);
-            io.a2a.grpc.SendMessageResponse.Builder responseBuilder = io.a2a.grpc.SendMessageResponse.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
-            if (responseBuilder.hasMsg()) {
-                return ProtoUtils.FromProto.message(responseBuilder.getMsg());
-            }
-            if (responseBuilder.hasTask()) {
-                return ProtoUtils.FromProto.task(responseBuilder.getTask());
-            }
-            throw new A2AClientException("Failed to send message, wrong response:" + httpResponseBody);
-        } catch (A2AClientException e) {
-            throw e;
-        } catch (IOException | InterruptedException | ExecutionException e) {
-            throw new A2AClientException("Failed to send message: " + e, e);
-        }
+        return sendPostRequest("/v1/message:send", payloadAndHeaders)
+                    .thenCompose(new Function<String, CompletionStage<EventKind>>() {
+                        @Override
+                        public CompletionStage<EventKind> apply(String httpResponseBody) {
+                            io.a2a.grpc.SendMessageResponse.Builder responseBuilder = io.a2a.grpc.SendMessageResponse.newBuilder();
+                            try {
+                                JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+                            } catch (InvalidProtocolBufferException e) {
+                                return CompletableFuture.failedFuture(new A2AClientException("Failed to send message: " + e, e));
+                            }
+
+                            if (responseBuilder.hasMsg()) {
+                                return CompletableFuture.completedFuture(ProtoUtils.FromProto.message(responseBuilder.getMsg()));
+                            }
+                            if (responseBuilder.hasTask()) {
+                                return CompletableFuture.completedFuture(ProtoUtils.FromProto.task(responseBuilder.getTask()));
+                            }
+
+                            return CompletableFuture.failedFuture(new A2AClientException("Failed to send message, wrong response:" + httpResponseBody));
+                        }
+                    });
     }
 
     @Override
@@ -109,7 +99,7 @@ public class RestTransport extends AbstractClientTransport {
                 builder, agentCard, context);
         AtomicReference<CompletableFuture<HttpResponse>> ref = new AtomicReference<>();
         RestSSEEventListener sseEventListener = new RestSSEEventListener(eventConsumer, errorConsumer);
-        try {
+    //    try {
             HttpClient.PostRequestBuilder postBuilder = createPostBuilder("/v1/message:stream", payloadAndHeaders).asSSE();
             ref.set(postBuilder.send().whenComplete(new BiConsumer<HttpResponse, Throwable>() {
                 @Override
@@ -123,68 +113,84 @@ public class RestTransport extends AbstractClientTransport {
                     }
                 }
             }));
+            /*
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         }
+
+             */
     }
 
     @Override
-    public Task getTask(TaskQueryParams taskQueryParams, @Nullable ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<Task> getTask(TaskQueryParams taskQueryParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("taskQueryParams", taskQueryParams);
         GetTaskRequest.Builder builder = GetTaskRequest.newBuilder();
         builder.setName("tasks/" + taskQueryParams.id());
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskRequest.METHOD, builder,
                 agentCard, context);
-        try {
-            String path;
-            if (taskQueryParams.historyLength() != null) {
-                path = String.format("/v1/tasks/%1s?historyLength=%2d", taskQueryParams.id(), taskQueryParams.historyLength());
-            } else {
-                path = String.format("/v1/tasks/%1s", taskQueryParams.id());
-            }
-            HttpClient.GetRequestBuilder getBuilder = httpClient.get(agentPath + path);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    getBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
-            }
-            CompletableFuture<HttpResponse> responseFut = getBuilder.send();
-            HttpResponse response = responseFut.get();
-            if (!response.success()) {
-                throw RestErrorMapper.mapRestError(response);
-            }
-            String httpResponseBody = response.body();
-            io.a2a.grpc.Task.Builder responseBuilder = io.a2a.grpc.Task.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
-            return ProtoUtils.FromProto.task(responseBuilder);
-        } catch (A2AClientException e) {
-            throw e;
-        } catch (IOException | InterruptedException | ExecutionException e) {
-            throw new A2AClientException("Failed to get task: " + e, e);
+
+        String path;
+        if (taskQueryParams.historyLength() != null) {
+            path = String.format("/v1/tasks/%1s?historyLength=%2d", taskQueryParams.id(), taskQueryParams.historyLength());
+        } else {
+            path = String.format("/v1/tasks/%1s", taskQueryParams.id());
         }
+        HttpClient.GetRequestBuilder getBuilder = httpClient.get(agentPath + path);
+        if (payloadAndHeaders.getHeaders() != null) {
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                getBuilder.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return getBuilder.send()
+                .thenCompose(new Function<HttpResponse, CompletionStage<String>>() {
+                    @Override
+                    public CompletionStage<String> apply(HttpResponse response) {
+                        if (!response.success()) {
+                            return RestErrorMapper.mapRestError(response);
+                        }
+
+                        return response.body();
+                    }
+                }).thenCompose(new Function<String, CompletionStage<Task>>() {
+                    @Override
+                    public CompletionStage<Task> apply(String httpResponseBody) {
+                        io.a2a.grpc.Task.Builder responseBuilder = io.a2a.grpc.Task.newBuilder();
+                        try {
+                            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+                            return CompletableFuture.completedFuture(ProtoUtils.FromProto.task(responseBuilder));
+                        } catch (InvalidProtocolBufferException e) {
+                            return CompletableFuture.failedFuture(new A2AClientException("Failed to get task: " + e, e));
+                        }
+                    }
+                });
     }
 
     @Override
-    public Task cancelTask(TaskIdParams taskIdParams, @Nullable ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<Task> cancelTask(TaskIdParams taskIdParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("taskIdParams", taskIdParams);
         CancelTaskRequest.Builder builder = CancelTaskRequest.newBuilder();
         builder.setName("tasks/" + taskIdParams.id());
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.CancelTaskRequest.METHOD, builder,
                 agentCard, context);
-        try {
-            String httpResponseBody = sendPostRequest(String.format("/v1/tasks/%1s:cancel", taskIdParams.id()), payloadAndHeaders);
-            io.a2a.grpc.Task.Builder responseBuilder = io.a2a.grpc.Task.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
-            return ProtoUtils.FromProto.task(responseBuilder);
-        } catch (A2AClientException e) {
-            throw e;
-        } catch (IOException | InterruptedException | ExecutionException e) {
-            throw new A2AClientException("Failed to cancel task: " + e, e);
-        }
+
+        return sendPostRequest(String.format("/v1/tasks/%1s:cancel", taskIdParams.id()), payloadAndHeaders)
+                .thenCompose(new Function<String, CompletionStage<Task>>() {
+                    @Override
+                    public CompletionStage<Task> apply(String httpResponseBody) {
+                        io.a2a.grpc.Task.Builder responseBuilder = io.a2a.grpc.Task.newBuilder();
+                        try {
+                            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+                            return CompletableFuture.completedFuture(ProtoUtils.FromProto.task(responseBuilder));
+                        } catch (InvalidProtocolBufferException e) {
+                            return CompletableFuture.failedFuture(new A2AClientException("Failed to cancel task: " + e, e));
+                        }
+                    }
+                });
     }
 
     @Override
-    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<TaskPushNotificationConfig> setTaskPushNotificationConfiguration(TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         CreateTaskPushNotificationConfigRequest.Builder builder = CreateTaskPushNotificationConfigRequest.newBuilder();
         builder.setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(request))
@@ -193,97 +199,138 @@ public class RestTransport extends AbstractClientTransport {
             builder.setConfigId(request.pushNotificationConfig().id());
         }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SetTaskPushNotificationConfigRequest.METHOD, builder, agentCard, context);
-        try {
-            String httpResponseBody = sendPostRequest(String.format("/v1/tasks/%1s/pushNotificationConfigs", request.taskId()), payloadAndHeaders);
-            io.a2a.grpc.TaskPushNotificationConfig.Builder responseBuilder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
-            return ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder);
-        } catch (A2AClientException e) {
-            throw e;
-        } catch (IOException | InterruptedException | ExecutionException e) {
-            throw new A2AClientException("Failed to set task push notification config: " + e, e);
-        }
+
+        return sendPostRequest(String.format("/v1/tasks/%1s/pushNotificationConfigs", request.taskId()), payloadAndHeaders)
+                .thenCompose(new Function<String, CompletionStage<TaskPushNotificationConfig>>() {
+                    @Override
+                    public CompletionStage<TaskPushNotificationConfig> apply(String httpResponseBody) {
+                        io.a2a.grpc.TaskPushNotificationConfig.Builder responseBuilder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
+                        try {
+                            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+                            return CompletableFuture.completedFuture(ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder));
+                        } catch (InvalidProtocolBufferException e) {
+                            return CompletableFuture.failedFuture(new A2AClientException("Failed to set task push notification config: " + e, e));
+                        }
+                    }
+                });
     }
 
     @Override
-    public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<TaskPushNotificationConfig> getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         GetTaskPushNotificationConfigRequest.Builder builder = GetTaskPushNotificationConfigRequest.newBuilder();
         builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId()));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
-        try {
-            String path = String.format("/v1/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId());
-            HttpClient.GetRequestBuilder getBuilder = httpClient.get(agentPath + path);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    getBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
-            }
 
-            CompletableFuture<HttpResponse> responseFut = getBuilder.send();
-            HttpResponse response = responseFut.get();
-
-            if (!response.success()) {
-                throw RestErrorMapper.mapRestError(response);
+        String path = String.format("/v1/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId());
+        HttpClient.GetRequestBuilder getBuilder = httpClient.get(agentPath + path);
+        if (payloadAndHeaders.getHeaders() != null) {
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                getBuilder.addHeader(entry.getKey(), entry.getValue());
             }
-            String httpResponseBody = response.body();
-            io.a2a.grpc.TaskPushNotificationConfig.Builder responseBuilder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
-            return ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder);
-        } catch (A2AClientException e) {
-            throw e;
-        } catch (IOException | InterruptedException | ExecutionException e) {
-            throw new A2AClientException("Failed to get push notifications: " + e, e);
         }
+        return getBuilder.send()
+                .thenCompose(new Function<HttpResponse, CompletionStage<String>>() {
+                    @Override
+                    public CompletionStage<String> apply(HttpResponse response) {
+                        if (!response.success()) {
+                            if (!response.success()) {
+                                return RestErrorMapper.mapRestError(response);
+                            }
+                        }
+
+                        return response.body();
+                    }
+                }).thenCompose(new Function<String, CompletionStage<TaskPushNotificationConfig>>() {
+                    @Override
+                    public CompletionStage<TaskPushNotificationConfig> apply(String httpResponseBody) {
+                        io.a2a.grpc.TaskPushNotificationConfig.Builder responseBuilder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
+                        try {
+                            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+                            return CompletableFuture.completedFuture(ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder));
+                        } catch (InvalidProtocolBufferException e) {
+                            return CompletableFuture.failedFuture(new A2AClientException("Failed to get push notifications: " + e, e));
+                        }
+                    }
+                });
     }
 
     @Override
-    public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<List<TaskPushNotificationConfig>> listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         ListTaskPushNotificationConfigRequest.Builder builder = ListTaskPushNotificationConfigRequest.newBuilder();
         builder.setParent(String.format("/tasks/%1s/pushNotificationConfigs", request.id()));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.ListTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
-        try {
-            String path = String.format("/v1/tasks/%1s/pushNotificationConfigs", request.id());
-            HttpClient.GetRequestBuilder getBuilder = httpClient.get(agentPath + path);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    getBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
-            }
-            CompletableFuture<HttpResponse> responseFut = getBuilder.send();
-            HttpResponse response = responseFut.get();
 
-            if (!response.success()) {
-                throw RestErrorMapper.mapRestError(response);
+        String path = String.format("/v1/tasks/%1s/pushNotificationConfigs", request.id());
+        HttpClient.GetRequestBuilder getBuilder = httpClient.get(agentPath + path);
+        if (payloadAndHeaders.getHeaders() != null) {
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                getBuilder.addHeader(entry.getKey(), entry.getValue());
             }
-            String httpResponseBody = response.body();
-            io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder responseBuilder = io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder();
-            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
-            return ProtoUtils.FromProto.listTaskPushNotificationConfigParams(responseBuilder);
-        } catch (A2AClientException e) {
-            throw e;
-        } catch (IOException | InterruptedException | ExecutionException e) {
-            throw new A2AClientException("Failed to list push notifications: " + e, e);
         }
+
+        return getBuilder.send()
+                .thenCompose(new Function<HttpResponse, CompletionStage<String>>() {
+                    @Override
+                    public CompletionStage<String> apply(HttpResponse response) {
+                        if (!response.success()) {
+                            if (!response.success()) {
+                                return RestErrorMapper.mapRestError(response);
+                            }
+                        }
+
+                        return response.body();
+                    }
+                }).thenCompose(new Function<String, CompletionStage<List<TaskPushNotificationConfig>>>() {
+                    @Override
+                    public CompletionStage<List<TaskPushNotificationConfig>> apply(String httpResponseBody) {
+                        io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder responseBuilder = io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder();
+                        try {
+                            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+                            return CompletableFuture.completedFuture(ProtoUtils.FromProto.listTaskPushNotificationConfigParams(responseBuilder));
+                        } catch (InvalidProtocolBufferException e) {
+                            return CompletableFuture.failedFuture(new A2AClientException("Failed to list push notifications: " + e, e));
+                        }
+                    }
+                });
     }
 
     @Override
-    public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<Void> deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         io.a2a.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder builder = io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.DeleteTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
-        try {
-            String path = String.format("/v1/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId());
-            HttpClient.DeleteRequestBuilder deleteBuilder = httpClient.delete(agentPath + path);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    deleteBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
+
+        String path = String.format("/v1/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId());
+        HttpClient.DeleteRequestBuilder deleteBuilder = httpClient.delete(agentPath + path);
+        if (payloadAndHeaders.getHeaders() != null) {
+            for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                deleteBuilder.addHeader(entry.getKey(), entry.getValue());
             }
+        }
+
+        return deleteBuilder
+                .send()
+                .thenCompose(new Function<HttpResponse, CompletionStage<String>>() {
+                    @Override
+                    public CompletionStage<String> apply(HttpResponse response) {
+                        if (!response.success()) {
+                            if (!response.success()) {
+                                return RestErrorMapper.mapRestError(response);
+                            }
+                        }
+
+                        return response.body();
+                    }
+                })
+                .thenApply(s -> null);
+        /*
+        try {
+
             CompletableFuture<HttpResponse> responseFut = deleteBuilder.send();
             HttpResponse response = responseFut.get();
 
@@ -295,6 +342,7 @@ public class RestTransport extends AbstractClientTransport {
         } catch (IOException | InterruptedException | ExecutionException e) {
             throw new A2AClientException("Failed to delete push notification config: " + e, e);
         }
+         */
     }
 
     @Override
@@ -307,7 +355,7 @@ public class RestTransport extends AbstractClientTransport {
                 agentCard, context);
         AtomicReference<CompletableFuture<HttpResponse>> ref = new AtomicReference<>();
         RestSSEEventListener sseEventListener = new RestSSEEventListener(eventConsumer, errorConsumer);
-        try {
+        // try {
             String path = String.format("/v1/tasks/%1s:subscribe", request.id());
             HttpClient.PostRequestBuilder postBuilder = createPostBuilder(path, payloadAndHeaders).asSSE();
             ref.set(postBuilder.send().whenComplete(new BiConsumer<HttpResponse, Throwable>() {
@@ -322,22 +370,28 @@ public class RestTransport extends AbstractClientTransport {
                     }
                 }
             }));
+            /*
         } catch (IOException e) {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         }
+             */
     }
 
     @Override
-    public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
+    public CompletableFuture<AgentCard> getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
         A2ACardResolver resolver;
-        try {
+
             if (agentCard == null) {
-                resolver = new A2ACardResolver(httpClient, agentPath, getHttpHeaders(context));
-                agentCard = resolver.getAgentCard();
-                needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
+                try {
+                    resolver = new A2ACardResolver(httpClient, agentPath, getHttpHeaders(context));
+                    agentCard = resolver.getAgentCard();
+                    needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
+                } catch (A2AClientError e) {
+                    return CompletableFuture.failedFuture(new A2AClientException("Failed to get agent card: " + e, e));
+                }
             }
             if (!needsExtendedCard) {
-                return agentCard;
+                return CompletableFuture.completedFuture(agentCard);
             }
             PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskRequest.METHOD, null,
                     agentCard, context);
@@ -348,21 +402,32 @@ public class RestTransport extends AbstractClientTransport {
                     getBuilder.addHeader(entry.getKey(), entry.getValue());
                 }
             }
-            CompletableFuture<HttpResponse> responseFut = getBuilder.send();
-            HttpResponse response = responseFut.get();
+            return getBuilder.send()
+                    .thenCompose(new Function<HttpResponse, CompletionStage<String>>() {
+                        @Override
+                        public CompletionStage<String> apply(HttpResponse response) {
+                            if (!response.success()) {
+                                return RestErrorMapper.mapRestError(response);
+                            }
 
-            if (!response.success()) {
-                throw RestErrorMapper.mapRestError(response);
-            }
-            String httpResponseBody = response.body();
-            agentCard = Utils.OBJECT_MAPPER.readValue(httpResponseBody, AgentCard.class);
-            needsExtendedCard = false;
-            return agentCard;
-        } catch (IOException | InterruptedException | ExecutionException e) {
-            throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
-        } catch (A2AClientError e) {
-            throw new A2AClientException("Failed to get agent card: " + e, e);
-        }
+                            return response.body();
+                        }
+                    }).thenCompose(new Function<String, CompletionStage<AgentCard>>() {
+                        @Override
+                        public CompletionStage<AgentCard> apply(String httpResponseBody) {
+                            try {
+                                return CompletableFuture.completedFuture(Utils.OBJECT_MAPPER.readValue(httpResponseBody, AgentCard.class));
+                            } catch (JsonProcessingException e) {
+                                return CompletableFuture.failedFuture(new A2AClientException("Failed to get authenticated extended agent card: " + e, e));
+                            }
+                        }
+                    }).whenComplete(new BiConsumer<AgentCard, Throwable>() {
+                        @Override
+                        public void accept(AgentCard agentCard, Throwable throwable) {
+                            RestTransport.this.agentCard = agentCard;
+                            needsExtendedCard = false;
+                        }
+                    });
     }
 
     @Override
@@ -370,23 +435,27 @@ public class RestTransport extends AbstractClientTransport {
         // no-op
     }
 
-    private String sendPostRequest(String path, PayloadAndHeaders payloadAndHeaders) throws IOException, InterruptedException, ExecutionException {
-        HttpClient.PostRequestBuilder builder = createPostBuilder(path, payloadAndHeaders);
-        CompletableFuture<HttpResponse> responseFut = builder.send();
+    private CompletableFuture<String> sendPostRequest(String path, PayloadAndHeaders payloadAndHeaders) {
+        return createPostBuilder(path, payloadAndHeaders)
+                .send()
+                .thenCompose(new Function<HttpResponse, CompletionStage<String>>() {
+                    @Override
+                    public CompletionStage<String> apply(HttpResponse response) {
+                        if (!response.success()) {
+                            log.fine("Error on POST processing " + convertToJsonString(payloadAndHeaders.getPayload()));
+                            return RestErrorMapper.mapRestError(response);
+                        }
 
-        HttpResponse response = responseFut.get();
-        if (!response.success()) {
-            log.fine("Error on POST processing " + JsonFormat.printer().print((MessageOrBuilder) payloadAndHeaders.getPayload()));
-            throw RestErrorMapper.mapRestError(response);
-        }
-        return response.body();
+                        return response.body();
+                    }
+                });
     }
 
-    private HttpClient.PostRequestBuilder createPostBuilder(String path, PayloadAndHeaders payloadAndHeaders) throws JsonProcessingException, InvalidProtocolBufferException {
-        log.fine(JsonFormat.printer().print((MessageOrBuilder) payloadAndHeaders.getPayload()));
+    private HttpClient.PostRequestBuilder createPostBuilder(String path, PayloadAndHeaders payloadAndHeaders) {
+        log.fine(convertToJsonString(payloadAndHeaders.getPayload()));
         HttpClient.PostRequestBuilder postBuilder = httpClient.post(agentPath + path)
                 .addHeader("Content-Type", "application/json")
-                .body(JsonFormat.printer().print((MessageOrBuilder) payloadAndHeaders.getPayload()));
+                .body(convertToJsonString(payloadAndHeaders.getPayload()));
 
         if (payloadAndHeaders.getHeaders() != null) {
             for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
@@ -398,5 +467,17 @@ public class RestTransport extends AbstractClientTransport {
 
     private Map<String, String> getHttpHeaders(@Nullable ClientCallContext context) {
         return context != null ? context.getHeaders() : Collections.emptyMap();
+    }
+
+    private @Nullable String convertToJsonString(@Nullable Object obj) {
+        if (obj != null) {
+            try {
+                return JsonFormat.printer().print((com.google.protobuf.MessageOrBuilder) obj);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return null;
     }
 }

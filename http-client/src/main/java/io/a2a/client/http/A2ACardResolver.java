@@ -114,7 +114,7 @@ public class A2ACardResolver {
             if (!response.success()) {
                 throw new A2AClientError("Failed to obtain agent card: " + response.statusCode());
             }
-            body = response.body();
+            body = response.body().get();
         } catch (InterruptedException | ExecutionException e) {
             throw new A2AClientError("Failed to obtain agent card", e);
         }

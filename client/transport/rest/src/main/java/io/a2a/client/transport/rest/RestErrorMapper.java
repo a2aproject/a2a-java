@@ -18,6 +18,8 @@ import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.UnsupportedOperationError;
+
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,8 +30,8 @@ public class RestErrorMapper {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    public static A2AClientException mapRestError(HttpResponse response) {
-        return RestErrorMapper.mapRestError(response.body(), response.statusCode());
+    public static <T> CompletableFuture<T> mapRestError(HttpResponse response) {
+        return response.body().thenCompose(responseBody -> CompletableFuture.failedFuture(RestErrorMapper.mapRestError(responseBody, response.statusCode())));
     }
 
     public static A2AClientException mapRestError(String body, int code) {
