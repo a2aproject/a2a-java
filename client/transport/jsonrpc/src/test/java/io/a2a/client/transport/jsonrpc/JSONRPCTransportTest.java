@@ -24,12 +24,7 @@ import static io.a2a.client.transport.jsonrpc.JsonMessages.SEND_MESSAGE_WITH_MIX
 import static io.a2a.client.transport.jsonrpc.JsonMessages.SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -37,6 +32,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
@@ -103,6 +101,8 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        CountDownLatch latch = new CountDownLatch(1);
+
         Message message = new Message.Builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
@@ -118,21 +118,32 @@ public class JSONRPCTransportTest {
                 .configuration(configuration)
                 .build();
 
-        EventKind result = client.sendMessage(params, null);
-        assertInstanceOf(Task.class, result);
-        Task task = (Task) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState.COMPLETED,task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
-        assertEquals("artifact-1", artifact.artifactId());
-        assertEquals("joke", artifact.name());
-        assertEquals(1, artifact.parts().size());
-        Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        client.sendMessage(params, null)
+                        .whenComplete(new BiConsumer<EventKind, Throwable>() {
+                            @Override
+                            public void accept(EventKind result, Throwable throwable) {
+                                assertNull(throwable);
+                                assertInstanceOf(Task.class, result);
+                                Task task = (Task) result;
+                                assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
+                                assertNotNull(task.getContextId());
+                                assertEquals(TaskState.COMPLETED,task.getStatus().state());
+                                assertEquals(1, task.getArtifacts().size());
+                                Artifact artifact = task.getArtifacts().get(0);
+                                assertEquals("artifact-1", artifact.artifactId());
+                                assertEquals("joke", artifact.name());
+                                assertEquals(1, artifact.parts().size());
+                                Part<?> part = artifact.parts().get(0);
+                                assertEquals(Part.Kind.TEXT, part.getKind());
+                                assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
+                                assertTrue(task.getMetadata().isEmpty());
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     @Test
@@ -151,6 +162,8 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        CountDownLatch latch = new CountDownLatch(1);
+
         Message message = new Message.Builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
@@ -166,14 +179,26 @@ public class JSONRPCTransportTest {
                 .configuration(configuration)
                 .build();
 
-        EventKind result = client.sendMessage(params, null);
-        assertInstanceOf(Message.class, result);
-        Message agentMessage = (Message) result;
-        assertEquals(Message.Role.AGENT, agentMessage.getRole());
-        Part<?> part = agentMessage.getParts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
-        assertEquals("msg-456", agentMessage.getMessageId());
+        client.sendMessage(params, null)
+                        .whenComplete(new BiConsumer<EventKind, Throwable>() {
+                            @Override
+                            public void accept(EventKind result, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertInstanceOf(Message.class, result);
+                                Message agentMessage = (Message) result;
+                                assertEquals(Message.Role.AGENT, agentMessage.getRole());
+                                Part<?> part = agentMessage.getParts().get(0);
+                                assertEquals(Part.Kind.TEXT, part.getKind());
+                                assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
+                                assertEquals("msg-456", agentMessage.getMessageId());
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
 
@@ -193,6 +218,8 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        CountDownLatch latch = new CountDownLatch(1);
+
         Message message = new Message.Builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
@@ -208,12 +235,21 @@ public class JSONRPCTransportTest {
                 .configuration(configuration)
                 .build();
 
-        try {
-            client.sendMessage(params, null);
-            fail(); // should not reach here
-        } catch (A2AClientException e) {
-            assertTrue(e.getMessage().contains("Invalid parameters: Hello world"));
-        }
+        client.sendMessage(params, null)
+                .whenComplete(new BiConsumer<EventKind, Throwable>() {
+                    @Override
+                    public void accept(EventKind eventKind, Throwable throwable) {
+                        assertNull(eventKind);
+
+                        assertNotNull(throwable);
+                        assertTrue(throwable.getMessage().contains("Invalid parameters: Hello world"));
+
+                        latch.countDown();
+                    }
+                });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     @Test
@@ -232,41 +268,55 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Task task = client.getTask(new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
-                10), null);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
-        assertEquals(1, artifact.parts().size());
-        assertEquals("artifact-1", artifact.artifactId());
-        Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
-        List<Message> history = task.getHistory();
-        assertNotNull(history);
-        assertEquals(1, history.size());
-        Message message = history.get(0);
-        assertEquals(Message.Role.USER, message.getRole());
-        List<Part<?>> parts = message.getParts();
-        assertNotNull(parts);
-        assertEquals(3, parts.size());
-        part = parts.get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("tell me a joke", ((TextPart)part).getText());
-        part = parts.get(1);
-        assertEquals(Part.Kind.FILE, part.getKind());
-        FileContent filePart = ((FilePart) part).getFile();
-        assertEquals("file:///path/to/file.txt", ((FileWithUri) filePart).uri());
-        assertEquals("text/plain", filePart.mimeType());
-        part = parts.get(2);
-        assertEquals(Part.Kind.FILE, part.getKind());
-        filePart = ((FilePart) part).getFile();
-        assertEquals("aGVsbG8=", ((FileWithBytes) filePart).bytes());
-        assertEquals("hello.txt", filePart.name());
-        assertTrue(task.getMetadata().isEmpty());
+        CountDownLatch latch = new CountDownLatch(1);
+
+        client.getTask(new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
+                10), null)
+                        .whenComplete(new BiConsumer<Task, Throwable>() {
+                            @Override
+                            public void accept(Task task, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
+                                assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.getContextId());
+                                assertEquals(TaskState.COMPLETED, task.getStatus().state());
+                                assertEquals(1, task.getArtifacts().size());
+                                Artifact artifact = task.getArtifacts().get(0);
+                                assertEquals(1, artifact.parts().size());
+                                assertEquals("artifact-1", artifact.artifactId());
+                                Part<?> part = artifact.parts().get(0);
+                                assertEquals(Part.Kind.TEXT, part.getKind());
+                                assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
+                                assertTrue(task.getMetadata().isEmpty());
+                                List<Message> history = task.getHistory();
+                                assertNotNull(history);
+                                assertEquals(1, history.size());
+                                Message message = history.get(0);
+                                assertEquals(Message.Role.USER, message.getRole());
+                                List<Part<?>> parts = message.getParts();
+                                assertNotNull(parts);
+                                assertEquals(3, parts.size());
+                                part = parts.get(0);
+                                assertEquals(Part.Kind.TEXT, part.getKind());
+                                assertEquals("tell me a joke", ((TextPart)part).getText());
+                                part = parts.get(1);
+                                assertEquals(Part.Kind.FILE, part.getKind());
+                                FileContent filePart = ((FilePart) part).getFile();
+                                assertEquals("file:///path/to/file.txt", ((FileWithUri) filePart).uri());
+                                assertEquals("text/plain", filePart.mimeType());
+                                part = parts.get(2);
+                                assertEquals(Part.Kind.FILE, part.getKind());
+                                filePart = ((FilePart) part).getFile();
+                                assertEquals("aGVsbG8=", ((FileWithBytes) filePart).bytes());
+                                assertEquals("hello.txt", filePart.name());
+                                assertTrue(task.getMetadata().isEmpty());
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     @Test
@@ -285,12 +335,26 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Task task = client.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
-                new HashMap<>()), null);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.getContextId());
-        assertEquals(TaskState.CANCELED, task.getStatus().state());
-        assertTrue(task.getMetadata().isEmpty());
+        CountDownLatch latch = new CountDownLatch(1);
+
+        client.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
+                new HashMap<>()), null)
+                        .whenComplete(new BiConsumer<Task, Throwable>() {
+                            @Override
+                            public void accept(Task task, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
+                                assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.getContextId());
+                                assertEquals(TaskState.CANCELED, task.getStatus().state());
+                                assertTrue(task.getMetadata().isEmpty());
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     @Test
@@ -309,15 +373,31 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
+        CountDownLatch latch = new CountDownLatch(1);
+
+        client.getTaskPushNotificationConfiguration(
                 new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", null,
-                        new HashMap<>()), null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
-        assertNotNull(pushNotificationConfig);
-        assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertTrue(authenticationInfo.schemes().size() == 1);
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
+                        new HashMap<>()), null)
+                .whenComplete(new BiConsumer<TaskPushNotificationConfig, Throwable>() {
+                    @Override
+                    public void accept(TaskPushNotificationConfig taskPushNotificationConfig, Throwable throwable) {
+                        assertNull(throwable);
+
+                        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+                        assertNotNull(pushNotificationConfig);
+                        assertEquals("https://example.com/callback", pushNotificationConfig.url());
+                        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+                        assertTrue(authenticationInfo.schemes().size() == 1);
+                        assertEquals("jwt", authenticationInfo.schemes().get(0));
+
+
+
+                        latch.countDown();
+                    }
+                });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     @Test
@@ -336,19 +416,33 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        TaskPushNotificationConfig taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(
+        CountDownLatch latch = new CountDownLatch(1);
+
+        client.setTaskPushNotificationConfiguration(
                 new TaskPushNotificationConfig("de38c76d-d54c-436c-8b9f-4c2703648d64",
                         new PushNotificationConfig.Builder()
                                 .url("https://example.com/callback")
                                 .authenticationInfo(new PushNotificationAuthenticationInfo(Collections.singletonList("jwt"),
                                         null))
-                                .build()), null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
-        assertNotNull(pushNotificationConfig);
-        assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertEquals(1, authenticationInfo.schemes().size());
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
+                                .build()), null)
+                .whenComplete(new BiConsumer<TaskPushNotificationConfig, Throwable>() {
+                    @Override
+                    public void accept(TaskPushNotificationConfig taskPushNotificationConfig, Throwable throwable) {
+                        assertNull(throwable);
+
+                        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+                        assertNotNull(pushNotificationConfig);
+                        assertEquals("https://example.com/callback", pushNotificationConfig.url());
+                        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+                        assertEquals(1, authenticationInfo.schemes().size());
+                        assertEquals("jwt", authenticationInfo.schemes().get(0));
+
+                        latch.countDown();
+                    }
+                });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
 
@@ -366,68 +460,82 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        AgentCard agentCard = client.getAgentCard(null);
-        assertEquals("GeoSpatial Route Planner Agent", agentCard.name());
-        assertEquals("Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.", agentCard.description());
-        assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());
-        assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
-        assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
-        assertEquals("1.2.0", agentCard.version());
-        assertEquals("https://docs.examplegeoservices.com/georoute-agent/api", agentCard.documentationUrl());
-        assertTrue(agentCard.capabilities().streaming());
-        assertTrue(agentCard.capabilities().pushNotifications());
-        assertFalse(agentCard.capabilities().stateTransitionHistory());
-        Map<String, SecurityScheme> securitySchemes = agentCard.securitySchemes();
-        assertNotNull(securitySchemes);
-        OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
-        assertEquals("openIdConnect", google.getType());
-        assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.getOpenIdConnectUrl());
-        List<Map<String, List<String>>> security = agentCard.security();
-        assertEquals(1, security.size());
-        Map<String, List<String>> securityMap = security.get(0);
-        List<String> scopes = securityMap.get("google");
-        List<String> expectedScopes = List.of("openid", "profile", "email");
-        assertEquals(expectedScopes, scopes);
-        List<String> defaultInputModes = List.of("application/json", "text/plain");
-        assertEquals(defaultInputModes, agentCard.defaultInputModes());
-        List<String> defaultOutputModes = List.of("application/json", "image/png");
-        assertEquals(defaultOutputModes, agentCard.defaultOutputModes());
-        List<AgentSkill> skills = agentCard.skills();
-        assertEquals("route-optimizer-traffic", skills.get(0).id());
-        assertEquals("Traffic-Aware Route Optimizer", skills.get(0).name());
-        assertEquals("Calculates the optimal driving route between two or more locations, taking into account real-time traffic conditions, road closures, and user preferences (e.g., avoid tolls, prefer highways).", skills.get(0).description());
-        List<String> tags = List.of("maps", "routing", "navigation", "directions", "traffic");
-        assertEquals(tags, skills.get(0).tags());
-        List<String> examples = List.of("Plan a route from '1600 Amphitheatre Parkway, Mountain View, CA' to 'San Francisco International Airport' avoiding tolls.",
-                "{\"origin\": {\"lat\": 37.422, \"lng\": -122.084}, \"destination\": {\"lat\": 37.7749, \"lng\": -122.4194}, \"preferences\": [\"avoid_ferries\"]}");
-        assertEquals(examples, skills.get(0).examples());
-        assertEquals(defaultInputModes, skills.get(0).inputModes());
-        List<String> outputModes = List.of("application/json", "application/vnd.geo+json", "text/html");
-        assertEquals(outputModes, skills.get(0).outputModes());
-        assertEquals("custom-map-generator", skills.get(1).id());
-        assertEquals("Personalized Map Generator", skills.get(1).name());
-        assertEquals("Creates custom map images or interactive map views based on user-defined points of interest, routes, and style preferences. Can overlay data layers.", skills.get(1).description());
-        tags = List.of("maps", "customization", "visualization", "cartography");
-        assertEquals(tags, skills.get(1).tags());
-        examples = List.of("Generate a map of my upcoming road trip with all planned stops highlighted.",
-                "Show me a map visualizing all coffee shops within a 1-mile radius of my current location.");
-        assertEquals(examples, skills.get(1).examples());
-        List<String> inputModes = List.of("application/json");
-        assertEquals(inputModes, skills.get(1).inputModes());
-        outputModes = List.of("image/png", "image/jpeg", "application/json", "text/html");
-        assertEquals(outputModes, skills.get(1).outputModes());
-        assertFalse(agentCard.supportsAuthenticatedExtendedCard());
-        assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals("0.2.9", agentCard.protocolVersion());
-        assertEquals("JSONRPC", agentCard.preferredTransport());
-        List<AgentInterface> additionalInterfaces = agentCard.additionalInterfaces();
-        assertEquals(3, additionalInterfaces.size());
-        AgentInterface jsonrpc = new AgentInterface(TransportProtocol.JSONRPC.asString(), "https://georoute-agent.example.com/a2a/v1");
-        AgentInterface grpc = new AgentInterface(TransportProtocol.GRPC.asString(), "https://georoute-agent.example.com/a2a/grpc");
-        AgentInterface httpJson = new AgentInterface(TransportProtocol.HTTP_JSON.asString(), "https://georoute-agent.example.com/a2a/json");
-        assertEquals(jsonrpc, additionalInterfaces.get(0));
-        assertEquals(grpc, additionalInterfaces.get(1));
-        assertEquals(httpJson, additionalInterfaces.get(2));
+        CountDownLatch latch = new CountDownLatch(1);
+
+        client.getAgentCard(null)
+                        .whenComplete(new BiConsumer<AgentCard, Throwable>() {
+                            @Override
+                            public void accept(AgentCard agentCard, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertEquals("GeoSpatial Route Planner Agent", agentCard.name());
+                                assertEquals("Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.", agentCard.description());
+                                assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());
+                                assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
+                                assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
+                                assertEquals("1.2.0", agentCard.version());
+                                assertEquals("https://docs.examplegeoservices.com/georoute-agent/api", agentCard.documentationUrl());
+                                assertTrue(agentCard.capabilities().streaming());
+                                assertTrue(agentCard.capabilities().pushNotifications());
+                                assertFalse(agentCard.capabilities().stateTransitionHistory());
+                                Map<String, SecurityScheme> securitySchemes = agentCard.securitySchemes();
+                                assertNotNull(securitySchemes);
+                                OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
+                                assertEquals("openIdConnect", google.getType());
+                                assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.getOpenIdConnectUrl());
+                                List<Map<String, List<String>>> security = agentCard.security();
+                                assertEquals(1, security.size());
+                                Map<String, List<String>> securityMap = security.get(0);
+                                List<String> scopes = securityMap.get("google");
+                                List<String> expectedScopes = List.of("openid", "profile", "email");
+                                assertEquals(expectedScopes, scopes);
+                                List<String> defaultInputModes = List.of("application/json", "text/plain");
+                                assertEquals(defaultInputModes, agentCard.defaultInputModes());
+                                List<String> defaultOutputModes = List.of("application/json", "image/png");
+                                assertEquals(defaultOutputModes, agentCard.defaultOutputModes());
+                                List<AgentSkill> skills = agentCard.skills();
+                                assertEquals("route-optimizer-traffic", skills.get(0).id());
+                                assertEquals("Traffic-Aware Route Optimizer", skills.get(0).name());
+                                assertEquals("Calculates the optimal driving route between two or more locations, taking into account real-time traffic conditions, road closures, and user preferences (e.g., avoid tolls, prefer highways).", skills.get(0).description());
+                                List<String> tags = List.of("maps", "routing", "navigation", "directions", "traffic");
+                                assertEquals(tags, skills.get(0).tags());
+                                List<String> examples = List.of("Plan a route from '1600 Amphitheatre Parkway, Mountain View, CA' to 'San Francisco International Airport' avoiding tolls.",
+                                        "{\"origin\": {\"lat\": 37.422, \"lng\": -122.084}, \"destination\": {\"lat\": 37.7749, \"lng\": -122.4194}, \"preferences\": [\"avoid_ferries\"]}");
+                                assertEquals(examples, skills.get(0).examples());
+                                assertEquals(defaultInputModes, skills.get(0).inputModes());
+                                List<String> outputModes = List.of("application/json", "application/vnd.geo+json", "text/html");
+                                assertEquals(outputModes, skills.get(0).outputModes());
+                                assertEquals("custom-map-generator", skills.get(1).id());
+                                assertEquals("Personalized Map Generator", skills.get(1).name());
+                                assertEquals("Creates custom map images or interactive map views based on user-defined points of interest, routes, and style preferences. Can overlay data layers.", skills.get(1).description());
+                                tags = List.of("maps", "customization", "visualization", "cartography");
+                                assertEquals(tags, skills.get(1).tags());
+                                examples = List.of("Generate a map of my upcoming road trip with all planned stops highlighted.",
+                                        "Show me a map visualizing all coffee shops within a 1-mile radius of my current location.");
+                                assertEquals(examples, skills.get(1).examples());
+                                List<String> inputModes = List.of("application/json");
+                                assertEquals(inputModes, skills.get(1).inputModes());
+                                outputModes = List.of("image/png", "image/jpeg", "application/json", "text/html");
+                                assertEquals(outputModes, skills.get(1).outputModes());
+                                assertFalse(agentCard.supportsAuthenticatedExtendedCard());
+                                assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
+                                assertEquals("0.2.9", agentCard.protocolVersion());
+                                assertEquals("JSONRPC", agentCard.preferredTransport());
+                                List<AgentInterface> additionalInterfaces = agentCard.additionalInterfaces();
+                                assertEquals(3, additionalInterfaces.size());
+                                AgentInterface jsonrpc = new AgentInterface(TransportProtocol.JSONRPC.asString(), "https://georoute-agent.example.com/a2a/v1");
+                                AgentInterface grpc = new AgentInterface(TransportProtocol.GRPC.asString(), "https://georoute-agent.example.com/a2a/grpc");
+                                AgentInterface httpJson = new AgentInterface(TransportProtocol.HTTP_JSON.asString(), "https://georoute-agent.example.com/a2a/json");
+                                assertEquals(jsonrpc, additionalInterfaces.get(0));
+                                assertEquals(grpc, additionalInterfaces.get(1));
+                                assertEquals(httpJson, additionalInterfaces.get(2));
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     @Test
@@ -455,63 +563,77 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        AgentCard agentCard = client.getAgentCard(null);
-        assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
-        assertEquals("Extended description", agentCard.description());
-        assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());
-        assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
-        assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
-        assertEquals("1.2.0", agentCard.version());
-        assertEquals("https://docs.examplegeoservices.com/georoute-agent/api", agentCard.documentationUrl());
-        assertTrue(agentCard.capabilities().streaming());
-        assertTrue(agentCard.capabilities().pushNotifications());
-        assertFalse(agentCard.capabilities().stateTransitionHistory());
-        Map<String, SecurityScheme> securitySchemes = agentCard.securitySchemes();
-        assertNotNull(securitySchemes);
-        OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
-        assertEquals("openIdConnect", google.getType());
-        assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.getOpenIdConnectUrl());
-        List<Map<String, List<String>>> security = agentCard.security();
-        assertEquals(1, security.size());
-        Map<String, List<String>> securityMap = security.get(0);
-        List<String> scopes = securityMap.get("google");
-        List<String> expectedScopes = List.of("openid", "profile", "email");
-        assertEquals(expectedScopes, scopes);
-        List<String> defaultInputModes = List.of("application/json", "text/plain");
-        assertEquals(defaultInputModes, agentCard.defaultInputModes());
-        List<String> defaultOutputModes = List.of("application/json", "image/png");
-        assertEquals(defaultOutputModes, agentCard.defaultOutputModes());
-        List<AgentSkill> skills = agentCard.skills();
-        assertEquals("route-optimizer-traffic", skills.get(0).id());
-        assertEquals("Traffic-Aware Route Optimizer", skills.get(0).name());
-        assertEquals("Calculates the optimal driving route between two or more locations, taking into account real-time traffic conditions, road closures, and user preferences (e.g., avoid tolls, prefer highways).", skills.get(0).description());
-        List<String> tags = List.of("maps", "routing", "navigation", "directions", "traffic");
-        assertEquals(tags, skills.get(0).tags());
-        List<String> examples = List.of("Plan a route from '1600 Amphitheatre Parkway, Mountain View, CA' to 'San Francisco International Airport' avoiding tolls.",
-                "{\"origin\": {\"lat\": 37.422, \"lng\": -122.084}, \"destination\": {\"lat\": 37.7749, \"lng\": -122.4194}, \"preferences\": [\"avoid_ferries\"]}");
-        assertEquals(examples, skills.get(0).examples());
-        assertEquals(defaultInputModes, skills.get(0).inputModes());
-        List<String> outputModes = List.of("application/json", "application/vnd.geo+json", "text/html");
-        assertEquals(outputModes, skills.get(0).outputModes());
-        assertEquals("custom-map-generator", skills.get(1).id());
-        assertEquals("Personalized Map Generator", skills.get(1).name());
-        assertEquals("Creates custom map images or interactive map views based on user-defined points of interest, routes, and style preferences. Can overlay data layers.", skills.get(1).description());
-        tags = List.of("maps", "customization", "visualization", "cartography");
-        assertEquals(tags, skills.get(1).tags());
-        examples = List.of("Generate a map of my upcoming road trip with all planned stops highlighted.",
-                "Show me a map visualizing all coffee shops within a 1-mile radius of my current location.");
-        assertEquals(examples, skills.get(1).examples());
-        List<String> inputModes = List.of("application/json");
-        assertEquals(inputModes, skills.get(1).inputModes());
-        outputModes = List.of("image/png", "image/jpeg", "application/json", "text/html");
-        assertEquals(outputModes, skills.get(1).outputModes());
-        assertEquals("skill-extended", skills.get(2).id());
-        assertEquals("Extended Skill", skills.get(2).name());
-        assertEquals("This is an extended skill.", skills.get(2).description());
-        assertEquals(List.of("extended"), skills.get(2).tags());
-        assertTrue(agentCard.supportsAuthenticatedExtendedCard());
-        assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals("0.2.5", agentCard.protocolVersion());
+        CountDownLatch latch = new CountDownLatch(1);
+
+        client.getAgentCard(null)
+                        .whenComplete(new BiConsumer<AgentCard, Throwable>() {
+                            @Override
+                            public void accept(AgentCard agentCard, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
+                                assertEquals("Extended description", agentCard.description());
+                                assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());
+                                assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
+                                assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
+                                assertEquals("1.2.0", agentCard.version());
+                                assertEquals("https://docs.examplegeoservices.com/georoute-agent/api", agentCard.documentationUrl());
+                                assertTrue(agentCard.capabilities().streaming());
+                                assertTrue(agentCard.capabilities().pushNotifications());
+                                assertFalse(agentCard.capabilities().stateTransitionHistory());
+                                Map<String, SecurityScheme> securitySchemes = agentCard.securitySchemes();
+                                assertNotNull(securitySchemes);
+                                OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
+                                assertEquals("openIdConnect", google.getType());
+                                assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.getOpenIdConnectUrl());
+                                List<Map<String, List<String>>> security = agentCard.security();
+                                assertEquals(1, security.size());
+                                Map<String, List<String>> securityMap = security.get(0);
+                                List<String> scopes = securityMap.get("google");
+                                List<String> expectedScopes = List.of("openid", "profile", "email");
+                                assertEquals(expectedScopes, scopes);
+                                List<String> defaultInputModes = List.of("application/json", "text/plain");
+                                assertEquals(defaultInputModes, agentCard.defaultInputModes());
+                                List<String> defaultOutputModes = List.of("application/json", "image/png");
+                                assertEquals(defaultOutputModes, agentCard.defaultOutputModes());
+                                List<AgentSkill> skills = agentCard.skills();
+                                assertEquals("route-optimizer-traffic", skills.get(0).id());
+                                assertEquals("Traffic-Aware Route Optimizer", skills.get(0).name());
+                                assertEquals("Calculates the optimal driving route between two or more locations, taking into account real-time traffic conditions, road closures, and user preferences (e.g., avoid tolls, prefer highways).", skills.get(0).description());
+                                List<String> tags = List.of("maps", "routing", "navigation", "directions", "traffic");
+                                assertEquals(tags, skills.get(0).tags());
+                                List<String> examples = List.of("Plan a route from '1600 Amphitheatre Parkway, Mountain View, CA' to 'San Francisco International Airport' avoiding tolls.",
+                                        "{\"origin\": {\"lat\": 37.422, \"lng\": -122.084}, \"destination\": {\"lat\": 37.7749, \"lng\": -122.4194}, \"preferences\": [\"avoid_ferries\"]}");
+                                assertEquals(examples, skills.get(0).examples());
+                                assertEquals(defaultInputModes, skills.get(0).inputModes());
+                                List<String> outputModes = List.of("application/json", "application/vnd.geo+json", "text/html");
+                                assertEquals(outputModes, skills.get(0).outputModes());
+                                assertEquals("custom-map-generator", skills.get(1).id());
+                                assertEquals("Personalized Map Generator", skills.get(1).name());
+                                assertEquals("Creates custom map images or interactive map views based on user-defined points of interest, routes, and style preferences. Can overlay data layers.", skills.get(1).description());
+                                tags = List.of("maps", "customization", "visualization", "cartography");
+                                assertEquals(tags, skills.get(1).tags());
+                                examples = List.of("Generate a map of my upcoming road trip with all planned stops highlighted.",
+                                        "Show me a map visualizing all coffee shops within a 1-mile radius of my current location.");
+                                assertEquals(examples, skills.get(1).examples());
+                                List<String> inputModes = List.of("application/json");
+                                assertEquals(inputModes, skills.get(1).inputModes());
+                                outputModes = List.of("image/png", "image/jpeg", "application/json", "text/html");
+                                assertEquals(outputModes, skills.get(1).outputModes());
+                                assertEquals("skill-extended", skills.get(2).id());
+                                assertEquals("Extended Skill", skills.get(2).name());
+                                assertEquals("This is an extended skill.", skills.get(2).description());
+                                assertEquals(List.of("extended"), skills.get(2).tags());
+                                assertTrue(agentCard.supportsAuthenticatedExtendedCard());
+                                assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
+                                assertEquals("0.2.5", agentCard.protocolVersion());
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     @Test
@@ -530,6 +652,8 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        CountDownLatch latch = new CountDownLatch(1);
+
         Message message = new Message.Builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
@@ -548,21 +672,33 @@ public class JSONRPCTransportTest {
                 .configuration(configuration)
                 .build();
 
-        EventKind result = client.sendMessage(params, null);
-        assertInstanceOf(Task.class, result);
-        Task task = (Task) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
-        assertEquals("artifact-1", artifact.artifactId());
-        assertEquals("image-analysis", artifact.name());
-        assertEquals(1, artifact.parts().size());
-        Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        client.sendMessage(params, null)
+                        .whenComplete(new BiConsumer<EventKind, Throwable>() {
+                            @Override
+                            public void accept(EventKind result, Throwable throwable) {
+                                assertNull(throwable);
+
+                                assertInstanceOf(Task.class, result);
+                                Task task = (Task) result;
+                                assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
+                                assertNotNull(task.getContextId());
+                                assertEquals(TaskState.COMPLETED, task.getStatus().state());
+                                assertEquals(1, task.getArtifacts().size());
+                                Artifact artifact = task.getArtifacts().get(0);
+                                assertEquals("artifact-1", artifact.artifactId());
+                                assertEquals("image-analysis", artifact.name());
+                                assertEquals(1, artifact.parts().size());
+                                Part<?> part = artifact.parts().get(0);
+                                assertEquals(Part.Kind.TEXT, part.getKind());
+                                assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart) part).getText());
+                                assertTrue(task.getMetadata().isEmpty());
+
+                                latch.countDown();
+                            }
+                        });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     @Test
@@ -581,6 +717,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        CountDownLatch latch = new CountDownLatch(1);
 
         Map<String, Object> data = new HashMap<>();
         data.put("temperature", 25.5);
@@ -606,21 +743,33 @@ public class JSONRPCTransportTest {
                 .configuration(configuration)
                 .build();
 
-        EventKind result = client.sendMessage(params, null);
-        assertInstanceOf(Task.class, result);
-        Task task = (Task) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
-        assertEquals("artifact-1", artifact.artifactId());
-        assertEquals("data-analysis", artifact.name());
-        assertEquals(1, artifact.parts().size());
-        Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco.", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        client.sendMessage(params, null)
+                .whenComplete(new BiConsumer<EventKind, Throwable>() {
+                    @Override
+                    public void accept(EventKind result, Throwable throwable) {
+                        assertNull(throwable);
+
+                        assertInstanceOf(Task.class, result);
+                        Task task = (Task) result;
+                        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
+                        assertNotNull(task.getContextId());
+                        assertEquals(TaskState.COMPLETED, task.getStatus().state());
+                        assertEquals(1, task.getArtifacts().size());
+                        Artifact artifact = task.getArtifacts().get(0);
+                        assertEquals("artifact-1", artifact.artifactId());
+                        assertEquals("data-analysis", artifact.name());
+                        assertEquals(1, artifact.parts().size());
+                        Part<?> part = artifact.parts().get(0);
+                        assertEquals(Part.Kind.TEXT, part.getKind());
+                        assertEquals("Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco.", ((TextPart) part).getText());
+                        assertTrue(task.getMetadata().isEmpty());
+
+                        latch.countDown();
+                    }
+                });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 
     @Test
@@ -639,6 +788,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        CountDownLatch latch = new CountDownLatch(1);
 
         Map<String, Object> data = new HashMap<>();
         data.put("chartType", "bar");
@@ -664,20 +814,32 @@ public class JSONRPCTransportTest {
                 .configuration(configuration)
                 .build();
 
-        EventKind result = client.sendMessage(params, null);
-        assertInstanceOf(Task.class, result);
-        Task task = (Task) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
-        assertEquals("artifact-1", artifact.artifactId());
-        assertEquals("mixed-analysis", artifact.name());
-        assertEquals(1, artifact.parts().size());
-        Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        client.sendMessage(params, null)
+                .whenComplete(new BiConsumer<EventKind, Throwable>() {
+                    @Override
+                    public void accept(EventKind result, Throwable throwable) {
+                        assertNull(throwable);
+
+                        assertInstanceOf(Task.class, result);
+                        Task task = (Task) result;
+                        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
+                        assertNotNull(task.getContextId());
+                        assertEquals(TaskState.COMPLETED, task.getStatus().state());
+                        assertEquals(1, task.getArtifacts().size());
+                        Artifact artifact = task.getArtifacts().get(0);
+                        assertEquals("artifact-1", artifact.artifactId());
+                        assertEquals("mixed-analysis", artifact.name());
+                        assertEquals(1, artifact.parts().size());
+                        Part<?> part = artifact.parts().get(0);
+                        assertEquals(Part.Kind.TEXT, part.getKind());
+                        assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart) part).getText());
+                        assertTrue(task.getMetadata().isEmpty());
+
+                        latch.countDown();
+                    }
+                });
+
+        boolean completed = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(completed);
     }
 }

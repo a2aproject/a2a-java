@@ -1,18 +1,19 @@
 package io.a2a.server.tasks;
 
 import static io.a2a.common.A2AHeaders.X_A2A_NOTIFICATION_TOKEN;
+
+import io.a2a.server.http.HttpClientManager;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.http.HttpClient;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.util.Utils;
@@ -25,18 +26,13 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasePushNotificationSender.class);
 
-    private final A2AHttpClient httpClient;
     private final PushNotificationConfigStore configStore;
+    private final HttpClientManager clientManager;
 
     @Inject
-    public BasePushNotificationSender(PushNotificationConfigStore configStore) {
-        this.httpClient = new JdkA2AHttpClient();
+    public BasePushNotificationSender(PushNotificationConfigStore configStore, HttpClientManager clientManager) {
         this.configStore = configStore;
-    }
-
-    public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient) {
-        this.configStore = configStore;
-        this.httpClient = httpClient;
+        this.clientManager = clientManager;
     }
 
     @Override
@@ -68,10 +64,13 @@ public class BasePushNotificationSender implements PushNotificationSender {
     }
 
     private boolean dispatchNotification(Task task, PushNotificationConfig pushInfo) {
-        String url = pushInfo.url();
-        String token = pushInfo.token();
+        final String url = pushInfo.url();
+        final String token = pushInfo.token();
 
-        A2AHttpClient.PostBuilder postBuilder = httpClient.createPost();
+        // Delegate to the HTTP client manager to better manage client's connection pool.
+        final HttpClient client = clientManager.getOrCreate(url);
+        final URI uri = URI.create(url);
+        HttpClient.PostRequestBuilder postBuilder = client.post(uri.getPath());
         if (token != null && !token.isBlank()) {
             postBuilder.addHeader(X_A2A_NOTIFICATION_TOKEN, token);
         }
@@ -89,10 +88,10 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
         try {
             postBuilder
-                    .url(url)
                     .body(body)
-                    .post();
-        } catch (IOException | InterruptedException e) {
+                    .send()
+                    .get();
+        } catch (ExecutionException | InterruptedException e) {
             LOGGER.debug("Error pushing data to " + url + ": {}", e.getMessage(), e);
             return false;
         }

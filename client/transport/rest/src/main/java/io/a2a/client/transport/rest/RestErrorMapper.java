@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.client.http.HttpResponse;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
@@ -18,6 +18,8 @@ import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.UnsupportedOperationError;
+
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,8 +30,8 @@ public class RestErrorMapper {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    public static A2AClientException mapRestError(A2AHttpResponse response) {
-        return RestErrorMapper.mapRestError(response.body(), response.status());
+    public static <T> CompletableFuture<T> mapRestError(HttpResponse response) {
+        return response.body().thenCompose(responseBody -> CompletableFuture.failedFuture(RestErrorMapper.mapRestError(responseBody, response.statusCode())));
     }
 
     public static A2AClientException mapRestError(String body, int code) {

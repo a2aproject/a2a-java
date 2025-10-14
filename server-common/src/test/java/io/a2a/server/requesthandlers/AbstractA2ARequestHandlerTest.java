@@ -3,6 +3,10 @@ package io.a2a.server.requesthandlers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+
+import io.a2a.client.http.sse.Event;
+import io.a2a.server.http.HttpClientManager;
+import jakarta.enterprise.context.Dependent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,10 +17,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-import jakarta.enterprise.context.Dependent;
-
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.client.http.HttpClient;
+import io.a2a.client.http.HttpResponse;
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
@@ -42,6 +44,11 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import static org.mockito.ArgumentMatchers.any;
 
 public class AbstractA2ARequestHandlerTest {
 
@@ -61,6 +68,9 @@ public class AbstractA2ARequestHandlerTest {
     private static final String PREFERRED_TRANSPORT = "preferred-transport";
     private static final String A2A_REQUESTHANDLER_TEST_PROPERTIES = "/a2a-requesthandler-test.properties";
 
+    @Mock
+    private HttpClientManager clientManager;
+
     protected AgentExecutor executor;
     protected TaskStore taskStore;
     protected RequestHandler requestHandler;
@@ -73,6 +83,8 @@ public class AbstractA2ARequestHandlerTest {
 
     @BeforeEach
     public void init() {
+        MockitoAnnotations.openMocks(this);
+
         executor = new AgentExecutor() {
             @Override
             public void execute(RequestContext context, EventQueue eventQueue) throws JSONRPCError {
@@ -92,8 +104,10 @@ public class AbstractA2ARequestHandlerTest {
         taskStore = new InMemoryTaskStore();
         queueManager = new InMemoryQueueManager();
         httpClient = new TestHttpClient();
+
+        Mockito.when(clientManager.getOrCreate(any())).thenReturn(httpClient);
         PushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
-        PushNotificationSender pushSender = new BasePushNotificationSender(pushConfigStore, httpClient);
+        PushNotificationSender pushSender = new BasePushNotificationSender(pushConfigStore, clientManager);
 
         requestHandler = new DefaultRequestHandler(executor, taskStore, queueManager, pushConfigStore, pushSender, internalExecutor);
     }
@@ -148,75 +162,79 @@ public class AbstractA2ARequestHandlerTest {
 
     @Dependent
     @IfBuildProfile("test")
-    protected static class TestHttpClient implements A2AHttpClient {
+    protected static class TestHttpClient implements HttpClient {
         public final List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
         public volatile CountDownLatch latch;
 
         @Override
-        public GetBuilder createGet() {
+        public GetRequestBuilder get(String path) {
             return null;
         }
 
         @Override
-        public PostBuilder createPost() {
-            return new TestHttpClient.TestPostBuilder();
+        public PostRequestBuilder post(String path) {
+            return new TestPostRequestBuilder();
         }
 
         @Override
-        public DeleteBuilder createDelete() {
+        public DeleteRequestBuilder delete(String path) {
             return null;
         }
 
-        class TestPostBuilder implements A2AHttpClient.PostBuilder {
+        class TestPostRequestBuilder implements PostRequestBuilder {
+
             private volatile String body;
             @Override
-            public PostBuilder body(String body) {
+            public PostRequestBuilder body(String body) {
                 this.body = body;
                 return this;
             }
 
             @Override
-            public A2AHttpResponse post() throws IOException, InterruptedException {
-                tasks.add(Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE));
+            public CompletableFuture<HttpResponse> send() {
+                CompletableFuture<HttpResponse> future = new CompletableFuture<>();
+
                 try {
-                    return new A2AHttpResponse() {
-                        @Override
-                        public int status() {
-                            return 200;
-                        }
+                    tasks.add(Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE));
 
-                        @Override
-                        public boolean success() {
-                            return true;
-                        }
+                    future.complete(
+                        new HttpResponse() {
+                            @Override
+                            public int statusCode() {
+                                return 200;
+                            }
 
-                        @Override
-                        public String body() {
-                            return "";
-                        }
-                    };
+                            @Override
+                            public boolean success() {
+                                return true;
+                            }
+
+                            @Override
+                            public String body() {
+                                return "";
+                            }
+
+                            @Override
+                            public void bodyAsSse(Consumer<Event> eventConsumer, Consumer<Throwable> errorConsumer) {
+
+                            }
+                        });
+                } catch (Exception ex) {
+                    future.completeExceptionally(ex);
                 } finally {
                     latch.countDown();
                 }
+
+                return future;
             }
 
             @Override
-            public CompletableFuture<Void> postAsyncSSE(Consumer<String> messageConsumer, Consumer<Throwable> errorConsumer, Runnable completeRunnable) throws IOException, InterruptedException {
-                return null;
-            }
-
-            @Override
-            public PostBuilder url(String s) {
+            public PostRequestBuilder addHeader(String name, String value) {
                 return this;
             }
 
             @Override
-            public PostBuilder addHeader(String name, String value) {
-                return this;
-            }
-
-            @Override
-            public PostBuilder addHeaders(Map<String, String> headers) {
+            public PostRequestBuilder addHeaders(Map<String, String> headers) {
                 return this;
             }
 

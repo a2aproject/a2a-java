@@ -3,11 +3,9 @@ package io.a2a;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import io.a2a.client.http.A2ACardResolver;
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.http.HttpClient;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientJSONError;
 import io.a2a.spec.AgentCard;
@@ -139,20 +137,7 @@ public class A2A {
      * @throws A2AClientJSONError f the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(String agentUrl) throws A2AClientError, A2AClientJSONError {
-        return getAgentCard(new JdkA2AHttpClient(), agentUrl);
-    }
-
-    /**
-     * Get the agent card for an A2A agent.
-     *
-     * @param httpClient the http client to use
-     * @param agentUrl the base URL for the agent whose agent card we want to retrieve
-     * @return the agent card
-     * @throws A2AClientError If an HTTP error occurs fetching the card
-     * @throws A2AClientJSONError f the response body cannot be decoded as JSON or validated against the AgentCard schema
-     */
-    public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl) throws A2AClientError, A2AClientJSONError  {
-        return getAgentCard(httpClient, agentUrl, null, null);
+        return getAgentCard(HttpClient.createHttpClient(agentUrl), null, null);
     }
 
     /**
@@ -160,30 +145,29 @@ public class A2A {
      *
      * @param agentUrl the base URL for the agent whose agent card we want to retrieve
      * @param relativeCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent-card.json"
+     *                         agent URL, defaults to "/.well-known/agent-card.json"
      * @param authHeaders the HTTP authentication headers to use
      * @return the agent card
      * @throws A2AClientError If an HTTP error occurs fetching the card
      * @throws A2AClientJSONError f the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError {
-        return getAgentCard(new JdkA2AHttpClient(), agentUrl, relativeCardPath, authHeaders);
+        return getAgentCard(HttpClient.createHttpClient(agentUrl), relativeCardPath, authHeaders);
     }
 
     /**
      * Get the agent card for an A2A agent.
      *
      * @param httpClient the http client to use
-     * @param agentUrl the base URL for the agent whose agent card we want to retrieve
      * @param relativeCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent-card.json"
+     *                         agent URL, defaults to "/.well-known/agent-card.json"
      * @param authHeaders the HTTP authentication headers to use
      * @return the agent card
      * @throws A2AClientError If an HTTP error occurs fetching the card
      * @throws A2AClientJSONError f the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
-    public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError  {
-        A2ACardResolver resolver = new A2ACardResolver(httpClient, agentUrl, relativeCardPath, authHeaders);
+    public static AgentCard getAgentCard(HttpClient httpClient, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError  {
+        A2ACardResolver resolver = new A2ACardResolver(httpClient, relativeCardPath, authHeaders);
         return resolver.getAgentCard();
     }
 }

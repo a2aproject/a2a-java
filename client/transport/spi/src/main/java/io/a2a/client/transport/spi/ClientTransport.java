@@ -1,6 +1,7 @@
 package io.a2a.client.transport.spi;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
@@ -31,7 +32,7 @@ public interface ClientTransport {
      * @return the response, either a Task or Message
      * @throws A2AClientException if sending the message fails for any reason
      */
-    EventKind sendMessage(MessageSendParams request, @Nullable ClientCallContext context)
+    CompletableFuture<EventKind> sendMessage(MessageSendParams request, @Nullable ClientCallContext context)
             throws A2AClientException;
 
     /**
@@ -54,7 +55,7 @@ public interface ClientTransport {
      * @return the task
      * @throws A2AClientException if retrieving the task fails for any reason
      */
-    Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    CompletableFuture<Task> getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Request the agent to cancel a specific task.
@@ -64,7 +65,7 @@ public interface ClientTransport {
      * @return the cancelled task
      * @throws A2AClientException if cancelling the task fails for any reason
      */
-    Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    CompletableFuture<Task> cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Set or update the push notification configuration for a specific task.
@@ -74,7 +75,7 @@ public interface ClientTransport {
      * @return the configured TaskPushNotificationConfig
      * @throws A2AClientException if setting the task push notification configuration fails for any reason
      */
-    TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
+    CompletableFuture<TaskPushNotificationConfig> setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
                                                                     @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
@@ -85,7 +86,7 @@ public interface ClientTransport {
      * @return the task push notification config
      * @throws A2AClientException if getting the task push notification config fails for any reason
      */
-    TaskPushNotificationConfig getTaskPushNotificationConfiguration(
+    CompletableFuture<TaskPushNotificationConfig> getTaskPushNotificationConfiguration(
             GetTaskPushNotificationConfigParams request,
             @Nullable ClientCallContext context) throws A2AClientException;
 
@@ -97,7 +98,7 @@ public interface ClientTransport {
      * @return the list of task push notification configs
      * @throws A2AClientException if getting the task push notification configs fails for any reason
      */
-    List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+    CompletableFuture<List<TaskPushNotificationConfig>> listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request,
             @Nullable ClientCallContext context) throws A2AClientException;
 
@@ -108,7 +109,7 @@ public interface ClientTransport {
      * @param context optional client call context for the request (may be {@code null})
      * @throws A2AClientException if deleting the task push notification configs fails for any reason
      */
-    void deleteTaskPushNotificationConfigurations(
+    CompletableFuture<Void> deleteTaskPushNotificationConfigurations(
             DeleteTaskPushNotificationConfigParams request,
             @Nullable ClientCallContext context) throws A2AClientException;
 
@@ -131,7 +132,7 @@ public interface ClientTransport {
      * @return the AgentCard
      * @throws A2AClientException if retrieving the agent card fails for any reason
      */
-    AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException;
+    CompletableFuture<AgentCard> getAgentCard(@Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Close the transport and release any associated resources.

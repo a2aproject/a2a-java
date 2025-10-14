@@ -1,27 +1,24 @@
 package io.a2a.client.transport.rest;
 
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.http.HttpClientBuilder;
 import io.a2a.client.transport.spi.ClientTransportConfigBuilder;
-import org.jspecify.annotations.Nullable;
+
+import io.a2a.util.Assert;
 
 public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<RestTransportConfig, RestTransportConfigBuilder> {
 
-    private @Nullable A2AHttpClient httpClient;
+    private HttpClientBuilder httpClientBuilder = io.a2a.client.http.HttpClientBuilder.DEFAULT_FACTORY;
 
-    public RestTransportConfigBuilder httpClient(A2AHttpClient httpClient) {
-        this.httpClient = httpClient;
+    public RestTransportConfigBuilder httpClientBuilder(HttpClientBuilder httpClientBuilder) {
+        Assert.checkNotNullParam("httpClientBuilder", httpClientBuilder);
+        this.httpClientBuilder = httpClientBuilder;
+
         return this;
     }
 
     @Override
     public RestTransportConfig build() {
-        // No HTTP client provided, fallback to the default one (JDK-based implementation)
-        if (httpClient == null) {
-            httpClient = new JdkA2AHttpClient();
-        }
-
-        RestTransportConfig config = new RestTransportConfig(httpClient);
+        RestTransportConfig config = new RestTransportConfig(this.httpClientBuilder);
         config.setInterceptors(this.interceptors);
         return config;
     }

@@ -1,6 +1,5 @@
 package io.a2a.server.apps.common;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,86 +7,91 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
+import io.a2a.client.http.sse.Event;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Alternative;
 
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.client.http.HttpClient;
+import io.a2a.client.http.HttpResponse;
 import io.a2a.spec.Task;
 import io.a2a.util.Utils;
 import java.util.Map;
 
 @Dependent
 @Alternative
-public class TestHttpClient implements A2AHttpClient {
+public class TestHttpClient implements HttpClient {
     final List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
     volatile CountDownLatch latch;
 
     @Override
-    public GetBuilder createGet() {
+    public GetRequestBuilder get(String path) {
         return null;
     }
 
     @Override
-    public PostBuilder createPost() {
-        return new TestPostBuilder();
+    public PostRequestBuilder post(String path) {
+        return new TestPostRequestBuilder();
     }
 
     @Override
-    public DeleteBuilder createDelete() {
+    public DeleteRequestBuilder delete(String path) {
         return null;
     }
 
-    class TestPostBuilder implements A2AHttpClient.PostBuilder {
+    class TestPostRequestBuilder implements PostRequestBuilder {
+
         private volatile String body;
         @Override
-        public PostBuilder body(String body) {
+        public PostRequestBuilder body(String body) {
             this.body = body;
             return this;
         }
 
         @Override
-        public A2AHttpResponse post() throws IOException, InterruptedException {
-            tasks.add(Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE));
+        public CompletableFuture<HttpResponse> send() {
+            CompletableFuture<HttpResponse> future = new CompletableFuture<>();
+
             try {
-                return new A2AHttpResponse() {
-                    @Override
-                    public int status() {
-                        return 200;
-                    }
+                tasks.add(Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE));
 
-                    @Override
-                    public boolean success() {
-                        return true;
-                    }
+                future.complete(
+                    new HttpResponse() {
+                        @Override
+                        public int statusCode() {
+                            return 200;
+                        }
 
-                    @Override
-                    public String body() {
-                        return "";
-                    }
-                };
+                        @Override
+                        public boolean success() {
+                            return true;
+                        }
+
+                        @Override
+                        public String body() {
+                            return "";
+                        }
+
+                        @Override
+                        public void bodyAsSse(Consumer<Event> eventConsumer, Consumer<Throwable> errorConsumer) {
+
+                        }
+                    });
+            } catch (Exception ex) {
+                future.completeExceptionally(ex);
             } finally {
                 latch.countDown();
             }
+
+            return future;
         }
 
         @Override
-        public CompletableFuture<Void> postAsyncSSE(Consumer<String> messageConsumer, Consumer<Throwable> errorConsumer, Runnable completeRunnable) throws IOException, InterruptedException {
-            return null;
-        }
-
-        @Override
-        public PostBuilder url(String s) {
+        public PostRequestBuilder addHeader(String name, String value) {
             return this;
         }
 
         @Override
-        public PostBuilder addHeader(String name, String value) {
-            return this;
-        }
-
-        @Override
-        public PostBuilder addHeaders(Map<String, String> headers) {
+        public PostRequestBuilder addHeaders(Map<String, String> headers) {
             return this;
         }
     }

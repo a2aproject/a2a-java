@@ -1,21 +1,24 @@
 package io.a2a.client.transport.jsonrpc;
 
+import io.a2a.client.http.HttpClientBuilder;
 import io.a2a.client.transport.spi.ClientTransportConfig;
-import io.a2a.client.http.A2AHttpClient;
+import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 public class JSONRPCTransportConfig extends ClientTransportConfig<JSONRPCTransport> {
 
-    private final A2AHttpClient httpClient;
+    private final HttpClientBuilder httpClientBuilder;
+
+    public JSONRPCTransportConfig(HttpClientBuilder httpClientBuilder) {
+        Assert.checkNotNullParam("httpClientBuilder", httpClientBuilder);
+        this.httpClientBuilder = httpClientBuilder;
+    }
 
     public JSONRPCTransportConfig() {
-        this.httpClient = null;
+        this.httpClientBuilder = HttpClientBuilder.DEFAULT_FACTORY;
     }
 
-    public JSONRPCTransportConfig(A2AHttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
-
-    public A2AHttpClient getHttpClient() {
-        return httpClient;
+    public HttpClientBuilder getHttpClientBuilder() {
+        return this.httpClientBuilder;
     }
 }

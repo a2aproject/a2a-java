@@ -5,13 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import io.a2a.client.http.HttpClient;
+import io.a2a.client.http.HttpResponse;
+import io.a2a.server.http.HttpClientManager;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -22,8 +24,6 @@ import org.mockito.MockitoAnnotations;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.server.tasks.BasePushNotificationSender;
 import io.a2a.server.tasks.PushNotificationConfigStore;
 import io.a2a.spec.PushNotificationConfig;
@@ -41,18 +41,18 @@ public class JpaPushNotificationConfigStoreTest {
     private BasePushNotificationSender notificationSender;
 
     @Mock
-    private A2AHttpClient mockHttpClient;
+    private HttpClientManager clientManager;
 
     @Mock
-    private A2AHttpClient.PostBuilder mockPostBuilder;
+    private HttpClient.PostRequestBuilder mockPostBuilder;
 
     @Mock
-    private A2AHttpResponse mockHttpResponse;
+    private HttpResponse mockHttpResponse;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        notificationSender = new BasePushNotificationSender(configStore, mockHttpClient);
+        notificationSender = new BasePushNotificationSender(configStore, clientManager);
     }
 
     @Test
@@ -232,21 +232,22 @@ public class JpaPushNotificationConfigStoreTest {
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
         configStore.setInfo(taskId, config);
 
+        HttpClient mockHttpClient = mock(HttpClient.class);
+        when(clientManager.getOrCreate(any())).thenReturn(mockHttpClient);
+
         // Mock successful HTTP response
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockHttpClient.post(any())).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
+        when(mockPostBuilder.send()).thenReturn(CompletableFuture.completedFuture(mockHttpResponse));
         when(mockHttpResponse.success()).thenReturn(true);
 
         notificationSender.sendNotification(task);
 
         // Verify HTTP client was called
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockHttpClient).createPost();
-        verify(mockPostBuilder).url(config.url());
+        verify(mockHttpClient).post(any());
         verify(mockPostBuilder).body(bodyCaptor.capture());
-        verify(mockPostBuilder).post();
+        verify(mockPostBuilder).send();
 
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
@@ -263,11 +264,13 @@ public class JpaPushNotificationConfigStoreTest {
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
         configStore.setInfo(taskId, config);
 
+        HttpClient mockHttpClient = mock(HttpClient.class);
+        when(clientManager.getOrCreate(any())).thenReturn(mockHttpClient);
+
         // Mock successful HTTP response
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockHttpClient.post(any())).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
+        when(mockPostBuilder.send()).thenReturn(CompletableFuture.completedFuture(mockHttpResponse));
         when(mockHttpResponse.success()).thenReturn(true);
 
         notificationSender.sendNotification(task);
@@ -279,10 +282,9 @@ public class JpaPushNotificationConfigStoreTest {
 
         // For now, just verify basic HTTP client interaction
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockHttpClient).createPost();
-        verify(mockPostBuilder).url(config.url());
+        verify(mockHttpClient).post(any());
         verify(mockPostBuilder).body(bodyCaptor.capture());
-        verify(mockPostBuilder).post();
+        verify(mockPostBuilder).send();
 
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
@@ -299,7 +301,7 @@ public class JpaPushNotificationConfigStoreTest {
         notificationSender.sendNotification(task);
 
         // Verify HTTP client was never called
-        verify(mockHttpClient, never()).createPost();
+        verify(clientManager, never()).getOrCreate(any());
     }
 
     @Test

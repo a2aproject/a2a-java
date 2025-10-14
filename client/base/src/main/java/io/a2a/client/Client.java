@@ -1,46 +1,37 @@
 package io.a2a.client;
 
+import static io.a2a.util.Assert.checkNotNullParam;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.a2a.client.config.ClientConfig;
-import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.client.transport.spi.ClientTransport;
-import io.a2a.spec.A2AClientError;
+import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.spec.A2AClientException;
-import io.a2a.spec.A2AClientInvalidStateError;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
-import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
-import io.a2a.spec.MessageSendConfiguration;
-import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.PushNotificationConfig;
-import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
-import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
-import io.a2a.spec.TaskStatusUpdateEvent;
-
-import static io.a2a.util.Assert.checkNotNullParam;
-
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public class Client extends AbstractClient {
+public abstract class Client extends AbstractClient {
 
-    private final ClientConfig clientConfig;
-    private final ClientTransport clientTransport;
-    private AgentCard agentCard;
+    protected final ClientConfig clientConfig;
+    protected final ClientTransport clientTransport;
+    protected AgentCard agentCard;
 
     Client(AgentCard agentCard, ClientConfig clientConfig, ClientTransport clientTransport,
-                  List<BiConsumer<ClientEvent, AgentCard>> consumers, @Nullable Consumer<Throwable> streamingErrorHandler) {
+                List<BiConsumer<ClientEvent, AgentCard>> consumers, @Nullable Consumer<Throwable> streamingErrorHandler) {
         super(consumers, streamingErrorHandler);
         checkNotNullParam("agentCard", agentCard);
 
@@ -53,191 +44,331 @@ public class Client extends AbstractClient {
         return new ClientBuilder(agentCard);
     }
 
-    @Override
-    public void sendMessage(Message request, @Nullable ClientCallContext context) throws A2AClientException {
-        MessageSendParams messageSendParams = getMessageSendParams(request, clientConfig);
-        sendMessage(messageSendParams, null, null, context);
+    /**
+     * Send a message to the remote agent. This method will automatically use
+     * the streaming or non-streaming approach as determined by the server's
+     * agent card and the client configuration. The configured client consumers
+     * will be used to handle messages, tasks, and update events received
+     * from the remote agent. The configured streaming error handler will be used
+     * if an error occurs during streaming. The configured client push notification
+     * configuration will get used for streaming.
+     *
+     * @param request the message
+     * @throws A2AClientException if sending the message fails for any reason
+     */
+    public void sendMessage(Message request) throws A2AClientException {
+        sendMessage(request, null);
     }
 
-    @Override
-    public void sendMessage(Message request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                            Consumer<Throwable> streamingErrorHandler, @Nullable ClientCallContext context) throws A2AClientException {
-        MessageSendParams messageSendParams = getMessageSendParams(request, clientConfig);
-        sendMessage(messageSendParams, consumers, streamingErrorHandler, context);
+    /**
+     * Send a message to the remote agent. This method will automatically use
+     * the streaming or non-streaming approach as determined by the server's
+     * agent card and the client configuration. The configured client consumers
+     * will be used to handle messages, tasks, and update events received
+     * from the remote agent. The configured streaming error handler will be used
+     * if an error occurs during streaming. The configured client push notification
+     * configuration will get used for streaming.
+     *
+     * @param request the message
+     * @param context optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if sending the message fails for any reason
+     */
+    public abstract void sendMessage(Message request, @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Send a message to the remote agent. This method will automatically use
+     * the streaming or non-streaming approach as determined by the server's
+     * agent card and the client configuration. The specified client consumers
+     * will be used to handle messages, tasks, and update events received
+     * from the remote agent. The specified streaming error handler will be used
+     * if an error occurs during streaming. The configured client push notification
+     * configuration will get used for streaming.
+     *
+     * @param request the message
+     * @param consumers a list of consumers to pass responses from the remote agent to
+     * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
+     * @throws A2AClientException if sending the message fails for any reason
+     */
+    public void sendMessage(Message request,
+                            List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                            Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
+        sendMessage(request, consumers, streamingErrorHandler, null);
     }
 
-    @Override
+    /**
+     * Send a message to the remote agent. This method will automatically use
+     * the streaming or non-streaming approach as determined by the server's
+     * agent card and the client configuration. The specified client consumers
+     * will be used to handle messages, tasks, and update events received
+     * from the remote agent. The specified streaming error handler will be used
+     * if an error occurs during streaming. The configured client push notification
+     * configuration will get used for streaming.
+     *
+     * @param request the message
+     * @param consumers a list of consumers to pass responses from the remote agent to
+     * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
+     * @param context optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if sending the message fails for any reason
+     */
+    public abstract void sendMessage(Message request,
+                                     List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                                     Consumer<Throwable> streamingErrorHandler,
+                                     @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Send a message to the remote agent. This method will automatically use
+     * the streaming or non-streaming approach as determined by the server's
+     * agent card and the client configuration. The configured client consumers
+     * will be used to handle messages, tasks, and update events received from
+     * the remote agent. The configured streaming error handler will be used
+     * if an error occurs during streaming.
+     *
+     * @param request the message
+     * @param pushNotificationConfiguration the push notification configuration that should be
+     *                                      used if the streaming approach is used
+     * @param metadata the optional metadata to include when sending the message
+     * @throws A2AClientException if sending the message fails for any reason
+     */
     public void sendMessage(Message request, PushNotificationConfig pushNotificationConfiguration,
-                            Map<String, Object> metatadata, @Nullable ClientCallContext context) throws A2AClientException {
-        MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(pushNotificationConfiguration);
-
-        MessageSendParams messageSendParams = new MessageSendParams.Builder()
-                .message(request)
-                .configuration(messageSendConfiguration)
-                .metadata(metatadata)
-                .build();
-
-        sendMessage(messageSendParams, null, null, context);
+                            Map<String, Object> metadata) throws A2AClientException {
+        sendMessage(request, pushNotificationConfiguration, metadata, null);
     }
 
-    @Override
-    public Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException {
-        return clientTransport.getTask(request, context);
+    /**
+     * Send a message to the remote agent. This method will automatically use
+     * the streaming or non-streaming approach as determined by the server's
+     * agent card and the client configuration. The configured client consumers
+     * will be used to handle messages, tasks, and update events received from
+     * the remote agent. The configured streaming error handler will be used
+     * if an error occurs during streaming.
+     *
+     * @param request the message
+     * @param pushNotificationConfiguration the push notification configuration that should be
+     *                                      used if the streaming approach is used
+     * @param metadata the optional metadata to include when sending the message
+     * @param context optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if sending the message fails for any reason
+     */
+    public abstract void sendMessage(Message request, PushNotificationConfig pushNotificationConfiguration,
+                                     Map<String, Object> metadata, @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Retrieve the current state and history of a specific task.
+     *
+     * @param request the task query parameters specifying which task to retrieve
+     * @return the task
+     * @throws A2AClientException if retrieving the task fails for any reason
+     */
+    public Task getTask(TaskQueryParams request) throws A2AClientException {
+        return getTask(request, null);
     }
 
-    @Override
-    public Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
-        return clientTransport.cancelTask(request, context);
+    /**
+     * Retrieve the current state and history of a specific task.
+     *
+     * @param request the task query parameters specifying which task to retrieve
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the task
+     * @throws A2AClientException if retrieving the task fails for any reason
+     */
+    public abstract Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Request the agent to cancel a specific task.
+     *
+     * @param request the task ID parameters specifying which task to cancel
+     * @return the cancelled task
+     * @throws A2AClientException if cancelling the task fails for any reason
+     */
+    public Task cancelTask(TaskIdParams request) throws A2AClientException {
+        return cancelTask(request, null);
     }
 
-    @Override
+    /**
+     * Request the agent to cancel a specific task.
+     *
+     * @param request the task ID parameters specifying which task to cancel
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the cancelled task
+     * @throws A2AClientException if cancelling the task fails for any reason
+     */
+    public abstract Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Set or update the push notification configuration for a specific task.
+     *
+     * @param request the push notification configuration to set for the task
+     * @return the configured TaskPushNotificationConfig
+     * @throws A2AClientException if setting the task push notification configuration fails for any reason
+     */
     public TaskPushNotificationConfig setTaskPushNotificationConfiguration(
-            TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
-        return clientTransport.setTaskPushNotificationConfiguration(request, context);
+            TaskPushNotificationConfig request) throws A2AClientException {
+        return setTaskPushNotificationConfiguration(request, null);
     }
 
-    @Override
+    /**
+     * Set or update the push notification configuration for a specific task.
+     *
+     * @param request the push notification configuration to set for the task
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the configured TaskPushNotificationConfig
+     * @throws A2AClientException if setting the task push notification configuration fails for any reason
+     */
+    public abstract TaskPushNotificationConfig setTaskPushNotificationConfiguration(
+            TaskPushNotificationConfig request,
+            @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Retrieve the push notification configuration for a specific task.
+     *
+     * @param request the parameters specifying which task's notification config to retrieve
+     * @return the task push notification config
+     * @throws A2AClientException if getting the task push notification config fails for any reason
+     */
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(
-            GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
-        return clientTransport.getTaskPushNotificationConfiguration(request, context);
+            GetTaskPushNotificationConfigParams request) throws A2AClientException {
+        return getTaskPushNotificationConfiguration(request, null);
     }
 
-    @Override
+    /**
+     * Retrieve the push notification configuration for a specific task.
+     *
+     * @param request the parameters specifying which task's notification config to retrieve
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the task push notification config
+     * @throws A2AClientException if getting the task push notification config fails for any reason
+     */
+    public abstract TaskPushNotificationConfig getTaskPushNotificationConfiguration(
+            GetTaskPushNotificationConfigParams request,
+            @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Retrieve the list of push notification configurations for a specific task.
+     *
+     * @param request the parameters specifying which task's notification configs to retrieve
+     * @return the list of task push notification configs
+     * @throws A2AClientException if getting the task push notification configs fails for any reason
+     */
     public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
-            ListTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
-        return clientTransport.listTaskPushNotificationConfigurations(request, context);
+            ListTaskPushNotificationConfigParams request) throws A2AClientException {
+        return listTaskPushNotificationConfigurations(request, null);
     }
 
-    @Override
+    /**
+     * Retrieve the list of push notification configurations for a specific task.
+     *
+     * @param request the parameters specifying which task's notification configs to retrieve
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the list of task push notification configs
+     * @throws A2AClientException if getting the task push notification configs fails for any reason
+     */
+    public abstract List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+            ListTaskPushNotificationConfigParams request,
+            @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Delete the list of push notification configurations for a specific task.
+     *
+     * @param request the parameters specifying which task's notification configs to delete
+     * @throws A2AClientException if deleting the task push notification configs fails for any reason
+     */
     public void deleteTaskPushNotificationConfigurations(
-            DeleteTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
-        clientTransport.deleteTaskPushNotificationConfigurations(request, context);
+            DeleteTaskPushNotificationConfigParams request) throws A2AClientException {
+        deleteTaskPushNotificationConfigurations(request, null);
     }
 
-    @Override
-    public void resubscribe(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
-       resubscribeToTask(request, null, null, context);
+    /**
+     * Delete the list of push notification configurations for a specific task.
+     *
+     * @param request the parameters specifying which task's notification configs to delete
+     * @param context optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if deleting the task push notification configs fails for any reason
+     */
+    public abstract void deleteTaskPushNotificationConfigurations(
+            DeleteTaskPushNotificationConfigParams request,
+            @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Resubscribe to a task's event stream.
+     * This is only available if both the client and server support streaming.
+     * The configured client consumers will be used to handle messages, tasks,
+     * and update events received from the remote agent. The configured streaming
+     * error handler will be used if an error occurs during streaming.
+     *
+     * @param request the parameters specifying which task's notification configs to delete
+     * @throws A2AClientException if resubscribing fails for any reason
+     */
+    public void resubscribe(TaskIdParams request) throws A2AClientException {
+        resubscribe(request, null);
     }
 
-    @Override
-    public void resubscribe(TaskIdParams request, @Nullable List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                            @Nullable Consumer<Throwable> streamingErrorHandler, @Nullable ClientCallContext context) throws A2AClientException {
-        resubscribeToTask(request, consumers, streamingErrorHandler, context);
+    /**
+     * Resubscribe to a task's event stream.
+     * This is only available if both the client and server support streaming.
+     * The configured client consumers will be used to handle messages, tasks,
+     * and update events received from the remote agent. The configured streaming
+     * error handler will be used if an error occurs during streaming.
+     *
+     * @param request the parameters specifying which task's notification configs to delete
+     * @param context optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if resubscribing fails for any reason
+     */
+    public abstract void resubscribe(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Resubscribe to a task's event stream.
+     * This is only available if both the client and server support streaming.
+     * The specified client consumers will be used to handle messages, tasks, and
+     * update events received from the remote agent. The specified streaming error
+     * handler will be used if an error occurs during streaming.
+     *
+     * @param request the parameters specifying which task's notification configs to delete
+     * @param consumers a list of consumers to pass responses from the remote agent to
+     * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
+     * @throws A2AClientException if resubscribing fails for any reason
+     */
+    public void resubscribe(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                            Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
+        resubscribe(request, consumers, streamingErrorHandler, null);
     }
 
-    @Override
-    public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
-        agentCard = clientTransport.getAgentCard(context);
-        return agentCard;
+    /**
+     * Resubscribe to a task's event stream.
+     * This is only available if both the client and server support streaming.
+     * The specified client consumers will be used to handle messages, tasks, and
+     * update events received from the remote agent. The specified streaming error
+     * handler will be used if an error occurs during streaming.
+     *
+     * @param request the parameters specifying which task's notification configs to delete
+     * @param consumers a list of consumers to pass responses from the remote agent to
+     * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
+     * @param context optional client call context for the request (may be {@code null})
+     * @throws A2AClientException if resubscribing fails for any reason
+     */
+    public abstract void resubscribe(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                                     Consumer<Throwable> streamingErrorHandler, @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Retrieve the AgentCard.
+     *
+     * @return the AgentCard
+     * @throws A2AClientException if retrieving the agent card fails for any reason
+     */
+    public AgentCard getAgentCard() throws A2AClientException {
+        return getAgentCard(null);
     }
 
-    @Override
-    public void close() {
-        clientTransport.close();
-    }
+    /**
+     * Retrieve the AgentCard.
+     *
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the AgentCard
+     * @throws A2AClientException if retrieving the agent card fails for any reason
+     */
+    public abstract AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException;
 
-    private ClientEvent getClientEvent(StreamingEventKind event, ClientTaskManager taskManager) throws A2AClientError {
-        if (event instanceof Message message) {
-            return new MessageEvent(message);
-        } else if (event instanceof Task task) {
-            taskManager.saveTaskEvent(task);
-            return new TaskEvent(taskManager.getCurrentTask());
-        } else if (event instanceof TaskStatusUpdateEvent updateEvent) {
-            taskManager.saveTaskEvent(updateEvent);
-            return new TaskUpdateEvent(taskManager.getCurrentTask(), updateEvent);
-        } else if (event instanceof TaskArtifactUpdateEvent updateEvent) {
-            taskManager.saveTaskEvent(updateEvent);
-            return new TaskUpdateEvent(taskManager.getCurrentTask(), updateEvent);
-        } else {
-            throw new A2AClientInvalidStateError("Invalid client event");
-        }
-    }
-
-    private MessageSendConfiguration createMessageSendConfiguration(@Nullable PushNotificationConfig pushNotificationConfig) {
-        return new MessageSendConfiguration.Builder()
-                .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
-                .blocking(!clientConfig.isPolling())
-                .historyLength(clientConfig.getHistoryLength())
-                .pushNotificationConfig(pushNotificationConfig)
-                .build();
-    }
-
-    private void sendMessage(MessageSendParams messageSendParams, @Nullable List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                             @Nullable Consumer<Throwable> errorHandler, @Nullable ClientCallContext context) throws A2AClientException {
-        if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
-            EventKind eventKind = clientTransport.sendMessage(messageSendParams, context);
-            ClientEvent clientEvent;
-            if (eventKind instanceof Task task) {
-                clientEvent = new TaskEvent(task);
-            } else {
-                // must be a message
-                clientEvent = new MessageEvent((Message) eventKind);
-            }
-            consume(clientEvent, agentCard, consumers);
-        } else {
-            ClientTaskManager tracker = new ClientTaskManager();
-            Consumer<Throwable> overriddenErrorHandler = getOverriddenErrorHandler(errorHandler);
-            Consumer<StreamingEventKind> eventHandler = event -> {
-                try {
-                    ClientEvent clientEvent = getClientEvent(event, tracker);
-                    consume(clientEvent, agentCard, consumers);
-                } catch (A2AClientError e) {
-                    overriddenErrorHandler.accept(e);
-                }
-            };
-            clientTransport.sendMessageStreaming(messageSendParams, eventHandler, overriddenErrorHandler, context);
-        }
-    }
-
-    private void resubscribeToTask(TaskIdParams request, @Nullable List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                   @Nullable Consumer<Throwable> errorHandler, @Nullable ClientCallContext context) throws A2AClientException {
-        if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
-            throw new A2AClientException("Client and/or server does not support resubscription");
-        }
-        ClientTaskManager tracker = new ClientTaskManager();
-        Consumer<Throwable> overriddenErrorHandler = getOverriddenErrorHandler(errorHandler);
-        Consumer<StreamingEventKind> eventHandler = event -> {
-            try {
-                ClientEvent clientEvent = getClientEvent(event, tracker);
-                consume(clientEvent, agentCard, consumers);
-            } catch (A2AClientError e) {
-                overriddenErrorHandler.accept(e);
-            }
-        };
-        clientTransport.resubscribe(request, eventHandler, overriddenErrorHandler, context);
-    }
-
-    private @NonNull Consumer<Throwable> getOverriddenErrorHandler(@Nullable Consumer<Throwable> errorHandler) {
-        return e -> {
-            if (errorHandler != null) {
-                errorHandler.accept(e);
-            } else {
-                if (getStreamingErrorHandler() != null) {
-                    getStreamingErrorHandler().accept(e);
-                }
-            }
-        };
-    }
-
-    private void consume(ClientEvent clientEvent, AgentCard agentCard, @Nullable List<BiConsumer<ClientEvent, AgentCard>> consumers) {
-        if (consumers != null) {
-            // use specified consumers
-            for (BiConsumer<ClientEvent, AgentCard> consumer : consumers) {
-                consumer.accept(clientEvent, agentCard);
-            }
-        } else {
-            // use configured consumers
-            consume(clientEvent, agentCard);
-        }
-    }
-
-    private MessageSendParams getMessageSendParams(Message request, ClientConfig clientConfig) {
-        MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(clientConfig.getPushNotificationConfig());
-
-        return new MessageSendParams.Builder()
-                .message(request)
-                .configuration(messageSendConfiguration)
-                .metadata(clientConfig.getMetadata())
-                .build();
-    }
+    /**
+     * Close the transport and release any associated resources.
+     */
+    public abstract void close();
 }
