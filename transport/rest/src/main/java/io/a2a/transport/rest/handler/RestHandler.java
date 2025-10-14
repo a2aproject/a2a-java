@@ -40,9 +40,11 @@ import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.server.util.async.Internal;
 import io.a2a.util.Utils;
 import jakarta.enterprise.inject.Instance;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mutiny.zero.ZeroPublisher;
@@ -56,26 +58,30 @@ public class RestHandler {
     private @Nullable
     Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
+    private final Executor executor;
 
     @SuppressWarnings("NullAway")
     protected RestHandler() {
         // For CDI
+        this.executor = null;
     }
 
     @Inject
     public RestHandler(@PublicAgentCard AgentCard agentCard, @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-            RequestHandler requestHandler) {
+            RequestHandler requestHandler, @Internal Executor executor) {
         this.agentCard = agentCard;
         this.extendedAgentCard = extendedAgentCard;
         this.requestHandler = requestHandler;
+        this.executor = executor;
 
         // Validate transport configuration
         AgentCardValidator.validateTransportConfiguration(agentCard);
     }
 
-    public RestHandler(AgentCard agentCard, RequestHandler requestHandler) {
+    public RestHandler(AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
         this.agentCard = agentCard;
         this.requestHandler = requestHandler;
+        this.executor = executor;
     }
 
     public HTTPRestResponse sendMessage(String body, ServerCallContext context) {
@@ -305,7 +311,7 @@ public class RestHandler {
                         tube.complete();
                     }
                 });
-            });
+            }, executor);
         });
     }
 

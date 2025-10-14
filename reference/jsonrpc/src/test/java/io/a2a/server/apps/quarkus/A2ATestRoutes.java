@@ -139,6 +139,14 @@ public class A2ATestRoutes {
                 .end(String.valueOf(streamingSubscribedCount.get()));
     }
 
+    @Route(path = "/test/queue/childCount/:taskId", methods = {Route.HttpMethod.GET}, produces = {TEXT_PLAIN})
+    public void getChildQueueCount(@Param String taskId, RoutingContext rc) {
+        int count = testUtilsBean.getChildQueueCount(taskId);
+        rc.response()
+                .setStatusCode(200)
+                .end(String.valueOf(count));
+    }
+
     @Route(path = "/test/task/:taskId/config/:configId", methods = {Route.HttpMethod.DELETE}, type = Route.HandlerType.BLOCKING)
     public void deleteTaskPushNotificationConfig(@Param String taskId, @Param String configId, RoutingContext rc) {
         try {

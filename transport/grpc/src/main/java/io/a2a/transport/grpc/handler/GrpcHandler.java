@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 import io.grpc.Context;
 import java.util.concurrent.Flow;
@@ -294,7 +295,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                     responseObserver.onCompleted();
                 }
             });
-        });
+        }, getExecutor());
     }
 
     @Override
@@ -503,6 +504,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     protected abstract AgentCard getAgentCard();
 
     protected abstract CallContextFactory getCallContextFactory();
+
+    protected abstract Executor getExecutor();
 
     /**
      * Attempts to extract the X-A2A-Extensions header from the current gRPC context.

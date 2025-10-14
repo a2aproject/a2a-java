@@ -49,6 +49,8 @@ public abstract class EventQueue implements AutoCloseable {
     public static class EventQueueBuilder {
         private int queueSize = DEFAULT_QUEUE_SIZE;
         private EventEnqueueHook hook;
+        private String taskId;
+        private Runnable onCloseCallback;
 
         public EventQueueBuilder queueSize(int queueSize) {
             this.queueSize = queueSize;
@@ -60,9 +62,19 @@ public abstract class EventQueue implements AutoCloseable {
             return this;
         }
 
+        public EventQueueBuilder taskId(String taskId) {
+            this.taskId = taskId;
+            return this;
+        }
+
+        public EventQueueBuilder onClose(Runnable onCloseCallback) {
+            this.onCloseCallback = onCloseCallback;
+            return this;
+        }
+
         public EventQueue build() {
-            if (hook != null) {
-                return new MainQueue(queueSize, hook);
+            if (hook != null || onCloseCallback != null) {
+                return new MainQueue(queueSize, hook, taskId, onCloseCallback);
             } else {
                 return new MainQueue(queueSize);
             }
@@ -111,11 +123,14 @@ public abstract class EventQueue implements AutoCloseable {
                 return event;
             }
             try {
+                LOGGER.trace("Polling queue {} (wait={}ms)", System.identityHashCode(this), waitMilliSeconds);
                 Event event = queue.poll(waitMilliSeconds, TimeUnit.MILLISECONDS);
                 if (event != null) {
                     // Call toString() since for errors we don't really want the full stacktrace
                     LOGGER.debug("Dequeued event (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
                     semaphore.release();
+                } else {
+                    LOGGER.trace("Dequeue timeout (null) from queue {}", System.identityHashCode(this));
                 }
                 return event;
             } catch (InterruptedException e) {
@@ -136,15 +151,26 @@ public abstract class EventQueue implements AutoCloseable {
 
     public abstract void close(boolean immediate);
 
+    /**
+     * Close this queue with control over parent notification (ChildQueue only).
+     *
+     * @param immediate If true, clear all pending events immediately
+     * @param notifyParent If true, notify parent (standard behavior). If false, close this queue
+     *                     without decrementing parent's reference count (used for non-blocking
+     *                     non-final tasks to keep MainQueue alive for resubscription)
+     * @throws UnsupportedOperationException if called on MainQueue
+     */
+    public abstract void close(boolean immediate, boolean notifyParent);
+
     public boolean isClosed() {
         return closed;
     }
 
-    public void doClose() {
+    protected void doClose() {
         doClose(false);
     }
 
-    public void doClose(boolean immediate) {
+    protected void doClose(boolean immediate) {
         synchronized (this) {
             if (closed) {
                 return;
@@ -166,25 +192,43 @@ public abstract class EventQueue implements AutoCloseable {
         private final CountDownLatch pollingStartedLatch = new CountDownLatch(1);
         private final AtomicBoolean pollingStarted = new AtomicBoolean(false);
         private final EventEnqueueHook enqueueHook;
+        private final String taskId;
+        private final Runnable onCloseCallback;
 
         MainQueue() {
             super();
             this.enqueueHook = null;
+            this.taskId = null;
+            this.onCloseCallback = null;
         }
 
         MainQueue(int queueSize) {
             super(queueSize);
             this.enqueueHook = null;
+            this.taskId = null;
+            this.onCloseCallback = null;
         }
 
         MainQueue(EventEnqueueHook hook) {
             super();
             this.enqueueHook = hook;
+            this.taskId = null;
+            this.onCloseCallback = null;
         }
 
         MainQueue(int queueSize, EventEnqueueHook hook) {
             super(queueSize);
             this.enqueueHook = hook;
+            this.taskId = null;
+            this.onCloseCallback = null;
+        }
+
+        MainQueue(int queueSize, EventEnqueueHook hook, String taskId, Runnable onCloseCallback) {
+            super(queueSize);
+            this.enqueueHook = hook;
+            this.taskId = taskId;
+            this.onCloseCallback = onCloseCallback;
+            LOGGER.debug("Created MainQueue for task {} with onClose callback: {}", taskId, onCloseCallback != null);
         }
 
         EventQueue tap() {
@@ -218,6 +262,42 @@ public abstract class EventQueue implements AutoCloseable {
             pollingStarted.set(true);
           }
 
+        void childClosing(ChildQueue child, boolean immediate) {
+            children.remove(child);  // Remove the closing child
+
+            // Only close MainQueue if immediate OR no children left
+            if (immediate || children.isEmpty()) {
+                LOGGER.debug("MainQueue closing: immediate={}, children.isEmpty()={}", immediate, children.isEmpty());
+                this.doClose(immediate);
+            } else {
+                LOGGER.debug("MainQueue staying open: {} children remaining", children.size());
+            }
+        }
+
+        /**
+         * Get the count of active child queues.
+         * Used for testing to verify reference counting mechanism.
+         *
+         * @return number of active child queues
+         */
+        public int getActiveChildCount() {
+            return children.size();
+        }
+
+        @Override
+        protected void doClose(boolean immediate) {
+            super.doClose(immediate);
+            // Invoke callback after closing to notify QueueManager
+            if (onCloseCallback != null) {
+                LOGGER.debug("Invoking onClose callback for task {}", taskId);
+                try {
+                    onCloseCallback.run();
+                } catch (Exception e) {
+                    LOGGER.error("Error in onClose callback for task {}", taskId, e);
+                }
+            }
+        }
+
         @Override
         public void close() {
             close(false);
@@ -226,7 +306,16 @@ public abstract class EventQueue implements AutoCloseable {
         @Override
         public void close(boolean immediate) {
             doClose(immediate);
-            children.forEach(child -> child.doClose(immediate));
+            if (immediate) {
+                // Force-close all remaining children
+                children.forEach(child -> child.doClose(immediate));
+            }
+            children.clear();
+        }
+
+        @Override
+        public void close(boolean immediate, boolean notifyParent) {
+            throw new UnsupportedOperationException("MainQueue does not support notifyParent parameter - use close(boolean) instead");
         }
     }
 
@@ -263,12 +352,22 @@ public abstract class EventQueue implements AutoCloseable {
 
         @Override
         public void close() {
-            parent.close();
+            close(false);
         }
 
         @Override
         public void close(boolean immediate) {
-            parent.close(immediate);
+            close(immediate, true);
+        }
+
+        @Override
+        public void close(boolean immediate, boolean notifyParent) {
+            this.doClose(immediate);           // Close self first
+            if (notifyParent) {
+                parent.childClosing(this, immediate);  // Notify parent
+            } else {
+                LOGGER.debug("Closing {} without notifying parent (keeping MainQueue alive)", this);
+            }
         }
     }
 }
