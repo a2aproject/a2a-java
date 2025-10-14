@@ -18,6 +18,7 @@ import io.a2a.server.events.InMemoryQueueManager;
 import io.a2a.server.tasks.InMemoryTaskStore;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
+import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
@@ -406,6 +407,124 @@ public class DefaultRequestHandlerTest {
         }
         // Note: In some architectures, the task might not be persisted if the
         // background consumption isn't implemented. This test documents the expected behavior.
+    }
+
+    /**
+     * Test that blocking message calls persist all events in background.
+     * This test proves the bug where blocking calls stop consuming events after
+     * the first event is returned, causing subsequent events to be lost.
+     *
+     * Expected behavior:
+     * 1. Blocking call returns immediately with first event (WORKING state)
+     * 2. Agent continues running in background and produces more events
+     * 3. Background consumption continues and persists all events to TaskStore
+     * 4. Final task state (COMPLETED) is persisted despite blocking call having returned
+     *
+     * This test will FAIL before the fix is applied, demonstrating the bug.
+     */
+    @Test
+    @Timeout(15)
+    void testBlockingMessagePersistsAllEventsInBackground() throws Exception {
+        String taskId = "blocking-persist-task";
+        String contextId = "blocking-persist-ctx";
+
+        Message message = new Message.Builder()
+            .messageId("msg-blocking-persist")
+            .role(Message.Role.USER)
+            .parts(new TextPart("test message"))
+            .taskId(taskId)
+            .contextId(contextId)
+            .build();
+
+        // Explicitly set blocking=true (though it's the default)
+        MessageSendConfiguration config = new MessageSendConfiguration.Builder()
+                .blocking(true)
+                .build();
+
+        MessageSendParams params = new MessageSendParams(message, config, null);
+
+        // Agent that produces multiple events with delays
+        CountDownLatch agentStarted = new CountDownLatch(1);
+        CountDownLatch firstEventEmitted = new CountDownLatch(1);
+        CountDownLatch allowCompletion = new CountDownLatch(1);
+
+        agentExecutor.setExecuteCallback((context, queue) -> {
+            agentStarted.countDown();
+
+            // Emit first event (WORKING state)
+            Task workingTask = new Task.Builder()
+                .id(taskId)
+                .contextId(contextId)
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+            queue.enqueueEvent(workingTask);
+            firstEventEmitted.countDown();
+
+            // Sleep to ensure the blocking call has returned before we emit more events
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+
+            // Wait for permission to complete
+            try {
+                allowCompletion.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+
+            // Emit final event (COMPLETED state)
+            // This event will be LOST with the current bug, because the consumer
+            // has already stopped after returning the first event
+            Task completedTask = new Task.Builder()
+                .id(taskId)
+                .contextId(contextId)
+                .status(new TaskStatus(TaskState.COMPLETED))
+                .build();
+            queue.enqueueEvent(completedTask);
+        });
+
+        // Call blocking onMessageSend
+        Object result = requestHandler.onMessageSend(params, serverCallContext);
+
+        // Assertion 1: The immediate result should be the first event (WORKING)
+        assertTrue(result instanceof Task, "Result should be a Task");
+        Task immediateTask = (Task) result;
+        assertTrue(immediateTask.getStatus().state() == TaskState.WORKING,
+            "Immediate return should show WORKING state, got: " + immediateTask.getStatus().state());
+
+        // At this point, the blocking call has returned, but the agent is still running
+
+        // Allow the agent to emit the final COMPLETED event
+        allowCompletion.countDown();
+
+        // Assertion 2: Poll for the final task state to be persisted
+        // Use polling loop instead of fixed sleep for faster and more reliable test
+        long timeoutMs = 5000;
+        long startTime = System.currentTimeMillis();
+        Task persistedTask = null;
+        boolean completedStateFound = false;
+
+        while (System.currentTimeMillis() - startTime < timeoutMs) {
+            persistedTask = taskStore.get(taskId);
+            if (persistedTask != null && persistedTask.getStatus().state() == TaskState.COMPLETED) {
+                completedStateFound = true;
+                break;
+            }
+            Thread.sleep(100);  // Poll every 100ms
+        }
+
+        assertTrue(persistedTask != null, "Task should be persisted to store");
+        assertTrue(
+            completedStateFound,
+            "Final task state should be COMPLETED (background consumption should have processed it), got: " +
+            (persistedTask != null ? persistedTask.getStatus().state() : "null") +
+            " after " + (System.currentTimeMillis() - startTime) + "ms. " +
+            "This failure proves the bug - events after the first are lost."
+        );
     }
 
     /**

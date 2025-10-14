@@ -11,6 +11,9 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.a2a.server.events.EventConsumer;
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
@@ -23,6 +26,8 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.util.Utils;
 
 public class ResultAggregator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResultAggregator.class);
+
     private final TaskManager taskManager;
     private final Executor executor;
     private volatile Message message;
@@ -160,9 +165,13 @@ public class ResultAggregator {
                     }
                     else {
                         // For blocking calls, interrupt when we get any task-related event (EventKind except Message)
-                        // Cancel subscription to free resources (client can resubscribe if needed)
+                        // BUT continue consuming in background to ensure all events are persisted to TaskStore
                         shouldInterrupt = true;
-                        continueInBackground = false;
+                        continueInBackground = true;
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Blocking call for task {}: returning first event to unblock request, " +
+                                "but continuing background consumption to persist remaining events", taskIdForLogging());
+                        }
                     }
 
                     if (shouldInterrupt) {
@@ -172,10 +181,17 @@ public class ResultAggregator {
 
                         if (continueInBackground) {
                             // Continue consuming in background - keep requesting events
+                            if (LOGGER.isDebugEnabled()) {
+                                String reason = isAuthRequired ? "auth-required" : (blocking ? "blocking" : "non-blocking");
+                                LOGGER.debug("Task {}: Continuing background consumption (reason: {})", taskIdForLogging(), reason);
+                            }
                             return true;
                         } else {
                             // Blocking call - cancel subscription AND close consumer to stop polling loop
                             // We need to close the consumer after the consumer() call completes
+                            if (LOGGER.isDebugEnabled()) {
+                                LOGGER.debug("Task {}: Closing consumer (no background consumption)", taskIdForLogging());
+                            }
                             shouldCloseConsumer.set(true);
                             return false;
                         }
@@ -232,6 +248,10 @@ public class ResultAggregator {
 
     private void callTaskManagerProcess(Event event) throws A2AServerException {
         taskManager.process(event);
+    }
+
+    private String taskIdForLogging() {
+        return taskManager.getTask() != null ? taskManager.getTask().getId() : "unknown";
     }
 
     public record EventTypeAndInterrupt(EventKind eventType, boolean interrupted) {

@@ -221,6 +221,7 @@ public class ResultAggregatorTest {
         assertEquals(firstEvent, result.eventType());
         assertTrue(result.interrupted());
         verify(mockTaskManager).process(firstEvent);
-        verify(mockTaskManager).getTask();
+        // getTask() is now called multiple times due to debug logging in taskIdForLogging()
+        verify(mockTaskManager, times(3)).getTask();
     }
 }
