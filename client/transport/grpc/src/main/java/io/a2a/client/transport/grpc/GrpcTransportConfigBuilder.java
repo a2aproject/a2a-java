@@ -3,7 +3,7 @@ package io.a2a.client.transport.grpc;
 import io.a2a.client.transport.spi.ClientTransportConfigBuilder;
 import io.a2a.util.Assert;
 import io.grpc.Channel;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.Function;
 

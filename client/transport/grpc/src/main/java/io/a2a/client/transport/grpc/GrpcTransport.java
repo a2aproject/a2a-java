@@ -18,6 +18,8 @@ import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
 import io.a2a.client.transport.spi.interceptors.auth.AuthInterceptor;
 import io.a2a.common.A2AHeaders;
 import io.a2a.grpc.A2AServiceGrpc;
+import io.a2a.grpc.A2AServiceGrpc.A2AServiceBlockingV2Stub;
+import io.a2a.grpc.A2AServiceGrpc.A2AServiceStub;
 import io.a2a.grpc.CancelTaskRequest;
 import io.a2a.grpc.CreateTaskPushNotificationConfigRequest;
 import io.a2a.grpc.DeleteTaskPushNotificationConfigRequest;
@@ -28,7 +30,8 @@ import io.a2a.grpc.SendMessageRequest;
 import io.a2a.grpc.SendMessageResponse;
 import io.a2a.grpc.StreamResponse;
 import io.a2a.grpc.TaskSubscriptionRequest;
-
+import io.a2a.grpc.utils.ProtoUtils.FromProto;
+import io.a2a.grpc.utils.ProtoUtils.ToProto;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
@@ -286,6 +289,9 @@ public class GrpcTransport implements ClientTransport {
     /**
      * Creates gRPC metadata from ClientCallContext headers.
      * Extracts headers like X-A2A-Extensions and sets them as gRPC metadata.
+     * @param context the client call context containing headers, may be null
+     * @param payloadAndHeaders the payload and headers wrapper, may be null
+     * @return the gRPC metadata
      */
     private Metadata createGrpcMetadata(@Nullable ClientCallContext context, @Nullable PayloadAndHeaders payloadAndHeaders) {
         Metadata metadata = new Metadata();
