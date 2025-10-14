@@ -1,7 +1,8 @@
 package io.a2a.client;
 
 import io.a2a.client.config.ClientConfig;
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.http.HttpClientBuilder;
+import io.a2a.client.http.jdk.JdkHttpClientBuilder;
 import io.a2a.client.transport.grpc.GrpcTransport;
 import io.a2a.client.transport.grpc.GrpcTransportConfigBuilder;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
@@ -71,13 +72,40 @@ public class ClientBuilderTest {
     }
 
     @Test
-    public void shouldCreateJSONRPCClient() throws A2AClientException {
+    public void shouldNotCreateJSONRPCClient_nullHttpClientFactory() throws A2AClientException {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> {
+                    Client
+                            .builder(card)
+                            .clientConfig(new ClientConfig.Builder().setUseClientPreference(true).build())
+                            .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder()
+                                    .addInterceptor(null)
+                                    .httpClientBuilder(null))
+                            .build();
+                });
+    }
+
+    @Test
+    public void shouldCreateJSONRPCClient_defaultHttpClientFactory() throws A2AClientException {
         Client client = Client
                 .builder(card)
                 .clientConfig(new ClientConfig.Builder().setUseClientPreference(true).build())
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder()
                         .addInterceptor(null)
-                        .httpClient(null))
+                        .httpClientBuilder(HttpClientBuilder.DEFAULT_FACTORY))
+                .build();
+
+        Assertions.assertNotNull(client);
+    }
+
+    @Test
+    public void shouldCreateJSONRPCClient_withHttpClientFactory() throws A2AClientException {
+        Client client = Client
+                .builder(card)
+                .clientConfig(new ClientConfig.Builder().setUseClientPreference(true).build())
+                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder()
+                        .addInterceptor(null)
+                        .httpClientBuilder(new JdkHttpClientBuilder()))
                 .build();
 
         Assertions.assertNotNull(client);
@@ -88,7 +116,7 @@ public class ClientBuilderTest {
         Client client = Client
                 .builder(card)
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig(new JdkA2AHttpClient()))
+                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig())
                 .build();
 
         Assertions.assertNotNull(client);

@@ -2,6 +2,9 @@ package io.a2a.client.transport.jsonrpc.sse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.a2a.client.http.HttpResponse;
+import io.a2a.client.http.sse.DataEvent;
+import io.a2a.client.http.sse.Event;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskStatusUpdateEvent;
@@ -23,22 +26,28 @@ public class SSEEventListener {
         this.errorHandler = errorHandler;
     }
 
-    public void onMessage(String message, Future<Void> completableFuture) {
-        try {
-            handleMessage(OBJECT_MAPPER.readTree(message),completableFuture);
-        } catch (JsonProcessingException e) {
-            log.warning("Failed to parse JSON message: " + message);
+    public void onMessage(Event event, Future<HttpResponse> completableFuture) {
+        log.fine("Streaming message received: " + event);
+
+        if (event instanceof DataEvent) {
+            try {
+                handleMessage(OBJECT_MAPPER.readTree(((DataEvent) event).getData()), completableFuture);
+            } catch (JsonProcessingException e) {
+                log.warning("Failed to parse JSON message: " + ((DataEvent) event).getData());
+            }
         }
     }
 
-    public void onError(Throwable throwable, Future<Void> future) {
+    public void onError(Throwable throwable, Future<HttpResponse> future) {
         if (errorHandler != null) {
             errorHandler.accept(throwable);
         }
-        future.cancel(true); // close SSE channel
+        if (future != null) {
+            future.cancel(true); // close SSE channel
+        }
     }
 
-    private void handleMessage(JsonNode jsonNode, Future<Void> future) {
+    private void handleMessage(JsonNode jsonNode, Future<HttpResponse> future) {
         try {
             if (jsonNode.has("error")) {
                 JSONRPCError error = OBJECT_MAPPER.treeToValue(jsonNode.get("error"), JSONRPCError.class);

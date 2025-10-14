@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.client.http.HttpResponse;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
@@ -28,8 +28,8 @@ public class RestErrorMapper {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    public static A2AClientException mapRestError(A2AHttpResponse response) {
-        return RestErrorMapper.mapRestError(response.body(), response.status());
+    public static A2AClientException mapRestError(HttpResponse response) {
+        return RestErrorMapper.mapRestError(response.body(), response.statusCode());
     }
 
     public static A2AClientException mapRestError(String body, int code) {

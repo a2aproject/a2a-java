@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import io.a2a.client.transport.spi.AbstractClientTransport;
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
-import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
 import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
 import io.a2a.client.transport.spi.interceptors.auth.AuthInterceptor;
@@ -50,7 +50,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 
-public class GrpcTransport implements ClientTransport {
+public class GrpcTransport extends AbstractClientTransport {
 
     private static final Metadata.Key<String> AUTHORIZATION_METADATA_KEY = Metadata.Key.of(
             AuthInterceptor.AUTHORIZATION,
@@ -60,7 +60,6 @@ public class GrpcTransport implements ClientTransport {
             Metadata.ASCII_STRING_MARSHALLER);
     private final A2AServiceBlockingV2Stub blockingStub;
     private final A2AServiceStub asyncStub;
-    private final List<ClientCallInterceptor> interceptors;
     private AgentCard agentCard;
 
     public GrpcTransport(Channel channel, AgentCard agentCard) {
@@ -68,11 +67,11 @@ public class GrpcTransport implements ClientTransport {
     }
 
     public GrpcTransport(Channel channel, AgentCard agentCard, List<ClientCallInterceptor> interceptors) {
+        super(interceptors);
         checkNotNullParam("channel", channel);
         this.asyncStub = A2AServiceGrpc.newStub(channel);
         this.blockingStub = A2AServiceGrpc.newBlockingV2Stub(channel);
         this.agentCard = agentCard;
-        this.interceptors = interceptors;
     }
 
     @Override
@@ -363,19 +362,6 @@ public class GrpcTransport implements ClientTransport {
         // Use taskId as default config ID if none provided
         //name.append(pushNotificationConfigId != null ? pushNotificationConfigId : taskId);
         return name.toString();
-    }
-
-    private PayloadAndHeaders applyInterceptors(String methodName, Object payload,
-                                                AgentCard agentCard, ClientCallContext clientCallContext) {
-        PayloadAndHeaders payloadAndHeaders = new PayloadAndHeaders(payload,
-                clientCallContext != null ? clientCallContext.getHeaders() : null);
-        if (interceptors != null && ! interceptors.isEmpty()) {
-            for (ClientCallInterceptor interceptor : interceptors) {
-                payloadAndHeaders = interceptor.intercept(methodName, payloadAndHeaders.getPayload(),
-                        payloadAndHeaders.getHeaders(), agentCard, clientCallContext);
-            }
-        }
-        return payloadAndHeaders;
     }
 
 }

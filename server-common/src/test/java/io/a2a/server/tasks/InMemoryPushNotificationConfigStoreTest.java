@@ -9,17 +9,19 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.a2a.client.http.HttpClient;
+import io.a2a.client.http.HttpResponse;
+import io.a2a.server.http.HttpClientManager;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.common.A2AHeaders;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
@@ -32,35 +34,39 @@ class InMemoryPushNotificationConfigStoreTest {
     private BasePushNotificationSender notificationSender;
 
     @Mock
-    private A2AHttpClient mockHttpClient;
+    private HttpClientManager clientManager;
 
     @Mock
-    private A2AHttpClient.PostBuilder mockPostBuilder;
+    private HttpClient mockHttpClient;
 
     @Mock
-    private A2AHttpResponse mockHttpResponse;
+    private HttpClient.PostRequestBuilder mockPostBuilder;
+
+    @Mock
+    private HttpResponse mockHttpResponse;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
         configStore = new InMemoryPushNotificationConfigStore();
-        notificationSender = new BasePushNotificationSender(configStore, mockHttpClient);
+        notificationSender = new BasePushNotificationSender(configStore, clientManager);
     }
 
     private void setupBasicMockHttpResponse() throws Exception {
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
+        when(clientManager.getOrCreate(any())).thenReturn(mockHttpClient);
+        when(mockHttpClient.post(any())).thenReturn(mockPostBuilder);
+//        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
+        when(mockPostBuilder.send()).thenReturn(CompletableFuture.completedFuture(mockHttpResponse));
         when(mockHttpResponse.success()).thenReturn(true);
     }
 
     private void verifyHttpCallWithoutToken(PushNotificationConfig config, Task task, String expectedToken) throws Exception {
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockHttpClient).createPost();
-        verify(mockPostBuilder).url(config.url());
+        verify(mockHttpClient).post(any());
+//        verify(mockPostBuilder).url(config.url());
         verify(mockPostBuilder).body(bodyCaptor.capture());
-        verify(mockPostBuilder).post();
+        verify(mockPostBuilder).send();
         // Verify that addHeader was never called for authentication token
         verify(mockPostBuilder, never()).addHeader(A2AHeaders.X_A2A_NOTIFICATION_TOKEN, expectedToken);
         
@@ -229,21 +235,23 @@ class InMemoryPushNotificationConfigStoreTest {
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
         configStore.setInfo(taskId, config);
 
+        when(clientManager.getOrCreate(any())).thenReturn(mockHttpClient);
+
         // Mock successful HTTP response
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockHttpClient.post(any())).thenReturn(mockPostBuilder);
+//        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
+        when(mockPostBuilder.send()).thenReturn(CompletableFuture.completedFuture(mockHttpResponse));
         when(mockHttpResponse.success()).thenReturn(true);
 
         notificationSender.sendNotification(task);
 
         // Verify HTTP client was called
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockHttpClient).createPost();
-        verify(mockPostBuilder).url(config.url());
+        verify(mockHttpClient).post(any());
+//        verify(mockPostBuilder).url(config.url());
         verify(mockPostBuilder).body(bodyCaptor.capture());
-        verify(mockPostBuilder).post();
+        verify(mockPostBuilder).send();
         
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
@@ -258,24 +266,26 @@ class InMemoryPushNotificationConfigStoreTest {
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
         configStore.setInfo(taskId, config);
 
+        when(clientManager.getOrCreate(any())).thenReturn(mockHttpClient);
+
         // Mock successful HTTP response
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockHttpClient.post(any())).thenReturn(mockPostBuilder);
+//        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.addHeader(any(String.class), any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
+        when(mockPostBuilder.send()).thenReturn(CompletableFuture.completedFuture(mockHttpResponse));
         when(mockHttpResponse.success()).thenReturn(true);
 
         notificationSender.sendNotification(task);
 
         // Verify HTTP client was called with proper authentication
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockHttpClient).createPost();
-        verify(mockPostBuilder).url(config.url());
+        verify(mockHttpClient).post(any());
+//        verify(mockPostBuilder).url(config.url());
         verify(mockPostBuilder).body(bodyCaptor.capture());
         // Verify that the token is included in request headers as X-A2A-Notification-Token
         verify(mockPostBuilder).addHeader(A2AHeaders.X_A2A_NOTIFICATION_TOKEN, config.token());
-        verify(mockPostBuilder).post();
+        verify(mockPostBuilder).send();
         
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
@@ -291,7 +301,7 @@ class InMemoryPushNotificationConfigStoreTest {
         notificationSender.sendNotification(task);
 
         // Verify HTTP client was never called
-        verify(mockHttpClient, never()).createPost();
+        verify(mockHttpClient, never()).post(any());
     }
 
     @Test

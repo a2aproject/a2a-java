@@ -381,13 +381,13 @@ Different transport protocols can be configured with specific settings using spe
 
 ##### JSON-RPC Transport Configuration
 
-For the JSON-RPC transport, to use the default `JdkA2AHttpClient`, provide a `JSONRPCTransportConfig` created with its default constructor.
+For the JSON-RPC transport, to use the default `JdkHttpClient`, provide a `JSONRPCTransportConfig` created with its default constructor.
 
 To use a custom HTTP client implementation, simply create a `JSONRPCTransportConfig` as follows:
 
 ```java
-// Create a custom HTTP client
-A2AHttpClient customHttpClient = ...
+// Create a custom HTTP client builder
+HttpClientBuilder httpClientBuilder = ...
 
 // Configure the client settings
 ClientConfig clientConfig = new ClientConfig.Builder()
@@ -397,7 +397,7 @@ ClientConfig clientConfig = new ClientConfig.Builder()
 Client client = Client
         .builder(agentCard)
         .clientConfig(clientConfig)
-        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig(customHttpClient))
+        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig(httpClientBuilder))
         .build();
 ```
 
@@ -428,13 +428,13 @@ Client client = Client
 
 ##### HTTP+JSON/REST Transport Configuration
 
-For the HTTP+JSON/REST transport, if you'd like to use the default `JdkA2AHttpClient`, provide a `RestTransportConfig` created with its default constructor.
+For the HTTP+JSON/REST transport, if you'd like to use the default `JdkHttpClient`, provide a `RestTransportConfig` created with its default constructor.
 
 To use a custom HTTP client implementation, simply create a `RestTransportConfig` as follows:
 
 ```java
 // Create a custom HTTP client
-A2AHttpClient customHttpClient = ...
+HttpClientBuilder httpClientBuilder = ...
 
 // Configure the client settings
 ClientConfig clientConfig = new ClientConfig.Builder()
@@ -444,7 +444,7 @@ ClientConfig clientConfig = new ClientConfig.Builder()
 Client client = Client
         .builder(agentCard)
         .clientConfig(clientConfig)
-        .withTransport(RestTransport.class, new RestTransportConfig(customHttpClient))
+        .withTransport(RestTransport.class, new RestTransportConfig(httpClientBuilder))
         .build();
 ```
 
