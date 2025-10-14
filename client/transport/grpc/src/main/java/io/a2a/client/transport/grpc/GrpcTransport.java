@@ -73,6 +73,7 @@ public class GrpcTransport implements ClientTransport {
 
     public GrpcTransport(Channel channel, AgentCard agentCard, @Nullable List<ClientCallInterceptor> interceptors) {
         checkNotNullParam("channel", channel);
+        checkNotNullParam("agentCard", agentCard);
         this.asyncStub = A2AServiceGrpc.newStub(channel);
         this.blockingStub = A2AServiceGrpc.newBlockingV2Stub(channel);
         this.agentCard = agentCard;
