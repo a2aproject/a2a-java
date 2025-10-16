@@ -289,4 +289,28 @@ public class ToProtoTest {
         assertNotNull(status.timestamp());
         assertEquals(expectedTimestamp, status.timestamp());
     }
+
+    @Test
+    public void testToProtoPartUnsupportedType() {
+        class FakePart extends io.a2a.spec.Part<Object> {
+            @Override
+            public io.a2a.spec.Part.Kind getKind() { return null; }
+            @Override
+            public Map<String, Object> getMetadata() { return Map.of(); }
+        }
+
+        FakePart fakePart = new FakePart();
+
+        io.a2a.spec.Message message = new io.a2a.spec.Message.Builder()
+                .messageId("msg-unsupported")
+                .contextId("ctx-unsupported")
+                .role(io.a2a.spec.Message.Role.USER)
+                .parts(List.of(fakePart))
+                .build();
+        io.a2a.grpc.Message result = ProtoUtils.ToProto.message(message);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContentCount());
+    }
+
 }
