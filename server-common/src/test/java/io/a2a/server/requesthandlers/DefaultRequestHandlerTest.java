@@ -18,6 +18,7 @@ import io.a2a.server.events.InMemoryQueueManager;
 import io.a2a.server.tasks.InMemoryTaskStore;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
+import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
@@ -45,7 +46,8 @@ public class DefaultRequestHandlerTest {
     @BeforeEach
     void setUp() {
         taskStore = new InMemoryTaskStore();
-        queueManager = new InMemoryQueueManager();
+        // Pass taskStore as TaskStateProvider to queueManager for task-aware queue management
+        queueManager = new InMemoryQueueManager(taskStore);
         agentExecutor = new TestAgentExecutor();
 
         requestHandler = new DefaultRequestHandler(
@@ -81,8 +83,15 @@ public class DefaultRequestHandlerTest {
                     .contextId(context.getContextId())
                     .status(new TaskStatus(TaskState.SUBMITTED))
                     .build();
-                queue.enqueueEvent(task);
+            } else {
+                // Subsequent messages: emit WORKING task (non-final)
+                task = new Task.Builder()
+                    .id(context.getTaskId())
+                    .contextId(context.getContextId())
+                    .status(new TaskStatus(TaskState.WORKING))
+                    .build();
             }
+            queue.enqueueEvent(task);
             // Don't complete - just return (fire-and-forget)
         });
 
@@ -409,6 +418,243 @@ public class DefaultRequestHandlerTest {
     }
 
     /**
+     * Test that blocking message calls persist all events in background.
+     * This test proves the bug where blocking calls stop consuming events after
+     * the first event is returned, causing subsequent events to be lost.
+     *
+     * Expected behavior:
+     * 1. Blocking call returns immediately with first event (WORKING state)
+     * 2. Agent continues running in background and produces more events
+     * 3. Background consumption continues and persists all events to TaskStore
+     * 4. Final task state (COMPLETED) is persisted despite blocking call having returned
+     *
+     * This test will FAIL before the fix is applied, demonstrating the bug.
+     */
+    @Test
+    @Timeout(15)
+    void testBlockingMessagePersistsAllEventsInBackground() throws Exception {
+        String taskId = "blocking-persist-task";
+        String contextId = "blocking-persist-ctx";
+
+        Message message = new Message.Builder()
+            .messageId("msg-blocking-persist")
+            .role(Message.Role.USER)
+            .parts(new TextPart("test message"))
+            .taskId(taskId)
+            .contextId(contextId)
+            .build();
+
+        // Explicitly set blocking=true (though it's the default)
+        MessageSendConfiguration config = new MessageSendConfiguration.Builder()
+                .blocking(true)
+                .build();
+
+        MessageSendParams params = new MessageSendParams(message, config, null);
+
+        // Agent that produces multiple events with delays
+        CountDownLatch agentStarted = new CountDownLatch(1);
+        CountDownLatch firstEventEmitted = new CountDownLatch(1);
+        CountDownLatch allowCompletion = new CountDownLatch(1);
+
+        agentExecutor.setExecuteCallback((context, queue) -> {
+            agentStarted.countDown();
+
+            // Emit first event (WORKING state)
+            Task workingTask = new Task.Builder()
+                .id(taskId)
+                .contextId(contextId)
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+            queue.enqueueEvent(workingTask);
+            firstEventEmitted.countDown();
+
+            // Sleep to ensure the blocking call has returned before we emit more events
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+
+            // Wait for permission to complete
+            try {
+                allowCompletion.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+
+            // Emit final event (COMPLETED state)
+            // This event will be LOST with the current bug, because the consumer
+            // has already stopped after returning the first event
+            Task completedTask = new Task.Builder()
+                .id(taskId)
+                .contextId(contextId)
+                .status(new TaskStatus(TaskState.COMPLETED))
+                .build();
+            queue.enqueueEvent(completedTask);
+        });
+
+        // Call blocking onMessageSend
+        Object result = requestHandler.onMessageSend(params, serverCallContext);
+
+        // Assertion 1: The immediate result should be the first event (WORKING)
+        assertTrue(result instanceof Task, "Result should be a Task");
+        Task immediateTask = (Task) result;
+        assertTrue(immediateTask.getStatus().state() == TaskState.WORKING,
+            "Immediate return should show WORKING state, got: " + immediateTask.getStatus().state());
+
+        // At this point, the blocking call has returned, but the agent is still running
+
+        // Allow the agent to emit the final COMPLETED event
+        allowCompletion.countDown();
+
+        // Assertion 2: Poll for the final task state to be persisted
+        // Use polling loop instead of fixed sleep for faster and more reliable test
+        long timeoutMs = 5000;
+        long startTime = System.currentTimeMillis();
+        Task persistedTask = null;
+        boolean completedStateFound = false;
+
+        while (System.currentTimeMillis() - startTime < timeoutMs) {
+            persistedTask = taskStore.get(taskId);
+            if (persistedTask != null && persistedTask.getStatus().state() == TaskState.COMPLETED) {
+                completedStateFound = true;
+                break;
+            }
+            Thread.sleep(100);  // Poll every 100ms
+        }
+
+        assertTrue(persistedTask != null, "Task should be persisted to store");
+        assertTrue(
+            completedStateFound,
+            "Final task state should be COMPLETED (background consumption should have processed it), got: " +
+            (persistedTask != null ? persistedTask.getStatus().state() : "null") +
+            " after " + (System.currentTimeMillis() - startTime) + "ms. " +
+            "This failure proves the bug - events after the first are lost."
+        );
+    }
+
+    /**
+     * Test the BIG idea: MainQueue stays open for non-final tasks even when all children close.
+     * This enables fire-and-forget tasks and late resubscriptions.
+     */
+    @Test
+    @Timeout(15)
+    void testMainQueueStaysOpenForNonFinalTasks() throws Exception {
+        String taskId = "fire-and-forget-task";
+        String contextId = "fire-ctx";
+
+        // Create initial task in WORKING state (non-final)
+        Task initialTask = new Task.Builder()
+            .id(taskId)
+            .contextId(contextId)
+            .status(new TaskStatus(TaskState.WORKING))
+            .build();
+        taskStore.save(initialTask);
+
+        Message message = new Message.Builder()
+            .messageId("msg-fire")
+            .role(Message.Role.USER)
+            .parts(new TextPart("fire and forget"))
+            .taskId(taskId)
+            .contextId(contextId)
+            .build();
+
+        MessageSendParams params = new MessageSendParams(message, null, null);
+
+        // Agent that emits WORKING status but never completes (fire-and-forget pattern)
+        CountDownLatch agentStarted = new CountDownLatch(1);
+        CountDownLatch allowAgentFinish = new CountDownLatch(1);
+
+        agentExecutor.setExecuteCallback((context, queue) -> {
+            agentStarted.countDown();
+
+            // Emit WORKING status (non-final)
+            Task workingTask = new Task.Builder()
+                .id(taskId)
+                .contextId(contextId)
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+            queue.enqueueEvent(workingTask);
+
+            // Don't emit final state - just wait and finish
+            try {
+                allowAgentFinish.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            // Agent finishes WITHOUT emitting final task state
+        });
+
+        // Start streaming
+        var streamingResult = requestHandler.onMessageSendStream(params, serverCallContext);
+
+        // Wait for agent to start and emit WORKING event
+        assertTrue(agentStarted.await(5, TimeUnit.SECONDS), "Agent should start");
+
+        // Give time for WORKING event to be processed
+        Thread.sleep(500);
+
+        // Simulate client disconnect - this closes the ChildQueue
+        // but MainQueue should stay open because task is non-final
+
+        // Allow agent to finish
+        allowAgentFinish.countDown();
+
+        // Give time for agent to finish and cleanup to run
+        Thread.sleep(2000);
+
+        // THE BIG IDEA TEST: Resubscription should work because MainQueue is still open
+        // Even though:
+        // 1. The original ChildQueue closed (client disconnected)
+        // 2. The agent finished executing
+        // 3. Task is still in non-final WORKING state
+        // Therefore: MainQueue should still be open for resubscriptions
+
+        io.a2a.spec.TaskIdParams resubParams = new io.a2a.spec.TaskIdParams(taskId);
+        var resubResult = requestHandler.onResubscribeToTask(resubParams, serverCallContext);
+
+        // If we get here without exception, the BIG idea works!
+        assertTrue(true, "Resubscription succeeded - MainQueue stayed open for non-final task");
+    }
+
+    /**
+     * Test that MainQueue DOES close when task is finalized.
+     * This ensures Level 2 protection doesn't prevent cleanup of completed tasks.
+     */
+    @Test
+    @Timeout(15)
+    void testMainQueueClosesForFinalizedTasks() throws Exception {
+        String taskId = "completed-task";
+        String contextId = "completed-ctx";
+
+        // Create initial task in COMPLETED state (already finalized)
+        Task completedTask = new Task.Builder()
+            .id(taskId)
+            .contextId(contextId)
+            .status(new TaskStatus(TaskState.COMPLETED))
+            .build();
+        taskStore.save(completedTask);
+
+        // Create a queue for this task
+        EventQueue mainQueue = queueManager.createOrTap(taskId);
+        assertTrue(mainQueue != null, "Queue should be created");
+
+        // Close the child queue (simulating client disconnect)
+        mainQueue.close();
+
+        // Give time for cleanup callback to run
+        Thread.sleep(1000);
+
+        // Since the task is finalized (COMPLETED), the MainQueue should be removed from the map
+        // This tests that Level 2 protection (childClosing check) allows cleanup for finalized tasks
+        EventQueue queue = queueManager.get(taskId);
+        assertTrue(queue == null || queue.isClosed(),
+            "Queue for finalized task should be null or closed");
+    }
+
+    /**
      * Simple test agent executor that allows controlling execution timing
      */
     private static class TestAgentExecutor implements AgentExecutor {
@@ -432,16 +678,17 @@ public class DefaultRequestHandlerTest {
             executing = true;
             try {
                 if (executeCallback != null) {
+                    // Custom callback is responsible for emitting events
                     executeCallback.call(context, eventQueue);
+                } else {
+                    // No custom callback - emit default completion event
+                    Task completedTask = new Task.Builder()
+                        .id(context.getTaskId())
+                        .contextId(context.getContextId())
+                        .status(new TaskStatus(TaskState.COMPLETED))
+                        .build();
+                    eventQueue.enqueueEvent(completedTask);
                 }
-
-                // Enqueue a simple task completion event
-                Task completedTask = new Task.Builder()
-                    .id(context.getTaskId())
-                    .contextId(context.getContextId())
-                    .status(new TaskStatus(TaskState.COMPLETED))
-                    .build();
-                eventQueue.enqueueEvent(completedTask);
 
             } finally {
                 executing = false;

@@ -16,9 +16,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.a2a.extras.common.events.TaskFinalizedEvent;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.EventQueueClosedException;
+import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.EventQueueTestHelper;
+import io.a2a.server.events.QueueClosedEvent;
 import io.a2a.spec.Event;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskState;
@@ -35,7 +38,7 @@ class ReplicatedQueueManagerTest {
 
     @BeforeEach
     void setUp() {
-        queueManager = new ReplicatedQueueManager();
+        queueManager = new ReplicatedQueueManager(new NoOpReplicationStrategy(), new MockTaskStateProvider(true));
         testEvent = new TaskStatusUpdateEvent.Builder()
                 .taskId("test-task")
                 .contextId("test-context")
@@ -47,7 +50,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicationStrategyTriggeredOnNormalEnqueue() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy);
+        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true));
 
         String taskId = "test-task-1";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -62,12 +65,12 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicationStrategyNotTriggeredOnReplicatedEvent() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy);
+        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true));
 
         String taskId = "test-task-2";
         EventQueue queue = queueManager.createOrTap(taskId);
 
-        ReplicatedEvent replicatedEvent = new ReplicatedEvent(taskId, testEvent);
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, testEvent);
         queueManager.onReplicatedEvent(replicatedEvent);
 
         assertEquals(0, strategy.getCallCount());
@@ -76,7 +79,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicationStrategyWithCountingImplementation() throws InterruptedException {
         CountingReplicationStrategy countingStrategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(countingStrategy);
+        queueManager = new ReplicatedQueueManager(countingStrategy, new MockTaskStateProvider(true));
 
         String taskId = "test-task-3";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -88,7 +91,7 @@ class ReplicatedQueueManagerTest {
         assertEquals(taskId, countingStrategy.getLastTaskId());
         assertEquals(testEvent, countingStrategy.getLastEvent());
 
-        ReplicatedEvent replicatedEvent = new ReplicatedEvent(taskId, testEvent);
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, testEvent);
         queueManager.onReplicatedEvent(replicatedEvent);
 
         assertEquals(2, countingStrategy.getCallCount());
@@ -99,12 +102,12 @@ class ReplicatedQueueManagerTest {
         String taskId = "test-task-4";
         EventQueue queue = queueManager.createOrTap(taskId);
 
-        ReplicatedEvent replicatedEvent = new ReplicatedEvent(taskId, testEvent);
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, testEvent);
         queueManager.onReplicatedEvent(replicatedEvent);
 
         Event dequeuedEvent;
         try {
-            dequeuedEvent = queue.dequeueEvent(100);
+            dequeuedEvent = queue.dequeueEventItem(100).getEvent();
         } catch (EventQueueClosedException e) {
             fail("Queue should not be closed");
             return;
@@ -119,7 +122,7 @@ class ReplicatedQueueManagerTest {
         // Verify no queue exists initially
         assertNull(queueManager.get(taskId));
 
-        ReplicatedEvent replicatedEvent = new ReplicatedEvent(taskId, testEvent);
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, testEvent);
 
         // Process the replicated event
         assertDoesNotThrow(() -> queueManager.onReplicatedEvent(replicatedEvent));
@@ -131,7 +134,7 @@ class ReplicatedQueueManagerTest {
         // Verify the event was enqueued by dequeuing it
         Event dequeuedEvent;
         try {
-            dequeuedEvent = queue.dequeueEvent(100);
+            dequeuedEvent = queue.dequeueEventItem(100).getEvent();
         } catch (EventQueueClosedException e) {
             fail("Queue should not be closed");
             return;
@@ -167,32 +170,33 @@ class ReplicatedQueueManagerTest {
     void testQueueToTaskIdMappingMaintained() throws InterruptedException {
         String taskId = "test-task-6";
         CountingReplicationStrategy countingStrategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(countingStrategy);
+        queueManager = new ReplicatedQueueManager(countingStrategy, new MockTaskStateProvider(true));
 
         EventQueue queue = queueManager.createOrTap(taskId);
         queue.enqueueEvent(testEvent);
 
         assertEquals(taskId, countingStrategy.getLastTaskId());
 
-        queueManager.close(taskId);
+        queueManager.close(taskId);  // Task is active, so NO poison pill is sent
 
         EventQueue newQueue = queueManager.createOrTap(taskId);
         newQueue.enqueueEvent(testEvent);
 
         assertEquals(taskId, countingStrategy.getLastTaskId());
+        // 2 replication calls: 1 testEvent, 1 testEvent (no QueueClosedEvent because task is active)
         assertEquals(2, countingStrategy.getCallCount());
     }
 
     @Test
     void testReplicatedEventJsonSerialization() throws Exception {
-        // Test that ReplicatedEvent can be properly serialized and deserialized with StreamingEventKind
+        // Test that ReplicatedEventQueueItem can be properly serialized and deserialized with StreamingEventKind
         TaskStatusUpdateEvent originalEvent = new TaskStatusUpdateEvent.Builder()
                 .taskId("json-test-task")
                 .contextId("json-test-context")
                 .status(new TaskStatus(TaskState.COMPLETED))
                 .isFinal(true)
                 .build();
-        ReplicatedEvent original = new ReplicatedEvent("json-test-task", originalEvent);
+        ReplicatedEventQueueItem original = new ReplicatedEventQueueItem("json-test-task", originalEvent);
 
         // Serialize to JSON
         String json = Utils.OBJECT_MAPPER.writeValueAsString(original);
@@ -202,7 +206,7 @@ class ReplicatedQueueManagerTest {
         assertTrue(json.contains("\"kind\":\"status-update\""));
 
         // Deserialize back
-        ReplicatedEvent deserialized = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEvent.class);
+        ReplicatedEventQueueItem deserialized = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
         assertNotNull(deserialized);
         assertEquals("json-test-task", deserialized.getTaskId());
         assertNotNull(deserialized.getEvent());
@@ -213,7 +217,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testParallelReplicationBehavior() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy);
+        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true));
 
         String taskId = "parallel-test-task";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -261,7 +265,7 @@ class ReplicatedQueueManagerTest {
                                 .status(new TaskStatus(TaskState.COMPLETED))
                                 .isFinal(true)
                                 .build();
-                        ReplicatedEvent replicatedEvent = new ReplicatedEvent(taskId, event);
+                        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
                         queueManager.onReplicatedEvent(replicatedEvent);
                         Thread.sleep(1); // Small delay to interleave operations
                     }
@@ -289,6 +293,205 @@ class ReplicatedQueueManagerTest {
                 "Only normal enqueue operations should trigger replication, not replicated events");
     }
 
+    @Test
+    void testReplicatedEventSkippedWhenTaskInactive() throws InterruptedException {
+        // Create a task state provider that returns false (task is inactive)
+        MockTaskStateProvider stateProvider = new MockTaskStateProvider(false);
+        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider);
+
+        String taskId = "inactive-task";
+
+        // Verify no queue exists initially
+        assertNull(queueManager.get(taskId));
+
+        // Process a replicated event for an inactive task
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, testEvent);
+        queueManager.onReplicatedEvent(replicatedEvent);
+
+        // Queue should NOT be created because task is inactive
+        assertNull(queueManager.get(taskId), "Queue should not be created for inactive task");
+    }
+
+    @Test
+    void testReplicatedEventProcessedWhenTaskActive() throws InterruptedException {
+        // Create a task state provider that returns true (task is active)
+        MockTaskStateProvider stateProvider = new MockTaskStateProvider(true);
+        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider);
+
+        String taskId = "active-task";
+
+        // Verify no queue exists initially
+        assertNull(queueManager.get(taskId));
+
+        // Process a replicated event for an active task
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, testEvent);
+        queueManager.onReplicatedEvent(replicatedEvent);
+
+        // Queue should be created and event should be enqueued
+        EventQueue queue = queueManager.get(taskId);
+        assertNotNull(queue, "Queue should be created for active task");
+
+        // Verify the event was enqueued
+        Event dequeuedEvent;
+        try {
+            dequeuedEvent = queue.dequeueEventItem(100).getEvent();
+        } catch (EventQueueClosedException e) {
+            fail("Queue should not be closed");
+            return;
+        }
+        assertEquals(testEvent, dequeuedEvent, "Event should be enqueued for active task");
+    }
+
+
+    @Test
+    void testReplicatedEventToExistingQueueWhenTaskBecomesInactive() throws InterruptedException {
+        // Create a task state provider that returns true initially
+        MockTaskStateProvider stateProvider = new MockTaskStateProvider(true);
+        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider);
+
+        String taskId = "task-becomes-inactive";
+
+        // Create queue and enqueue an event
+        EventQueue queue = queueManager.createOrTap(taskId);
+        queue.enqueueEvent(testEvent);
+
+        // Dequeue to clear the queue
+        try {
+            queue.dequeueEventItem(100);
+        } catch (EventQueueClosedException e) {
+            fail("Queue should not be closed");
+        }
+
+        // Now mark task as inactive
+        stateProvider.setActive(false);
+
+        // Process a replicated event - should be skipped
+        TaskStatusUpdateEvent newEvent = new TaskStatusUpdateEvent.Builder()
+                .taskId(taskId)
+                .contextId("test-context")
+                .status(new TaskStatus(TaskState.COMPLETED))
+                .isFinal(true)
+                .build();
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, newEvent);
+        queueManager.onReplicatedEvent(replicatedEvent);
+
+        // Try to dequeue with a short timeout - should timeout (no new event)
+        try {
+            EventQueueItem item = queue.dequeueEventItem(100);
+            assertNull(item, "No event should be enqueued for inactive task");
+        } catch (EventQueueClosedException e) {
+            fail("Queue should not be closed");
+        }
+    }
+
+    @Test
+    void testPoisonPillSentViaTransactionAwareEvent() throws InterruptedException {
+        CountingReplicationStrategy strategy = new CountingReplicationStrategy();
+        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true));
+
+        String taskId = "poison-pill-test";
+        EventQueue queue = queueManager.createOrTap(taskId);
+
+        // Enqueue a normal event first
+        queue.enqueueEvent(testEvent);
+
+        // In the new architecture, QueueClosedEvent (poison pill) is sent via CDI events
+        // when JpaDatabaseTaskStore.save() persists a final task and the transaction commits
+        // ReplicatedQueueManager.onTaskFinalized() observes AFTER_SUCCESS and sends the poison pill
+
+        // Simulate the CDI event observer being called (what happens in real execution)
+        TaskFinalizedEvent taskFinalizedEvent = new TaskFinalizedEvent(taskId);
+
+        // Call the observer method directly (simulating CDI event delivery)
+        queueManager.onTaskFinalized(taskFinalizedEvent);
+
+        // Verify that QueueClosedEvent was replicated
+        // strategy.getCallCount() should be 2: one for testEvent, one for QueueClosedEvent
+        assertEquals(2, strategy.getCallCount(), "Should have replicated both normal event and QueueClosedEvent");
+
+        Event lastEvent = strategy.getLastEvent();
+        assertTrue(lastEvent instanceof QueueClosedEvent, "Last replicated event should be QueueClosedEvent");
+        assertEquals(taskId, ((QueueClosedEvent) lastEvent).getTaskId());
+    }
+
+    @Test
+    void testQueueClosedEventJsonSerialization() throws Exception {
+        // Test that ReplicatedEventQueueItem can serialize/deserialize QueueClosedEvent
+        String taskId = "closed-event-json-test";
+        QueueClosedEvent closedEvent = new QueueClosedEvent(taskId);
+        ReplicatedEventQueueItem original = new ReplicatedEventQueueItem(taskId, closedEvent);
+
+        // Verify the item is marked as closed event
+        assertTrue(original.isClosedEvent(), "Should be marked as closed event");
+        assertFalse(original.hasEvent(), "Should not have regular event");
+        assertFalse(original.hasError(), "Should not have error");
+
+        // Serialize to JSON
+        String json = Utils.OBJECT_MAPPER.writeValueAsString(original);
+        assertNotNull(json);
+        assertTrue(json.contains(taskId), "JSON should contain taskId");
+        assertTrue(json.contains("\"closedEvent\":true"), "JSON should contain closedEvent flag");
+
+        // Deserialize back
+        ReplicatedEventQueueItem deserialized = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
+        assertNotNull(deserialized);
+        assertEquals(taskId, deserialized.getTaskId());
+        assertTrue(deserialized.isClosedEvent(), "Deserialized should be marked as closed event");
+        assertFalse(deserialized.hasEvent(), "Deserialized should not have regular event");
+        assertFalse(deserialized.hasError(), "Deserialized should not have error");
+
+        // Verify getEvent() returns QueueClosedEvent
+        Event reconstructedEvent = deserialized.getEvent();
+        assertNotNull(reconstructedEvent);
+        assertTrue(reconstructedEvent instanceof QueueClosedEvent,
+                "getEvent() should return QueueClosedEvent");
+        assertEquals(taskId, ((QueueClosedEvent) reconstructedEvent).getTaskId());
+    }
+
+    @Test
+    void testReplicatedQueueClosedEventTerminatesConsumer() throws InterruptedException {
+        String taskId = "remote-close-test";
+        EventQueue queue = queueManager.createOrTap(taskId);
+
+        // Enqueue a normal event
+        queue.enqueueEvent(testEvent);
+
+        // Simulate receiving QueueClosedEvent from remote node
+        QueueClosedEvent closedEvent = new QueueClosedEvent(taskId);
+        ReplicatedEventQueueItem replicatedClosedEvent = new ReplicatedEventQueueItem(taskId, closedEvent);
+        queueManager.onReplicatedEvent(replicatedClosedEvent);
+
+        // Dequeue the normal event first
+        EventQueueItem item1;
+        try {
+            item1 = queue.dequeueEventItem(100);
+        } catch (EventQueueClosedException e) {
+            fail("Should not throw on first dequeue");
+            return;
+        }
+        assertNotNull(item1);
+        assertEquals(testEvent, item1.getEvent());
+
+        // Next dequeue should get the QueueClosedEvent
+        EventQueueItem item2;
+        try {
+            item2 = queue.dequeueEventItem(100);
+        } catch (EventQueueClosedException e) {
+            fail("Should not throw on second dequeue, should return the event");
+            return;
+        }
+        assertNotNull(item2);
+        assertTrue(item2.getEvent() instanceof QueueClosedEvent,
+                "Second event should be QueueClosedEvent");
+    }
+
+    private static class NoOpReplicationStrategy implements ReplicationStrategy {
+        @Override
+        public void send(String taskId, Event event) {
+            // No-op for tests that don't care about replication
+        }
+    }
+
     private static class CountingReplicationStrategy implements ReplicationStrategy {
         private final AtomicInteger callCount = new AtomicInteger(0);
         private volatile String lastTaskId;
@@ -314,4 +517,26 @@ class ReplicatedQueueManagerTest {
         }
     }
 
+
+    private static class MockTaskStateProvider implements io.a2a.server.tasks.TaskStateProvider {
+        private volatile boolean active;
+
+        public MockTaskStateProvider(boolean active) {
+            this.active = active;
+        }
+
+        @Override
+        public boolean isTaskActive(String taskId) {
+            return active;
+        }
+
+        @Override
+        public boolean isTaskFinalized(String taskId) {
+            return !active;  // If task is inactive, it's finalized; if active, not finalized
+        }
+
+        public void setActive(boolean active) {
+            this.active = active;
+        }
+    }
 }

@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import io.a2a.server.ServerCallContext;
@@ -28,10 +29,12 @@ import io.a2a.server.agentexecution.SimpleRequestContextBuilder;
 import io.a2a.server.events.EnhancedRunnable;
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueue;
+import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.QueueManager;
 import io.a2a.server.events.TaskQueueExistsException;
 import io.a2a.server.tasks.PushNotificationConfigStore;
 import io.a2a.server.tasks.PushNotificationSender;
+import io.a2a.server.tasks.TaskStateProvider;
 import io.a2a.server.tasks.ResultAggregator;
 import io.a2a.server.tasks.TaskManager;
 import io.a2a.server.tasks.TaskStore;
@@ -222,7 +225,8 @@ public class DefaultRequestHandler implements RequestHandler {
             LOGGER.debug("Removed agent for task {} from runningAgents in finally block, size after: {}", taskId, runningAgents.size());
 
             // Track cleanup as background task to avoid blocking Vert.x threads
-            trackBackgroundTask(cleanupProducer(agentFuture, taskId, queue, false));
+            // Pass the consumption future to ensure cleanup waits for background consumption to complete
+            trackBackgroundTask(cleanupProducer(agentFuture, etai != null ? etai.consumptionFuture() : null, taskId, queue, false));
         }
 
         LOGGER.debug("Returning: {}", etai.eventType());
@@ -251,10 +255,12 @@ public class DefaultRequestHandler implements RequestHandler {
         AtomicBoolean backgroundConsumeStarted = new AtomicBoolean(false);
 
         try {
-            Flow.Publisher<Event> results = resultAggregator.consumeAndEmit(consumer);
+            Flow.Publisher<EventQueueItem> results = resultAggregator.consumeAndEmit(consumer);
 
-            Flow.Publisher<Event> eventPublisher =
-                    processor(createTubeConfig(), results, ((errorConsumer, event) -> {
+            // First process the items then convert to Event
+            Flow.Publisher<EventQueueItem> processed =
+                    processor(createTubeConfig(), results, ((errorConsumer, item) -> {
+                Event event = item.getEvent();
                 if (event instanceof Task createdTask) {
                     if (!Objects.equals(taskId.get(), createdTask.getId())) {
                         errorConsumer.accept(new InternalError("Task ID mismatch in agent response"));
@@ -287,6 +293,9 @@ public class DefaultRequestHandler implements RequestHandler {
 
                 return true;
             }));
+
+            // Then convert EventQueueItem -> Event
+            Flow.Publisher<Event> eventPublisher = convertingProcessor(processed, EventQueueItem::getEvent);
 
             Flow.Publisher<StreamingEventKind> finalPublisher = convertingProcessor(eventPublisher, event -> (StreamingEventKind) event);
 
@@ -374,7 +383,7 @@ public class DefaultRequestHandler implements RequestHandler {
             CompletableFuture<Void> agentFuture = runningAgents.remove(taskId.get());
             LOGGER.debug("Removed agent for task {} from runningAgents in finally block, size after: {}", taskId.get(), runningAgents.size());
 
-            trackBackgroundTask(cleanupProducer(agentFuture, taskId.get(), queue, true));
+            trackBackgroundTask(cleanupProducer(agentFuture, null, taskId.get(), queue, true));
         }
     }
 
@@ -427,6 +436,7 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public Flow.Publisher<StreamingEventKind> onResubscribeToTask(
             TaskIdParams params, ServerCallContext context) throws JSONRPCError {
+        LOGGER.debug("onResubscribeToTask - taskId: {}", params.id());
         Task task = taskStore.get(params.id());
         if (task == null) {
             throw new TaskNotFoundError();
@@ -435,6 +445,7 @@ public class DefaultRequestHandler implements RequestHandler {
         TaskManager taskManager = new TaskManager(task.getId(), task.getContextId(), taskStore, null);
         ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor);
         EventQueue queue = queueManager.tap(task.getId());
+        LOGGER.debug("onResubscribeToTask - tapped queue: {}", queue != null ? System.identityHashCode(queue) : "null");
 
         if (queue == null) {
             // If task is in final state, queue legitimately doesn't exist anymore
@@ -448,8 +459,9 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         EventConsumer consumer = new EventConsumer(queue);
-        Flow.Publisher<Event> results = resultAggregator.consumeAndEmit(consumer);
-        return convertingProcessor(results, e -> (StreamingEventKind) e);
+        Flow.Publisher<EventQueueItem> results = resultAggregator.consumeAndEmit(consumer);
+        LOGGER.debug("onResubscribeToTask - returning publisher for taskId: {}", params.id());
+        return convertingProcessor(results, item -> (StreamingEventKind) item.getEvent());
     }
 
     @Override
@@ -564,40 +576,59 @@ public class DefaultRequestHandler implements RequestHandler {
         });
     }
 
-    private CompletableFuture<Void> cleanupProducer(CompletableFuture<Void> agentFuture, String taskId, EventQueue queue, boolean isStreaming) {
+    /**
+     * Wait for all background tasks to complete.
+     * Useful for testing to ensure cleanup completes before assertions.
+     *
+     * @return CompletableFuture that completes when all background tasks finish
+     */
+    public CompletableFuture<Void> waitForBackgroundTasks() {
+        CompletableFuture<?>[] tasks = backgroundTasks.toArray(new CompletableFuture[0]);
+        if (tasks.length == 0) {
+            return CompletableFuture.completedFuture(null);
+        }
+        LOGGER.debug("Waiting for {} background tasks to complete", tasks.length);
+        return CompletableFuture.allOf(tasks);
+    }
+
+    private CompletableFuture<Void> cleanupProducer(CompletableFuture<Void> agentFuture, CompletableFuture<Void> consumptionFuture, String taskId, EventQueue queue, boolean isStreaming) {
         LOGGER.debug("Starting cleanup for task {} (streaming={})", taskId, isStreaming);
         logThreadStats("CLEANUP START");
 
         if (agentFuture == null) {
             LOGGER.debug("No running agent found for task {}, cleanup complete", taskId);
-            return CompletableFuture.completedFuture(null);  // Return completed future
+            return CompletableFuture.completedFuture(null);
         }
 
-        return agentFuture.whenComplete((v, t) -> {
+        // Wait for BOTH agent AND consumption to complete before cleanup
+        // This ensures TaskStore is fully updated before we check task finalization
+        CompletableFuture<Void> bothComplete = agentFuture;
+        if (consumptionFuture != null) {
+            bothComplete = CompletableFuture.allOf(agentFuture, consumptionFuture);
+            LOGGER.debug("Cleanup will wait for both agent and consumption to complete for task {}", taskId);
+        }
+
+        return bothComplete.whenComplete((v, t) -> {
             if (t != null) {
-                LOGGER.debug("Agent completed with error for task {}", taskId, t);
+                LOGGER.debug("Agent/consumption completed with error for task {}", taskId, t);
             } else {
-                LOGGER.debug("Agent completed successfully for task {}", taskId);
+                LOGGER.debug("Agent and consumption both completed successfully for task {}", taskId);
             }
 
-            // Determine if we should keep the MainQueue alive
-            // For non-streaming, non-blocking requests with non-final tasks, we close the ChildQueue
-            // but keep the MainQueue alive to support resubscription
-            boolean keepMainQueueAlive = false;
-            if (!isStreaming) {
-                Task task = taskStore.get(taskId);
-                if (task != null && !task.getStatus().state().isFinal()) {
-                    keepMainQueueAlive = true;
-                    LOGGER.debug("Non-streaming call with non-final task {} (state={}), closing ChildQueue but keeping MainQueue alive for resubscription",
-                            taskId, task.getStatus().state());
-                }
-            }
+            // Always close the ChildQueue and notify the parent MainQueue
+            // The parent will close itself when all children are closed (childClosing logic)
+            // This ensures proper cleanup and removal from QueueManager map
+            LOGGER.debug("{} call, closing ChildQueue for task {} (immediate=false, notifyParent=true)",
+                    isStreaming ? "Streaming" : "Non-streaming", taskId);
 
-            LOGGER.debug("{} call, closing queue for task {} (immediate=false, notifyParent={})",
-                    isStreaming ? "Streaming" : "Non-streaming", taskId, !keepMainQueueAlive);
+            // Always notify parent so MainQueue can clean up when last child closes
+            queue.close(false, true);
 
-            // Close the ChildQueue, optionally keeping MainQueue alive
-            queue.close(false, !keepMainQueueAlive);
+            // For replicated environments, the poison pill is now sent via CDI events
+            // When JpaDatabaseTaskStore.save() persists a final task, it fires TaskFinalizedEvent
+            // ReplicatedQueueManager.onTaskFinalized() observes AFTER_SUCCESS and sends poison pill
+            // This guarantees the transaction is committed before the poison pill is sent
+            LOGGER.debug("Queue cleanup completed for task {}", taskId);
 
             logThreadStats("CLEANUP END");
         });

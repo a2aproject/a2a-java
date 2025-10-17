@@ -24,14 +24,14 @@ import io.a2a.client.TaskUpdateEvent;
 import io.a2a.client.config.ClientConfig;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
-import io.a2a.extras.queuemanager.replicated.core.ReplicatedEvent;
+import io.a2a.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
 import io.a2a.server.PublicAgentCard;
+import io.a2a.server.events.QueueClosedEvent;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
-import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
@@ -40,8 +40,8 @@ import io.a2a.util.Utils;
 import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -49,7 +49,6 @@ import org.junit.jupiter.api.Test;
  * Tests the full A2A message flow with Kafka replication verification.
  */
 @QuarkusTest
-@Disabled
 public class KafkaReplicationIntegrationTest {
 
     @Inject
@@ -65,6 +64,7 @@ public class KafkaReplicationIntegrationTest {
 
     private Client streamingClient;
     private Client nonStreamingClient;
+    private Client pollingClient;
 
     @BeforeEach
     public void setup() throws A2AClientException {
@@ -87,6 +87,31 @@ public class KafkaReplicationIntegrationTest {
                 .clientConfig(streamingConfig)
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
                 .build();
+
+        // Create polling client for non-blocking operations
+        ClientConfig pollingConfig = new ClientConfig.Builder()
+                .setStreaming(false)
+                .setPolling(true)
+                .build();
+
+        pollingClient = Client.builder(agentCard)
+                .clientConfig(pollingConfig)
+                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+                .build();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        // Close all clients to release resources and prevent connection leaks
+        if (nonStreamingClient != null) {
+            nonStreamingClient.close();
+        }
+        if (streamingClient != null) {
+            streamingClient.close();
+        }
+        if (pollingClient != null) {
+            pollingClient.close();
+        }
     }
 
     @Test
@@ -131,7 +156,7 @@ public class KafkaReplicationIntegrationTest {
         assertEquals(TaskState.SUBMITTED, task.getStatus().state());
 
         // Wait for the event to be replicated to Kafka
-        ReplicatedEvent replicatedEvent = testConsumer.waitForEvent(taskId, 30);
+        ReplicatedEventQueueItem replicatedEvent = testConsumer.waitForEvent(taskId, 30);
         assertNotNull(replicatedEvent, "Event should be replicated to Kafka within 30 seconds");
 
         // Verify the replicated event content
@@ -228,7 +253,7 @@ public class KafkaReplicationIntegrationTest {
                 .isFinal(true)
                 .build();
 
-        ReplicatedEvent replicatedEvent = new ReplicatedEvent(taskId, statusEvent);
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, statusEvent);
         String eventJson = Utils.OBJECT_MAPPER.writeValueAsString(replicatedEvent);
 
         // Send to Kafka using reactive messaging
@@ -250,14 +275,152 @@ public class KafkaReplicationIntegrationTest {
         assertEquals(taskId, completedEvent.getTaskId(), "Event should have correct task ID");
         assertEquals(contextId, completedEvent.getContextId(), "Event should have correct context ID");
 
-        // Also verify via client API that the task state was updated
-        Task updatedTask = nonStreamingClient.getTask(new TaskQueryParams(taskId, null));
-        assertNotNull(updatedTask, "Task should still exist");
-        assertEquals(TaskState.COMPLETED, updatedTask.getStatus().state(), "Task should now show COMPLETED state after Kafka replication");
+        // Note: We do NOT verify TaskStore state here because replicated events intentionally
+        // skip TaskStore updates to avoid duplicates. The TaskStore is updated on the originating
+        // node that produced the event. This test verifies the replication flow:
+        // Kafka -> EventQueue -> Streaming Clients, which is working correctly.
+    }
 
-        // Note: The replicated event goes to the local queue, but since we created the task
-        // and immediately sent a completion event, the task lifecycle might not reflect this
-        // in the client API. The important thing is that the replication system works.
+    @Test
+    public void testQueueClosedEventTerminatesRemoteSubscribers() throws Exception {
+        String taskId = "queue-closed-test-" + System.currentTimeMillis();
+        String contextId = "test-context-" + System.currentTimeMillis();
+
+        // Clear any previous events
+        testConsumer.clear();
+
+        // Use polling (non-blocking) client with "working" command
+        // This creates task in WORKING state (non-final) and keeps queue alive
+        Message workingMessage = new Message.Builder()
+                .role(Message.Role.USER)
+                .parts(List.of(new TextPart("working")))
+                .taskId(taskId)
+                .messageId("working-msg-" + System.currentTimeMillis())
+                .contextId(contextId)
+                .build();
+
+        CountDownLatch workingLatch = new CountDownLatch(1);
+        AtomicReference<String> taskIdRef = new AtomicReference<>();
+
+        pollingClient.sendMessage(workingMessage, List.of((ClientEvent event, AgentCard card) -> {
+            if (event instanceof TaskEvent taskEvent) {
+                taskIdRef.set(taskEvent.getTask().getId());
+                workingLatch.countDown();
+            } else if (event instanceof TaskUpdateEvent tue && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
+                if (status.getStatus().state() == TaskState.WORKING) {
+                    taskIdRef.set(status.getTaskId());
+                    workingLatch.countDown();
+                }
+            }
+        }), (Throwable error) -> {
+            workingLatch.countDown();
+        });
+
+        assertTrue(workingLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
+        String createdTaskId = taskIdRef.get();
+        assertNotNull(createdTaskId, "Task should be created");
+        assertEquals(taskId, createdTaskId);
+
+        // Set up streaming resubscription to listen for the QueueClosedEvent
+        CountDownLatch streamCompletedLatch = new CountDownLatch(1);
+        AtomicBoolean streamCompleted = new AtomicBoolean(false);
+        AtomicBoolean streamErrored = new AtomicBoolean(false);
+        AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+        // Create consumer - we expect the stream to complete when QueueClosedEvent arrives
+        BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
+            // We might receive some events before the stream completes, that's fine
+            // The important thing is that the stream eventually completes
+        };
+
+        // Create error handler that captures completion
+        Consumer<Throwable> errorHandler = error -> {
+            if (error == null) {
+                // null error means stream completed normally
+                streamCompleted.set(true);
+            } else {
+                streamErrored.set(true);
+                errorRef.set(error);
+            }
+            streamCompletedLatch.countDown();
+        };
+
+        // Resubscribe to the task - this creates a streaming subscription
+        streamingClient.resubscribe(new TaskIdParams(taskId), List.of(consumer), errorHandler);
+
+        // Wait a moment to ensure the streaming subscription is fully established
+        Thread.sleep(2000);
+
+        // Now manually send a QueueClosedEvent to Kafka to simulate queue closure on another node
+        QueueClosedEvent closedEvent = new QueueClosedEvent(taskId);
+        ReplicatedEventQueueItem replicatedClosedEvent = new ReplicatedEventQueueItem(taskId, closedEvent);
+        String eventJson = Utils.OBJECT_MAPPER.writeValueAsString(replicatedClosedEvent);
+
+        // Send to Kafka using reactive messaging
+        testEmitter.send(eventJson);
+
+        // Wait for the stream to complete - should happen when QueueClosedEvent is received
+        // Allow extra time for Kafka message processing and CDI event propagation
+        assertTrue(streamCompletedLatch.await(30, TimeUnit.SECONDS),
+                "Streaming subscription should complete when QueueClosedEvent is received");
+
+        // Verify the stream completed normally (not with an error)
+        assertTrue(streamCompleted.get(), "Stream should complete normally when QueueClosedEvent is received");
+        assertFalse(streamErrored.get(), "Stream should not error on QueueClosedEvent");
+        assertNull(errorRef.get(), "Should not receive error when stream completes gracefully");
+    }
+
+    @Test
+    public void testPoisonPillGenerationOnTaskFinalization() throws Exception {
+        String taskId = "poison-pill-gen-test-" + System.currentTimeMillis();
+        String contextId = "test-context-" + System.currentTimeMillis();
+
+        // Clear any previous events
+        testConsumer.clear();
+
+        // Create a task that will be completed (finalized)
+        Message completeMessage = new Message.Builder()
+                .role(Message.Role.USER)
+                .parts(List.of(new TextPart("complete")))
+                .taskId(taskId)
+                .messageId("complete-msg-" + System.currentTimeMillis())
+                .contextId(contextId)
+                .build();
+
+        CountDownLatch completeLatch = new CountDownLatch(1);
+        AtomicReference<Task> finalTask = new AtomicReference<>();
+
+        nonStreamingClient.sendMessage(completeMessage, List.of((ClientEvent event, AgentCard card) -> {
+            if (event instanceof TaskEvent taskEvent) {
+                finalTask.set(taskEvent.getTask());
+                // Count down for any task event - we just need the task to be created
+                completeLatch.countDown();
+            }
+        }), (Throwable error) -> {
+            completeLatch.countDown();
+        });
+
+        assertTrue(completeLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
+        Task createdTask = finalTask.get();
+        assertNotNull(createdTask, "Task should be created");
+
+        // The task should complete very quickly since it's a simple operation
+        // Wait a moment to ensure all events have been enqueued
+        Thread.sleep(2000);
+
+        // Wait for the QueueClosedEvent to be published to Kafka
+        // The event should be published automatically because isTaskFinalized() returns true
+        ReplicatedEventQueueItem poisonPill = testConsumer.waitForClosedEvent(taskId, 30);
+        assertNotNull(poisonPill, "QueueClosedEvent should be published to Kafka when task is finalized");
+        assertTrue(poisonPill.isClosedEvent(), "Event should be marked as closedEvent");
+        assertEquals(taskId, poisonPill.getTaskId(), "QueueClosedEvent should have correct task ID");
+
+        // Verify the event is actually a QueueClosedEvent
+        assertInstanceOf(QueueClosedEvent.class, poisonPill.getEvent(),
+                "Event should be a QueueClosedEvent");
+        QueueClosedEvent closedEvent =
+                (QueueClosedEvent) poisonPill.getEvent();
+        assertEquals(taskId, closedEvent.getTaskId(), "QueueClosedEvent task ID should match");
     }
 
 }

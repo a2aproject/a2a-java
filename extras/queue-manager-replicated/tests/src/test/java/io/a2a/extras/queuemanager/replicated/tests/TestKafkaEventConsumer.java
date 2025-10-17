@@ -8,7 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
-import io.a2a.extras.queuemanager.replicated.core.ReplicatedEvent;
+import io.a2a.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
 import io.a2a.util.Utils;
 import io.quarkus.arc.profile.IfBuildProfile;
 
@@ -20,13 +20,13 @@ import io.quarkus.arc.profile.IfBuildProfile;
 @ApplicationScoped
 public class TestKafkaEventConsumer {
 
-    private final ConcurrentLinkedQueue<ReplicatedEvent> receivedEvents = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<ReplicatedEventQueueItem> receivedEvents = new ConcurrentLinkedQueue<>();
     private volatile CountDownLatch eventLatch;
 
     @Incoming("test-replicated-events-in")
     public void onTestReplicatedEvent(String jsonMessage) {
         try {
-            ReplicatedEvent event = Utils.OBJECT_MAPPER.readValue(jsonMessage, ReplicatedEvent.class);
+            ReplicatedEventQueueItem event = Utils.OBJECT_MAPPER.readValue(jsonMessage, ReplicatedEventQueueItem.class);
             receivedEvents.offer(event);
 
             // Signal any waiting threads
@@ -44,11 +44,11 @@ public class TestKafkaEventConsumer {
      * Wait for an event matching the given task ID.
      * @param taskId the task ID to wait for
      * @param timeoutSeconds maximum time to wait
-     * @return the matching ReplicatedEvent, or null if timeout
+     * @return the matching ReplicatedEventQueueItem, or null if timeout
      */
-    public ReplicatedEvent waitForEvent(String taskId, int timeoutSeconds) throws InterruptedException {
+    public ReplicatedEventQueueItem waitForEvent(String taskId, int timeoutSeconds) throws InterruptedException {
         // Check if we already have the event
-        ReplicatedEvent existing = findEventByTaskId(taskId);
+        ReplicatedEventQueueItem existing = findEventByTaskId(taskId);
         if (existing != null) {
             return existing;
         }
@@ -74,11 +74,11 @@ public class TestKafkaEventConsumer {
      * @param taskId the task ID to wait for
      * @param contentMatch a string that must be present in the event
      * @param timeoutSeconds maximum time to wait
-     * @return the matching ReplicatedEvent, or null if timeout
+     * @return the matching ReplicatedEventQueueItem, or null if timeout
      */
-    public ReplicatedEvent waitForEventWithContent(String taskId, String contentMatch, int timeoutSeconds) throws InterruptedException {
+    public ReplicatedEventQueueItem waitForEventWithContent(String taskId, String contentMatch, int timeoutSeconds) throws InterruptedException {
         // Check if we already have the event
-        ReplicatedEvent existing = findEventByTaskIdWithContent(taskId, contentMatch);
+        ReplicatedEventQueueItem existing = findEventByTaskIdWithContent(taskId, contentMatch);
         if (existing != null) {
             return existing;
         }
@@ -100,9 +100,38 @@ public class TestKafkaEventConsumer {
     }
 
     /**
+     * Wait for a QueueClosedEvent matching the given task ID.
+     * @param taskId the task ID to wait for
+     * @param timeoutSeconds maximum time to wait
+     * @return the matching ReplicatedEventQueueItem with QueueClosedEvent, or null if timeout
+     */
+    public ReplicatedEventQueueItem waitForClosedEvent(String taskId, int timeoutSeconds) throws InterruptedException {
+        // Check if we already have the event
+        ReplicatedEventQueueItem existing = findClosedEventByTaskId(taskId);
+        if (existing != null) {
+            return existing;
+        }
+
+        // Set up latch to wait for new events
+        eventLatch = new CountDownLatch(1);
+
+        try {
+            // Wait for new events
+            boolean received = eventLatch.await(timeoutSeconds, TimeUnit.SECONDS);
+            if (received) {
+                // Check again for the event
+                return findClosedEventByTaskId(taskId);
+            }
+            return null;
+        } finally {
+            eventLatch = null;
+        }
+    }
+
+    /**
      * Find an event by task ID in the received events.
      */
-    private ReplicatedEvent findEventByTaskId(String taskId) {
+    private ReplicatedEventQueueItem findEventByTaskId(String taskId) {
         return receivedEvents.stream()
                 .filter(event -> taskId.equals(event.getTaskId()))
                 .findFirst()
@@ -110,9 +139,19 @@ public class TestKafkaEventConsumer {
     }
 
     /**
+     * Find a QueueClosedEvent by task ID in the received events.
+     */
+    private ReplicatedEventQueueItem findClosedEventByTaskId(String taskId) {
+        return receivedEvents.stream()
+                .filter(event -> taskId.equals(event.getTaskId()) && event.isClosedEvent())
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * Find an event by task ID and content match in the received events.
      */
-    private ReplicatedEvent findEventByTaskIdWithContent(String taskId, String contentMatch) {
+    private ReplicatedEventQueueItem findEventByTaskIdWithContent(String taskId, String contentMatch) {
         return receivedEvents.stream()
                 .filter(event -> taskId.equals(event.getTaskId()) &&
                         event.getEvent().toString().contains(contentMatch))

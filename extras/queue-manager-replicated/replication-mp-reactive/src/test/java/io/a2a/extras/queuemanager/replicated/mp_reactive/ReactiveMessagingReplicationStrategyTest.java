@@ -14,7 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.a2a.extras.queuemanager.replicated.core.ReplicatedEvent;
+import io.a2a.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskState;
@@ -28,7 +28,7 @@ class ReactiveMessagingReplicationStrategyTest {
     private Emitter<String> emitter;
 
     @Mock
-    private Event<ReplicatedEvent> cdiEvent;
+    private Event<ReplicatedEventQueueItem> cdiEvent;
 
     @InjectMocks
     private ReactiveMessagingReplicationStrategy strategy;
@@ -46,14 +46,14 @@ class ReactiveMessagingReplicationStrategyTest {
     }
 
     private String createValidJsonMessage(String taskId, String contextId) throws Exception {
-        // Create a proper ReplicatedEvent JSON with StreamingEventKind
+        // Create a proper ReplicatedEventQueueItem JSON with StreamingEventKind
         TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
                 .taskId(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
                 .isFinal(false)
                 .build();
-        ReplicatedEvent replicatedEvent = new ReplicatedEvent(taskId, event);
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
         return Utils.OBJECT_MAPPER.writeValueAsString(replicatedEvent);
     }
 
@@ -103,7 +103,7 @@ class ReactiveMessagingReplicationStrategyTest {
         assertDoesNotThrow(() -> strategy.onReplicatedEvent(invalidJsonMessage));
 
         // CDI event should not be fired for invalid JSON
-        verify(cdiEvent, never()).fire(any(ReplicatedEvent.class));
+        verify(cdiEvent, never()).fire(any(ReplicatedEventQueueItem.class));
     }
 
 

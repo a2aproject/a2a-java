@@ -21,6 +21,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-extras-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-core</artifactId>
         </dependency>

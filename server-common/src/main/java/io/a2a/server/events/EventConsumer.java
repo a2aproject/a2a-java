@@ -28,14 +28,14 @@ public class EventConsumer {
     }
 
     public Event consumeOne() throws A2AServerException, EventQueueClosedException {
-        Event event = queue.dequeueEvent(NO_WAIT);
-        if (event == null) {
+        EventQueueItem item = queue.dequeueEventItem(NO_WAIT);
+        if (item == null) {
             throw new A2AServerException(ERROR_MSG, new InternalError(ERROR_MSG));
         }
-        return event;
+        return item.getEvent();
     }
 
-    public Flow.Publisher<Event> consumeAll() {
+    public Flow.Publisher<EventQueueItem> consumeAll() {
         TubeConfiguration conf = new TubeConfiguration()
                 .withBackpressureStrategy(BackpressureStrategy.BUFFER)
                 .withBufferSize(256);
@@ -55,17 +55,49 @@ public class EventConsumer {
                     // enqueued by the agent and the agent simply threw an exception
 
                     // TODO the callback mentioned above seems unused in the Python 0.2.1 tag
+                    EventQueueItem item;
                     Event event;
                     try {
-                        event = queue.dequeueEvent(QUEUE_WAIT_MILLISECONDS);
-                        if (event == null) {
+                        item = queue.dequeueEventItem(QUEUE_WAIT_MILLISECONDS);
+                        if (item == null) {
                             continue;
                         }
+                        event = item.getEvent();
+
                         if (event instanceof Throwable thr) {
                             tube.fail(thr);
                             return;
                         }
-                        tube.send(event);
+
+                        // Check for QueueClosedEvent BEFORE sending to avoid delivering it to subscribers
+                        boolean isFinalEvent = false;
+                        if (event instanceof TaskStatusUpdateEvent tue && tue.isFinal()) {
+                            isFinalEvent = true;
+                        } else if (event instanceof Message) {
+                            isFinalEvent = true;
+                        } else if (event instanceof Task task) {
+                            isFinalEvent = task.getStatus().state().isFinal();
+                        } else if (event instanceof QueueClosedEvent) {
+                            // Poison pill event - signals queue closure from remote node
+                            // Do NOT send to subscribers - just close the queue
+                            LOGGER.debug("Received QueueClosedEvent for task {}, treating as final event",
+                                ((QueueClosedEvent) event).getTaskId());
+                            isFinalEvent = true;
+                        }
+
+                        // Only send event if it's not a QueueClosedEvent
+                        // QueueClosedEvent is an internal coordination event used for replication
+                        // and should not be exposed to API consumers
+                        if (!(event instanceof QueueClosedEvent)) {
+                            tube.send(item);
+                        }
+
+                        if (isFinalEvent) {
+                            LOGGER.debug("Final event detected, closing queue and breaking loop for queue {}", System.identityHashCode(queue));
+                            queue.close();
+                            LOGGER.debug("Queue closed, breaking loop for queue {}", System.identityHashCode(queue));
+                            break;
+                        }
                     } catch (EventQueueClosedException e) {
                         completed = true;
                         tube.complete();
@@ -74,31 +106,14 @@ public class EventConsumer {
                         tube.fail(t);
                         return;
                     }
-
-                    boolean isFinalEvent = false;
-                    if (event instanceof TaskStatusUpdateEvent tue && tue.isFinal()) {
-                        isFinalEvent = true;
-                    } else if (event instanceof Message) {
-                        isFinalEvent = true;
-                    } else if (event instanceof Task task) {
-                        switch (task.getStatus().state()) {
-                            case COMPLETED:
-                            case CANCELED:
-                            case FAILED:
-                            case REJECTED:
-                            case UNKNOWN:
-                                isFinalEvent = true;
-                        }
-                    }
-
-                    if (isFinalEvent) {
-                        queue.close();
-                        break;
-                    }
                 }
             } finally {
                 if (!completed) {
+                    LOGGER.debug("EventConsumer finally block: calling tube.complete() for queue {}", System.identityHashCode(queue));
                     tube.complete();
+                    LOGGER.debug("EventConsumer finally block: tube.complete() returned for queue {}", System.identityHashCode(queue));
+                } else {
+                    LOGGER.debug("EventConsumer finally block: completed=true, skipping tube.complete() for queue {}", System.identityHashCode(queue));
                 }
             }
         });

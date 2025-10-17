@@ -3,6 +3,8 @@ package io.a2a.server.tasks;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -203,7 +205,7 @@ public class ResultAggregatorTest {
 
         // Create an event queue using QueueManager (which has access to builder)
         InMemoryQueueManager queueManager =
-            new InMemoryQueueManager();
+            new InMemoryQueueManager(new MockTaskStateProvider());
 
         EventQueue queue = queueManager.getEventQueueBuilder("test-task").build();
         queue.enqueueEvent(firstEvent);
@@ -221,6 +223,10 @@ public class ResultAggregatorTest {
         assertEquals(firstEvent, result.eventType());
         assertTrue(result.interrupted());
         verify(mockTaskManager).process(firstEvent);
-        verify(mockTaskManager).getTask();
+        // getTask() is called at least once for the return value (line 255)
+        // May be called once more if debug logging executes in time (line 209)
+        // The async consumer may or may not execute before verification, so we accept 1-2 calls
+        verify(mockTaskManager, atLeast(1)).getTask();
+        verify(mockTaskManager, atMost(2)).getTask();
     }
 }

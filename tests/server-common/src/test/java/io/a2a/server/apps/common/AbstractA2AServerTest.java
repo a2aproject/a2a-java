@@ -500,6 +500,10 @@ public abstract class AbstractA2AServerTest {
 
         // Create error handler to capture the TaskNotFoundError
         Consumer<Throwable> errorHandler = error -> {
+            if (error == null) {
+                // Stream completed successfully - ignore, we're waiting for an error
+                return;
+            }
             if (!isStreamClosedError(error)) {
                 errorRef.set(error);
             }
@@ -1671,6 +1675,241 @@ public abstract class AbstractA2AServerTest {
         configureTransport(clientBuilder);
 
         return clientBuilder.build();
+    }
+
+    /**
+     * Integration test for THE BIG IDEA: MainQueue stays open for non-final tasks,
+     * enabling fire-and-forget patterns and late resubscription.
+     *
+     * Flow:
+     * 1. Agent emits WORKING state (non-final) and finishes without completing
+     * 2. Client disconnects (ChildQueue closes)
+     * 3. MainQueue should stay OPEN because task is non-final
+     * 4. Late resubscription should succeed
+     */
+    @Test
+    @Timeout(value = 2, unit = TimeUnit.MINUTES)
+    public void testMainQueueStaysOpenForNonFinalTasks() throws Exception {
+        String taskId = "fire-and-forget-task-integration";
+        String contextId = "fire-ctx";
+
+        // Create task in WORKING state (non-final)
+        Task workingTask = new Task.Builder()
+            .id(taskId)
+            .contextId(contextId)
+            .status(new TaskStatus(TaskState.WORKING))
+            .build();
+        saveTaskInTaskStore(workingTask);
+
+        try {
+            // Ensure queue exists for the task
+            ensureQueueForTask(taskId);
+
+            // Send a message that will leave task in WORKING state (fire-and-forget pattern)
+            Message message = new Message.Builder(MESSAGE)
+                .taskId(taskId)
+                .contextId(contextId)
+                .parts(new TextPart("fire and forget"))
+                .build();
+
+            CountDownLatch firstEventLatch = new CountDownLatch(1);
+            AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+            BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
+                // Receive any event (Message) to know agent processed the request
+                if (event instanceof MessageEvent) {
+                    firstEventLatch.countDown();
+                }
+            };
+
+            Consumer<Throwable> errorHandler = error -> {
+                if (!isStreamClosedError(error)) {
+                    errorRef.set(error);
+                }
+                firstEventLatch.countDown();
+            };
+
+            // Start streaming subscription
+            CountDownLatch subscriptionLatch = new CountDownLatch(1);
+            awaitStreamingSubscription()
+                .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
+
+            getClient().sendMessage(message, List.of(consumer), errorHandler);
+
+            // Wait for subscription to be established
+            assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS),
+                "Subscription should be established");
+
+            // Wait for agent to respond (test agent sends Message, not WORKING status)
+            assertTrue(firstEventLatch.await(15, TimeUnit.SECONDS),
+                "Should receive agent response");
+            assertNull(errorRef.get());
+
+            // Give agent time to finish (task remains in WORKING state - non-final)
+            Thread.sleep(2000);
+
+            // THE BIG IDEA TEST: Resubscribe to the task
+            // Even though the agent finished and original ChildQueue closed,
+            // MainQueue should still be open because task is in non-final WORKING state
+
+            CountDownLatch resubLatch = new CountDownLatch(1);
+            AtomicReference<Throwable> resubErrorRef = new AtomicReference<>();
+
+            BiConsumer<ClientEvent, AgentCard> resubConsumer = (event, agentCard) -> {
+                // We might not receive events immediately, but subscription should succeed
+                resubLatch.countDown();
+            };
+
+            Consumer<Throwable> resubErrorHandler = error -> {
+                if (!isStreamClosedError(error)) {
+                    resubErrorRef.set(error);
+                }
+                resubLatch.countDown();
+            };
+
+            // This should succeed - MainQueue is still open for non-final task
+            CountDownLatch resubSubscriptionLatch = new CountDownLatch(1);
+            awaitStreamingSubscription()
+                .whenComplete((unused, throwable) -> resubSubscriptionLatch.countDown());
+
+            getClient().resubscribe(new TaskIdParams(taskId),
+                List.of(resubConsumer),
+                resubErrorHandler);
+
+            // Wait for resubscription to be established
+            assertTrue(resubSubscriptionLatch.await(15, TimeUnit.SECONDS),
+                "Resubscription should succeed - MainQueue stayed open for non-final task");
+
+            // Verify no errors during resubscription
+            assertNull(resubErrorRef.get(),
+                "Resubscription should not error - validates THE BIG IDEA works end-to-end");
+
+        } finally {
+            deleteTaskInTaskStore(taskId);
+        }
+    }
+
+    /**
+     * Integration test verifying MainQueue DOES close when task is finalized.
+     * This ensures Level 2 protection doesn't prevent cleanup of completed tasks.
+     *
+     * Flow:
+     * 1. Send message to new task (creates task in WORKING, then completes it)
+     * 2. Task reaches COMPLETED state (final)
+     * 3. ChildQueue closes after receiving final event
+     * 4. MainQueue should close because task is finalized
+     * 5. Resubscription should fail with TaskNotFoundError
+     */
+    @Test
+    @Timeout(value = 2, unit = TimeUnit.MINUTES)
+    public void testMainQueueClosesForFinalizedTasks() throws Exception {
+        String taskId = "completed-task-integration";
+        String contextId = "completed-ctx";
+
+        // Send a message that will create and complete the task
+        Message message = new Message.Builder(MESSAGE)
+            .taskId(taskId)
+            .contextId(contextId)
+            .parts(new TextPart("complete task"))
+            .build();
+
+        CountDownLatch completionLatch = new CountDownLatch(1);
+        AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+        BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
+            if (event instanceof TaskEvent te) {
+                // Might get Task with final state
+                if (te.getTask().getStatus().state().isFinal()) {
+                    completionLatch.countDown();
+                }
+            } else if (event instanceof MessageEvent me) {
+                // Message is considered a final event
+                completionLatch.countDown();
+            } else if (event instanceof TaskUpdateEvent tue &&
+                tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
+                if (status.isFinal()) {
+                    completionLatch.countDown();
+                }
+            }
+        };
+
+        Consumer<Throwable> errorHandler = error -> {
+            if (!isStreamClosedError(error)) {
+                errorRef.set(error);
+            }
+            completionLatch.countDown();
+        };
+
+        try {
+            // Send message and wait for completion
+            getClient().sendMessage(message, List.of(consumer), errorHandler);
+
+            assertTrue(completionLatch.await(15, TimeUnit.SECONDS),
+                "Should receive final event");
+            assertNull(errorRef.get(), "Should not have errors during message send");
+
+            // Give cleanup time to run after final event
+            Thread.sleep(2000);
+
+            // Try to resubscribe to finalized task - should fail
+            CountDownLatch errorLatch = new CountDownLatch(1);
+            AtomicReference<Throwable> resubErrorRef = new AtomicReference<>();
+
+            Consumer<Throwable> resubErrorHandler = error -> {
+                if (error == null) {
+                    // Stream completed successfully - ignore, we're waiting for an error
+                    return;
+                }
+                if (!isStreamClosedError(error)) {
+                    resubErrorRef.set(error);
+                }
+                errorLatch.countDown();
+            };
+
+            // Attempt resubscription
+            try {
+                getClient().resubscribe(new TaskIdParams(taskId),
+                    List.of(),
+                    resubErrorHandler);
+
+                // Wait for error
+                assertTrue(errorLatch.await(15, TimeUnit.SECONDS),
+                    "Should receive error for finalized task");
+
+                Throwable error = resubErrorRef.get();
+                assertNotNull(error, "Resubscription should fail for finalized task");
+
+                // Verify it's a TaskNotFoundError
+                Throwable cause = error;
+                boolean foundTaskNotFound = false;
+                while (cause != null && !foundTaskNotFound) {
+                    if (cause instanceof TaskNotFoundError ||
+                        (cause instanceof A2AClientException &&
+                         ((A2AClientException) cause).getCause() instanceof TaskNotFoundError)) {
+                        foundTaskNotFound = true;
+                    }
+                    cause = cause.getCause();
+                }
+                assertTrue(foundTaskNotFound,
+                    "Should receive TaskNotFoundError - MainQueue closed for finalized task");
+
+            } catch (A2AClientException e) {
+                // Exception might be thrown immediately instead of via error handler
+                assertInstanceOf(TaskNotFoundError.class, e.getCause(),
+                    "Should fail with TaskNotFoundError - MainQueue cleaned up for finalized task");
+            }
+
+        } finally {
+            // Task might not exist in store if created via message send
+            try {
+                Task task = getTaskFromTaskStore(taskId);
+                if (task != null) {
+                    deleteTaskInTaskStore(taskId);
+                }
+            } catch (Exception e) {
+                // Ignore cleanup errors - task might not have been persisted
+            }
+        }
     }
 
 }

@@ -388,7 +388,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromIterable(events)).when(mock).consumeAll();})){
+                    Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();})){
             streamRecorder = sendStreamingMessageRequest(handler);
         }
         Assertions.assertNull(streamRecorder.getError());
@@ -564,7 +564,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromIterable(events)).when(mock).consumeAll();})){
+                    Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();})){
             handler.taskSubscription(request, streamRecorder);
             streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         }

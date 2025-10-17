@@ -23,6 +23,10 @@
             <artifactId>a2a-java-sdk-server-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-extras-common</artifactId>
+        </dependency>
+        <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
         </dependency>

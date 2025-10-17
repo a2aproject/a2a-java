@@ -56,7 +56,7 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactWithCustomIdAndName() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "custom-artifact-id", "Custom Artifact", null);
-        Event event = eventQueue.dequeueEvent(0);
+        Event event = eventQueue.dequeueEventItem(0).getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -68,7 +68,7 @@ public class TaskUpdaterTest {
         assertSame(SAMPLE_PARTS, taue.getArtifact().parts());
 
 
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     @Test
@@ -239,7 +239,7 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactWithAppendTrue() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, true, null);
-        Event event = eventQueue.dequeueEvent(0);
+        Event event = eventQueue.dequeueEventItem(0).getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -252,13 +252,13 @@ public class TaskUpdaterTest {
         assertEquals(true, taue.isAppend());
         assertNull(taue.isLastChunk());
 
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     @Test
     public void testAddArtifactWithLastChunkTrue() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, null, true);
-        Event event = eventQueue.dequeueEvent(0);
+        Event event = eventQueue.dequeueEventItem(0).getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -267,13 +267,13 @@ public class TaskUpdaterTest {
         assertNull(taue.isAppend());
         assertEquals(true, taue.isLastChunk());
 
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     @Test
     public void testAddArtifactWithAppendAndLastChunk() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, true, false);
-        Event event = eventQueue.dequeueEvent(0);
+        Event event = eventQueue.dequeueEventItem(0).getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -281,13 +281,13 @@ public class TaskUpdaterTest {
         assertEquals(true, taue.isAppend());
         assertEquals(false, taue.isLastChunk());
 
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     @Test
     public void testAddArtifactGeneratesIdWhenNull() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, null, "Test Artifact", null);
-        Event event = eventQueue.dequeueEvent(0);
+        Event event = eventQueue.dequeueEventItem(0).getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -298,7 +298,7 @@ public class TaskUpdaterTest {
         assertEquals(36, artifactId.length()); // Standard UUID length
         assertTrue(artifactId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
 
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     @Test
@@ -312,7 +312,7 @@ public class TaskUpdaterTest {
         assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
 
         // Verify no additional events were queued
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     @Test
@@ -326,7 +326,7 @@ public class TaskUpdaterTest {
         assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
 
         // Verify no additional events were queued
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     @Test
@@ -340,7 +340,7 @@ public class TaskUpdaterTest {
         assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
 
         // Verify no additional events were queued
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     @Test
@@ -354,7 +354,7 @@ public class TaskUpdaterTest {
         assertEquals("Cannot update task status - terminal state already reached", exception.getMessage());
 
         // Verify no additional events were queued
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     @Test
@@ -383,7 +383,7 @@ public class TaskUpdaterTest {
         thread2.join();
 
         // Exactly one event should have been queued
-        Event event = eventQueue.dequeueEvent(0);
+        Event event = eventQueue.dequeueEventItem(0).getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskStatusUpdateEvent.class, event);
 
@@ -392,11 +392,11 @@ public class TaskUpdaterTest {
         assertTrue(tsue.getStatus().state() == TaskState.COMPLETED || tsue.getStatus().state() == TaskState.FAILED);
 
         // No additional events should be queued
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
     }
 
     private TaskStatusUpdateEvent checkTaskStatusUpdateEventOnQueue(boolean isFinal, TaskState state, Message statusMessage) throws Exception {
-        Event event = eventQueue.dequeueEvent(0);
+        Event event = eventQueue.dequeueEventItem(0).getEvent();
 
         assertNotNull(event);
         assertInstanceOf(TaskStatusUpdateEvent.class, event);
@@ -408,7 +408,7 @@ public class TaskUpdaterTest {
         assertEquals(state, tsue.getStatus().state());
         assertEquals(statusMessage, tsue.getStatus().message());
 
-        assertNull(eventQueue.dequeueEvent(0));
+        assertNull(eventQueue.dequeueEventItem(0));
 
         return tsue;
     }
