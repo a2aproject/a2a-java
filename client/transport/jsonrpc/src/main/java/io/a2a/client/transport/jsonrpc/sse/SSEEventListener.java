@@ -16,6 +16,7 @@ public class SSEEventListener {
     private static final Logger log = Logger.getLogger(SSEEventListener.class.getName());
     private final Consumer<StreamingEventKind> eventHandler;
     private final Consumer<Throwable> errorHandler;
+    private volatile boolean completed = false;
 
     public SSEEventListener(Consumer<StreamingEventKind> eventHandler,
                             Consumer<Throwable> errorHandler) {
@@ -39,6 +40,13 @@ public class SSEEventListener {
     }
 
     public void onComplete() {
+        // Idempotent: only signal completion once, even if called multiple times
+        if (completed) {
+            log.fine("SSEEventListener.onComplete() called again - ignoring (already completed)");
+            return;
+        }
+        completed = true;
+
         // Signal normal stream completion (null error means successful completion)
         log.info("SSEEventListener.onComplete() called - signaling successful stream completion");
         if (errorHandler != null) {

@@ -68,7 +68,7 @@ public class InMemoryQueueManager implements QueueManager {
         // Lazy cleanup: only remove closed queues if task is finalized
         // Don't remove queues for non-finalized tasks - they must stay for late-arriving events
         if (existing != null && existing.isClosed()) {
-            boolean isFinalized = taskStateProvider.isTaskFinalized(taskId);
+            boolean isFinalized = (taskStateProvider != null) && taskStateProvider.isTaskFinalized(taskId);
             if (isFinalized) {
                 LOGGER.debug("Removing closed queue {} for finalized task {}", System.identityHashCode(existing), taskId);
                 queues.remove(taskId);
@@ -140,7 +140,7 @@ public class InMemoryQueueManager implements QueueManager {
             LOGGER.debug("Queue close callback invoked for task {}", taskId);
 
             // Check if task is finalized before removing queue
-            boolean isFinalized = taskStateProvider.isTaskFinalized(taskId);
+            boolean isFinalized = (taskStateProvider != null) && taskStateProvider.isTaskFinalized(taskId);
 
             if (!isFinalized) {
                 LOGGER.debug("Task {} is not finalized, keeping queue in map for late-arriving events", taskId);

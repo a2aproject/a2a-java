@@ -95,6 +95,9 @@ public class ReplicatedQueueManager implements QueueManager {
         EventQueue mainQueue = delegate.get(replicatedEvent.getTaskId());
         if (mainQueue != null) {
             mainQueue.enqueueItem(replicatedEvent);
+        } else {
+            LOGGER.warn("MainQueue not found for task {}, cannot enqueue replicated event. This may happen if the queue was already cleaned up.",
+                replicatedEvent.getTaskId());
         }
     }
 
