@@ -262,7 +262,8 @@ public class ResultAggregator {
     }
 
     private String taskIdForLogging() {
-        return taskManager.getTask() != null ? taskManager.getTask().getId() : "unknown";
+        Task task = taskManager.getTask();
+        return task != null ? task.getId() : "unknown";
     }
 
     public record EventTypeAndInterrupt(EventKind eventType, boolean interrupted, CompletableFuture<Void> consumptionFuture) {
