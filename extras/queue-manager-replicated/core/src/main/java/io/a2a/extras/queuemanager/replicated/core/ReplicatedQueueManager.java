@@ -27,26 +27,17 @@ public class ReplicatedQueueManager implements QueueManager {
 
     private final InMemoryQueueManager delegate;
 
-    @Inject
     private ReplicationStrategy replicationStrategy;
 
-    @Inject
     private TaskStateProvider taskStateProvider;
 
     @Inject
-    public ReplicatedQueueManager(TaskStateProvider taskStateProvider) {
+    public ReplicatedQueueManager(ReplicationStrategy replicationStrategy, TaskStateProvider taskStateProvider) {
         this.delegate = new InMemoryQueueManager(new ReplicatingEventQueueFactory(), taskStateProvider);
         this.taskStateProvider = taskStateProvider;
+        this.replicationStrategy = replicationStrategy;
     }
 
-    // For testing
-    ReplicatedQueueManager(
-            ReplicationStrategy replicationStrategy,
-            TaskStateProvider taskStateProvider) {
-        this.delegate = new InMemoryQueueManager(new ReplicatingEventQueueFactory(), taskStateProvider);
-        this.replicationStrategy = replicationStrategy;
-        this.taskStateProvider = taskStateProvider;
-    }
 
     @Override
     public void add(String taskId, EventQueue queue) {
@@ -139,71 +130,15 @@ public class ReplicatedQueueManager implements QueueManager {
     private class ReplicatingEventQueueFactory implements EventQueueFactory {
         @Override
         public EventQueue.EventQueueBuilder builder(String taskId) {
-            // We need to send poison pill before cleanup, but we have a circular dependency:
-            // - Callback needs queue reference
-            // - Queue doesn't exist until builder.build() is called
-            // - Callbacks must be added BEFORE build()
-            //
-            // Solution: Use AtomicReference that's captured by the lambda closure.
-            // The reference will be set after build() but before the callback is invoked.
-            final java.util.concurrent.atomic.AtomicReference<EventQueue> queueRef =
-                    new java.util.concurrent.atomic.AtomicReference<>();
+            // Poison pill sending is handled by the TaskFinalizedEvent observer (onTaskFinalized)
+            // which sends the QueueClosedEvent after the database transaction commits.
+            // This ensures proper ordering and transactional guarantees.
 
-            // Poison pill callback is no longer needed - CDI event handles this
-            // The TaskFinalizedEvent observer (onTaskFinalized) sends poison pill after transaction commit
-            // Keep empty callback for backward compatibility with test constructor
-            Runnable poisonPillCallback = () -> {
-                LOGGER.debug("Poison pill callback invoked for task {} (no-op - using CDI events)", taskId);
-            };
-
-            // Get the base builder with callbacks
-            EventQueue.EventQueueBuilder baseBuilder = delegate.getEventQueueBuilder(taskId)
+            // Return the builder with callbacks
+            return delegate.getEventQueueBuilder(taskId)
                     .taskId(taskId)
                     .hook(new ReplicationHook(taskId))
-                    .addOnCloseCallback(poisonPillCallback)
                     .addOnCloseCallback(delegate.getCleanupCallback(taskId));
-
-            // Return a custom builder that captures the queue when build() is called
-            return new EventQueue.EventQueueBuilder() {
-                @Override
-                public EventQueue.EventQueueBuilder queueSize(int queueSize) {
-                    baseBuilder.queueSize(queueSize);
-                    return this;
-                }
-
-                @Override
-                public EventQueue.EventQueueBuilder hook(EventEnqueueHook hook) {
-                    baseBuilder.hook(hook);
-                    return this;
-                }
-
-                @Override
-                public EventQueue.EventQueueBuilder taskId(String taskId) {
-                    baseBuilder.taskId(taskId);
-                    return this;
-                }
-
-                @Override
-                public EventQueue.EventQueueBuilder addOnCloseCallback(Runnable onCloseCallback) {
-                    baseBuilder.addOnCloseCallback(onCloseCallback);
-                    return this;
-                }
-
-                @Override
-                public EventQueue.EventQueueBuilder taskStateProvider(TaskStateProvider taskStateProvider) {
-                    baseBuilder.taskStateProvider(taskStateProvider);
-                    return this;
-                }
-
-                @Override
-                public EventQueue build() {
-                    // Build the queue using the base builder
-                    EventQueue queue = baseBuilder.build();
-                    // Capture the queue in the AtomicReference for the callback
-                    queueRef.set(queue);
-                    return queue;
-                }
-            };
         }
     }
 
@@ -217,9 +152,9 @@ public class ReplicatedQueueManager implements QueueManager {
 
         @Override
         public void onEnqueue(EventQueueItem item) {
-            // Only replicate if this isn't already a replicated event
-            // This prevents replication loops
             if (!item.isReplicated()) {
+                // Only replicate if this isn't already a replicated event
+                // This prevents replication loops
                 if (replicationStrategy != null && taskId != null) {
                     replicationStrategy.send(taskId, item.getEvent());
                 }

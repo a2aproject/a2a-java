@@ -36,7 +36,7 @@ class ReplicatedQueueManagerTest {
 
     @BeforeEach
     void setUp() {
-        queueManager = new ReplicatedQueueManager(new MockTaskStateProvider(true));
+        queueManager = new ReplicatedQueueManager(null, new MockTaskStateProvider(true));
         testEvent = new TaskStatusUpdateEvent.Builder()
                 .taskId("test-task")
                 .contextId("test-context")

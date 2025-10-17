@@ -46,9 +46,10 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             em.merge(jpaTask);
             LOGGER.debug("Persisted/updated task with ID: {}", task.getId());
 
-            // Fire CDI event if task reached final state
-            // The event will be delivered AFTER transaction commits (AFTER_SUCCESS observers)
             if (task.getStatus() != null && task.getStatus().state() != null && task.getStatus().state().isFinal()) {
+                // Fire CDI event if task reached final state
+                // IMPORTANT: The event will be delivered AFTER transaction commits (AFTER_SUCCESS observers)
+                // This ensures the task's final state is durably stored before the QueueClosedEvent poison pill is sent
                 LOGGER.debug("Task {} is in final state, firing TaskFinalizedEvent", task.getId());
                 taskFinalizedEvent.fire(new TaskFinalizedEvent(task.getId()));
             }

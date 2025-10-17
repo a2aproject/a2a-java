@@ -79,9 +79,6 @@ public class DefaultRequestHandler implements RequestHandler {
     private final Executor executor;
 
     @Inject
-    Instance<TaskStateProvider> taskStateProviderInstance;
-
-    @Inject
     public DefaultRequestHandler(AgentExecutor agentExecutor, TaskStore taskStore,
                                  QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
                                  PushNotificationSender pushSender, @Internal Executor executor) {

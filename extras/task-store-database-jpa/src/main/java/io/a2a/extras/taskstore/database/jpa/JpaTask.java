@@ -87,8 +87,8 @@ public class JpaTask {
             id = task.getId();
         }
         this.task = task;
-        // Set finalizedAt timestamp idempotently if task is in final state
         if (task.getStatus() != null && task.getStatus().state() != null) {
+            // Set finalizedAt timestamp idempotently if task is in final state
             setFinalizedAt(Instant.now(), task.getStatus().state().isFinal());
         }
     }
@@ -97,8 +97,8 @@ public class JpaTask {
         String json = Utils.OBJECT_MAPPER.writeValueAsString(task);
         JpaTask jpaTask = new JpaTask(task.getId(), json);
         jpaTask.task = task;
-        // Set finalizedAt timestamp idempotently if task is in final state
         if (task.getStatus() != null && task.getStatus().state() != null) {
+            // Set finalizedAt timestamp idempotently if task is in final state
             jpaTask.setFinalizedAt(Instant.now(), task.getStatus().state().isFinal());
         }
         return jpaTask;

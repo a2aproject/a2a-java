@@ -86,6 +86,8 @@ public class EventConsumer {
                         }
 
                         // Only send event if it's not a QueueClosedEvent
+                        // QueueClosedEvent is an internal coordination event used for replication
+                        // and should not be exposed to API consumers
                         if (!(event instanceof QueueClosedEvent)) {
                             tube.send(item);
                         }
