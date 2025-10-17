@@ -197,9 +197,6 @@ public class ResultAggregator {
                         // Complete the future to unblock the main thread
                         interrupted.set(true);
                         completionFuture.complete(null);
-                        // For interrupted/background tasks, complete the consumption future immediately
-                        // so cleanup doesn't wait for the entire subscription to finish
-                        consumptionCompletionFuture.complete(null);
 
                         // Continue consuming in background - keep requesting events
                         // Note: continueInBackground is always true when shouldInterrupt is true
