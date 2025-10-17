@@ -5,7 +5,7 @@ import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.a2a.extras.queuemanager.replicated.core.ReplicatedEvent;
+import io.a2a.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
 import io.a2a.extras.queuemanager.replicated.core.ReplicationStrategy;
 import io.a2a.util.Utils;
 import org.eclipse.microprofile.reactive.messaging.Channel;
@@ -18,21 +18,21 @@ import org.slf4j.LoggerFactory;
 public class ReactiveMessagingReplicationStrategy implements ReplicationStrategy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveMessagingReplicationStrategy.class);
-    private static final TypeReference<ReplicatedEvent> REPLICATED_EVENT_TYPE_REF = new TypeReference<ReplicatedEvent>() {};
+    private static final TypeReference<ReplicatedEventQueueItem> REPLICATED_EVENT_TYPE_REF = new TypeReference<ReplicatedEventQueueItem>() {};
 
     @Inject
     @Channel("replicated-events-out")
     private Emitter<String> emitter;
 
     @Inject
-    private Event<ReplicatedEvent> cdiEvent;
+    private Event<ReplicatedEventQueueItem> cdiEvent;
 
     @Override
     public void send(String taskId, io.a2a.spec.Event event) {
         LOGGER.debug("Sending replicated event for task: {}, event: {}", taskId, event);
 
         try {
-            ReplicatedEvent replicatedEvent = new ReplicatedEvent(taskId, event);
+            ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
             String json = Utils.OBJECT_MAPPER.writeValueAsString(replicatedEvent);
             emitter.send(json);
             LOGGER.debug("Successfully sent replicated event for task: {}", taskId);
@@ -47,7 +47,7 @@ public class ReactiveMessagingReplicationStrategy implements ReplicationStrategy
         LOGGER.debug("Received replicated event JSON: {}", jsonMessage);
 
         try {
-            ReplicatedEvent replicatedEvent = Utils.unmarshalFrom(jsonMessage, REPLICATED_EVENT_TYPE_REF);
+            ReplicatedEventQueueItem replicatedEvent = Utils.unmarshalFrom(jsonMessage, REPLICATED_EVENT_TYPE_REF);
             LOGGER.debug("Deserialized replicated event for task: {}, event: {}",
                     replicatedEvent.getTaskId(), replicatedEvent.getEvent());
 

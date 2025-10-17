@@ -8,7 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import io.a2a.spec.Task;
 
 @ApplicationScoped
-public class InMemoryTaskStore implements TaskStore {
+public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
     private final ConcurrentMap<String, Task> tasks = new ConcurrentHashMap<>();
 
@@ -25,5 +25,27 @@ public class InMemoryTaskStore implements TaskStore {
     @Override
     public void delete(String taskId) {
         tasks.remove(taskId);
+    }
+
+    @Override
+    public boolean isTaskActive(String taskId) {
+        Task task = tasks.get(taskId);
+        if (task == null) {
+            return false;
+        }
+        // Task is active if not in final state
+        return task.getStatus() == null || task.getStatus().state() == null || !task.getStatus().state().isFinal();
+    }
+
+    @Override
+    public boolean isTaskFinalized(String taskId) {
+        Task task = tasks.get(taskId);
+        if (task == null) {
+            return false;
+        }
+        // Task is finalized if in final state (ignores grace period)
+        return task.getStatus() != null
+                && task.getStatus().state() != null
+                && task.getStatus().state().isFinal();
     }
 }

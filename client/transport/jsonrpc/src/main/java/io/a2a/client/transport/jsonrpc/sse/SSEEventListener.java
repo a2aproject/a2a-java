@@ -38,6 +38,17 @@ public class SSEEventListener {
         future.cancel(true); // close SSE channel
     }
 
+    public void onComplete() {
+        // Signal normal stream completion (null error means successful completion)
+        log.info("SSEEventListener.onComplete() called - signaling successful stream completion");
+        if (errorHandler != null) {
+            log.info("Calling errorHandler.accept(null) to signal successful completion");
+            errorHandler.accept(null);
+        } else {
+            log.warning("errorHandler is null, cannot signal completion");
+        }
+    }
+
     private void handleMessage(JsonNode jsonNode, Future<Void> future) {
         try {
             if (jsonNode.has("error")) {

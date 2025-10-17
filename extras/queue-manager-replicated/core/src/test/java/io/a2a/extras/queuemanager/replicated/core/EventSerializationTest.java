@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.a2a.server.events.QueueClosedEvent;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Event;
 import io.a2a.spec.InternalError;
@@ -200,7 +201,7 @@ public class EventSerializationTest {
 
     @Test
     public void testReplicatedEventWithStreamingEventSerialization() throws JsonProcessingException {
-        // Test that ReplicatedEvent can properly handle StreamingEventKind
+        // Test that ReplicatedEventQueueItem can properly handle StreamingEventKind
         TaskStatusUpdateEvent statusEvent = new TaskStatusUpdateEvent.Builder()
                 .taskId("replicated-test-task")
                 .contextId("replicated-test-context")
@@ -208,26 +209,26 @@ public class EventSerializationTest {
                 .isFinal(false)
                 .build();
 
-        // Create ReplicatedEvent with StreamingEventKind
-        ReplicatedEvent originalReplicatedEvent = new ReplicatedEvent("replicated-test-task", statusEvent);
+        // Create ReplicatedEventQueueItem with StreamingEventKind
+        ReplicatedEventQueueItem originalReplicatedEvent = new ReplicatedEventQueueItem("replicated-test-task", statusEvent);
 
-        // Serialize the ReplicatedEvent
+        // Serialize the ReplicatedEventQueueItem
         String json = Utils.OBJECT_MAPPER.writeValueAsString(originalReplicatedEvent);
         assertTrue(json.contains("\"taskId\":\"replicated-test-task\""), "JSON should contain task ID");
         assertTrue(json.contains("\"event\""), "JSON should contain event field");
         assertTrue(json.contains("\"kind\":\"status-update\""), "JSON should contain the event kind");
         assertFalse(json.contains("\"error\""), "JSON should not contain error field");
 
-        // Deserialize the ReplicatedEvent
-        ReplicatedEvent deserializedReplicatedEvent = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEvent.class);
+        // Deserialize the ReplicatedEventQueueItem
+        ReplicatedEventQueueItem deserializedReplicatedEvent = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
         assertEquals(originalReplicatedEvent.getTaskId(), deserializedReplicatedEvent.getTaskId());
 
         // Now we should get the proper type back!
-        StreamingEventKind retrievedEvent = deserializedReplicatedEvent.getEvent();
-        assertNotNull(retrievedEvent);
-        assertInstanceOf(TaskStatusUpdateEvent.class, retrievedEvent, "Should deserialize to TaskStatusUpdateEvent");
+        Event retrievedEventAsEvent = deserializedReplicatedEvent.getEvent();
+        assertNotNull(retrievedEventAsEvent);
+        assertInstanceOf(TaskStatusUpdateEvent.class, retrievedEventAsEvent, "Should deserialize to TaskStatusUpdateEvent");
 
-        TaskStatusUpdateEvent retrievedStatusEvent = (TaskStatusUpdateEvent) retrievedEvent;
+        TaskStatusUpdateEvent retrievedStatusEvent = (TaskStatusUpdateEvent) retrievedEventAsEvent;
         assertEquals(statusEvent.getTaskId(), retrievedStatusEvent.getTaskId());
         assertEquals(statusEvent.getContextId(), retrievedStatusEvent.getContextId());
         assertEquals(statusEvent.getStatus().state(), retrievedStatusEvent.getStatus().state());
@@ -236,30 +237,31 @@ public class EventSerializationTest {
         // Test helper methods
         assertTrue(deserializedReplicatedEvent.hasEvent());
         assertFalse(deserializedReplicatedEvent.hasError());
-        assertNull(deserializedReplicatedEvent.getError());
+        assertFalse(deserializedReplicatedEvent.isClosedEvent());
+        assertNull(deserializedReplicatedEvent.getErrorObject());
     }
 
     @Test
     public void testReplicatedEventWithErrorSerialization() throws JsonProcessingException {
-        // Test that ReplicatedEvent can properly handle JSONRPCError
+        // Test that ReplicatedEventQueueItem can properly handle JSONRPCError
         InvalidRequestError error = new InvalidRequestError("Invalid request for testing");
 
-        // Create ReplicatedEvent with JSONRPCError
-        ReplicatedEvent originalReplicatedEvent = new ReplicatedEvent("error-test-task", error);
+        // Create ReplicatedEventQueueItem with JSONRPCError
+        ReplicatedEventQueueItem originalReplicatedEvent = new ReplicatedEventQueueItem("error-test-task", error);
 
-        // Serialize the ReplicatedEvent
+        // Serialize the ReplicatedEventQueueItemQueueItem
         String json = Utils.OBJECT_MAPPER.writeValueAsString(originalReplicatedEvent);
         assertTrue(json.contains("\"taskId\":\"error-test-task\""), "JSON should contain task ID");
         assertTrue(json.contains("\"error\""), "JSON should contain error field");
         assertTrue(json.contains("\"message\""), "JSON should contain error message");
         assertFalse(json.contains("\"event\""), "JSON should not contain event field");
 
-        // Deserialize the ReplicatedEvent
-        ReplicatedEvent deserializedReplicatedEvent = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEvent.class);
+        // Deserialize the ReplicatedEventQueueItem
+        ReplicatedEventQueueItem deserializedReplicatedEvent = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
         assertEquals(originalReplicatedEvent.getTaskId(), deserializedReplicatedEvent.getTaskId());
 
         // Should get the error back
-        JSONRPCError retrievedError = deserializedReplicatedEvent.getError();
+        JSONRPCError retrievedError = deserializedReplicatedEvent.getErrorObject();
         assertNotNull(retrievedError);
         assertEquals(error.getMessage(), retrievedError.getMessage());
         assertEquals(error.getCode(), retrievedError.getCode());
@@ -267,7 +269,8 @@ public class EventSerializationTest {
         // Test helper methods
         assertFalse(deserializedReplicatedEvent.hasEvent());
         assertTrue(deserializedReplicatedEvent.hasError());
-        assertNull(deserializedReplicatedEvent.getEvent());
+        assertFalse(deserializedReplicatedEvent.isClosedEvent());
+        assertNull(deserializedReplicatedEvent.getStreamingEvent());
     }
 
     @Test
@@ -281,11 +284,51 @@ public class EventSerializationTest {
                 .build();
 
         // Use the backward compatibility constructor
-        ReplicatedEvent replicatedEvent = new ReplicatedEvent("backward-compat-task", (Event) statusEvent);
+        ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem("backward-compat-task", (Event) statusEvent);
 
         // Should work the same as the specific constructor
         assertTrue(replicatedEvent.hasEvent());
         assertFalse(replicatedEvent.hasError());
+        assertFalse(replicatedEvent.isClosedEvent());
         assertInstanceOf(TaskStatusUpdateEvent.class, replicatedEvent.getEvent());
+    }
+
+    @Test
+    public void testQueueClosedEventSerialization() throws JsonProcessingException {
+        // Test that QueueClosedEvent can be properly serialized and deserialized via ReplicatedEventQueueItem
+        String taskId = "queue-closed-serialization-test";
+        QueueClosedEvent closedEvent = new QueueClosedEvent(taskId);
+
+        // Create ReplicatedEventQueueItem with QueueClosedEvent
+        ReplicatedEventQueueItem originalReplicatedEvent = new ReplicatedEventQueueItem(taskId, closedEvent);
+
+        // Verify the item is marked as a closed event
+        assertTrue(originalReplicatedEvent.isClosedEvent(), "Should be marked as closed event");
+        assertFalse(originalReplicatedEvent.hasEvent(), "Should not have regular event");
+        assertFalse(originalReplicatedEvent.hasError(), "Should not have error");
+
+        // Serialize the ReplicatedEventQueueItem
+        String json = Utils.OBJECT_MAPPER.writeValueAsString(originalReplicatedEvent);
+        assertTrue(json.contains("\"taskId\":\"" + taskId + "\""), "JSON should contain task ID");
+        assertTrue(json.contains("\"closedEvent\":true"), "JSON should contain closedEvent flag set to true");
+        assertFalse(json.contains("\"event\""), "JSON should not contain event field");
+        assertFalse(json.contains("\"error\""), "JSON should not contain error field");
+
+        // Deserialize the ReplicatedEventQueueItem
+        ReplicatedEventQueueItem deserializedReplicatedEvent = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
+        assertEquals(taskId, deserializedReplicatedEvent.getTaskId());
+
+        // Verify the deserialized item is marked as a closed event
+        assertTrue(deserializedReplicatedEvent.isClosedEvent(), "Deserialized should be marked as closed event");
+        assertFalse(deserializedReplicatedEvent.hasEvent(), "Deserialized should not have regular event");
+        assertFalse(deserializedReplicatedEvent.hasError(), "Deserialized should not have error");
+
+        // Verify getEvent() reconstructs the QueueClosedEvent
+        Event retrievedEvent = deserializedReplicatedEvent.getEvent();
+        assertNotNull(retrievedEvent, "getEvent() should return a reconstructed QueueClosedEvent");
+        assertInstanceOf(QueueClosedEvent.class, retrievedEvent, "Should deserialize to QueueClosedEvent");
+
+        QueueClosedEvent retrievedClosedEvent = (QueueClosedEvent) retrievedEvent;
+        assertEquals(taskId, retrievedClosedEvent.getTaskId(), "Reconstructed event should have correct task ID");
     }
 }

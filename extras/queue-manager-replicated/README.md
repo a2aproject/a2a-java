@@ -177,6 +177,147 @@ Events are serialized using Jackson with polymorphic type information to ensure 
 }
 ```
 
+## Production Considerations
+
+### Kafka Partitioning Strategy
+
+**Critical for scalability and correctness**: How you partition your Kafka topic significantly impacts system performance and behavior.
+
+#### Simple Approach: Single Partition
+
+The simplest configuration uses a single partition for the replicated events topic:
+
+```bash
+kafka-topics.sh --create --topic replicated-events --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+```
+
+**Advantages**:
+- Guarantees global event ordering
+- Simpler to reason about and debug
+- Suitable for development, testing, and low-throughput production systems
+
+**Disadvantages**:
+- Limited scalability (single partition bottleneck)
+- Cannot parallelize consumption across multiple consumer instances
+- All events processed sequentially
+
+**When to use**: Development environments, integration tests, production systems with low event volumes (<1000 events/sec), or when strict global ordering is required.
+
+#### Recommended Approach: Partition by Task ID
+
+For production systems with higher throughput, partition events by `taskId`:
+
+```properties
+# Configure the producer to use taskId as the partition key
+mp.messaging.outgoing.replicated-events-out.key.serializer=org.apache.kafka.common.serialization.StringSerializer
+mp.messaging.outgoing.replicated-events-out.value.serializer=org.apache.kafka.common.serialization.StringSerializer
+```
+
+```bash
+# Create topic with multiple partitions
+kafka-topics.sh --create --topic replicated-events --bootstrap-server localhost:9092 --partitions 10 --replication-factor 3
+```
+
+The `ReactiveMessagingReplicationStrategy` already sends the `taskId` as the Kafka message key, so Kafka will automatically partition by task ID using its default partitioner.
+
+**Advantages**:
+- **Horizontal scalability**: Different tasks can be processed in parallel across partitions
+- **Per-task ordering guarantee**: All events for a single task go to the same partition and maintain order
+- **Consumer parallelism**: Multiple consumer instances can process different partitions concurrently
+
+**Disadvantages**:
+- No global ordering across all tasks
+- More complex to debug (events spread across partitions)
+- Requires proper consumer group configuration
+
+**When to use**: Production systems with medium to high throughput, systems that need to scale horizontally, distributed deployments with multiple A2A instances.
+
+#### Consumer Group Configuration
+
+When using multiple partitions, ensure all A2A instances belong to the same consumer group:
+
+```properties
+mp.messaging.incoming.replicated-events-in.group.id=a2a-instance-group
+```
+
+This ensures that:
+- Each partition is consumed by exactly one instance
+- Events for the same task always go to the same instance (partition affinity)
+- System can scale horizontally by adding more instances (up to the number of partitions)
+
+**Rule of thumb**: Number of partitions ≥ number of A2A instances for optimal distribution.
+
+### Transaction-Aware Queue Cleanup ("Poison Pill")
+
+When a task reaches a final state (COMPLETED, FAILED, CANCELED), all nodes in the cluster must terminate their event consumers for that task. This is achieved through a special "poison pill" event (`QueueClosedEvent`) that is replicated to all nodes.
+
+#### How It Works
+
+The poison pill mechanism uses **transaction-aware CDI events** to ensure the poison pill is only sent AFTER the final task state is durably committed to the database:
+
+1. **Task Finalization**: When `JpaDatabaseTaskStore.save()` persists a task with a final state, it fires a `TaskFinalizedEvent` CDI event
+2. **Transaction Coordination**: The CDI observer is configured with `@Observes(during = TransactionPhase.AFTER_SUCCESS)`, which delays event delivery until AFTER the JPA transaction commits
+3. **Poison Pill Delivery**: `ReplicatedQueueManager.onTaskFinalized()` receives the event and sends `QueueClosedEvent` via the replication strategy
+4. **Cluster-Wide Termination**: All nodes receive the `QueueClosedEvent`, recognize it as final, and gracefully terminate their event consumers
+
+**Key Architecture Decision**: We use JPA transaction lifecycle hooks instead of time-based delays because:
+- **Eliminates race conditions**: No time window where the poison pill might arrive before the database commit
+- **Deterministic behavior**: Guaranteed consistency without tuning magic delay values
+- **Simplicity**: No need to monitor consumer lag or configure grace periods
+- **Reliability**: Works correctly regardless of network latency or database performance
+
+#### Code Flow
+
+**JpaDatabaseTaskStore** (fires CDI event):
+```java
+@Inject
+Event<TaskFinalizedEvent> taskFinalizedEvent;
+
+public void save(Task task) {
+    // ... persist task to database ...
+
+    // Fire CDI event if task reached final state
+    if (task.getStatus().state().isFinal()) {
+        taskFinalizedEvent.fire(new TaskFinalizedEvent(task.getId()));
+    }
+    // Transaction commits here (end of method)
+}
+```
+
+**ReplicatedQueueManager** (observes and sends poison pill):
+```java
+public void onTaskFinalized(@Observes(during = TransactionPhase.AFTER_SUCCESS) TaskFinalizedEvent event) {
+    String taskId = event.getTaskId();
+    LOGGER.info("Task {} finalized - sending poison pill after transaction commit", taskId);
+
+    // Send QueueClosedEvent to all nodes via replication
+    QueueClosedEvent closedEvent = new QueueClosedEvent(taskId);
+    replicationStrategy.send(taskId, closedEvent);
+}
+```
+
+#### Configuration
+
+No configuration is required for the poison pill mechanism - it works automatically when:
+1. Using `JpaDatabaseTaskStore` for task persistence
+2. Using `ReplicatedQueueManager` for event replication
+3. Both modules are present in your application
+
+#### Monitoring
+
+Enable debug logging to monitor poison pill delivery:
+
+```properties
+quarkus.log.category."io.a2a.extras.queuemanager.replicated".level=DEBUG
+quarkus.log.category."io.a2a.extras.taskstore.database.jpa".level=DEBUG
+```
+
+You should see log entries like:
+```
+Task abc-123 is in final state, firing TaskFinalizedEvent
+Task abc-123 finalized - sending poison pill (QueueClosedEvent) after transaction commit
+```
+
 ## Advanced Topics
 
 ### Custom Replication Strategies

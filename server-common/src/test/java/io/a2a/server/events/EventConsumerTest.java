@@ -113,7 +113,7 @@ public class EventConsumerTest {
             eventQueue.enqueueEvent(event);
         }
 
-        Flow.Publisher<Event> publisher = eventConsumer.consumeAll();
+        Flow.Publisher<EventQueueItem> publisher = eventConsumer.consumeAll();
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Throwable> error = new AtomicReference<>();
 
@@ -127,8 +127,8 @@ public class EventConsumerTest {
             }
 
             @Override
-            public void onNext(Event item) {
-                receivedEvents.add(item);
+            public void onNext(EventQueueItem item) {
+                receivedEvents.add(item.getEvent());
                 subscription.request(1);
 
             }
@@ -174,7 +174,7 @@ public class EventConsumerTest {
             eventQueue.enqueueEvent(event);
         }
 
-        Flow.Publisher<Event> publisher = eventConsumer.consumeAll();
+        Flow.Publisher<EventQueueItem> publisher = eventConsumer.consumeAll();
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Throwable> error = new AtomicReference<>();
 
@@ -188,8 +188,8 @@ public class EventConsumerTest {
             }
 
             @Override
-            public void onNext(Event item) {
-                receivedEvents.add(item);
+            public void onNext(EventQueueItem item) {
+                receivedEvents.add(item.getEvent());
                 subscription.request(1);
 
             }
@@ -223,7 +223,7 @@ public class EventConsumerTest {
             eventQueue.enqueueEvent(event);
         }
 
-        Flow.Publisher<Event> publisher = eventConsumer.consumeAll();
+        Flow.Publisher<EventQueueItem> publisher = eventConsumer.consumeAll();
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Throwable> error = new AtomicReference<>();
 
@@ -237,8 +237,8 @@ public class EventConsumerTest {
             }
 
             @Override
-            public void onNext(Event item) {
-                receivedEvents.add(item);
+            public void onNext(EventQueueItem item) {
+                receivedEvents.add(item.getEvent());
                 subscription.request(1);
 
             }
@@ -303,7 +303,7 @@ public class EventConsumerTest {
         // Set an error in the event consumer
         setEventConsumerError(new RuntimeException("Stored error"));
 
-        Flow.Publisher<Event> publisher = eventConsumer.consumeAll();
+        Flow.Publisher<EventQueueItem> publisher = eventConsumer.consumeAll();
         final AtomicReference<Throwable> receivedError = new AtomicReference<>();
 
         final CountDownLatch errorLatch = new CountDownLatch(1);
@@ -316,7 +316,7 @@ public class EventConsumerTest {
             }
 
             @Override
-            public void onNext(Event item) {
+            public void onNext(EventQueueItem item) {
                 // Should not be called
                 errorLatch.countDown();
             }
@@ -349,7 +349,7 @@ public class EventConsumerTest {
         // Close the queue immediately
         queue.close();
 
-        Flow.Publisher<Event> publisher = consumer.consumeAll();
+        Flow.Publisher<EventQueueItem> publisher = consumer.consumeAll();
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Boolean> completed = new AtomicReference<>(false);
         final CountDownLatch completionLatch = new CountDownLatch(1);
@@ -361,8 +361,8 @@ public class EventConsumerTest {
             }
 
             @Override
-            public void onNext(Event item) {
-                receivedEvents.add(item);
+            public void onNext(EventQueueItem item) {
+                receivedEvents.add(item.getEvent());
             }
 
             @Override
@@ -399,7 +399,7 @@ public class EventConsumerTest {
         // Close the queue before consuming
         queue.close();
 
-        Flow.Publisher<Event> publisher = consumer.consumeAll();
+        Flow.Publisher<EventQueueItem> publisher = consumer.consumeAll();
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Boolean> completed = new AtomicReference<>(false);
         final CountDownLatch completionLatch = new CountDownLatch(1);
@@ -411,8 +411,8 @@ public class EventConsumerTest {
             }
 
             @Override
-            public void onNext(Event item) {
-                receivedEvents.add(item);
+            public void onNext(EventQueueItem item) {
+                receivedEvents.add(item.getEvent());
             }
 
             @Override
@@ -435,6 +435,56 @@ public class EventConsumerTest {
         assertTrue(completed.get());
         assertEquals(1, receivedEvents.size());
         assertSame(message, receivedEvents.get(0));
+    }
+
+    @Test
+    public void testConsumeAllTerminatesOnQueueClosedEvent() throws Exception {
+        EventQueue queue = EventQueue.builder().build();
+        EventConsumer consumer = new EventConsumer(queue);
+
+        // Enqueue a QueueClosedEvent (poison pill)
+        QueueClosedEvent queueClosedEvent = new QueueClosedEvent("task-123");
+        queue.enqueueEvent(queueClosedEvent);
+
+        Flow.Publisher<EventQueueItem> publisher = consumer.consumeAll();
+        final List<Event> receivedEvents = new ArrayList<>();
+        final AtomicReference<Boolean> completed = new AtomicReference<>(false);
+        final AtomicReference<Throwable> error = new AtomicReference<>();
+        final CountDownLatch completionLatch = new CountDownLatch(1);
+
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(EventQueueItem item) {
+                receivedEvents.add(item.getEvent());
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                error.set(throwable);
+                completionLatch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                completed.set(true);
+                completionLatch.countDown();
+            }
+        });
+
+        // Wait for completion with timeout
+        assertTrue(completionLatch.await(5, TimeUnit.SECONDS), "Test timed out waiting for completion callback.");
+
+        // Should complete gracefully without error
+        assertTrue(completed.get(), "Stream should complete normally");
+        assertNull(error.get(), "Stream should not error");
+
+        // The poison pill should not be delivered to subscribers
+        assertEquals(0, receivedEvents.size(), "QueueClosedEvent should be intercepted, not delivered");
     }
 
     private void enqueueAndConsumeOneEvent(Event event) throws Exception {

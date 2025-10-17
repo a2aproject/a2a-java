@@ -32,6 +32,24 @@
             <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
         </dependency>
 
+        <!-- JPA TaskStore for testing poison pill generation -->
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- A2A Client for testing -->
         <dependency>
             <groupId>io.github.a2asdk</groupId>

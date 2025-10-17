@@ -26,6 +26,10 @@ public class JpaDatabaseTaskStoreTest {
     @Inject
     TaskStore taskStore;
 
+
+    @Inject
+    jakarta.persistence.EntityManager entityManager;
+
     @Test
     public void testIsJpaDatabaseTaskStore() {
         assertInstanceOf(JpaDatabaseTaskStore.class, taskStore);
@@ -178,5 +182,95 @@ public class JpaDatabaseTaskStoreTest {
         assertEquals("value1", retrieved.getMetadata().get("key1"));
         assertEquals(42, retrieved.getMetadata().get("key2"));
         assertEquals(true, retrieved.getMetadata().get("key3"));
+    }
+
+    @Test
+    @Transactional
+    public void testIsTaskActiveForNonFinalTask() {
+        // Create a task in non-final state
+        Task task = new Task.Builder()
+                .id("test-task-active-1")
+                .contextId("test-context")
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+        
+        taskStore.save(task);
+        
+        // Task should be active (not in final state)
+        JpaDatabaseTaskStore jpaDatabaseTaskStore = (JpaDatabaseTaskStore) taskStore;
+        boolean isActive = jpaDatabaseTaskStore.isTaskActive("test-task-active-1");
+        
+        assertEquals(true, isActive, "Non-final task should be active");
+    }
+
+    @Test
+    @Transactional
+    public void testIsTaskActiveForFinalTaskWithinGracePeriod() {
+        // Create a task and update it to final state
+        Task task = new Task.Builder()
+                .id("test-task-active-2")
+                .contextId("test-context")
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+        
+        taskStore.save(task);
+        
+        // Update to final state
+        Task finalTask = new Task.Builder()
+                .id("test-task-active-2")
+                .contextId("test-context")
+                .status(new TaskStatus(TaskState.COMPLETED))
+                .build();
+        
+        taskStore.save(finalTask);
+        
+        // Task should be active (within grace period - default 15 seconds)
+        JpaDatabaseTaskStore jpaDatabaseTaskStore = (JpaDatabaseTaskStore) taskStore;
+        boolean isActive = jpaDatabaseTaskStore.isTaskActive("test-task-active-2");
+        
+        assertEquals(true, isActive, "Final task within grace period should be active");
+    }
+
+    @Test
+    @Transactional
+    public void testIsTaskActiveForFinalTaskBeyondGracePeriod() {
+        // Create and save a task in final state
+        Task task = new Task.Builder()
+                .id("test-task-active-3")
+                .contextId("test-context")
+                .status(new TaskStatus(TaskState.COMPLETED))
+                .build();
+        
+        taskStore.save(task);
+        
+        // Directly update the finalizedAt timestamp to 20 seconds in the past
+        // (beyond the default 15-second grace period)
+        JpaTask jpaTask = entityManager.find(JpaTask.class, "test-task-active-3");
+        assertNotNull(jpaTask);
+        
+        // Manually set finalizedAt to 20 seconds in the past
+        java.time.Instant pastTime = java.time.Instant.now().minusSeconds(20);
+        entityManager.createQuery("UPDATE JpaTask j SET j.finalizedAt = :finalizedAt WHERE j.id = :id")
+                .setParameter("finalizedAt", pastTime)
+                .setParameter("id", "test-task-active-3")
+                .executeUpdate();
+        
+        entityManager.flush();
+        entityManager.clear(); // Clear persistence context to force fresh read
+        
+        // Task should be inactive (beyond grace period)
+        JpaDatabaseTaskStore jpaDatabaseTaskStore = (JpaDatabaseTaskStore) taskStore;
+        boolean isActive = jpaDatabaseTaskStore.isTaskActive("test-task-active-3");
+        
+        assertEquals(false, isActive, "Final task beyond grace period should be inactive");
+    }
+
+    @Test
+    @Transactional
+    public void testIsTaskActiveForNonExistentTask() {
+        JpaDatabaseTaskStore jpaDatabaseTaskStore = (JpaDatabaseTaskStore) taskStore;
+        boolean isActive = jpaDatabaseTaskStore.isTaskActive("non-existent-task");
+        
+        assertEquals(false, isActive, "Non-existent task should be inactive");
     }
 }

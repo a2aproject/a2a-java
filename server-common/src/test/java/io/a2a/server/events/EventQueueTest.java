@@ -104,8 +104,8 @@ public class EventQueueTest {
         parentQueue.enqueueEvent(event);
 
         // Event should be available in both parent and child queues
-        Event parentEvent = parentQueue.dequeueEvent(-1);
-        Event childEvent = childQueue.dequeueEvent(-1);
+        Event parentEvent = parentQueue.dequeueEventItem(-1).getEvent();
+        Event childEvent = childQueue.dequeueEventItem(-1).getEvent();
 
         assertSame(event, parentEvent);
         assertSame(event, childEvent);
@@ -124,14 +124,14 @@ public class EventQueueTest {
         parentQueue.enqueueEvent(event2);
 
         // All queues should receive both events
-        assertSame(event1, parentQueue.dequeueEvent(-1));
-        assertSame(event2, parentQueue.dequeueEvent(-1));
+        assertSame(event1, parentQueue.dequeueEventItem(-1).getEvent());
+        assertSame(event2, parentQueue.dequeueEventItem(-1).getEvent());
 
-        assertSame(event1, childQueue1.dequeueEvent(-1));
-        assertSame(event2, childQueue1.dequeueEvent(-1));
+        assertSame(event1, childQueue1.dequeueEventItem(-1).getEvent());
+        assertSame(event2, childQueue1.dequeueEventItem(-1).getEvent());
 
-        assertSame(event1, childQueue2.dequeueEvent(-1));
-        assertSame(event2, childQueue2.dequeueEvent(-1));
+        assertSame(event1, childQueue2.dequeueEventItem(-1).getEvent());
+        assertSame(event2, childQueue2.dequeueEventItem(-1).getEvent());
     }
 
     @Test
@@ -144,15 +144,15 @@ public class EventQueueTest {
         parentQueue.enqueueEvent(event);
 
         // Dequeue from child1 first
-        Event child1Event = childQueue1.dequeueEvent(-1);
+        Event child1Event = childQueue1.dequeueEventItem(-1).getEvent();
         assertSame(event, child1Event);
 
         // child2 should still have the event available
-        Event child2Event = childQueue2.dequeueEvent(-1);
+        Event child2Event = childQueue2.dequeueEventItem(-1).getEvent();
         assertSame(event, child2Event);
 
         // Parent should still have the event available
-        Event parentEvent = parentQueue.dequeueEvent(-1);
+        Event parentEvent = parentQueue.dequeueEventItem(-1).getEvent();
         assertSame(event, parentEvent);
     }
 
@@ -168,7 +168,7 @@ public class EventQueueTest {
 
         assertFalse(childQueue.isClosed());
         try {
-            assertNotNull(childQueue.dequeueEvent(-1)); // Child has the event
+            assertNotNull(childQueue.dequeueEventItem(-1)); // Child has the event
         } catch (EventQueueClosedException e) {
             // This is fine if queue closed before dequeue
         }
@@ -184,7 +184,7 @@ public class EventQueueTest {
 
         // Child queue should be cleared due to immediate close
         // Child queue should be cleared and closed, so dequeueing should throw
-        assertThrows(EventQueueClosedException.class, () -> childQueue.dequeueEvent(-1));
+        assertThrows(EventQueueClosedException.class, () -> childQueue.dequeueEventItem(-1));
     }
 
     @Test
@@ -195,12 +195,16 @@ public class EventQueueTest {
         queue.close(); // Close the queue first
         assertTrue(queue.isClosed());
 
-        // Attempt to enqueue should be ignored (no exception thrown)
+        // MainQueue accepts events even when closed (for replication support)
+        // This ensures late-arriving replicated events can be enqueued to closed queues
         queue.enqueueEvent(event);
 
-        // Verify the queue is still empty
-        // Verify the queue is still empty and dequeueing from a closed, empty queue throws
-        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEvent(-1));
+        // Event should be available for dequeuing
+        Event dequeuedEvent = queue.dequeueEventItem(-1).getEvent();
+        assertSame(event, dequeuedEvent);
+
+        // Now queue is closed and empty, should throw exception
+        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEventItem(-1));
     }
 
     @Test
@@ -210,7 +214,7 @@ public class EventQueueTest {
         assertTrue(queue.isClosed());
 
         // Dequeue from closed empty queue should throw exception
-        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEvent(-1));
+        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEventItem(-1));
     }
 
     @Test
@@ -223,18 +227,18 @@ public class EventQueueTest {
         assertTrue(queue.isClosed());
 
         // Should still be able to dequeue existing events
-        Event dequeuedEvent = queue.dequeueEvent(-1);
+        Event dequeuedEvent = queue.dequeueEventItem(-1).getEvent();
         assertSame(event, dequeuedEvent);
 
         // Now queue is closed and empty, should throw exception
-        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEvent(-1));
+        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEventItem(-1));
     }
 
     @Test
     public void testEnqueueAndDequeueEvent() throws Exception {
         Event event = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.TYPE_REFERENCE);
         eventQueue.enqueueEvent(event);
-        Event dequeuedEvent = eventQueue.dequeueEvent(200);
+        Event dequeuedEvent = eventQueue.dequeueEventItem(200).getEvent();
         assertSame(event, dequeuedEvent);
     }
 
@@ -242,14 +246,14 @@ public class EventQueueTest {
     public void testDequeueEventNoWait() throws Exception {
         Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
         eventQueue.enqueueEvent(event);
-        Event dequeuedEvent = eventQueue.dequeueEvent(-1);
+        Event dequeuedEvent = eventQueue.dequeueEventItem(-1).getEvent();
         assertSame(event, dequeuedEvent);
     }
 
     @Test
     public void testDequeueEventEmptyQueueNoWait() throws Exception {
-        Event dequeuedEvent = eventQueue.dequeueEvent(-1);
-        assertNull(dequeuedEvent);
+        EventQueueItem item = eventQueue.dequeueEventItem(-1);
+        assertNull(item);
     }
 
     @Test
@@ -262,7 +266,7 @@ public class EventQueueTest {
                 .build();
 
         eventQueue.enqueueEvent(event);
-        Event dequeuedEvent = eventQueue.dequeueEvent(1000);
+        Event dequeuedEvent = eventQueue.dequeueEventItem(1000).getEvent();
         assertSame(event, dequeuedEvent);
     }
 
@@ -277,7 +281,7 @@ public class EventQueueTest {
                         .build())
                 .build();
         eventQueue.enqueueEvent(event);
-        Event dequeuedEvent = eventQueue.dequeueEvent(1000);
+        Event dequeuedEvent = eventQueue.dequeueEventItem(1000).getEvent();
         assertSame(event, dequeuedEvent);
         eventQueue.taskDone();
     }
@@ -290,7 +294,7 @@ public class EventQueueTest {
 
         for (Event event : events) {
             eventQueue.enqueueEvent(event);
-            Event dequeuedEvent = eventQueue.dequeueEvent(100);
+            Event dequeuedEvent = eventQueue.dequeueEventItem(100).getEvent();
             assertSame(event, dequeuedEvent);
         }
     }
@@ -323,9 +327,9 @@ public class EventQueueTest {
         // After immediate close, queue should be cleared
         // Attempting to dequeue should return null or throw exception
         try {
-            Event dequeuedEvent = eventQueue.dequeueEvent(-1);
-            // If we get here, the event should be null (queue was cleared)
-            assertNull(dequeuedEvent);
+            EventQueueItem item = eventQueue.dequeueEventItem(-1);
+            // If we get here, the item should be null (queue was cleared)
+            assertNull(item);
         } catch (EventQueueClosedException e) {
             // This is also acceptable - queue is closed
         }
