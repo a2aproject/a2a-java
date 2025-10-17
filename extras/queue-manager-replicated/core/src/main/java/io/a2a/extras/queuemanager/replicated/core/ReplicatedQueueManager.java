@@ -84,20 +84,24 @@ public class ReplicatedQueueManager implements QueueManager {
             return;
         }
 
-        // Get or create a ChildQueue for this task (consistent with normal queue access pattern)
-        // This will create the MainQueue if it doesn't exist, and return a ChildQueue
-        EventQueue queue = delegate.createOrTap(replicatedEvent.getTaskId());
+        // Get or create a ChildQueue for this task (creates MainQueue if it doesn't exist)
+        EventQueue childQueue = delegate.createOrTap(replicatedEvent.getTaskId());
 
-        // Enqueue using the parent's enqueueEvent to ensure proper distribution
-        // We use enqueueEvent (not enqueueItem) on the ChildQueue, which delegates to parent's enqueueEvent
-        // The parent will then wrap it and distribute to all children, but we need enqueueItem to preserve type
-        // So we need to call the MainQueue's enqueueItem directly
-        EventQueue mainQueue = delegate.get(replicatedEvent.getTaskId());
-        if (mainQueue != null) {
-            mainQueue.enqueueItem(replicatedEvent);
-        } else {
-            LOGGER.warn("MainQueue not found for task {}, cannot enqueue replicated event. This may happen if the queue was already cleaned up.",
-                replicatedEvent.getTaskId());
+        try {
+            // Get the MainQueue to enqueue the replicated event item
+            // We must use enqueueItem (not enqueueEvent) to preserve the isReplicated() flag
+            // and avoid triggering the replication hook again (which would cause a replication loop)
+            EventQueue mainQueue = delegate.get(replicatedEvent.getTaskId());
+            if (mainQueue != null) {
+                mainQueue.enqueueItem(replicatedEvent);
+            } else {
+                LOGGER.warn("MainQueue not found for task {}, cannot enqueue replicated event. This may happen if the queue was already cleaned up.",
+                    replicatedEvent.getTaskId());
+            }
+        } finally {
+            // Close the temporary ChildQueue to prevent leaks
+            // The MainQueue remains open for other consumers
+            childQueue.close();
         }
     }
 

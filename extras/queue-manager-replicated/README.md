@@ -260,11 +260,13 @@ The poison pill mechanism uses **transaction-aware CDI events** to ensure the po
 3. **Poison Pill Delivery**: `ReplicatedQueueManager.onTaskFinalized()` receives the event and sends `QueueClosedEvent` via the replication strategy
 4. **Cluster-Wide Termination**: All nodes receive the `QueueClosedEvent`, recognize it as final, and gracefully terminate their event consumers
 
-**Key Architecture Decision**: We use JPA transaction lifecycle hooks instead of time-based delays because:
+**Key Architecture Decision**: We use JPA transaction lifecycle hooks instead of time-based delays for poison pill delivery because:
 - **Eliminates race conditions**: No time window where the poison pill might arrive before the database commit
-- **Deterministic behavior**: Guaranteed consistency without tuning magic delay values
-- **Simplicity**: No need to monitor consumer lag or configure grace periods
+- **Deterministic cleanup**: Queue termination happens immediately after transaction commit, without delay-based tuning
+- **Simplicity**: No need to monitor consumer lag or configure delays for cleanup timing
 - **Reliability**: Works correctly regardless of network latency or database performance
+
+**Note**: While the poison pill mechanism eliminates delays for cleanup, the system still uses a configurable grace period (`a2a.replication.grace-period-seconds`, default 15s) in `JpaDatabaseTaskStore.isTaskActive()` to handle late-arriving replicated events. This grace period prevents queue recreation for tasks that were recently finalized, accommodating Kafka consumer lag and network delays. See the Grace Period Configuration section below for details.
 
 #### Code Flow
 
@@ -317,6 +319,43 @@ You should see log entries like:
 Task abc-123 is in final state, firing TaskFinalizedEvent
 Task abc-123 finalized - sending poison pill (QueueClosedEvent) after transaction commit
 ```
+
+#### Grace Period Configuration
+
+While the poison pill mechanism provides deterministic cleanup timing, the system uses a configurable **grace period** to handle late-arriving replicated events. This is separate from the poison pill mechanism and serves a different purpose.
+
+**Purpose**: The grace period prevents queue recreation for tasks that were recently finalized. When a replicated event arrives after a task is finalized, the system checks if the task is still within the grace period before creating a new queue.
+
+**Configuration**:
+```properties
+# Grace period for handling late-arriving events (default: 15 seconds)
+a2a.replication.grace-period-seconds=15
+```
+
+**How It Works**:
+1. When a task is finalized, `JpaDatabaseTaskStore` records the `finalizedAt` timestamp
+2. When a replicated event arrives, `ReplicatedQueueManager.onReplicatedEvent()` calls `taskStateProvider.isTaskActive(taskId)`
+3. `JpaDatabaseTaskStore.isTaskActive()` returns `true` if:
+   - Task is not in a final state, OR
+   - Task is final but within the grace period (`now < finalizedAt + gracePeriodSeconds`)
+4. If `isTaskActive()` returns `false`, the replicated event is skipped (no queue created)
+
+**When to Adjust**:
+- **Increase** the grace period if you observe warnings about skipped events for inactive tasks in high-latency networks
+- **Decrease** the grace period to reduce memory usage in systems with very low latency and high task turnover
+- **Default (15s)** is suitable for most deployments with typical Kafka consumer lag
+
+**Monitoring**:
+```properties
+quarkus.log.category."io.a2a.extras.queuemanager.replicated".level=DEBUG
+```
+
+Watch for:
+```
+Skipping replicated event for inactive task abc-123  # Event arrived too late
+```
+
+**Important**: This grace period is for **late event handling**, not cleanup timing. The poison pill mechanism handles cleanup deterministically without delays.
 
 ## Advanced Topics
 
