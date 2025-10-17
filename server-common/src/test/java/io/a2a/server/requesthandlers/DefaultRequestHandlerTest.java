@@ -83,8 +83,15 @@ public class DefaultRequestHandlerTest {
                     .contextId(context.getContextId())
                     .status(new TaskStatus(TaskState.SUBMITTED))
                     .build();
-                queue.enqueueEvent(task);
+            } else {
+                // Subsequent messages: emit WORKING task (non-final)
+                task = new Task.Builder()
+                    .id(context.getTaskId())
+                    .contextId(context.getContextId())
+                    .status(new TaskStatus(TaskState.WORKING))
+                    .build();
             }
+            queue.enqueueEvent(task);
             // Don't complete - just return (fire-and-forget)
         });
 
@@ -671,16 +678,17 @@ public class DefaultRequestHandlerTest {
             executing = true;
             try {
                 if (executeCallback != null) {
+                    // Custom callback is responsible for emitting events
                     executeCallback.call(context, eventQueue);
+                } else {
+                    // No custom callback - emit default completion event
+                    Task completedTask = new Task.Builder()
+                        .id(context.getTaskId())
+                        .contextId(context.getContextId())
+                        .status(new TaskStatus(TaskState.COMPLETED))
+                        .build();
+                    eventQueue.enqueueEvent(completedTask);
                 }
-
-                // Enqueue a simple task completion event
-                Task completedTask = new Task.Builder()
-                    .id(context.getTaskId())
-                    .contextId(context.getContextId())
-                    .status(new TaskStatus(TaskState.COMPLETED))
-                    .build();
-                eventQueue.enqueueEvent(completedTask);
 
             } finally {
                 executing = false;
