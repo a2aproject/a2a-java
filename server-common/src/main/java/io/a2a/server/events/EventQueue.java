@@ -9,6 +9,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.a2a.server.tasks.TaskStateProvider;
 import io.a2a.spec.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +21,8 @@ public abstract class EventQueue implements AutoCloseable {
     public static final int DEFAULT_QUEUE_SIZE = 1000;
 
     private final int queueSize;
-    private final BlockingQueue<Event> queue = new LinkedBlockingDeque<>();
-    private final Semaphore semaphore;
+    protected final BlockingQueue<EventQueueItem> queue = new LinkedBlockingDeque<>();
+    protected final Semaphore semaphore;
     private volatile boolean closed = false;
 
     protected EventQueue() {
@@ -50,7 +51,8 @@ public abstract class EventQueue implements AutoCloseable {
         private int queueSize = DEFAULT_QUEUE_SIZE;
         private EventEnqueueHook hook;
         private String taskId;
-        private Runnable onCloseCallback;
+        private List<Runnable> onCloseCallbacks = new java.util.ArrayList<>();
+        private TaskStateProvider taskStateProvider;
 
         public EventQueueBuilder queueSize(int queueSize) {
             this.queueSize = queueSize;
@@ -67,14 +69,21 @@ public abstract class EventQueue implements AutoCloseable {
             return this;
         }
 
-        public EventQueueBuilder onClose(Runnable onCloseCallback) {
-            this.onCloseCallback = onCloseCallback;
+        public EventQueueBuilder addOnCloseCallback(Runnable onCloseCallback) {
+            if (onCloseCallback != null) {
+                this.onCloseCallbacks.add(onCloseCallback);
+            }
+            return this;
+        }
+
+        public EventQueueBuilder taskStateProvider(TaskStateProvider taskStateProvider) {
+            this.taskStateProvider = taskStateProvider;
             return this;
         }
 
         public EventQueue build() {
-            if (hook != null || onCloseCallback != null) {
-                return new MainQueue(queueSize, hook, taskId, onCloseCallback);
+            if (hook != null || !onCloseCallbacks.isEmpty() || taskStateProvider != null) {
+                return new MainQueue(queueSize, hook, taskId, onCloseCallbacks, taskStateProvider);
             } else {
                 return new MainQueue(queueSize);
             }
@@ -90,6 +99,11 @@ public abstract class EventQueue implements AutoCloseable {
     abstract void signalQueuePollerStarted();
 
     public void enqueueEvent(Event event) {
+        enqueueItem(new LocalEventQueueItem(event));
+    }
+
+    public void enqueueItem(EventQueueItem item) {
+        Event event = item.getEvent();
         if (closed) {
             LOGGER.warn("Queue is closed. Event will not be enqueued. {} {}", this, event);
             return;
@@ -101,38 +115,51 @@ public abstract class EventQueue implements AutoCloseable {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Unable to acquire the semaphore to enqueue the event", e);
         }
-        queue.add(event);
+        queue.add(item);
         LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
     }
 
     abstract EventQueue tap();
 
-    public Event dequeueEvent(int waitMilliSeconds) throws EventQueueClosedException {
+    /**
+     * Dequeues an EventQueueItem from the queue.
+     * <p>
+     * This method returns the full EventQueueItem wrapper, allowing callers to check
+     * metadata like whether the event is replicated via {@link EventQueueItem#isReplicated()}.
+     * </p>
+     *
+     * @param waitMilliSeconds the maximum time to wait in milliseconds
+     * @return the EventQueueItem, or null if timeout occurs
+     * @throws EventQueueClosedException if the queue is closed and empty
+     */
+    public EventQueueItem dequeueEventItem(int waitMilliSeconds) throws EventQueueClosedException {
         if (closed && queue.isEmpty()) {
             LOGGER.debug("Queue is closed, and empty. Sending termination message. {}", this);
             throw new EventQueueClosedException();
         }
         try {
             if (waitMilliSeconds <= 0) {
-                Event event = queue.poll();
-                if (event != null) {
+                EventQueueItem item = queue.poll();
+                if (item != null) {
+                    Event event = item.getEvent();
                     // Call toString() since for errors we don't really want the full stacktrace
-                    LOGGER.debug("Dequeued event (no wait) {} {}", this, event instanceof Throwable ? event.toString() : event);
+                    LOGGER.debug("Dequeued event item (no wait) {} {}", this, event instanceof Throwable ? event.toString() : event);
                     semaphore.release();
                 }
-                return event;
+                return item;
             }
             try {
                 LOGGER.trace("Polling queue {} (wait={}ms)", System.identityHashCode(this), waitMilliSeconds);
-                Event event = queue.poll(waitMilliSeconds, TimeUnit.MILLISECONDS);
-                if (event != null) {
+                EventQueueItem item = queue.poll(waitMilliSeconds, TimeUnit.MILLISECONDS);
+                if (item != null) {
+                    Event event = item.getEvent();
                     // Call toString() since for errors we don't really want the full stacktrace
-                    LOGGER.debug("Dequeued event (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
+                    LOGGER.debug("Dequeued event item (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
                     semaphore.release();
                 } else {
                     LOGGER.trace("Dequeue timeout (null) from queue {}", System.identityHashCode(this));
                 }
-                return event;
+                return item;
             } catch (InterruptedException e) {
                 LOGGER.debug("Interrupted dequeue (waiting) {}", this);
                 Thread.currentThread().interrupt();
@@ -193,42 +220,49 @@ public abstract class EventQueue implements AutoCloseable {
         private final AtomicBoolean pollingStarted = new AtomicBoolean(false);
         private final EventEnqueueHook enqueueHook;
         private final String taskId;
-        private final Runnable onCloseCallback;
+        private final List<Runnable> onCloseCallbacks;
+        private final TaskStateProvider taskStateProvider;
 
         MainQueue() {
             super();
             this.enqueueHook = null;
             this.taskId = null;
-            this.onCloseCallback = null;
+            this.onCloseCallbacks = List.of();
+            this.taskStateProvider = null;
         }
 
         MainQueue(int queueSize) {
             super(queueSize);
             this.enqueueHook = null;
             this.taskId = null;
-            this.onCloseCallback = null;
+            this.onCloseCallbacks = List.of();
+            this.taskStateProvider = null;
         }
 
         MainQueue(EventEnqueueHook hook) {
             super();
             this.enqueueHook = hook;
             this.taskId = null;
-            this.onCloseCallback = null;
+            this.onCloseCallbacks = List.of();
+            this.taskStateProvider = null;
         }
 
         MainQueue(int queueSize, EventEnqueueHook hook) {
             super(queueSize);
             this.enqueueHook = hook;
             this.taskId = null;
-            this.onCloseCallback = null;
+            this.onCloseCallbacks = List.of();
+            this.taskStateProvider = null;
         }
 
-        MainQueue(int queueSize, EventEnqueueHook hook, String taskId, Runnable onCloseCallback) {
+        MainQueue(int queueSize, EventEnqueueHook hook, String taskId, List<Runnable> onCloseCallbacks, TaskStateProvider taskStateProvider) {
             super(queueSize);
             this.enqueueHook = hook;
             this.taskId = taskId;
-            this.onCloseCallback = onCloseCallback;
-            LOGGER.debug("Created MainQueue for task {} with onClose callback: {}", taskId, onCloseCallback != null);
+            this.onCloseCallbacks = List.copyOf(onCloseCallbacks);  // Defensive copy
+            this.taskStateProvider = taskStateProvider;
+            LOGGER.debug("Created MainQueue for task {} with {} onClose callbacks and TaskStateProvider: {}",
+                    taskId, onCloseCallbacks.size(), taskStateProvider != null);
         }
 
         EventQueue tap() {
@@ -237,11 +271,34 @@ public abstract class EventQueue implements AutoCloseable {
             return child;
         }
 
-        public void enqueueEvent(Event event) {
-            super.enqueueEvent(event);
-            children.forEach(eq -> eq.internalEnqueueEvent(event));
+        @Override
+        public void enqueueItem(EventQueueItem item) {
+            // MainQueue must accept events even when closed to support:
+            // 1. Late-arriving replicated events for non-finalized tasks
+            // 2. Events enqueued during onClose callbacks (before super.doClose())
+            // 3. QueueClosedEvent termination for remote subscribers
+            //
+            // We bypass the parent's closed check and enqueue directly
+            Event event = item.getEvent();
+
+            // Acquire semaphore for backpressure
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Unable to acquire the semaphore to enqueue the event", e);
+            }
+
+            // Add to this MainQueue's internal queue
+            queue.add(item);
+            LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
+
+            // Distribute to all ChildQueues (they will receive the event even if MainQueue is closed)
+            children.forEach(eq -> eq.internalEnqueueItem(item));
+
+            // Trigger replication hook if configured
             if (enqueueHook != null) {
-                enqueueHook.onEnqueue(event);
+                enqueueHook.onEnqueue(item);
             }
         }
 
@@ -265,13 +322,32 @@ public abstract class EventQueue implements AutoCloseable {
         void childClosing(ChildQueue child, boolean immediate) {
             children.remove(child);  // Remove the closing child
 
-            // Only close MainQueue if immediate OR no children left
-            if (immediate || children.isEmpty()) {
-                LOGGER.debug("MainQueue closing: immediate={}, children.isEmpty()={}", immediate, children.isEmpty());
+            // Close immediately if requested
+            if (immediate) {
+                LOGGER.debug("MainQueue closing immediately (immediate=true)");
                 this.doClose(immediate);
-            } else {
-                LOGGER.debug("MainQueue staying open: {} children remaining", children.size());
+                return;
             }
+
+            // If there are still children, keep queue open
+            if (!children.isEmpty()) {
+                LOGGER.debug("MainQueue staying open: {} children remaining", children.size());
+                return;
+            }
+
+            // No children left - check if task is finalized before auto-closing
+            if (taskStateProvider != null && taskId != null) {
+                boolean isFinalized = taskStateProvider.isTaskFinalized(taskId);
+                if (!isFinalized) {
+                    LOGGER.debug("MainQueue for task {} has no children, but task is not finalized - keeping queue open for potential resubscriptions", taskId);
+                    return;  // Don't close - keep queue open for fire-and-forget or late resubscribes
+                }
+                LOGGER.debug("MainQueue for task {} has no children and task is finalized - closing queue", taskId);
+            } else {
+                LOGGER.debug("MainQueue has no children and no TaskStateProvider - closing queue (legacy behavior)");
+            }
+
+            this.doClose(immediate);
         }
 
         /**
@@ -286,16 +362,19 @@ public abstract class EventQueue implements AutoCloseable {
 
         @Override
         protected void doClose(boolean immediate) {
-            super.doClose(immediate);
-            // Invoke callback after closing to notify QueueManager
-            if (onCloseCallback != null) {
-                LOGGER.debug("Invoking onClose callback for task {}", taskId);
-                try {
-                    onCloseCallback.run();
-                } catch (Exception e) {
-                    LOGGER.error("Error in onClose callback for task {}", taskId, e);
+            // Invoke all callbacks BEFORE closing, so they can still enqueue events
+            if (!onCloseCallbacks.isEmpty()) {
+                LOGGER.debug("Invoking {} onClose callbacks for task {} BEFORE closing", onCloseCallbacks.size(), taskId);
+                for (Runnable callback : onCloseCallbacks) {
+                    try {
+                        callback.run();
+                    } catch (Exception e) {
+                        LOGGER.error("Error in onClose callback for task {}", taskId, e);
+                    }
                 }
             }
+            // Now close the queue
+            super.doClose(immediate);
         }
 
         @Override
@@ -331,8 +410,8 @@ public abstract class EventQueue implements AutoCloseable {
             parent.enqueueEvent(event);
         }
 
-        private void internalEnqueueEvent(Event event) {
-            super.enqueueEvent(event);
+        private void internalEnqueueItem(EventQueueItem item) {
+            super.enqueueItem(item);
         }
 
         @Override

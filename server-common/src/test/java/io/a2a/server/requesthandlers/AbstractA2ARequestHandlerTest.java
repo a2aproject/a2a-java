@@ -20,6 +20,7 @@ import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
+import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.InMemoryQueueManager;
 import io.a2a.server.tasks.BasePushNotificationSender;
 import io.a2a.server.tasks.InMemoryPushNotificationConfigStore;
@@ -34,6 +35,7 @@ import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
+import io.a2a.spec.Event;
 import io.a2a.spec.TextPart;
 import io.a2a.util.Utils;
 import io.quarkus.arc.profile.IfBuildProfile;
@@ -89,8 +91,9 @@ public class AbstractA2ARequestHandlerTest {
             }
         };
 
-        taskStore = new InMemoryTaskStore();
-        queueManager = new InMemoryQueueManager();
+        InMemoryTaskStore inMemoryTaskStore = new InMemoryTaskStore();
+        taskStore = inMemoryTaskStore;
+        queueManager = new InMemoryQueueManager(inMemoryTaskStore);
         httpClient = new TestHttpClient();
         PushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
         PushNotificationSender pushSender = new BasePushNotificationSender(pushConfigStore, httpClient);
@@ -144,6 +147,24 @@ public class AbstractA2ARequestHandlerTest {
 
     protected interface AgentExecutorMethod {
         void invoke(RequestContext context, EventQueue eventQueue) throws JSONRPCError;
+    }
+
+    /**
+     * Helper method to wrap events in EventQueueItem for tests.
+     * Creates a simple wrapper that marks events as non-replicated (local events).
+     */
+    protected static EventQueueItem wrapEvent(Event event) {
+        return new EventQueueItem() {
+            @Override
+            public Event getEvent() {
+                return event;
+            }
+
+            @Override
+            public boolean isReplicated() {
+                return false;
+            }
+        };
     }
 
     @Dependent

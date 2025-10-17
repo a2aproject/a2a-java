@@ -14,16 +14,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
+import io.a2a.server.tasks.MockTaskStateProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class InMemoryQueueManagerTest {
 
     private InMemoryQueueManager queueManager;
+    private MockTaskStateProvider taskStateProvider;
 
     @BeforeEach
     public void setUp() {
-        queueManager = new InMemoryQueueManager();
+        taskStateProvider = new MockTaskStateProvider();
+        queueManager = new InMemoryQueueManager(taskStateProvider);
     }
 
     @Test

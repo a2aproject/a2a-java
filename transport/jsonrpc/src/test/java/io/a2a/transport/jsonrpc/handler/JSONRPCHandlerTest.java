@@ -186,7 +186,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageResponse response;
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
-                (mock, context) -> {Mockito.doReturn(ZeroPublisher.fromItems(MINIMAL_TASK)).when(mock).consumeAll();})){
+                (mock, context) -> {Mockito.doReturn(ZeroPublisher.fromItems(wrapEvent(MINIMAL_TASK))).when(mock).consumeAll();})){
             response = handler.onMessageSend(request, callContext);
         }
         assertNull(response.getError());
@@ -230,7 +230,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromItems(MINIMAL_TASK)).when(mock).consumeAll();})){
+                    Mockito.doReturn(ZeroPublisher.fromItems(wrapEvent(MINIMAL_TASK))).when(mock).consumeAll();})){
             response = handler.onMessageSend(request, callContext);
         }
         assertNull(response.getError());
@@ -270,7 +270,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromItems(new UnsupportedOperationError())).when(mock).consumeAll();})){
+                    Mockito.doReturn(ZeroPublisher.fromItems(wrapEvent(new UnsupportedOperationError()))).when(mock).consumeAll();})){
             response = handler.onMessageSend(request, callContext);
         }
 
@@ -475,7 +475,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromIterable(events)).when(mock).consumeAll();})){
+                    Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();})){
             response = handler.onMessageSendStream(request, callContext);
         }
 
@@ -622,7 +622,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromIterable(events)).when(mock).consumeAll();})){
+                    Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();})){
             response = handler.onMessageSendStream(request, callContext);
         }
 
@@ -904,7 +904,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromIterable(events)).when(mock).consumeAll();})){
+                    Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();})){
             response = handler.onResubscribeToTask(request, callContext);
         }
 

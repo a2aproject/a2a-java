@@ -38,6 +38,18 @@ public class ReplicationTestAgentExecutor {
                         // Submit task - this should trigger TaskStatusUpdateEvent
                         taskUpdater.submit();
                         break;
+                    case "working":
+                        // Move task to WORKING state without completing - keeps queue alive
+                        taskUpdater.submit();
+                        taskUpdater.startWork();
+                        break;
+                    case "complete":
+                        // Complete the task - should trigger poison pill generation
+                        taskUpdater.submit();
+                        taskUpdater.startWork();
+                        taskUpdater.addArtifact(List.of(new TextPart("Task completed")));
+                        taskUpdater.complete();
+                        break;
                     default:
                         throw new InvalidRequestError("Unknown command: " + lastText);
                 }

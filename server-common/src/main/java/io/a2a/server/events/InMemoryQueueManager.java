@@ -4,6 +4,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import io.a2a.server.tasks.TaskStateProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,13 +16,18 @@ public class InMemoryQueueManager implements QueueManager {
 
     private final ConcurrentMap<String, EventQueue> queues = new ConcurrentHashMap<>();
     private final EventQueueFactory factory;
+    private final TaskStateProvider taskStateProvider;
 
-    public InMemoryQueueManager() {
+    @Inject
+    public InMemoryQueueManager(TaskStateProvider taskStateProvider) {
         this.factory = new DefaultEventQueueFactory();
+        this.taskStateProvider = taskStateProvider;
     }
 
-    public InMemoryQueueManager(EventQueueFactory factory) {
+    // For testing with custom factory
+    public InMemoryQueueManager(EventQueueFactory factory, TaskStateProvider taskStateProvider) {
         this.factory = factory;
+        this.taskStateProvider = taskStateProvider;
     }
 
     @Override
@@ -54,14 +62,24 @@ public class InMemoryQueueManager implements QueueManager {
 
     @Override
     public EventQueue createOrTap(String taskId) {
-        LOGGER.info("createOrTap called for task {}, current map size: {}", taskId, queues.size());
+        LOGGER.debug("createOrTap called for task {}, current map size: {}", taskId, queues.size());
         EventQueue existing = queues.get(taskId);
 
-        // Lazy cleanup: remove closed queues from map
+        // Lazy cleanup: only remove closed queues if task is finalized
+        // Don't remove queues for non-finalized tasks - they must stay for late-arriving events
         if (existing != null && existing.isClosed()) {
-            LOGGER.debug("Removing closed queue {} for task {}", System.identityHashCode(existing), taskId);
-            queues.remove(taskId);
-            existing = null;
+            boolean isFinalized = (taskStateProvider != null) && taskStateProvider.isTaskFinalized(taskId);
+            if (isFinalized) {
+                LOGGER.debug("Removing closed queue {} for finalized task {}", System.identityHashCode(existing), taskId);
+                queues.remove(taskId);
+                existing = null;
+            } else {
+                LOGGER.debug("Queue {} for task {} is closed but task not finalized - keeping for late-arriving events",
+                        System.identityHashCode(existing), taskId);
+                // Don't remove or recreate - existing closed queue stays in map
+                // This is critical for replication where events may arrive after MainQueue closes
+                // The closed MainQueue can still receive enqueued events via enqueueEvent()
+            }
         }
 
         EventQueue newQueue = null;
@@ -77,7 +95,7 @@ public class InMemoryQueueManager implements QueueManager {
         EventQueue result = main.tap();  // Always return ChildQueue
 
         if (existing == null) {
-            LOGGER.info("Created new MainQueue {} for task {}, returning ChildQueue {} (map size: {})",
+            LOGGER.debug("Created new MainQueue {} for task {}, returning ChildQueue {} (map size: {})",
                 System.identityHashCode(main), taskId, System.identityHashCode(result), queues.size());
         } else {
             LOGGER.debug("Tapped existing MainQueue {} -> ChildQueue {} for task {}",
@@ -105,22 +123,50 @@ public class InMemoryQueueManager implements QueueManager {
         return -1;
     }
 
+    /**
+     * Get the cleanup callback that removes a queue from the map when it closes.
+     * This is exposed so that subclasses (like ReplicatedQueueManager) can reuse
+     * this cleanup logic while adding their own callbacks in the correct order.
+     * <p>
+     * The cleanup callback checks if the task is finalized before removing the queue.
+     * If the task is not finalized, the queue remains in the map to handle late-arriving events.
+     * </p>
+     *
+     * @param taskId the task ID for the queue
+     * @return a Runnable that removes the queue from the map if appropriate
+     */
+    public Runnable getCleanupCallback(String taskId) {
+        return () -> {
+            LOGGER.debug("Queue close callback invoked for task {}", taskId);
+
+            // Check if task is finalized before removing queue
+            boolean isFinalized = (taskStateProvider != null) && taskStateProvider.isTaskFinalized(taskId);
+
+            if (!isFinalized) {
+                LOGGER.debug("Task {} is not finalized, keeping queue in map for late-arriving events", taskId);
+                return;  // Don't remove from map - task is still active
+            }
+
+            LOGGER.debug("Task {} is finalized, removing queue from map", taskId);
+
+            EventQueue removed = queues.remove(taskId);
+            if (removed != null) {
+                LOGGER.debug("Removed closed queue for task {} from QueueManager (map size: {})",
+                        taskId, queues.size());
+            } else {
+                LOGGER.debug("Queue for task {} was already removed from map", taskId);
+            }
+        };
+    }
+
     private class DefaultEventQueueFactory implements EventQueueFactory {
         @Override
         public EventQueue.EventQueueBuilder builder(String taskId) {
             // Return builder with callback that removes queue from map when closed
             return EventQueue.builder()
                     .taskId(taskId)
-                    .onClose(() -> {
-                        LOGGER.debug("Queue close callback invoked for task {}, removing from map", taskId);
-                        EventQueue removed = queues.remove(taskId);
-                        if (removed != null) {
-                            LOGGER.info("Removed closed queue for task {} from QueueManager (map size: {})",
-                                    taskId, queues.size());
-                        } else {
-                            LOGGER.debug("Queue for task {} was already removed from map", taskId);
-                        }
-                    });
+                    .addOnCloseCallback(getCleanupCallback(taskId))
+                    .taskStateProvider(taskStateProvider);
         }
     }
 }
