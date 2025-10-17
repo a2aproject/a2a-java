@@ -6,11 +6,11 @@ import io.grpc.Channel;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 public class GrpcTransportConfigBuilder extends ClientTransportConfigBuilder<GrpcTransportConfig, GrpcTransportConfigBuilder> {
 
-    private Function<String, Channel> channelFactory = s -> { 
-        throw new IllegalStateException("channelFactory must be set"); 
-    };
+    private @Nullable Function<String, Channel> channelFactory;
 
     public GrpcTransportConfigBuilder channelFactory(Function<String, Channel> channelFactory) {
         Assert.checkNotNullParam("channelFactory", channelFactory);
@@ -22,6 +22,9 @@ public class GrpcTransportConfigBuilder extends ClientTransportConfigBuilder<Grp
 
     @Override
     public GrpcTransportConfig build() {
+        if (channelFactory == null) {
+            throw new IllegalStateException("channelFactory must be set");
+        }
         GrpcTransportConfig config = new GrpcTransportConfig(channelFactory);
         config.setInterceptors(interceptors);
         return config;
