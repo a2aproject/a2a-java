@@ -1,11 +1,9 @@
 package io.a2a.spec;
 
-import java.io.IOException;
-
 /**
  * Exception to indicate a general failure related to the A2A protocol.
  */
-public class A2AException extends IOException {
+public class A2AException extends RuntimeException {
 
     /**
      * Constructs a new {@code A2AException} instance. The message is left blank ({@code null}), and no

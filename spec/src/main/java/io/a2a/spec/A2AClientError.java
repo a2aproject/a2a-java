@@ -1,6 +1,9 @@
 package io.a2a.spec;
 
-public class A2AClientError extends Exception {
+/**
+ * Base exception for A2A Client errors.
+ */
+public class A2AClientError extends RuntimeException {
     public A2AClientError() {
     }
 
