@@ -62,6 +62,38 @@ public record AgentCard(String name, String description, String url, AgentProvid
         private String protocolVersion;
         private List<AgentCardSignature> signatures;
 
+        /**
+         * Creates a new Builder.
+         */
+        public Builder() {
+
+        }
+
+        /**
+         * Creates a new Builder as a copy of an existing AgentCard.
+         *
+         * @param card the AgentCard to copy
+         */
+        public Builder(AgentCard card) {
+            this.name = card.name;
+            this.description = card.description;
+            this.url = card.url;
+            this.provider = card.provider;
+            this.version = card.version;
+            this.documentationUrl = card.documentationUrl;
+            this.capabilities = card.capabilities;
+            this.defaultInputModes = card.defaultInputModes != null ? new ArrayList<>(card.defaultInputModes) : null;
+            this.defaultOutputModes = card.defaultOutputModes != null ? new ArrayList<>(card.defaultOutputModes) : null;
+            this.skills = card.skills != null ? new ArrayList<>(card.skills) : null;
+            this.supportsAuthenticatedExtendedCard = card.supportsAuthenticatedExtendedCard;
+            this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
+            this.security = card.security != null ? new ArrayList<>(card.security) : null;
+            this.iconUrl = card.iconUrl;
+            this.additionalInterfaces = card.additionalInterfaces != null ? new ArrayList<>(card.additionalInterfaces) : null;
+            this.preferredTransport = card.preferredTransport;
+            this.protocolVersion = card.protocolVersion;
+            this.signatures = card.signatures != null ? new ArrayList<>(card.signatures) : null;
+        }
 
         public Builder name(String name) {
             this.name = name;

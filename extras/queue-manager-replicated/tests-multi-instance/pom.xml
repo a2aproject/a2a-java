@@ -6,20 +6,20 @@
 
     <parent>
         <groupId>io.github.a2asdk</groupId>
-        <artifactId>a2a-java-sdk-parent</artifactId>
+        <artifactId>a2a-java-queue-manager-replicated-parent</artifactId>
         <version>0.3.0.Beta3-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>a2a-java-queue-manager-replicated-parent</artifactId>
+    <artifactId>a2a-java-queue-manager-replicated-tests-multi-instance-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Java A2A Extras: Replicated Queue Manager Parent</name>
+    <name>Java A2A Extras: Replicated Queue Manager Tests - Multi Instance Parent</name>
 
     <modules>
-        <module>core</module>
-        <module>replication-mp-reactive</module>
-        <module>tests-single-instance</module>
-        <module>tests-multi-instance</module>
+        <module>quarkus-common</module>
+        <module>quarkus-app-1</module>
+        <module>quarkus-app-2</module>
+        <module>tests</module>
     </modules>
 
 </project>

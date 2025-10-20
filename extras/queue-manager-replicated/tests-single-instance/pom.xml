@@ -10,8 +10,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>a2a-java-queue-manager-replicated-tests</artifactId>
-    <name>Java A2A Extras: Replicated Queue Manager Tests</name>
+    <artifactId>a2a-java-queue-manager-replicated-tests-single-instance</artifactId>
+    <name>Java A2A Extras: Replicated Queue Manager Tests - Single Instance</name>
 
     <dependencies>
         <!-- Project Modules -->
@@ -66,11 +66,6 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
