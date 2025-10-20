@@ -32,11 +32,11 @@ public class TaskUpdater {
         updateStatus(taskState, null, taskState.isFinal());
     }
 
-    private void updateStatus(TaskState taskState, Message message) {
+    public void updateStatus(TaskState taskState, Message message) {
         updateStatus(taskState, message, taskState.isFinal());
     }
 
-    private void updateStatus(TaskState state, Message message, boolean isFinal) {
+    public void updateStatus(TaskState state, Message message, boolean isFinal) {
         synchronized (stateLock) {
             // Check if we're already in a terminal state
             if (terminalStateReached.get()) {
@@ -60,6 +60,10 @@ public class TaskUpdater {
 
     public String getContextId() {
         return this.contextId;
+    }
+
+    public String getTaskId() {
+        return this.taskId;
     }
 
     public void addArtifact(List<Part<?>> parts) {
