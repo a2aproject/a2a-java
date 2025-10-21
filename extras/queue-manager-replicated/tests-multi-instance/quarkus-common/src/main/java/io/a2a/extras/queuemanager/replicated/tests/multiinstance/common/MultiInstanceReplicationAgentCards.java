@@ -12,7 +12,10 @@ import io.a2a.spec.TransportProtocol;
 /**
  * Shared AgentCard factory for multi-instance replication tests.
  */
-public class MultiInstanceReplicationAgentCards {
+public final class MultiInstanceReplicationAgentCards {
+
+    private MultiInstanceReplicationAgentCards() {
+    }
 
     /**
      * Creates an AgentCard for a test instance.

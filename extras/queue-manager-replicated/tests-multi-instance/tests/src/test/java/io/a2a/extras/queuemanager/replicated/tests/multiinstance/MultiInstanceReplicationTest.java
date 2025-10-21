@@ -1,7 +1,6 @@
 package io.a2a.extras.queuemanager.replicated.tests.multiinstance;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -10,8 +9,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -20,7 +17,6 @@ import java.util.function.Consumer;
 import io.a2a.A2A;
 import io.a2a.client.Client;
 import io.a2a.client.ClientEvent;
-import io.a2a.client.TaskUpdateEvent;
 import io.a2a.client.config.ClientConfig;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfig;
@@ -163,14 +159,6 @@ public class MultiInstanceReplicationTest {
             System.err.println(app2.getLogs());
             throw new RuntimeException("Failed to get AgentCards", e);
         }
-
-        System.out.println("=== Test Infrastructure Started ===");
-        System.out.println("Kafka bootstrap servers: " + kafka.getBootstrapServers());
-        System.out.println("PostgreSQL JDBC URL: " + postgres.getJdbcUrl());
-        System.out.println("App1 URL: " + app1Url);
-        System.out.println("App2 URL: " + app2Url);
-        System.out.println("App1 Card: " + app1Card.name());
-        System.out.println("App2 Card: " + app2Card.name());
     }
 
     @AfterAll
@@ -243,8 +231,6 @@ public class MultiInstanceReplicationTest {
         assertNotNull(postgres.getJdbcUrl());
         assertNotNull(app1.getMappedPort(8081));
         assertNotNull(app2.getMappedPort(8082));
-
-        System.out.println("All infrastructure containers started successfully!");
     }
 
     /**
@@ -258,14 +244,10 @@ public class MultiInstanceReplicationTest {
      */
     @Test
     public void testMultiInstanceEventReplication() throws Exception {
-        System.out.println("\n=== Starting Multi-Instance Replication Test ===\n");
-
         final String taskId = "replication-test-task-" + System.currentTimeMillis();
         final String contextId = "replication-test-context";
 
         // Step 1: Send initial message NON-streaming to create task
-        System.out.println("Step 1: Creating task on app1 (non-streaming)...");
-
         Message initialMessage = new Message.Builder(A2A.toUserMessage("Initial test message"))
                 .taskId(taskId)
                 .contextId(contextId)
@@ -277,8 +259,6 @@ public class MultiInstanceReplicationTest {
                 .clientConfig(ClientConfig.builder().setStreaming(false).build())
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig())
                 .build();
-
-        System.out.println("Sending initial message to: " + app1Card.url());
 
         Task createdTask = null;
         try {
@@ -293,13 +273,9 @@ public class MultiInstanceReplicationTest {
             assertTrue(state == TaskState.SUBMITTED || state == TaskState.WORKING,
                 "Task should be in SUBMITTED or WORKING state, but was: " + state);
             nonStreamingClient.close();
-
-            System.out.println("✓ Task created in non-final state (" + state + "): " + taskId + "\n");
         } catch (Exception e) {
             System.err.println("\n=== FAILED TO CREATE TASK ===");
             System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-
             System.err.println("\n=== APP1 CONTAINER LOGS ===");
             System.err.println(app1.getLogs());
 
@@ -310,7 +286,6 @@ public class MultiInstanceReplicationTest {
         }
 
         // Step 2: Subscribe from both app1 and app2 with proper latches
-        System.out.println("Step 2: Subscribing to task from both app1 and app2...");
 
         // We need to wait for at least 3 new events after resubscription:
         // 1. TaskArtifactUpdateEvent (message from app1)
@@ -329,28 +304,24 @@ public class MultiInstanceReplicationTest {
 
         // App1 subscriber
         BiConsumer<ClientEvent, AgentCard> app1Subscriber = (event, card) -> {
-            System.out.println("[App1 Subscriber] Received: " + event.getClass().getSimpleName());
             app1Events.add(event);
             app1EventCount.incrementAndGet();
         };
 
         Consumer<Throwable> app1ErrorHandler = error -> {
             if (!isStreamClosedError(error)) {
-                System.err.println("[App1 Subscriber] Error: " + error.getMessage());
                 app1Error.set(error);
             }
         };
 
         // App2 subscriber
         BiConsumer<ClientEvent, AgentCard> app2Subscriber = (event, card) -> {
-            System.out.println("[App2 Subscriber] Received: " + event.getClass().getSimpleName());
             app2Events.add(event);
             app2EventCount.incrementAndGet();
         };
 
         Consumer<Throwable> app2ErrorHandler = error -> {
             if (!isStreamClosedError(error)) {
-                System.err.println("[App2 Subscriber] Error: " + error.getMessage());
                 app2Error.set(error);
             }
         };
@@ -360,17 +331,12 @@ public class MultiInstanceReplicationTest {
         getClient2().resubscribe(new TaskIdParams(taskId), List.of(app2Subscriber), app2ErrorHandler);
 
         // Wait for subscriptions to be established - at least one event should arrive on each
-        System.out.println("Waiting for subscriptions to be established...");
         await()
             .atMost(Duration.ofSeconds(10))
             .pollInterval(Duration.ofMillis(500))
             .until(() -> app1EventCount.get() >= 1 && app2EventCount.get() >= 1);
 
-        System.out.println("✓ Both subscriptions active (App1: " + app1EventCount.get() +
-                         " events, App2: " + app2EventCount.get() + " events)\n");
-
         // Step 3: Send message on app1 (should generate TaskArtifactUpdateEvent)
-        System.out.println("Step 3: Sending artifact message on app1...");
         int app1BeforeMsg1 = app1EventCount.get();
         int app2BeforeMsg1 = app2EventCount.get();
 
@@ -387,11 +353,7 @@ public class MultiInstanceReplicationTest {
             .until(() -> app1EventCount.get() > app1BeforeMsg1 &&
                         app2EventCount.get() > app2BeforeMsg1);
 
-        System.out.println("✓ Message sent on app1 and replicated (App1: " + app1EventCount.get() +
-                         " events, App2: " + app2EventCount.get() + " events)\n");
-
         // Step 4: Send message on app2 (should generate TaskArtifactUpdateEvent)
-        System.out.println("Step 4: Sending artifact message on app2...");
         int app1BeforeMsg2 = app1EventCount.get();
         int app2BeforeMsg2 = app2EventCount.get();
 
@@ -408,11 +370,7 @@ public class MultiInstanceReplicationTest {
             .until(() -> app1EventCount.get() > app1BeforeMsg2 &&
                         app2EventCount.get() > app2BeforeMsg2);
 
-        System.out.println("✓ Message sent on app2 and replicated (App1: " + app1EventCount.get() +
-                         " events, App2: " + app2EventCount.get() + " events)\n");
-
         // Step 5: Send close message (should generate TaskStatusUpdateEvent with COMPLETED)
-        System.out.println("Step 5: Sending close message...");
         int app1BeforeClose = app1EventCount.get();
         int app2BeforeClose = app2EventCount.get();
 
@@ -429,8 +387,6 @@ public class MultiInstanceReplicationTest {
             .until(() -> app1EventCount.get() > app1BeforeClose &&
                         app2EventCount.get() > app2BeforeClose);
 
-        System.out.println("✓ Close message sent and replicated (App1: " + app1EventCount.get() +
-                         " events, App2: " + app2EventCount.get() + " events)\n");
 
         // Verify we got at least 3 new events after initial subscription (artifact1, artifact2, completed)
         assertTrue(app1Events.size() >= 3,
@@ -446,15 +402,9 @@ public class MultiInstanceReplicationTest {
             throw new AssertionError("App2 subscriber error", app2Error.get());
         }
 
-        System.out.println("\nFinal Statistics:");
-        System.out.println("  App1 subscriber total events: " + app1Events.size());
-        System.out.println("  App2 subscriber total events: " + app2Events.size());
-
         // Verify both received at least 3 events (could be more due to initial state events)
         assertTrue(app1Events.size() >= 3, "App1 should receive at least 3 events, got: " + app1Events.size());
         assertTrue(app2Events.size() >= 3, "App2 should receive at least 3 events, got: " + app2Events.size());
-
-        System.out.println("\n=== Multi-Instance Replication Test PASSED ===\n");
     }
 
     /**
