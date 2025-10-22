@@ -1,0 +1,101 @@
+name: Cloud Deployment Example Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  test-cloud-deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install Kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+          kind version
+
+      - name: Build project
+        run: mvn -B clean install -DskipTests -f pom.xml
+
+      - name: Deploy with Kind
+        working-directory: examples/cloud-deployment/scripts
+        run: |
+          chmod +x deploy.sh
+          ./deploy.sh --container-tool docker
+
+      - name: Verify deployment
+        working-directory: examples/cloud-deployment/scripts
+        run: |
+          chmod +x verify.sh
+          ./verify.sh
+
+      - name: Verify agent card is accessible
+        run: |
+          echo "Testing agent card endpoint at http://localhost:8080/.well-known/agent-card.json"
+          curl -f http://localhost:8080/.well-known/agent-card.json || (echo "Agent card not accessible" && exit 1)
+
+      - name: Run test client
+        working-directory: examples/cloud-deployment/server
+        run: |
+          mvn test-compile exec:java \
+            -Dexec.mainClass="io.a2a.examples.cloud.A2ACloudExampleClient" \
+            -Dexec.classpathScope=test \
+            -Dagent.url=http://localhost:8080
+
+      - name: Show diagnostics on failure
+        if: failure()
+        run: |
+          echo "=== Agent Pod Status ==="
+          kubectl get pods -n a2a-demo -l app=a2a-agent -o wide
+
+          echo ""
+          echo "=== Agent Pod Descriptions ==="
+          for pod in $(kubectl get pods -n a2a-demo -l app=a2a-agent -o jsonpath='{.items[*].metadata.name}'); do
+            echo "--- Pod: $pod ---"
+            kubectl describe pod $pod -n a2a-demo | tail -30
+          done
+
+          echo ""
+          echo "=== Recent Events ==="
+          kubectl get events -n a2a-demo --sort-by='.lastTimestamp' | tail -20
+
+          echo ""
+          echo "=== Agent Pod Logs ==="
+          for pod in $(kubectl get pods -n a2a-demo -l app=a2a-agent -o jsonpath='{.items[*].metadata.name}'); do
+            echo "--- Logs for $pod ---"
+            kubectl logs -n a2a-demo $pod --tail=100 || true
+          done
+
+          echo ""
+          echo "=== PostgreSQL Logs ==="
+          kubectl logs -n a2a-demo postgres-0 --tail=50 || true
+
+          echo ""
+          echo "=== Kafka Logs ==="
+          kubectl logs -n kafka -l strimzi.io/cluster=a2a-kafka --tail=50 || true
+
+      - name: Cleanup
+        if: always()
+        run: |
+          cd examples/cloud-deployment/scripts
+          echo "y" | ./cleanup.sh --container-tool docker || true
+
+
