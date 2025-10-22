@@ -1,7 +1,10 @@
 package io.a2a.server.rest.quarkus;
 
+import static io.a2a.transport.rest.context.RestContextKeys.HEADERS_KEY;
+import static io.a2a.transport.rest.context.RestContextKeys.METHOD_NAME_KEY;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.MediaType.SERVER_SENT_EVENTS;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
@@ -42,6 +45,15 @@ import java.util.Map;
 import java.util.Set;
 
 import io.a2a.server.extensions.A2AExtensions;
+import io.a2a.spec.CancelTaskRequest;
+import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
+import io.a2a.spec.GetTaskPushNotificationConfigRequest;
+import io.a2a.spec.GetTaskRequest;
+import io.a2a.spec.ListTaskPushNotificationConfigRequest;
+import io.a2a.spec.SendMessageRequest;
+import io.a2a.spec.SendStreamingMessageRequest;
+import io.a2a.spec.SetTaskPushNotificationConfigRequest;
+import io.a2a.spec.TaskResubscriptionRequest;
 import org.jspecify.annotations.Nullable;
 
 @Singleton
@@ -65,7 +77,7 @@ public class A2AServerRoutes {
 
     @Route(regex = "^/v1/message:send$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     public void sendMessage(@Body String body, RoutingContext rc) {
-        ServerCallContext context = createCallContext(rc);
+        ServerCallContext context = createCallContext(rc, SendMessageRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             response = jsonRestHandler.sendMessage(body, context);
@@ -78,7 +90,7 @@ public class A2AServerRoutes {
 
     @Route(regex = "^/v1/message:stream$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     public void sendMessageStreaming(@Body String body, RoutingContext rc) {
-        ServerCallContext context = createCallContext(rc);
+        ServerCallContext context = createCallContext(rc, SendStreamingMessageRequest.METHOD);
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
@@ -104,7 +116,7 @@ public class A2AServerRoutes {
     @Route(path = "/v1/tasks/:id", order = 1, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
     public void getTask(RoutingContext rc) {
         String taskId = rc.pathParam("id");
-        ServerCallContext context = createCallContext(rc);
+        ServerCallContext context = createCallContext(rc, GetTaskRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
@@ -128,7 +140,7 @@ public class A2AServerRoutes {
     @Route(regex = "^/v1/tasks/([^/]+):cancel$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void cancelTask(RoutingContext rc) {
         String taskId = rc.pathParam("param0");
-        ServerCallContext context = createCallContext(rc);
+        ServerCallContext context = createCallContext(rc, CancelTaskRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
@@ -161,7 +173,7 @@ public class A2AServerRoutes {
     @Route(regex = "^/v1/tasks/([^/]+):subscribe$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void resubscribeTask(RoutingContext rc) {
         String taskId = rc.pathParam("param0");
-        ServerCallContext context = createCallContext(rc);
+        ServerCallContext context = createCallContext(rc, TaskResubscriptionRequest.METHOD);
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
@@ -191,7 +203,7 @@ public class A2AServerRoutes {
     @Route(path = "/v1/tasks/:id/pushNotificationConfigs", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     public void setTaskPushNotificationConfiguration(@Body String body, RoutingContext rc) {
         String taskId = rc.pathParam("id");
-        ServerCallContext context = createCallContext(rc);
+        ServerCallContext context = createCallContext(rc, SetTaskPushNotificationConfigRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
@@ -210,7 +222,7 @@ public class A2AServerRoutes {
     public void getTaskPushNotificationConfiguration(RoutingContext rc) {
         String taskId = rc.pathParam("id");
         String configId = rc.pathParam("configId");
-        ServerCallContext context = createCallContext(rc);
+        ServerCallContext context = createCallContext(rc, GetTaskPushNotificationConfigRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
@@ -228,7 +240,7 @@ public class A2AServerRoutes {
     @Route(path = "/v1/tasks/:id/pushNotificationConfigs", order = 1, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
     public void listTaskPushNotificationConfigurations(RoutingContext rc) {
         String taskId = rc.pathParam("id");
-        ServerCallContext context = createCallContext(rc);
+        ServerCallContext context = createCallContext(rc, ListTaskPushNotificationConfigRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
@@ -247,7 +259,7 @@ public class A2AServerRoutes {
     public void deleteTaskPushNotificationConfiguration(RoutingContext rc) {
         String taskId = rc.pathParam("id");
         String configId = rc.pathParam("configId");
-        ServerCallContext context = createCallContext(rc);
+        ServerCallContext context = createCallContext(rc, DeleteTaskPushNotificationConfigRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
@@ -294,8 +306,7 @@ public class A2AServerRoutes {
         streamingMultiSseSupportSubscribedRunnable = runnable;
     }
 
-    private ServerCallContext createCallContext(RoutingContext rc) {
-
+    private ServerCallContext createCallContext(RoutingContext rc, String jsonRpcMethodName) {
         if (callContextFactory.isUnsatisfied()) {
             User user;
             if (rc.user() == null) {
@@ -328,7 +339,8 @@ public class A2AServerRoutes {
             Map<String, String> headers = new HashMap<>();
             Set<String> headerNames = rc.request().headers().names();
             headerNames.forEach(name -> headers.put(name, rc.request().getHeader(name)));
-            state.put("headers", headers);
+            state.put(HEADERS_KEY, headers);
+            state.put(METHOD_NAME_KEY, jsonRpcMethodName);
 
             // Extract requested extensions from X-A2A-Extensions header
             List<String> extensionHeaderValues = rc.request().headers().getAll(A2AHeaders.X_A2A_EXTENSIONS);
@@ -351,8 +363,8 @@ public class A2AServerRoutes {
         private static void initialize(HttpServerResponse response) {
             if (response.bytesWritten() == 0) {
                 MultiMap headers = response.headers();
-                if (headers.get("content-type") == null) {
-                    headers.set("content-type", "text/event-stream");
+                if (headers.get(CONTENT_TYPE) == null) {
+                    headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
                 }
                 response.setChunked(true);
             }
@@ -426,8 +438,8 @@ public class A2AServerRoutes {
         private static void endOfStream(HttpServerResponse response) {
             if (response.bytesWritten() == 0) { // No item
                 MultiMap headers = response.headers();
-                if (headers.get("content-type") == null) {
-                    headers.set("content-type", "text/event-stream");
+                if (headers.get(CONTENT_TYPE) == null) {
+                    headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
                 }
             }
             response.end();

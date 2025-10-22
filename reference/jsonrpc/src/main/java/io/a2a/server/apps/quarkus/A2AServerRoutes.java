@@ -1,7 +1,10 @@
 package io.a2a.server.apps.quarkus;
 
+import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
+import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.MediaType.SERVER_SENT_EVENTS;
 
 import java.util.HashMap;
 import java.util.List;
@@ -91,14 +94,20 @@ public class A2AServerRoutes {
         JSONRPCResponse<?> nonStreamingResponse = null;
         Multi<? extends JSONRPCResponse<?>> streamingResponse = null;
         JSONRPCErrorResponse error = null;
-
         try {
-            if (isStreamingRequest(body)) {
-                streaming = true;
-                StreamingJSONRPCRequest<?> request = Utils.OBJECT_MAPPER.readValue(body, StreamingJSONRPCRequest.class);
+            JsonNode node = Utils.OBJECT_MAPPER.readTree(body);
+            JsonNode method = node != null ? node.get("method") : null;
+            streaming = method != null && (SendStreamingMessageRequest.METHOD.equals(method.asText())
+                    || TaskResubscriptionRequest.METHOD.equals(method.asText()));
+            String methodName = (method != null && method.isTextual()) ? method.asText() : null;
+            if (methodName != null) {
+                context.getState().put(METHOD_NAME_KEY, methodName);
+            }
+            if (streaming) {
+                StreamingJSONRPCRequest<?> request = Utils.OBJECT_MAPPER.treeToValue(node, StreamingJSONRPCRequest.class);
                 streamingResponse = processStreamingRequest(request, context);
             } else {
-                NonStreamingJSONRPCRequest<?> request = Utils.OBJECT_MAPPER.readValue(body, NonStreamingJSONRPCRequest.class);
+                NonStreamingJSONRPCRequest<?> request = Utils.OBJECT_MAPPER.treeToValue(node, NonStreamingJSONRPCRequest.class);
                 nonStreamingResponse = processNonStreamingRequest(request, context);
             }
         } catch (JsonProcessingException e) {
@@ -201,17 +210,6 @@ public class A2AServerRoutes {
         return new JSONRPCErrorResponse(request.getId(), error);
     }
 
-    private static boolean isStreamingRequest(String requestBody) {
-        try {
-            JsonNode node = Utils.OBJECT_MAPPER.readTree(requestBody);
-            JsonNode method = node != null ? node.get("method") : null;
-            return method != null && (SendStreamingMessageRequest.METHOD.equals(method.asText())
-                    || TaskResubscriptionRequest.METHOD.equals(method.asText()));
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     static void setStreamingMultiSseSupportSubscribedRunnable(Runnable runnable) {
         streamingMultiSseSupportSubscribedRunnable = runnable;
     }
@@ -243,7 +241,7 @@ public class A2AServerRoutes {
             Map<String, String> headers = new HashMap<>();
             Set<String> headerNames = rc.request().headers().names();
             headerNames.forEach(name -> headers.put(name, rc.request().getHeader(name)));
-            state.put("headers", headers);
+            state.put(HEADERS_KEY, headers);
 
             // Extract requested extensions from X-A2A-Extensions header
             List<String> extensionHeaderValues = rc.request().headers().getAll(A2AHeaders.X_A2A_EXTENSIONS);
@@ -266,8 +264,8 @@ public class A2AServerRoutes {
         private static void initialize(HttpServerResponse response) {
             if (response.bytesWritten() == 0) {
                 MultiMap headers = response.headers();
-                if (headers.get("content-type") == null) {
-                    headers.set("content-type", "text/event-stream");
+                if (headers.get(CONTENT_TYPE) == null) {
+                    headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
                 }
                 response.setChunked(true);
             }
@@ -340,8 +338,8 @@ public class A2AServerRoutes {
         private static void endOfStream(HttpServerResponse response) {
             if (response.bytesWritten() == 0) { // No item
                 MultiMap headers = response.headers();
-                if (headers.get("content-type") == null) {
-                    headers.set("content-type", "text/event-stream");
+                if (headers.get(CONTENT_TYPE) == null) {
+                    headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
                 }
             }
             response.end();
