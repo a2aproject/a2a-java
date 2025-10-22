@@ -34,65 +34,83 @@ echo ""
 # Check if Minikube is running
 if ! minikube status > /dev/null 2>&1; then
     echo -e "${RED}Error: Minikube is not running${NC}"
-    echo "Please start Minikube first with insecure registry configuration:"
+    echo "Please start Minikube first:"
     echo ""
     echo "With Docker:"
-    echo "  minikube start --cpus=4 --memory=8192 --insecure-registry=192.168.49.1:5001"
+    echo "  minikube start --cpus=4 --memory=8192"
     echo ""
     echo "With Podman:"
-    echo "  minikube start --cpus=4 --memory=8192 --driver=podman --insecure-registry=192.168.49.1:5001"
+    echo "  minikube start --cpus=4 --memory=8192 --driver=podman"
+    echo ""
+    echo "With Podman (rootless):"
+    echo "  minikube start --cpus=4 --memory=8192 --driver=podman --container-runtime=containerd"
     exit 1
 fi
 
 echo -e "${GREEN}✓ Minikube is running${NC}"
 
-# Check if insecure registry is configured
-echo "Checking insecure registry configuration..."
-MINIKUBE_HOST_IP=$(minikube ssh "ip route | grep default | awk '{print \$3}'")
-if ! minikube profile list -o json | grep -q "InsecureRegistry"; then
-    echo -e "${RED}Error: Minikube is not configured for insecure registry${NC}"
-    echo ""
-    echo "Please delete and recreate Minikube with insecure registry support:"
-    echo "  minikube delete"
-    echo "  minikube start --cpus=4 --memory=8192 --driver=podman --insecure-registry=${MINIKUBE_HOST_IP}:5001"
-    exit 1
-fi
-echo -e "${GREEN}✓ Insecure registry configured (${MINIKUBE_HOST_IP}:5001)${NC}"
-
-# Set up local registry container on host
+# Enable Minikube registry addon if not already enabled
 echo ""
-echo "Setting up local registry container..."
-
-# Check if registry container is already running
-if $CONTAINER_TOOL ps --filter "name=kind-registry" --format '{{.Names}}' | grep -q kind-registry; then
-    echo "Registry container already running"
+echo "Checking Minikube registry addon..."
+if ! minikube addons list | grep -q "registry.*enabled"; then
+    echo "Enabling Minikube registry addon..."
+    minikube addons enable registry
+    # Wait a bit for registry to start
+    sleep 5
+    echo -e "${GREEN}✓ Registry addon enabled${NC}"
 else
-    # Remove old container if it exists but is stopped
-    $CONTAINER_TOOL rm -f kind-registry > /dev/null 2>&1 || true
-
-    # Start registry container on host
-    echo "Starting registry container on host (port 5001)..."
-    $CONTAINER_TOOL run -d --restart=always -p "0.0.0.0:5001:5000" --name "kind-registry" registry:2
+    echo -e "${GREEN}✓ Registry addon already enabled${NC}"
 fi
 
-# Verify registry is accessible
-echo "Verifying registry is accessible at localhost:5001..."
-for i in {1..10}; do
-    if curl -s http://localhost:5001/v2/ > /dev/null 2>&1; then
-        echo -e "${GREEN}✓ Registry accessible at localhost:5001${NC}"
+# Set up port forwarding to registry
+# This makes the registry accessible at localhost:5000
+echo ""
+echo "Setting up registry port forwarding..."
+
+# Detect OS
+if echo "$OSTYPE" | grep -q "^darwin"; then
+    # macOS - use socat in container for port forwarding
+    echo "macOS detected, using socat for port forwarding..."
+
+    # Stop any existing port forwarder
+    $CONTAINER_TOOL stop socat-registry 2>/dev/null || true
+    $CONTAINER_TOOL rm socat-registry 2>/dev/null || true
+
+    # Pull alpine if needed
+    $CONTAINER_TOOL pull alpine 2>/dev/null || true
+
+    # Start socat container for port forwarding
+    $CONTAINER_TOOL run -d --name socat-registry --rm --network=host alpine \
+        ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$(minikube ip):5000" \
+        > /dev/null 2>&1 &
+
+    echo -e "${GREEN}✓ Port forward started (socat container)${NC}"
+else
+    # Linux - use kubectl port-forward
+    echo "Linux detected, using kubectl port-forward..."
+
+    # Kill any existing port-forward processes
+    pkill -f "kubectl.*port-forward.*registry" || true
+
+    # Start port forward in background
+    kubectl port-forward --namespace kube-system service/registry 5000:80 > /dev/null 2>&1 &
+
+    echo -e "${GREEN}✓ Port forward started (kubectl)${NC}"
+fi
+
+# Wait for registry to be accessible
+echo "Waiting for registry to be accessible at localhost:5000..."
+for i in {1..30}; do
+    if curl -s http://localhost:5000/v2/ > /dev/null 2>&1; then
+        echo -e "${GREEN}✓ Registry accessible at localhost:5000${NC}"
         break
     fi
-    if [ $i -eq 10 ]; then
-        echo -e "${RED}ERROR: Registry not accessible after 10 attempts${NC}"
+    if [ $i -eq 30 ]; then
+        echo -e "${RED}ERROR: Registry not accessible after 30 attempts${NC}"
         exit 1
     fi
-    echo "Attempt $i/10..."
     sleep 1
 done
-
-# Registry will be accessed from Minikube using host.minikube.internal
-REGISTRY="localhost:5001"
-echo "Using registry: $REGISTRY (host), host.minikube.internal:5001 (from Minikube)"
 
 # Build the project
 echo ""
@@ -102,17 +120,18 @@ mvn clean package -DskipTests
 echo -e "${GREEN}✓ Project built successfully${NC}"
 
 # Build and push container image to Minikube registry
+REGISTRY="localhost:5000"
 echo ""
 echo "Building container image..."
 $CONTAINER_TOOL build -t ${REGISTRY}/a2a-cloud-deployment:latest .
 echo -e "${GREEN}✓ Container image built${NC}"
 
 echo "Pushing image to Minikube registry..."
-# Retry push a few times as it can be flaky with Podman
+# Retry push a few times as port-forward can be flaky
 MAX_RETRIES=3
 for attempt in $(seq 1 $MAX_RETRIES); do
     echo "Push attempt $attempt/$MAX_RETRIES..."
-    if $CONTAINER_TOOL push ${REGISTRY}/a2a-cloud-deployment:latest --tls-verify=false --retry=2 2>&1 | tee /tmp/push.log; then
+    if $CONTAINER_TOOL push ${REGISTRY}/a2a-cloud-deployment:latest 2>&1 | tee /tmp/push.log; then
         echo -e "${GREEN}✓ Image pushed to registry${NC}"
         break
     else
@@ -245,4 +264,4 @@ echo "To access the agent from outside the cluster:"
 echo "  kubectl port-forward -n a2a-demo svc/a2a-agent-service 8080:8080"
 echo ""
 echo "Then access the agent at:"
-echo "  http://localhost:8080/a2a/agent-card"
+echo "  http://localhost:8080/.well-known/agent-card.json"

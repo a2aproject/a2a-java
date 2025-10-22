@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
         - name: a2a-agent
-          image: 192.168.49.1:5001/a2a-cloud-deployment:latest
-          imagePullPolicy: Always
+          image: localhost:5000/a2a-cloud-deployment:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
               name: http

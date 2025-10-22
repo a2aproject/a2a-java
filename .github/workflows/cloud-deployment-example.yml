@@ -33,20 +33,44 @@ jobs:
           kubernetes-version: v1.30.0
           driver: docker
           addons: ingress
-          insecure-registry: '192.168.49.1:5001'
 
       - name: Build project
         run: mvn -B clean install -DskipTests -f pom.xml
+
+      - name: Enable Minikube registry addon
+        run: |
+          echo "Enabling Minikube registry addon..."
+          minikube addons enable registry
+          sleep 5
+
+      - name: Set up registry port forwarding
+        run: |
+          echo "Starting registry port forwarding..."
+          kubectl port-forward --namespace kube-system service/registry 5000:80 > /dev/null 2>&1 &
+
+          # Wait for registry to be accessible
+          echo "Waiting for registry to be accessible..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5000/v2/ > /dev/null 2>&1; then
+              echo "Registry accessible"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "ERROR: Registry not accessible"
+              exit 1
+            fi
+            sleep 1
+          done
 
       - name: Build and package server
         working-directory: examples/cloud-deployment/server
         run: mvn clean package -DskipTests
 
-      - name: Build Docker image
+      - name: Build and push Docker image
         working-directory: examples/cloud-deployment/server
         run: |
-          docker build -t localhost:5001/a2a-cloud-deployment:latest .
-          docker tag localhost:5001/a2a-cloud-deployment:latest 192.168.49.1:5001/a2a-cloud-deployment:latest
+          docker build -t localhost:5000/a2a-cloud-deployment:latest .
+          docker push localhost:5000/a2a-cloud-deployment:latest
 
       - name: Deploy infrastructure (skip agent)
         working-directory: examples/cloud-deployment/scripts
@@ -56,24 +80,12 @@ jobs:
           chmod +x deploy.sh
           ./deploy.sh
 
-      - name: Load image into minikube and deploy agent
+      - name: Deploy agent
         working-directory: examples/cloud-deployment
         run: |
-          # Load image into minikube
-          echo "Loading image into minikube..."
-          minikube image load 192.168.49.1:5001/a2a-cloud-deployment:latest
+          echo "Deploying agent..."
+          kubectl apply -f k8s/04-agent-deployment.yaml
 
-          # Verify image is in minikube
-          echo "Verifying image in minikube:"
-          minikube ssh -- docker images | grep a2a-cloud-deployment
-
-          # Modify deployment YAML to use imagePullPolicy: Never before applying
-          echo "Deploying agent with imagePullPolicy: Never..."
-          cat k8s/04-agent-deployment.yaml | \
-            sed 's/imagePullPolicy: Always/imagePullPolicy: Never/' | \
-            kubectl apply -f -
-
-          # Wait for rollout to complete
           echo "Waiting for deployment rollout to complete..."
           kubectl rollout status deployment/a2a-agent -n a2a-demo --timeout=120s
 

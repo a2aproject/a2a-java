@@ -45,19 +45,25 @@ echo "Deleting namespace..."
 kubectl delete -f ../k8s/00-namespace.yaml --ignore-not-found=true
 
 echo ""
-echo "Cleaning up local registry container..."
-# Determine container tool
+echo "Stopping registry port forwarding..."
+# Kill any port-forward processes
+pkill -f "kubectl.*port-forward.*registry" > /dev/null 2>&1 || true
+
+# Determine container tool for stopping socat container on macOS
 CONTAINER_TOOL="docker"
 if command -v podman &> /dev/null; then
     CONTAINER_TOOL="podman"
 fi
 
-# Remove registry container if it exists
-$CONTAINER_TOOL rm -f kind-registry > /dev/null 2>&1 || true
+# Stop socat container if running (macOS)
+$CONTAINER_TOOL stop socat-registry > /dev/null 2>&1 || true
+$CONTAINER_TOOL rm socat-registry > /dev/null 2>&1 || true
 
 echo ""
 echo -e "${GREEN}Cleanup completed${NC}"
 echo ""
-echo -e "${YELLOW}Note: Strimzi operator was not removed${NC}"
+echo -e "${YELLOW}Note: Minikube registry addon and Strimzi operator were not removed${NC}"
+echo "To disable the registry addon, run:"
+echo "  minikube addons disable registry"
 echo "To remove Strimzi operator, run:"
 echo "  kubectl delete namespace kafka"

@@ -61,19 +61,22 @@ This example demonstrates deploying an A2A agent to Kubernetes with:
 
 ### 1. Start Minikube
 
-This example uses a local container registry on the host machine. Minikube must be configured to allow pulling from this insecure (HTTP) registry.
+This example uses Minikube's built-in registry addon for container image distribution.
 
 **With Docker:**
 ```bash
-minikube start --cpus=4 --memory=8192 --insecure-registry=192.168.49.1:5001
+minikube start --cpus=4 --memory=8192
 ```
 
-**With Podman:**
+**With Podman (rootful or rootless):**
 ```bash
-minikube start --cpus=4 --memory=8192 --driver=podman --insecure-registry=192.168.49.1:5001
+minikube start --cpus=4 --memory=8192 --driver=podman
 ```
 
-**Note**: The IP address `192.168.49.1` is the default host IP from Minikube's perspective. If your Minikube uses a different network range, adjust accordingly.
+**Note for rootless Podman users on Fedora/Linux**: Add `--container-runtime=containerd` if you encounter issues:
+```bash
+minikube start --cpus=4 --memory=8192 --driver=podman --container-runtime=containerd
+```
 
 ### 2. Deploy the Stack
 
@@ -88,6 +91,8 @@ cd scripts
 ```
 
 This script will:
+- Enable Minikube registry addon
+- Set up registry port forwarding (localhost:5000)
 - Install Strimzi Kafka operator
 - Deploy PostgreSQL
 - Deploy Kafka cluster
@@ -319,39 +324,44 @@ kubectl logs <pod-name> -n a2a-demo
 ```
 
 **Common issues:**
-- **ImagePullBackOff**: Image not built in Minikube's container environment
-  - Solution with Docker: Run `eval $(minikube docker-env)` before building
-  - Solution with Podman: Run `eval $(minikube podman-env)` before building
+- **ImagePullBackOff**: Image not pushed to Minikube registry
+  - Solution: Ensure registry port-forward is running and push completed successfully
+  - Check: `curl http://localhost:5000/v2/_catalog` should list the image
 - **CrashLoopBackOff**: Application startup failure
   - Check logs: `kubectl logs <pod-name> -n a2a-demo`
   - Common causes: Database not ready, Kafka not ready
 
-### Container Build Issues
+### Registry Issues
 
-**Image not found in Minikube:**
+**Registry not accessible:**
 
-The container image must be built inside Minikube's environment.
+The deploy.sh script sets up port forwarding automatically. If you need to set it up manually:
 
-**With Docker:**
+**On macOS:**
 ```bash
-eval $(minikube docker-env)
-docker build -t a2a-cloud-deployment:latest .
+# Using Docker or Podman
+docker run -d --name socat-registry --rm --network=host alpine \
+  ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$(minikube ip):5000"
 ```
 
-**With Podman:**
+**On Linux:**
 ```bash
-eval $(minikube podman-env)
-podman build -t a2a-cloud-deployment:latest .
+kubectl port-forward --namespace kube-system service/registry 5000:80 &
 ```
 
-**Verify image exists:**
+**Verify registry is accessible:**
 ```bash
-# With Docker
-minikube ssh docker images | grep a2a-cloud-deployment
+curl http://localhost:5000/v2/
+# Should return: {}
 
-# With Podman
-minikube ssh podman images | grep a2a-cloud-deployment
+# List images in registry
+curl http://localhost:5000/v2/_catalog
 ```
+
+**Image push failures:**
+- Check port-forward is running: `ps aux | grep "port-forward.*registry"`
+- Restart port-forward if needed
+- For rootless Podman: Ensure you're not using sudo (should work without it)
 
 ### Database Connection Failures
 
