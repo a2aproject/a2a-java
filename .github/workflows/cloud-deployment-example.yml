@@ -1,0 +1,166 @@
+name: Cloud Deployment Example Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  test-cloud-deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@latest
+        with:
+          cpus: 4
+          memory: 8192
+          kubernetes-version: v1.30.0
+          driver: docker
+          addons: ingress
+          insecure-registry: '192.168.49.1:5001'
+
+      - name: Build project
+        run: mvn -B clean install -DskipTests -f pom.xml
+
+      - name: Build and package server
+        working-directory: examples/cloud-deployment/server
+        run: mvn clean package -DskipTests
+
+      - name: Build Docker image
+        working-directory: examples/cloud-deployment/server
+        run: |
+          docker build -t localhost:5001/a2a-cloud-deployment:latest .
+          docker tag localhost:5001/a2a-cloud-deployment:latest 192.168.49.1:5001/a2a-cloud-deployment:latest
+
+      - name: Deploy infrastructure (skip agent)
+        working-directory: examples/cloud-deployment/scripts
+        env:
+          SKIP_AGENT_DEPLOY: "true"
+        run: |
+          chmod +x deploy.sh
+          ./deploy.sh
+
+      - name: Load image into minikube and deploy agent
+        working-directory: examples/cloud-deployment
+        run: |
+          # Load image into minikube
+          echo "Loading image into minikube..."
+          minikube image load 192.168.49.1:5001/a2a-cloud-deployment:latest
+
+          # Verify image is in minikube
+          echo "Verifying image in minikube:"
+          minikube ssh -- docker images | grep a2a-cloud-deployment
+
+          # Modify deployment YAML to use imagePullPolicy: Never before applying
+          echo "Deploying agent with imagePullPolicy: Never..."
+          cat k8s/04-agent-deployment.yaml | \
+            sed 's/imagePullPolicy: Always/imagePullPolicy: Never/' | \
+            kubectl apply -f -
+
+          # Wait for rollout to complete
+          echo "Waiting for deployment rollout to complete..."
+          kubectl rollout status deployment/a2a-agent -n a2a-demo --timeout=120s
+
+          echo "Waiting for agent pods to be ready..."
+          kubectl wait --for=condition=Ready pod -l app=a2a-agent -n a2a-demo --timeout=120s
+
+      - name: Verify deployment
+        working-directory: examples/cloud-deployment/scripts
+        run: |
+          chmod +x verify.sh
+          ./verify.sh
+
+      - name: Start minikube tunnel in background
+        run: |
+          minikube tunnel > /tmp/minikube-tunnel.log 2>&1 &
+          echo $! > /tmp/minikube-tunnel.pid
+          sleep 10  # Wait for tunnel to establish
+
+      - name: Wait for external IP
+        run: |
+          echo "Waiting for LoadBalancer external IP..."
+          for i in {1..30}; do
+            EXTERNAL_IP=$(kubectl get svc a2a-agent-service -n a2a-demo -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            if [ ! -z "$EXTERNAL_IP" ]; then
+              echo "External IP assigned: $EXTERNAL_IP"
+              echo "AGENT_IP=$EXTERNAL_IP" >> $GITHUB_ENV
+              break
+            fi
+            echo "Attempt $i/30: Waiting for external IP..."
+            sleep 2
+          done
+          kubectl get svc a2a-agent-service -n a2a-demo
+
+      - name: Verify agent card is accessible
+        run: |
+          echo "Testing agent card endpoint at http://${{ env.AGENT_IP }}:8080/.well-known/agent-card.json"
+          curl -f http://${{ env.AGENT_IP }}:8080/.well-known/agent-card.json || (echo "Agent card not accessible" && exit 1)
+
+      - name: Run test client
+        working-directory: examples/cloud-deployment/server
+        run: |
+          mvn test-compile exec:java \
+            -Dexec.mainClass="io.a2a.examples.cloud.A2ACloudExampleClient" \
+            -Dexec.classpathScope=test \
+            -Dagent.url=http://${{ env.AGENT_IP }}:8080
+
+      - name: Show diagnostics on failure
+        if: failure()
+        run: |
+          echo "=== Agent Pod Status ==="
+          kubectl get pods -n a2a-demo -l app=a2a-agent -o wide
+
+          echo ""
+          echo "=== Agent Pod Descriptions ==="
+          for pod in $(kubectl get pods -n a2a-demo -l app=a2a-agent -o jsonpath='{.items[*].metadata.name}'); do
+            echo "--- Pod: $pod ---"
+            kubectl describe pod $pod -n a2a-demo | tail -30
+          done
+
+          echo ""
+          echo "=== Recent Events ==="
+          kubectl get events -n a2a-demo --sort-by='.lastTimestamp' | tail -20
+
+          echo ""
+          echo "=== Agent Pod Logs ==="
+          for pod in $(kubectl get pods -n a2a-demo -l app=a2a-agent -o jsonpath='{.items[*].metadata.name}'); do
+            echo "--- Logs for $pod ---"
+            kubectl logs -n a2a-demo $pod --tail=100 || true
+          done
+
+          echo ""
+          echo "=== PostgreSQL Logs ==="
+          kubectl logs -n a2a-demo postgres-0 --tail=50 || true
+
+          echo ""
+          echo "=== Kafka Logs ==="
+          kubectl logs -n kafka -l strimzi.io/cluster=a2a-kafka --tail=50 || true
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Kill minikube tunnel if running
+          if [ -f /tmp/minikube-tunnel.pid ]; then
+            kill $(cat /tmp/minikube-tunnel.pid) || true
+          fi
+          # Cleanup resources
+          cd examples/cloud-deployment/scripts
+          echo "y" | ./cleanup.sh || true
+
+

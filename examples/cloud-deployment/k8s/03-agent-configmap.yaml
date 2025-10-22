@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-config
+  namespace: a2a-demo
+data:
+  DATABASE_URL: "jdbc:postgresql://postgres.a2a-demo.svc.cluster.local:5432/a2a"
+  DATABASE_USER: "a2a"
+  DATABASE_PASSWORD: "a2a"
+  KAFKA_BOOTSTRAP_SERVERS: "a2a-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092"
+  AGENT_URL: "http://a2a-agent-service.a2a-demo.svc.cluster.local:8080"
