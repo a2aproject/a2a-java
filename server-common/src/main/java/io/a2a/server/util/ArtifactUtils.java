@@ -44,7 +44,7 @@ public final class ArtifactUtils {
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
     public static Artifact newArtifact(List<Part<?>> parts, String name) {
-        return newArtifact(parts, name, "");
+        return newArtifact(parts, name, null);
     }
 
     /**
@@ -71,7 +71,7 @@ public final class ArtifactUtils {
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
     public static Artifact newTextArtifact(String name, String text) {
-        return newTextArtifact(name, text, "");
+        return newTextArtifact(name, text, null);
     }
 
     /**
@@ -98,6 +98,6 @@ public final class ArtifactUtils {
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
     public static Artifact newDataArtifact(String name, Map<String, Object> data) {
-        return newDataArtifact(name, data, "");
+        return newDataArtifact(name, data, null);
     }
 }

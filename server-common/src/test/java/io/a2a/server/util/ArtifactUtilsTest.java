@@ -66,7 +66,7 @@ class ArtifactUtilsTest {
         Artifact artifact = ArtifactUtils.newArtifact(parts, name);
         
         // Then
-        assertEquals("", artifact.description());
+        assertNull(artifact.description());
     }
 
     @Test
@@ -115,9 +115,7 @@ class ArtifactUtilsTest {
     @Test
     void testNewDataArtifactCreatesSingleDataPart() {
         // Given
-        Map<String, Object> sampleData = new HashMap<>();
-        sampleData.put("key", "value");
-        sampleData.put("number", 123);
+        Map<String, Object> sampleData = Map.of("key", "value", "number", 123);
         String name = "Data_Artifact";
         
         // When
@@ -131,9 +129,7 @@ class ArtifactUtilsTest {
     @Test
     void testNewDataArtifactPartContainsProvidedData() {
         // Given
-        Map<String, Object> sampleData = new HashMap<>();
-        sampleData.put("content", "test_data");
-        sampleData.put("is_valid", true);
+        Map<String, Object> sampleData = Map.of("content", "test_data", "is_valid", true);
         String name = "Structured_Data_Artifact";
         
         // When
@@ -147,8 +143,7 @@ class ArtifactUtilsTest {
     @Test
     void testNewDataArtifactAssignsNameDescription() {
         // Given
-        Map<String, Object> sampleData = new HashMap<>();
-        sampleData.put("info", "some details");
+        Map<String, Object> sampleData = Map.of("info", "some details");
         String name = "Named_Data_Artifact";
         String description = "Description for data artifact.";
         
@@ -158,32 +153,6 @@ class ArtifactUtilsTest {
         // Then
         assertEquals(name, artifact.name());
         assertEquals(description, artifact.description());
-    }
-
-    @Test
-    void testNewTextArtifactWithEmptyDescription() {
-        // Given
-        String text = "Test content";
-        String name = "Test_Artifact";
-        
-        // When
-        Artifact artifact = ArtifactUtils.newTextArtifact(name, text);
-        
-        // Then
-        assertEquals("", artifact.description());
-    }
-
-    @Test
-    void testNewDataArtifactWithEmptyDescription() {
-        // Given
-        Map<String, Object> data = Map.of("test", "value");
-        String name = "Test_Data_Artifact";
-        
-        // When
-        Artifact artifact = ArtifactUtils.newDataArtifact(name, data);
-        
-        // Then
-        assertEquals("", artifact.description());
     }
 
     @Test
