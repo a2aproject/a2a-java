@@ -21,12 +21,12 @@ public final class ArtifactUtils {
     /**
      * Creates a new Artifact object.
      *
-     * @param parts The list of {@code Part} objects forming the artifact's content.
      * @param name The human-readable name of the artifact.
+     * @param parts The list of {@code Part} objects forming the artifact's content.
      * @param description An optional description of the artifact.
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
-    public static Artifact newArtifact(List<Part<?>> parts, String name, String description) {
+    public static Artifact newArtifact(String name, List<Part<?>> parts, String description) {
         return new Artifact(
             UUID.randomUUID().toString(),
             name,
@@ -39,12 +39,12 @@ public final class ArtifactUtils {
     /**
      * Creates a new Artifact object with empty description.
      *
-     * @param parts The list of {@code Part} objects forming the artifact's content.
      * @param name The human-readable name of the artifact.
+     * @param parts The list of {@code Part} objects forming the artifact's content.
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
-    public static Artifact newArtifact(List<Part<?>> parts, String name) {
-        return newArtifact(parts, name, null);
+    public static Artifact newArtifact(String name, List<Part<?>> parts) {
+        return newArtifact(name, parts, null);
     }
 
     /**
@@ -57,8 +57,8 @@ public final class ArtifactUtils {
      */
     public static Artifact newTextArtifact(String name, String text, String description) {
         return newArtifact(
-            List.of(new TextPart(text)),
             name,
+            List.of(new TextPart(text)),
             description
         );
     }
@@ -84,8 +84,8 @@ public final class ArtifactUtils {
      */
     public static Artifact newDataArtifact(String name, Map<String, Object> data, String description) {
         return newArtifact(
-            List.of(new DataPart(data)),
             name,
+            List.of(new DataPart(data)),
             description
         );
     }

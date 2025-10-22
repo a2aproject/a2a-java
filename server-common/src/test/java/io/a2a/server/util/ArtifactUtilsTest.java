@@ -1,59 +1,43 @@
 package io.a2a.server.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 import io.a2a.spec.Artifact;
 import io.a2a.spec.DataPart;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
-
-import static org.mockito.Mockito.mockStatic;
 class ArtifactUtilsTest {
 
     @Test
-    void testNewArtifactGeneratesId() {
-        // Given
-        UUID mockUuid = UUID.fromString("abcdef12-1234-5678-1234-567812345678");
-        
-        try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
-            mockedUuid.when(UUID::randomUUID).thenReturn(mockUuid);
-            
-            // When
-            Artifact artifact = ArtifactUtils.newArtifact(
-            List.of(new TextPart("")),
-            "test_artifact"
-        );
-            
-            // Then
-            assertEquals(mockUuid.toString(), artifact.artifactId());
-        }
-    }
-
-    @Test
     void testNewArtifactAssignsPartsNameDescription() {
-        // Given
-        List<Part<?>> parts = List.of(new TextPart("Sample text"));
-        String name = "My Artifact";
-        String description = "This is a test artifact.";
-        
-        // When
-        Artifact artifact = ArtifactUtils.newArtifact(parts, name, description);
-        
-        // Then
-        assertEquals(parts, artifact.parts());
-        assertEquals(name, artifact.name());
-        assertEquals(description, artifact.description());
+            // Given
+            List<Part<?>> parts = List.of(new TextPart("Sample text"));
+            String name = "My Artifact";
+            String description = "This is a test artifact.";
+    
+            // When
+            Artifact artifact = ArtifactUtils.newArtifact(name, parts, description);
+    
+            // Then
+            assertEquals(parts, artifact.parts());
+            assertEquals(name, artifact.name());
+            assertEquals(description, artifact.description());
+    
+            // Then
+            assertNotNull(artifact.artifactId());
+            assertFalse(artifact.artifactId().isBlank());
+            assertDoesNotThrow(() -> UUID.fromString(artifact.artifactId()));
     }
 
     @Test
@@ -63,7 +47,7 @@ class ArtifactUtilsTest {
         String name = "Artifact_No_Desc";
         
         // When
-        Artifact artifact = ArtifactUtils.newArtifact(parts, name);
+        Artifact artifact = ArtifactUtils.newArtifact(name, parts);
         
         // Then
         assertEquals(null, artifact.description());    }
@@ -161,7 +145,7 @@ class ArtifactUtilsTest {
         String name = "Test_Artifact";
         
         // When
-        Artifact artifact = ArtifactUtils.newArtifact(parts, name);
+        Artifact artifact = ArtifactUtils.newArtifact(name, parts);
         
         // Then
         assertNotNull(artifact.artifactId());
