@@ -66,8 +66,7 @@ class ArtifactUtilsTest {
         Artifact artifact = ArtifactUtils.newArtifact(parts, name);
         
         // Then
-        assertNull(artifact.description());
-    }
+        assertEquals(null, artifact.description());    }
 
     @Test
     void testNewTextArtifactCreatesSingleTextPart() {
