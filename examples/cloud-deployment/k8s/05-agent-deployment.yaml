@@ -18,7 +18,9 @@ spec:
       containers:
         - name: a2a-agent
           image: localhost:5001/a2a-cloud-deployment:latest
-          imagePullPolicy: IfNotPresent
+          # Always pull to ensure latest image is used when rebuilding with :latest tag
+          # For production, use digest-based image references (e.g., @sha256:...)
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
               name: http

@@ -6,7 +6,7 @@ This example demonstrates deploying an A2A agent to Kubernetes with:
 - **Kafka event replication** for cross-pod event streaming
 - **JSON-RPC transport** for client-server communication
 
-Note that the aim of this example is just to demonstrate how to set up a2a-java in a cloud environment. Hence, it doesn't do anything with an LLM. It just inter
+Note that the aim of this example is just to demonstrate how to set up a2a-java in a cloud environment. Hence, it doesn't do anything with an LLM, but shows that it can be configured to work in a cloud, or other distributed, environment.
 
 ## Architecture
 
@@ -122,7 +122,7 @@ Expected output:
 The agent service uses **NodePort** with Kind **extraPortMappings** to expose the service:
 
 - Kind maps **host port 8080** → **node port 30080** (configured in `kind-config.yaml`)
-- Kubernetes Service maps **NodePort 30080** → **pod port 8080** (configured in `k8s/0-agent-deployment.yaml`)
+- Kubernetes Service maps **NodePort 30080** → **pod port 8080** (configured in `k8s/05-agent-deployment.yaml`)
 - Result: Access the agent at **http://localhost:8080** from your host machine
 
 This approach provides the same round-robin load balancing as a real LoadBalancer but works consistently across all platforms (macOS, Linux, Windows, and CI environments like GitHub Actions).
@@ -512,7 +512,7 @@ cloud-deployment/
 │   ├── 00-namespace.yaml                     # Kubernetes namespace
 │   ├── 01-postgres.yaml                      # PostgreSQL deployment
 │   ├── 02-kafka.yaml                         # Strimzi Kafka cluster
-│   ├── 03-kafka-topic.yaml                  # Strimzi Kafka cluster
+│   ├── 03-kafka-topic.yaml                   # Kafka topic
 │   ├── 04-agent-configmap.yaml               # Configuration
 │   └── 05-agent-deployment.yaml              # Agent deployment + service
 ├── scripts/
