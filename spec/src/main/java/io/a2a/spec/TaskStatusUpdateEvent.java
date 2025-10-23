@@ -86,6 +86,16 @@ public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKin
         private boolean isFinal;
         private Map<String, Object> metadata;
 
+        public Builder() {
+        }
+
+        public Builder(TaskStatusUpdateEvent existingTaskStatusUpdateEvent) {
+            this.taskId = existingTaskStatusUpdateEvent.taskId;
+            this.status = existingTaskStatusUpdateEvent.status;
+            this.contextId = existingTaskStatusUpdateEvent.contextId;
+            this.isFinal = existingTaskStatusUpdateEvent.isFinal;
+            this.metadata = existingTaskStatusUpdateEvent.metadata;
+        }
         public Builder taskId(String id) {
             this.taskId = id;
             return this;

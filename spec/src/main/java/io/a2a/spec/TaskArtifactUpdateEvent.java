@@ -94,6 +94,18 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
         private Boolean lastChunk;
         private Map<String, Object> metadata;
 
+        public Builder() {
+        }
+
+        public Builder(TaskArtifactUpdateEvent existingTaskArtifactUpdateEvent) {
+            this.taskId = existingTaskArtifactUpdateEvent.taskId;
+            this.artifact = existingTaskArtifactUpdateEvent.artifact;
+            this.contextId = existingTaskArtifactUpdateEvent.contextId;
+            this.append = existingTaskArtifactUpdateEvent.append;
+            this.lastChunk = existingTaskArtifactUpdateEvent.lastChunk;
+            this.metadata = existingTaskArtifactUpdateEvent.metadata;
+        }
+
         public Builder taskId(String taskId) {
             this.taskId = taskId;
             return this;
