@@ -31,6 +31,13 @@ done
 echo "Container tool: $CONTAINER_TOOL"
 echo ""
 
+# Configure Kind to use podman if specified
+if [ "$CONTAINER_TOOL" = "podman" ]; then
+    export KIND_EXPERIMENTAL_PROVIDER=podman
+    echo "Configured Kind to use podman provider"
+    echo ""
+fi
+
 # Check if Kind is installed
 if ! command -v kind &> /dev/null; then
     echo -e "${RED}Error: Kind is not installed${NC}"
