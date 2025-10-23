@@ -27,6 +27,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Configure Kind to use podman if specified
+if [ "$CONTAINER_TOOL" = "podman" ]; then
+    export KIND_EXPERIMENTAL_PROVIDER=podman
+fi
+
 echo -e "${YELLOW}This will delete all resources in the a2a-demo namespace and the Kind cluster${NC}"
 read -p "Are you sure you want to continue? (y/N) " -n 1 -r
 echo ""
