@@ -13,7 +13,7 @@ option csharp_namespace = "A2a.V1";
 option go_package = "google.golang.org/a2a/v1";
 option java_multiple_files = true;
 option java_outer_classname = "A2A";
-option java_package = "com.google.a2a.v1";
+option java_package = "io.a2a.grpc";
 
 // A2AService defines the gRPC version of the A2A protocol. This has a slightly
 // different shape than the JSONRPC version to better conform to AIP-127,
