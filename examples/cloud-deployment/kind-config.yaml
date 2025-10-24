@@ -1,0 +1,24 @@
+# Kind cluster configuration for A2A Cloud Deployment Example
+# This config enables:
+# - Local registry integration
+# - NodePort service access via extraPortMappings
+# - Sufficient resources for PostgreSQL, Kafka, and 2 agent pods
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+
+# Enable local registry support
+containerdConfigPatches:
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry]
+    config_path = "/etc/containerd/certs.d"
+
+nodes:
+# Single control-plane node is sufficient for this demo
+- role: control-plane
+  # Map host port 8080 to NodePort 30080 for agent service access
+  extraPortMappings:
+  - containerPort: 30080  # NodePort on Kubernetes node
+    hostPort: 8080        # Accessible on localhost:8080
+    listenAddress: "0.0.0.0"
+    protocol: TCP

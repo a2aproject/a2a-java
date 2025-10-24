@@ -439,6 +439,7 @@
         <module>client/transport/spi</module>
         <module>common</module>
         <module>examples/helloworld</module>
+        <module>examples/cloud-deployment/server</module>
         <module>extras/common</module>
         <module>extras/task-store-database-jpa</module>
         <module>extras/push-notification-config-store-database-jpa</module>

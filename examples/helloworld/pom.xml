@@ -14,7 +14,7 @@
     <artifactId>a2a-java-sdk-examples-parent</artifactId>
     <packaging>pom</packaging>
 
-    <name>Java SDK A2A Examples</name>
+    <name>Java SDK A2A Examples: Hello World</name>
     <description>Examples for the Java SDK for the Agent2Agent Protocol (A2A)</description>
 
     <dependencyManagement>

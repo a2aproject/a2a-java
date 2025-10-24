@@ -1,0 +1,16 @@
+---
+# Kafka topic for A2A event replication
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: a2a-replicated-events
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: a2a-kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: 3600000  # 1 hour retention
+    segment.bytes: 1073741824
+    cleanup.policy: delete
