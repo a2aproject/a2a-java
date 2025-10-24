@@ -90,6 +90,8 @@ cd scripts
 ./deploy.sh --container-tool podman
 ```
 
+Note that using Kind with Podman on Linux may have some occasional issues due to Kind's experimental support for Podman. In our testing, a reboot normally solves this. 
+
 The script will:
 - Create Kind cluster with local registry support (if not already exists)
 - Set up local container registry (localhost:5001)
