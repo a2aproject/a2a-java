@@ -13,7 +13,7 @@ public class JsonRestMessages {
                   "messageId": "message-1234",
                   "contextId": "context-1234",
                   "role": "ROLE_USER",
-                  "content": [{
+                  "parts": [{
                     "text": "tell me a joke"
                   }],
                   "metadata": {
@@ -35,7 +35,7 @@ public class JsonRestMessages {
                     "contextId": "context-1234",
                     "taskId": "9b511af4-b27c-47fa-aecf-2a93c08a44f8",
                     "role": "ROLE_USER",
-                    "content": [
+                    "parts": [
                       {
                         "text": "tell me a joke"
                       }
@@ -81,7 +81,7 @@ public class JsonRestMessages {
               "history": [
                {
                 "role": "ROLE_USER",
-                "content": [
+                "parts": [
                  {
                   "text": "tell me a joke"
                  },
@@ -624,7 +624,7 @@ public class JsonRestMessages {
             {
               "message": {
                 "role": "ROLE_USER",
-                "content": [
+                "parts": [
                   {
                     "text": "tell me some jokes"
                   }

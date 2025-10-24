@@ -63,7 +63,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             .setContextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getContextId())
             .setMessageId(AbstractA2ARequestHandlerTest.MESSAGE.getMessageId())
             .setRole(Role.ROLE_AGENT)
-            .addContent(Part.newBuilder().setText(((TextPart) AbstractA2ARequestHandlerTest.MESSAGE.getParts().get(0)).getText()).build())
+            .addParts(Part.newBuilder().setText(((TextPart) AbstractA2ARequestHandlerTest.MESSAGE.getParts().get(0)).getText()).build())
             .setMetadata(Struct.newBuilder().build())
             .build();
 
