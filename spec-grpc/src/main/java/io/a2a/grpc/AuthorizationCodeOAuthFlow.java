@@ -6,6 +6,10 @@
 package io.a2a.grpc;
 
 /**
+ * <pre>
+ * --8&lt;-- [start:AuthorizationCodeOAuthFlow]
+ * </pre>
+ *
  * Protobuf type {@code a2a.v1.AuthorizationCodeOAuthFlow}
  */
 @com.google.protobuf.Generated
@@ -503,6 +507,10 @@ java.lang.String defaultValue) {
     return builder;
   }
   /**
+   * <pre>
+   * --8&lt;-- [start:AuthorizationCodeOAuthFlow]
+   * </pre>
+   *
    * Protobuf type {@code a2a.v1.AuthorizationCodeOAuthFlow}
    */
   public static final class Builder extends

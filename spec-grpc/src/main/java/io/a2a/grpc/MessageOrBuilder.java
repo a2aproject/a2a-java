@@ -12,8 +12,8 @@ public interface MessageOrBuilder extends
 
   /**
    * <pre>
-   * The message id of the message. This is required and created by the
-   * message creator.
+   * The unique identifier (e.g. UUID)of the message. This is required and
+   * created by the message creator.
    * </pre>
    *
    * <code>string message_id = 1;</code>
@@ -22,8 +22,8 @@ public interface MessageOrBuilder extends
   java.lang.String getMessageId();
   /**
    * <pre>
-   * The message id of the message. This is required and created by the
-   * message creator.
+   * The unique identifier (e.g. UUID)of the message. This is required and
+   * created by the message creator.
    * </pre>
    *
    * <code>string message_id = 1;</code>
@@ -98,50 +98,50 @@ public interface MessageOrBuilder extends
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   java.util.List<io.a2a.grpc.Part> 
-      getContentList();
+      getPartsList();
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
-  io.a2a.grpc.Part getContent(int index);
+  io.a2a.grpc.Part getParts(int index);
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
-  int getContentCount();
+  int getPartsCount();
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
-      getContentOrBuilderList();
+      getPartsOrBuilderList();
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
-  io.a2a.grpc.PartOrBuilder getContentOrBuilder(
+  io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
       int index);
 
   /**
@@ -214,4 +214,45 @@ public interface MessageOrBuilder extends
    */
   com.google.protobuf.ByteString
       getExtensionsBytes(int index);
+
+  /**
+   * <pre>
+   * A list of task IDs that this message references for additional context.
+   * </pre>
+   *
+   * <code>repeated string reference_task_ids = 8;</code>
+   * @return A list containing the referenceTaskIds.
+   */
+  java.util.List<java.lang.String>
+      getReferenceTaskIdsList();
+  /**
+   * <pre>
+   * A list of task IDs that this message references for additional context.
+   * </pre>
+   *
+   * <code>repeated string reference_task_ids = 8;</code>
+   * @return The count of referenceTaskIds.
+   */
+  int getReferenceTaskIdsCount();
+  /**
+   * <pre>
+   * A list of task IDs that this message references for additional context.
+   * </pre>
+   *
+   * <code>repeated string reference_task_ids = 8;</code>
+   * @param index The index of the element to return.
+   * @return The referenceTaskIds at the given index.
+   */
+  java.lang.String getReferenceTaskIds(int index);
+  /**
+   * <pre>
+   * A list of task IDs that this message references for additional context.
+   * </pre>
+   *
+   * <code>repeated string reference_task_ids = 8;</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the referenceTaskIds at the given index.
+   */
+  com.google.protobuf.ByteString
+      getReferenceTaskIdsBytes(int index);
 }

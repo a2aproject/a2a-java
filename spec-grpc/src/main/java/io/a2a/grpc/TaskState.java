@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:TaskState]
  * The set of states a Task can be in.
  * </pre>
  *

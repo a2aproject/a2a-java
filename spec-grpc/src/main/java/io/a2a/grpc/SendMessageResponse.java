@@ -8,6 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * &#47;///// Response Messages ///////////
+ * --8&lt;-- [start:SendMessageSuccessResponse]
  * </pre>
  *
  * Protobuf type {@code a2a.v1.SendMessageResponse}
@@ -339,6 +340,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * &#47;///// Response Messages ///////////
+   * --8&lt;-- [start:SendMessageSuccessResponse]
    * </pre>
    *
    * Protobuf type {@code a2a.v1.SendMessageResponse}
