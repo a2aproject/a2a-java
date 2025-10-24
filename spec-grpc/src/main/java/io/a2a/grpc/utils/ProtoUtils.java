@@ -362,6 +362,7 @@ public class ProtoUtils {
             io.a2a.grpc.AgentCapabilities.Builder builder = io.a2a.grpc.AgentCapabilities.newBuilder();
             builder.setStreaming(agentCapabilities.streaming());
             builder.setPushNotifications(agentCapabilities.pushNotifications());
+            builder.setStateTransitionHistory(agentCapabilities.stateTransitionHistory());
             if (agentCapabilities.extensions() != null) {
                 builder.addAllExtensions(agentCapabilities.extensions().stream().map(ToProto::agentExtension).collect(Collectors.toList()));
             }
