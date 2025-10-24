@@ -14,9 +14,6 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  * - TaskPushNotificationConfig are a resource whose parent is a task.
  *   They have get, list and create methods.
  * - AgentCard is a static resource with only a get method.
- * fields are not present as they don't comply with AIP rules, and the
- * optional history_length on the get task method is not present as it also
- * violates AIP-127 and AIP-131.
  * </pre>
  */
 @javax.annotation.Generated(
@@ -121,6 +118,37 @@ public final class A2AServiceGrpc {
       }
     }
     return getGetTaskMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<io.a2a.grpc.ListTasksRequest,
+      io.a2a.grpc.ListTasksResponse> getListTasksMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ListTasks",
+      requestType = io.a2a.grpc.ListTasksRequest.class,
+      responseType = io.a2a.grpc.ListTasksResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<io.a2a.grpc.ListTasksRequest,
+      io.a2a.grpc.ListTasksResponse> getListTasksMethod() {
+    io.grpc.MethodDescriptor<io.a2a.grpc.ListTasksRequest, io.a2a.grpc.ListTasksResponse> getListTasksMethod;
+    if ((getListTasksMethod = A2AServiceGrpc.getListTasksMethod) == null) {
+      synchronized (A2AServiceGrpc.class) {
+        if ((getListTasksMethod = A2AServiceGrpc.getListTasksMethod) == null) {
+          A2AServiceGrpc.getListTasksMethod = getListTasksMethod =
+              io.grpc.MethodDescriptor.<io.a2a.grpc.ListTasksRequest, io.a2a.grpc.ListTasksResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListTasks"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  io.a2a.grpc.ListTasksRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  io.a2a.grpc.ListTasksResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new A2AServiceMethodDescriptorSupplier("ListTasks"))
+              .build();
+        }
+      }
+    }
+    return getListTasksMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<io.a2a.grpc.CancelTaskRequest,
@@ -411,9 +439,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public interface AsyncService {
@@ -448,6 +473,16 @@ public final class A2AServiceGrpc {
     default void getTask(io.a2a.grpc.GetTaskRequest request,
         io.grpc.stub.StreamObserver<io.a2a.grpc.Task> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetTaskMethod(), responseObserver);
+    }
+
+    /**
+     * <pre>
+     * List tasks with optional filtering and pagination.
+     * </pre>
+     */
+    default void listTasks(io.a2a.grpc.ListTasksRequest request,
+        io.grpc.stub.StreamObserver<io.a2a.grpc.ListTasksResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListTasksMethod(), responseObserver);
     }
 
     /**
@@ -538,9 +573,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static abstract class A2AServiceImplBase
@@ -564,9 +596,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static final class A2AServiceStub
@@ -615,6 +644,17 @@ public final class A2AServiceGrpc {
         io.grpc.stub.StreamObserver<io.a2a.grpc.Task> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetTaskMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     * <pre>
+     * List tasks with optional filtering and pagination.
+     * </pre>
+     */
+    public void listTasks(io.a2a.grpc.ListTasksRequest request,
+        io.grpc.stub.StreamObserver<io.a2a.grpc.ListTasksResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getListTasksMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -712,9 +752,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static final class A2AServiceBlockingV2Stub
@@ -762,6 +799,16 @@ public final class A2AServiceGrpc {
     public io.a2a.grpc.Task getTask(io.a2a.grpc.GetTaskRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetTaskMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * List tasks with optional filtering and pagination.
+     * </pre>
+     */
+    public io.a2a.grpc.ListTasksResponse listTasks(io.a2a.grpc.ListTasksRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListTasksMethod(), getCallOptions(), request);
     }
 
     /**
@@ -854,9 +901,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static final class A2AServiceBlockingStub
@@ -903,6 +947,16 @@ public final class A2AServiceGrpc {
     public io.a2a.grpc.Task getTask(io.a2a.grpc.GetTaskRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetTaskMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * List tasks with optional filtering and pagination.
+     * </pre>
+     */
+    public io.a2a.grpc.ListTasksResponse listTasks(io.a2a.grpc.ListTasksRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListTasksMethod(), getCallOptions(), request);
     }
 
     /**
@@ -994,9 +1048,6 @@ public final class A2AServiceGrpc {
    * - TaskPushNotificationConfig are a resource whose parent is a task.
    *   They have get, list and create methods.
    * - AgentCard is a static resource with only a get method.
-   * fields are not present as they don't comply with AIP rules, and the
-   * optional history_length on the get task method is not present as it also
-   * violates AIP-127 and AIP-131.
    * </pre>
    */
   public static final class A2AServiceFutureStub
@@ -1033,6 +1084,17 @@ public final class A2AServiceGrpc {
         io.a2a.grpc.GetTaskRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetTaskMethod(), getCallOptions()), request);
+    }
+
+    /**
+     * <pre>
+     * List tasks with optional filtering and pagination.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.ListTasksResponse> listTasks(
+        io.a2a.grpc.ListTasksRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getListTasksMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1106,13 +1168,14 @@ public final class A2AServiceGrpc {
   private static final int METHODID_SEND_MESSAGE = 0;
   private static final int METHODID_SEND_STREAMING_MESSAGE = 1;
   private static final int METHODID_GET_TASK = 2;
-  private static final int METHODID_CANCEL_TASK = 3;
-  private static final int METHODID_TASK_SUBSCRIPTION = 4;
-  private static final int METHODID_CREATE_TASK_PUSH_NOTIFICATION_CONFIG = 5;
-  private static final int METHODID_GET_TASK_PUSH_NOTIFICATION_CONFIG = 6;
-  private static final int METHODID_LIST_TASK_PUSH_NOTIFICATION_CONFIG = 7;
-  private static final int METHODID_GET_AGENT_CARD = 8;
-  private static final int METHODID_DELETE_TASK_PUSH_NOTIFICATION_CONFIG = 9;
+  private static final int METHODID_LIST_TASKS = 3;
+  private static final int METHODID_CANCEL_TASK = 4;
+  private static final int METHODID_TASK_SUBSCRIPTION = 5;
+  private static final int METHODID_CREATE_TASK_PUSH_NOTIFICATION_CONFIG = 6;
+  private static final int METHODID_GET_TASK_PUSH_NOTIFICATION_CONFIG = 7;
+  private static final int METHODID_LIST_TASK_PUSH_NOTIFICATION_CONFIG = 8;
+  private static final int METHODID_GET_AGENT_CARD = 9;
+  private static final int METHODID_DELETE_TASK_PUSH_NOTIFICATION_CONFIG = 10;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -1142,6 +1205,10 @@ public final class A2AServiceGrpc {
         case METHODID_GET_TASK:
           serviceImpl.getTask((io.a2a.grpc.GetTaskRequest) request,
               (io.grpc.stub.StreamObserver<io.a2a.grpc.Task>) responseObserver);
+          break;
+        case METHODID_LIST_TASKS:
+          serviceImpl.listTasks((io.a2a.grpc.ListTasksRequest) request,
+              (io.grpc.stub.StreamObserver<io.a2a.grpc.ListTasksResponse>) responseObserver);
           break;
         case METHODID_CANCEL_TASK:
           serviceImpl.cancelTask((io.a2a.grpc.CancelTaskRequest) request,
@@ -1210,6 +1277,13 @@ public final class A2AServiceGrpc {
               io.a2a.grpc.GetTaskRequest,
               io.a2a.grpc.Task>(
                 service, METHODID_GET_TASK)))
+        .addMethod(
+          getListTasksMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.a2a.grpc.ListTasksRequest,
+              io.a2a.grpc.ListTasksResponse>(
+                service, METHODID_LIST_TASKS)))
         .addMethod(
           getCancelTaskMethod(),
           io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -1310,6 +1384,7 @@ public final class A2AServiceGrpc {
               .addMethod(getSendMessageMethod())
               .addMethod(getSendStreamingMessageMethod())
               .addMethod(getGetTaskMethod())
+              .addMethod(getListTasksMethod())
               .addMethod(getCancelTaskMethod())
               .addMethod(getTaskSubscriptionMethod())
               .addMethod(getCreateTaskPushNotificationConfigMethod())

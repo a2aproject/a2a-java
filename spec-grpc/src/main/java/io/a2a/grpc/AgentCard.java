@@ -7,12 +7,13 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:AgentCard]
  * AgentCard conveys key information:
  * - Overall details (version, name, description, uses)
  * - Skills; a set of actions/solutions the agent can perform
  * - Default modalities/content types supported by the agent.
  * - Authentication requirements
- * Next ID: 18
+ * Next ID: 19
  * </pre>
  *
  * Protobuf type {@code a2a.v1.AgentCard}
@@ -52,6 +53,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.LazyStringArrayList.emptyList();
     skills_ = java.util.Collections.emptyList();
     signatures_ = java.util.Collections.emptyList();
+    iconUrl_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -1043,6 +1045,53 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     return signatures_.get(index);
   }
 
+  public static final int ICON_URL_FIELD_NUMBER = 18;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object iconUrl_ = "";
+  /**
+   * <pre>
+   * An optional URL to an icon for the agent.
+   * </pre>
+   *
+   * <code>string icon_url = 18;</code>
+   * @return The iconUrl.
+   */
+  @java.lang.Override
+  public java.lang.String getIconUrl() {
+    java.lang.Object ref = iconUrl_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      iconUrl_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * An optional URL to an icon for the agent.
+   * </pre>
+   *
+   * <code>string icon_url = 18;</code>
+   * @return The bytes for iconUrl.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getIconUrlBytes() {
+    java.lang.Object ref = iconUrl_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      iconUrl_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -1110,6 +1159,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     for (int i = 0; i < signatures_.size(); i++) {
       output.writeMessage(17, signatures_.get(i));
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(iconUrl_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 18, iconUrl_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -1195,6 +1247,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(17, signatures_.get(i));
     }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(iconUrl_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(18, iconUrl_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1250,6 +1305,8 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         != other.getSupportsAuthenticatedExtendedCard()) return false;
     if (!getSignaturesList()
         .equals(other.getSignaturesList())) return false;
+    if (!getIconUrl()
+        .equals(other.getIconUrl())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -1314,6 +1371,8 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       hash = (37 * hash) + SIGNATURES_FIELD_NUMBER;
       hash = (53 * hash) + getSignaturesList().hashCode();
     }
+    hash = (37 * hash) + ICON_URL_FIELD_NUMBER;
+    hash = (53 * hash) + getIconUrl().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1413,12 +1472,13 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
+   * --8&lt;-- [start:AgentCard]
    * AgentCard conveys key information:
    * - Overall details (version, name, description, uses)
    * - Skills; a set of actions/solutions the agent can perform
    * - Default modalities/content types supported by the agent.
    * - Authentication requirements
-   * Next ID: 18
+   * Next ID: 19
    * </pre>
    *
    * Protobuf type {@code a2a.v1.AgentCard}
@@ -1538,6 +1598,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         signaturesBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00010000);
+      iconUrl_ = "";
       return this;
     }
 
@@ -1658,6 +1719,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       }
       if (((from_bitField0_ & 0x00008000) != 0)) {
         result.supportsAuthenticatedExtendedCard_ = supportsAuthenticatedExtendedCard_;
+      }
+      if (((from_bitField0_ & 0x00020000) != 0)) {
+        result.iconUrl_ = iconUrl_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1845,6 +1909,11 @@ io.a2a.grpc.SecurityScheme defaultValue) {
           }
         }
       }
+      if (!other.getIconUrl().isEmpty()) {
+        iconUrl_ = other.iconUrl_;
+        bitField0_ |= 0x00020000;
+        onChanged();
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -1998,6 +2067,11 @@ io.a2a.grpc.SecurityScheme defaultValue) {
               }
               break;
             } // case 138
+            case 146: {
+              iconUrl_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00020000;
+              break;
+            } // case 146
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -5076,6 +5150,98 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         signatures_ = null;
       }
       return signaturesBuilder_;
+    }
+
+    private java.lang.Object iconUrl_ = "";
+    /**
+     * <pre>
+     * An optional URL to an icon for the agent.
+     * </pre>
+     *
+     * <code>string icon_url = 18;</code>
+     * @return The iconUrl.
+     */
+    public java.lang.String getIconUrl() {
+      java.lang.Object ref = iconUrl_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        iconUrl_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * An optional URL to an icon for the agent.
+     * </pre>
+     *
+     * <code>string icon_url = 18;</code>
+     * @return The bytes for iconUrl.
+     */
+    public com.google.protobuf.ByteString
+        getIconUrlBytes() {
+      java.lang.Object ref = iconUrl_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        iconUrl_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * An optional URL to an icon for the agent.
+     * </pre>
+     *
+     * <code>string icon_url = 18;</code>
+     * @param value The iconUrl to set.
+     * @return This builder for chaining.
+     */
+    public Builder setIconUrl(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      iconUrl_ = value;
+      bitField0_ |= 0x00020000;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * An optional URL to an icon for the agent.
+     * </pre>
+     *
+     * <code>string icon_url = 18;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearIconUrl() {
+      iconUrl_ = getDefaultInstance().getIconUrl();
+      bitField0_ = (bitField0_ & ~0x00020000);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * An optional URL to an icon for the agent.
+     * </pre>
+     *
+     * <code>string icon_url = 18;</code>
+     * @param value The bytes for iconUrl to set.
+     * @return This builder for chaining.
+     */
+    public Builder setIconUrlBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      iconUrl_ = value;
+      bitField0_ |= 0x00020000;
+      onChanged();
+      return this;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.AgentCard)

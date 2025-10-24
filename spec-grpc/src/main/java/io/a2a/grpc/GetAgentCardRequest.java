@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * Empty. Added to fix linter violation.
+ * --8&lt;-- [start:GetAuthenticatedExtendedCardRequest]
  * </pre>
  *
  * Protobuf type {@code a2a.v1.GetAgentCardRequest}
@@ -195,7 +195,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Empty. Added to fix linter violation.
+   * --8&lt;-- [start:GetAuthenticatedExtendedCardRequest]
    * </pre>
    *
    * Protobuf type {@code a2a.v1.GetAgentCardRequest}

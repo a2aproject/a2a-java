@@ -6,6 +6,10 @@
 package io.a2a.grpc;
 
 /**
+ * <pre>
+ * --8&lt;-- [start:HTTPAuthSecurityScheme]
+ * </pre>
+ *
  * Protobuf type {@code a2a.v1.HTTPAuthSecurityScheme}
  */
 @com.google.protobuf.Generated
@@ -374,6 +378,10 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
+   * <pre>
+   * --8&lt;-- [start:HTTPAuthSecurityScheme]
+   * </pre>
+   *
    * Protobuf type {@code a2a.v1.HTTPAuthSecurityScheme}
    */
   public static final class Builder extends

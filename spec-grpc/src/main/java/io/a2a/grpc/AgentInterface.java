@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:AgentInterface]
  * Defines additional transport information for the agent.
  * </pre>
  *
@@ -315,6 +316,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:AgentInterface]
    * Defines additional transport information for the agent.
    * </pre>
    *

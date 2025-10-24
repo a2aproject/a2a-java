@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:Artifact]
  * Artifacts are the container for task completed results. These are similar
  * to Messages but are intended to be the product of a task, as opposed to
  * point-to-point communication.
@@ -61,7 +62,8 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object artifactId_ = "";
   /**
    * <pre>
-   * Unique id for the artifact. It must be at least unique within a task.
+   * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
+   * within a task.
    * </pre>
    *
    * <code>string artifact_id = 1;</code>
@@ -82,7 +84,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Unique id for the artifact. It must be at least unique within a task.
+   * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
+   * within a task.
    * </pre>
    *
    * <code>string artifact_id = 1;</code>
@@ -573,6 +576,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:Artifact]
    * Artifacts are the container for task completed results. These are similar
    * to Messages but are intended to be the product of a task, as opposed to
    * point-to-point communication.
@@ -857,7 +861,8 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object artifactId_ = "";
     /**
      * <pre>
-     * Unique id for the artifact. It must be at least unique within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
+     * within a task.
      * </pre>
      *
      * <code>string artifact_id = 1;</code>
@@ -877,7 +882,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique id for the artifact. It must be at least unique within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
+     * within a task.
      * </pre>
      *
      * <code>string artifact_id = 1;</code>
@@ -898,7 +904,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique id for the artifact. It must be at least unique within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
+     * within a task.
      * </pre>
      *
      * <code>string artifact_id = 1;</code>
@@ -915,7 +922,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique id for the artifact. It must be at least unique within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
+     * within a task.
      * </pre>
      *
      * <code>string artifact_id = 1;</code>
@@ -929,7 +937,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique id for the artifact. It must be at least unique within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
+     * within a task.
      * </pre>
      *
      * <code>string artifact_id = 1;</code>

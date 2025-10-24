@@ -6,6 +6,10 @@
 package io.a2a.grpc;
 
 /**
+ * <pre>
+ * --8&lt;-- [start:APIKeySecurityScheme]
+ * </pre>
+ *
  * Protobuf type {@code a2a.v1.APIKeySecurityScheme}
  */
 @com.google.protobuf.Generated
@@ -364,6 +368,10 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
+   * <pre>
+   * --8&lt;-- [start:APIKeySecurityScheme]
+   * </pre>
+   *
    * Protobuf type {@code a2a.v1.APIKeySecurityScheme}
    */
   public static final class Builder extends

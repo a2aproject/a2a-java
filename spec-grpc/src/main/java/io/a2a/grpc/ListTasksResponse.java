@@ -7,16 +7,16 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:ListTaskPushNotificationConfigSuccessResponse]
+ * --8&lt;-- [start:ListTasksResponse]
  * </pre>
  *
- * Protobuf type {@code a2a.v1.ListTaskPushNotificationConfigResponse}
+ * Protobuf type {@code a2a.v1.ListTasksResponse}
  */
 @com.google.protobuf.Generated
-public final class ListTaskPushNotificationConfigResponse extends
+public final class ListTasksResponse extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.ListTaskPushNotificationConfigResponse)
-    ListTaskPushNotificationConfigResponseOrBuilder {
+    // @@protoc_insertion_point(message_implements:a2a.v1.ListTasksResponse)
+    ListTasksResponseOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -25,89 +25,89 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 31,
       /* patch= */ 1,
       /* suffix= */ "",
-      ListTaskPushNotificationConfigResponse.class.getName());
+      ListTasksResponse.class.getName());
   }
-  // Use ListTaskPushNotificationConfigResponse.newBuilder() to construct.
-  private ListTaskPushNotificationConfigResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use ListTasksResponse.newBuilder() to construct.
+  private ListTasksResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private ListTaskPushNotificationConfigResponse() {
-    configs_ = java.util.Collections.emptyList();
+  private ListTasksResponse() {
+    tasks_ = java.util.Collections.emptyList();
     nextPageToken_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_descriptor;
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksResponse_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            io.a2a.grpc.ListTaskPushNotificationConfigResponse.class, io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder.class);
+            io.a2a.grpc.ListTasksResponse.class, io.a2a.grpc.ListTasksResponse.Builder.class);
   }
 
-  public static final int CONFIGS_FIELD_NUMBER = 1;
+  public static final int TASKS_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
-  private java.util.List<io.a2a.grpc.TaskPushNotificationConfig> configs_;
+  private java.util.List<io.a2a.grpc.Task> tasks_;
   /**
    * <pre>
-   * The list of push notification configurations.
+   * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1;</code>
    */
   @java.lang.Override
-  public java.util.List<io.a2a.grpc.TaskPushNotificationConfig> getConfigsList() {
-    return configs_;
+  public java.util.List<io.a2a.grpc.Task> getTasksList() {
+    return tasks_;
   }
   /**
    * <pre>
-   * The list of push notification configurations.
+   * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
-      getConfigsOrBuilderList() {
-    return configs_;
+  public java.util.List<? extends io.a2a.grpc.TaskOrBuilder> 
+      getTasksOrBuilderList() {
+    return tasks_;
   }
   /**
    * <pre>
-   * The list of push notification configurations.
+   * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1;</code>
    */
   @java.lang.Override
-  public int getConfigsCount() {
-    return configs_.size();
+  public int getTasksCount() {
+    return tasks_.size();
   }
   /**
    * <pre>
-   * The list of push notification configurations.
+   * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.TaskPushNotificationConfig getConfigs(int index) {
-    return configs_.get(index);
+  public io.a2a.grpc.Task getTasks(int index) {
+    return tasks_.get(index);
   }
   /**
    * <pre>
-   * The list of push notification configurations.
+   * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigsOrBuilder(
+  public io.a2a.grpc.TaskOrBuilder getTasksOrBuilder(
       int index) {
-    return configs_.get(index);
+    return tasks_.get(index);
   }
 
   public static final int NEXT_PAGE_TOKEN_FIELD_NUMBER = 2;
@@ -115,8 +115,8 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object nextPageToken_ = "";
   /**
    * <pre>
-   * A token, which can be sent as `page_token` to retrieve the next page.
-   * If this field is omitted, there are no subsequent pages.
+   * Token for retrieving the next page of results.
+   * Empty string if no more results.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -137,8 +137,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A token, which can be sent as `page_token` to retrieve the next page.
-   * If this field is omitted, there are no subsequent pages.
+   * Token for retrieving the next page of results.
+   * Empty string if no more results.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -159,6 +159,21 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int TOTAL_SIZE_FIELD_NUMBER = 3;
+  private int totalSize_ = 0;
+  /**
+   * <pre>
+   * Total number of tasks available (before pagination).
+   * </pre>
+   *
+   * <code>int32 total_size = 3;</code>
+   * @return The totalSize.
+   */
+  @java.lang.Override
+  public int getTotalSize() {
+    return totalSize_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -173,11 +188,14 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    for (int i = 0; i < configs_.size(); i++) {
-      output.writeMessage(1, configs_.get(i));
+    for (int i = 0; i < tasks_.size(); i++) {
+      output.writeMessage(1, tasks_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(nextPageToken_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 2, nextPageToken_);
+    }
+    if (totalSize_ != 0) {
+      output.writeInt32(3, totalSize_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -188,12 +206,16 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    for (int i = 0; i < configs_.size(); i++) {
+    for (int i = 0; i < tasks_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(1, configs_.get(i));
+        .computeMessageSize(1, tasks_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(nextPageToken_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(2, nextPageToken_);
+    }
+    if (totalSize_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(3, totalSize_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -205,15 +227,17 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof io.a2a.grpc.ListTaskPushNotificationConfigResponse)) {
+    if (!(obj instanceof io.a2a.grpc.ListTasksResponse)) {
       return super.equals(obj);
     }
-    io.a2a.grpc.ListTaskPushNotificationConfigResponse other = (io.a2a.grpc.ListTaskPushNotificationConfigResponse) obj;
+    io.a2a.grpc.ListTasksResponse other = (io.a2a.grpc.ListTasksResponse) obj;
 
-    if (!getConfigsList()
-        .equals(other.getConfigsList())) return false;
+    if (!getTasksList()
+        .equals(other.getTasksList())) return false;
     if (!getNextPageToken()
         .equals(other.getNextPageToken())) return false;
+    if (getTotalSize()
+        != other.getTotalSize()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -225,55 +249,57 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (getConfigsCount() > 0) {
-      hash = (37 * hash) + CONFIGS_FIELD_NUMBER;
-      hash = (53 * hash) + getConfigsList().hashCode();
+    if (getTasksCount() > 0) {
+      hash = (37 * hash) + TASKS_FIELD_NUMBER;
+      hash = (53 * hash) + getTasksList().hashCode();
     }
     hash = (37 * hash) + NEXT_PAGE_TOKEN_FIELD_NUMBER;
     hash = (53 * hash) + getNextPageToken().hashCode();
+    hash = (37 * hash) + TOTAL_SIZE_FIELD_NUMBER;
+    hash = (53 * hash) + getTotalSize();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTasksResponse parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTasksResponse parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTasksResponse parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTasksResponse parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(byte[] data)
+  public static io.a2a.grpc.ListTasksResponse parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTasksResponse parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(java.io.InputStream input)
+  public static io.a2a.grpc.ListTasksResponse parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTasksResponse parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -281,26 +307,26 @@ private static final long serialVersionUID = 0L;
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseDelimitedFrom(java.io.InputStream input)
+  public static io.a2a.grpc.ListTasksResponse parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseDelimitedFrom(
+  public static io.a2a.grpc.ListTasksResponse parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTasksResponse parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTasksResponse parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -313,7 +339,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(io.a2a.grpc.ListTaskPushNotificationConfigResponse prototype) {
+  public static Builder newBuilder(io.a2a.grpc.ListTasksResponse prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -330,29 +356,29 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:ListTaskPushNotificationConfigSuccessResponse]
+   * --8&lt;-- [start:ListTasksResponse]
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.ListTaskPushNotificationConfigResponse}
+   * Protobuf type {@code a2a.v1.ListTasksResponse}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.ListTaskPushNotificationConfigResponse)
-      io.a2a.grpc.ListTaskPushNotificationConfigResponseOrBuilder {
+      // @@protoc_insertion_point(builder_implements:a2a.v1.ListTasksResponse)
+      io.a2a.grpc.ListTasksResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksResponse_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.a2a.grpc.ListTaskPushNotificationConfigResponse.class, io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder.class);
+              io.a2a.grpc.ListTasksResponse.class, io.a2a.grpc.ListTasksResponse.Builder.class);
     }
 
-    // Construct using io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder()
+    // Construct using io.a2a.grpc.ListTasksResponse.newBuilder()
     private Builder() {
 
     }
@@ -366,31 +392,32 @@ private static final long serialVersionUID = 0L;
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      if (configsBuilder_ == null) {
-        configs_ = java.util.Collections.emptyList();
+      if (tasksBuilder_ == null) {
+        tasks_ = java.util.Collections.emptyList();
       } else {
-        configs_ = null;
-        configsBuilder_.clear();
+        tasks_ = null;
+        tasksBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000001);
       nextPageToken_ = "";
+      totalSize_ = 0;
       return this;
     }
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksResponse_descriptor;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.ListTaskPushNotificationConfigResponse getDefaultInstanceForType() {
-      return io.a2a.grpc.ListTaskPushNotificationConfigResponse.getDefaultInstance();
+    public io.a2a.grpc.ListTasksResponse getDefaultInstanceForType() {
+      return io.a2a.grpc.ListTasksResponse.getDefaultInstance();
     }
 
     @java.lang.Override
-    public io.a2a.grpc.ListTaskPushNotificationConfigResponse build() {
-      io.a2a.grpc.ListTaskPushNotificationConfigResponse result = buildPartial();
+    public io.a2a.grpc.ListTasksResponse build() {
+      io.a2a.grpc.ListTasksResponse result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -398,68 +425,71 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.ListTaskPushNotificationConfigResponse buildPartial() {
-      io.a2a.grpc.ListTaskPushNotificationConfigResponse result = new io.a2a.grpc.ListTaskPushNotificationConfigResponse(this);
+    public io.a2a.grpc.ListTasksResponse buildPartial() {
+      io.a2a.grpc.ListTasksResponse result = new io.a2a.grpc.ListTasksResponse(this);
       buildPartialRepeatedFields(result);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    private void buildPartialRepeatedFields(io.a2a.grpc.ListTaskPushNotificationConfigResponse result) {
-      if (configsBuilder_ == null) {
+    private void buildPartialRepeatedFields(io.a2a.grpc.ListTasksResponse result) {
+      if (tasksBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
-          configs_ = java.util.Collections.unmodifiableList(configs_);
+          tasks_ = java.util.Collections.unmodifiableList(tasks_);
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.configs_ = configs_;
+        result.tasks_ = tasks_;
       } else {
-        result.configs_ = configsBuilder_.build();
+        result.tasks_ = tasksBuilder_.build();
       }
     }
 
-    private void buildPartial0(io.a2a.grpc.ListTaskPushNotificationConfigResponse result) {
+    private void buildPartial0(io.a2a.grpc.ListTasksResponse result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.nextPageToken_ = nextPageToken_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.totalSize_ = totalSize_;
       }
     }
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof io.a2a.grpc.ListTaskPushNotificationConfigResponse) {
-        return mergeFrom((io.a2a.grpc.ListTaskPushNotificationConfigResponse)other);
+      if (other instanceof io.a2a.grpc.ListTasksResponse) {
+        return mergeFrom((io.a2a.grpc.ListTasksResponse)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(io.a2a.grpc.ListTaskPushNotificationConfigResponse other) {
-      if (other == io.a2a.grpc.ListTaskPushNotificationConfigResponse.getDefaultInstance()) return this;
-      if (configsBuilder_ == null) {
-        if (!other.configs_.isEmpty()) {
-          if (configs_.isEmpty()) {
-            configs_ = other.configs_;
+    public Builder mergeFrom(io.a2a.grpc.ListTasksResponse other) {
+      if (other == io.a2a.grpc.ListTasksResponse.getDefaultInstance()) return this;
+      if (tasksBuilder_ == null) {
+        if (!other.tasks_.isEmpty()) {
+          if (tasks_.isEmpty()) {
+            tasks_ = other.tasks_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureConfigsIsMutable();
-            configs_.addAll(other.configs_);
+            ensureTasksIsMutable();
+            tasks_.addAll(other.tasks_);
           }
           onChanged();
         }
       } else {
-        if (!other.configs_.isEmpty()) {
-          if (configsBuilder_.isEmpty()) {
-            configsBuilder_.dispose();
-            configsBuilder_ = null;
-            configs_ = other.configs_;
+        if (!other.tasks_.isEmpty()) {
+          if (tasksBuilder_.isEmpty()) {
+            tasksBuilder_.dispose();
+            tasksBuilder_ = null;
+            tasks_ = other.tasks_;
             bitField0_ = (bitField0_ & ~0x00000001);
-            configsBuilder_ = 
+            tasksBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                 internalGetConfigsFieldBuilder() : null;
+                 internalGetTasksFieldBuilder() : null;
           } else {
-            configsBuilder_.addAllMessages(other.configs_);
+            tasksBuilder_.addAllMessages(other.tasks_);
           }
         }
       }
@@ -467,6 +497,9 @@ private static final long serialVersionUID = 0L;
         nextPageToken_ = other.nextPageToken_;
         bitField0_ |= 0x00000002;
         onChanged();
+      }
+      if (other.getTotalSize() != 0) {
+        setTotalSize(other.getTotalSize());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -495,15 +528,15 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
-              io.a2a.grpc.TaskPushNotificationConfig m =
+              io.a2a.grpc.Task m =
                   input.readMessage(
-                      io.a2a.grpc.TaskPushNotificationConfig.parser(),
+                      io.a2a.grpc.Task.parser(),
                       extensionRegistry);
-              if (configsBuilder_ == null) {
-                ensureConfigsIsMutable();
-                configs_.add(m);
+              if (tasksBuilder_ == null) {
+                ensureTasksIsMutable();
+                tasks_.add(m);
               } else {
-                configsBuilder_.addMessage(m);
+                tasksBuilder_.addMessage(m);
               }
               break;
             } // case 10
@@ -512,6 +545,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000002;
               break;
             } // case 18
+            case 24: {
+              totalSize_ = input.readInt32();
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 24
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -529,323 +567,323 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private java.util.List<io.a2a.grpc.TaskPushNotificationConfig> configs_ =
+    private java.util.List<io.a2a.grpc.Task> tasks_ =
       java.util.Collections.emptyList();
-    private void ensureConfigsIsMutable() {
+    private void ensureTasksIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        configs_ = new java.util.ArrayList<io.a2a.grpc.TaskPushNotificationConfig>(configs_);
+        tasks_ = new java.util.ArrayList<io.a2a.grpc.Task>(tasks_);
         bitField0_ |= 0x00000001;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilder<
-        io.a2a.grpc.TaskPushNotificationConfig, io.a2a.grpc.TaskPushNotificationConfig.Builder, io.a2a.grpc.TaskPushNotificationConfigOrBuilder> configsBuilder_;
+        io.a2a.grpc.Task, io.a2a.grpc.Task.Builder, io.a2a.grpc.TaskOrBuilder> tasksBuilder_;
 
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public java.util.List<io.a2a.grpc.TaskPushNotificationConfig> getConfigsList() {
-      if (configsBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(configs_);
+    public java.util.List<io.a2a.grpc.Task> getTasksList() {
+      if (tasksBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(tasks_);
       } else {
-        return configsBuilder_.getMessageList();
+        return tasksBuilder_.getMessageList();
       }
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public int getConfigsCount() {
-      if (configsBuilder_ == null) {
-        return configs_.size();
+    public int getTasksCount() {
+      if (tasksBuilder_ == null) {
+        return tasks_.size();
       } else {
-        return configsBuilder_.getCount();
+        return tasksBuilder_.getCount();
       }
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public io.a2a.grpc.TaskPushNotificationConfig getConfigs(int index) {
-      if (configsBuilder_ == null) {
-        return configs_.get(index);
+    public io.a2a.grpc.Task getTasks(int index) {
+      if (tasksBuilder_ == null) {
+        return tasks_.get(index);
       } else {
-        return configsBuilder_.getMessage(index);
+        return tasksBuilder_.getMessage(index);
       }
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public Builder setConfigs(
-        int index, io.a2a.grpc.TaskPushNotificationConfig value) {
-      if (configsBuilder_ == null) {
+    public Builder setTasks(
+        int index, io.a2a.grpc.Task value) {
+      if (tasksBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureConfigsIsMutable();
-        configs_.set(index, value);
+        ensureTasksIsMutable();
+        tasks_.set(index, value);
         onChanged();
       } else {
-        configsBuilder_.setMessage(index, value);
+        tasksBuilder_.setMessage(index, value);
       }
       return this;
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public Builder setConfigs(
-        int index, io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
-      if (configsBuilder_ == null) {
-        ensureConfigsIsMutable();
-        configs_.set(index, builderForValue.build());
+    public Builder setTasks(
+        int index, io.a2a.grpc.Task.Builder builderForValue) {
+      if (tasksBuilder_ == null) {
+        ensureTasksIsMutable();
+        tasks_.set(index, builderForValue.build());
         onChanged();
       } else {
-        configsBuilder_.setMessage(index, builderForValue.build());
+        tasksBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public Builder addConfigs(io.a2a.grpc.TaskPushNotificationConfig value) {
-      if (configsBuilder_ == null) {
+    public Builder addTasks(io.a2a.grpc.Task value) {
+      if (tasksBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureConfigsIsMutable();
-        configs_.add(value);
+        ensureTasksIsMutable();
+        tasks_.add(value);
         onChanged();
       } else {
-        configsBuilder_.addMessage(value);
+        tasksBuilder_.addMessage(value);
       }
       return this;
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public Builder addConfigs(
-        int index, io.a2a.grpc.TaskPushNotificationConfig value) {
-      if (configsBuilder_ == null) {
+    public Builder addTasks(
+        int index, io.a2a.grpc.Task value) {
+      if (tasksBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureConfigsIsMutable();
-        configs_.add(index, value);
+        ensureTasksIsMutable();
+        tasks_.add(index, value);
         onChanged();
       } else {
-        configsBuilder_.addMessage(index, value);
+        tasksBuilder_.addMessage(index, value);
       }
       return this;
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public Builder addConfigs(
-        io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
-      if (configsBuilder_ == null) {
-        ensureConfigsIsMutable();
-        configs_.add(builderForValue.build());
+    public Builder addTasks(
+        io.a2a.grpc.Task.Builder builderForValue) {
+      if (tasksBuilder_ == null) {
+        ensureTasksIsMutable();
+        tasks_.add(builderForValue.build());
         onChanged();
       } else {
-        configsBuilder_.addMessage(builderForValue.build());
+        tasksBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public Builder addConfigs(
-        int index, io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
-      if (configsBuilder_ == null) {
-        ensureConfigsIsMutable();
-        configs_.add(index, builderForValue.build());
+    public Builder addTasks(
+        int index, io.a2a.grpc.Task.Builder builderForValue) {
+      if (tasksBuilder_ == null) {
+        ensureTasksIsMutable();
+        tasks_.add(index, builderForValue.build());
         onChanged();
       } else {
-        configsBuilder_.addMessage(index, builderForValue.build());
+        tasksBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public Builder addAllConfigs(
-        java.lang.Iterable<? extends io.a2a.grpc.TaskPushNotificationConfig> values) {
-      if (configsBuilder_ == null) {
-        ensureConfigsIsMutable();
+    public Builder addAllTasks(
+        java.lang.Iterable<? extends io.a2a.grpc.Task> values) {
+      if (tasksBuilder_ == null) {
+        ensureTasksIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, configs_);
+            values, tasks_);
         onChanged();
       } else {
-        configsBuilder_.addAllMessages(values);
+        tasksBuilder_.addAllMessages(values);
       }
       return this;
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public Builder clearConfigs() {
-      if (configsBuilder_ == null) {
-        configs_ = java.util.Collections.emptyList();
+    public Builder clearTasks() {
+      if (tasksBuilder_ == null) {
+        tasks_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
       } else {
-        configsBuilder_.clear();
+        tasksBuilder_.clear();
       }
       return this;
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public Builder removeConfigs(int index) {
-      if (configsBuilder_ == null) {
-        ensureConfigsIsMutable();
-        configs_.remove(index);
+    public Builder removeTasks(int index) {
+      if (tasksBuilder_ == null) {
+        ensureTasksIsMutable();
+        tasks_.remove(index);
         onChanged();
       } else {
-        configsBuilder_.remove(index);
+        tasksBuilder_.remove(index);
       }
       return this;
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public io.a2a.grpc.TaskPushNotificationConfig.Builder getConfigsBuilder(
+    public io.a2a.grpc.Task.Builder getTasksBuilder(
         int index) {
-      return internalGetConfigsFieldBuilder().getBuilder(index);
+      return internalGetTasksFieldBuilder().getBuilder(index);
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigsOrBuilder(
+    public io.a2a.grpc.TaskOrBuilder getTasksOrBuilder(
         int index) {
-      if (configsBuilder_ == null) {
-        return configs_.get(index);  } else {
-        return configsBuilder_.getMessageOrBuilder(index);
+      if (tasksBuilder_ == null) {
+        return tasks_.get(index);  } else {
+        return tasksBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public java.util.List<? extends io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
-         getConfigsOrBuilderList() {
-      if (configsBuilder_ != null) {
-        return configsBuilder_.getMessageOrBuilderList();
+    public java.util.List<? extends io.a2a.grpc.TaskOrBuilder> 
+         getTasksOrBuilderList() {
+      if (tasksBuilder_ != null) {
+        return tasksBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(configs_);
+        return java.util.Collections.unmodifiableList(tasks_);
       }
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public io.a2a.grpc.TaskPushNotificationConfig.Builder addConfigsBuilder() {
-      return internalGetConfigsFieldBuilder().addBuilder(
-          io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance());
+    public io.a2a.grpc.Task.Builder addTasksBuilder() {
+      return internalGetTasksFieldBuilder().addBuilder(
+          io.a2a.grpc.Task.getDefaultInstance());
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public io.a2a.grpc.TaskPushNotificationConfig.Builder addConfigsBuilder(
+    public io.a2a.grpc.Task.Builder addTasksBuilder(
         int index) {
-      return internalGetConfigsFieldBuilder().addBuilder(
-          index, io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance());
+      return internalGetTasksFieldBuilder().addBuilder(
+          index, io.a2a.grpc.Task.getDefaultInstance());
     }
     /**
      * <pre>
-     * The list of push notification configurations.
+     * Array of tasks matching the specified criteria.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .a2a.v1.Task tasks = 1;</code>
      */
-    public java.util.List<io.a2a.grpc.TaskPushNotificationConfig.Builder> 
-         getConfigsBuilderList() {
-      return internalGetConfigsFieldBuilder().getBuilderList();
+    public java.util.List<io.a2a.grpc.Task.Builder> 
+         getTasksBuilderList() {
+      return internalGetTasksFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        io.a2a.grpc.TaskPushNotificationConfig, io.a2a.grpc.TaskPushNotificationConfig.Builder, io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
-        internalGetConfigsFieldBuilder() {
-      if (configsBuilder_ == null) {
-        configsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-            io.a2a.grpc.TaskPushNotificationConfig, io.a2a.grpc.TaskPushNotificationConfig.Builder, io.a2a.grpc.TaskPushNotificationConfigOrBuilder>(
-                configs_,
+        io.a2a.grpc.Task, io.a2a.grpc.Task.Builder, io.a2a.grpc.TaskOrBuilder> 
+        internalGetTasksFieldBuilder() {
+      if (tasksBuilder_ == null) {
+        tasksBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+            io.a2a.grpc.Task, io.a2a.grpc.Task.Builder, io.a2a.grpc.TaskOrBuilder>(
+                tasks_,
                 ((bitField0_ & 0x00000001) != 0),
                 getParentForChildren(),
                 isClean());
-        configs_ = null;
+        tasks_ = null;
       }
-      return configsBuilder_;
+      return tasksBuilder_;
     }
 
     private java.lang.Object nextPageToken_ = "";
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * Token for retrieving the next page of results.
+     * Empty string if no more results.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -865,8 +903,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * Token for retrieving the next page of results.
+     * Empty string if no more results.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -887,8 +925,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * Token for retrieving the next page of results.
+     * Empty string if no more results.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -905,8 +943,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * Token for retrieving the next page of results.
+     * Empty string if no more results.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -920,8 +958,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * Token for retrieving the next page of results.
+     * Empty string if no more results.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -938,23 +976,67 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.ListTaskPushNotificationConfigResponse)
+    private int totalSize_ ;
+    /**
+     * <pre>
+     * Total number of tasks available (before pagination).
+     * </pre>
+     *
+     * <code>int32 total_size = 3;</code>
+     * @return The totalSize.
+     */
+    @java.lang.Override
+    public int getTotalSize() {
+      return totalSize_;
+    }
+    /**
+     * <pre>
+     * Total number of tasks available (before pagination).
+     * </pre>
+     *
+     * <code>int32 total_size = 3;</code>
+     * @param value The totalSize to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTotalSize(int value) {
+
+      totalSize_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Total number of tasks available (before pagination).
+     * </pre>
+     *
+     * <code>int32 total_size = 3;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearTotalSize() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      totalSize_ = 0;
+      onChanged();
+      return this;
+    }
+
+    // @@protoc_insertion_point(builder_scope:a2a.v1.ListTasksResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.ListTaskPushNotificationConfigResponse)
-  private static final io.a2a.grpc.ListTaskPushNotificationConfigResponse DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:a2a.v1.ListTasksResponse)
+  private static final io.a2a.grpc.ListTasksResponse DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new io.a2a.grpc.ListTaskPushNotificationConfigResponse();
+    DEFAULT_INSTANCE = new io.a2a.grpc.ListTasksResponse();
   }
 
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse getDefaultInstance() {
+  public static io.a2a.grpc.ListTasksResponse getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<ListTaskPushNotificationConfigResponse>
-      PARSER = new com.google.protobuf.AbstractParser<ListTaskPushNotificationConfigResponse>() {
+  private static final com.google.protobuf.Parser<ListTasksResponse>
+      PARSER = new com.google.protobuf.AbstractParser<ListTasksResponse>() {
     @java.lang.Override
-    public ListTaskPushNotificationConfigResponse parsePartialFrom(
+    public ListTasksResponse parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -973,17 +1055,17 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public static com.google.protobuf.Parser<ListTaskPushNotificationConfigResponse> parser() {
+  public static com.google.protobuf.Parser<ListTasksResponse> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<ListTaskPushNotificationConfigResponse> getParserForType() {
+  public com.google.protobuf.Parser<ListTasksResponse> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public io.a2a.grpc.ListTaskPushNotificationConfigResponse getDefaultInstanceForType() {
+  public io.a2a.grpc.ListTasksResponse getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

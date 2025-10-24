@@ -12,7 +12,8 @@ public interface ArtifactOrBuilder extends
 
   /**
    * <pre>
-   * Unique id for the artifact. It must be at least unique within a task.
+   * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
+   * within a task.
    * </pre>
    *
    * <code>string artifact_id = 1;</code>
@@ -21,7 +22,8 @@ public interface ArtifactOrBuilder extends
   java.lang.String getArtifactId();
   /**
    * <pre>
-   * Unique id for the artifact. It must be at least unique within a task.
+   * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
+   * within a task.
    * </pre>
    *
    * <code>string artifact_id = 1;</code>

@@ -12,7 +12,8 @@ public interface CancelTaskRequestOrBuilder extends
 
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task to cancel.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -21,7 +22,8 @@ public interface CancelTaskRequestOrBuilder extends
   java.lang.String getName();
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task to cancel.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1;</code>

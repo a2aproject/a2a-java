@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:Part]
  * Part represents a container for a section of communication content.
  * Parts can be purely textual, some sort of file (image, video, etc) or
  * a structured data blob (i.e. JSON).
@@ -49,6 +50,7 @@ private static final long serialVersionUID = 0L;
             io.a2a.grpc.Part.class, io.a2a.grpc.Part.Builder.class);
   }
 
+  private int bitField0_;
   private int partCase_ = 0;
   @SuppressWarnings("serial")
   private java.lang.Object part_;
@@ -207,6 +209,44 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.DataPart.getDefaultInstance();
   }
 
+  public static final int METADATA_FIELD_NUMBER = 4;
+  private com.google.protobuf.Struct metadata_;
+  /**
+   * <pre>
+   * Optional metadata associated with this part.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * @return Whether the metadata field is set.
+   */
+  @java.lang.Override
+  public boolean hasMetadata() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <pre>
+   * Optional metadata associated with this part.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * @return The metadata.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Struct getMetadata() {
+    return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+  }
+  /**
+   * <pre>
+   * Optional metadata associated with this part.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 4;</code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
+    return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -230,6 +270,9 @@ private static final long serialVersionUID = 0L;
     if (partCase_ == 3) {
       output.writeMessage(3, (io.a2a.grpc.DataPart) part_);
     }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeMessage(4, getMetadata());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -250,6 +293,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, (io.a2a.grpc.DataPart) part_);
     }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(4, getMetadata());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -265,6 +312,11 @@ private static final long serialVersionUID = 0L;
     }
     io.a2a.grpc.Part other = (io.a2a.grpc.Part) obj;
 
+    if (hasMetadata() != other.hasMetadata()) return false;
+    if (hasMetadata()) {
+      if (!getMetadata()
+          .equals(other.getMetadata())) return false;
+    }
     if (!getPartCase().equals(other.getPartCase())) return false;
     switch (partCase_) {
       case 1:
@@ -293,6 +345,10 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
+    if (hasMetadata()) {
+      hash = (37 * hash) + METADATA_FIELD_NUMBER;
+      hash = (53 * hash) + getMetadata().hashCode();
+    }
     switch (partCase_) {
       case 1:
         hash = (37 * hash) + TEXT_FIELD_NUMBER;
@@ -408,6 +464,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:Part]
    * Part represents a container for a section of communication content.
    * Parts can be purely textual, some sort of file (image, video, etc) or
    * a structured data blob (i.e. JSON).
@@ -434,13 +491,19 @@ private static final long serialVersionUID = 0L;
 
     // Construct using io.a2a.grpc.Part.newBuilder()
     private Builder() {
-
+      maybeForceBuilderInitialization();
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       super(parent);
-
+      maybeForceBuilderInitialization();
+    }
+    private void maybeForceBuilderInitialization() {
+      if (com.google.protobuf.GeneratedMessage
+              .alwaysUseFieldBuilders) {
+        internalGetMetadataFieldBuilder();
+      }
     }
     @java.lang.Override
     public Builder clear() {
@@ -451,6 +514,11 @@ private static final long serialVersionUID = 0L;
       }
       if (dataBuilder_ != null) {
         dataBuilder_.clear();
+      }
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
+        metadataBuilder_ = null;
       }
       partCase_ = 0;
       part_ = null;
@@ -488,6 +556,14 @@ private static final long serialVersionUID = 0L;
 
     private void buildPartial0(io.a2a.grpc.Part result) {
       int from_bitField0_ = bitField0_;
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.metadata_ = metadataBuilder_ == null
+            ? metadata_
+            : metadataBuilder_.build();
+        to_bitField0_ |= 0x00000001;
+      }
+      result.bitField0_ |= to_bitField0_;
     }
 
     private void buildPartialOneofs(io.a2a.grpc.Part result) {
@@ -515,6 +591,9 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(io.a2a.grpc.Part other) {
       if (other == io.a2a.grpc.Part.getDefaultInstance()) return this;
+      if (other.hasMetadata()) {
+        mergeMetadata(other.getMetadata());
+      }
       switch (other.getPartCase()) {
         case TEXT: {
           partCase_ = 1;
@@ -580,6 +659,13 @@ private static final long serialVersionUID = 0L;
               partCase_ = 3;
               break;
             } // case 26
+            case 34: {
+              input.readMessage(
+                  internalGetMetadataFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000008;
+              break;
+            } // case 34
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -987,6 +1073,163 @@ private static final long serialVersionUID = 0L;
       partCase_ = 3;
       onChanged();
       return dataBuilder_;
+    }
+
+    private com.google.protobuf.Struct metadata_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
+    /**
+     * <pre>
+     * Optional metadata associated with this part.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * @return Whether the metadata field is set.
+     */
+    public boolean hasMetadata() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <pre>
+     * Optional metadata associated with this part.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * @return The metadata.
+     */
+    public com.google.protobuf.Struct getMetadata() {
+      if (metadataBuilder_ == null) {
+        return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+      } else {
+        return metadataBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Optional metadata associated with this part.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 4;</code>
+     */
+    public Builder setMetadata(com.google.protobuf.Struct value) {
+      if (metadataBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        metadata_ = value;
+      } else {
+        metadataBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Optional metadata associated with this part.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 4;</code>
+     */
+    public Builder setMetadata(
+        com.google.protobuf.Struct.Builder builderForValue) {
+      if (metadataBuilder_ == null) {
+        metadata_ = builderForValue.build();
+      } else {
+        metadataBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Optional metadata associated with this part.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 4;</code>
+     */
+    public Builder mergeMetadata(com.google.protobuf.Struct value) {
+      if (metadataBuilder_ == null) {
+        if (((bitField0_ & 0x00000008) != 0) &&
+          metadata_ != null &&
+          metadata_ != com.google.protobuf.Struct.getDefaultInstance()) {
+          getMetadataBuilder().mergeFrom(value);
+        } else {
+          metadata_ = value;
+        }
+      } else {
+        metadataBuilder_.mergeFrom(value);
+      }
+      if (metadata_ != null) {
+        bitField0_ |= 0x00000008;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Optional metadata associated with this part.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 4;</code>
+     */
+    public Builder clearMetadata() {
+      bitField0_ = (bitField0_ & ~0x00000008);
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
+        metadataBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Optional metadata associated with this part.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 4;</code>
+     */
+    public com.google.protobuf.Struct.Builder getMetadataBuilder() {
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return internalGetMetadataFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Optional metadata associated with this part.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 4;</code>
+     */
+    public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
+      if (metadataBuilder_ != null) {
+        return metadataBuilder_.getMessageOrBuilder();
+      } else {
+        return metadata_ == null ?
+            com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+      }
+    }
+    /**
+     * <pre>
+     * Optional metadata associated with this part.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 4;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        internalGetMetadataFieldBuilder() {
+      if (metadataBuilder_ == null) {
+        metadataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>(
+                getMetadata(),
+                getParentForChildren(),
+                isClean());
+        metadata_ = null;
+      }
+      return metadataBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.Part)

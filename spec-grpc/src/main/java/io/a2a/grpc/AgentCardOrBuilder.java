@@ -623,4 +623,24 @@ io.a2a.grpc.SecurityScheme defaultValue);
    */
   io.a2a.grpc.AgentCardSignatureOrBuilder getSignaturesOrBuilder(
       int index);
+
+  /**
+   * <pre>
+   * An optional URL to an icon for the agent.
+   * </pre>
+   *
+   * <code>string icon_url = 18;</code>
+   * @return The iconUrl.
+   */
+  java.lang.String getIconUrl();
+  /**
+   * <pre>
+   * An optional URL to an icon for the agent.
+   * </pre>
+   *
+   * <code>string icon_url = 18;</code>
+   * @return The bytes for iconUrl.
+   */
+  com.google.protobuf.ByteString
+      getIconUrlBytes();
 }

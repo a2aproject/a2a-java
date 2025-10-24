@@ -57,5 +57,32 @@ public interface PartOrBuilder extends
    */
   io.a2a.grpc.DataPartOrBuilder getDataOrBuilder();
 
+  /**
+   * <pre>
+   * Optional metadata associated with this part.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * @return Whether the metadata field is set.
+   */
+  boolean hasMetadata();
+  /**
+   * <pre>
+   * Optional metadata associated with this part.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * @return The metadata.
+   */
+  com.google.protobuf.Struct getMetadata();
+  /**
+   * <pre>
+   * Optional metadata associated with this part.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 4;</code>
+   */
+  com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
+
   io.a2a.grpc.Part.PartCase getPartCase();
 }

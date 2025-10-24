@@ -6,6 +6,10 @@
 package io.a2a.grpc;
 
 /**
+ * <pre>
+ * --8&lt;-- [start:ListTaskPushNotificationConfigRequest]
+ * </pre>
+ *
  * Protobuf type {@code a2a.v1.ListTaskPushNotificationConfigRequest}
  */
 @com.google.protobuf.Generated
@@ -50,7 +54,8 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object parent_ = "";
   /**
    * <pre>
-   * parent=tasks/{id}
+   * The parent task resource.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string parent = 1;</code>
@@ -71,7 +76,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * parent=tasks/{id}
+   * The parent task resource.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string parent = 1;</code>
@@ -344,6 +350,10 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
+   * <pre>
+   * --8&lt;-- [start:ListTaskPushNotificationConfigRequest]
+   * </pre>
+   *
    * Protobuf type {@code a2a.v1.ListTaskPushNotificationConfigRequest}
    */
   public static final class Builder extends
@@ -510,7 +520,8 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object parent_ = "";
     /**
      * <pre>
-     * parent=tasks/{id}
+     * The parent task resource.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string parent = 1;</code>
@@ -530,7 +541,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * parent=tasks/{id}
+     * The parent task resource.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string parent = 1;</code>
@@ -551,7 +563,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * parent=tasks/{id}
+     * The parent task resource.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string parent = 1;</code>
@@ -568,7 +581,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * parent=tasks/{id}
+     * The parent task resource.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string parent = 1;</code>
@@ -582,7 +596,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * parent=tasks/{id}
+     * The parent task resource.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string parent = 1;</code>

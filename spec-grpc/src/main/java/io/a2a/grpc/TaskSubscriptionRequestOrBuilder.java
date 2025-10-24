@@ -12,7 +12,8 @@ public interface TaskSubscriptionRequestOrBuilder extends
 
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task to subscribe to.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -21,7 +22,8 @@ public interface TaskSubscriptionRequestOrBuilder extends
   java.lang.String getName();
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task to subscribe to.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1;</code>

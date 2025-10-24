@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:TaskArtifactUpdateEvent]
  * TaskArtifactUpdateEvent represents a task delta where an artifact has
  * been generated.
  * </pre>
@@ -475,6 +476,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:TaskArtifactUpdateEvent]
    * TaskArtifactUpdateEvent represents a task delta where an artifact has
    * been generated.
    * </pre>

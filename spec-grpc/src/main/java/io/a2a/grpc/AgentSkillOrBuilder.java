@@ -12,7 +12,7 @@ public interface AgentSkillOrBuilder extends
 
   /**
    * <pre>
-   * Unique id of the skill within this agent.
+   * Unique identifier of the skill within this agent.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -21,7 +21,7 @@ public interface AgentSkillOrBuilder extends
   java.lang.String getId();
   /**
    * <pre>
-   * Unique id of the skill within this agent.
+   * Unique identifier of the skill within this agent.
    * </pre>
    *
    * <code>string id = 1;</code>

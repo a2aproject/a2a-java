@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:AgentCapabilities]
  * Defines the A2A feature set supported by the agent
  * </pre>
  *
@@ -139,6 +140,21 @@ private static final long serialVersionUID = 0L;
     return extensions_.get(index);
   }
 
+  public static final int STATE_TRANSITION_HISTORY_FIELD_NUMBER = 4;
+  private boolean stateTransitionHistory_ = false;
+  /**
+   * <pre>
+   * If the agent provides a history of state transitions for a task.
+   * </pre>
+   *
+   * <code>bool state_transition_history = 4;</code>
+   * @return The stateTransitionHistory.
+   */
+  @java.lang.Override
+  public boolean getStateTransitionHistory() {
+    return stateTransitionHistory_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -162,6 +178,9 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < extensions_.size(); i++) {
       output.writeMessage(3, extensions_.get(i));
     }
+    if (stateTransitionHistory_ != false) {
+      output.writeBool(4, stateTransitionHistory_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -182,6 +201,10 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < extensions_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, extensions_.get(i));
+    }
+    if (stateTransitionHistory_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(4, stateTransitionHistory_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -204,6 +227,8 @@ private static final long serialVersionUID = 0L;
         != other.getPushNotifications()) return false;
     if (!getExtensionsList()
         .equals(other.getExtensionsList())) return false;
+    if (getStateTransitionHistory()
+        != other.getStateTransitionHistory()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -225,6 +250,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + EXTENSIONS_FIELD_NUMBER;
       hash = (53 * hash) + getExtensionsList().hashCode();
     }
+    hash = (37 * hash) + STATE_TRANSITION_HISTORY_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getStateTransitionHistory());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -324,6 +352,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:AgentCapabilities]
    * Defines the A2A feature set supported by the agent
    * </pre>
    *
@@ -369,6 +398,7 @@ private static final long serialVersionUID = 0L;
         extensionsBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000004);
+      stateTransitionHistory_ = false;
       return this;
     }
 
@@ -421,6 +451,9 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.pushNotifications_ = pushNotifications_;
       }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.stateTransitionHistory_ = stateTransitionHistory_;
+      }
     }
 
     @java.lang.Override
@@ -466,6 +499,9 @@ private static final long serialVersionUID = 0L;
             extensionsBuilder_.addAllMessages(other.extensions_);
           }
         }
+      }
+      if (other.getStateTransitionHistory() != false) {
+        setStateTransitionHistory(other.getStateTransitionHistory());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -516,6 +552,11 @@ private static final long serialVersionUID = 0L;
               }
               break;
             } // case 26
+            case 32: {
+              stateTransitionHistory_ = input.readBool();
+              bitField0_ |= 0x00000008;
+              break;
+            } // case 32
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -931,6 +972,50 @@ private static final long serialVersionUID = 0L;
         extensions_ = null;
       }
       return extensionsBuilder_;
+    }
+
+    private boolean stateTransitionHistory_ ;
+    /**
+     * <pre>
+     * If the agent provides a history of state transitions for a task.
+     * </pre>
+     *
+     * <code>bool state_transition_history = 4;</code>
+     * @return The stateTransitionHistory.
+     */
+    @java.lang.Override
+    public boolean getStateTransitionHistory() {
+      return stateTransitionHistory_;
+    }
+    /**
+     * <pre>
+     * If the agent provides a history of state transitions for a task.
+     * </pre>
+     *
+     * <code>bool state_transition_history = 4;</code>
+     * @param value The stateTransitionHistory to set.
+     * @return This builder for chaining.
+     */
+    public Builder setStateTransitionHistory(boolean value) {
+
+      stateTransitionHistory_ = value;
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * If the agent provides a history of state transitions for a task.
+     * </pre>
+     *
+     * <code>bool state_transition_history = 4;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearStateTransitionHistory() {
+      bitField0_ = (bitField0_ & ~0x00000008);
+      stateTransitionHistory_ = false;
+      onChanged();
+      return this;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.AgentCapabilities)

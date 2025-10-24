@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:AgentCardSignature]
  * AgentCardSignature represents a JWS signature of an AgentCard.
  * This follows the JSON format of an RFC 7515 JSON Web Signature (JWS).
  * </pre>
@@ -369,6 +370,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:AgentCardSignature]
    * AgentCardSignature represents a JWS signature of an AgentCard.
    * This follows the JSON format of an RFC 7515 JSON Web Signature (JWS).
    * </pre>

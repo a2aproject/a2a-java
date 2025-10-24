@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:PushNotificationConfig]
  * Configuration for setting up push notifications for task updates.
  * </pre>
  *
@@ -56,7 +57,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object id_ = "";
   /**
    * <pre>
-   * A unique id for this push notification.
+   * A unique identifier (e.g. UUID) for this push notification.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -77,7 +78,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A unique id for this push notification.
+   * A unique identifier (e.g. UUID) for this push notification.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -424,6 +425,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:PushNotificationConfig]
    * Configuration for setting up push notifications for task updates.
    * </pre>
    *
@@ -624,7 +626,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object id_ = "";
     /**
      * <pre>
-     * A unique id for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -644,7 +646,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A unique id for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -665,7 +667,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A unique id for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -682,7 +684,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A unique id for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -696,7 +698,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A unique id for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification.
      * </pre>
      *
      * <code>string id = 1;</code>

@@ -6,6 +6,10 @@
 package io.a2a.grpc;
 
 /**
+ * <pre>
+ * --8&lt;-- [start:CancelTaskRequest]
+ * </pre>
+ *
  * Protobuf type {@code a2a.v1.CancelTaskRequest}
  */
 @com.google.protobuf.Generated
@@ -49,7 +53,8 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object name_ = "";
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task to cancel.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -70,7 +75,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task to cancel.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -248,6 +254,10 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
+   * <pre>
+   * --8&lt;-- [start:CancelTaskRequest]
+   * </pre>
+   *
    * Protobuf type {@code a2a.v1.CancelTaskRequest}
    */
   public static final class Builder extends
@@ -388,7 +398,8 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object name_ = "";
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task to cancel.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -408,7 +419,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task to cancel.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -429,7 +441,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task to cancel.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -446,7 +459,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task to cancel.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1;</code>
@@ -460,7 +474,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task to cancel.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1;</code>

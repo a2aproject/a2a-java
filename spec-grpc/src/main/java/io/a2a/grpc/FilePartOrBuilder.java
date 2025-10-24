@@ -50,5 +50,17 @@ public interface FilePartOrBuilder extends
   com.google.protobuf.ByteString
       getMimeTypeBytes();
 
+  /**
+   * <code>string name = 4;</code>
+   * @return The name.
+   */
+  java.lang.String getName();
+  /**
+   * <code>string name = 4;</code>
+   * @return The bytes for name.
+   */
+  com.google.protobuf.ByteString
+      getNameBytes();
+
   io.a2a.grpc.FilePart.FileCase getFileCase();
 }

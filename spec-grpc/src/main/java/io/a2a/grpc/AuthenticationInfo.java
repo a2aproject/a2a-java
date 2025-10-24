@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:PushNotificationAuthenticationInfo]
  * Defines authentication details, used for push notifications.
  * </pre>
  *
@@ -325,6 +326,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:PushNotificationAuthenticationInfo]
    * Defines authentication details, used for push notifications.
    * </pre>
    *

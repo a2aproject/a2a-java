@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:DataPart]
  * DataPart represents a structured blob. This is most commonly a JSON payload.
  * </pre>
  *
@@ -238,6 +239,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:DataPart]
    * DataPart represents a structured blob. This is most commonly a JSON payload.
    * </pre>
    *

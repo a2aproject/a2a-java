@@ -12,7 +12,8 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * parent=tasks/{id}
+   * The parent task resource.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string parent = 1;</code>
@@ -21,7 +22,8 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
   java.lang.String getParent();
   /**
    * <pre>
-   * parent=tasks/{id}
+   * The parent task resource.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string parent = 1;</code>

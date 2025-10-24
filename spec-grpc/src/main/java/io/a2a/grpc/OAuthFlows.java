@@ -6,6 +6,10 @@
 package io.a2a.grpc;
 
 /**
+ * <pre>
+ * --8&lt;-- [start:OAuthFlows]
+ * </pre>
+ *
  * Protobuf type {@code a2a.v1.OAuthFlows}
  */
 @com.google.protobuf.Generated
@@ -429,6 +433,10 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
+   * <pre>
+   * --8&lt;-- [start:OAuthFlows]
+   * </pre>
+   *
    * Protobuf type {@code a2a.v1.OAuthFlows}
    */
   public static final class Builder extends

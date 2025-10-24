@@ -12,7 +12,7 @@ public interface PushNotificationConfigOrBuilder extends
 
   /**
    * <pre>
-   * A unique id for this push notification.
+   * A unique identifier (e.g. UUID) for this push notification.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -21,7 +21,7 @@ public interface PushNotificationConfigOrBuilder extends
   java.lang.String getId();
   /**
    * <pre>
-   * A unique id for this push notification.
+   * A unique identifier (e.g. UUID) for this push notification.
    * </pre>
    *
    * <code>string id = 1;</code>
