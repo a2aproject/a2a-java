@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:TaskStatus]
  * A container for the status of a task
  * </pre>
  *
@@ -344,6 +345,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:TaskStatus]
    * A container for the status of a task
    * </pre>
    *

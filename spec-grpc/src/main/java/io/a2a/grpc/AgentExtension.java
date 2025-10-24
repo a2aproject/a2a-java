@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:AgentExtension]
  * A declaration of an extension supported by an Agent.
  * </pre>
  *
@@ -398,6 +399,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:AgentExtension]
    * A declaration of an extension supported by an Agent.
    * </pre>
    *

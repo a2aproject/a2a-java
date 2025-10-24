@@ -161,7 +161,7 @@ public class ProtoUtils {
             }
             builder.setRole(role(message.getRole()));
             if (message.getParts() != null) {
-                builder.addAllContent(message.getParts().stream().map(ToProto::part).collect(Collectors.toList()));
+                builder.addAllParts(message.getParts().stream().map(ToProto::part).collect(Collectors.toList()));
             }
             builder.setMetadata(struct(message.getMetadata()));
             return builder.build();
@@ -362,6 +362,7 @@ public class ProtoUtils {
             io.a2a.grpc.AgentCapabilities.Builder builder = io.a2a.grpc.AgentCapabilities.newBuilder();
             builder.setStreaming(agentCapabilities.streaming());
             builder.setPushNotifications(agentCapabilities.pushNotifications());
+            builder.setStateTransitionHistory(agentCapabilities.stateTransitionHistory());
             if (agentCapabilities.extensions() != null) {
                 builder.addAllExtensions(agentCapabilities.extensions().stream().map(ToProto::agentExtension).collect(Collectors.toList()));
             }
@@ -870,7 +871,7 @@ public class ProtoUtils {
 
             return new Message(
                     role(message.getRole()),
-                    message.getContentList().stream().map(item -> part(item)).collect(Collectors.toList()),
+                    message.getPartsList().stream().map(item -> part(item)).collect(Collectors.toList()),
                     message.getMessageId().isEmpty() ? null :  message.getMessageId(),
                     message.getContextId().isEmpty() ? null :  message.getContextId(),
                     message.getTaskId().isEmpty() ? null :  message.getTaskId(),

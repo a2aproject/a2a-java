@@ -6,6 +6,10 @@
 package io.a2a.grpc;
 
 /**
+ * <pre>
+ * --8&lt;-- [start:GetTaskRequest]
+ * </pre>
+ *
  * Protobuf type {@code a2a.v1.GetTaskRequest}
  */
 @com.google.protobuf.Generated
@@ -49,7 +53,8 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object name_ = "";
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -70,7 +75,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -94,6 +100,10 @@ private static final long serialVersionUID = 0L;
   public static final int HISTORY_LENGTH_FIELD_NUMBER = 2;
   private int historyLength_ = 0;
   /**
+   * <pre>
+   * The number of most recent messages from the task's history to retrieve.
+   * </pre>
+   *
    * <code>int32 history_length = 2;</code>
    * @return The historyLength.
    */
@@ -270,6 +280,10 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
+   * <pre>
+   * --8&lt;-- [start:GetTaskRequest]
+   * </pre>
+   *
    * Protobuf type {@code a2a.v1.GetTaskRequest}
    */
   public static final class Builder extends
@@ -422,7 +436,8 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object name_ = "";
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -442,7 +457,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -463,7 +479,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -480,7 +497,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -494,7 +512,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name=tasks/{id}
+     * The resource name of the task.
+     * Format: tasks/{task_id}
      * </pre>
      *
      * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -513,6 +532,10 @@ private static final long serialVersionUID = 0L;
 
     private int historyLength_ ;
     /**
+     * <pre>
+     * The number of most recent messages from the task's history to retrieve.
+     * </pre>
+     *
      * <code>int32 history_length = 2;</code>
      * @return The historyLength.
      */
@@ -521,6 +544,10 @@ private static final long serialVersionUID = 0L;
       return historyLength_;
     }
     /**
+     * <pre>
+     * The number of most recent messages from the task's history to retrieve.
+     * </pre>
+     *
      * <code>int32 history_length = 2;</code>
      * @param value The historyLength to set.
      * @return This builder for chaining.
@@ -533,6 +560,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The number of most recent messages from the task's history to retrieve.
+     * </pre>
+     *
      * <code>int32 history_length = 2;</code>
      * @return This builder for chaining.
      */

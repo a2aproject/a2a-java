@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:AgentSkill]
  * AgentSkill represents a unit of action/solution that the agent can perform.
  * One can think of this as a type of highly reliable solution that an agent
  * can be tasked to provide. Agents have the autonomy to choose how and when
@@ -68,7 +69,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object id_ = "";
   /**
    * <pre>
-   * Unique id of the skill within this agent.
+   * Unique identifier of the skill within this agent.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -89,7 +90,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Unique id of the skill within this agent.
+   * Unique identifier of the skill within this agent.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -774,6 +775,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:AgentSkill]
    * AgentSkill represents a unit of action/solution that the agent can perform.
    * One can think of this as a type of highly reliable solution that an agent
    * can be tasked to provide. Agents have the autonomy to choose how and when
@@ -1096,7 +1098,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object id_ = "";
     /**
      * <pre>
-     * Unique id of the skill within this agent.
+     * Unique identifier of the skill within this agent.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -1116,7 +1118,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique id of the skill within this agent.
+     * Unique identifier of the skill within this agent.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -1137,7 +1139,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique id of the skill within this agent.
+     * Unique identifier of the skill within this agent.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -1154,7 +1156,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique id of the skill within this agent.
+     * Unique identifier of the skill within this agent.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -1168,7 +1170,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique id of the skill within this agent.
+     * Unique identifier of the skill within this agent.
      * </pre>
      *
      * <code>string id = 1;</code>

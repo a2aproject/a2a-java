@@ -63,7 +63,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                   "messageId": "message-1234",
                   "contextId": "context-1234",
                   "role": "ROLE_USER",
-                  "content": [{
+                  "parts": [{
                     "text": "tell me a joke"
                   }],
                   "metadata": {
@@ -103,7 +103,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                           "messageId": "message-1234",
                           "contextId": "context-1234",
                           "role": "user",
-                          "content": [{
+                          "parts": [{
                             "text": "tell me a joke"
                           }],
                           "metadata": {
@@ -170,7 +170,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             {
               "message": {
                 "role": "ROLE_USER",
-                "content": [
+                "parts": [
                   {
                     "text": "tell me some jokes"
                   }
@@ -200,7 +200,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             {
                 "contextId": "ctx123",
                 "role": "ROLE_USER",
-                "content": [{
+                "parts": [{
                     "text": "Hello"
                 }]
             }
@@ -341,7 +341,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             {
               "message": {
                 "role": "ROLE_USER",
-                "content": [
+                "parts": [
                   {
                     "text": "tell me some jokes"
                   }

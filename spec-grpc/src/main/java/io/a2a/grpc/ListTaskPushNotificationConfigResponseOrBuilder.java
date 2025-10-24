@@ -11,24 +11,44 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   * <pre>
+   * The list of push notification configurations.
+   * </pre>
+   *
    * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   java.util.List<io.a2a.grpc.TaskPushNotificationConfig> 
       getConfigsList();
   /**
+   * <pre>
+   * The list of push notification configurations.
+   * </pre>
+   *
    * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   io.a2a.grpc.TaskPushNotificationConfig getConfigs(int index);
   /**
+   * <pre>
+   * The list of push notification configurations.
+   * </pre>
+   *
    * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   int getConfigsCount();
   /**
+   * <pre>
+   * The list of push notification configurations.
+   * </pre>
+   *
    * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   java.util.List<? extends io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
       getConfigsOrBuilderList();
   /**
+   * <pre>
+   * The list of push notification configurations.
+   * </pre>
+   *
    * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigsOrBuilder(

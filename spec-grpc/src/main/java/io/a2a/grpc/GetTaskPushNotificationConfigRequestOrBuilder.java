@@ -12,7 +12,8 @@ public interface GetTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * name=tasks/{id}/pushNotificationConfigs/{push_id}
+   * The resource name of the config to retrieve.
+   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -21,7 +22,8 @@ public interface GetTaskPushNotificationConfigRequestOrBuilder extends
   java.lang.String getName();
   /**
    * <pre>
-   * name=tasks/{id}/pushNotificationConfigs/{push_id}
+   * The resource name of the config to retrieve.
+   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
    * </pre>
    *
    * <code>string name = 1;</code>

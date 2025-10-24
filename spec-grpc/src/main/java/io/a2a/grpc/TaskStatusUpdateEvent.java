@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:TaskStatusUpdateEvent]
  * TaskStatusUpdateEvent is a delta even on a task indicating that a task
  * has changed.
  * </pre>
@@ -448,6 +449,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:TaskStatusUpdateEvent]
    * TaskStatusUpdateEvent is a delta even on a task indicating that a task
    * has changed.
    * </pre>
