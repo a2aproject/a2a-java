@@ -73,4 +73,14 @@ public interface AgentCapabilitiesOrBuilder extends
    */
   io.a2a.grpc.AgentExtensionOrBuilder getExtensionsOrBuilder(
       int index);
+
+  /**
+   * <pre>
+   * If the agent provides a history of state transitions for a task.
+   * </pre>
+   *
+   * <code>bool state_transition_history = 4;</code>
+   * @return The stateTransitionHistory.
+   */
+  boolean getStateTransitionHistory();
 }

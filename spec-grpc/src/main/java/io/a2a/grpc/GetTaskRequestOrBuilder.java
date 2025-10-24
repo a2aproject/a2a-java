@@ -12,7 +12,8 @@ public interface GetTaskRequestOrBuilder extends
 
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -21,7 +22,8 @@ public interface GetTaskRequestOrBuilder extends
   java.lang.String getName();
   /**
    * <pre>
-   * name=tasks/{id}
+   * The resource name of the task.
+   * Format: tasks/{task_id}
    * </pre>
    *
    * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -31,6 +33,10 @@ public interface GetTaskRequestOrBuilder extends
       getNameBytes();
 
   /**
+   * <pre>
+   * The number of most recent messages from the task's history to retrieve.
+   * </pre>
+   *
    * <code>int32 history_length = 2;</code>
    * @return The historyLength.
    */

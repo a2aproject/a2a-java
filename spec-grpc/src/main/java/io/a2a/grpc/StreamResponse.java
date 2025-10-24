@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:SendStreamingMessageSuccessResponse]
  * The stream response for a message. The stream should be one of the following
  * sequences:
  * If the response is a message, the stream should contain one, and only one,
@@ -442,6 +443,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:SendStreamingMessageSuccessResponse]
    * The stream response for a message. The stream should be one of the following
    * sequences:
    * If the response is a message, the stream should contain one, and only one,
