@@ -78,6 +78,9 @@ else
     echo -e "${GREEN}✓ Minikube is already running${NC}"
 fi
 
+# Ensure kubectl is using the correct minikube context
+minikube update-context
+
 # Set up registry for Docker, skip for Podman (we'll use minikube image load)
 if [ "$CONTAINER_TOOL" = "docker" ]; then
     # Enable Minikube registry addon if not already enabled
