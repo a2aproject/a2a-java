@@ -135,7 +135,7 @@ if [ "$CONTAINER_TOOL" = "docker" ]; then
         echo "Linux/CI detected, using kubectl port-forward..."
 
         # Kill any existing port-forward processes
-        pkill -f "kubectl.*port-forward.*registry" 2>/dev/null || true
+        pkill -f "kubectl.*port-forward.*registry" || true
 
         # Start port forward in background
         kubectl port-forward --namespace kube-system service/registry 5000:80 > /dev/null 2>&1 &
@@ -200,11 +200,13 @@ else
         echo "Push attempt $attempt/$MAX_RETRIES..."
         if $CONTAINER_TOOL push ${REGISTRY}/a2a-cloud-deployment:latest 2>&1 | tee /tmp/push.log; then
             echo -e "${GREEN}✓ Image pushed to registry${NC}"
+            rm -f /tmp/push.log
             break
         else
             if [ $attempt -eq $MAX_RETRIES ]; then
                 echo -e "${RED}ERROR: Failed to push image after $MAX_RETRIES attempts${NC}"
                 cat /tmp/push.log
+                rm -f /tmp/push.log
                 exit 1
             fi
             echo -e "${YELLOW}Push failed, retrying in 2 seconds...${NC}"
@@ -341,7 +343,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]] && [ "$CONTAINER_TOOL" = "podman" ]; then
             break
         fi
         if [ $i -eq 30 ]; then
-            echo -e "${YELLOW}⚠ Topic not found in broker after 30 attempts, continuing anyway${NC}"
+            echo -e "${RED}ERROR: Topic not found in broker after 30 attempts${NC}"
+            exit 1
         fi
         sleep 2
     done
