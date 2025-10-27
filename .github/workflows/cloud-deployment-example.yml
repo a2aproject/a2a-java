@@ -25,21 +25,20 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Install Kind
+      - name: Install Minikube
         run: |
-          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
-          chmod +x ./kind
-          sudo mv ./kind /usr/local/bin/kind
-          kind version
+          curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          chmod +x minikube
+          sudo mv minikube /usr/local/bin/
 
       - name: Build project
         run: mvn -B clean install -DskipTests -f pom.xml
 
-      - name: Deploy with Kind
+      - name: Deploy with Minikube
         working-directory: examples/cloud-deployment/scripts
         run: |
           chmod +x deploy.sh
-          ./deploy.sh --container-tool docker
+          ./deploy.sh
 
       - name: Verify deployment
         working-directory: examples/cloud-deployment/scripts
@@ -47,10 +46,15 @@ jobs:
           chmod +x verify.sh
           ./verify.sh
 
+      - name: Get service URL
+        id: service
+        run: |
+          echo "url=$(minikube service a2a-agent-service -n a2a-demo --url)" >> $GITHUB_OUTPUT
+
       - name: Verify agent card is accessible
         run: |
-          echo "Testing agent card endpoint at http://localhost:8080/.well-known/agent-card.json"
-          curl -f http://localhost:8080/.well-known/agent-card.json || (echo "Agent card not accessible" && exit 1)
+          echo "Testing agent card endpoint at ${{ steps.service.outputs.url }}/.well-known/agent-card.json"
+          curl -f ${{ steps.service.outputs.url }}/.well-known/agent-card.json || (echo "Agent card not accessible" && exit 1)
 
       - name: Run test client
         working-directory: examples/cloud-deployment/server
@@ -58,7 +62,7 @@ jobs:
           mvn test-compile exec:java \
             -Dexec.mainClass="io.a2a.examples.cloud.A2ACloudExampleClient" \
             -Dexec.classpathScope=test \
-            -Dagent.url=http://localhost:8080
+            -Dagent.url=${{ steps.service.outputs.url }}
 
       - name: Show diagnostics on failure
         if: failure()
@@ -96,6 +100,6 @@ jobs:
         if: always()
         run: |
           cd examples/cloud-deployment/scripts
-          echo "y" | ./cleanup.sh --container-tool docker || true
+          echo "y" | ./cleanup.sh || true
 
 

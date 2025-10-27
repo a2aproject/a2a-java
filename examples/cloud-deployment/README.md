@@ -11,12 +11,12 @@ Note that the aim of this example is just to demonstrate how to set up a2a-java 
 ## Architecture
 
 ```
-                              localhost:8080
-                            (extraPortMappings)
+                         minikube service --url
+                         (tunnel to NodePort)
                                     ▲
                                     │
 ┌───────────────────────────────────┼───────────────────────┐
-│  Kubernetes Cluster (Kind)        │                       │
+│  Kubernetes Cluster (Minikube)    │                       │
 │                                    │                      │
 │                        ┌───────────▼──────────┐           │
 │                        │ Service (NodePort)   │           │
@@ -60,7 +60,7 @@ Note that the aim of this example is just to demonstrate how to set up a2a-java 
 
 ## Prerequisites
 
-- **Kind** (Kubernetes IN Docker) v0.20+
+- **Minikube** v1.30+
 - **kubectl** (v1.27+)
 - **Maven** (3.8+)
 - **Java** 17+
@@ -70,15 +70,15 @@ Note that the aim of this example is just to demonstrate how to set up a2a-java 
 
 ### 1. Install Prerequisites
 
-**Install Kind:**
-See https://kind.sigs.k8s.io/docs/user/quick-start/ for installation instructions.
+**Install Minikube:**
+See https://minikube.sigs.k8s.io/docs/start/ for installation instructions.
 
 **Install kubectl:**
 See https://kubernetes.io/docs/tasks/tools/ for installation instructions.
 
 ### 2. Deploy the Stack
 
-The deployment script will automatically create the Kind cluster and deploy all components:
+The deployment script will automatically create the Minikube cluster and deploy all components:
 
 ```bash
 cd scripts
@@ -88,19 +88,20 @@ cd scripts
 **If using Podman instead of Docker:**
 ```bash
 ./deploy.sh --container-tool podman
+# OR set environment variable:
+export CONTAINER_TOOL=podman
+./deploy.sh
 ```
 
-Note that using Kind with Podman on Linux may have some occasional issues due to Kind's experimental support for Podman. In our testing, a reboot normally solves this. 
+**Note**: Minikube with Podman requires the Podman driver. The script will configure this automatically.
 
 The script will:
-- Create Kind cluster with local registry support (if not already exists)
-- Set up local container registry (localhost:5001)
+- Start Minikube cluster (if not already running)
+- Enable the registry addon
 - Install Strimzi Kafka operator
 - Deploy PostgreSQL
 - Deploy Kafka cluster (using KRaft mode)
 - Build and deploy the A2A agent (2 pods)
-
-**Note:** You don't need to manually create the Kind cluster - the script handles everything.
 
 ### 3. Verify Deployment
 
@@ -121,13 +122,20 @@ Expected output:
 
 #### Understanding the NodePort Setup
 
-The agent service uses **NodePort** with Kind **extraPortMappings** to expose the service:
+The agent service uses **NodePort** for external access with reliable load balancing:
 
-- Kind maps **host port 8080** → **node port 30080** (configured in `kind-config.yaml`)
-- Kubernetes Service maps **NodePort 30080** → **pod port 8080** (configured in `k8s/05-agent-deployment.yaml`)
-- Result: Access the agent at **http://localhost:8080** from your host machine
+- Kubernetes Service exposes **NodePort 30080** → **pod port 8080** (configured in `k8s/05-agent-deployment.yaml`)
+- Minikube makes NodePort accessible via `minikube service` command
+- Result: Access the agent at the URL provided by `minikube service a2a-agent-service -n a2a-demo --url`
 
-This approach provides the same round-robin load balancing as a real LoadBalancer but works consistently across all platforms (macOS, Linux, Windows, and CI environments like GitHub Actions).
+**Why NodePort instead of LoadBalancer?**
+- ✅ Works without `minikube tunnel` (which can have networking issues, especially in CI)
+- ✅ Provides reliable round-robin load balancing across multiple pods
+- ✅ Simpler setup for local development
+- ✅ Consistent behavior across different host operating systems (macOS, Linux, Windows)
+- ✅ Works reliably in CI environments like GitHub Actions
+
+**Note**: The test client creates fresh HTTP connections for each request to ensure proper load distribution across both pods.
 
 #### Run the Test Client
 
@@ -339,23 +347,17 @@ kubectl logs <pod-name> -n a2a-demo
 **Registry not accessible:**
 
 ```bash
-# Verify registry is running
-docker ps | grep kind-registry
-# or for Podman:
-podman ps | grep kind-registry
+# Verify Minikube registry addon is enabled
+minikube addons list | grep registry
 
-# Verify registry is accessible
-curl http://localhost:5001/v2/
-# Should return: {}
-
-# List images in registry
-curl http://localhost:5001/v2/_catalog
+# Verify images are cached in Minikube
+minikube ssh "crictl images" | grep a2a-cloud-deployment
 ```
 
 **Image push failures:**
-- Check registry container is running
-- For Podman: Ensure you use `--tls-verify=false` flag when pushing
-- Restart registry if needed: `docker/podman stop kind-registry && docker/podman start kind-registry`
+- Verify Minikube is running: `minikube status`
+- Check registry addon is enabled: `minikube addons enable registry`
+- For Podman: Ensure Minikube is started with `--driver=podman`
 
 ### Database Connection Failures
 
@@ -407,10 +409,8 @@ kubectl get svc a2a-agent-service -n a2a-demo
 # NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 # a2a-agent-service    NodePort    10.96.123.45    <none>        8080:30080/TCP   5m
 
-# 3. Verify Kind extraPortMappings are configured
-docker ps | grep kind-control-plane
-# or for Podman:
-podman ps | grep kind-control-plane
+# 3. Get service URL via minikube
+minikube service a2a-agent-service -n a2a-demo --url
 ```
 
 **Only seeing 1 pod:**
@@ -436,20 +436,22 @@ kubectl get crd kafkas.kafka.strimzi.io
 kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 ```
 
-### Kind Resource Issues
+### Minikube Resource Issues
 
 **Insufficient resources:**
-Kind uses your Docker/Podman resources. Increase Docker Desktop memory/CPU limits if needed.
+Minikube uses your Docker/Podman resources. Increase Docker Desktop or Podman Machine memory/CPU limits if needed.
 
 **Disk space:**
 ```bash
-# Check disk usage inside Kind node
-docker exec -it kind-control-plane df -h
-# or for Podman:
-podman exec -it kind-control-plane df -h
+# Check disk usage inside Minikube
+minikube ssh df -h
 
 # Clean up old images
 docker system prune -a   # or: podman system prune -a
+
+# Delete and recreate Minikube with more resources
+minikube delete
+minikube start --cpus=4 --memory=8192
 ```
 
 ## Cleanup
@@ -459,6 +461,16 @@ To remove all deployed resources:
 ```bash
 cd scripts
 ./cleanup.sh
+```
+
+**If you used Podman:**
+```bash
+./cleanup.sh --container-tool podman
+```
+
+**Skip confirmation prompt:**
+```bash
+./cleanup.sh --yes
 ```
 
 This will delete:
@@ -472,9 +484,9 @@ To also remove Strimzi operator:
 kubectl delete namespace kafka
 ```
 
-To delete the Kind cluster:
+To stop the Minikube cluster:
 ```bash
-kind delete cluster
+minikube stop
 ```
 
 ### Complete Clean Slate
@@ -482,13 +494,8 @@ kind delete cluster
 For a completely fresh start (useful for testing from scratch):
 
 ```bash
-# Delete Kind cluster
-kind delete cluster
-
-# Remove local registry container
-docker stop kind-registry && docker rm kind-registry
-# or for Podman:
-podman stop kind-registry && podman rm kind-registry
+# Delete Minikube cluster
+minikube delete
 
 # Optional: Clean up container images
 docker system prune -a   # or: podman system prune -a
@@ -571,9 +578,10 @@ From `pom.xml`:
 ## References
 
 - [A2A Protocol Specification](https://github.com/a2aproject/a2a)
-- [Kind Quick Start](https://kind.sigs.k8s.io/docs/user/quick-start/)
-- [Kind Local Registry](https://kind.sigs.k8s.io/docs/user/local-registry/)
-- [Kind extraPortMappings](https://kind.sigs.k8s.io/docs/user/configuration/#extra-port-mappings)
+- [Minikube Quick Start](https://minikube.sigs.k8s.io/docs/start/)
+- [Minikube Services](https://minikube.sigs.k8s.io/docs/handbook/accessing/)
+- [Minikube with Podman](https://minikube.sigs.k8s.io/docs/drivers/podman/)
 - [Strimzi Kafka Operator](https://strimzi.io/)
 - [Quarkus Reactive Messaging](https://quarkus.io/guides/kafka)
 - [Kubernetes Downward API](https://kubernetes.io/docs/concepts/workloads/pods/downward-api/)
+- [Kubernetes NodePort Service](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)

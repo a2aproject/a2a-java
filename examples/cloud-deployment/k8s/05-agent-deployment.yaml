@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: a2a-agent
-          image: localhost:5001/a2a-cloud-deployment:latest
+          image: localhost:5000/a2a-cloud-deployment:latest
           # Always pull to ensure latest image is used when rebuilding with :latest tag
           # For production, use digest-based image references (e.g., @sha256:...)
           imagePullPolicy: Always
@@ -91,6 +91,6 @@ spec:
     - protocol: TCP
       port: 8080        # Service port inside cluster
       targetPort: 8080  # Pod port
-      nodePort: 30080   # Fixed NodePort (mapped to host port 8080 via Kind config)
+      nodePort: 30080   # Fixed NodePort for consistent access
   type: NodePort
   sessionAffinity: None  # Ensures round-robin load balancing
