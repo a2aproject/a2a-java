@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -236,9 +237,11 @@ public class KafkaReplicationIntegrationTest {
             }
         };
 
-        // Create error handler
+        // Create error handler - filter out benign stream closed errors
         Consumer<Throwable> errorHandler = error -> {
-            errorRef.set(error);
+            if (!isStreamClosedError(error)) {
+                errorRef.set(error);
+            }
             resubscribeLatch.countDown();
         };
 
@@ -421,6 +424,38 @@ public class KafkaReplicationIntegrationTest {
         QueueClosedEvent closedEvent =
                 (QueueClosedEvent) poisonPill.getEvent();
         assertEquals(taskId, closedEvent.getTaskId(), "QueueClosedEvent task ID should match");
+    }
+
+    /**
+     * Checks if an error is a benign stream closed/cancelled error that should be ignored.
+     * HTTP/2 streams can be cancelled during normal cleanup, which is not an actual error.
+     */
+    private boolean isStreamClosedError(Throwable error) {
+        if (error == null) {
+            return false;
+        }
+
+        // Check for IOException which includes stream cancellation
+        if (error instanceof IOException) {
+            String message = error.getMessage();
+            if (message != null) {
+                // Filter out normal stream closure/cancellation errors
+                if (message.contains("Stream closed") ||
+                    message.contains("Stream") && message.contains("cancelled") ||
+                    message.contains("EOF reached") ||
+                    message.contains("CANCEL")) {
+                    return true;
+                }
+            }
+        }
+
+        // Check cause recursively
+        Throwable cause = error.getCause();
+        if (cause != null && cause != error) {
+            return isStreamClosedError(cause);
+        }
+
+        return false;
     }
 
 }

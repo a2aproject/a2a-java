@@ -27,3 +27,23 @@ jobs:
         cache: maven
     - name: Build with Maven and run tests
       run: mvn -B package --file pom.xml -fae
+    - name: Upload Test Reports
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: surefire-reports-java-${{ matrix.java-version }}
+        path: |
+          **/target/surefire-reports/
+          **/target/failsafe-reports/
+        retention-days: 7
+        if-no-files-found: warn
+    - name: Upload Build Logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs-java-${{ matrix.java-version }}
+        path: |
+          **/target/*.log
+          **/target/quarkus.log
+        retention-days: 3
+        if-no-files-found: ignore
