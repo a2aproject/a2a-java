@@ -6,7 +6,7 @@ name: Build with '-Prelease'
 on:
   # Handle all branches for now
   push:
-  pull_request:
+  pull_request_target:
   workflow_dispatch:
 
 # Only run the latest job
@@ -47,7 +47,7 @@ jobs:
           mkdir -p ~/.m2
           echo "<settings><servers><server><id>central-a2asdk-temp</id><username>${{ secrets.CENTRAL_TOKEN_USERNAME }}</username><password>${{ secrets.CENTRAL_TOKEN_PASSWORD }}</password></server></servers></settings>" > ~/.m2/settings.xml
 
-      # Deploy to Maven Central
+      # Build with the same settings as the deploy job
       # -s uses the settings file we created.
       - name: Build with same arguments as deploy job
         run: >
