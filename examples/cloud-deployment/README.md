@@ -90,7 +90,22 @@ cd scripts
 ./deploy.sh --container-tool podman
 ```
 
-Note that using Kind with Podman on Linux may have some occasional issues due to Kind's experimental support for Podman. In our testing, a reboot normally solves this. 
+Note that using Kind with Podman on Linux may have some occasional issues due to Kind's experimental support for Podman. In our testing, a reboot normally solves this.
+
+**Troubleshooting entity operator timeout:**
+
+In some environments (particularly Linux with Podman), the Kafka entity operator may not start properly, causing deployment to timeout while waiting for Kafka to be ready. If you encounter this issue, you can skip the entity operator wait:
+
+```bash
+export SKIP_ENTITY_OPERATOR_WAIT=true
+./deploy.sh --container-tool podman
+```
+
+This tells the script to:
+- Check only the Kafka broker pod (not the full Kafka resource with entity operator)
+- Poll the Kafka broker directly to verify topic creation (instead of waiting for the topic operator)
+
+The entity operator manages topic and user resources, but the broker handles the actual message streaming. Skipping the entity operator wait does not affect the demo's core functionality. 
 
 The script will:
 - Create Kind cluster with local registry support (if not already exists)

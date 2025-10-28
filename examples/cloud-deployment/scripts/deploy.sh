@@ -219,34 +219,83 @@ echo -e "${GREEN}✓ PostgreSQL deployed${NC}"
 echo ""
 echo "Deploying Kafka..."
 kubectl apply -f ../k8s/02-kafka.yaml
-echo "Waiting for Kafka to be ready (using KRaft mode, typically 2-3 minutes)..."
+echo "Waiting for Kafka to be ready (using KRaft mode, typically 2-3 minutes. Timeout is 10 minutes)..."
 
-# Monitor progress while waiting
-for i in {1..60}; do
-    echo "Checking Kafka status (attempt $i/60)..."
-    kubectl get kafka -n kafka -o wide 2>/dev/null || true
-    kubectl get pods -n kafka -l strimzi.io/cluster=a2a-kafka 2>/dev/null || true
+# Check if we should skip entity operator wait (workaround for some environments)
+if [ "${SKIP_ENTITY_OPERATOR_WAIT}" = "true" ]; then
+    echo -e "${YELLOW}⚠ SKIP_ENTITY_OPERATOR_WAIT is set - checking broker pod only${NC}"
 
-    if kubectl wait --for=condition=Ready kafka/a2a-kafka -n kafka --timeout=10s 2>/dev/null; then
-        echo -e "${GREEN}✓ Kafka deployed${NC}"
-        break
-    fi
+    # Wait for broker pod to be ready (skip entity operator check)
+    for i in {1..60}; do
+        echo "Checking Kafka broker status (attempt $i/60)..."
+        kubectl get pods -n kafka -l strimzi.io/cluster=a2a-kafka 2>/dev/null || true
 
-    if [ $i -eq 60 ]; then
-        echo -e "${RED}ERROR: Timeout waiting for Kafka${NC}"
-        kubectl describe kafka/a2a-kafka -n kafka
-        kubectl get events -n kafka --sort-by='.lastTimestamp'
-        exit 1
-    fi
-done
+        if kubectl wait --for=condition=Ready pod/a2a-kafka-broker-0 -n kafka --timeout=5s 2>/dev/null; then
+            echo -e "${GREEN}✓ Kafka broker pod is ready${NC}"
+            echo -e "${YELLOW}⚠ Entity operator may not be ready, but this does not affect functionality${NC}"
+            break
+        fi
+
+        if [ $i -eq 60 ]; then
+            echo -e "${RED}ERROR: Timeout waiting for Kafka broker${NC}"
+            kubectl get pods -n kafka -l strimzi.io/cluster=a2a-kafka
+            kubectl describe pod a2a-kafka-broker-0 -n kafka 2>/dev/null || true
+            exit 1
+        fi
+
+        sleep 5
+    done
+else
+    echo -e "${YELLOW} If waiting for Kafka times out, run ./cleanup.sh, and retry having set 'SKIP_ENTITY_OPERATOR_WAIT=true'${NC}"
+    # Standard wait for full Kafka resource (includes entity operator)
+    for i in {1..60}; do
+        echo "Checking Kafka status (attempt $i/60)..."
+        kubectl get kafka -n kafka -o wide 2>/dev/null || true
+        kubectl get pods -n kafka -l strimzi.io/cluster=a2a-kafka 2>/dev/null || true
+
+        if kubectl wait --for=condition=Ready kafka/a2a-kafka -n kafka --timeout=10s 2>/dev/null; then
+            echo -e "${GREEN}✓ Kafka deployed${NC}"
+            break
+        fi
+
+        if [ $i -eq 60 ]; then
+            echo -e "${RED}ERROR: Timeout waiting for Kafka${NC}"
+            kubectl describe kafka/a2a-kafka -n kafka
+            kubectl get events -n kafka --sort-by='.lastTimestamp'
+            exit 1
+        fi
+    done
+fi
 
 # Create Kafka Topic for event replication
 echo ""
 echo "Creating Kafka topic for event replication..."
 kubectl apply -f ../k8s/03-kafka-topic.yaml
-echo "Waiting for Kafka topic to be ready..."
-kubectl wait --for=condition=Ready kafkatopic/a2a-replicated-events -n kafka --timeout=60s
-echo -e "${GREEN}✓ Kafka topic created${NC}"
+
+if [ "${SKIP_ENTITY_OPERATOR_WAIT}" = "true" ]; then
+    echo -e "${YELLOW}⚠ SKIP_ENTITY_OPERATOR_WAIT is set - polling Kafka broker for topic${NC}"
+    echo "  Topic operator may not be ready, waiting for broker to create topic. This check can take several minutes..."
+
+    # Wait for topic to actually exist in Kafka broker (not just CRD)
+    for i in {1..30}; do
+        if kubectl exec a2a-kafka-broker-0 -n kafka -- \
+            /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server localhost:9092 2>/dev/null | \
+            grep -q "a2a-replicated-events"; then
+            echo -e "${GREEN}✓ Topic exists in Kafka broker${NC}"
+            break
+        fi
+        if [ $i -eq 30 ]; then
+            echo -e "${RED}ERROR: Topic not found in broker after 30 attempts${NC}"
+            exit 1
+        fi
+        sleep 2
+    done
+else
+    echo "Waiting for Kafka topic to be ready..."
+    echo -e "${YELLOW} If waiting for Kafka times out, run ./cleanup.sh, and retry having set 'SKIP_ENTITY_OPERATOR_WAIT=true'${NC}"
+    kubectl wait --for=condition=Ready kafkatopic/a2a-replicated-events -n kafka --timeout=60s
+    echo -e "${GREEN}✓ Kafka topic created${NC}"
+fi
 
 # Deploy Agent ConfigMap
 echo ""
