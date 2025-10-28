@@ -292,9 +292,14 @@ if [ "${SKIP_ENTITY_OPERATOR_WAIT}" = "true" ]; then
     done
 else
     echo "Waiting for Kafka topic to be ready..."
-    echo -e "${YELLOW} If waiting for Kafka times out, run ./cleanup.sh, and retry having set 'SKIP_ENTITY_OPERATOR_WAIT=true'${NC}"
-    kubectl wait --for=condition=Ready kafkatopic/a2a-replicated-events -n kafka --timeout=60s
-    echo -e "${GREEN}✓ Kafka topic created${NC}"
+    if kubectl wait --for=condition=Ready kafkatopic/a2a-replicated-events -n kafka --timeout=60s; then
+        echo -e "${GREEN}✓ Kafka topic created${NC}"
+    else
+        echo -e "${RED}ERROR: Timeout waiting for Kafka topic${NC}"
+        echo -e "${YELLOW}The topic operator may not be ready in this environment.${NC}"
+        echo -e "${YELLOW}Run ./cleanup.sh, then retry with: export SKIP_ENTITY_OPERATOR_WAIT=true${NC}"
+        exit 1
+    fi
 fi
 
 # Deploy Agent ConfigMap
