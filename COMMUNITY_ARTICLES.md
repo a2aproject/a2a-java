@@ -17,9 +17,13 @@ Here are some articles and videos from the community that you may find helpful.
 
 *   [Getting Started with Quarkus and A2A Java SDK 0.3.0](https://quarkus.io/blog/quarkus-a2a-java-0-3-0-alpha-release/): Learn about what's new in the 0.3.0 version of the A2A Java SDK. This article also appeared in the [Medium Google Cloud publication](https://medium.com/google-cloud/getting-started-with-quarkus-and-a2a-java-sdk-0-3-0-c4e70620a805).
 
-*   [A2A Java SDK: Support for the REST Transport is Now Here](https://medium.com/google-cloud/a2a-java-sdk-support-for-the-rest-transport-is-now-here-56c666060b32): Learn about the new support for the REST transport introduced in A2A Java SDK 0.3.0.Beta1.
+*   [A2A Java SDK: Support for the REST Transport is Now Here](https://quarkus.io/blog/quarkus-a2a-java-0-3-0-beta-release/): Learn about the new support for the REST transport introduced in A2A Java SDK 0.3.0.Beta1. This article also appeared in the [Medium Google Cloud publication](https://medium.com/google-cloud/a2a-java-sdk-support-for-the-rest-transport-is-now-here-56c666060b32).
 
 *   [Multi-Language Agent Collaboration and Interoperability with A2A](https://medium.com/google-cloud/multi-language-agent-collaboration-and-interoperability-with-a2a-e5fe80b4962d): A deep dive into a multi-language, multi-agent sample where agents written in Java, Python, and TypeScript work together to achieve a common goal: content creation.
+
+*   [Getting Started with A2A Java SDK and gRPC](https://quarkus.io/blog/quarkus-a2a-java-grpc/): Let's learn how to create an A2A server agent and an A2A client that can communicate using the gRPC transport. This article also appeared in the [Medium Google Cloud publication](https://medium.com/google-cloud/getting-started-with-the-a2a-java-sdk-and-grpc-11c987df73c1).
+
+*   [How to Secure Your A2A Server Agent with Keycloak OAuth2](https://quarkus.io/blog/quarkus-a2a-java-security/): This blog post shows how to secure an A2A server agent using OAuth2 bearer tokens via Keycloak and shows how to enable an A2A client to automatically obtain and pass the required token in each request.
 
 ## A2A Java SDK for Jakarta Servers
 
