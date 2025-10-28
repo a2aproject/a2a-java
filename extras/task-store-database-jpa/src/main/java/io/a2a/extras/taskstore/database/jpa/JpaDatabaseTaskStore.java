@@ -94,12 +94,12 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     /**
      * Determines if a task is considered active for queue management purposes.
-     * <p>
-     * A task is active if:
+     * <p>A task is active if:</p>
      * <ul>
      *   <li>Its state is not final, OR</li>
      *   <li>Its state is final but it was finalized within the grace period</li>
      * </ul>
+     * <p>
      * The grace period handles the race condition where events are published to Kafka
      * while a task is active, but consumed on a replica node after the task is finalized.
      * </p>

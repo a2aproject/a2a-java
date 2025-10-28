@@ -28,7 +28,7 @@ public interface TaskStateProvider {
      * </p>
      * <ul>
      *     <li>Its state is not final, OR</li>
-     *     <li>Its state is final but finalized within the grace period (now < finalizedAt + gracePeriod)</li>
+     *     <li>Its state is final but finalized within the grace period (now &lt; finalizedAt + gracePeriod)</li>
      * </ul>
      * <p>
      * This method is used to decide whether to process late-arriving events.
