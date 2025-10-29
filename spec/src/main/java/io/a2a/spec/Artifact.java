@@ -12,7 +12,8 @@ import io.a2a.util.Assert;
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record Artifact(String artifactId, String name, String description, List<Part<?>> parts, Map<String, Object> metadata) {
+public record Artifact(String artifactId, String name, String description, List<Part<?>> parts, Map<String, Object> metadata,
+                       List<String> extensions) {
 
     public Artifact {
         Assert.checkNotNullParam("artifactId", artifactId);
@@ -28,6 +29,7 @@ public record Artifact(String artifactId, String name, String description, List<
         private String description;
         private List<Part<?>> parts;
         private Map<String, Object> metadata;
+        private List<String> extensions;
 
         public Builder(){
         }
@@ -38,6 +40,7 @@ public record Artifact(String artifactId, String name, String description, List<
             description = existingArtifact.description;
             parts = existingArtifact.parts;
             metadata = existingArtifact.metadata;
+            extensions = existingArtifact.extensions;
         }
 
         public Builder artifactId(String artifactId) {
@@ -71,8 +74,13 @@ public record Artifact(String artifactId, String name, String description, List<
             return this;
         }
 
+        public Builder extensions(List<String> extensions) {
+            this.extensions = (extensions == null) ? null : List.copyOf(extensions);
+            return this;
+        }
+
         public Artifact build() {
-            return new Artifact(artifactId, name, description, parts, metadata);
+            return new Artifact(artifactId, name, description, parts, metadata, extensions);
         }
     }
 }
