@@ -75,7 +75,7 @@ public record Artifact(String artifactId, String name, String description, List<
         }
 
         public Builder extensions(List<String> extensions) {
-            this.extensions = this.extensions = (extensions == null) ? null : List.copyOf(extensions);
+            this.extensions = (extensions == null) ? null : List.copyOf(extensions);
             return this;
         }
 
