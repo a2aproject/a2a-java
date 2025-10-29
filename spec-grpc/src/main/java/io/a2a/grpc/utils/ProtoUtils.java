@@ -132,6 +132,9 @@ public class ProtoUtils {
             if (agentCard.signatures() != null) {
                 builder.addAllSignatures(agentCard.signatures().stream().map(ToProto::agentCardSignature).collect(Collectors.toList()));
             }
+            if (agentCard.iconUrl() != null) {
+                builder.setIconUrl(agentCard.iconUrl());
+            }
             return builder.build();
         }
 
