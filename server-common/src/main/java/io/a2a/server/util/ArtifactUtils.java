@@ -32,6 +32,7 @@ public final class ArtifactUtils {
             name,
             description,
             parts,
+            null,
             null
         );
     }

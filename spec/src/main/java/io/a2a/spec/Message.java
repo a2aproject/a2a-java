@@ -34,17 +34,18 @@ public final class Message implements EventKind, StreamingEventKind {
     private final Map<String, Object> metadata;
     private final String kind;
     private final List<String> referenceTaskIds;
+    private final List<String> extensions;
 
     public Message(Role role, List<Part<?>> parts, String messageId, String contextId, String taskId,
-                   List<String> referenceTaskIds, Map<String, Object> metadata) {
-        this(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata, MESSAGE);
+                   List<String> referenceTaskIds, Map<String, Object> metadata, List<String> extensions) {
+        this(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata, extensions, MESSAGE);
     }
 
     @JsonCreator
     public Message(@JsonProperty("role") Role role, @JsonProperty("parts") List<Part<?>> parts,
                    @JsonProperty("messageId") String messageId, @JsonProperty("contextId") String contextId,
                    @JsonProperty("taskId") String taskId, @JsonProperty("referenceTaskIds") List<String> referenceTaskIds,
-                   @JsonProperty("metadata") Map<String, Object> metadata,
+                   @JsonProperty("metadata") Map<String, Object> metadata, @JsonProperty("extensions") List<String> extensions,
                    @JsonProperty("kind") String kind) {
         Assert.checkNotNullParam("kind", kind);
         Assert.checkNotNullParam("parts", parts);
@@ -63,6 +64,7 @@ public final class Message implements EventKind, StreamingEventKind {
         this.taskId = taskId;
         this.referenceTaskIds = referenceTaskIds;
         this.metadata = metadata;
+        this.extensions = extensions;
         this.kind = kind;
     }
 
@@ -102,6 +104,10 @@ public final class Message implements EventKind, StreamingEventKind {
         return referenceTaskIds;
     }
 
+    public List<String> getExtensions() {
+        return extensions;
+    }
+
     @Override
     public String getKind() {
         return kind;
@@ -132,6 +138,7 @@ public final class Message implements EventKind, StreamingEventKind {
         private String taskId;
         private List<String> referenceTaskIds;
         private Map<String, Object> metadata;
+        private List<String> extensions;
 
         public Builder() {
         }
@@ -144,6 +151,7 @@ public final class Message implements EventKind, StreamingEventKind {
             taskId = message.taskId;
             referenceTaskIds = message.referenceTaskIds;
             metadata = message.metadata;
+            extensions = message.extensions;
         }
 
         public Builder role(Role role) {
@@ -186,9 +194,14 @@ public final class Message implements EventKind, StreamingEventKind {
             return this;
         }
 
+        public Builder extensions(List<String> extensions) {
+            this.extensions = (extensions == null) ? null : List.copyOf(extensions);
+            return this;
+        }
+
         public Message build() {
             return new Message(role, parts, messageId == null ? UUID.randomUUID().toString() : messageId,
-                    contextId, taskId, referenceTaskIds, metadata);
+                    contextId, taskId, referenceTaskIds, metadata, extensions);
         }
     }
 }
