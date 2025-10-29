@@ -267,6 +267,9 @@ public class ProtoUtils {
             } else if (fileContent instanceof FileWithUri) {
                 builder.setFileWithUri(((FileWithUri) fileContent).uri());
             }
+            if (fileContent.name() != null) {
+                builder.setName(fileContent.name());
+            }
             return builder.build();
         }
 
@@ -936,9 +939,13 @@ public class ProtoUtils {
 
         private static FilePart filePart(io.a2a.grpc.FilePartOrBuilder filePart) {
             if (filePart.hasFileWithBytes()) {
-                return new FilePart(new FileWithBytes(filePart.getMimeType(), null, filePart.getFileWithBytes().toStringUtf8()));
+                return new FilePart(new FileWithBytes(filePart.getMimeType(),
+                        ! filePart.getName().isEmpty() ? filePart.getName() : null,
+                        filePart.getFileWithBytes().toStringUtf8()));
             } else if (filePart.hasFileWithUri()) {
-                return new FilePart(new FileWithUri(filePart.getMimeType(), null, filePart.getFileWithUri()));
+                return new FilePart(new FileWithUri(filePart.getMimeType(),
+                        ! filePart.getName().isEmpty() ? filePart.getName() : null,
+                        filePart.getFileWithUri()));
             }
             throw new InvalidRequestError();
         }
