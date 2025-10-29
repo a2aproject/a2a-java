@@ -875,7 +875,8 @@ public class ProtoUtils {
                     message.getContextId().isEmpty() ? null :  message.getContextId(),
                     message.getTaskId().isEmpty() ? null :  message.getTaskId(),
                     null, // referenceTaskIds is not in grpc message
-                    struct(message.getMetadata())
+                    struct(message.getMetadata()),
+                    message.getExtensionsList().isEmpty() ? null : message.getExtensionsList()
             );
         }
 
@@ -906,7 +907,8 @@ public class ProtoUtils {
                     artifact.getName(),
                     artifact.getDescription(),
                     artifact.getPartsList().stream().map(item -> part(item)).collect(Collectors.toList()),
-                    struct(artifact.getMetadata())
+                    struct(artifact.getMetadata()),
+                    artifact.getExtensionsList().isEmpty() ? null : artifact.getExtensionsList()
             );
         }
 
