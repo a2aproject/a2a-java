@@ -164,6 +164,9 @@ public class ProtoUtils {
                 builder.addAllParts(message.getParts().stream().map(ToProto::part).collect(Collectors.toList()));
             }
             builder.setMetadata(struct(message.getMetadata()));
+            if (message.getReferenceTaskIds() != null && !message.getReferenceTaskIds().isEmpty()) {
+                builder.addAllReferenceTaskIds(message.getReferenceTaskIds());
+            }
             return builder.build();
         }
 
@@ -875,7 +878,7 @@ public class ProtoUtils {
                     message.getMessageId().isEmpty() ? null :  message.getMessageId(),
                     message.getContextId().isEmpty() ? null :  message.getContextId(),
                     message.getTaskId().isEmpty() ? null :  message.getTaskId(),
-                    null, // referenceTaskIds is not in grpc message
+                    message.getReferenceTaskIdsList().isEmpty() ? null :  message.getReferenceTaskIdsList(),
                     struct(message.getMetadata()),
                     message.getExtensionsList().isEmpty() ? null : message.getExtensionsList()
             );
