@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.a2asdk</groupId>
         <artifactId>a2a-java-sdk-parent</artifactId>
-        <version>0.3.1.Beta1-SNAPSHOT</version>
+        <version>0.3.1.Final</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
