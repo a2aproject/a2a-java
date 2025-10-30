@@ -12,6 +12,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +23,15 @@ public class AsyncExecutorProducer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncExecutorProducer.class);
 
+    @Inject // Needed to work in standard Jakarta runtimes (Quarkus skips this)
     @ConfigProperty(name = "a2a.executor.core-pool-size", defaultValue = "5")
     int corePoolSize;
 
+    @Inject // Needed to work in standard Jakarta runtimes (Quarkus skips this)
     @ConfigProperty(name = "a2a.executor.max-pool-size", defaultValue = "50")
     int maxPoolSize;
 
+    @Inject // Needed to work in standard Jakarta runtimes (Quarkus skips this)
     @ConfigProperty(name = "a2a.executor.keep-alive-seconds", defaultValue = "60")
     long keepAliveSeconds;
 
