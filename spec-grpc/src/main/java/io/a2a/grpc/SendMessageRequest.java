@@ -8,6 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * &#47;////////// Request Messages ///////////
+ * --8&lt;-- [start:MessageSendParams]
  * </pre>
  *
  * Protobuf type {@code a2a.v1.SendMessageRequest}
@@ -51,6 +52,10 @@ private static final long serialVersionUID = 0L;
   public static final int REQUEST_FIELD_NUMBER = 1;
   private io.a2a.grpc.Message request_;
   /**
+   * <pre>
+   * The message to send to the agent.
+   * </pre>
+   *
    * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the request field is set.
    */
@@ -59,6 +64,10 @@ private static final long serialVersionUID = 0L;
     return ((bitField0_ & 0x00000001) != 0);
   }
   /**
+   * <pre>
+   * The message to send to the agent.
+   * </pre>
+   *
    * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
    * @return The request.
    */
@@ -67,6 +76,10 @@ private static final long serialVersionUID = 0L;
     return request_ == null ? io.a2a.grpc.Message.getDefaultInstance() : request_;
   }
   /**
+   * <pre>
+   * The message to send to the agent.
+   * </pre>
+   *
    * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
@@ -77,6 +90,10 @@ private static final long serialVersionUID = 0L;
   public static final int CONFIGURATION_FIELD_NUMBER = 2;
   private io.a2a.grpc.SendMessageConfiguration configuration_;
   /**
+   * <pre>
+   * Configuration for the send request.
+   * </pre>
+   *
    * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
    * @return Whether the configuration field is set.
    */
@@ -85,6 +102,10 @@ private static final long serialVersionUID = 0L;
     return ((bitField0_ & 0x00000002) != 0);
   }
   /**
+   * <pre>
+   * Configuration for the send request.
+   * </pre>
+   *
    * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
    * @return The configuration.
    */
@@ -93,6 +114,10 @@ private static final long serialVersionUID = 0L;
     return configuration_ == null ? io.a2a.grpc.SendMessageConfiguration.getDefaultInstance() : configuration_;
   }
   /**
+   * <pre>
+   * Configuration for the send request.
+   * </pre>
+   *
    * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
    */
   @java.lang.Override
@@ -103,6 +128,10 @@ private static final long serialVersionUID = 0L;
   public static final int METADATA_FIELD_NUMBER = 3;
   private com.google.protobuf.Struct metadata_;
   /**
+   * <pre>
+   * Optional metadata for the request.
+   * </pre>
+   *
    * <code>.google.protobuf.Struct metadata = 3;</code>
    * @return Whether the metadata field is set.
    */
@@ -111,6 +140,10 @@ private static final long serialVersionUID = 0L;
     return ((bitField0_ & 0x00000004) != 0);
   }
   /**
+   * <pre>
+   * Optional metadata for the request.
+   * </pre>
+   *
    * <code>.google.protobuf.Struct metadata = 3;</code>
    * @return The metadata.
    */
@@ -119,6 +152,10 @@ private static final long serialVersionUID = 0L;
     return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
   }
   /**
+   * <pre>
+   * Optional metadata for the request.
+   * </pre>
+   *
    * <code>.google.protobuf.Struct metadata = 3;</code>
    */
   @java.lang.Override
@@ -323,6 +360,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * &#47;////////// Request Messages ///////////
+   * --8&lt;-- [start:MessageSendParams]
    * </pre>
    *
    * Protobuf type {@code a2a.v1.SendMessageRequest}
@@ -525,6 +563,10 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> requestBuilder_;
     /**
+     * <pre>
+     * The message to send to the agent.
+     * </pre>
+     *
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the request field is set.
      */
@@ -532,6 +574,10 @@ private static final long serialVersionUID = 0L;
       return ((bitField0_ & 0x00000001) != 0);
     }
     /**
+     * <pre>
+     * The message to send to the agent.
+     * </pre>
+     *
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      * @return The request.
      */
@@ -543,6 +589,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * The message to send to the agent.
+     * </pre>
+     *
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setRequest(io.a2a.grpc.Message value) {
@@ -559,6 +609,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The message to send to the agent.
+     * </pre>
+     *
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setRequest(
@@ -573,6 +627,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The message to send to the agent.
+     * </pre>
+     *
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeRequest(io.a2a.grpc.Message value) {
@@ -594,6 +652,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The message to send to the agent.
+     * </pre>
+     *
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearRequest() {
@@ -607,6 +669,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The message to send to the agent.
+     * </pre>
+     *
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Message.Builder getRequestBuilder() {
@@ -615,6 +681,10 @@ private static final long serialVersionUID = 0L;
       return internalGetRequestFieldBuilder().getBuilder();
     }
     /**
+     * <pre>
+     * The message to send to the agent.
+     * </pre>
+     *
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.MessageOrBuilder getRequestOrBuilder() {
@@ -626,6 +696,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * The message to send to the agent.
+     * </pre>
+     *
      * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
@@ -646,6 +720,10 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.SendMessageConfiguration, io.a2a.grpc.SendMessageConfiguration.Builder, io.a2a.grpc.SendMessageConfigurationOrBuilder> configurationBuilder_;
     /**
+     * <pre>
+     * Configuration for the send request.
+     * </pre>
+     *
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      * @return Whether the configuration field is set.
      */
@@ -653,6 +731,10 @@ private static final long serialVersionUID = 0L;
       return ((bitField0_ & 0x00000002) != 0);
     }
     /**
+     * <pre>
+     * Configuration for the send request.
+     * </pre>
+     *
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      * @return The configuration.
      */
@@ -664,6 +746,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Configuration for the send request.
+     * </pre>
+     *
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      */
     public Builder setConfiguration(io.a2a.grpc.SendMessageConfiguration value) {
@@ -680,6 +766,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Configuration for the send request.
+     * </pre>
+     *
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      */
     public Builder setConfiguration(
@@ -694,6 +784,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Configuration for the send request.
+     * </pre>
+     *
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      */
     public Builder mergeConfiguration(io.a2a.grpc.SendMessageConfiguration value) {
@@ -715,6 +809,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Configuration for the send request.
+     * </pre>
+     *
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      */
     public Builder clearConfiguration() {
@@ -728,6 +826,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Configuration for the send request.
+     * </pre>
+     *
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      */
     public io.a2a.grpc.SendMessageConfiguration.Builder getConfigurationBuilder() {
@@ -736,6 +838,10 @@ private static final long serialVersionUID = 0L;
       return internalGetConfigurationFieldBuilder().getBuilder();
     }
     /**
+     * <pre>
+     * Configuration for the send request.
+     * </pre>
+     *
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      */
     public io.a2a.grpc.SendMessageConfigurationOrBuilder getConfigurationOrBuilder() {
@@ -747,6 +853,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Configuration for the send request.
+     * </pre>
+     *
      * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
@@ -767,6 +877,10 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
     /**
+     * <pre>
+     * Optional metadata for the request.
+     * </pre>
+     *
      * <code>.google.protobuf.Struct metadata = 3;</code>
      * @return Whether the metadata field is set.
      */
@@ -774,6 +888,10 @@ private static final long serialVersionUID = 0L;
       return ((bitField0_ & 0x00000004) != 0);
     }
     /**
+     * <pre>
+     * Optional metadata for the request.
+     * </pre>
+     *
      * <code>.google.protobuf.Struct metadata = 3;</code>
      * @return The metadata.
      */
@@ -785,6 +903,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Optional metadata for the request.
+     * </pre>
+     *
      * <code>.google.protobuf.Struct metadata = 3;</code>
      */
     public Builder setMetadata(com.google.protobuf.Struct value) {
@@ -801,6 +923,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Optional metadata for the request.
+     * </pre>
+     *
      * <code>.google.protobuf.Struct metadata = 3;</code>
      */
     public Builder setMetadata(
@@ -815,6 +941,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Optional metadata for the request.
+     * </pre>
+     *
      * <code>.google.protobuf.Struct metadata = 3;</code>
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
@@ -836,6 +966,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Optional metadata for the request.
+     * </pre>
+     *
      * <code>.google.protobuf.Struct metadata = 3;</code>
      */
     public Builder clearMetadata() {
@@ -849,6 +983,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Optional metadata for the request.
+     * </pre>
+     *
      * <code>.google.protobuf.Struct metadata = 3;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
@@ -857,6 +995,10 @@ private static final long serialVersionUID = 0L;
       return internalGetMetadataFieldBuilder().getBuilder();
     }
     /**
+     * <pre>
+     * Optional metadata for the request.
+     * </pre>
+     *
      * <code>.google.protobuf.Struct metadata = 3;</code>
      */
     public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
@@ -868,6 +1010,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Optional metadata for the request.
+     * </pre>
+     *
      * <code>.google.protobuf.Struct metadata = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<

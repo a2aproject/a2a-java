@@ -12,7 +12,8 @@ public interface TaskPushNotificationConfigOrBuilder extends
 
   /**
    * <pre>
-   * name=tasks/{id}/pushNotificationConfigs/{id}
+   * The resource name of the config.
+   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -21,7 +22,8 @@ public interface TaskPushNotificationConfigOrBuilder extends
   java.lang.String getName();
   /**
    * <pre>
-   * name=tasks/{id}/pushNotificationConfigs/{id}
+   * The resource name of the config.
+   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
    * </pre>
    *
    * <code>string name = 1;</code>
@@ -31,16 +33,28 @@ public interface TaskPushNotificationConfigOrBuilder extends
       getNameBytes();
 
   /**
+   * <pre>
+   * The push notification configuration details.
+   * </pre>
+   *
    * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return Whether the pushNotificationConfig field is set.
    */
   boolean hasPushNotificationConfig();
   /**
+   * <pre>
+   * The push notification configuration details.
+   * </pre>
+   *
    * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return The pushNotificationConfig.
    */
   io.a2a.grpc.PushNotificationConfig getPushNotificationConfig();
   /**
+   * <pre>
+   * The push notification configuration details.
+   * </pre>
+   *
    * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    */
   io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder();

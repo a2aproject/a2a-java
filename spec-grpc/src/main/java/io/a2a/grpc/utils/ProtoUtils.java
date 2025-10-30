@@ -132,6 +132,9 @@ public class ProtoUtils {
             if (agentCard.signatures() != null) {
                 builder.addAllSignatures(agentCard.signatures().stream().map(ToProto::agentCardSignature).collect(Collectors.toList()));
             }
+            if (agentCard.iconUrl() != null) {
+                builder.setIconUrl(agentCard.iconUrl());
+            }
             return builder.build();
         }
 
@@ -161,9 +164,12 @@ public class ProtoUtils {
             }
             builder.setRole(role(message.getRole()));
             if (message.getParts() != null) {
-                builder.addAllContent(message.getParts().stream().map(ToProto::part).collect(Collectors.toList()));
+                builder.addAllParts(message.getParts().stream().map(ToProto::part).collect(Collectors.toList()));
             }
             builder.setMetadata(struct(message.getMetadata()));
+            if (message.getReferenceTaskIds() != null && !message.getReferenceTaskIds().isEmpty()) {
+                builder.addAllReferenceTaskIds(message.getReferenceTaskIds());
+            }
             return builder.build();
         }
 
@@ -260,6 +266,9 @@ public class ProtoUtils {
                 builder.setFileWithBytes(ByteString.copyFrom(((FileWithBytes) fileContent).bytes(), StandardCharsets.UTF_8));
             } else if (fileContent instanceof FileWithUri) {
                 builder.setFileWithUri(((FileWithUri) fileContent).uri());
+            }
+            if (fileContent.name() != null) {
+                builder.setName(fileContent.name());
             }
             return builder.build();
         }
@@ -362,6 +371,7 @@ public class ProtoUtils {
             io.a2a.grpc.AgentCapabilities.Builder builder = io.a2a.grpc.AgentCapabilities.newBuilder();
             builder.setStreaming(agentCapabilities.streaming());
             builder.setPushNotifications(agentCapabilities.pushNotifications());
+            builder.setStateTransitionHistory(agentCapabilities.stateTransitionHistory());
             if (agentCapabilities.extensions() != null) {
                 builder.addAllExtensions(agentCapabilities.extensions().stream().map(ToProto::agentExtension).collect(Collectors.toList()));
             }
@@ -870,11 +880,11 @@ public class ProtoUtils {
 
             return new Message(
                     role(message.getRole()),
-                    message.getContentList().stream().map(item -> part(item)).collect(Collectors.toList()),
+                    message.getPartsList().stream().map(item -> part(item)).collect(Collectors.toList()),
                     message.getMessageId().isEmpty() ? null :  message.getMessageId(),
                     message.getContextId().isEmpty() ? null :  message.getContextId(),
                     message.getTaskId().isEmpty() ? null :  message.getTaskId(),
-                    null, // referenceTaskIds is not in grpc message
+                    message.getReferenceTaskIdsList().isEmpty() ? null :  message.getReferenceTaskIdsList(),
                     struct(message.getMetadata()),
                     message.getExtensionsList().isEmpty() ? null : message.getExtensionsList()
             );
@@ -929,9 +939,13 @@ public class ProtoUtils {
 
         private static FilePart filePart(io.a2a.grpc.FilePartOrBuilder filePart) {
             if (filePart.hasFileWithBytes()) {
-                return new FilePart(new FileWithBytes(filePart.getMimeType(), null, filePart.getFileWithBytes().toStringUtf8()));
+                return new FilePart(new FileWithBytes(filePart.getMimeType(),
+                        ! filePart.getName().isEmpty() ? filePart.getName() : null,
+                        filePart.getFileWithBytes().toStringUtf8()));
             } else if (filePart.hasFileWithUri()) {
-                return new FilePart(new FileWithUri(filePart.getMimeType(), null, filePart.getFileWithUri()));
+                return new FilePart(new FileWithUri(filePart.getMimeType(),
+                        ! filePart.getName().isEmpty() ? filePart.getName() : null,
+                        filePart.getFileWithUri()));
             }
             throw new InvalidRequestError();
         }

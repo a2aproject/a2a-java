@@ -6,6 +6,10 @@
 package io.a2a.grpc;
 
 /**
+ * <pre>
+ * --8&lt;-- [start:PasswordOAuthFlow]
+ * </pre>
+ *
  * Protobuf type {@code a2a.v1.PasswordOAuthFlow}
  */
 @com.google.protobuf.Generated
@@ -443,6 +447,10 @@ java.lang.String defaultValue) {
     return builder;
   }
   /**
+   * <pre>
+   * --8&lt;-- [start:PasswordOAuthFlow]
+   * </pre>
+   *
    * Protobuf type {@code a2a.v1.PasswordOAuthFlow}
    */
   public static final class Builder extends

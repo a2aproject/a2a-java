@@ -163,10 +163,10 @@ public class ToProtoTest {
                 assertEquals("context-1234", result.getHistory(0).getContextId());
         assertEquals("message-1234", result.getHistory(0).getMessageId());
         assertEquals(ROLE_USER, result.getHistory(0).getRole());
-        assertEquals(1, result.getHistory(0).getContentCount());
-        assertEquals("tell me a joke", result.getHistory(0).getContent(0).getText());
-        assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getHistory(0).getContent(0).getFile());
-        assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getHistory(0).getContent(0).getData());
+        assertEquals(1, result.getHistory(0).getPartsCount());
+        assertEquals("tell me a joke", result.getHistory(0).getParts(0).getText());
+        assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getHistory(0).getParts(0).getFile());
+        assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getHistory(0).getParts(0).getData());
     }
 
     @Test
@@ -175,10 +175,10 @@ public class ToProtoTest {
         assertEquals("context-1234", result.getContextId());
         assertEquals("message-1234", result.getMessageId());
         assertEquals(ROLE_USER, result.getRole());
-        assertEquals(1, result.getContentCount());
-        assertEquals("tell me a joke", result.getContent(0).getText());
-        assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getContent(0).getFile());
-        assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getContent(0).getData());
+        assertEquals(1, result.getPartsCount());
+        assertEquals("tell me a joke", result.getParts(0).getText());
+        assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getParts(0).getFile());
+        assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getParts(0).getData());
         Message message = new Message.Builder()
                 .role(Message.Role.AGENT)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
@@ -188,10 +188,10 @@ public class ToProtoTest {
         assertEquals("", result.getContextId());
         assertEquals("message-1234", result.getMessageId());
         assertEquals(ROLE_AGENT, result.getRole());
-        assertEquals(1, result.getContentCount());
-        assertEquals("tell me a joke", result.getContent(0).getText());
-        assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getContent(0).getFile());
-        assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getContent(0).getData());
+        assertEquals(1, result.getPartsCount());
+        assertEquals("tell me a joke", result.getParts(0).getText());
+        assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getParts(0).getFile());
+        assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getParts(0).getData());
     }
 
     @Test

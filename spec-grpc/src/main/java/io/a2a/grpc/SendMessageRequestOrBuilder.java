@@ -11,46 +11,82 @@ public interface SendMessageRequestOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   * <pre>
+   * The message to send to the agent.
+   * </pre>
+   *
    * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the request field is set.
    */
   boolean hasRequest();
   /**
+   * <pre>
+   * The message to send to the agent.
+   * </pre>
+   *
    * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
    * @return The request.
    */
   io.a2a.grpc.Message getRequest();
   /**
+   * <pre>
+   * The message to send to the agent.
+   * </pre>
+   *
    * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.MessageOrBuilder getRequestOrBuilder();
 
   /**
+   * <pre>
+   * Configuration for the send request.
+   * </pre>
+   *
    * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
    * @return Whether the configuration field is set.
    */
   boolean hasConfiguration();
   /**
+   * <pre>
+   * Configuration for the send request.
+   * </pre>
+   *
    * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
    * @return The configuration.
    */
   io.a2a.grpc.SendMessageConfiguration getConfiguration();
   /**
+   * <pre>
+   * Configuration for the send request.
+   * </pre>
+   *
    * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
    */
   io.a2a.grpc.SendMessageConfigurationOrBuilder getConfigurationOrBuilder();
 
   /**
+   * <pre>
+   * Optional metadata for the request.
+   * </pre>
+   *
    * <code>.google.protobuf.Struct metadata = 3;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
   /**
+   * <pre>
+   * Optional metadata for the request.
+   * </pre>
+   *
    * <code>.google.protobuf.Struct metadata = 3;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
   /**
+   * <pre>
+   * Optional metadata for the request.
+   * </pre>
+   *
    * <code>.google.protobuf.Struct metadata = 3;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();

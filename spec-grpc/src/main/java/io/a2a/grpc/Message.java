@@ -7,6 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
+ * --8&lt;-- [start:Message]
  * Message is one unit of communication between client and server. It is
  * associated with a context and optionally a task. Since the server is
  * responsible for the context definition, it must always provide a context_id
@@ -42,8 +43,10 @@ private static final long serialVersionUID = 0L;
     contextId_ = "";
     taskId_ = "";
     role_ = 0;
-    content_ = java.util.Collections.emptyList();
+    parts_ = java.util.Collections.emptyList();
     extensions_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    referenceTaskIds_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
@@ -66,8 +69,8 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object messageId_ = "";
   /**
    * <pre>
-   * The message id of the message. This is required and created by the
-   * message creator.
+   * The unique identifier (e.g. UUID)of the message. This is required and
+   * created by the message creator.
    * </pre>
    *
    * <code>string message_id = 1;</code>
@@ -88,8 +91,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The message id of the message. This is required and created by the
-   * message creator.
+   * The unique identifier (e.g. UUID)of the message. This is required and
+   * created by the message creator.
    * </pre>
    *
    * <code>string message_id = 1;</code>
@@ -234,70 +237,70 @@ private static final long serialVersionUID = 0L;
     return result == null ? io.a2a.grpc.Role.UNRECOGNIZED : result;
   }
 
-  public static final int CONTENT_FIELD_NUMBER = 5;
+  public static final int PARTS_FIELD_NUMBER = 5;
   @SuppressWarnings("serial")
-  private java.util.List<io.a2a.grpc.Part> content_;
+  private java.util.List<io.a2a.grpc.Part> parts_;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   @java.lang.Override
-  public java.util.List<io.a2a.grpc.Part> getContentList() {
-    return content_;
+  public java.util.List<io.a2a.grpc.Part> getPartsList() {
+    return parts_;
   }
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
-      getContentOrBuilderList() {
-    return content_;
+      getPartsOrBuilderList() {
+    return parts_;
   }
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   @java.lang.Override
-  public int getContentCount() {
-    return content_.size();
+  public int getPartsCount() {
+    return parts_.size();
   }
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.Part getContent(int index) {
-    return content_.get(index);
+  public io.a2a.grpc.Part getParts(int index) {
+    return parts_.get(index);
   }
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Content is the container of the message content.
+   * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part content = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.PartOrBuilder getContentOrBuilder(
+  public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
       int index) {
-    return content_.get(index);
+    return parts_.get(index);
   }
 
   public static final int METADATA_FIELD_NUMBER = 6;
@@ -394,6 +397,59 @@ private static final long serialVersionUID = 0L;
     return extensions_.getByteString(index);
   }
 
+  public static final int REFERENCE_TASK_IDS_FIELD_NUMBER = 8;
+  @SuppressWarnings("serial")
+  private com.google.protobuf.LazyStringArrayList referenceTaskIds_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
+  /**
+   * <pre>
+   * A list of task IDs that this message references for additional context.
+   * </pre>
+   *
+   * <code>repeated string reference_task_ids = 8;</code>
+   * @return A list containing the referenceTaskIds.
+   */
+  public com.google.protobuf.ProtocolStringList
+      getReferenceTaskIdsList() {
+    return referenceTaskIds_;
+  }
+  /**
+   * <pre>
+   * A list of task IDs that this message references for additional context.
+   * </pre>
+   *
+   * <code>repeated string reference_task_ids = 8;</code>
+   * @return The count of referenceTaskIds.
+   */
+  public int getReferenceTaskIdsCount() {
+    return referenceTaskIds_.size();
+  }
+  /**
+   * <pre>
+   * A list of task IDs that this message references for additional context.
+   * </pre>
+   *
+   * <code>repeated string reference_task_ids = 8;</code>
+   * @param index The index of the element to return.
+   * @return The referenceTaskIds at the given index.
+   */
+  public java.lang.String getReferenceTaskIds(int index) {
+    return referenceTaskIds_.get(index);
+  }
+  /**
+   * <pre>
+   * A list of task IDs that this message references for additional context.
+   * </pre>
+   *
+   * <code>repeated string reference_task_ids = 8;</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the referenceTaskIds at the given index.
+   */
+  public com.google.protobuf.ByteString
+      getReferenceTaskIdsBytes(int index) {
+    return referenceTaskIds_.getByteString(index);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -420,14 +476,17 @@ private static final long serialVersionUID = 0L;
     if (role_ != io.a2a.grpc.Role.ROLE_UNSPECIFIED.getNumber()) {
       output.writeEnum(4, role_);
     }
-    for (int i = 0; i < content_.size(); i++) {
-      output.writeMessage(5, content_.get(i));
+    for (int i = 0; i < parts_.size(); i++) {
+      output.writeMessage(5, parts_.get(i));
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(6, getMetadata());
     }
     for (int i = 0; i < extensions_.size(); i++) {
       com.google.protobuf.GeneratedMessage.writeString(output, 7, extensions_.getRaw(i));
+    }
+    for (int i = 0; i < referenceTaskIds_.size(); i++) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 8, referenceTaskIds_.getRaw(i));
     }
     getUnknownFields().writeTo(output);
   }
@@ -451,9 +510,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(4, role_);
     }
-    for (int i = 0; i < content_.size(); i++) {
+    for (int i = 0; i < parts_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, content_.get(i));
+        .computeMessageSize(5, parts_.get(i));
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
@@ -466,6 +525,14 @@ private static final long serialVersionUID = 0L;
       }
       size += dataSize;
       size += 1 * getExtensionsList().size();
+    }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < referenceTaskIds_.size(); i++) {
+        dataSize += computeStringSizeNoTag(referenceTaskIds_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getReferenceTaskIdsList().size();
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -489,8 +556,8 @@ private static final long serialVersionUID = 0L;
     if (!getTaskId()
         .equals(other.getTaskId())) return false;
     if (role_ != other.role_) return false;
-    if (!getContentList()
-        .equals(other.getContentList())) return false;
+    if (!getPartsList()
+        .equals(other.getPartsList())) return false;
     if (hasMetadata() != other.hasMetadata()) return false;
     if (hasMetadata()) {
       if (!getMetadata()
@@ -498,6 +565,8 @@ private static final long serialVersionUID = 0L;
     }
     if (!getExtensionsList()
         .equals(other.getExtensionsList())) return false;
+    if (!getReferenceTaskIdsList()
+        .equals(other.getReferenceTaskIdsList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -517,9 +586,9 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getTaskId().hashCode();
     hash = (37 * hash) + ROLE_FIELD_NUMBER;
     hash = (53 * hash) + role_;
-    if (getContentCount() > 0) {
-      hash = (37 * hash) + CONTENT_FIELD_NUMBER;
-      hash = (53 * hash) + getContentList().hashCode();
+    if (getPartsCount() > 0) {
+      hash = (37 * hash) + PARTS_FIELD_NUMBER;
+      hash = (53 * hash) + getPartsList().hashCode();
     }
     if (hasMetadata()) {
       hash = (37 * hash) + METADATA_FIELD_NUMBER;
@@ -528,6 +597,10 @@ private static final long serialVersionUID = 0L;
     if (getExtensionsCount() > 0) {
       hash = (37 * hash) + EXTENSIONS_FIELD_NUMBER;
       hash = (53 * hash) + getExtensionsList().hashCode();
+    }
+    if (getReferenceTaskIdsCount() > 0) {
+      hash = (37 * hash) + REFERENCE_TASK_IDS_FIELD_NUMBER;
+      hash = (53 * hash) + getReferenceTaskIdsList().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -628,6 +701,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
+   * --8&lt;-- [start:Message]
    * Message is one unit of communication between client and server. It is
    * associated with a context and optionally a task. Since the server is
    * responsible for the context definition, it must always provide a context_id
@@ -669,7 +743,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
-        internalGetContentFieldBuilder();
+        internalGetPartsFieldBuilder();
         internalGetMetadataFieldBuilder();
       }
     }
@@ -681,11 +755,11 @@ private static final long serialVersionUID = 0L;
       contextId_ = "";
       taskId_ = "";
       role_ = 0;
-      if (contentBuilder_ == null) {
-        content_ = java.util.Collections.emptyList();
+      if (partsBuilder_ == null) {
+        parts_ = java.util.Collections.emptyList();
       } else {
-        content_ = null;
-        contentBuilder_.clear();
+        parts_ = null;
+        partsBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000010);
       metadata_ = null;
@@ -694,6 +768,8 @@ private static final long serialVersionUID = 0L;
         metadataBuilder_ = null;
       }
       extensions_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      referenceTaskIds_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
       return this;
     }
@@ -728,14 +804,14 @@ private static final long serialVersionUID = 0L;
     }
 
     private void buildPartialRepeatedFields(io.a2a.grpc.Message result) {
-      if (contentBuilder_ == null) {
+      if (partsBuilder_ == null) {
         if (((bitField0_ & 0x00000010) != 0)) {
-          content_ = java.util.Collections.unmodifiableList(content_);
+          parts_ = java.util.Collections.unmodifiableList(parts_);
           bitField0_ = (bitField0_ & ~0x00000010);
         }
-        result.content_ = content_;
+        result.parts_ = parts_;
       } else {
-        result.content_ = contentBuilder_.build();
+        result.parts_ = partsBuilder_.build();
       }
     }
 
@@ -763,6 +839,10 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000040) != 0)) {
         extensions_.makeImmutable();
         result.extensions_ = extensions_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        referenceTaskIds_.makeImmutable();
+        result.referenceTaskIds_ = referenceTaskIds_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -797,29 +877,29 @@ private static final long serialVersionUID = 0L;
       if (other.role_ != 0) {
         setRoleValue(other.getRoleValue());
       }
-      if (contentBuilder_ == null) {
-        if (!other.content_.isEmpty()) {
-          if (content_.isEmpty()) {
-            content_ = other.content_;
+      if (partsBuilder_ == null) {
+        if (!other.parts_.isEmpty()) {
+          if (parts_.isEmpty()) {
+            parts_ = other.parts_;
             bitField0_ = (bitField0_ & ~0x00000010);
           } else {
-            ensureContentIsMutable();
-            content_.addAll(other.content_);
+            ensurePartsIsMutable();
+            parts_.addAll(other.parts_);
           }
           onChanged();
         }
       } else {
-        if (!other.content_.isEmpty()) {
-          if (contentBuilder_.isEmpty()) {
-            contentBuilder_.dispose();
-            contentBuilder_ = null;
-            content_ = other.content_;
+        if (!other.parts_.isEmpty()) {
+          if (partsBuilder_.isEmpty()) {
+            partsBuilder_.dispose();
+            partsBuilder_ = null;
+            parts_ = other.parts_;
             bitField0_ = (bitField0_ & ~0x00000010);
-            contentBuilder_ = 
+            partsBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                 internalGetContentFieldBuilder() : null;
+                 internalGetPartsFieldBuilder() : null;
           } else {
-            contentBuilder_.addAllMessages(other.content_);
+            partsBuilder_.addAllMessages(other.parts_);
           }
         }
       }
@@ -833,6 +913,16 @@ private static final long serialVersionUID = 0L;
         } else {
           ensureExtensionsIsMutable();
           extensions_.addAll(other.extensions_);
+        }
+        onChanged();
+      }
+      if (!other.referenceTaskIds_.isEmpty()) {
+        if (referenceTaskIds_.isEmpty()) {
+          referenceTaskIds_ = other.referenceTaskIds_;
+          bitField0_ |= 0x00000080;
+        } else {
+          ensureReferenceTaskIdsIsMutable();
+          referenceTaskIds_.addAll(other.referenceTaskIds_);
         }
         onChanged();
       }
@@ -887,11 +977,11 @@ private static final long serialVersionUID = 0L;
                   input.readMessage(
                       io.a2a.grpc.Part.parser(),
                       extensionRegistry);
-              if (contentBuilder_ == null) {
-                ensureContentIsMutable();
-                content_.add(m);
+              if (partsBuilder_ == null) {
+                ensurePartsIsMutable();
+                parts_.add(m);
               } else {
-                contentBuilder_.addMessage(m);
+                partsBuilder_.addMessage(m);
               }
               break;
             } // case 42
@@ -908,6 +998,12 @@ private static final long serialVersionUID = 0L;
               extensions_.add(s);
               break;
             } // case 58
+            case 66: {
+              java.lang.String s = input.readStringRequireUtf8();
+              ensureReferenceTaskIdsIsMutable();
+              referenceTaskIds_.add(s);
+              break;
+            } // case 66
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -928,8 +1024,8 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object messageId_ = "";
     /**
      * <pre>
-     * The message id of the message. This is required and created by the
-     * message creator.
+     * The unique identifier (e.g. UUID)of the message. This is required and
+     * created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1;</code>
@@ -949,8 +1045,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The message id of the message. This is required and created by the
-     * message creator.
+     * The unique identifier (e.g. UUID)of the message. This is required and
+     * created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1;</code>
@@ -971,8 +1067,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The message id of the message. This is required and created by the
-     * message creator.
+     * The unique identifier (e.g. UUID)of the message. This is required and
+     * created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1;</code>
@@ -989,8 +1085,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The message id of the message. This is required and created by the
-     * message creator.
+     * The unique identifier (e.g. UUID)of the message. This is required and
+     * created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1;</code>
@@ -1004,8 +1100,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The message id of the message. This is required and created by the
-     * message creator.
+     * The unique identifier (e.g. UUID)of the message. This is required and
+     * created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1;</code>
@@ -1287,334 +1383,334 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.util.List<io.a2a.grpc.Part> content_ =
+    private java.util.List<io.a2a.grpc.Part> parts_ =
       java.util.Collections.emptyList();
-    private void ensureContentIsMutable() {
+    private void ensurePartsIsMutable() {
       if (!((bitField0_ & 0x00000010) != 0)) {
-        content_ = new java.util.ArrayList<io.a2a.grpc.Part>(content_);
+        parts_ = new java.util.ArrayList<io.a2a.grpc.Part>(parts_);
         bitField0_ |= 0x00000010;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilder<
-        io.a2a.grpc.Part, io.a2a.grpc.Part.Builder, io.a2a.grpc.PartOrBuilder> contentBuilder_;
+        io.a2a.grpc.Part, io.a2a.grpc.Part.Builder, io.a2a.grpc.PartOrBuilder> partsBuilder_;
 
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public java.util.List<io.a2a.grpc.Part> getContentList() {
-      if (contentBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(content_);
+    public java.util.List<io.a2a.grpc.Part> getPartsList() {
+      if (partsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(parts_);
       } else {
-        return contentBuilder_.getMessageList();
+        return partsBuilder_.getMessageList();
       }
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public int getContentCount() {
-      if (contentBuilder_ == null) {
-        return content_.size();
+    public int getPartsCount() {
+      if (partsBuilder_ == null) {
+        return parts_.size();
       } else {
-        return contentBuilder_.getCount();
+        return partsBuilder_.getCount();
       }
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public io.a2a.grpc.Part getContent(int index) {
-      if (contentBuilder_ == null) {
-        return content_.get(index);
+    public io.a2a.grpc.Part getParts(int index) {
+      if (partsBuilder_ == null) {
+        return parts_.get(index);
       } else {
-        return contentBuilder_.getMessage(index);
+        return partsBuilder_.getMessage(index);
       }
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public Builder setContent(
+    public Builder setParts(
         int index, io.a2a.grpc.Part value) {
-      if (contentBuilder_ == null) {
+      if (partsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureContentIsMutable();
-        content_.set(index, value);
+        ensurePartsIsMutable();
+        parts_.set(index, value);
         onChanged();
       } else {
-        contentBuilder_.setMessage(index, value);
+        partsBuilder_.setMessage(index, value);
       }
       return this;
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public Builder setContent(
+    public Builder setParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
-      if (contentBuilder_ == null) {
-        ensureContentIsMutable();
-        content_.set(index, builderForValue.build());
+      if (partsBuilder_ == null) {
+        ensurePartsIsMutable();
+        parts_.set(index, builderForValue.build());
         onChanged();
       } else {
-        contentBuilder_.setMessage(index, builderForValue.build());
+        partsBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public Builder addContent(io.a2a.grpc.Part value) {
-      if (contentBuilder_ == null) {
+    public Builder addParts(io.a2a.grpc.Part value) {
+      if (partsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureContentIsMutable();
-        content_.add(value);
+        ensurePartsIsMutable();
+        parts_.add(value);
         onChanged();
       } else {
-        contentBuilder_.addMessage(value);
+        partsBuilder_.addMessage(value);
       }
       return this;
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public Builder addContent(
+    public Builder addParts(
         int index, io.a2a.grpc.Part value) {
-      if (contentBuilder_ == null) {
+      if (partsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureContentIsMutable();
-        content_.add(index, value);
+        ensurePartsIsMutable();
+        parts_.add(index, value);
         onChanged();
       } else {
-        contentBuilder_.addMessage(index, value);
+        partsBuilder_.addMessage(index, value);
       }
       return this;
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public Builder addContent(
+    public Builder addParts(
         io.a2a.grpc.Part.Builder builderForValue) {
-      if (contentBuilder_ == null) {
-        ensureContentIsMutable();
-        content_.add(builderForValue.build());
+      if (partsBuilder_ == null) {
+        ensurePartsIsMutable();
+        parts_.add(builderForValue.build());
         onChanged();
       } else {
-        contentBuilder_.addMessage(builderForValue.build());
+        partsBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public Builder addContent(
+    public Builder addParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
-      if (contentBuilder_ == null) {
-        ensureContentIsMutable();
-        content_.add(index, builderForValue.build());
+      if (partsBuilder_ == null) {
+        ensurePartsIsMutable();
+        parts_.add(index, builderForValue.build());
         onChanged();
       } else {
-        contentBuilder_.addMessage(index, builderForValue.build());
+        partsBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public Builder addAllContent(
+    public Builder addAllParts(
         java.lang.Iterable<? extends io.a2a.grpc.Part> values) {
-      if (contentBuilder_ == null) {
-        ensureContentIsMutable();
+      if (partsBuilder_ == null) {
+        ensurePartsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, content_);
+            values, parts_);
         onChanged();
       } else {
-        contentBuilder_.addAllMessages(values);
+        partsBuilder_.addAllMessages(values);
       }
       return this;
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public Builder clearContent() {
-      if (contentBuilder_ == null) {
-        content_ = java.util.Collections.emptyList();
+    public Builder clearParts() {
+      if (partsBuilder_ == null) {
+        parts_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
       } else {
-        contentBuilder_.clear();
+        partsBuilder_.clear();
       }
       return this;
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public Builder removeContent(int index) {
-      if (contentBuilder_ == null) {
-        ensureContentIsMutable();
-        content_.remove(index);
+    public Builder removeParts(int index) {
+      if (partsBuilder_ == null) {
+        ensurePartsIsMutable();
+        parts_.remove(index);
         onChanged();
       } else {
-        contentBuilder_.remove(index);
+        partsBuilder_.remove(index);
       }
       return this;
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public io.a2a.grpc.Part.Builder getContentBuilder(
+    public io.a2a.grpc.Part.Builder getPartsBuilder(
         int index) {
-      return internalGetContentFieldBuilder().getBuilder(index);
+      return internalGetPartsFieldBuilder().getBuilder(index);
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public io.a2a.grpc.PartOrBuilder getContentOrBuilder(
+    public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
         int index) {
-      if (contentBuilder_ == null) {
-        return content_.get(index);  } else {
-        return contentBuilder_.getMessageOrBuilder(index);
+      if (partsBuilder_ == null) {
+        return parts_.get(index);  } else {
+        return partsBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
     public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
-         getContentOrBuilderList() {
-      if (contentBuilder_ != null) {
-        return contentBuilder_.getMessageOrBuilderList();
+         getPartsOrBuilderList() {
+      if (partsBuilder_ != null) {
+        return partsBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(content_);
+        return java.util.Collections.unmodifiableList(parts_);
       }
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public io.a2a.grpc.Part.Builder addContentBuilder() {
-      return internalGetContentFieldBuilder().addBuilder(
+    public io.a2a.grpc.Part.Builder addPartsBuilder() {
+      return internalGetPartsFieldBuilder().addBuilder(
           io.a2a.grpc.Part.getDefaultInstance());
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
-    public io.a2a.grpc.Part.Builder addContentBuilder(
+    public io.a2a.grpc.Part.Builder addPartsBuilder(
         int index) {
-      return internalGetContentFieldBuilder().addBuilder(
+      return internalGetPartsFieldBuilder().addBuilder(
           index, io.a2a.grpc.Part.getDefaultInstance());
     }
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Content is the container of the message content.
+     * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part content = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5;</code>
      */
     public java.util.List<io.a2a.grpc.Part.Builder> 
-         getContentBuilderList() {
-      return internalGetContentFieldBuilder().getBuilderList();
+         getPartsBuilderList() {
+      return internalGetPartsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
         io.a2a.grpc.Part, io.a2a.grpc.Part.Builder, io.a2a.grpc.PartOrBuilder> 
-        internalGetContentFieldBuilder() {
-      if (contentBuilder_ == null) {
-        contentBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+        internalGetPartsFieldBuilder() {
+      if (partsBuilder_ == null) {
+        partsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             io.a2a.grpc.Part, io.a2a.grpc.Part.Builder, io.a2a.grpc.PartOrBuilder>(
-                content_,
+                parts_,
                 ((bitField0_ & 0x00000010) != 0),
                 getParentForChildren(),
                 isClean());
-        content_ = null;
+        parts_ = null;
       }
-      return contentBuilder_;
+      return partsBuilder_;
     }
 
     private com.google.protobuf.Struct metadata_;
@@ -1926,6 +2022,153 @@ private static final long serialVersionUID = 0L;
       ensureExtensionsIsMutable();
       extensions_.add(value);
       bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.LazyStringArrayList referenceTaskIds_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    private void ensureReferenceTaskIdsIsMutable() {
+      if (!referenceTaskIds_.isModifiable()) {
+        referenceTaskIds_ = new com.google.protobuf.LazyStringArrayList(referenceTaskIds_);
+      }
+      bitField0_ |= 0x00000080;
+    }
+    /**
+     * <pre>
+     * A list of task IDs that this message references for additional context.
+     * </pre>
+     *
+     * <code>repeated string reference_task_ids = 8;</code>
+     * @return A list containing the referenceTaskIds.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getReferenceTaskIdsList() {
+      referenceTaskIds_.makeImmutable();
+      return referenceTaskIds_;
+    }
+    /**
+     * <pre>
+     * A list of task IDs that this message references for additional context.
+     * </pre>
+     *
+     * <code>repeated string reference_task_ids = 8;</code>
+     * @return The count of referenceTaskIds.
+     */
+    public int getReferenceTaskIdsCount() {
+      return referenceTaskIds_.size();
+    }
+    /**
+     * <pre>
+     * A list of task IDs that this message references for additional context.
+     * </pre>
+     *
+     * <code>repeated string reference_task_ids = 8;</code>
+     * @param index The index of the element to return.
+     * @return The referenceTaskIds at the given index.
+     */
+    public java.lang.String getReferenceTaskIds(int index) {
+      return referenceTaskIds_.get(index);
+    }
+    /**
+     * <pre>
+     * A list of task IDs that this message references for additional context.
+     * </pre>
+     *
+     * <code>repeated string reference_task_ids = 8;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the referenceTaskIds at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getReferenceTaskIdsBytes(int index) {
+      return referenceTaskIds_.getByteString(index);
+    }
+    /**
+     * <pre>
+     * A list of task IDs that this message references for additional context.
+     * </pre>
+     *
+     * <code>repeated string reference_task_ids = 8;</code>
+     * @param index The index to set the value at.
+     * @param value The referenceTaskIds to set.
+     * @return This builder for chaining.
+     */
+    public Builder setReferenceTaskIds(
+        int index, java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      ensureReferenceTaskIdsIsMutable();
+      referenceTaskIds_.set(index, value);
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A list of task IDs that this message references for additional context.
+     * </pre>
+     *
+     * <code>repeated string reference_task_ids = 8;</code>
+     * @param value The referenceTaskIds to add.
+     * @return This builder for chaining.
+     */
+    public Builder addReferenceTaskIds(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      ensureReferenceTaskIdsIsMutable();
+      referenceTaskIds_.add(value);
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A list of task IDs that this message references for additional context.
+     * </pre>
+     *
+     * <code>repeated string reference_task_ids = 8;</code>
+     * @param values The referenceTaskIds to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllReferenceTaskIds(
+        java.lang.Iterable<java.lang.String> values) {
+      ensureReferenceTaskIdsIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, referenceTaskIds_);
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A list of task IDs that this message references for additional context.
+     * </pre>
+     *
+     * <code>repeated string reference_task_ids = 8;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearReferenceTaskIds() {
+      referenceTaskIds_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+      bitField0_ = (bitField0_ & ~0x00000080);;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A list of task IDs that this message references for additional context.
+     * </pre>
+     *
+     * <code>repeated string reference_task_ids = 8;</code>
+     * @param value The bytes of the referenceTaskIds to add.
+     * @return This builder for chaining.
+     */
+    public Builder addReferenceTaskIdsBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      ensureReferenceTaskIdsIsMutable();
+      referenceTaskIds_.add(value);
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
