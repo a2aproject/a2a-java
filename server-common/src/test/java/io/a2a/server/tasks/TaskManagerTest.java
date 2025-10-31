@@ -692,4 +692,50 @@ public class TaskManagerTest {
         assertEquals("test-context", taskManagerWithoutId.getContextId());
         assertSame(savedTask, taskManagerWithoutId.getTask());
     }
+
+    @Test
+    public void testUpdateWithMessage() throws A2AServerException {
+        Message initialMessage = new Message.Builder()
+                .role(Message.Role.USER)
+                .parts(Collections.singletonList(new TextPart("initial message")))
+                .messageId("initial-msg-id")
+                .build();
+
+        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
+
+        Message taskMessage = new Message.Builder()
+                .role(Message.Role.AGENT)
+                .parts(Collections.singletonList(new TextPart("task message")))
+                .messageId("task-msg-id")
+                .build();
+
+        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                .taskId("new-task-id")
+                .contextId("some-context")
+                .status(new TaskStatus(TaskState.SUBMITTED, taskMessage, null))
+                .isFinal(false)
+                .build();
+
+        Task saved = taskManagerWithInitialMessage.saveTaskEvent(event);
+
+        Message updateMessage = new Message.Builder()
+                .role(Message.Role.USER)
+                .parts(Collections.singletonList(new TextPart("update message")))
+                .messageId("update-msg-id")
+                .build();
+
+        TaskManager taskManagerWithUpdateMessage = new TaskManager(saved.getId(), saved.getContextId(), taskStore, updateMessage);
+        Task retrieved = taskManagerWithUpdateMessage.getTask();
+        Task updated = taskManagerWithUpdateMessage.updateWithMessage(updateMessage, retrieved);
+
+        // There should now be a history containing the initialMessage, task message and update message
+        assertNotNull(updated.getHistory());
+        assertEquals(3, updated.getHistory().size());
+        assertEquals("initial message", ((TextPart) updated.getHistory().get(0).getParts().get(0)).getText());
+
+        // The message in the current state should be null
+        assertNull(updated.getStatus().message());
+        assertEquals("task message", ((TextPart) updated.getHistory().get(1).getParts().get(0)).getText());
+        assertEquals("update message", ((TextPart) updated.getHistory().get(2).getParts().get(0)).getText());
+    }
 }

@@ -105,11 +105,15 @@ public class TaskManager {
 
     public Task updateWithMessage(Message message, Task task) {
         List<Message> history = task.getHistory() == null ? new ArrayList<>() : new ArrayList<>(task.getHistory());
-        if (task.getStatus().message() != null) {
-            history.add(task.getStatus().message());
+
+        TaskStatus status = task.getStatus();
+        if (status.message() != null) {
+            history.add(status.message());
+            status = new TaskStatus(status.state(), null, status.timestamp());
         }
         history.add(message);
         task = new Task.Builder(task)
+                .status(status)
                 .history(history)
                 .build();
         saveTask(task);
