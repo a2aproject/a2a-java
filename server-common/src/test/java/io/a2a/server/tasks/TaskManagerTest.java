@@ -588,7 +588,7 @@ public class TaskManagerTest {
     }
 
     @Test
-    public void testSaveTaskEventMetadataUpdateOverwritesExisting() throws A2AServerException {
+    public void testSaveTaskEventMetadataMergeExisting() throws A2AServerException {
         // Test that metadata update overwrites existing metadata
         Map<String, Object> originalMetadata = new HashMap<>();
         originalMetadata.put("original_key", "original_value");
@@ -612,8 +612,10 @@ public class TaskManagerTest {
         taskManager.saveTaskEvent(event);
 
         Task updatedTask = taskManager.getTask();
-        assertEquals(newMetadata, updatedTask.getMetadata());
-        assertNotEquals(originalMetadata, updatedTask.getMetadata());
+
+        Map<String, Object> mergedMetadata = new HashMap<>(originalMetadata);
+        mergedMetadata.putAll(newMetadata);
+        assertEquals(mergedMetadata, updatedTask.getMetadata());
     }
 
     @Test
