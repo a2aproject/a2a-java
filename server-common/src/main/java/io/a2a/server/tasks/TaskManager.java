@@ -5,7 +5,9 @@ import static io.a2a.util.Assert.checkNotNullParam;
 import static io.a2a.util.Utils.appendArtifactToTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Artifact;
@@ -78,7 +80,9 @@ public class TaskManager {
 
         // Handle metadata from the event
         if (event.getMetadata() != null) {
-            builder.metadata(event.getMetadata());
+            Map<String, Object> metadata = task.getMetadata() == null ? new HashMap<>() : new HashMap<>(task.getMetadata());
+            metadata.putAll(event.getMetadata());
+            builder.metadata(metadata);
         }
 
         task = builder.build();
