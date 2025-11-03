@@ -11,20 +11,20 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.InternalError;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResultAggregator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResultAggregator.class);
@@ -106,10 +106,14 @@ public class ResultAggregator {
     }
 
     public EventTypeAndInterrupt consumeAndBreakOnInterrupt(EventConsumer consumer, boolean blocking) throws JSONRPCError {
-        return consumeAndBreakOnInterrupt(consumer, blocking, null);
+        return consumeAndBreakOnInterrupt(consumer, blocking, null, null);
     }
 
     public EventTypeAndInterrupt consumeAndBreakOnInterrupt(EventConsumer consumer, boolean blocking, Runnable eventCallback) throws JSONRPCError {
+        return consumeAndBreakOnInterrupt(consumer, blocking, eventCallback, null);
+    }
+
+    public EventTypeAndInterrupt consumeAndBreakOnInterrupt(EventConsumer consumer, boolean blocking, Runnable eventCallback, CompletableFuture<Void> agentFuture) throws JSONRPCError {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
         AtomicReference<Message> message = new AtomicReference<>();
         AtomicBoolean interrupted = new AtomicBoolean(false);
@@ -180,11 +184,11 @@ public class ResultAggregator {
                         shouldInterrupt = true;
                         continueInBackground = true;
                     }
-                    else {
-                        // For ALL blocking calls (both final and non-final events), use background consumption
-                        // This ensures all events are processed and persisted to TaskStore in background
-                        // Queue lifecycle is now managed by DefaultRequestHandler.cleanupProducer()
-                        // which waits for BOTH agent and consumption futures before closing queues
+                    else if (blocking) {
+                        // For blocking calls: Interrupt to free Vert.x thread, but continue in background
+                        // Python's async consumption doesn't block threads, but Java's does
+                        // So we interrupt to return quickly, then rely on background consumption
+                        // DefaultRequestHandler will fetch the final state from TaskStore
                         shouldInterrupt = true;
                         continueInBackground = true;
                         if (LOGGER.isDebugEnabled()) {
@@ -198,10 +202,17 @@ public class ResultAggregator {
                         interrupted.set(true);
                         completionFuture.complete(null);
 
-                        // Signal that cleanup can proceed while consumption continues in background.
-                        // This prevents infinite hangs for fire-and-forget agents that never emit final events.
-                        // Processing continues (return true below) and all events are still persisted to TaskStore.
-                        consumptionCompletionFuture.complete(null);
+                        // For blocking calls, DON'T complete consumptionCompletionFuture here.
+                        // Let it complete naturally when subscription finishes (onComplete callback below).
+                        // This ensures all events are processed and persisted to TaskStore before
+                        // DefaultRequestHandler.cleanupProducer() proceeds with cleanup.
+                        //
+                        // For non-blocking and auth-required calls, complete immediately to allow
+                        // cleanup to proceed while consumption continues in background.
+                        if (!blocking) {
+                            consumptionCompletionFuture.complete(null);
+                        }
+                        // else: blocking calls wait for actual consumption completion in onComplete
 
                         // Continue consuming in background - keep requesting events
                         // Note: continueInBackground is always true when shouldInterrupt is true
@@ -244,8 +255,8 @@ public class ResultAggregator {
             }
         }
 
-        // Background consumption continues automatically via the subscription
-        // returning true in the consumer function keeps the subscription alive
+        // Note: For blocking calls that were interrupted, the wait logic has been moved
+        // to DefaultRequestHandler.onMessageSend() to avoid blocking Vert.x worker threads.
         // Queue lifecycle is managed by DefaultRequestHandler.cleanupProducer()
 
         Throwable error = errorRef.get();

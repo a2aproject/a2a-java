@@ -1,7 +1,10 @@
 package io.a2a.server.requesthandlers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -16,6 +19,7 @@ import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.InMemoryQueueManager;
 import io.a2a.server.tasks.InMemoryTaskStore;
+import io.a2a.server.tasks.TaskUpdater;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
@@ -418,35 +422,99 @@ public class DefaultRequestHandlerTest {
     }
 
     /**
-     * Test that blocking message calls persist all events in background.
-     * This test proves the bug where blocking calls stop consuming events after
-     * the first event is returned, causing subsequent events to be lost.
+     * Test that blocking message call waits for agent to finish and returns complete Task
+     * even when agent does fire-and-forget (emits non-final state and returns).
      *
      * Expected behavior:
-     * 1. Blocking call returns immediately with first event (WORKING state)
-     * 2. Agent continues running in background and produces more events
-     * 3. Background consumption continues and persists all events to TaskStore
-     * 4. Final task state (COMPLETED) is persisted despite blocking call having returned
+     * 1. Agent emits WORKING state with artifacts
+     * 2. Agent's execute() method returns WITHOUT emitting final state
+     * 3. Blocking onMessageSend() should wait for agent execution to complete
+     * 4. Blocking onMessageSend() should wait for all queued events to be processed
+     * 5. Returned Task should have WORKING state with all artifacts included
      *
-     * This test will FAIL before the fix is applied, demonstrating the bug.
+     * This tests fire-and-forget pattern with blocking calls.
      */
     @Test
     @Timeout(15)
-    void testBlockingMessagePersistsAllEventsInBackground() throws Exception {
-        String taskId = "blocking-persist-task";
-        String contextId = "blocking-persist-ctx";
+    void testBlockingFireAndForgetReturnsNonFinalTask() throws Exception {
+        String taskId = "blocking-fire-forget-task";
+        String contextId = "blocking-fire-forget-ctx";
 
         Message message = new Message.Builder()
-            .messageId("msg-blocking-persist")
+            .messageId("msg-blocking-fire-forget")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
             .taskId(taskId)
             .contextId(contextId)
             .build();
 
-        // Explicitly set blocking=true (though it's the default)
         MessageSendConfiguration config = new MessageSendConfiguration.Builder()
                 .blocking(true)
+                .build();
+
+        MessageSendParams params = new MessageSendParams(message, config, null);
+
+        // Agent that does fire-and-forget: emits WORKING with artifact but never completes
+        agentExecutor.setExecuteCallback((context, queue) -> {
+            TaskUpdater updater = new TaskUpdater(context, queue);
+
+            // Start work (WORKING state)
+            updater.startWork();
+
+            // Add artifact
+            updater.addArtifact(
+                List.of(new TextPart("Fire and forget artifact", null)),
+                "artifact-1", "FireForget", null);
+
+            // Agent returns WITHOUT calling updater.complete()
+            // Task stays in WORKING state (non-final)
+        });
+
+        // Call blocking onMessageSend - should wait for agent to finish
+        Object result = requestHandler.onMessageSend(params, serverCallContext);
+
+        // The returned result should be a Task in WORKING state with artifact
+        assertTrue(result instanceof Task, "Result should be a Task");
+        Task returnedTask = (Task) result;
+
+        // Verify task is in WORKING state (non-final, fire-and-forget)
+        assertEquals(TaskState.WORKING, returnedTask.getStatus().state(),
+            "Returned task should be WORKING (fire-and-forget), got: " + returnedTask.getStatus().state());
+
+        // Verify artifacts are included in the returned task
+        assertNotNull(returnedTask.getArtifacts(),
+            "Returned task should have artifacts");
+        assertTrue(returnedTask.getArtifacts().size() >= 1,
+            "Returned task should have at least 1 artifact, got: " +
+            (returnedTask.getArtifacts() != null ? returnedTask.getArtifacts().size() : 0));
+    }
+
+    /**
+     * Test that non-blocking message call returns immediately and persists all events in background.
+     *
+     * Expected behavior:
+     * 1. Non-blocking call returns immediately with first event (WORKING state)
+     * 2. Agent continues running in background and produces more events
+     * 3. Background consumption continues and persists all events to TaskStore
+     * 4. Final task state (COMPLETED) is persisted in background
+     */
+    @Test
+    @Timeout(15)
+    void testNonBlockingMessagePersistsAllEventsInBackground() throws Exception {
+        String taskId = "blocking-persist-task";
+        String contextId = "blocking-persist-ctx";
+
+        Message message = new Message.Builder()
+            .messageId("msg-nonblocking-persist")
+            .role(Message.Role.USER)
+            .parts(new TextPart("test message"))
+            .taskId(taskId)
+            .contextId(contextId)
+            .build();
+
+        // Set blocking=false for non-blocking behavior
+        MessageSendConfiguration config = new MessageSendConfiguration.Builder()
+                .blocking(false)
                 .build();
 
         MessageSendParams params = new MessageSendParams(message, config, null);
@@ -468,7 +536,7 @@ public class DefaultRequestHandlerTest {
             queue.enqueueEvent(workingTask);
             firstEventEmitted.countDown();
 
-            // Sleep to ensure the blocking call has returned before we emit more events
+            // Sleep to ensure the non-blocking call has returned before we emit more events
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -485,8 +553,7 @@ public class DefaultRequestHandlerTest {
             }
 
             // Emit final event (COMPLETED state)
-            // This event will be LOST with the current bug, because the consumer
-            // has already stopped after returning the first event
+            // This event should be persisted to TaskStore in background
             Task completedTask = new Task.Builder()
                 .id(taskId)
                 .contextId(contextId)
@@ -495,21 +562,21 @@ public class DefaultRequestHandlerTest {
             queue.enqueueEvent(completedTask);
         });
 
-        // Call blocking onMessageSend
+        // Call non-blocking onMessageSend
         Object result = requestHandler.onMessageSend(params, serverCallContext);
 
         // Assertion 1: The immediate result should be the first event (WORKING)
         assertTrue(result instanceof Task, "Result should be a Task");
         Task immediateTask = (Task) result;
-        assertTrue(immediateTask.getStatus().state() == TaskState.WORKING,
-            "Immediate return should show WORKING state, got: " + immediateTask.getStatus().state());
+        assertEquals(TaskState.WORKING, immediateTask.getStatus().state(),
+            "Non-blocking should return immediately with WORKING state, got: " + immediateTask.getStatus().state());
 
-        // At this point, the blocking call has returned, but the agent is still running
+        // At this point, the non-blocking call has returned, but the agent is still running
 
         // Allow the agent to emit the final COMPLETED event
         allowCompletion.countDown();
 
-        // Assertion 2: Poll for the final task state to be persisted
+        // Assertion 2: Poll for the final task state to be persisted in background
         // Use polling loop instead of fixed sleep for faster and more reliable test
         long timeoutMs = 5000;
         long startTime = System.currentTimeMillis();
@@ -530,8 +597,7 @@ public class DefaultRequestHandlerTest {
             completedStateFound,
             "Final task state should be COMPLETED (background consumption should have processed it), got: " +
             (persistedTask != null ? persistedTask.getStatus().state() : "null") +
-            " after " + (System.currentTimeMillis() - startTime) + "ms. " +
-            "This failure proves the bug - events after the first are lost."
+            " after " + (System.currentTimeMillis() - startTime) + "ms"
         );
     }
 
@@ -652,6 +718,80 @@ public class DefaultRequestHandlerTest {
         EventQueue queue = queueManager.get(taskId);
         assertTrue(queue == null || queue.isClosed(),
             "Queue for finalized task should be null or closed");
+    }
+
+    /**
+     * Test that blocking message call returns a Task with ALL artifacts included.
+     * This reproduces the reported bug: blocking call returns before artifacts are processed.
+     *
+     * Expected behavior:
+     * 1. Agent emits multiple artifacts via TaskUpdater
+     * 2. Blocking onMessageSend() should wait for ALL events to be processed
+     * 3. Returned Task should have all artifacts included in COMPLETED state
+     *
+     * Bug manifestation:
+     * - onMessageSend() returns after first event
+     * - Artifacts are still being processed in background
+     * - Returned Task is incomplete
+     */
+    @Test
+    @Timeout(15)
+    void testBlockingCallReturnsCompleteTaskWithArtifacts() throws Exception {
+        String taskId = "blocking-artifacts-task";
+        String contextId = "blocking-artifacts-ctx";
+
+        Message message = new Message.Builder()
+            .messageId("msg-blocking-artifacts")
+            .role(Message.Role.USER)
+            .parts(new TextPart("test message"))
+            .taskId(taskId)
+            .contextId(contextId)
+            .build();
+
+        MessageSendConfiguration config = new MessageSendConfiguration.Builder()
+                .blocking(true)
+                .build();
+
+        MessageSendParams params = new MessageSendParams(message, config, null);
+
+        // Agent that uses TaskUpdater to emit multiple artifacts (like real agents do)
+        agentExecutor.setExecuteCallback((context, queue) -> {
+            TaskUpdater updater = new TaskUpdater(context, queue);
+
+            // Start work (WORKING state)
+            updater.startWork();
+
+            // Add first artifact
+            updater.addArtifact(
+                List.of(new TextPart("First artifact", null)),
+                "artifact-1", "First", null);
+
+            // Add second artifact
+            updater.addArtifact(
+                List.of(new TextPart("Second artifact", null)),
+                "artifact-2", "Second", null);
+
+            // Complete the task
+            updater.complete();
+        });
+
+        // Call blocking onMessageSend - should wait for ALL events
+        Object result = requestHandler.onMessageSend(params, serverCallContext);
+
+        // The returned result should be a Task with ALL artifacts
+        assertTrue(result instanceof Task, "Result should be a Task");
+        Task returnedTask = (Task) result;
+
+        // Verify task is completed
+        assertTrue(returnedTask.getStatus().state() == TaskState.COMPLETED,
+            "Returned task should be COMPLETED, got: " + returnedTask.getStatus().state());
+
+        // Verify artifacts are included in the returned task
+        assertNotNull(returnedTask.getArtifacts(),
+            "Returned task should have artifacts");
+        assertTrue(returnedTask.getArtifacts().size() >= 2,
+            "Returned task should have at least 2 artifacts, got: " +
+            (returnedTask.getArtifacts() != null ? returnedTask.getArtifacts().size() : 0));
     }
 
     /**

@@ -194,6 +194,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(taskId, mss.requestContext, queue);
         ResultAggregator.EventTypeAndInterrupt etai = null;
+        EventKind kind = null;  // Declare outside try block so it's in scope for return
         try {
             // Create callback for push notifications during background event processing
             Runnable pushNotificationCallback = () -> sendPushNotification(taskId, resultAggregator);
@@ -203,7 +204,10 @@ public class DefaultRequestHandler implements RequestHandler {
             // This callback must be added before we start consuming. Otherwise,
             // any errors thrown by the producerRunnable are not picked up by the consumer
             producerRunnable.addDoneCallback(consumer.createAgentRunnableDoneCallback());
-            etai = resultAggregator.consumeAndBreakOnInterrupt(consumer, blocking, pushNotificationCallback);
+
+            // Get agent future before consuming (for blocking calls to wait for agent completion)
+            CompletableFuture<Void> agentFuture = runningAgents.get(taskId);
+            etai = resultAggregator.consumeAndBreakOnInterrupt(consumer, blocking, pushNotificationCallback, agentFuture);
 
             if (etai == null) {
                 LOGGER.debug("No result, throwing InternalError");
@@ -212,7 +216,63 @@ public class DefaultRequestHandler implements RequestHandler {
             interruptedOrNonBlocking = etai.interrupted();
             LOGGER.debug("Was interrupted or non-blocking: {}", interruptedOrNonBlocking);
 
-            EventKind kind = etai.eventType();
+            // For blocking calls that were interrupted (returned on first event),
+            // wait for agent execution and event processing BEFORE returning to client.
+            // This ensures the returned Task has all artifacts and current state.
+            // We do this HERE (not in ResultAggregator) to avoid blocking Vert.x worker threads
+            // during the consumption loop itself.
+            kind = etai.eventType();
+            if (blocking && interruptedOrNonBlocking) {
+                // For blocking calls: ensure all events are processed before returning
+                // Order of operations is critical to avoid circular dependency:
+                // 1. Wait for agent to finish enqueueing events
+                // 2. Close the queue to signal consumption can complete
+                // 3. Wait for consumption to finish processing events
+                // 4. Fetch final task state from TaskStore
+
+                try {
+                    // Step 1: Wait for agent to finish (with short timeout for fast agents)
+                    if (agentFuture != null) {
+                        try {
+                            agentFuture.get(5, java.util.concurrent.TimeUnit.SECONDS);
+                            LOGGER.debug("Agent completed for task {}", taskId);
+                        } catch (java.util.concurrent.TimeoutException e) {
+                            // Agent still running after 5s - that's fine, events already being processed
+                            LOGGER.debug("Agent still running for task {} after 5s", taskId);
+                        }
+                    }
+
+                    // Step 2: Close the queue to signal consumption can complete
+                    // For fire-and-forget tasks, there's no final event, so we need to close the queue
+                    // This allows EventConsumer.consumeAll() to exit
+                    queue.close(false, false);  // graceful close, don't notify parent yet
+                    LOGGER.debug("Closed queue for task {} to allow consumption completion", taskId);
+
+                    // Step 3: Wait for consumption to complete (now that queue is closed)
+                    if (etai.consumptionFuture() != null) {
+                        etai.consumptionFuture().get(2, java.util.concurrent.TimeUnit.SECONDS);
+                        LOGGER.debug("Consumption completed for task {}", taskId);
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    LOGGER.warn("Interrupted waiting for task {} completion", taskId, e);
+                } catch (java.util.concurrent.ExecutionException e) {
+                    LOGGER.warn("Error during task {} execution", taskId, e.getCause());
+                } catch (java.util.concurrent.TimeoutException e) {
+                    LOGGER.warn("Timeout waiting for consumption to complete for task {}", taskId);
+                }
+
+                // Step 4: Fetch the final task state from TaskStore (all events have been processed)
+                Task updatedTask = taskStore.get(taskId);
+                if (updatedTask != null) {
+                    kind = updatedTask;
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Fetched final task for {} with state {} and {} artifacts",
+                            taskId, updatedTask.getStatus().state(),
+                            updatedTask.getArtifacts() != null ? updatedTask.getArtifacts().size() : 0);
+                    }
+                }
+            }
             if (kind instanceof Task taskResult && !taskId.equals(taskResult.getId())) {
                 throw new InternalError("Task ID mismatch in agent response");
             }
@@ -229,8 +289,8 @@ public class DefaultRequestHandler implements RequestHandler {
             trackBackgroundTask(cleanupProducer(agentFuture, etai != null ? etai.consumptionFuture() : null, taskId, queue, false));
         }
 
-        LOGGER.debug("Returning: {}", etai.eventType());
-        return etai.eventType();
+        LOGGER.debug("Returning: {}", kind);
+        return kind;
     }
 
     @Override

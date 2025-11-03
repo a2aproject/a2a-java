@@ -1245,6 +1245,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                                 .when(mock).consumeAndBreakOnInterrupt(
                                         Mockito.any(EventConsumer.class),
                                         Mockito.anyBoolean(),
+                                        Mockito.any(),
                                         Mockito.any());
                 })){
             response = handler.onMessageSend(request, callContext);
