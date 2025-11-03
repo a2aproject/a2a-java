@@ -125,7 +125,7 @@ public class RestTransport implements ClientTransport {
                 agentCard, context);
         try {
             String url;
-            if (taskQueryParams.historyLength() != null) {
+            if (taskQueryParams.historyLength() > 0) {
                 url = agentUrl + String.format("/v1/tasks/%1s?historyLength=%2d", taskQueryParams.id(), taskQueryParams.historyLength());
             } else {
                 url = agentUrl + String.format("/v1/tasks/%1s", taskQueryParams.id());

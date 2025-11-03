@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import io.a2a.server.ServerCallContext;
@@ -34,7 +33,6 @@ import io.a2a.server.events.QueueManager;
 import io.a2a.server.events.TaskQueueExistsException;
 import io.a2a.server.tasks.PushNotificationConfigStore;
 import io.a2a.server.tasks.PushNotificationSender;
-import io.a2a.server.tasks.TaskStateProvider;
 import io.a2a.server.tasks.ResultAggregator;
 import io.a2a.server.tasks.TaskManager;
 import io.a2a.server.tasks.TaskStore;
@@ -103,10 +101,10 @@ public class DefaultRequestHandler implements RequestHandler {
             LOGGER.debug("No task found for {}. Throwing TaskNotFoundError", params.id());
             throw new TaskNotFoundError();
         }
-        if (params.historyLength() != null && task.getHistory() != null && params.historyLength() < task.getHistory().size()) {
+        if (task.getHistory() != null && params.historyLength() < task.getHistory().size()) {
             List<Message> history;
             if (params.historyLength() <= 0) {
-                history = new ArrayList<>();
+                history = task.getHistory();
             } else {
                 history = task.getHistory().subList(
                         task.getHistory().size() - params.historyLength(),

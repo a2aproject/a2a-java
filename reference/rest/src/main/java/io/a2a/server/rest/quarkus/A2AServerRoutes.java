@@ -122,9 +122,9 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                Integer historyLength = null;
+                int historyLength = 0;
                 if (rc.request().params().contains("history_length")) {
-                    historyLength = Integer.valueOf(rc.request().params().get("history_length"));
+                    historyLength = Integer.parseInt(rc.request().params().get("history_length"));
                 }
                 response = jsonRestHandler.getTask(taskId, historyLength, context);
             }
