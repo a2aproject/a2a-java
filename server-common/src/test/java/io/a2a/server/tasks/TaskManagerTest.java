@@ -589,7 +589,7 @@ public class TaskManagerTest {
 
     @Test
     public void testSaveTaskEventMetadataMergeExisting() throws A2AServerException {
-        // Test that metadata update overwrites existing metadata
+        // Test that metadata update merges with existing metadata
         Map<String, Object> originalMetadata = new HashMap<>();
         originalMetadata.put("original_key", "original_value");
         
