@@ -104,7 +104,7 @@ public class TaskManager {
     }
 
     public Task updateWithMessage(Message message, Task task) {
-        List<Message> history = task.getHistory() == null ? new ArrayList<>() : new ArrayList<>(task.getHistory());
+        List<Message> history = new ArrayList<>(task.getHistory());
 
         TaskStatus status = task.getStatus();
         if (status.message() != null) {

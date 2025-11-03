@@ -724,9 +724,7 @@ public class TaskManagerTest {
                 .messageId("update-msg-id")
                 .build();
 
-        TaskManager taskManagerWithUpdateMessage = new TaskManager(saved.getId(), saved.getContextId(), taskStore, updateMessage);
-        Task retrieved = taskManagerWithUpdateMessage.getTask();
-        Task updated = taskManagerWithUpdateMessage.updateWithMessage(updateMessage, retrieved);
+        Task updated = taskManagerWithInitialMessage.updateWithMessage(updateMessage, saved);
 
         // There should now be a history containing the initialMessage, task message and update message
         assertNotNull(updated.getHistory());
