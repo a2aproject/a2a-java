@@ -1244,9 +1244,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                                 new UnsupportedOperationError())
                                 .when(mock).consumeAndBreakOnInterrupt(
                                         Mockito.any(EventConsumer.class),
-                                        Mockito.anyBoolean(),
-                                        Mockito.any(),
-                                        Mockito.any());
+                                        Mockito.anyBoolean());
                 })){
             response = handler.onMessageSend(request, callContext);
         }

@@ -21,8 +21,6 @@ import java.util.function.Supplier;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
@@ -53,11 +51,12 @@ import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskNotCancelableError;
-import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
+import io.a2a.spec.TaskState;
 import io.a2a.spec.UnsupportedOperationError;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,7 +239,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
             // Get agent future before consuming (for blocking calls to wait for agent completion)
             CompletableFuture<Void> agentFuture = runningAgents.get(taskId);
-            etai = resultAggregator.consumeAndBreakOnInterrupt(consumer, blocking, pushNotificationCallback, agentFuture);
+            etai = resultAggregator.consumeAndBreakOnInterrupt(consumer, blocking);
 
             if (etai == null) {
                 LOGGER.debug("No result, throwing InternalError");
