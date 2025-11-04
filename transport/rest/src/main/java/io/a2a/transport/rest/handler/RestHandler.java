@@ -162,7 +162,7 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse getTask(String taskId, @Nullable Integer historyLength, ServerCallContext context) {
+    public HTTPRestResponse getTask(String taskId, int historyLength, ServerCallContext context) {
         try {
             TaskQueryParams params = new TaskQueryParams(taskId, historyLength);
             Task task = requestHandler.onGetTask(params, context);

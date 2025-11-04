@@ -1,9 +1,5 @@
 package io.a2a.client.transport.grpc;
 
-import static io.a2a.grpc.A2AServiceGrpc.A2AServiceBlockingV2Stub;
-import static io.a2a.grpc.A2AServiceGrpc.A2AServiceStub;
-import static io.a2a.grpc.utils.ProtoUtils.FromProto;
-import static io.a2a.grpc.utils.ProtoUtils.ToProto;
 import static io.a2a.util.Assert.checkNotNullParam;
 
 import java.util.List;
@@ -127,9 +123,7 @@ public class GrpcTransport implements ClientTransport {
 
         GetTaskRequest.Builder requestBuilder = GetTaskRequest.newBuilder();
         requestBuilder.setName("tasks/" + request.id());
-        if (request.historyLength() != null) {
-            requestBuilder.setHistoryLength(request.historyLength());
-        }
+        requestBuilder.setHistoryLength(request.historyLength());
         GetTaskRequest getTaskRequest = requestBuilder.build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskRequest.METHOD, getTaskRequest,
                 agentCard, context);

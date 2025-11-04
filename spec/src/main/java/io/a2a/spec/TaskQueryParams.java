@@ -17,20 +17,20 @@ import org.jspecify.annotations.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TaskQueryParams(String id, @Nullable Integer historyLength, @Nullable Map<String, Object> metadata) {
+public record TaskQueryParams(String id, int historyLength, @Nullable Map<String, Object> metadata) {
 
     public TaskQueryParams {
         Assert.checkNotNullParam("id", id);
-        if (historyLength != null && historyLength < 0) {
+        if (historyLength < 0) {
             throw new IllegalArgumentException("Invalid history length");
         }
     }
 
     public TaskQueryParams(String id) {
-        this(id, null, null);
+        this(id, 0, null);
     }
 
-    public TaskQueryParams(String id, @Nullable Integer historyLength) {
+    public TaskQueryParams(String id, int historyLength) {
         this(id, historyLength, null);
     }
 }

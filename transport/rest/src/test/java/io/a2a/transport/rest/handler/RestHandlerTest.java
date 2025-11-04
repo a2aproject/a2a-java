@@ -26,7 +26,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
-        RestHandler.HTTPRestResponse response = handler.getTask(MINIMAL_TASK.getId(),null,  callContext);
+        RestHandler.HTTPRestResponse response = handler.getTask(MINIMAL_TASK.getId(), 0, callContext);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -43,7 +43,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testGetTaskNotFound() {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.getTask("nonexistent", null, callContext);
+        RestHandler.HTTPRestResponse response = handler.getTask("nonexistent", 0, callContext);
 
         Assertions.assertEquals(404, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -315,7 +315,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(400, response.getStatusCode());
 
         // Test 404 for not found
-        response = handler.getTask("nonexistent", null, callContext);
+        response = handler.getTask("nonexistent", 0, callContext);
         Assertions.assertEquals(404, response.getStatusCode());
     }
 

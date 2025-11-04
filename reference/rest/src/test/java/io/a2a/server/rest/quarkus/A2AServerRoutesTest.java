@@ -4,6 +4,7 @@ import static io.a2a.transport.rest.context.RestContextKeys.METHOD_NAME_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -137,7 +138,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{test:value}");
-        when(mockRestHandler.getTask(anyString(), any(), any(ServerCallContext.class))).thenReturn(mockHttpResponse);
+        when(mockRestHandler.getTask(anyString(), anyInt(), any(ServerCallContext.class))).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -145,7 +146,7 @@ public class A2AServerRoutesTest {
         routes.getTask(mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).getTask(eq("task123"), eq(null), contextCaptor.capture());
+        verify(mockRestHandler).getTask(eq("task123"), anyInt(), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(GetTaskRequest.METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
