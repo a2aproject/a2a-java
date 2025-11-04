@@ -3,6 +3,7 @@ package io.a2a.server.requesthandlers;
 import static io.a2a.server.util.async.AsyncUtils.convertingProcessor;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import static io.a2a.server.util.async.AsyncUtils.processor;
+import static java.util.concurrent.TimeUnit.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -266,7 +267,7 @@ public class DefaultRequestHandler implements RequestHandler {
                     // Step 1: Wait for agent to finish (with configurable timeout)
                     if (agentFuture != null) {
                         try {
-                            agentFuture.get(agentCompletionTimeoutSeconds, java.util.concurrent.TimeUnit.SECONDS);
+                            agentFuture.get(agentCompletionTimeoutSeconds, SECONDS);
                             LOGGER.debug("Agent completed for task {}", taskId);
                         } catch (java.util.concurrent.TimeoutException e) {
                             // Agent still running after timeout - that's fine, events already being processed
@@ -282,16 +283,22 @@ public class DefaultRequestHandler implements RequestHandler {
 
                     // Step 3: Wait for consumption to complete (now that queue is closed)
                     if (etai.consumptionFuture() != null) {
-                        etai.consumptionFuture().get(consumptionCompletionTimeoutSeconds, java.util.concurrent.TimeUnit.SECONDS);
+                        etai.consumptionFuture().get(consumptionCompletionTimeoutSeconds, SECONDS);
                         LOGGER.debug("Consumption completed for task {}", taskId);
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    LOGGER.warn("Interrupted waiting for task {} completion", taskId, e);
+                    String msg = String.format("Error waiting for task %s completion", taskId);
+                    LOGGER.warn(msg, e);
+                    throw new InternalError(msg);
                 } catch (java.util.concurrent.ExecutionException e) {
-                    LOGGER.warn("Error during task {} execution", taskId, e.getCause());
+                    String msg = String.format("Error during task %s execution", taskId);
+                    LOGGER.warn(msg, e.getCause());
+                    throw new InternalError(msg);
                 } catch (java.util.concurrent.TimeoutException e) {
-                    LOGGER.warn("Timeout waiting for consumption to complete for task {}", taskId);
+                    String msg = String.format("Timeout waiting for consumption to complete for task %s", taskId);
+                    LOGGER.warn(msg, taskId);
+                    throw new InternalError(msg);
                 }
 
                 // Step 4: Fetch the final task state from TaskStore (all events have been processed)
