@@ -98,7 +98,8 @@ public class AbstractA2ARequestHandlerTest {
         PushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
         PushNotificationSender pushSender = new BasePushNotificationSender(pushConfigStore, httpClient);
 
-        requestHandler = new DefaultRequestHandler(executor, taskStore, queueManager, pushConfigStore, pushSender, internalExecutor);
+        requestHandler = DefaultRequestHandler.create(
+                executor, taskStore, queueManager, pushConfigStore, pushSender, internalExecutor);
     }
 
     @AfterEach

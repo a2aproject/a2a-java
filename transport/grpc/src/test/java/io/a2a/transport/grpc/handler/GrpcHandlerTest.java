@@ -280,8 +280,8 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnSetPushNotificationNoPushNotifierConfig() throws Exception {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler =
-                new DefaultRequestHandler(executor, taskStore, queueManager, null, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
+                executor, taskStore, queueManager, null, null, internalExecutor);
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true, false);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId();
@@ -655,8 +655,8 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListPushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler =
-                new DefaultRequestHandler(executor, taskStore, queueManager, null, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
+                executor, taskStore, queueManager, null, null, internalExecutor);
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {
@@ -728,8 +728,8 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testDeletePushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler =
-                new DefaultRequestHandler(executor, taskStore, queueManager, null, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
+                executor, taskStore, queueManager, null, null, internalExecutor);
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId();
         DeleteTaskPushNotificationConfigRequest request = DeleteTaskPushNotificationConfigRequest.newBuilder()
