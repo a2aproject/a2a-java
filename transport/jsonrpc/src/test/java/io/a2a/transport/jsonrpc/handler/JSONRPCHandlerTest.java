@@ -186,7 +186,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageResponse response;
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
-                (mock, context) -> {Mockito.doReturn(ZeroPublisher.fromItems(wrapEvent(MINIMAL_TASK))).when(mock).consumeAll();})){
+                (mock, context) -> {Mockito.doReturn(ZeroPublisher.fromItems(wrapEvent(MINIMAL_TASK))).when(mock).consumeAll();
+                Mockito.doCallRealMethod().when(mock).createAgentRunnableDoneCallback();})){
             response = handler.onMessageSend(request, callContext);
         }
         assertNull(response.getError());
