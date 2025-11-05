@@ -1,6 +1,5 @@
 package io.a2a.server.events;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
