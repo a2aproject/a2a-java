@@ -59,6 +59,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.a2a.util.Utils;
+import org.jspecify.annotations.Nullable;
 
 public class JSONRPCTransport implements ClientTransport {
 
@@ -73,8 +74,8 @@ public class JSONRPCTransport implements ClientTransport {
 
     private final A2AHttpClient httpClient;
     private final String agentUrl;
-    private final List<ClientCallInterceptor> interceptors;
-    private AgentCard agentCard;
+    private final @Nullable List<ClientCallInterceptor> interceptors;
+    private @Nullable AgentCard agentCard;
     private boolean needsExtendedCard = false;
 
     public JSONRPCTransport(String agentUrl) {
@@ -85,8 +86,8 @@ public class JSONRPCTransport implements ClientTransport {
         this(null, agentCard, agentCard.url(), null);
     }
 
-    public JSONRPCTransport(A2AHttpClient httpClient, AgentCard agentCard,
-                            String agentUrl, List<ClientCallInterceptor> interceptors) {
+    public JSONRPCTransport(@Nullable A2AHttpClient httpClient, @Nullable AgentCard agentCard,
+                            String agentUrl, @Nullable List<ClientCallInterceptor> interceptors) {
         this.httpClient = httpClient == null ? new JdkA2AHttpClient() : httpClient;
         this.agentCard = agentCard;
         this.agentUrl = agentUrl;
@@ -95,7 +96,7 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public EventKind sendMessage(MessageSendParams request, ClientCallContext context) throws A2AClientException {
+    public EventKind sendMessage(MessageSendParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         SendMessageRequest sendMessageRequest = new SendMessageRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
@@ -119,7 +120,7 @@ public class JSONRPCTransport implements ClientTransport {
 
     @Override
     public void sendMessageStreaming(MessageSendParams request, Consumer<StreamingEventKind> eventConsumer,
-                                     Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+                                     @Nullable Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
         SendStreamingMessageRequest sendStreamingMessageRequest = new SendStreamingMessageRequest.Builder()
@@ -131,7 +132,7 @@ public class JSONRPCTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SendStreamingMessageRequest.METHOD,
                 sendStreamingMessageRequest, agentCard, context);
 
-        AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
+        final AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
 
         try {
@@ -151,7 +152,7 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public Task getTask(TaskQueryParams request, ClientCallContext context) throws A2AClientException {
+    public Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         GetTaskRequest getTaskRequest = new GetTaskRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
@@ -174,7 +175,7 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public Task cancelTask(TaskIdParams request, ClientCallContext context) throws A2AClientException {
+    public Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         CancelTaskRequest cancelTaskRequest = new CancelTaskRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
@@ -198,7 +199,7 @@ public class JSONRPCTransport implements ClientTransport {
 
     @Override
     public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
-                                                                           ClientCallContext context) throws A2AClientException {
+                                                                           @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         SetTaskPushNotificationConfigRequest setTaskPushNotificationRequest = new SetTaskPushNotificationConfigRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
@@ -223,7 +224,7 @@ public class JSONRPCTransport implements ClientTransport {
 
     @Override
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request,
-                                                                           ClientCallContext context) throws A2AClientException {
+                                                                           @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         GetTaskPushNotificationConfigRequest getTaskPushNotificationRequest = new GetTaskPushNotificationConfigRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
@@ -249,7 +250,7 @@ public class JSONRPCTransport implements ClientTransport {
     @Override
     public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request,
-            ClientCallContext context) throws A2AClientException {
+            @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         ListTaskPushNotificationConfigRequest listTaskPushNotificationRequest = new ListTaskPushNotificationConfigRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
@@ -274,7 +275,7 @@ public class JSONRPCTransport implements ClientTransport {
 
     @Override
     public void deleteTaskPushNotificationConfigurations(DeleteTaskPushNotificationConfigParams request,
-                                                         ClientCallContext context) throws A2AClientException {
+                                                         @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         DeleteTaskPushNotificationConfigRequest deleteTaskPushNotificationRequest = new DeleteTaskPushNotificationConfigRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
@@ -297,7 +298,7 @@ public class JSONRPCTransport implements ClientTransport {
 
     @Override
     public void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
-                            Consumer<Throwable> errorConsumer, ClientCallContext context) throws A2AClientException {
+                            Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
         checkNotNullParam("errorConsumer", errorConsumer);
@@ -330,7 +331,7 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getAgentCard(ClientCallContext context) throws A2AClientException {
+    public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
         A2ACardResolver resolver;
         try {
             if (agentCard == null) {
@@ -370,8 +371,8 @@ public class JSONRPCTransport implements ClientTransport {
         // no-op
     }
 
-    private PayloadAndHeaders applyInterceptors(String methodName, Object payload,
-                                                AgentCard agentCard, ClientCallContext clientCallContext) {
+    private PayloadAndHeaders applyInterceptors(String methodName, @Nullable Object payload,
+                                                @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         PayloadAndHeaders payloadAndHeaders = new PayloadAndHeaders(payload, getHttpHeaders(clientCallContext));
         if (interceptors != null && ! interceptors.isEmpty()) {
             for (ClientCallInterceptor interceptor : interceptors) {
@@ -416,7 +417,7 @@ public class JSONRPCTransport implements ClientTransport {
         return value;
     }
 
-    private Map<String, String> getHttpHeaders(ClientCallContext context) {
+    private @Nullable Map<String, String> getHttpHeaders(@Nullable ClientCallContext context) {
         return context != null ? context.getHeaders() : null;
     }
 }

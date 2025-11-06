@@ -3,14 +3,14 @@ package io.a2a.client.transport.jsonrpc;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.client.transport.spi.ClientTransportConfigBuilder;
+import org.jspecify.annotations.Nullable;
 
 public class JSONRPCTransportConfigBuilder extends ClientTransportConfigBuilder<JSONRPCTransportConfig, JSONRPCTransportConfigBuilder> {
 
-    private A2AHttpClient httpClient;
+    private @Nullable A2AHttpClient httpClient;
 
     public JSONRPCTransportConfigBuilder httpClient(A2AHttpClient httpClient) {
         this.httpClient = httpClient;
-
         return this;
     }
 

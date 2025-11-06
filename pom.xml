@@ -64,7 +64,9 @@
         <rest-assured.version>5.5.1</rest-assured.version>
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.18</logback.version>
-        <error-prone.version>2.42.0</error-prone.version>
+        <error-prone.version>2.43.0</error-prone.version>
+        <nullaway.version>0.12.12</nullaway.version>
+        <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true </error-prone.flag>
 
         <!-- Redirect test output to file -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
@@ -321,7 +323,7 @@
                             <arg>-XDcompilePolicy=simple</arg>
                             <arg>--should-stop=ifError=FLOW</arg>
                             <arg>-parameters</arg>
-                            <arg>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode </arg>
+                            <arg>${error-prone.flag}-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode </arg>
                         </compilerArgs>
                         <annotationProcessorPaths>
                             <path>
@@ -332,7 +334,7 @@
                             <path>
                                 <groupId>com.uber.nullaway</groupId>
                                 <artifactId>nullaway</artifactId>
-                                <version>0.12.10</version>
+                                <version>${nullaway.version}</version>
                             </path>
                             <!-- Other annotation processors go here.
 
@@ -482,6 +484,21 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <!--
+                This profile gis required for old JDK that don't support reading type use annotations from bytecodes.
+                https://github.com/uber/NullAway/wiki/JSpecify-Support#supported-jdk-versions
+            -->
+            <id>old_jdk_support</id>
+            <activation>
+                <jdk>(17, 21]</jdk>
+            </activation>
+            <properties>
+                <error-prone.version>2.42.0</error-prone.version>
+                <nullaway.version>0.12.10</nullaway.version>
+                <error-prone.flag></error-prone.flag>
+            </properties>
         </profile>
     </profiles>
 

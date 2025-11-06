@@ -47,21 +47,18 @@ import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskResubscriptionRequest;
 import io.a2a.server.util.async.Internal;
 import mutiny.zero.ZeroPublisher;
+import org.jspecify.annotations.Nullable;
 
 @ApplicationScoped
 public class JSONRPCHandler {
 
     private AgentCard agentCard;
-    private Instance<AgentCard> extendedAgentCard;
+    private @Nullable Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
     private final Executor executor;
 
-    protected JSONRPCHandler() {
-        this.executor = null;
-    }
-
     @Inject
-    public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
+    public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, @Nullable @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
                           RequestHandler requestHandler, @Internal Executor executor) {
         this.agentCard = agentCard;
         this.extendedAgentCard = extendedAgentCard;
@@ -227,7 +224,7 @@ public class JSONRPCHandler {
     // TODO: Add authentication (https://github.com/a2aproject/a2a-java/issues/77)
     public GetAuthenticatedExtendedCardResponse onGetAuthenticatedExtendedCardRequest(
             GetAuthenticatedExtendedCardRequest request, ServerCallContext context) {
-        if ( !agentCard.supportsAuthenticatedExtendedCard() || !extendedAgentCard.isResolvable()) {
+        if (!agentCard.supportsAuthenticatedExtendedCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
             return new GetAuthenticatedExtendedCardResponse(request.getId(),
                     new AuthenticatedExtendedCardNotConfiguredError());
         }
@@ -252,6 +249,7 @@ public class JSONRPCHandler {
             return ZeroPublisher.create(createTubeConfig(), tube -> {
                 CompletableFuture.runAsync(() -> {
                     publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
+                        @SuppressWarnings("NullAway")
                         Flow.Subscription subscription;
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {
