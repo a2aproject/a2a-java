@@ -21,6 +21,19 @@ public final class MessageEvent implements ClientEvent {
     public Message getMessage() {
         return message;
     }
+
+    @Override
+    public String toString() {
+        String messageAsString = "{"
+                + "role=" + message.getRole()
+                + ", parts=" + message.getParts()
+                + ", messageId=" + message.getMessageId()
+                + ", contextId=" + message.getContextId()
+                + ", taskId=" + message.getTaskId()
+                + ", metadata=" + message.getMetadata()
+                + ", kind=" + message.getKind()
+                + ", referenceTaskIds=" + message.getReferenceTaskIds()
+                + ", extensions=" + message.getExtensions() + '}';
+        return "MessageEvent{" + "message=" + messageAsString + '}';
+    }
 }
-
-

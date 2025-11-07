@@ -128,7 +128,6 @@ public final class Message implements EventKind, StreamingEventKind {
             return this.role;
         }
     }
-
     public static class Builder {
 
         private Role role;

@@ -457,6 +457,7 @@
         <module>transport/jsonrpc</module>
         <module>transport/grpc</module>
         <module>transport/rest</module>
+        <module>extensions/timestamp</module>
     </modules>
 
     <profiles>
