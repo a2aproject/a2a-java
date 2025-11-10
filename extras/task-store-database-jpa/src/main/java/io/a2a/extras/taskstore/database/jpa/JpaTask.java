@@ -130,8 +130,11 @@ public class JpaTask {
      */
     private void updateDenormalizedFields(Task task) {
         this.contextId = task.getContextId();
-        if (task.getStatus() != null && task.getStatus().state() != null) {
-            this.state = task.getStatus().state().asString();
+        if (task.getStatus() != null) {
+            io.a2a.spec.TaskState taskState = task.getStatus().state();
+            this.state = (taskState != null) ? taskState.asString() : null;
+        } else {
+            this.state = null;
         }
     }
 

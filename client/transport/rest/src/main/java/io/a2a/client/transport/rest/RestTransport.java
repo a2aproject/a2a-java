@@ -231,39 +231,32 @@ public class RestTransport implements ClientTransport {
                     responseBuilder.getTasksCount(),
                     responseBuilder.getNextPageToken().isEmpty() ? null : responseBuilder.getNextPageToken()
             );
-        } catch (A2AClientException e) {
-            throw e;
         } catch (IOException | InterruptedException e) {
             throw new A2AClientException("Failed to list tasks: " + e, e);
         }
     }
 
     private String buildListTasksQueryString(ListTasksParams request) {
-        StringBuilder sb = new StringBuilder();
+        java.util.List<String> queryParts = new java.util.ArrayList<>();
         if (request.contextId() != null) {
-            sb.append("contextId=").append(URLEncoder.encode(request.contextId(), StandardCharsets.UTF_8));
+            queryParts.add("contextId=" + URLEncoder.encode(request.contextId(), StandardCharsets.UTF_8));
         }
         if (request.status() != null) {
-            if (sb.length() > 0) sb.append("&");
-            sb.append("status=").append(request.status().asString());
+            queryParts.add("status=" + request.status().asString());
         }
         if (request.pageSize() != null) {
-            if (sb.length() > 0) sb.append("&");
-            sb.append("pageSize=").append(request.pageSize());
+            queryParts.add("pageSize=" + request.pageSize());
         }
         if (request.pageToken() != null) {
-            if (sb.length() > 0) sb.append("&");
-            sb.append("pageToken=").append(URLEncoder.encode(request.pageToken(), StandardCharsets.UTF_8));
+            queryParts.add("pageToken=" + URLEncoder.encode(request.pageToken(), StandardCharsets.UTF_8));
         }
         if (request.historyLength() != null) {
-            if (sb.length() > 0) sb.append("&");
-            sb.append("historyLength=").append(request.historyLength());
+            queryParts.add("historyLength=" + request.historyLength());
         }
         if (request.includeArtifacts() != null && request.includeArtifacts()) {
-            if (sb.length() > 0) sb.append("&");
-            sb.append("includeArtifacts=true");
+            queryParts.add("includeArtifacts=true");
         }
-        return sb.toString();
+        return String.join("&", queryParts);
     }
 
     @Override

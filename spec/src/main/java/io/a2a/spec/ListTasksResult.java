@@ -31,6 +31,9 @@ public record ListTasksResult(
         if (pageSize < 0) {
             throw new IllegalArgumentException("pageSize must be non-negative");
         }
+        if (pageSize != tasks.size()) {
+            throw new IllegalArgumentException("pageSize must be equal to the number of tasks in the list. Got " + pageSize + ", but list has " + tasks.size() + " tasks.");
+        }
         // Make defensive copy
         tasks = List.copyOf(tasks);
     }

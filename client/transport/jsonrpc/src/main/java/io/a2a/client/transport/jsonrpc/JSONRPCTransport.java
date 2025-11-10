@@ -218,8 +218,6 @@ public class JSONRPCTransport implements ClientTransport {
             String httpResponseBody = sendPostRequest(payloadAndHeaders);
             ListTasksResponse response = unmarshalResponse(httpResponseBody, LIST_TASKS_RESPONSE_REFERENCE);
             return response.getResult();
-        } catch (A2AClientException e) {
-            throw e;
         } catch (IOException | InterruptedException e) {
             throw new A2AClientException("Failed to list tasks: " + e, e);
         }
