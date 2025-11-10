@@ -40,6 +40,10 @@ import io.a2a.spec.JSONRPCResponse;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigResponse;
+import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.ListTasksRequest;
+import io.a2a.spec.ListTasksResponse;
+import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.spec.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.spec.MessageSendParams;
@@ -66,6 +70,7 @@ public class JSONRPCTransport implements ClientTransport {
     private static final TypeReference<SendMessageResponse> SEND_MESSAGE_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<GetTaskResponse> GET_TASK_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<CancelTaskResponse> CANCEL_TASK_RESPONSE_REFERENCE = new TypeReference<>() {};
+    private static final TypeReference<ListTasksResponse> LIST_TASKS_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<GetTaskPushNotificationConfigResponse> GET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<SetTaskPushNotificationConfigResponse> SET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
     private static final TypeReference<ListTaskPushNotificationConfigResponse> LIST_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
@@ -194,6 +199,29 @@ public class JSONRPCTransport implements ClientTransport {
             throw e;
         } catch (IOException | InterruptedException e) {
             throw new A2AClientException("Failed to cancel task: " + e, e);
+        }
+    }
+
+    @Override
+    public ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        ListTasksRequest listTasksRequest = new ListTasksRequest.Builder()
+                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                .method(ListTasksRequest.METHOD)
+                .params(request)
+                .build(); // id will be randomly generated
+
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(ListTasksRequest.METHOD, listTasksRequest,
+                agentCard, context);
+
+        try {
+            String httpResponseBody = sendPostRequest(payloadAndHeaders);
+            ListTasksResponse response = unmarshalResponse(httpResponseBody, LIST_TASKS_RESPONSE_REFERENCE);
+            return response.getResult();
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to list tasks: " + e, e);
         }
     }
 

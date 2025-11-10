@@ -33,6 +33,9 @@ public class NonStreamingJSONRPCRequestDeserializer extends JSONRPCRequestDeseri
             case CancelTaskRequest.METHOD:
                 return new CancelTaskRequest(jsonrpc, id, method,
                         getAndValidateParams(paramsNode, jsonParser, treeNode, TaskIdParams.class));
+            case ListTasksRequest.METHOD:
+                return new ListTasksRequest(jsonrpc, id, method,
+                        getAndValidateParams(paramsNode, jsonParser, treeNode, ListTasksParams.class));
             case SetTaskPushNotificationConfigRequest.METHOD:
                 return new SetTaskPushNotificationConfigRequest(jsonrpc, id, method,
                         getAndValidateParams(paramsNode, jsonParser, treeNode, TaskPushNotificationConfig.class));

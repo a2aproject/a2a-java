@@ -10,6 +10,8 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -65,6 +67,16 @@ public interface ClientTransport {
      * @throws A2AClientException if cancelling the task fails for any reason
      */
     Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * List tasks with optional filtering and pagination.
+     *
+     * @param request the list tasks parameters including filters and pagination
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the list tasks result containing tasks and pagination information
+     * @throws A2AClientException if listing tasks fails for any reason
+     */
+    ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Set or update the push notification configuration for a specific task.

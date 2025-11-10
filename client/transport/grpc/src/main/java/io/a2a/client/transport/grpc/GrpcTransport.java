@@ -22,6 +22,7 @@ import io.a2a.grpc.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskRequest;
 import io.a2a.grpc.ListTaskPushNotificationConfigRequest;
+import io.a2a.grpc.ListTasksRequest;
 import io.a2a.grpc.SendMessageRequest;
 import io.a2a.grpc.SendMessageResponse;
 import io.a2a.grpc.StreamResponse;
@@ -34,6 +35,8 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
@@ -151,6 +154,51 @@ public class GrpcTransport implements ClientTransport {
             return FromProto.task(stubWithMetadata.cancelTask(cancelTaskRequest));
         } catch (StatusRuntimeException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to cancel task: ");
+        }
+    }
+
+    @Override
+    public ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+
+        ListTasksRequest.Builder requestBuilder = ListTasksRequest.newBuilder();
+        if (request.contextId() != null) {
+            requestBuilder.setContextId(request.contextId());
+        }
+        if (request.status() != null) {
+            requestBuilder.setStatus(ToProto.taskState(request.status()));
+        }
+        if (request.pageSize() != null) {
+            requestBuilder.setPageSize(request.pageSize());
+        }
+        if (request.pageToken() != null) {
+            requestBuilder.setPageToken(request.pageToken());
+        }
+        if (request.historyLength() != null) {
+            requestBuilder.setHistoryLength(request.historyLength());
+        }
+        if (request.includeArtifacts() != null && request.includeArtifacts()) {
+            requestBuilder.setIncludeArtifacts(true);
+        }
+
+        ListTasksRequest listTasksRequest = requestBuilder.build();
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.ListTasksRequest.METHOD, listTasksRequest,
+                agentCard, context);
+
+        try {
+            A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
+            io.a2a.grpc.ListTasksResponse grpcResponse = stubWithMetadata.listTasks(listTasksRequest);
+
+            return new io.a2a.spec.ListTasksResult(
+                    grpcResponse.getTasksList().stream()
+                            .map(FromProto::task)
+                            .collect(Collectors.toList()),
+                    grpcResponse.getTotalSize(),
+                    grpcResponse.getTasksCount(),
+                    grpcResponse.getNextPageToken().isEmpty() ? null : grpcResponse.getNextPageToken()
+            );
+        } catch (StatusRuntimeException e) {
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to list tasks: ");
         }
     }
 

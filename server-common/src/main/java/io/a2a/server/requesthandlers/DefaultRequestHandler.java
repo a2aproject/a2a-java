@@ -45,6 +45,8 @@ import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.PushNotificationConfig;
@@ -136,23 +138,38 @@ public class DefaultRequestHandler implements RequestHandler {
             LOGGER.debug("No task found for {}. Throwing TaskNotFoundError", params.id());
             throw new TaskNotFoundError();
         }
-        if (task.getHistory() != null && params.historyLength() < task.getHistory().size()) {
-            List<Message> history;
-            if (params.historyLength() <= 0) {
-                history = task.getHistory();
-            } else {
-                history = task.getHistory().subList(
-                        task.getHistory().size() - params.historyLength(),
-                        task.getHistory().size() - 1);
-            }
-
-            task = new Task.Builder(task)
-                    .history(history)
-                    .build();
-        }
-
+        task = limitTaskHistory(task, params.historyLength());
         LOGGER.debug("Task found {}", task);
         return task;
+    }
+
+    /**
+     * Limits the history of a task to the most recent N messages.
+     *
+     * @param task the task to limit
+     * @param historyLength the maximum number of recent messages to keep (0 or negative = unlimited)
+     * @return the task with limited history, or the original task if no limiting needed
+     */
+    private static Task limitTaskHistory(Task task, int historyLength) {
+        if (task.getHistory() == null || historyLength <= 0 || historyLength >= task.getHistory().size()) {
+            return task;
+        }
+        // Keep only the most recent historyLength messages
+        List<Message> limitedHistory = task.getHistory().subList(
+                task.getHistory().size() - historyLength,
+                task.getHistory().size());
+        return new Task.Builder(task)
+                .history(limitedHistory)
+                .build();
+    }
+
+    @Override
+    public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws JSONRPCError {
+        LOGGER.debug("onListTasks with contextId={}, status={}, pageSize={}, pageToken={}",
+                params.contextId(), params.status(), params.pageSize(), params.pageToken());
+        ListTasksResult result = taskStore.list(params);
+        LOGGER.debug("Found {} tasks (total: {})", result.pageSize(), result.totalSize());
+        return result;
     }
 
     @Override

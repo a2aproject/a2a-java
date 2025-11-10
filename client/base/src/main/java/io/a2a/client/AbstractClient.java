@@ -13,6 +13,8 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.Message;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
@@ -171,6 +173,27 @@ public abstract class AbstractClient {
      * @throws A2AClientException if retrieving the task fails for any reason
      */
     public abstract Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * List tasks with optional filtering and pagination.
+     *
+     * @param request the list tasks parameters including filters and pagination
+     * @return the list tasks result containing tasks and pagination information
+     * @throws A2AClientException if listing tasks fails for any reason
+     */
+    public ListTasksResult listTasks(ListTasksParams request) throws A2AClientException {
+        return listTasks(request, null);
+    }
+
+    /**
+     * List tasks with optional filtering and pagination.
+     *
+     * @param request the list tasks parameters including filters and pagination
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the list tasks result containing tasks and pagination information
+     * @throws A2AClientException if listing tasks fails for any reason
+     */
+    public abstract ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Request the agent to cancel a specific task.

@@ -76,6 +76,7 @@ public abstract class JSONRPCRequestDeserializerBase<T> extends StdDeserializer<
     protected static boolean isValidMethodName(String methodName) {
         return methodName != null && (methodName.equals(CancelTaskRequest.METHOD)
                 || methodName.equals(GetTaskRequest.METHOD)
+                || methodName.equals(ListTasksRequest.METHOD)
                 || methodName.equals(GetTaskPushNotificationConfigRequest.METHOD)
                 || methodName.equals(SetTaskPushNotificationConfigRequest.METHOD)
                 || methodName.equals(TaskResubscriptionRequest.METHOD)

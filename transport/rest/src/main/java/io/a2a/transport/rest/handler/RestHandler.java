@@ -30,6 +30,8 @@ import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.StreamingEventKind;
@@ -39,6 +41,7 @@ import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
+import io.a2a.spec.TaskState;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.server.util.async.Internal;
 import io.a2a.util.Utils;
@@ -170,6 +173,42 @@ public class RestHandler {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
             }
             throw new TaskNotFoundError();
+        } catch (JSONRPCError e) {
+            return createErrorResponse(e);
+        } catch (Throwable throwable) {
+            return createErrorResponse(new InternalError(throwable.getMessage()));
+        }
+    }
+
+    public HTTPRestResponse listTasks(@Nullable String contextId, @Nullable String status,
+                                       @Nullable Integer pageSize, @Nullable String pageToken,
+                                       @Nullable Integer historyLength, @Nullable Boolean includeArtifacts,
+                                       ServerCallContext context) {
+        try {
+            // Build params
+            ListTasksParams.Builder paramsBuilder = new ListTasksParams.Builder();
+            if (contextId != null) {
+                paramsBuilder.contextId(contextId);
+            }
+            if (status != null) {
+                paramsBuilder.status(TaskState.valueOf(status));
+            }
+            if (pageSize != null) {
+                paramsBuilder.pageSize(pageSize);
+            }
+            if (pageToken != null) {
+                paramsBuilder.pageToken(pageToken);
+            }
+            if (historyLength != null) {
+                paramsBuilder.historyLength(historyLength);
+            }
+            if (includeArtifacts != null) {
+                paramsBuilder.includeArtifacts(includeArtifacts);
+            }
+            ListTasksParams params = paramsBuilder.build();
+
+            ListTasksResult result = requestHandler.onListTasks(params, context);
+            return createSuccessResponse(200, io.a2a.grpc.ListTasksResponse.newBuilder(ProtoUtils.ToProto.listTasksResult(result)));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {

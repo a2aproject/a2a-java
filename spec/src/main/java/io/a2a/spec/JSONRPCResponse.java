@@ -12,10 +12,7 @@ import io.a2a.util.Assert;
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permits SendStreamingMessageResponse,
-        GetTaskResponse, CancelTaskResponse, SetTaskPushNotificationConfigResponse, GetTaskPushNotificationConfigResponse,
-        SendMessageResponse, DeleteTaskPushNotificationConfigResponse, ListTaskPushNotificationConfigResponse, JSONRPCErrorResponse,
-        GetAuthenticatedExtendedCardResponse {
+public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permits CancelTaskResponse, DeleteTaskPushNotificationConfigResponse, GetAuthenticatedExtendedCardResponse, GetTaskPushNotificationConfigResponse, GetTaskResponse, JSONRPCErrorResponse, ListTaskPushNotificationConfigResponse, ListTasksResponse, SendMessageResponse, SendStreamingMessageResponse, SetTaskPushNotificationConfigResponse {
 
     protected String jsonrpc;
     protected Object id;

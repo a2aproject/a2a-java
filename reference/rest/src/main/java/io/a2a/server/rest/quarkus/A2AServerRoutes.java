@@ -50,6 +50,7 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
+import io.a2a.spec.ListTasksRequest;
 import io.a2a.spec.SendMessageRequest;
 import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
@@ -110,6 +111,51 @@ public class A2AServerRoutes {
                             events.map(i -> (Object) i), rc);
                 });
             }
+        }
+    }
+
+    @Route(path = "/v1/tasks", order = 0, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    public void listTasks(RoutingContext rc) {
+        ServerCallContext context = createCallContext(rc, ListTasksRequest.METHOD);
+        HTTPRestResponse response = null;
+        try {
+            // Extract query parameters
+            String contextId = rc.request().params().get("contextId");
+            String statusStr = rc.request().params().get("status");
+            if (statusStr != null && !statusStr.isEmpty()) {
+                statusStr = statusStr.toUpperCase();
+            }
+            String pageSizeStr = rc.request().params().get("pageSize");
+            String pageToken = rc.request().params().get("pageToken");
+            String historyLengthStr = rc.request().params().get("historyLength");
+            String includeArtifactsStr = rc.request().params().get("includeArtifacts");
+
+            // Parse optional parameters
+            Integer pageSize = null;
+            if (pageSizeStr != null && !pageSizeStr.isEmpty()) {
+                pageSize = Integer.parseInt(pageSizeStr);
+            }
+
+            Integer historyLength = null;
+            if (historyLengthStr != null && !historyLengthStr.isEmpty()) {
+                historyLength = Integer.parseInt(historyLengthStr);
+            }
+
+            Boolean includeArtifacts = null;
+            if (includeArtifactsStr != null && !includeArtifactsStr.isEmpty()) {
+                includeArtifacts = Boolean.parseBoolean(includeArtifactsStr);
+            }
+
+            response = jsonRestHandler.listTasks(contextId, statusStr, pageSize, pageToken,
+                    historyLength, includeArtifacts, context);
+        } catch (NumberFormatException e) {
+            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
+        } catch (IllegalArgumentException e) {
+            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
+        } catch (Throwable t) {
+            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+        } finally {
+            sendResponse(rc, response);
         }
     }
 

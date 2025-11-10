@@ -9,6 +9,8 @@ import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -20,9 +22,10 @@ public interface RequestHandler {
     Task onGetTask(
             TaskQueryParams params,
             ServerCallContext context) throws JSONRPCError;
-//    
-//    List<Task> onListTask(ServerCallContext context)
-//            throws JSONRPCError;
+
+    ListTasksResult onListTasks(
+            ListTasksParams params,
+            ServerCallContext context) throws JSONRPCError;
 
     Task onCancelTask(
             TaskIdParams params,

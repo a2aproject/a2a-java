@@ -20,6 +20,7 @@ import io.a2a.grpc.CreateTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskRequest;
 import io.a2a.grpc.ListTaskPushNotificationConfigRequest;
+import io.a2a.grpc.ListTasksRequest;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
@@ -27,6 +28,8 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -38,6 +41,8 @@ import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import io.a2a.util.Utils;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -168,6 +173,97 @@ public class RestTransport implements ClientTransport {
         } catch (IOException | InterruptedException e) {
             throw new A2AClientException("Failed to cancel task: " + e, e);
         }
+    }
+
+    @Override
+    public ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException {
+        checkNotNullParam("request", request);
+        ListTasksRequest.Builder builder = ListTasksRequest.newBuilder();
+        if (request.contextId() != null) {
+            builder.setContextId(request.contextId());
+        }
+        if (request.status() != null) {
+            builder.setStatus(ProtoUtils.ToProto.taskState(request.status()));
+        }
+        if (request.pageSize() != null) {
+            builder.setPageSize(request.pageSize());
+        }
+        if (request.pageToken() != null) {
+            builder.setPageToken(request.pageToken());
+        }
+        if (request.historyLength() != null) {
+            builder.setHistoryLength(request.historyLength());
+        }
+        if (request.includeArtifacts() != null && request.includeArtifacts()) {
+            builder.setIncludeArtifacts(true);
+        }
+
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.ListTasksRequest.METHOD, builder,
+                agentCard, context);
+
+        try {
+            // Build query string
+            StringBuilder urlBuilder = new StringBuilder(agentUrl).append("/v1/tasks");
+            String queryParams = buildListTasksQueryString(request);
+            if (!queryParams.isEmpty()) {
+                urlBuilder.append("?").append(queryParams);
+            }
+
+            A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(urlBuilder.toString());
+            if (payloadAndHeaders.getHeaders() != null) {
+                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                    getBuilder.addHeader(entry.getKey(), entry.getValue());
+                }
+            }
+            A2AHttpResponse response = getBuilder.get();
+            if (!response.success()) {
+                throw RestErrorMapper.mapRestError(response);
+            }
+            String httpResponseBody = response.body();
+            io.a2a.grpc.ListTasksResponse.Builder responseBuilder = io.a2a.grpc.ListTasksResponse.newBuilder();
+            JsonFormat.parser().merge(httpResponseBody, responseBuilder);
+
+            return new ListTasksResult(
+                    responseBuilder.getTasksList().stream()
+                            .map(ProtoUtils.FromProto::task)
+                            .toList(),
+                    responseBuilder.getTotalSize(),
+                    responseBuilder.getTasksCount(),
+                    responseBuilder.getNextPageToken().isEmpty() ? null : responseBuilder.getNextPageToken()
+            );
+        } catch (A2AClientException e) {
+            throw e;
+        } catch (IOException | InterruptedException e) {
+            throw new A2AClientException("Failed to list tasks: " + e, e);
+        }
+    }
+
+    private String buildListTasksQueryString(ListTasksParams request) {
+        StringBuilder sb = new StringBuilder();
+        if (request.contextId() != null) {
+            sb.append("contextId=").append(URLEncoder.encode(request.contextId(), StandardCharsets.UTF_8));
+        }
+        if (request.status() != null) {
+            if (sb.length() > 0) sb.append("&");
+            sb.append("status=").append(request.status().asString());
+        }
+        if (request.pageSize() != null) {
+            if (sb.length() > 0) sb.append("&");
+            sb.append("pageSize=").append(request.pageSize());
+        }
+        if (request.pageToken() != null) {
+            if (sb.length() > 0) sb.append("&");
+            sb.append("pageToken=").append(URLEncoder.encode(request.pageToken(), StandardCharsets.UTF_8));
+        }
+        if (request.historyLength() != null) {
+            if (sb.length() > 0) sb.append("&");
+            sb.append("historyLength=").append(request.historyLength());
+        }
+        if (request.includeArtifacts() != null && request.includeArtifacts()) {
+            if (sb.length() > 0) sb.append("&");
+            sb.append("includeArtifacts=true");
+        }
+        return sb.toString();
     }
 
     @Override

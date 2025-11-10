@@ -39,6 +39,7 @@ import io.a2a.spec.ImplicitOAuthFlow;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
@@ -150,6 +151,18 @@ public class ProtoUtils {
                 builder.addAllHistory(task.getHistory().stream().map(ToProto::message).collect(Collectors.toList()));
             }
             builder.setMetadata(struct(task.getMetadata()));
+            return builder.build();
+        }
+
+        public static io.a2a.grpc.ListTasksResponse listTasksResult(io.a2a.spec.ListTasksResult result) {
+            io.a2a.grpc.ListTasksResponse.Builder builder = io.a2a.grpc.ListTasksResponse.newBuilder();
+            if (result.tasks() != null) {
+                builder.addAllTasks(result.tasks().stream().map(ToProto::task).collect(Collectors.toList()));
+            }
+            if (result.nextPageToken() != null) {
+                builder.setNextPageToken(result.nextPageToken());
+            }
+            builder.setTotalSize(result.totalSize());
             return builder.build();
         }
 
@@ -308,7 +321,7 @@ public class ProtoUtils {
             return builder.build();
         }
 
-        private static io.a2a.grpc.TaskState taskState(TaskState taskState) {
+        public static io.a2a.grpc.TaskState taskState(TaskState taskState) {
             if (taskState == null) {
                 return io.a2a.grpc.TaskState.TASK_STATE_UNSPECIFIED;
             }
@@ -721,6 +734,35 @@ public class ProtoUtils {
             String name = request.getName();
             String id = name.substring(name.lastIndexOf('/') + 1);
             return new TaskQueryParams(id, request.getHistoryLength());
+        }
+
+        public static io.a2a.spec.ListTasksParams listTasksParams(io.a2a.grpc.ListTasksRequestOrBuilder request) {
+            io.a2a.spec.ListTasksParams.Builder builder = new io.a2a.spec.ListTasksParams.Builder();
+            if (!request.getContextId().isEmpty()) {
+                builder.contextId(request.getContextId());
+            }
+            if (request.getStatus() != io.a2a.grpc.TaskState.TASK_STATE_UNSPECIFIED) {
+                builder.status(taskState(request.getStatus()));
+            }
+            if (request.getPageSize() > 0) {
+                builder.pageSize(request.getPageSize());
+            }
+            if (!request.getPageToken().isEmpty()) {
+                builder.pageToken(request.getPageToken());
+            }
+            if (request.getHistoryLength() > 0) {
+                builder.historyLength(request.getHistoryLength());
+            }
+            if (request.hasLastUpdatedTime()) {
+                Instant instant = Instant.ofEpochSecond(
+                        request.getLastUpdatedTime().getSeconds(),
+                        request.getLastUpdatedTime().getNanos());
+                builder.lastUpdatedAfter(instant);
+            }
+            if (request.getIncludeArtifacts()) {
+                builder.includeArtifacts(true);
+            }
+            return builder.build();
         }
 
         public static TaskIdParams taskIdParams(io.a2a.grpc.CancelTaskRequestOrBuilder request) {

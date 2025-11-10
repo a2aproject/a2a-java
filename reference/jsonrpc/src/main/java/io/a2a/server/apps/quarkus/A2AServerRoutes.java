@@ -46,6 +46,7 @@ import io.a2a.spec.JSONRPCErrorResponse;
 import io.a2a.spec.JSONRPCRequest;
 import io.a2a.spec.JSONRPCResponse;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
+import io.a2a.spec.ListTasksRequest;
 import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.MethodNotFoundJsonMappingException;
 import io.a2a.spec.NonStreamingJSONRPCRequest;
@@ -176,6 +177,8 @@ public class A2AServerRoutes {
             return jsonRpcHandler.onGetTask(req, context);
         } else if (request instanceof CancelTaskRequest req) {
             return jsonRpcHandler.onCancelTask(req, context);
+        } else if (request instanceof ListTasksRequest req) {
+            return jsonRpcHandler.onListTasks(req, context);
         } else if (request instanceof SetTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.setPushNotificationConfig(req, context);
         } else if (request instanceof GetTaskPushNotificationConfigRequest req) {

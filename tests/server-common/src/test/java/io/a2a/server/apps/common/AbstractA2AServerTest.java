@@ -228,6 +228,220 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
+    public void testListTasksSuccess() throws Exception {
+        // Create multiple tasks with different contexts and states
+        Task task1 = new Task.Builder()
+                .id("list-task-1")
+                .contextId("context-1")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        Task task2 = new Task.Builder()
+                .id("list-task-2")
+                .contextId("context-1")
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+        Task task3 = new Task.Builder()
+                .id("list-task-3")
+                .contextId("context-2")
+                .status(new TaskStatus(TaskState.COMPLETED))
+                .build();
+
+        saveTaskInTaskStore(task1);
+        saveTaskInTaskStore(task2);
+        saveTaskInTaskStore(task3);
+
+        try {
+            // Test listing all tasks (no filters)
+            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder().build();
+            io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
+
+            assertNotNull(result);
+            assertNotNull(result.tasks());
+            assertTrue(result.tasks().size() >= 3, "Should have at least 3 tasks");
+            assertEquals(result.tasks().size(), result.pageSize());
+            assertTrue(result.totalSize() >= 3, "Total size should be at least 3");
+        } finally {
+            deleteTaskInTaskStore(task1.getId());
+            deleteTaskInTaskStore(task2.getId());
+            deleteTaskInTaskStore(task3.getId());
+        }
+    }
+
+    @Test
+    public void testListTasksFilterByContextId() throws Exception {
+        Task task1 = new Task.Builder()
+                .id("list-task-ctx-1")
+                .contextId("context-filter-1")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        Task task2 = new Task.Builder()
+                .id("list-task-ctx-2")
+                .contextId("context-filter-1")
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+        Task task3 = new Task.Builder()
+                .id("list-task-ctx-3")
+                .contextId("context-filter-2")
+                .status(new TaskStatus(TaskState.COMPLETED))
+                .build();
+
+        saveTaskInTaskStore(task1);
+        saveTaskInTaskStore(task2);
+        saveTaskInTaskStore(task3);
+
+        try {
+            // Filter by contextId
+            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder()
+                    .contextId("context-filter-1")
+                    .build();
+            io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
+
+            assertNotNull(result);
+            assertNotNull(result.tasks());
+            assertEquals(2, result.tasks().size(), "Should have exactly 2 tasks with context-filter-1");
+            assertTrue(result.tasks().stream().allMatch(t -> "context-filter-1".equals(t.getContextId())));
+        } finally {
+            deleteTaskInTaskStore(task1.getId());
+            deleteTaskInTaskStore(task2.getId());
+            deleteTaskInTaskStore(task3.getId());
+        }
+    }
+
+    @Test
+    public void testListTasksFilterByStatus() throws Exception {
+        Task task1 = new Task.Builder()
+                .id("list-task-status-1")
+                .contextId("context-status")
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+        Task task2 = new Task.Builder()
+                .id("list-task-status-2")
+                .contextId("context-status")
+                .status(new TaskStatus(TaskState.WORKING))
+                .build();
+        Task task3 = new Task.Builder()
+                .id("list-task-status-3")
+                .contextId("context-status")
+                .status(new TaskStatus(TaskState.COMPLETED))
+                .build();
+
+        saveTaskInTaskStore(task1);
+        saveTaskInTaskStore(task2);
+        saveTaskInTaskStore(task3);
+
+        try {
+            // Filter by status WORKING
+            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder()
+                    .status(TaskState.WORKING)
+                    .build();
+            io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
+
+            assertNotNull(result);
+            assertNotNull(result.tasks());
+            assertTrue(result.tasks().size() >= 2, "Should have at least 2 WORKING tasks");
+            assertTrue(result.tasks().stream()
+                    .filter(t -> t.getId().startsWith("list-task-status-"))
+                    .allMatch(t -> TaskState.WORKING.equals(t.getStatus().state())));
+        } finally {
+            deleteTaskInTaskStore(task1.getId());
+            deleteTaskInTaskStore(task2.getId());
+            deleteTaskInTaskStore(task3.getId());
+        }
+    }
+
+    @Test
+    public void testListTasksWithPagination() throws Exception {
+        // Create several tasks
+        Task task1 = new Task.Builder()
+                .id("page-task-1")
+                .contextId("page-context")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        Task task2 = new Task.Builder()
+                .id("page-task-2")
+                .contextId("page-context")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        Task task3 = new Task.Builder()
+                .id("page-task-3")
+                .contextId("page-context")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+
+        saveTaskInTaskStore(task1);
+        saveTaskInTaskStore(task2);
+        saveTaskInTaskStore(task3);
+
+        try {
+            // Get first page with pageSize=2
+            io.a2a.spec.ListTasksParams params1 = new io.a2a.spec.ListTasksParams.Builder()
+                    .contextId("page-context")
+                    .pageSize(2)
+                    .build();
+            io.a2a.spec.ListTasksResult result1 = getClient().listTasks(params1);
+
+            assertNotNull(result1);
+            assertEquals(2, result1.tasks().size(), "First page should have 2 tasks");
+            assertNotNull(result1.nextPageToken(), "Should have next page token");
+            assertTrue(result1.hasMoreResults());
+
+            // Get second page using pageToken
+            io.a2a.spec.ListTasksParams params2 = new io.a2a.spec.ListTasksParams.Builder()
+                    .contextId("page-context")
+                    .pageSize(2)
+                    .pageToken(result1.nextPageToken())
+                    .build();
+            io.a2a.spec.ListTasksResult result2 = getClient().listTasks(params2);
+
+            assertNotNull(result2);
+            assertTrue(result2.tasks().size() >= 1, "Second page should have at least 1 task");
+        } finally {
+            deleteTaskInTaskStore(task1.getId());
+            deleteTaskInTaskStore(task2.getId());
+            deleteTaskInTaskStore(task3.getId());
+        }
+    }
+
+    @Test
+    public void testListTasksWithHistoryLimit() throws Exception {
+        // Create task with multiple history messages
+        List<Message> history = List.of(
+                new Message.Builder(MESSAGE).messageId("msg-1").build(),
+                new Message.Builder(MESSAGE).messageId("msg-2").build(),
+                new Message.Builder(MESSAGE).messageId("msg-3").build(),
+                new Message.Builder(MESSAGE).messageId("msg-4").build()
+        );
+        Task taskWithHistory = new Task.Builder()
+                .id("list-task-history")
+                .contextId("context-history")
+                .status(new TaskStatus(TaskState.WORKING))
+                .history(history)
+                .build();
+
+        saveTaskInTaskStore(taskWithHistory);
+
+        try {
+            // List with history limited to 2 messages
+            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder()
+                    .contextId("context-history")
+                    .historyLength(2)
+                    .build();
+            io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
+
+            assertNotNull(result);
+            assertEquals(1, result.tasks().size());
+            Task task = result.tasks().get(0);
+            assertNotNull(task.getHistory());
+            assertEquals(2, task.getHistory().size(), "History should be limited to 2 most recent messages");
+            // Verify we get the most recent messages (msg-3 and msg-4)
+            assertEquals("msg-3", task.getHistory().get(0).getMessageId());
+            assertEquals("msg-4", task.getHistory().get(1).getMessageId());
+        } finally {
+            deleteTaskInTaskStore(taskWithHistory.getId());
+        }
+    }
+
+    @Test
     public void testSendMessageNewMessageSuccess() throws Exception {
         assertTrue(getTaskFromTaskStore(MINIMAL_TASK.getId()) == null);
         Message message = new Message.Builder(MESSAGE)

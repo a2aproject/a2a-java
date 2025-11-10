@@ -19,6 +19,12 @@ public class JpaTask {
     @Column(name = "task_id")
     private String id;
 
+    @Column(name = "context_id")
+    private String contextId;
+
+    @Column(name = "state")
+    private String state;
+
     @Column(name = "task_data", columnDefinition = "TEXT", nullable = false)
     private String taskJson;
 
@@ -43,6 +49,22 @@ public class JpaTask {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getContextId() {
+        return contextId;
+    }
+
+    public void setContextId(String contextId) {
+        this.contextId = contextId;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 
     public String getTaskJson() {
@@ -87,6 +109,7 @@ public class JpaTask {
             id = task.getId();
         }
         this.task = task;
+        updateDenormalizedFields(task);
         updateFinalizedTimestamp(task);
     }
 
@@ -94,8 +117,22 @@ public class JpaTask {
         String json = Utils.OBJECT_MAPPER.writeValueAsString(task);
         JpaTask jpaTask = new JpaTask(task.getId(), json);
         jpaTask.task = task;
+        jpaTask.updateDenormalizedFields(task);
         jpaTask.updateFinalizedTimestamp(task);
         return jpaTask;
+    }
+
+    /**
+     * Updates denormalized fields (contextId, state) from the task object.
+     * These fields are duplicated from the JSON to enable efficient querying.
+     *
+     * @param task the task to extract fields from
+     */
+    private void updateDenormalizedFields(Task task) {
+        this.contextId = task.getContextId();
+        if (task.getStatus() != null && task.getStatus().state() != null) {
+            this.state = task.getStatus().state().asString();
+        }
     }
 
     /**

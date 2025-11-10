@@ -112,6 +112,24 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    public void listTasks(io.a2a.grpc.ListTasksRequest request,
+                         StreamObserver<io.a2a.grpc.ListTasksResponse> responseObserver) {
+        try {
+            ServerCallContext context = createCallContext(responseObserver);
+            io.a2a.spec.ListTasksParams params = FromProto.listTasksParams(request);
+            io.a2a.spec.ListTasksResult result = getRequestHandler().onListTasks(params, context);
+            responseObserver.onNext(ToProto.listTasksResult(result));
+            responseObserver.onCompleted();
+        } catch (JSONRPCError e) {
+            handleError(responseObserver, e);
+        } catch (SecurityException e) {
+            handleSecurityException(responseObserver, e);
+        } catch (Throwable t) {
+            handleInternalError(responseObserver, t);
+        }
+    }
+
+    @Override
     public void cancelTask(io.a2a.grpc.CancelTaskRequest request,
                           StreamObserver<io.a2a.grpc.Task> responseObserver) {
         try {
