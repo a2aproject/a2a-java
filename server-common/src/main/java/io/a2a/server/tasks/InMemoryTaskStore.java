@@ -1,6 +1,7 @@
 package io.a2a.server.tasks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,12 +65,19 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
         // Handle page token (simple cursor: last task ID from previous page)
         if (params.pageToken() != null && !params.pageToken().isEmpty()) {
-            for (int i = 0; i < allFilteredTasks.size(); i++) {
-                if (allFilteredTasks.get(i).getId().equals(params.pageToken())) {
-                    startIndex = i + 1;
-                    break;
-                }
+            // Use binary search since list is sorted by task ID (O(log N) vs O(N))
+            int index = Collections.binarySearch(allFilteredTasks, null,
+                (t1, t2) -> {
+                    // Handle null key comparisons (binarySearch passes null as one argument)
+                    if (t1 == null && t2 == null) return 0;
+                    if (t1 == null) return params.pageToken().compareTo(t2.getId());
+                    if (t2 == null) return t1.getId().compareTo(params.pageToken());
+                    return t1.getId().compareTo(t2.getId());
+                });
+            if (index >= 0) {
+                startIndex = index + 1;
             }
+            // If not found (index < 0), startIndex remains 0 (start from beginning)
         }
 
         // Get the page of tasks
