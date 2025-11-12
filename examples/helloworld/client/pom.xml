@@ -12,7 +12,7 @@
 
     <artifactId>a2a-java-sdk-examples-client</artifactId>
 
-    <name>Java SDK A2A Examples</name>
+        <name>Java SDK A2A HelloWorld Example - Client</name>
     <description>Examples for the Java SDK for the Agent2Agent Protocol (A2A)</description>
 
     <dependencies>

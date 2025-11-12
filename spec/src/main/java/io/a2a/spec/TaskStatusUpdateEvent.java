@@ -96,6 +96,7 @@ public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKin
             this.isFinal = existingTaskStatusUpdateEvent.isFinal;
             this.metadata = existingTaskStatusUpdateEvent.metadata;
         }
+
         public Builder taskId(String id) {
             this.taskId = id;
             return this;

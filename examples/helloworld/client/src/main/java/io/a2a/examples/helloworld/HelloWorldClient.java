@@ -12,16 +12,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.a2a.A2A;
 
 import io.a2a.client.Client;
-import io.a2a.client.ClientBuilder;
 import io.a2a.client.ClientEvent;
 import io.a2a.client.MessageEvent;
 import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfig;
+import io.a2a.client.transport.spi.interceptors.ClientCallContext;
+import io.a2a.common.A2AHeaders;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
+import java.util.Collections;
 
 /**
  * A simple example of using the A2A Java SDK to communicate with an A2A server.
@@ -61,6 +63,7 @@ public class HelloWorldClient {
             List<BiConsumer<ClientEvent, AgentCard>> consumers = new ArrayList<>();
             consumers.add((event, agentCard) -> {
                 if (event instanceof MessageEvent messageEvent) {
+                    System.out.println("Received client MessageEvent: " + messageEvent);
                     Message responseMessage = messageEvent.getMessage();
                     StringBuilder textBuilder = new StringBuilder();
                     if (responseMessage.getParts() != null) {
@@ -89,11 +92,11 @@ public class HelloWorldClient {
                     .streamingErrorHandler(streamingErrorHandler)
                     .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig())
                     .build();
+            ClientCallContext clientContext = new ClientCallContext(Collections.emptyMap(), Map.of(A2AHeaders.X_A2A_EXTENSIONS, "https://github.com/a2aproject/a2a-samples/extensions/timestamp/v1"));
 
             Message message = A2A.toUserMessage(MESSAGE_TEXT); // the message ID will be automatically generated for you
-            
             System.out.println("Sending message: " + MESSAGE_TEXT);
-            client.sendMessage(message);
+            client.sendMessage(message, clientContext);
             System.out.println("Message sent successfully. Responses will be handled by the configured consumers.");
 
             try {

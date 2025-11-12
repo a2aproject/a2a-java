@@ -12,13 +12,18 @@
 
     <artifactId>a2a-java-sdk-examples-server</artifactId>
 
-    <name>Java SDK A2A Examples</name>
+    <name>Java SDK A2A HelloWorld Example - Server</name>
     <description>Examples for the Java SDK for the Agent2Agent Protocol (A2A)</description>
 
     <dependencies>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-timestamp-extension</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
