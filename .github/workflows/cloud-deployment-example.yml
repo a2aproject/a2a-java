@@ -58,7 +58,8 @@ jobs:
           mvn test-compile exec:java \
             -Dexec.mainClass="io.a2a.examples.cloud.A2ACloudExampleClient" \
             -Dexec.classpathScope=test \
-            -Dagent.url=http://localhost:8080
+            -Dagent.url=http://localhost:8080 \
+            -Dci.mode=true
 
       - name: Show diagnostics on failure
         if: failure()
