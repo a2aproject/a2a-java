@@ -25,6 +25,9 @@ public class JpaTask {
     @Column(name = "state")
     private String state;
 
+    @Column(name = "status_timestamp")
+    private Instant statusTimestamp;
+
     @Column(name = "task_data", columnDefinition = "TEXT", nullable = false)
     private String taskJson;
 
@@ -65,6 +68,14 @@ public class JpaTask {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public Instant getStatusTimestamp() {
+        return statusTimestamp;
+    }
+
+    public void setStatusTimestamp(Instant statusTimestamp) {
+        this.statusTimestamp = statusTimestamp;
     }
 
     public String getTaskJson() {
@@ -123,7 +134,7 @@ public class JpaTask {
     }
 
     /**
-     * Updates denormalized fields (contextId, state) from the task object.
+     * Updates denormalized fields (contextId, state, statusTimestamp) from the task object.
      * These fields are duplicated from the JSON to enable efficient querying.
      *
      * @param task the task to extract fields from
@@ -133,8 +144,14 @@ public class JpaTask {
         if (task.getStatus() != null) {
             io.a2a.spec.TaskState taskState = task.getStatus().state();
             this.state = (taskState != null) ? taskState.asString() : null;
+            // Extract status timestamp for efficient querying and sorting
+            // Truncate to milliseconds for keyset pagination consistency (pageToken uses millis)
+            this.statusTimestamp = (task.getStatus().timestamp() != null)
+                    ? task.getStatus().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+                    : null;
         } else {
             this.state = null;
+            this.statusTimestamp = null;
         }
     }
 

@@ -11,7 +11,11 @@ import io.a2a.server.ExtendedAgentCard;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Flow;
 
 import io.a2a.server.PublicAgentCard;
@@ -182,7 +186,8 @@ public class RestHandler {
 
     public HTTPRestResponse listTasks(@Nullable String contextId, @Nullable String status,
                                        @Nullable Integer pageSize, @Nullable String pageToken,
-                                       @Nullable Integer historyLength, @Nullable Boolean includeArtifacts,
+                                       @Nullable Integer historyLength, @Nullable String lastUpdatedAfter,
+                                       @Nullable Boolean includeArtifacts,
                                        ServerCallContext context) {
         try {
             // Build params
@@ -201,6 +206,16 @@ public class RestHandler {
             }
             if (historyLength != null) {
                 paramsBuilder.historyLength(historyLength);
+            }
+            if (lastUpdatedAfter != null) {
+                try {
+                    paramsBuilder.lastUpdatedAfter(Instant.parse(lastUpdatedAfter));
+                } catch (DateTimeParseException e) {
+                    Map<String, Object> errorData = new HashMap<>();
+                    errorData.put("parameter", "lastUpdatedAfter");
+                    errorData.put("reason", "Must be valid ISO-8601 timestamp");
+                    throw new InvalidParamsError(null, "Invalid params", errorData);
+                }
             }
             if (includeArtifacts != null) {
                 paramsBuilder.includeArtifacts(includeArtifacts);
