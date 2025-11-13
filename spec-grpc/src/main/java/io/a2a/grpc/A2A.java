@@ -442,77 +442,77 @@ public final class A2A {
       "\001(\005\022\022\n\npage_token\030\004 \001(\t\022\026\n\016history_lengt" +
       "h\030\005 \001(\005\0225\n\021last_updated_time\030\006 \001(\0132\032.goo" +
       "gle.protobuf.Timestamp\022\031\n\021include_artifa" +
-      "cts\030\007 \001(\010\"]\n\021ListTasksResponse\022\033\n\005tasks\030" +
+      "cts\030\007 \001(\010\"p\n\021ListTasksResponse\022\033\n\005tasks\030" +
       "\001 \003(\0132\014.a2a.v1.Task\022\027\n\017next_page_token\030\002" +
-      " \001(\t\022\022\n\ntotal_size\030\003 \001(\005\"!\n\021CancelTaskRe" +
-      "quest\022\014\n\004name\030\001 \001(\t\"4\n$GetTaskPushNotifi" +
-      "cationConfigRequest\022\014\n\004name\030\001 \001(\t\"7\n\'Del" +
-      "eteTaskPushNotificationConfigRequest\022\014\n\004" +
-      "name\030\001 \001(\t\"\217\001\n\'CreateTaskPushNotificatio" +
-      "nConfigRequest\022\023\n\006parent\030\001 \001(\tB\003\340A\002\022\026\n\tc" +
-      "onfig_id\030\002 \001(\tB\003\340A\002\0227\n\006config\030\003 \001(\0132\".a2" +
-      "a.v1.TaskPushNotificationConfigB\003\340A\002\"\'\n\027" +
-      "TaskSubscriptionRequest\022\014\n\004name\030\001 \001(\t\"^\n" +
-      "%ListTaskPushNotificationConfigRequest\022\016" +
-      "\n\006parent\030\001 \001(\t\022\021\n\tpage_size\030\002 \001(\005\022\022\n\npag" +
-      "e_token\030\003 \001(\t\"\025\n\023GetAgentCardRequest\"g\n\023" +
-      "SendMessageResponse\022\034\n\004task\030\001 \001(\0132\014.a2a." +
+      " \001(\t\022\021\n\tpage_size\030\003 \001(\005\022\022\n\ntotal_size\030\004 " +
+      "\001(\005\"!\n\021CancelTaskRequest\022\014\n\004name\030\001 \001(\t\"4" +
+      "\n$GetTaskPushNotificationConfigRequest\022\014" +
+      "\n\004name\030\001 \001(\t\"7\n\'DeleteTaskPushNotificati" +
+      "onConfigRequest\022\014\n\004name\030\001 \001(\t\"\217\001\n\'Create" +
+      "TaskPushNotificationConfigRequest\022\023\n\006par" +
+      "ent\030\001 \001(\tB\003\340A\002\022\026\n\tconfig_id\030\002 \001(\tB\003\340A\002\0227" +
+      "\n\006config\030\003 \001(\0132\".a2a.v1.TaskPushNotifica" +
+      "tionConfigB\003\340A\002\"\'\n\027TaskSubscriptionReque" +
+      "st\022\014\n\004name\030\001 \001(\t\"^\n%ListTaskPushNotifica" +
+      "tionConfigRequest\022\016\n\006parent\030\001 \001(\t\022\021\n\tpag" +
+      "e_size\030\002 \001(\005\022\022\n\npage_token\030\003 \001(\t\"\025\n\023GetA" +
+      "gentCardRequest\"g\n\023SendMessageResponse\022\034" +
+      "\n\004task\030\001 \001(\0132\014.a2a.v1.TaskH\000\022\'\n\003msg\030\002 \001(" +
+      "\0132\017.a2a.v1.MessageH\000R\007messageB\t\n\007payload" +
+      "\"\326\001\n\016StreamResponse\022\034\n\004task\030\001 \001(\0132\014.a2a." +
       "v1.TaskH\000\022\'\n\003msg\030\002 \001(\0132\017.a2a.v1.MessageH" +
-      "\000R\007messageB\t\n\007payload\"\326\001\n\016StreamResponse" +
-      "\022\034\n\004task\030\001 \001(\0132\014.a2a.v1.TaskH\000\022\'\n\003msg\030\002 " +
-      "\001(\0132\017.a2a.v1.MessageH\000R\007message\0226\n\rstatu" +
-      "s_update\030\003 \001(\0132\035.a2a.v1.TaskStatusUpdate" +
-      "EventH\000\022:\n\017artifact_update\030\004 \001(\0132\037.a2a.v" +
-      "1.TaskArtifactUpdateEventH\000B\t\n\007payload\"v" +
-      "\n&ListTaskPushNotificationConfigResponse" +
-      "\0223\n\007configs\030\001 \003(\0132\".a2a.v1.TaskPushNotif" +
-      "icationConfig\022\027\n\017next_page_token\030\002 \001(\t*\372" +
-      "\001\n\tTaskState\022\032\n\026TASK_STATE_UNSPECIFIED\020\000" +
-      "\022\030\n\024TASK_STATE_SUBMITTED\020\001\022\026\n\022TASK_STATE" +
-      "_WORKING\020\002\022\030\n\024TASK_STATE_COMPLETED\020\003\022\025\n\021" +
-      "TASK_STATE_FAILED\020\004\022\030\n\024TASK_STATE_CANCEL" +
-      "LED\020\005\022\035\n\031TASK_STATE_INPUT_REQUIRED\020\006\022\027\n\023" +
-      "TASK_STATE_REJECTED\020\007\022\034\n\030TASK_STATE_AUTH" +
-      "_REQUIRED\020\010*;\n\004Role\022\024\n\020ROLE_UNSPECIFIED\020" +
-      "\000\022\r\n\tROLE_USER\020\001\022\016\n\nROLE_AGENT\020\0022\220\013\n\nA2A" +
-      "Service\022c\n\013SendMessage\022\032.a2a.v1.SendMess" +
-      "ageRequest\032\033.a2a.v1.SendMessageResponse\"" +
-      "\033\202\323\344\223\002\025\"\020/v1/message:send:\001*\022k\n\024SendStre" +
-      "amingMessage\022\032.a2a.v1.SendMessageRequest" +
-      "\032\026.a2a.v1.StreamResponse\"\035\202\323\344\223\002\027\"\022/v1/me" +
-      "ssage:stream:\001*0\001\022R\n\007GetTask\022\026.a2a.v1.Ge" +
-      "tTaskRequest\032\014.a2a.v1.Task\"!\332A\004name\202\323\344\223\002" +
-      "\024\022\022/v1/{name=tasks/*}\022S\n\tListTasks\022\030.a2a" +
-      ".v1.ListTasksRequest\032\031.a2a.v1.ListTasksR" +
-      "esponse\"\021\202\323\344\223\002\013\022\t/v1/tasks\022[\n\nCancelTask" +
-      "\022\031.a2a.v1.CancelTaskRequest\032\014.a2a.v1.Tas" +
-      "k\"$\202\323\344\223\002\036\"\031/v1/{name=tasks/*}:cancel:\001*\022" +
-      "s\n\020TaskSubscription\022\037.a2a.v1.TaskSubscri" +
-      "ptionRequest\032\026.a2a.v1.StreamResponse\"$\202\323" +
-      "\344\223\002\036\022\034/v1/{name=tasks/*}:subscribe0\001\022\305\001\n" +
-      " CreateTaskPushNotificationConfig\022/.a2a." +
-      "v1.CreateTaskPushNotificationConfigReque" +
-      "st\032\".a2a.v1.TaskPushNotificationConfig\"L" +
-      "\332A\rparent,config\202\323\344\223\0026\",/v1/{parent=task" +
-      "s/*/pushNotificationConfigs}:\006config\022\256\001\n" +
-      "\035GetTaskPushNotificationConfig\022,.a2a.v1." +
-      "GetTaskPushNotificationConfigRequest\032\".a" +
-      "2a.v1.TaskPushNotificationConfig\";\332A\004nam" +
-      "e\202\323\344\223\002.\022,/v1/{name=tasks/*/pushNotificat" +
-      "ionConfigs/*}\022\276\001\n\036ListTaskPushNotificati" +
-      "onConfig\022-.a2a.v1.ListTaskPushNotificati" +
-      "onConfigRequest\032..a2a.v1.ListTaskPushNot" +
-      "ificationConfigResponse\"=\332A\006parent\202\323\344\223\002." +
-      "\022,/v1/{parent=tasks/*}/pushNotificationC" +
-      "onfigs\022P\n\014GetAgentCard\022\033.a2a.v1.GetAgent" +
-      "CardRequest\032\021.a2a.v1.AgentCard\"\020\202\323\344\223\002\n\022\010" +
-      "/v1/card\022\250\001\n DeleteTaskPushNotificationC" +
-      "onfig\022/.a2a.v1.DeleteTaskPushNotificatio" +
-      "nConfigRequest\032\026.google.protobuf.Empty\";" +
-      "\332A\004name\202\323\344\223\002.*,/v1/{name=tasks/*/pushNot" +
-      "ificationConfigs/*}B7\n\013io.a2a.grpcB\003A2AP" +
-      "\001Z\030google.golang.org/a2a/v1\252\002\006A2a.V1b\006pr" +
-      "oto3"
+      "\000R\007message\0226\n\rstatus_update\030\003 \001(\0132\035.a2a." +
+      "v1.TaskStatusUpdateEventH\000\022:\n\017artifact_u" +
+      "pdate\030\004 \001(\0132\037.a2a.v1.TaskArtifactUpdateE" +
+      "ventH\000B\t\n\007payload\"v\n&ListTaskPushNotific" +
+      "ationConfigResponse\0223\n\007configs\030\001 \003(\0132\".a" +
+      "2a.v1.TaskPushNotificationConfig\022\027\n\017next" +
+      "_page_token\030\002 \001(\t*\372\001\n\tTaskState\022\032\n\026TASK_" +
+      "STATE_UNSPECIFIED\020\000\022\030\n\024TASK_STATE_SUBMIT" +
+      "TED\020\001\022\026\n\022TASK_STATE_WORKING\020\002\022\030\n\024TASK_ST" +
+      "ATE_COMPLETED\020\003\022\025\n\021TASK_STATE_FAILED\020\004\022\030" +
+      "\n\024TASK_STATE_CANCELLED\020\005\022\035\n\031TASK_STATE_I" +
+      "NPUT_REQUIRED\020\006\022\027\n\023TASK_STATE_REJECTED\020\007" +
+      "\022\034\n\030TASK_STATE_AUTH_REQUIRED\020\010*;\n\004Role\022\024" +
+      "\n\020ROLE_UNSPECIFIED\020\000\022\r\n\tROLE_USER\020\001\022\016\n\nR" +
+      "OLE_AGENT\020\0022\220\013\n\nA2AService\022c\n\013SendMessag" +
+      "e\022\032.a2a.v1.SendMessageRequest\032\033.a2a.v1.S" +
+      "endMessageResponse\"\033\202\323\344\223\002\025\"\020/v1/message:" +
+      "send:\001*\022k\n\024SendStreamingMessage\022\032.a2a.v1" +
+      ".SendMessageRequest\032\026.a2a.v1.StreamRespo" +
+      "nse\"\035\202\323\344\223\002\027\"\022/v1/message:stream:\001*0\001\022R\n\007" +
+      "GetTask\022\026.a2a.v1.GetTaskRequest\032\014.a2a.v1" +
+      ".Task\"!\332A\004name\202\323\344\223\002\024\022\022/v1/{name=tasks/*}" +
+      "\022S\n\tListTasks\022\030.a2a.v1.ListTasksRequest\032" +
+      "\031.a2a.v1.ListTasksResponse\"\021\202\323\344\223\002\013\022\t/v1/" +
+      "tasks\022[\n\nCancelTask\022\031.a2a.v1.CancelTaskR" +
+      "equest\032\014.a2a.v1.Task\"$\202\323\344\223\002\036\"\031/v1/{name=" +
+      "tasks/*}:cancel:\001*\022s\n\020TaskSubscription\022\037" +
+      ".a2a.v1.TaskSubscriptionRequest\032\026.a2a.v1" +
+      ".StreamResponse\"$\202\323\344\223\002\036\022\034/v1/{name=tasks" +
+      "/*}:subscribe0\001\022\305\001\n CreateTaskPushNotifi" +
+      "cationConfig\022/.a2a.v1.CreateTaskPushNoti" +
+      "ficationConfigRequest\032\".a2a.v1.TaskPushN" +
+      "otificationConfig\"L\332A\rparent,config\202\323\344\223\002" +
+      "6\",/v1/{parent=tasks/*/pushNotificationC" +
+      "onfigs}:\006config\022\256\001\n\035GetTaskPushNotificat" +
+      "ionConfig\022,.a2a.v1.GetTaskPushNotificati" +
+      "onConfigRequest\032\".a2a.v1.TaskPushNotific" +
+      "ationConfig\";\332A\004name\202\323\344\223\002.\022,/v1/{name=ta" +
+      "sks/*/pushNotificationConfigs/*}\022\276\001\n\036Lis" +
+      "tTaskPushNotificationConfig\022-.a2a.v1.Lis" +
+      "tTaskPushNotificationConfigRequest\032..a2a" +
+      ".v1.ListTaskPushNotificationConfigRespon" +
+      "se\"=\332A\006parent\202\323\344\223\002.\022,/v1/{parent=tasks/*" +
+      "}/pushNotificationConfigs\022P\n\014GetAgentCar" +
+      "d\022\033.a2a.v1.GetAgentCardRequest\032\021.a2a.v1." +
+      "AgentCard\"\020\202\323\344\223\002\n\022\010/v1/card\022\250\001\n DeleteTa" +
+      "skPushNotificationConfig\022/.a2a.v1.Delete" +
+      "TaskPushNotificationConfigRequest\032\026.goog" +
+      "le.protobuf.Empty\";\332A\004name\202\323\344\223\002.*,/v1/{n" +
+      "ame=tasks/*/pushNotificationConfigs/*}B7" +
+      "\n\013io.a2a.grpcB\003A2AP\001Z\030google.golang.org/" +
+      "a2a/v1\252\002\006A2a.V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -781,7 +781,7 @@ public final class A2A {
     internal_static_a2a_v1_ListTasksResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_a2a_v1_ListTasksResponse_descriptor,
-        new java.lang.String[] { "Tasks", "NextPageToken", "TotalSize", });
+        new java.lang.String[] { "Tasks", "NextPageToken", "PageSize", "TotalSize", });
     internal_static_a2a_v1_CancelTaskRequest_descriptor =
       getDescriptor().getMessageTypes().get(37);
     internal_static_a2a_v1_CancelTaskRequest_fieldAccessorTable = new

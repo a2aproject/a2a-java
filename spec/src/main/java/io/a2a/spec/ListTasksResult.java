@@ -21,7 +21,7 @@ public record ListTasksResult(
         List<Task> tasks,
         int totalSize,
         int pageSize,
-        @Nullable String nextPageToken
+        @JsonInclude(JsonInclude.Include.ALWAYS) @Nullable String nextPageToken
 ) {
     public ListTasksResult {
         Assert.checkNotNullParam("tasks", tasks);
