@@ -159,14 +159,30 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int TOTAL_SIZE_FIELD_NUMBER = 3;
+  public static final int PAGE_SIZE_FIELD_NUMBER = 3;
+  private int pageSize_ = 0;
+  /**
+   * <pre>
+   * Number of tasks returned in this response.
+   * NOTE: This field added from PR #1160 (v1.0 RC) - our proto temporarily diverges from main
+   * </pre>
+   *
+   * <code>int32 page_size = 3;</code>
+   * @return The pageSize.
+   */
+  @java.lang.Override
+  public int getPageSize() {
+    return pageSize_;
+  }
+
+  public static final int TOTAL_SIZE_FIELD_NUMBER = 4;
   private int totalSize_ = 0;
   /**
    * <pre>
    * Total number of tasks available (before pagination).
    * </pre>
    *
-   * <code>int32 total_size = 3;</code>
+   * <code>int32 total_size = 4;</code>
    * @return The totalSize.
    */
   @java.lang.Override
@@ -194,8 +210,11 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(nextPageToken_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 2, nextPageToken_);
     }
+    if (pageSize_ != 0) {
+      output.writeInt32(3, pageSize_);
+    }
     if (totalSize_ != 0) {
-      output.writeInt32(3, totalSize_);
+      output.writeInt32(4, totalSize_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -213,9 +232,13 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(nextPageToken_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(2, nextPageToken_);
     }
+    if (pageSize_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(3, pageSize_);
+    }
     if (totalSize_ != 0) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(3, totalSize_);
+        .computeInt32Size(4, totalSize_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -236,6 +259,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getTasksList())) return false;
     if (!getNextPageToken()
         .equals(other.getNextPageToken())) return false;
+    if (getPageSize()
+        != other.getPageSize()) return false;
     if (getTotalSize()
         != other.getTotalSize()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
@@ -255,6 +280,8 @@ private static final long serialVersionUID = 0L;
     }
     hash = (37 * hash) + NEXT_PAGE_TOKEN_FIELD_NUMBER;
     hash = (53 * hash) + getNextPageToken().hashCode();
+    hash = (37 * hash) + PAGE_SIZE_FIELD_NUMBER;
+    hash = (53 * hash) + getPageSize();
     hash = (37 * hash) + TOTAL_SIZE_FIELD_NUMBER;
     hash = (53 * hash) + getTotalSize();
     hash = (29 * hash) + getUnknownFields().hashCode();
@@ -400,6 +427,7 @@ private static final long serialVersionUID = 0L;
       }
       bitField0_ = (bitField0_ & ~0x00000001);
       nextPageToken_ = "";
+      pageSize_ = 0;
       totalSize_ = 0;
       return this;
     }
@@ -451,6 +479,9 @@ private static final long serialVersionUID = 0L;
         result.nextPageToken_ = nextPageToken_;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.pageSize_ = pageSize_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
         result.totalSize_ = totalSize_;
       }
     }
@@ -497,6 +528,9 @@ private static final long serialVersionUID = 0L;
         nextPageToken_ = other.nextPageToken_;
         bitField0_ |= 0x00000002;
         onChanged();
+      }
+      if (other.getPageSize() != 0) {
+        setPageSize(other.getPageSize());
       }
       if (other.getTotalSize() != 0) {
         setTotalSize(other.getTotalSize());
@@ -546,10 +580,15 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 18
             case 24: {
-              totalSize_ = input.readInt32();
+              pageSize_ = input.readInt32();
               bitField0_ |= 0x00000004;
               break;
             } // case 24
+            case 32: {
+              totalSize_ = input.readInt32();
+              bitField0_ |= 0x00000008;
+              break;
+            } // case 32
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -976,13 +1015,60 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private int pageSize_ ;
+    /**
+     * <pre>
+     * Number of tasks returned in this response.
+     * NOTE: This field added from PR #1160 (v1.0 RC) - our proto temporarily diverges from main
+     * </pre>
+     *
+     * <code>int32 page_size = 3;</code>
+     * @return The pageSize.
+     */
+    @java.lang.Override
+    public int getPageSize() {
+      return pageSize_;
+    }
+    /**
+     * <pre>
+     * Number of tasks returned in this response.
+     * NOTE: This field added from PR #1160 (v1.0 RC) - our proto temporarily diverges from main
+     * </pre>
+     *
+     * <code>int32 page_size = 3;</code>
+     * @param value The pageSize to set.
+     * @return This builder for chaining.
+     */
+    public Builder setPageSize(int value) {
+
+      pageSize_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Number of tasks returned in this response.
+     * NOTE: This field added from PR #1160 (v1.0 RC) - our proto temporarily diverges from main
+     * </pre>
+     *
+     * <code>int32 page_size = 3;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearPageSize() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      pageSize_ = 0;
+      onChanged();
+      return this;
+    }
+
     private int totalSize_ ;
     /**
      * <pre>
      * Total number of tasks available (before pagination).
      * </pre>
      *
-     * <code>int32 total_size = 3;</code>
+     * <code>int32 total_size = 4;</code>
      * @return The totalSize.
      */
     @java.lang.Override
@@ -994,14 +1080,14 @@ private static final long serialVersionUID = 0L;
      * Total number of tasks available (before pagination).
      * </pre>
      *
-     * <code>int32 total_size = 3;</code>
+     * <code>int32 total_size = 4;</code>
      * @param value The totalSize to set.
      * @return This builder for chaining.
      */
     public Builder setTotalSize(int value) {
 
       totalSize_ = value;
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1010,11 +1096,11 @@ private static final long serialVersionUID = 0L;
      * Total number of tasks available (before pagination).
      * </pre>
      *
-     * <code>int32 total_size = 3;</code>
+     * <code>int32 total_size = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearTotalSize() {
-      bitField0_ = (bitField0_ & ~0x00000004);
+      bitField0_ = (bitField0_ & ~0x00000008);
       totalSize_ = 0;
       onChanged();
       return this;

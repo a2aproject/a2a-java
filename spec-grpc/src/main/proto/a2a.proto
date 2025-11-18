@@ -751,8 +751,11 @@ message ListTasksResponse {
   // Token for retrieving the next page of results.
   // Empty string if no more results.
   string next_page_token = 2;
+  // Number of tasks returned in this response.
+  // NOTE: This field added from PR #1160 (v1.0 RC) - our proto temporarily diverges from main
+  int32 page_size = 3;
   // Total number of tasks available (before pagination).
-  int32 total_size = 3;
+  int32 total_size = 4;
 }
 // --8<-- [end:ListTasksResponse]
 

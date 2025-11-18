@@ -78,10 +78,21 @@ public interface ListTasksResponseOrBuilder extends
 
   /**
    * <pre>
+   * Number of tasks returned in this response.
+   * NOTE: This field added from PR #1160 (v1.0 RC) - our proto temporarily diverges from main
+   * </pre>
+   *
+   * <code>int32 page_size = 3;</code>
+   * @return The pageSize.
+   */
+  int getPageSize();
+
+  /**
+   * <pre>
    * Total number of tasks available (before pagination).
    * </pre>
    *
-   * <code>int32 total_size = 3;</code>
+   * <code>int32 total_size = 4;</code>
    * @return The totalSize.
    */
   int getTotalSize();

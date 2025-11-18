@@ -10,6 +10,9 @@ import java.util.stream.Stream;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.a2a.spec.Artifact;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTasksResult;
@@ -19,10 +22,12 @@ import io.a2a.spec.Task;
 @ApplicationScoped
 public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryTaskStore.class);
     private final ConcurrentMap<String, Task> tasks = new ConcurrentHashMap<>();
 
     @Override
     public void save(Task task) {
+        LOGGER.debug("=== InMemoryTaskStore.save() === taskId=" + task.getId() + ", contextId=" + task.getContextId());
         tasks.put(task.getId(), task);
     }
 
@@ -38,56 +43,96 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
     @Override
     public ListTasksResult list(ListTasksParams params) {
-        Stream<Task> taskStream = tasks.values().stream();
+        // DEBUG: Log store contents for totalSize investigation
+        LOGGER.debug("=== InMemoryTaskStore.list() DEBUG ===");
+        LOGGER.debug("Total tasks in store: {}", tasks.size());
+        LOGGER.debug("Filter contextId: {}", params.contextId());
+        LOGGER.debug("Filter status: {}", params.status());
+        tasks.values().forEach(t -> LOGGER.debug("  Task: id={}, contextId={}", t.getId(), t.getContextId()));
 
-        // Apply filters
-        if (params.contextId() != null) {
-            taskStream = taskStream.filter(task -> params.contextId().equals(task.getContextId()));
-        }
-        if (params.status() != null) {
-            taskStream = taskStream.filter(task ->
-                task.getStatus() != null && params.status().equals(task.getStatus().state())
-            );
-        }
-        // Note: lastUpdatedAfter filtering not implemented in InMemoryTaskStore
-        // as Task doesn't have a lastUpdated timestamp field
-
-        // Sort by task ID for consistent pagination
-        List<Task> allFilteredTasks = taskStream
-                .sorted(Comparator.comparing(Task::getId))
+        // Filter and sort tasks in a single stream pipeline
+        List<Task> allFilteredTasks = tasks.values().stream()
+                .filter(task -> params.contextId() == null || params.contextId().equals(task.getContextId()))
+                .filter(task -> params.status() == null ||
+                        (task.getStatus() != null && params.status().equals(task.getStatus().state())))
+                .filter(task -> params.lastUpdatedAfter() == null ||
+                        (task.getStatus() != null &&
+                         task.getStatus().timestamp() != null &&
+                         task.getStatus().timestamp().toInstant().isAfter(params.lastUpdatedAfter())))
+                .sorted(Comparator.comparing(
+                        (Task t) -> (t.getStatus() != null && t.getStatus().timestamp() != null)
+                                // Truncate to milliseconds for consistency with pageToken precision
+                                ? t.getStatus().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+                                : null,
+                        Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(Task::getId))
                 .toList();
 
         int totalSize = allFilteredTasks.size();
+        LOGGER.debug("Filtered tasks count: {}", totalSize);
+        LOGGER.debug("=== END DEBUG ===");
 
         // Apply pagination
         int pageSize = params.getEffectivePageSize();
         int startIndex = 0;
 
-        // Handle page token (simple cursor: last task ID from previous page)
+        // Handle page token using keyset pagination (format: "timestamp_millis:taskId")
+        // Use binary search to efficiently find the first task after the pageToken position (O(log N))
         if (params.pageToken() != null && !params.pageToken().isEmpty()) {
-            // Use binary search since list is sorted by task ID (O(log N) vs O(N))
-            int index = Collections.binarySearch(allFilteredTasks, null,
-                (t1, t2) -> {
-                    // Handle null key comparisons (binarySearch passes null as one argument)
-                    if (t1 == null && t2 == null) return 0;
-                    if (t1 == null) return params.pageToken().compareTo(t2.getId());
-                    if (t2 == null) return t1.getId().compareTo(params.pageToken());
-                    return t1.getId().compareTo(t2.getId());
-                });
-            if (index >= 0) {
-                startIndex = index + 1;
+            String[] tokenParts = params.pageToken().split(":", 2);
+            if (tokenParts.length == 2) {
+                try {
+                    long tokenTimestampMillis = Long.parseLong(tokenParts[0]);
+                    java.time.Instant tokenTimestamp = java.time.Instant.ofEpochMilli(tokenTimestampMillis);
+                    String tokenId = tokenParts[1];
+
+                    // Binary search for first task where: timestamp < tokenTimestamp OR (timestamp == tokenTimestamp AND id > tokenId)
+                    // Since list is sorted (timestamp DESC, id ASC), we search for the insertion point
+                    int left = 0;
+                    int right = allFilteredTasks.size();
+
+                    while (left < right) {
+                        int mid = left + (right - left) / 2;
+                        Task task = allFilteredTasks.get(mid);
+
+                        // All tasks have timestamps (TaskStatus canonical constructor ensures this)
+                        // Truncate to milliseconds for consistency with pageToken precision
+                        java.time.Instant taskTimestamp = task.getStatus().timestamp().toInstant()
+                                .truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
+                        int timestampCompare = taskTimestamp.compareTo(tokenTimestamp);
+
+                        if (timestampCompare < 0 || (timestampCompare == 0 && task.getId().compareTo(tokenId) > 0)) {
+                            // This task is after the token, search left half
+                            right = mid;
+                        } else {
+                            // This task is before or equal to token, search right half
+                            left = mid + 1;
+                        }
+                    }
+                    startIndex = left;
+                } catch (NumberFormatException e) {
+                    // Malformed timestamp in pageToken
+                    throw new io.a2a.spec.InvalidParamsError(null,
+                        "Invalid pageToken format: timestamp must be numeric milliseconds", null);
+                }
+            } else {
+                // Legacy ID-only pageToken format is not supported with timestamp-based sorting
+                // Throw error to prevent incorrect pagination results
+                throw new io.a2a.spec.InvalidParamsError(null, "Invalid pageToken format: expected 'timestamp:id'", null);
             }
-            // If not found (index < 0), startIndex remains 0 (start from beginning)
         }
 
         // Get the page of tasks
         int endIndex = Math.min(startIndex + pageSize, allFilteredTasks.size());
         List<Task> pageTasks = allFilteredTasks.subList(startIndex, endIndex);
 
-        // Determine next page token
+        // Determine next page token (format: "timestamp_millis:taskId")
         String nextPageToken = null;
         if (endIndex < allFilteredTasks.size()) {
-            nextPageToken = allFilteredTasks.get(endIndex - 1).getId();
+            Task lastTask = allFilteredTasks.get(endIndex - 1);
+            // All tasks have timestamps (TaskStatus canonical constructor ensures this)
+            long timestampMillis = lastTask.getStatus().timestamp().toInstant().toEpochMilli();
+            nextPageToken = timestampMillis + ":" + lastTask.getId();
         }
 
         // Transform tasks: limit history and optionally remove artifacts
@@ -102,9 +147,13 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
     }
 
     private Task transformTask(Task task, int historyLength, boolean includeArtifacts) {
-        // Limit history if needed (keep most recent N messages)
+        // Limit history based on historyLength parameter
         List<Message> history = task.getHistory();
-        if (historyLength > 0 && history != null && history.size() > historyLength) {
+        if (historyLength == 0) {
+            // historyLength=0 means no history should be included
+            history = List.of();
+        } else if (historyLength > 0 && history != null && history.size() > historyLength) {
+            // Keep most recent N messages
             history = history.subList(history.size() - historyLength, history.size());
         }
 

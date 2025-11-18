@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
@@ -70,6 +73,7 @@ import org.jspecify.annotations.Nullable;
 public class ProtoUtils {
 
     public static class ToProto {
+        private static final Logger LOGGER = LoggerFactory.getLogger(ToProto.class);
 
         public static io.a2a.grpc.AgentCard agentCard(AgentCard agentCard) {
             io.a2a.grpc.AgentCard.Builder builder = io.a2a.grpc.AgentCard.newBuilder();
@@ -155,6 +159,11 @@ public class ProtoUtils {
         }
 
         public static io.a2a.grpc.ListTasksResponse listTasksResult(io.a2a.spec.ListTasksResult result) {
+            LOGGER.debug("=== ProtoUtils.ToProto.listTasksResult() DEBUG ===");
+            LOGGER.debug("Input result.totalSize(): {}", result.totalSize());
+            LOGGER.debug("Input result.pageSize(): {}", result.pageSize());
+            LOGGER.debug("Input result.tasks().size(): {}", result.tasks().size());
+
             io.a2a.grpc.ListTasksResponse.Builder builder = io.a2a.grpc.ListTasksResponse.newBuilder();
             if (result.tasks() != null) {
                 builder.addAllTasks(result.tasks().stream().map(ToProto::task).collect(Collectors.toList()));
@@ -163,7 +172,15 @@ public class ProtoUtils {
                 builder.setNextPageToken(result.nextPageToken());
             }
             builder.setTotalSize(result.totalSize());
-            return builder.build();
+            builder.setPageSize(result.pageSize());
+
+            io.a2a.grpc.ListTasksResponse response = builder.build();
+            LOGGER.debug("Output response.getTotalSize(): {}", response.getTotalSize());
+            LOGGER.debug("Output response.getPageSize(): {}", response.getPageSize());
+            LOGGER.debug("Output response.getTasksCount(): {}", response.getTasksCount());
+            LOGGER.debug("=== END ProtoUtils DEBUG ===");
+
+            return response;
         }
 
         public static io.a2a.grpc.Message message(Message message) {
