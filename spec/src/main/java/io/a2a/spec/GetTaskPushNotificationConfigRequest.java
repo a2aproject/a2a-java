@@ -10,7 +10,17 @@ import io.a2a.util.Utils;
 import java.util.UUID;
 
 /**
- * A get task push notification request.
+ * JSON-RPC request to retrieve push notification configuration for a task.
+ * <p>
+ * This request retrieves the currently configured push notification endpoint and settings
+ * for a specific task, allowing clients to verify or inspect the notification configuration.
+ * <p>
+ * This class implements the JSON-RPC {@code tasks/pushNotificationConfig/get} method.
+ *
+ * @see GetTaskPushNotificationConfigResponse for the response
+ * @see GetTaskPushNotificationConfigParams for the parameter structure
+ * @see TaskPushNotificationConfig for the returned configuration
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

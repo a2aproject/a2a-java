@@ -12,7 +12,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.a2a.util.Assert;
 
 /**
- * A get task request.
+ * JSON-RPC request to retrieve task information by ID.
+ * <p>
+ * This request queries the agent for the current state of a specific task, including its
+ * status, artifacts, messages, and other task metadata. Clients use this to check task
+ * progress or retrieve completed task results.
+ * <p>
+ * This class implements the JSON-RPC {@code tasks/get} method as specified in the A2A Protocol.
+ *
+ * @see GetTaskResponse for the corresponding response
+ * @see TaskQueryParams for the parameter structure
+ * @see Task for the returned task structure
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -6,7 +6,18 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * The response for a get task request.
+ * JSON-RPC response containing requested task information.
+ * <p>
+ * This response returns the full {@link Task} object for a task ID queried via
+ * {@link GetTaskRequest}, including all task metadata, status, artifacts, and messages.
+ * <p>
+ * If the task is not found or an error occurs, the error field will be populated with
+ * a {@link JSONRPCError} (typically {@link TaskNotFoundError}) instead of a result.
+ *
+ * @see GetTaskRequest for the corresponding request
+ * @see Task for the task structure
+ * @see TaskNotFoundError for the common error case
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

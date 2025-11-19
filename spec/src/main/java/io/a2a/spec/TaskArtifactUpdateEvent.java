@@ -12,8 +12,32 @@ import io.a2a.util.Assert;
 import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
 
 /**
- * An event sent by the agent to notify the client that an artifact has been
- * generated or updated. This is typically used in streaming models.
+ * Event notifying that a task artifact has been created, modified, or appended to.
+ * <p>
+ * TaskArtifactUpdateEvent is emitted during streaming operations to deliver partial or complete
+ * artifacts as they become available. This enables progressive result delivery and real-time
+ * feedback for long-running operations.
+ * <p>
+ * The event supports two primary patterns:
+ * <ul>
+ *   <li><b>Complete artifacts</b> - New artifacts added to the task (append=false or null)</li>
+ *   <li><b>Incremental chunks</b> - Content appended to existing artifacts (append=true)</li>
+ * </ul>
+ * <p>
+ * Use cases include:
+ * <ul>
+ *   <li>Streaming text generation (progressive LLM responses)</li>
+ *   <li>Incremental file generation (large documents built over time)</li>
+ *   <li>Partial results (early outputs before complete analysis)</li>
+ * </ul>
+ * <p>
+ * The {@code lastChunk} flag indicates whether this is the final update for an artifact,
+ * allowing clients to distinguish between intermediate and final states.
+ *
+ * @see UpdateEvent
+ * @see StreamingEventKind
+ * @see Artifact
+ * @see Task
  */
 @JsonTypeName(ARTIFACT_UPDATE)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
@@ -85,6 +109,35 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
         return kind;
     }
 
+    /**
+     * Builder for constructing {@link TaskArtifactUpdateEvent} instances.
+     * <p>
+     * Example for complete artifact:
+     * <pre>{@code
+     * TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+     *     .taskId("task-123")
+     *     .contextId("ctx-456")
+     *     .artifact(new Artifact.Builder()
+     *         .artifactId("artifact-789")
+     *         .parts(List.of(new TextPart("Analysis complete")))
+     *         .build())
+     *     .build();
+     * }</pre>
+     * <p>
+     * Example for incremental chunk:
+     * <pre>{@code
+     * TaskArtifactUpdateEvent chunk = new TaskArtifactUpdateEvent.Builder()
+     *     .taskId("task-123")
+     *     .contextId("ctx-456")
+     *     .artifact(new Artifact.Builder()
+     *         .artifactId("artifact-789")
+     *         .parts(List.of(new TextPart("more text...")))
+     *         .build())
+     *     .append(true)
+     *     .lastChunk(false)
+     *     .build();
+     * }</pre>
+     */
     public static class Builder {
 
         private String taskId;
@@ -130,7 +183,6 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
             this.lastChunk  = lastChunk;
             return this;
         }
-
 
         public Builder metadata(Map<String, Object> metadata) {
             this.metadata = metadata;

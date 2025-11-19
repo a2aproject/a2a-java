@@ -8,7 +8,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * Parameters for removing pushNotificationConfiguration associated with a Task.
+ * Parameters for deleting a push notification configuration from a task.
+ * <p>
+ * This record specifies which task and which specific push notification configuration
+ * to remove, allowing cleanup of notification endpoints that are no longer needed.
+ *
+ * @param id the task identifier (required)
+ * @param pushNotificationConfigId the specific configuration ID to delete (required)
+ * @param metadata optional arbitrary key-value metadata for the request
+ * @see DeleteTaskPushNotificationConfigRequest for the request using these parameters
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

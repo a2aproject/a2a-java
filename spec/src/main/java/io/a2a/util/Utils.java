@@ -14,19 +14,72 @@ import io.a2a.spec.Part;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 
+/**
+ * Utility class providing common helper methods for A2A Protocol operations.
+ * <p>
+ * This class contains static utility methods for JSON serialization/deserialization,
+ * null-safe operations, artifact management, and other common tasks used throughout
+ * the A2A Java SDK.
+ * <p>
+ * Key capabilities:
+ * <ul>
+ *   <li>JSON processing with pre-configured {@link ObjectMapper}</li>
+ *   <li>Null-safe value defaults via {@link #defaultIfNull(Object, Object)}</li>
+ *   <li>Artifact streaming support via {@link #appendArtifactToTask(Task, TaskArtifactUpdateEvent, String)}</li>
+ *   <li>Type-safe exception rethrowing via {@link #rethrow(Throwable)}</li>
+ * </ul>
+ *
+ * @see ObjectMapper for JSON processing
+ * @see TaskArtifactUpdateEvent for streaming artifact updates
+ */
 public class Utils {
 
+    /**
+     * Pre-configured Jackson {@link ObjectMapper} for JSON operations.
+     * <p>
+     * This mapper is configured with:
+     * <ul>
+     *   <li>{@link JavaTimeModule} for Java 8 date/time type support</li>
+     * </ul>
+     * <p>
+     * Used throughout the SDK for consistent JSON serialization and deserialization.
+     */
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private static final Logger log = Logger.getLogger(Utils.class.getName());
+
     static {
         // needed for date/time types
         OBJECT_MAPPER.registerModule(new JavaTimeModule());
     }
 
+    /**
+     * Deserializes JSON string into a typed object using Jackson.
+     * <p>
+     * This method uses the pre-configured {@link #OBJECT_MAPPER} to parse JSON
+     * with support for generic types via {@link TypeReference}.
+     *
+     * @param <T> the target type
+     * @param data JSON string to deserialize
+     * @param typeRef type reference specifying the target type (for generic types)
+     * @return deserialized object of type T
+     * @throws JsonProcessingException if JSON parsing fails
+     */
     public static <T> T unmarshalFrom(String data, TypeReference<T> typeRef) throws JsonProcessingException {
         return OBJECT_MAPPER.readValue(data, typeRef);
     }
 
+    /**
+     * Returns the provided value if non-null, otherwise returns the default value.
+     * <p>
+     * This is a null-safe utility for providing default values when a parameter
+     * might be null.
+     *
+     * @param <T> the value type
+     * @param value the value to check
+     * @param defaultValue the default value to return if value is null
+     * @return value if non-null, otherwise defaultValue
+     */
     public static <T> T defaultIfNull(T value, T defaultValue) {
         if (value == null) {
             return defaultValue;
@@ -34,10 +87,44 @@ public class Utils {
         return value;
     }
 
+    /**
+     * Rethrows a checked exception as an unchecked exception.
+     * <p>
+     * This method uses type erasure to bypass checked exception handling,
+     * allowing checked exceptions to be thrown without explicit declaration.
+     * Use with caution as it bypasses Java's compile-time exception checking.
+     *
+     * @param <T> the throwable type
+     * @param t the throwable to rethrow
+     * @throws T the rethrown exception
+     */
     public static <T extends Throwable> void rethrow(Throwable t) throws T {
         throw (T) t;
     }
 
+    /**
+     * Appends or updates an artifact in a task based on a {@link TaskArtifactUpdateEvent}.
+     * <p>
+     * This method handles streaming artifact updates, supporting both:
+     * <ul>
+     *   <li>Adding new artifacts to the task</li>
+     *   <li>Replacing existing artifacts (when {@code append=false})</li>
+     *   <li>Appending parts to existing artifacts (when {@code append=true})</li>
+     * </ul>
+     * <p>
+     * The {@code append} flag in the event determines the behavior:
+     * <ul>
+     *   <li>{@code false} or {@code null}: Replace/add the entire artifact</li>
+     *   <li>{@code true}: Append the new artifact's parts to an existing artifact with matching {@code artifactId}</li>
+     * </ul>
+     *
+     * @param task the current task to update
+     * @param event the artifact update event containing the new/updated artifact
+     * @param taskId the task ID (for logging purposes)
+     * @return a new Task instance with the updated artifacts list
+     * @see TaskArtifactUpdateEvent for streaming artifact updates
+     * @see Artifact for artifact structure
+     */
     public static Task appendArtifactToTask(Task task, TaskArtifactUpdateEvent event, String taskId) {
         // Append artifacts
         List<Artifact> artifacts = task.getArtifacts() == null ? new ArrayList<>() : new ArrayList<>(task.getArtifacts());
@@ -94,6 +181,16 @@ public class Utils {
 
     }
 
+    /**
+     * Serializes an object to a JSON string using Jackson.
+     * <p>
+     * This method uses the pre-configured {@link #OBJECT_MAPPER} to produce
+     * JSON representation of the provided object.
+     *
+     * @param o the object to serialize
+     * @return JSON string representation of the object
+     * @throws RuntimeException if JSON serialization fails (wraps {@link JsonProcessingException})
+     */
     public static String toJsonString(Object o) {
         try {
             return OBJECT_MAPPER.writeValueAsString(o);

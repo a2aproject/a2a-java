@@ -12,7 +12,16 @@ import io.a2a.util.Assert;
 import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
 
 /**
- * Defines a security scheme using an API key.
+ * API key security scheme for agent authentication.
+ * <p>
+ * This security scheme uses an API key that can be sent in a header, query parameter,
+ * or cookie to authenticate requests to the agent.
+ * <p>
+ * Corresponds to the OpenAPI "apiKey" security scheme type.
+ *
+ * @see SecurityScheme for the base interface
+ * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme</a>
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonTypeName(API_KEY)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)

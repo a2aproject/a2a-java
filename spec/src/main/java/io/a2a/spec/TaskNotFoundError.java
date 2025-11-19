@@ -8,7 +8,34 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import static io.a2a.util.Utils.defaultIfNull;
 
 /**
- * An A2A-specific error indicating that the requested task ID was not found.
+ * A2A Protocol error indicating that the requested task ID does not exist.
+ * <p>
+ * This error is returned when a client attempts to perform operations on a task (such as
+ * {@link GetTaskRequest}, {@link CancelTaskRequest}, or push notification operations) using
+ * a task ID that is not found in the server's task store.
+ * <p>
+ * Common causes:
+ * <ul>
+ *   <li>Task ID was never created</li>
+ *   <li>Task has been removed from the task store (expired or deleted)</li>
+ *   <li>Task ID typo or incorrect value</li>
+ *   <li>Task belongs to a different agent or server instance</li>
+ * </ul>
+ * <p>
+ * Corresponds to A2A-specific error code {@code -32001}.
+ * <p>
+ * Usage example:
+ * <pre>{@code
+ * Task task = taskStore.getTask(taskId);
+ * if (task == null) {
+ *     throw new TaskNotFoundError();
+ * }
+ * }</pre>
+ *
+ * @see Task for task object definition
+ * @see GetTaskRequest for task retrieval
+ * @see CancelTaskRequest for task cancellation
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

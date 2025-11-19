@@ -11,7 +11,17 @@ import io.a2a.util.Assert;
 import io.a2a.util.Utils;
 
 /**
- * A delete task push notification config request.
+ * JSON-RPC request to delete a push notification configuration from a task.
+ * <p>
+ * This request removes a specific push notification endpoint configuration from a task,
+ * stopping future notifications to that endpoint. The task will continue execution, but
+ * no longer send updates to the deleted notification URL.
+ * <p>
+ * This class implements the JSON-RPC {@code tasks/pushNotificationConfig/delete} method.
+ *
+ * @see DeleteTaskPushNotificationConfigResponse for the response
+ * @see DeleteTaskPushNotificationConfigParams for the parameter structure
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

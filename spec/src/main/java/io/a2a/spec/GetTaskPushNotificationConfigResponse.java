@@ -6,7 +6,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * A response for a get task push notification request.
+ * JSON-RPC response containing a task's push notification configuration.
+ * <p>
+ * This response returns the {@link TaskPushNotificationConfig} for the requested task,
+ * showing the current push notification endpoint and authentication settings.
+ * <p>
+ * If no configuration exists or an error occurs, the error field will contain a
+ * {@link JSONRPCError}.
+ *
+ * @see GetTaskPushNotificationConfigRequest for the corresponding request
+ * @see TaskPushNotificationConfig for the configuration structure
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

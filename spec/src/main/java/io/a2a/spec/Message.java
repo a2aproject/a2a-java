@@ -16,7 +16,23 @@ import io.a2a.util.Assert;
 import static io.a2a.spec.Message.MESSAGE;
 
 /**
- * Represents a single message in the conversation between a user and an agent.
+ * Represents a single message in the conversation between a user and an agent in the A2A Protocol.
+ * <p>
+ * A Message encapsulates communication content exchanged during agent interactions. It contains the
+ * message role (user or agent), content parts (text, files, or data), and contextual metadata for
+ * message threading and correlation.
+ * <p>
+ * Messages are fundamental to the A2A Protocol's conversational model, enabling rich multi-modal
+ * communication between users and agents. Each message has a unique identifier and can reference
+ * related tasks and contexts.
+ * <p>
+ * Messages implement both {@link EventKind} and {@link StreamingEventKind}, meaning they can be
+ * sent as standalone events or as part of a streaming response sequence.
+ * <p>
+ * This class is mutable (allows setting taskId and contextId) to support post-construction correlation
+ * with tasks and conversation contexts. Use the {@link Builder} for construction.
+ *
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonTypeName(MESSAGE)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
@@ -113,8 +129,21 @@ public final class Message implements EventKind, StreamingEventKind {
         return kind;
     }
 
+    /**
+     * Defines the role of the message sender in the conversation.
+     * <p>
+     * The role determines who originated the message and how it should be processed
+     * within the conversational context.
+     */
     public enum Role {
+        /**
+         * Message originated from the user (client side).
+         */
         USER("user"),
+
+        /**
+         * Message originated from the agent (server side).
+         */
         AGENT("agent");
 
         private final String role;
@@ -123,12 +152,32 @@ public final class Message implements EventKind, StreamingEventKind {
             this.role = role;
         }
 
+        /**
+         * Returns the string representation of the role for JSON serialization.
+         *
+         * @return the role as a string ("user" or "agent")
+         */
         @JsonValue
         public String asString() {
             return this.role;
         }
     }
 
+    /**
+     * Builder for constructing {@link Message} instances with fluent API.
+     * <p>
+     * The Builder provides a convenient way to construct messages with required and optional fields.
+     * If messageId is not provided, a random UUID will be generated automatically.
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * Message userMessage = new Message.Builder()
+     *     .role(Message.Role.USER)
+     *     .parts(List.of(new TextPart("Hello, agent!", null)))
+     *     .contextId("conv-123")
+     *     .build();
+     * }</pre>
+     */
     public static class Builder {
 
         private Role role;
@@ -140,9 +189,17 @@ public final class Message implements EventKind, StreamingEventKind {
         private Map<String, Object> metadata;
         private List<String> extensions;
 
+        /**
+         * Creates a new Builder with all fields unset.
+         */
         public Builder() {
         }
 
+        /**
+         * Creates a new Builder initialized with values from an existing Message.
+         *
+         * @param message the Message to copy values from
+         */
         public Builder(Message message) {
             role = message.role;
             parts = message.parts;
@@ -154,51 +211,115 @@ public final class Message implements EventKind, StreamingEventKind {
             extensions = message.extensions;
         }
 
+        /**
+         * Sets the role of the message sender.
+         *
+         * @param role the message role (required)
+         * @return this builder for method chaining
+         */
         public Builder role(Role role) {
             this.role = role;
             return this;
         }
 
+        /**
+         * Sets the content parts of the message.
+         *
+         * @param parts the list of message parts (required, must not be empty)
+         * @return this builder for method chaining
+         */
         public Builder parts(List<Part<?>> parts) {
             this.parts = parts;
             return this;
         }
 
+        /**
+         * Sets the content parts of the message from varargs.
+         *
+         * @param parts the message parts (required, must not be empty)
+         * @return this builder for method chaining
+         */
         public Builder parts(Part<?>...parts) {
             this.parts = List.of(parts);
             return this;
         }
 
+        /**
+         * Sets the unique identifier for this message.
+         * <p>
+         * If not provided, a random UUID will be generated when {@link #build()} is called.
+         *
+         * @param messageId the message identifier (optional)
+         * @return this builder for method chaining
+         */
         public Builder messageId(String messageId) {
             this.messageId = messageId;
             return this;
         }
 
+        /**
+         * Sets the conversation context identifier.
+         *
+         * @param contextId the context identifier (optional)
+         * @return this builder for method chaining
+         */
         public Builder contextId(String contextId) {
             this.contextId = contextId;
             return this;
         }
 
+        /**
+         * Sets the task identifier this message is associated with.
+         *
+         * @param taskId the task identifier (optional)
+         * @return this builder for method chaining
+         */
         public Builder taskId(String taskId) {
             this.taskId = taskId;
             return this;
         }
 
+        /**
+         * Sets the list of reference task identifiers this message relates to.
+         *
+         * @param referenceTaskIds the list of reference task IDs (optional)
+         * @return this builder for method chaining
+         */
         public Builder referenceTaskIds(List<String> referenceTaskIds) {
             this.referenceTaskIds = referenceTaskIds;
             return this;
         }
 
+        /**
+         * Sets additional metadata for the message.
+         *
+         * @param metadata map of metadata key-value pairs (optional)
+         * @return this builder for method chaining
+         */
         public Builder metadata(Map<String, Object> metadata) {
             this.metadata = metadata;
             return this;
         }
 
+        /**
+         * Sets the list of protocol extensions used in this message.
+         *
+         * @param extensions the list of extension identifiers (optional)
+         * @return this builder for method chaining
+         */
         public Builder extensions(List<String> extensions) {
             this.extensions = (extensions == null) ? null : List.copyOf(extensions);
             return this;
         }
 
+        /**
+         * Builds a new {@link Message} from the current builder state.
+         * <p>
+         * If messageId was not set, a random UUID will be generated.
+         *
+         * @return a new Message instance
+         * @throws IllegalArgumentException if required fields are missing or invalid
+         */
         public Message build() {
             return new Message(role, parts, messageId == null ? UUID.randomUUID().toString() : messageId,
                     contextId, taskId, referenceTaskIds, metadata, extensions);

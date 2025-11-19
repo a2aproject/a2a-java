@@ -8,7 +8,31 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * An A2A-specific error indicating that the task is in a state where it cannot be canceled.
+ * A2A Protocol error indicating that a task cannot be canceled in its current state.
+ * <p>
+ * This error is returned when a client attempts to cancel a task via {@link CancelTaskRequest}
+ * but the task is in a terminal state ({@link TaskState#COMPLETED}, {@link TaskState#FAILED},
+ * {@link TaskState#CANCELED}) where cancellation is not applicable.
+ * <p>
+ * Tasks can only be canceled when they are in non-terminal states such as {@link TaskState#SUBMITTED}
+ * or {@link TaskState#WORKING}.
+ * <p>
+ * Corresponds to A2A-specific error code {@code -32002}.
+ * <p>
+ * Usage example:
+ * <pre>{@code
+ * Task task = taskStore.getTask(taskId);
+ * if (task.status().state().isFinal()) {
+ *     throw new TaskNotCancelableError(
+ *         "Task in " + task.status().state() + " state cannot be canceled"
+ *     );
+ * }
+ * }</pre>
+ *
+ * @see CancelTaskRequest for task cancellation
+ * @see TaskState for task state definitions
+ * @see TaskStatus#state() for current task state
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -11,7 +11,18 @@ import io.a2a.util.Assert;
 import static io.a2a.spec.OAuth2SecurityScheme.OAUTH2;
 
 /**
- * Defines a security scheme using OAuth 2.0.
+ * OAuth 2.0 security scheme for agent authentication.
+ * <p>
+ * This security scheme uses OAuth 2.0 authorization flows to authenticate requests.
+ * Supports authorization code, client credentials, implicit, and password flows
+ * via the {@link OAuthFlows} configuration.
+ * <p>
+ * Corresponds to the OpenAPI "oauth2" security scheme type.
+ *
+ * @see SecurityScheme for the base interface
+ * @see OAuthFlows for flow configuration
+ * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme</a>
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonTypeName(OAUTH2)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)

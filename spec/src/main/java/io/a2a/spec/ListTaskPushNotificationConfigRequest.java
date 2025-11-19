@@ -11,7 +11,17 @@ import io.a2a.util.Assert;
 import io.a2a.util.Utils;
 
 /**
- * A list task push notification config request.
+ * JSON-RPC request to list all push notification configurations for a task.
+ * <p>
+ * This request retrieves all configured push notification endpoints for a specific task,
+ * allowing clients to enumerate all active notification subscriptions.
+ * <p>
+ * This class implements the JSON-RPC {@code tasks/pushNotificationConfig/list} method.
+ *
+ * @see ListTaskPushNotificationConfigResponse for the response
+ * @see ListTaskPushNotificationConfigParams for the parameter structure
+ * @see TaskPushNotificationConfig for the configuration structure
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

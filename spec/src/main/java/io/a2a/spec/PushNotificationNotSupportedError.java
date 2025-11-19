@@ -8,7 +8,29 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * An A2A-specific error indicating that the agent does not support push notifications.
+ * A2A Protocol error indicating that the agent does not support push notifications.
+ * <p>
+ * This error is returned when a client attempts push notification operations
+ * (such as {@link SetTaskPushNotificationConfigRequest}) on an agent that has
+ * {@link AgentCapabilities#pushNotifications()} set to {@code false}.
+ * <p>
+ * Push notifications allow agents to proactively send task updates to clients via
+ * HTTP callbacks. Agents that don't support this capability will return this error
+ * for all push notification-related methods.
+ * <p>
+ * Corresponds to A2A-specific error code {@code -32003}.
+ * <p>
+ * Usage example:
+ * <pre>{@code
+ * if (!agentCard.capabilities().pushNotifications()) {
+ *     throw new PushNotificationNotSupportedError();
+ * }
+ * }</pre>
+ *
+ * @see AgentCapabilities#pushNotifications() for push notification capability
+ * @see SetTaskPushNotificationConfigRequest for configuring push notifications
+ * @see TaskPushNotificationConfig for push notification configuration
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

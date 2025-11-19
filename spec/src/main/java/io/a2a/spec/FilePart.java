@@ -12,8 +12,35 @@ import io.a2a.util.Assert;
 import static io.a2a.spec.FilePart.FILE;
 
 /**
- * Represents a file segment within a message or artifact. The file content can be
- * provided either directly as bytes or as a URI.
+ * Represents a file content part within a {@link Message} or {@link Artifact}.
+ * <p>
+ * FilePart contains file data that can be provided in two ways:
+ * <ul>
+ *   <li>{@link FileWithBytes} - File content embedded as base64-encoded bytes</li>
+ *   <li>{@link FileWithUri} - File content referenced by URI</li>
+ * </ul>
+ * <p>
+ * File parts are used to exchange binary data, documents, images, or any file-based content
+ * between users and agents. The choice between bytes and URI depends on file size, accessibility,
+ * and security requirements.
+ * <p>
+ * Example usage:
+ * <pre>{@code
+ * // File with embedded bytes
+ * FilePart imageBytes = new FilePart(
+ *     new FileWithBytes("image/png", "diagram.png", "iVBORw0KGgoAAAANS...")
+ * );
+ *
+ * // File with URI reference
+ * FilePart imageUri = new FilePart(
+ *     new FileWithUri("image/png", "photo.png", "https://example.com/photo.png")
+ * );
+ * }</pre>
+ *
+ * @see Part
+ * @see FileContent
+ * @see FileWithBytes
+ * @see FileWithUri
  */
 @JsonTypeName(FILE)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)

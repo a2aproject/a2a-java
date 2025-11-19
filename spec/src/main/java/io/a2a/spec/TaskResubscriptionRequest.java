@@ -11,7 +11,24 @@ import io.a2a.util.Assert;
 import java.util.UUID;
 
 /**
- * Used to resubscribe to a task.
+ * JSON-RPC request to resubscribe to an ongoing or completed task's event stream.
+ * <p>
+ * This request allows clients to reconnect to a task and receive its events, enabling
+ * recovery from disconnections or retrieval of missed updates. The agent will stream
+ * events for the task starting from its current state.
+ * <p>
+ * Resubscription is particularly useful for:
+ * <ul>
+ *   <li>Recovering from network interruptions without losing task context</li>
+ *   <li>Multiple clients observing the same task</li>
+ *   <li>Retrieving final results for completed tasks</li>
+ * </ul>
+ * <p>
+ * This class implements the JSON-RPC {@code tasks/resubscribe} method as specified in the A2A Protocol.
+ *
+ * @see TaskIdParams for the parameter structure
+ * @see StreamingEventKind for the types of events that can be streamed
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

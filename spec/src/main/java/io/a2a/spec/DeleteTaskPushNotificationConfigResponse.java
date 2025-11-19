@@ -7,7 +7,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * A response for a delete task push notification config request.
+ * JSON-RPC response confirming deletion of a task's push notification configuration.
+ * <p>
+ * This response confirms successful deletion of the push notification configuration.
+ * The result is void (no content) on success.
+ * <p>
+ * If an error occurs during deletion, the error field will contain a {@link JSONRPCError}.
+ *
+ * @see DeleteTaskPushNotificationConfigRequest for the corresponding request
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

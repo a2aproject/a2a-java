@@ -12,7 +12,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.a2a.util.Assert;
 
 /**
- * Used to set a task push notification request.
+ * JSON-RPC request to configure push notifications for a specific task.
+ * <p>
+ * This request registers or updates the push notification endpoint for a task, enabling
+ * the agent to send asynchronous updates (status changes, artifact additions) to the
+ * specified URL without requiring client polling.
+ * <p>
+ * This class implements the JSON-RPC {@code tasks/pushNotificationConfig/set} method.
+ *
+ * @see SetTaskPushNotificationConfigResponse for the response
+ * @see TaskPushNotificationConfig for the parameter structure
+ * @see PushNotificationConfig for notification endpoint details
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -9,7 +9,17 @@ import io.a2a.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Parameters for fetching a pushNotificationConfiguration associated with a Task.
+ * Parameters for retrieving push notification configuration for a specific task.
+ * <p>
+ * This record specifies which task's push notification configuration to retrieve, with
+ * an optional filter by configuration ID if multiple configurations exist for the task.
+ *
+ * @param id the task identifier (required)
+ * @param pushNotificationConfigId optional specific configuration ID to retrieve
+ * @param metadata optional arbitrary key-value metadata for the request
+ * @see GetTaskPushNotificationConfigRequest for the request using these parameters
+ * @see TaskPushNotificationConfig for the returned configuration structure
+ * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
