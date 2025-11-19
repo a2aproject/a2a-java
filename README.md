@@ -232,11 +232,22 @@ public class WeatherAgentExecutorProducer {
 }
 ```
 
-### 4. Configure Executor Settings (Optional)
+### 4. Configuration System
 
-The A2A Java SDK uses a dedicated executor for handling asynchronous operations like streaming subscriptions. By default, this executor is configured with a core pool size of 5 threads and a maximum pool size of 50 threads, optimized for I/O-bound operations.
+The A2A Java SDK uses a flexible configuration system that works across different frameworks.
 
-You can customize the executor settings in your `application.properties`:
+**Default behavior:** Configuration values come from `META-INF/a2a-defaults.properties` files on the classpath (provided by core modules and extras). These defaults work out of the box without any additional setup.
+
+**Customizing configuration:**
+- **Quarkus/MicroProfile Config users**: Add the [`microprofile-config`](integrations/microprofile-config/README.md) integration to override defaults via `application.properties`, environment variables, or system properties
+- **Spring/other frameworks**: See the [integration module README](integrations/microprofile-config/README.md#custom-config-providers) for how to implement a custom `A2AConfigProvider`
+- **Reference implementations**: Already include the MicroProfile Config integration
+
+#### Configuration Properties
+
+**Executor Settings** (Optional)
+
+The SDK uses a dedicated executor for async operations like streaming. Default: 5 core threads, 50 max threads.
 
 ```properties
 # Core thread pool size for the @Internal executor (default: 5)
@@ -249,20 +260,23 @@ a2a.executor.max-pool-size=50
 a2a.executor.keep-alive-seconds=60
 ```
 
-**Why this matters:**
-- **Streaming Performance**: The executor handles streaming subscriptions. Too few threads can cause timeouts under concurrent load.
-- **Resource Management**: The dedicated executor prevents streaming operations from competing with the ForkJoinPool used by other async tasks.
-- **Concurrency**: In production environments with high concurrent streaming requests, increase the pool sizes accordingly.
+**Blocking Call Timeouts** (Optional)
 
-**Default Configuration:**
 ```properties
-# These are the defaults - no need to set unless you want different values
-a2a.executor.core-pool-size=5
-a2a.executor.max-pool-size=50
-a2a.executor.keep-alive-seconds=60
+# Timeout for agent execution in blocking calls (default: 30 seconds)
+a2a.blocking.agent.timeout.seconds=30
+
+# Timeout for event consumption in blocking calls (default: 5 seconds)
+a2a.blocking.consumption.timeout.seconds=5
 ```
 
-**Note:** The reference server implementations automatically configure this executor. If you're creating a custom server integration, ensure you provide an `@Internal Executor` bean for optimal streaming performance.
+**Why this matters:**
+- **Streaming Performance**: The executor handles streaming subscriptions. Too few threads can cause timeouts under concurrent load.
+- **Resource Management**: The dedicated executor prevents streaming operations from competing with the ForkJoinPool.
+- **Concurrency**: In production with high concurrent streaming, increase pool sizes accordingly.
+- **Agent Timeouts**: LLM-based agents may need longer timeouts (60-120s) compared to simple agents.
+
+**Note:** The reference server implementations (Quarkus-based) automatically include the MicroProfile Config integration, so properties work out of the box in `application.properties`.
 
 ## A2A Client
 
