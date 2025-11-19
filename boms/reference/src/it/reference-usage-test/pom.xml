@@ -71,6 +71,10 @@
         </dependency>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-microprofile-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-client</artifactId>
         </dependency>
         <dependency>
@@ -84,6 +88,12 @@
         <dependency>
             <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
+        </dependency>
+
+        <!-- Third-party dependencies needed for integration classes -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
         </dependency>
 
         <!-- Quarkus modules - should come from imported Quarkus BOM -->

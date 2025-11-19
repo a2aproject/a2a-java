@@ -63,7 +63,8 @@ import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.UnsupportedOperationError;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import io.a2a.server.config.A2AConfigProvider;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,24 +73,29 @@ public class DefaultRequestHandler implements RequestHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRequestHandler.class);
 
+    @Inject
+    A2AConfigProvider configProvider;
+
     /**
      * Timeout in seconds to wait for agent execution to complete in blocking calls.
      * This allows slow agents (LLM-based, data processing, external APIs) sufficient time.
-     * Configurable via: a2a.blocking.agent.timeout.seconds
-     * Default: 30 seconds
+     * <p>
+     * Property: {@code a2a.blocking.agent.timeout.seconds}<br>
+     * Default: 30 seconds<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath
+     * (e.g., MicroProfileConfigProvider in reference implementations).
      */
-    @Inject
-    @ConfigProperty(name = "a2a.blocking.agent.timeout.seconds", defaultValue = "30")
     int agentCompletionTimeoutSeconds;
 
     /**
      * Timeout in seconds to wait for event consumption to complete in blocking calls.
      * This ensures all events are processed and persisted before returning to client.
-     * Configurable via: a2a.blocking.consumption.timeout.seconds
-     * Default: 5 seconds
+     * <p>
+     * Property: {@code a2a.blocking.consumption.timeout.seconds}<br>
+     * Default: 5 seconds<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath
+     * (e.g., MicroProfileConfigProvider in reference implementations).
      */
-    @Inject
-    @ConfigProperty(name = "a2a.blocking.consumption.timeout.seconds", defaultValue = "5")
     int consumptionCompletionTimeoutSeconds;
 
     private final AgentExecutor agentExecutor;
@@ -119,6 +125,14 @@ public class DefaultRequestHandler implements RequestHandler {
         //  I am unsure about the correct scope.
         //  Also reworked to make a Supplier since otherwise the builder gets polluted with wrong tasks
         this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false);
+    }
+
+    @PostConstruct
+    void initConfig() {
+        agentCompletionTimeoutSeconds = Integer.parseInt(
+                configProvider.getValue("a2a.blocking.agent.timeout.seconds"));
+        consumptionCompletionTimeoutSeconds = Integer.parseInt(
+                configProvider.getValue("a2a.blocking.consumption.timeout.seconds"));
     }
 
     /**

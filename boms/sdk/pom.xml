@@ -52,6 +52,13 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <!-- Integration modules -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-microprofile-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Client modules -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
