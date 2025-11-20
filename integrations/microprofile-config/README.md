@@ -104,7 +104,7 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 @Alternative
 @Priority(100)  // Higher than MicroProfileConfigProvider's priority of 50
-public class SpringConfigProvider implements A2AConfigProvider {
+public class OtherEnvironmentConfigProvider implements A2AConfigProvider {
 
     @Inject
     Environment env;
