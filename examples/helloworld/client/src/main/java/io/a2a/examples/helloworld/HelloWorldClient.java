@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.a2a.A2A;
 
 import io.a2a.client.Client;
-import io.a2a.client.ClientBuilder;
 import io.a2a.client.ClientEvent;
 import io.a2a.client.MessageEvent;
 import io.a2a.client.http.A2ACardResolver;
@@ -22,6 +21,12 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 
 /**
  * A simple example of using the A2A Java SDK to communicate with an A2A server.
@@ -82,16 +87,20 @@ public class HelloWorldClient {
                 error.printStackTrace();
                 messageResponse.completeExceptionally(error);
             };
-
+            JSONRPCTransportConfig transportConfig = new JSONRPCTransportConfig();
+            if (Boolean.getBoolean("opentelemetry")) {
+                transportConfig.setParameters(Map.of("io.a2a.extras.opentelemetry.Tracer",
+                        initOpenTelemetry().getTracer("helloworld-client")));
+            }
             Client client = Client
                     .builder(finalAgentCard)
                     .addConsumers(consumers)
                     .streamingErrorHandler(streamingErrorHandler)
-                    .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig())
+                    .withTransport(JSONRPCTransport.class, transportConfig)
                     .build();
 
             Message message = A2A.toUserMessage(MESSAGE_TEXT); // the message ID will be automatically generated for you
-            
+
             System.out.println("Sending message: " + MESSAGE_TEXT);
             client.sendMessage(message);
             System.out.println("Message sent successfully. Responses will be handled by the configured consumers.");
@@ -108,4 +117,17 @@ public class HelloWorldClient {
         }
     }
 
-} 
+    static OpenTelemetry initOpenTelemetry() {
+        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+                .addSpanProcessor(SimpleSpanProcessor.create(OtlpGrpcSpanExporter.builder().setEndpoint("http://localhost:5317").build()))
+                .setResource(Resource.getDefault().toBuilder().put("service.version", "1.0").put("service.name", "helloworld-client").build())
+                .build();
+
+        OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder()
+                .setTracerProvider(sdkTracerProvider)
+                .build();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(sdkTracerProvider::close));
+        return openTelemetrySdk;
+    }
+}

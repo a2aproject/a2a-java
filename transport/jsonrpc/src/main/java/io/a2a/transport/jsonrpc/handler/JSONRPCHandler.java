@@ -1,6 +1,8 @@
 package io.a2a.transport.jsonrpc.handler;
 
+import static io.a2a.server.interceptors.Kind.SERVER;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -14,6 +16,7 @@ import io.a2a.server.AgentCardValidator;
 import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.ServerCallContext;
+import io.a2a.server.interceptors.Trace;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
@@ -76,6 +79,7 @@ public class JSONRPCHandler {
         this(agentCard, null, requestHandler, executor);
     }
 
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
         try {
             EventKind taskOrMessage = requestHandler.onMessageSend(request.getParams(), context);
@@ -87,7 +91,7 @@ public class JSONRPCHandler {
         }
     }
 
-
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public Flow.Publisher<SendStreamingMessageResponse> onMessageSendStream(
             SendStreamingMessageRequest request, ServerCallContext context) {
         if (!agentCard.capabilities().streaming()) {
@@ -110,6 +114,7 @@ public class JSONRPCHandler {
         }
     }
 
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public CancelTaskResponse onCancelTask(CancelTaskRequest request, ServerCallContext context) {
         try {
             Task task = requestHandler.onCancelTask(request.getParams(), context);
@@ -124,6 +129,7 @@ public class JSONRPCHandler {
         }
     }
 
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public Flow.Publisher<SendStreamingMessageResponse> onResubscribeToTask(
             TaskResubscriptionRequest request, ServerCallContext context) {
         if (!agentCard.capabilities().streaming()) {
@@ -132,7 +138,6 @@ public class JSONRPCHandler {
                             request.getId(),
                             new InvalidRequestError("Streaming is not supported by the agent")));
         }
-
         try {
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onResubscribeToTask(request.getParams(), context);
@@ -146,6 +151,7 @@ public class JSONRPCHandler {
         }
     }
 
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public GetTaskPushNotificationConfigResponse getPushNotificationConfig(
             GetTaskPushNotificationConfigRequest request, ServerCallContext context) {
         if (!agentCard.capabilities().pushNotifications()) {
@@ -163,6 +169,7 @@ public class JSONRPCHandler {
         }
     }
 
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public SetTaskPushNotificationConfigResponse setPushNotificationConfig(
             SetTaskPushNotificationConfigRequest request, ServerCallContext context) {
         if (!agentCard.capabilities().pushNotifications()) {
@@ -180,6 +187,7 @@ public class JSONRPCHandler {
         }
     }
 
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public GetTaskResponse onGetTask(GetTaskRequest request, ServerCallContext context) {
         try {
             Task task = requestHandler.onGetTask(request.getParams(), context);
@@ -191,6 +199,7 @@ public class JSONRPCHandler {
         }
     }
 
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public ListTasksResponse onListTasks(ListTasksRequest request, ServerCallContext context) {
         try {
             ListTasksResult result = requestHandler.onListTasks(request.getParams(), context);
@@ -202,6 +211,7 @@ public class JSONRPCHandler {
         }
     }
 
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public ListTaskPushNotificationConfigResponse listPushNotificationConfig(
             ListTaskPushNotificationConfigRequest request, ServerCallContext context) {
         if ( !agentCard.capabilities().pushNotifications()) {
@@ -219,6 +229,7 @@ public class JSONRPCHandler {
         }
     }
 
+    @Trace(extractor=JsonRPCAttributeExtractor.class, kind = SERVER) 
     public DeleteTaskPushNotificationConfigResponse deletePushNotificationConfig(
             DeleteTaskPushNotificationConfigRequest request, ServerCallContext context) {
         if ( !agentCard.capabilities().pushNotifications()) {
