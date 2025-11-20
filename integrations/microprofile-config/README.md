@@ -63,12 +63,17 @@ The `MicroProfileConfigProvider` implementation:
 ```
 MicroProfile Config Sources (application.properties, env vars, -D flags)
   ↓ (not found?)
-META-INF/a2a-defaults.properties (from server-common)
-  ↓ (not found?)
-META-INF/a2a-defaults.properties (from extras modules)
+DefaultValuesConfigProvider
+  → Scans classpath for ALL META-INF/a2a-defaults.properties files
+  → Merges all discovered properties together
+  → Throws exception if duplicate keys found
+  ↓ (property exists?)
+Return merged default value
   ↓ (not found?)
 IllegalArgumentException
 ```
+
+**Note**: All `META-INF/a2a-defaults.properties` files (from server-common, extras modules, etc.) are loaded and merged together by `DefaultValuesConfigProvider` at startup. This is not a sequential fallback chain, but a single merged set of defaults.
 
 ## Available Configuration Properties
 
