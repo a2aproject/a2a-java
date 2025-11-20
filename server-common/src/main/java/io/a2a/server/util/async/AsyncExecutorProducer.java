@@ -14,7 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import io.a2a.server.config.A2AConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,22 +23,44 @@ public class AsyncExecutorProducer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncExecutorProducer.class);
 
-    @Inject // Needed to work in standard Jakarta runtimes (Quarkus skips this)
-    @ConfigProperty(name = "a2a.executor.core-pool-size", defaultValue = "5")
+    @Inject
+    A2AConfigProvider configProvider;
+
+    /**
+     * Core pool size for async agent execution thread pool.
+     * <p>
+     * Property: {@code a2a.executor.core-pool-size}<br>
+     * Default: 5<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath.
+     */
     int corePoolSize;
 
-    @Inject // Needed to work in standard Jakarta runtimes (Quarkus skips this)
-    @ConfigProperty(name = "a2a.executor.max-pool-size", defaultValue = "50")
+    /**
+     * Maximum pool size for async agent execution thread pool.
+     * <p>
+     * Property: {@code a2a.executor.max-pool-size}<br>
+     * Default: 50<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath.
+     */
     int maxPoolSize;
 
-    @Inject // Needed to work in standard Jakarta runtimes (Quarkus skips this)
-    @ConfigProperty(name = "a2a.executor.keep-alive-seconds", defaultValue = "60")
+    /**
+     * Keep-alive time for idle threads (seconds).
+     * <p>
+     * Property: {@code a2a.executor.keep-alive-seconds}<br>
+     * Default: 60<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath.
+     */
     long keepAliveSeconds;
 
     private ExecutorService executor;
 
     @PostConstruct
     public void init() {
+        corePoolSize = Integer.parseInt(configProvider.getValue("a2a.executor.core-pool-size"));
+        maxPoolSize = Integer.parseInt(configProvider.getValue("a2a.executor.max-pool-size"));
+        keepAliveSeconds = Long.parseLong(configProvider.getValue("a2a.executor.keep-alive-seconds"));
+
         LOGGER.info("Initializing async executor: corePoolSize={}, maxPoolSize={}, keepAliveSeconds={}",
                 corePoolSize, maxPoolSize, keepAliveSeconds);
 

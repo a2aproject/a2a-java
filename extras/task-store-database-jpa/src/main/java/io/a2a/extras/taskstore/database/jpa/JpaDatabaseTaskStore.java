@@ -3,6 +3,7 @@ package io.a2a.extras.taskstore.database.jpa;
 import java.time.Duration;
 import java.time.Instant;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
@@ -14,10 +15,10 @@ import jakarta.transaction.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.a2a.extras.common.events.TaskFinalizedEvent;
+import io.a2a.server.config.A2AConfigProvider;
 import io.a2a.server.tasks.TaskStateProvider;
 import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.Task;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +36,23 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
     Event<TaskFinalizedEvent> taskFinalizedEvent;
 
     @Inject
-    @ConfigProperty(name = "a2a.replication.grace-period-seconds", defaultValue = "15")
+    A2AConfigProvider configProvider;
+
+    /**
+     * Grace period for task finalization in replicated scenarios (seconds).
+     * After a task reaches a final state, this is the minimum time to wait before cleanup
+     * to allow replicated events to arrive and be processed.
+     * <p>
+     * Property: {@code a2a.replication.grace-period-seconds}<br>
+     * Default: 15<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath.
+     */
     long gracePeriodSeconds;
+
+    @PostConstruct
+    void initConfig() {
+        gracePeriodSeconds = Long.parseLong(configProvider.getValue("a2a.replication.grace-period-seconds"));
+    }
 
     @Transactional
     @Override

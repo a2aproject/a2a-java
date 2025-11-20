@@ -10,32 +10,17 @@
         <version>0.3.3.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <artifactId>a2a-java-sdk-reference-common</artifactId>
+    <artifactId>a2a-java-sdk-microprofile-config</artifactId>
 
     <packaging>jar</packaging>
 
-    <name>Java A2A Reference Server: Common</name>
-    <description>Java SDK for the Agent2Agent Protocol (A2A) - Common classes for A2A Reference Servers (based on Quarkus)</description>
+    <name>A2A Java SDK - MicroProfile Config Integration</name>
+    <description>MicroProfile Config integration for A2A Java SDK - provides A2AConfigProvider implementation</description>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-server-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-tests-server-common</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-tests-server-common</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-reactive-routes</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise</groupId>
@@ -46,12 +31,19 @@
             <artifactId>jakarta.inject-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
+
+        <!-- Test dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-microprofile-config</artifactId>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -59,18 +51,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-rest-client-jackson</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
