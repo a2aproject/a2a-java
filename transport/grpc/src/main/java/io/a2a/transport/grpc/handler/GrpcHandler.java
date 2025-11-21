@@ -2,6 +2,7 @@ package io.a2a.transport.grpc.handler;
 
 import static io.a2a.grpc.utils.ProtoUtils.FromProto;
 import static io.a2a.grpc.utils.ProtoUtils.ToProto;
+import static io.a2a.server.interceptors.Kind.SERVER;
 
 import jakarta.enterprise.inject.Vetoed;
 
@@ -27,6 +28,7 @@ import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
 import io.a2a.server.extensions.A2AExtensions;
+import io.a2a.server.interceptors.Trace;
 import io.a2a.transport.grpc.context.GrpcContextKeys;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.spec.AgentCard;
@@ -71,6 +73,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void sendMessage(io.a2a.grpc.SendMessageRequest request,
                            StreamObserver<io.a2a.grpc.SendMessageResponse> responseObserver) {
         try {
@@ -90,6 +93,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void getTask(io.a2a.grpc.GetTaskRequest request,
                        StreamObserver<io.a2a.grpc.Task> responseObserver) {
         try {
@@ -112,6 +116,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void listTasks(io.a2a.grpc.ListTasksRequest request,
                          StreamObserver<io.a2a.grpc.ListTasksResponse> responseObserver) {
         try {
@@ -130,6 +135,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void cancelTask(io.a2a.grpc.CancelTaskRequest request,
                           StreamObserver<io.a2a.grpc.Task> responseObserver) {
         try {
@@ -152,6 +158,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request,
                                                StreamObserver<io.a2a.grpc.TaskPushNotificationConfig> responseObserver) {
         if (!getAgentCardInternal().capabilities().pushNotifications()) {
@@ -175,6 +182,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void getTaskPushNotificationConfig(io.a2a.grpc.GetTaskPushNotificationConfigRequest request,
                                             StreamObserver<io.a2a.grpc.TaskPushNotificationConfig> responseObserver) {
         if (!getAgentCardInternal().capabilities().pushNotifications()) {
@@ -198,6 +206,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void listTaskPushNotificationConfig(io.a2a.grpc.ListTaskPushNotificationConfigRequest request,
                                              StreamObserver<io.a2a.grpc.ListTaskPushNotificationConfigResponse> responseObserver) {
         if (!getAgentCardInternal().capabilities().pushNotifications()) {
@@ -226,6 +235,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void sendStreamingMessage(io.a2a.grpc.SendMessageRequest request,
                                      StreamObserver<io.a2a.grpc.StreamResponse> responseObserver) {
         if (!getAgentCardInternal().capabilities().streaming()) {
@@ -248,6 +258,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void taskSubscription(io.a2a.grpc.TaskSubscriptionRequest request,
                                  StreamObserver<io.a2a.grpc.StreamResponse> responseObserver) {
         if (!getAgentCardInternal().capabilities().streaming()) {
@@ -328,6 +339,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
+    @Trace(extractor = GrpcAttributeExtractor.class, kind = SERVER)
     public void deleteTaskPushNotificationConfig(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest request,
                                                StreamObserver<Empty> responseObserver) {
         if (!getAgentCardInternal().capabilities().pushNotifications()) {
@@ -378,7 +390,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                         state.put("grpc_metadata", grpcMetadata);
                     }
                     
-                    String methodName = GrpcContextKeys.METHOD_NAME_KEY.get(currentContext);
+                    String methodName = GrpcContextKeys.GRPC_METHOD_NAME_KEY.get(currentContext);
                     if (methodName != null) {
                         state.put("grpc_method_name", methodName);
                     }
@@ -578,7 +590,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      * @return the method name, or null if not available
      */
     protected static String getCurrentMethodName() {
-        return getFromContext(GrpcContextKeys.METHOD_NAME_KEY);
+        return getFromContext(GrpcContextKeys.GRPC_METHOD_NAME_KEY);
     }
     
     /**

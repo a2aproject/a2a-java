@@ -7,6 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
 import io.a2a.server.PublicAgentCard;
+import io.a2a.server.interceptors.Trace;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentSkill;
@@ -14,6 +15,7 @@ import io.a2a.spec.AgentSkill;
 @ApplicationScoped
 public class AgentCardProducer {
 
+    @Trace
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
