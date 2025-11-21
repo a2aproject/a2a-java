@@ -18,6 +18,8 @@ package io.a2a.spec;
  * @see A2AClientException for general client exceptions
  * @see A2AClientHTTPError for HTTP-specific errors
  * @see A2AClientJSONError for JSON-specific errors
+ * @see A2AClientInvalidStateError for invalid state errors
+ * @see A2AClientInvalidArgsError for invalid argument errors
  */
 public class A2AClientError extends RuntimeException {
     /**
