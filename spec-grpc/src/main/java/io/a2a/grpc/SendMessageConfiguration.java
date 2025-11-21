@@ -104,18 +104,18 @@ private static final long serialVersionUID = 0L;
     return acceptedOutputModes_.getByteString(index);
   }
 
-  public static final int PUSH_NOTIFICATION_FIELD_NUMBER = 2;
-  private io.a2a.grpc.PushNotificationConfig pushNotification_;
+  public static final int PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER = 2;
+  private io.a2a.grpc.PushNotificationConfig pushNotificationConfig_;
   /**
    * <pre>
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
-   * @return Whether the pushNotification field is set.
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * @return Whether the pushNotificationConfig field is set.
    */
   @java.lang.Override
-  public boolean hasPushNotification() {
+  public boolean hasPushNotificationConfig() {
     return ((bitField0_ & 0x00000001) != 0);
   }
   /**
@@ -123,23 +123,23 @@ private static final long serialVersionUID = 0L;
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
-   * @return The pushNotification.
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * @return The pushNotificationConfig.
    */
   @java.lang.Override
-  public io.a2a.grpc.PushNotificationConfig getPushNotification() {
-    return pushNotification_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotification_;
+  public io.a2a.grpc.PushNotificationConfig getPushNotificationConfig() {
+    return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
   }
   /**
    * <pre>
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationOrBuilder() {
-    return pushNotification_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotification_;
+  public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
+    return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
   }
 
   public static final int HISTORY_LENGTH_FIELD_NUMBER = 3;
@@ -194,7 +194,7 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.GeneratedMessage.writeString(output, 1, acceptedOutputModes_.getRaw(i));
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(2, getPushNotification());
+      output.writeMessage(2, getPushNotificationConfig());
     }
     if (historyLength_ != 0) {
       output.writeInt32(3, historyLength_);
@@ -221,7 +221,7 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getPushNotification());
+        .computeMessageSize(2, getPushNotificationConfig());
     }
     if (historyLength_ != 0) {
       size += com.google.protobuf.CodedOutputStream
@@ -248,10 +248,10 @@ private static final long serialVersionUID = 0L;
 
     if (!getAcceptedOutputModesList()
         .equals(other.getAcceptedOutputModesList())) return false;
-    if (hasPushNotification() != other.hasPushNotification()) return false;
-    if (hasPushNotification()) {
-      if (!getPushNotification()
-          .equals(other.getPushNotification())) return false;
+    if (hasPushNotificationConfig() != other.hasPushNotificationConfig()) return false;
+    if (hasPushNotificationConfig()) {
+      if (!getPushNotificationConfig()
+          .equals(other.getPushNotificationConfig())) return false;
     }
     if (getHistoryLength()
         != other.getHistoryLength()) return false;
@@ -272,9 +272,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + ACCEPTED_OUTPUT_MODES_FIELD_NUMBER;
       hash = (53 * hash) + getAcceptedOutputModesList().hashCode();
     }
-    if (hasPushNotification()) {
-      hash = (37 * hash) + PUSH_NOTIFICATION_FIELD_NUMBER;
-      hash = (53 * hash) + getPushNotification().hashCode();
+    if (hasPushNotificationConfig()) {
+      hash = (37 * hash) + PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getPushNotificationConfig().hashCode();
     }
     hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
     hash = (53 * hash) + getHistoryLength();
@@ -416,7 +416,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
-        internalGetPushNotificationFieldBuilder();
+        internalGetPushNotificationConfigFieldBuilder();
       }
     }
     @java.lang.Override
@@ -425,10 +425,10 @@ private static final long serialVersionUID = 0L;
       bitField0_ = 0;
       acceptedOutputModes_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
-      pushNotification_ = null;
-      if (pushNotificationBuilder_ != null) {
-        pushNotificationBuilder_.dispose();
-        pushNotificationBuilder_ = null;
+      pushNotificationConfig_ = null;
+      if (pushNotificationConfigBuilder_ != null) {
+        pushNotificationConfigBuilder_.dispose();
+        pushNotificationConfigBuilder_ = null;
       }
       historyLength_ = 0;
       blocking_ = false;
@@ -471,9 +471,9 @@ private static final long serialVersionUID = 0L;
       }
       int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.pushNotification_ = pushNotificationBuilder_ == null
-            ? pushNotification_
-            : pushNotificationBuilder_.build();
+        result.pushNotificationConfig_ = pushNotificationConfigBuilder_ == null
+            ? pushNotificationConfig_
+            : pushNotificationConfigBuilder_.build();
         to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
@@ -507,8 +507,8 @@ private static final long serialVersionUID = 0L;
         }
         onChanged();
       }
-      if (other.hasPushNotification()) {
-        mergePushNotification(other.getPushNotification());
+      if (other.hasPushNotificationConfig()) {
+        mergePushNotificationConfig(other.getPushNotificationConfig());
       }
       if (other.getHistoryLength() != 0) {
         setHistoryLength(other.getHistoryLength());
@@ -550,7 +550,7 @@ private static final long serialVersionUID = 0L;
             } // case 10
             case 18: {
               input.readMessage(
-                  internalGetPushNotificationFieldBuilder().getBuilder(),
+                  internalGetPushNotificationConfigFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000002;
               break;
@@ -729,18 +729,18 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private io.a2a.grpc.PushNotificationConfig pushNotification_;
+    private io.a2a.grpc.PushNotificationConfig pushNotificationConfig_;
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> pushNotificationBuilder_;
+        io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> pushNotificationConfigBuilder_;
     /**
      * <pre>
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
-     * @return Whether the pushNotification field is set.
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * @return Whether the pushNotificationConfig field is set.
      */
-    public boolean hasPushNotification() {
+    public boolean hasPushNotificationConfig() {
       return ((bitField0_ & 0x00000002) != 0);
     }
     /**
@@ -748,14 +748,14 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
-     * @return The pushNotification.
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * @return The pushNotificationConfig.
      */
-    public io.a2a.grpc.PushNotificationConfig getPushNotification() {
-      if (pushNotificationBuilder_ == null) {
-        return pushNotification_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotification_;
+    public io.a2a.grpc.PushNotificationConfig getPushNotificationConfig() {
+      if (pushNotificationConfigBuilder_ == null) {
+        return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
       } else {
-        return pushNotificationBuilder_.getMessage();
+        return pushNotificationConfigBuilder_.getMessage();
       }
     }
     /**
@@ -763,16 +763,16 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
-    public Builder setPushNotification(io.a2a.grpc.PushNotificationConfig value) {
-      if (pushNotificationBuilder_ == null) {
+    public Builder setPushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
+      if (pushNotificationConfigBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        pushNotification_ = value;
+        pushNotificationConfig_ = value;
       } else {
-        pushNotificationBuilder_.setMessage(value);
+        pushNotificationConfigBuilder_.setMessage(value);
       }
       bitField0_ |= 0x00000002;
       onChanged();
@@ -783,14 +783,14 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
-    public Builder setPushNotification(
+    public Builder setPushNotificationConfig(
         io.a2a.grpc.PushNotificationConfig.Builder builderForValue) {
-      if (pushNotificationBuilder_ == null) {
-        pushNotification_ = builderForValue.build();
+      if (pushNotificationConfigBuilder_ == null) {
+        pushNotificationConfig_ = builderForValue.build();
       } else {
-        pushNotificationBuilder_.setMessage(builderForValue.build());
+        pushNotificationConfigBuilder_.setMessage(builderForValue.build());
       }
       bitField0_ |= 0x00000002;
       onChanged();
@@ -801,21 +801,21 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
-    public Builder mergePushNotification(io.a2a.grpc.PushNotificationConfig value) {
-      if (pushNotificationBuilder_ == null) {
+    public Builder mergePushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
+      if (pushNotificationConfigBuilder_ == null) {
         if (((bitField0_ & 0x00000002) != 0) &&
-          pushNotification_ != null &&
-          pushNotification_ != io.a2a.grpc.PushNotificationConfig.getDefaultInstance()) {
-          getPushNotificationBuilder().mergeFrom(value);
+          pushNotificationConfig_ != null &&
+          pushNotificationConfig_ != io.a2a.grpc.PushNotificationConfig.getDefaultInstance()) {
+          getPushNotificationConfigBuilder().mergeFrom(value);
         } else {
-          pushNotification_ = value;
+          pushNotificationConfig_ = value;
         }
       } else {
-        pushNotificationBuilder_.mergeFrom(value);
+        pushNotificationConfigBuilder_.mergeFrom(value);
       }
-      if (pushNotification_ != null) {
+      if (pushNotificationConfig_ != null) {
         bitField0_ |= 0x00000002;
         onChanged();
       }
@@ -826,14 +826,14 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
-    public Builder clearPushNotification() {
+    public Builder clearPushNotificationConfig() {
       bitField0_ = (bitField0_ & ~0x00000002);
-      pushNotification_ = null;
-      if (pushNotificationBuilder_ != null) {
-        pushNotificationBuilder_.dispose();
-        pushNotificationBuilder_ = null;
+      pushNotificationConfig_ = null;
+      if (pushNotificationConfigBuilder_ != null) {
+        pushNotificationConfigBuilder_.dispose();
+        pushNotificationConfigBuilder_ = null;
       }
       onChanged();
       return this;
@@ -843,26 +843,26 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
-    public io.a2a.grpc.PushNotificationConfig.Builder getPushNotificationBuilder() {
+    public io.a2a.grpc.PushNotificationConfig.Builder getPushNotificationConfigBuilder() {
       bitField0_ |= 0x00000002;
       onChanged();
-      return internalGetPushNotificationFieldBuilder().getBuilder();
+      return internalGetPushNotificationConfigFieldBuilder().getBuilder();
     }
     /**
      * <pre>
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
-    public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationOrBuilder() {
-      if (pushNotificationBuilder_ != null) {
-        return pushNotificationBuilder_.getMessageOrBuilder();
+    public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
+      if (pushNotificationConfigBuilder_ != null) {
+        return pushNotificationConfigBuilder_.getMessageOrBuilder();
       } else {
-        return pushNotification_ == null ?
-            io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotification_;
+        return pushNotificationConfig_ == null ?
+            io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
       }
     }
     /**
@@ -870,20 +870,20 @@ private static final long serialVersionUID = 0L;
      * A configuration of a webhook that can be used to receive updates
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> 
-        internalGetPushNotificationFieldBuilder() {
-      if (pushNotificationBuilder_ == null) {
-        pushNotificationBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+        internalGetPushNotificationConfigFieldBuilder() {
+      if (pushNotificationConfigBuilder_ == null) {
+        pushNotificationConfigBuilder_ = new com.google.protobuf.SingleFieldBuilder<
             io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder>(
-                getPushNotification(),
+                getPushNotificationConfig(),
                 getParentForChildren(),
                 isClean());
-        pushNotification_ = null;
+        pushNotificationConfig_ = null;
       }
-      return pushNotificationBuilder_;
+      return pushNotificationConfigBuilder_;
     }
 
     private int historyLength_ ;

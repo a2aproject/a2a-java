@@ -56,27 +56,27 @@ public interface SendMessageConfigurationOrBuilder extends
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
-   * @return Whether the pushNotification field is set.
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * @return Whether the pushNotificationConfig field is set.
    */
-  boolean hasPushNotification();
+  boolean hasPushNotificationConfig();
   /**
    * <pre>
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
-   * @return The pushNotification.
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * @return The pushNotificationConfig.
    */
-  io.a2a.grpc.PushNotificationConfig getPushNotification();
+  io.a2a.grpc.PushNotificationConfig getPushNotificationConfig();
   /**
    * <pre>
    * A configuration of a webhook that can be used to receive updates
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification = 2;</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    */
-  io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationOrBuilder();
+  io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder();
 
   /**
    * <pre>
