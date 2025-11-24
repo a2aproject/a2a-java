@@ -79,7 +79,7 @@ public class AuthInterceptorTest {
                 "session-id",
                 APIKeySecurityScheme.API_KEY,
                 "secret-api-key",
-                new APIKeySecurityScheme("header", "x-api-key", "API Key authentication"),
+                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "x-api-key", "API Key authentication"),
                 "x-api-key",
                 "secret-api-key"
         );
@@ -258,7 +258,7 @@ public class AuthInterceptorTest {
     @Test
     void testNoCredentialAvailable() {
         String schemeName = "apikey";
-        SecurityScheme securityScheme = new APIKeySecurityScheme("header", "X-API-Key", "API Key authentication");
+        SecurityScheme securityScheme = new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "X-API-Key", "API Key authentication");
         AgentCard agentCard = createAgentCard(schemeName, securityScheme);
         
         Map<String, Object> requestPayload = Map.of("test", "payload");

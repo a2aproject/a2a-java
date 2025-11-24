@@ -160,27 +160,29 @@ public class GrpcTransport implements ClientTransport {
     public ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        ListTasksRequest.Builder requestBuilder = ListTasksRequest.newBuilder();
+        ListTasksRequest.Builder builder = ListTasksRequest.newBuilder();
         if (request.contextId() != null) {
-            requestBuilder.setContextId(request.contextId());
+            builder.setContextId(request.contextId());
         }
         if (request.status() != null) {
-            requestBuilder.setStatus(ToProto.taskState(request.status()));
+            builder.setStatus(ToProto.taskState(request.status()));
         }
         if (request.pageSize() != null) {
-            requestBuilder.setPageSize(request.pageSize());
+            builder.setPageSize(request.pageSize());
         }
         if (request.pageToken() != null) {
-            requestBuilder.setPageToken(request.pageToken());
+            builder.setPageToken(request.pageToken());
         }
         if (request.historyLength() != null) {
-            requestBuilder.setHistoryLength(request.historyLength());
+            builder.setHistoryLength(request.historyLength());
         }
-        if (request.includeArtifacts() != null && request.includeArtifacts()) {
-            requestBuilder.setIncludeArtifacts(true);
+        if (request.lastUpdatedAfter() != null) {
+            builder.setLastUpdatedAfter(request.lastUpdatedAfter().toEpochMilli());
         }
-
-        ListTasksRequest listTasksRequest = requestBuilder.build();
+        if (request.includeArtifacts() != null) {
+            builder.setIncludeArtifacts(request.includeArtifacts());
+        }
+        ListTasksRequest listTasksRequest = builder.build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.ListTasksRequest.METHOD, listTasksRequest,
                 agentCard, context);
 
@@ -317,15 +319,7 @@ public class GrpcTransport implements ClientTransport {
     }
 
     private SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams, @Nullable ClientCallContext context) {
-        SendMessageRequest.Builder builder = SendMessageRequest.newBuilder();
-        builder.setRequest(ToProto.message(messageSendParams.message()));
-        if (messageSendParams.configuration() != null) {
-            builder.setConfiguration(ToProto.messageSendConfiguration(messageSendParams.configuration()));
-        }
-        if (messageSendParams.metadata() != null) {
-            builder.setMetadata(ToProto.struct(messageSendParams.metadata()));
-        }
-        return builder.build();
+        return ToProto.sendMessageRequest(messageSendParams);
     }
 
     /**

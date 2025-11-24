@@ -54,6 +54,8 @@
         <jakarta.json-api.version>2.1.3</jakarta.json-api.version>
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
         <junit.version>5.13.4</junit.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <mapstruct-spi-protobuf.version>1.52.0</mapstruct-spi-protobuf.version>
         <mockito-core.version>5.17.0</mockito-core.version>
         <mockserver.version>5.15.0</mockserver.version>
         <mutiny-zero.version>1.1.1</mutiny-zero.version>
@@ -224,6 +226,16 @@
                 <version>${jakarta.inject.jakarta.inject-api.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.json</groupId>
                 <artifactId>jakarta.json-api</artifactId>
                 <version>${jakarta.json-api.version}</version>
@@ -340,6 +352,16 @@
                                 <groupId>com.uber.nullaway</groupId>
                                 <artifactId>nullaway</artifactId>
                                 <version>${nullaway.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${mapstruct.version}</version>
+                            </path>
+                            <path>
+                                <groupId>no.entur.mapstruct.spi</groupId>
+                                <artifactId>protobuf-spi-impl</artifactId>
+                                <version>${mapstruct-spi-protobuf.version}</version>
                             </path>
                             <!-- Other annotation processors go here.
 

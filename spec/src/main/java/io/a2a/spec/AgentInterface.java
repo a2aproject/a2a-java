@@ -1,14 +1,17 @@
 package io.a2a.spec;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * Declares a combination of a target URL and transport protocol for accessing an agent.
+ * Declares a combination of a target URL and protocol binding for accessing an agent.
  * <p>
  * AgentInterface defines how clients can connect to and communicate with an agent using
- * a specific transport mechanism (such as JSON-RPC, gRPC, or REST) at a particular endpoint.
+ * a specific protocol binding at a particular endpoint. The protocol binding is an open-form
+ * string that can be extended for other protocol bindings. Core officially supported bindings
+ * are JSONRPC, GRPC, and HTTP+JSON.
  * <p>
  * Agents may support multiple interfaces to allow flexibility in how clients communicate.
  * The {@link AgentCard} includes a primary interface (url + preferredTransport) and may
@@ -16,18 +19,18 @@ import io.a2a.util.Assert;
  * <p>
  * This class is immutable.
  *
- * @param transport the transport protocol name (e.g., "jsonrpc", "grpc", "rest") (required)
- * @param url the endpoint URL for this transport interface (required)
+ * @param protocolBinding the protocol binding supported at this URL (e.g., "JSONRPC", "GRPC", "HTTP+JSON") (required)
+ * @param url the endpoint URL where this interface is available; must be a valid absolute HTTPS URL in production (required)
  * @see AgentCard
  * @see TransportProtocol
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record AgentInterface(String transport, String url) {
+public record AgentInterface(String protocolBinding, String url) {
 
     public AgentInterface {
-        Assert.checkNotNullParam("transport", transport);
+        Assert.checkNotNullParam("protocolBinding", protocolBinding);
         Assert.checkNotNullParam("url", url);
     }
 }

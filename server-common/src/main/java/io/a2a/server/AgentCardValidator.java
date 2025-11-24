@@ -88,7 +88,7 @@ public class AgentCardValidator {
         // check that the primary URL matches the URL for the preferred transport
         if (agentCard.additionalInterfaces() != null) {
             agentCard.additionalInterfaces().stream()
-                    .filter(agentInterface -> agentInterface.transport().equals(agentCard.preferredTransport()))
+                    .filter(agentInterface -> agentInterface.protocolBinding().equals(agentCard.preferredTransport()))
                     .findFirst()
                     .ifPresent(preferredTransportAgentInterface -> {
                 if (!preferredTransportAgentInterface.url().equals(agentCard.url())) {
@@ -120,8 +120,8 @@ public class AgentCardValidator {
         // Add additional interface transports
         if (agentCard.additionalInterfaces() != null) {
             for (AgentInterface agentInterface : agentCard.additionalInterfaces()) {
-                if (agentInterface.transport() != null) {
-                    transportStrings.add(agentInterface.transport());
+                if (agentInterface.protocolBinding() != null) {
+                    transportStrings.add(agentInterface.protocolBinding());
                 }
             }
         }

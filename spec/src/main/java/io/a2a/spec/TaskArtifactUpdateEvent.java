@@ -110,6 +110,15 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
     }
 
     /**
+     * Creates a new Builder for constructing TaskArtifactUpdateEvent instances.
+     *
+     * @return a new TaskArtifactUpdateEvent.Builder instance
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link TaskArtifactUpdateEvent} instances.
      * <p>
      * Example for complete artifact:

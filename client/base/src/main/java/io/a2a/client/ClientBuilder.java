@@ -92,9 +92,9 @@ public class ClientBuilder {
         AgentInterface agentInterface = findBestClientTransport();
 
         // Get the transport provider associated with the protocol
-        ClientTransportProvider clientTransportProvider = transportProviderRegistry.get(agentInterface.transport());
+        ClientTransportProvider clientTransportProvider = transportProviderRegistry.get(agentInterface.protocolBinding());
         if (clientTransportProvider == null) {
-            throw new A2AClientException("No client available for " + agentInterface.transport());
+            throw new A2AClientException("No client available for " + agentInterface.protocolBinding());
         }
         Class<? extends ClientTransport> transportProtocolClass = clientTransportProvider.getTransportProtocolClass();
 
@@ -102,7 +102,7 @@ public class ClientBuilder {
         ClientTransportConfig<? extends ClientTransport> clientTransportConfig = clientTransports.get(transportProtocolClass);
 
         if (clientTransportConfig == null) {
-            throw new A2AClientException("Missing required TransportConfig for " + agentInterface.transport());
+            throw new A2AClientException("Missing required TransportConfig for " + agentInterface.protocolBinding());
         }
 
         return clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface.url());
@@ -113,7 +113,7 @@ public class ClientBuilder {
         serverPreferredTransports.put(agentCard.preferredTransport(), agentCard.url());
         if (agentCard.additionalInterfaces() != null) {
             for (AgentInterface agentInterface : agentCard.additionalInterfaces()) {
-                serverPreferredTransports.putIfAbsent(agentInterface.transport(), agentInterface.url());
+                serverPreferredTransports.putIfAbsent(agentInterface.protocolBinding(), agentInterface.url());
             }
         }
         return serverPreferredTransports;

@@ -38,7 +38,7 @@ import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.Part;
 import io.a2a.spec.Part.Kind;
-import io.a2a.spec.PushNotificationAuthenticationInfo;
+import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -206,7 +206,7 @@ public class RestTransportTest {
         assertEquals(1, task.getArtifacts().size());
         Artifact artifact = task.getArtifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
-        assertEquals("", artifact.name());
+        assertNull(artifact.name());
         assertEquals(false, artifact.parts().isEmpty());
         assertEquals(Kind.TEXT, artifact.parts().get(0).getKind());
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).getText());
@@ -304,13 +304,13 @@ public class RestTransportTest {
                 new PushNotificationConfig.Builder()
                         .url("https://example.com/callback")
                         .authenticationInfo(
-                                new PushNotificationAuthenticationInfo(Collections.singletonList("jwt"), null))
+                                new AuthenticationInfo(Collections.singletonList("jwt"), null))
                         .build());
         TaskPushNotificationConfig taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(pushedConfig, null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+        AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
         assertEquals(1, authenticationInfo.schemes().size());
         assertEquals("jwt", authenticationInfo.schemes().get(0));
     }
@@ -338,7 +338,7 @@ public class RestTransportTest {
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+        AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
         assertTrue(authenticationInfo.schemes().size() == 1);
         assertEquals("jwt", authenticationInfo.schemes().get(0));
     }
@@ -367,7 +367,7 @@ public class RestTransportTest {
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         assertEquals("10", pushNotificationConfig.id());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+        AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
         assertTrue(authenticationInfo.schemes().size() == 1);
         assertEquals("jwt", authenticationInfo.schemes().get(0));
         assertEquals("", authenticationInfo.credentials());

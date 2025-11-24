@@ -13,7 +13,7 @@ import io.a2a.spec.Artifact;
 import io.a2a.spec.HTTPAuthSecurityScheme;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
-import io.a2a.spec.PushNotificationAuthenticationInfo;
+import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
@@ -211,7 +211,7 @@ public class ToProtoTest {
                 = new TaskPushNotificationConfig("push-task-123",
                         new PushNotificationConfig.Builder()
                                 .token("AAAAAA")
-                                .authenticationInfo(new PushNotificationAuthenticationInfo(Collections.singletonList("jwt"), "credentials"))
+                                .authenticationInfo(new AuthenticationInfo(Collections.singletonList("jwt"), "credentials"))
                                 .url("http://example.com")
                                 .id("xyz")
                                 .build());

@@ -14,9 +14,9 @@ public class JsonMessages {
                  "url": "https://georoute-agent.example.com/a2a/v1",
                  "preferredTransport": "JSONRPC",
                  "additionalInterfaces" : [
-                   {"url": "https://georoute-agent.example.com/a2a/v1", "transport": "JSONRPC"},
-                   {"url": "https://georoute-agent.example.com/a2a/grpc", "transport": "GRPC"},
-                   {"url": "https://georoute-agent.example.com/a2a/json", "transport": "HTTP+JSON"}
+                   {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC"},
+                   {"url": "https://georoute-agent.example.com/a2a/grpc", "protocolBinding": "GRPC"},
+                   {"url": "https://georoute-agent.example.com/a2a/json", "protocolBinding": "HTTP+JSON"}
                  ],
                  "provider": {
                    "organization": "Example Geo Services Inc.",

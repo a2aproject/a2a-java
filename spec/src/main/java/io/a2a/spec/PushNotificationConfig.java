@@ -16,21 +16,21 @@ import io.a2a.util.Assert;
  * Authentication can be provided via either:
  * <ul>
  *   <li>Simple bearer token in the {@code token} field</li>
- *   <li>More complex authentication via {@link PushNotificationAuthenticationInfo}</li>
+ *   <li>More complex authentication via {@link AuthenticationInfo}</li>
  * </ul>
  *
  * @param url the HTTP/HTTPS endpoint URL to receive push notifications (required)
  * @param token optional bearer token for simple authentication
  * @param authentication optional complex authentication configuration
  * @param id optional client-provided identifier for this configuration
- * @see PushNotificationAuthenticationInfo for authentication details
+ * @see AuthenticationInfo for authentication details
  * @see TaskPushNotificationConfig for task-specific bindings
  * @see MessageSendConfiguration for configuring push notifications on message send
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record PushNotificationConfig(String url, String token, PushNotificationAuthenticationInfo authentication, String id) {
+public record PushNotificationConfig(String url, String token, AuthenticationInfo authentication, String id) {
     public static final TypeReference<PushNotificationConfig> TYPE_REFERENCE = new TypeReference<>() {};
 
     public PushNotificationConfig {
@@ -46,7 +46,7 @@ public record PushNotificationConfig(String url, String token, PushNotificationA
     public static class Builder {
         private String url;
         private String token;
-        private PushNotificationAuthenticationInfo authentication;
+        private AuthenticationInfo authentication;
         private String id;
 
         /** Creates an empty builder. */
@@ -93,7 +93,7 @@ public record PushNotificationConfig(String url, String token, PushNotificationA
          * @param authenticationInfo the authentication configuration
          * @return this builder
          */
-        public Builder authenticationInfo(PushNotificationAuthenticationInfo authenticationInfo) {
+        public Builder authenticationInfo(AuthenticationInfo authenticationInfo) {
             this.authentication = authenticationInfo;
             return this;
         }
