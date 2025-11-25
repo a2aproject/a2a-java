@@ -35,7 +35,7 @@ public interface PushNotificationConfigOrBuilder extends
    * Url to send the notification too
    * </pre>
    *
-   * <code>string url = 2;</code>
+   * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The url.
    */
   java.lang.String getUrl();
@@ -44,7 +44,7 @@ public interface PushNotificationConfigOrBuilder extends
    * Url to send the notification too
    * </pre>
    *
-   * <code>string url = 2;</code>
+   * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for url.
    */
   com.google.protobuf.ByteString

@@ -16,7 +16,7 @@ public interface ArtifactOrBuilder extends
    * within a task.
    * </pre>
    *
-   * <code>string artifact_id = 1;</code>
+   * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The artifactId.
    */
   java.lang.String getArtifactId();
@@ -26,7 +26,7 @@ public interface ArtifactOrBuilder extends
    * within a task.
    * </pre>
    *
-   * <code>string artifact_id = 1;</code>
+   * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for artifactId.
    */
   com.google.protobuf.ByteString
@@ -77,7 +77,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<io.a2a.grpc.Part> 
       getPartsList();
@@ -86,7 +86,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.Part getParts(int index);
   /**
@@ -94,7 +94,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getPartsCount();
   /**
@@ -102,7 +102,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
       getPartsOrBuilderList();
@@ -111,7 +111,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
       int index);

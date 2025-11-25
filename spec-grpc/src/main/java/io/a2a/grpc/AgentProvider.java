@@ -8,7 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:AgentProvider]
- * Represents information about the service provider of an agent.
+ * Represents the service provider of an agent.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.AgentProvider}
@@ -55,11 +55,11 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object url_ = "";
   /**
    * <pre>
-   * The providers reference url
+   * A URL for the agent provider's website or relevant documentation.
    * Example: "https://ai.google.dev"
    * </pre>
    *
-   * <code>string url = 1;</code>
+   * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The url.
    */
   @java.lang.Override
@@ -77,11 +77,11 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The providers reference url
+   * A URL for the agent provider's website or relevant documentation.
    * Example: "https://ai.google.dev"
    * </pre>
    *
-   * <code>string url = 1;</code>
+   * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for url.
    */
   @java.lang.Override
@@ -104,11 +104,11 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object organization_ = "";
   /**
    * <pre>
-   * The providers organization name
+   * The name of the agent provider's organization.
    * Example: "Google"
    * </pre>
    *
-   * <code>string organization = 2;</code>
+   * <code>string organization = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The organization.
    */
   @java.lang.Override
@@ -126,11 +126,11 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The providers organization name
+   * The name of the agent provider's organization.
    * Example: "Google"
    * </pre>
    *
-   * <code>string organization = 2;</code>
+   * <code>string organization = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for organization.
    */
   @java.lang.Override
@@ -317,7 +317,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:AgentProvider]
-   * Represents information about the service provider of an agent.
+   * Represents the service provider of an agent.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.AgentProvider}
@@ -474,11 +474,11 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object url_ = "";
     /**
      * <pre>
-     * The providers reference url
+     * A URL for the agent provider's website or relevant documentation.
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The url.
      */
     public java.lang.String getUrl() {
@@ -495,11 +495,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The providers reference url
+     * A URL for the agent provider's website or relevant documentation.
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for url.
      */
     public com.google.protobuf.ByteString
@@ -517,11 +517,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The providers reference url
+     * A URL for the agent provider's website or relevant documentation.
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The url to set.
      * @return This builder for chaining.
      */
@@ -535,11 +535,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The providers reference url
+     * A URL for the agent provider's website or relevant documentation.
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearUrl() {
@@ -550,11 +550,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The providers reference url
+     * A URL for the agent provider's website or relevant documentation.
      * Example: "https://ai.google.dev"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for url to set.
      * @return This builder for chaining.
      */
@@ -571,11 +571,11 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object organization_ = "";
     /**
      * <pre>
-     * The providers organization name
+     * The name of the agent provider's organization.
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2;</code>
+     * <code>string organization = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The organization.
      */
     public java.lang.String getOrganization() {
@@ -592,11 +592,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The providers organization name
+     * The name of the agent provider's organization.
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2;</code>
+     * <code>string organization = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for organization.
      */
     public com.google.protobuf.ByteString
@@ -614,11 +614,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The providers organization name
+     * The name of the agent provider's organization.
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2;</code>
+     * <code>string organization = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The organization to set.
      * @return This builder for chaining.
      */
@@ -632,11 +632,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The providers organization name
+     * The name of the agent provider's organization.
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2;</code>
+     * <code>string organization = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearOrganization() {
@@ -647,11 +647,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The providers organization name
+     * The name of the agent provider's organization.
      * Example: "Google"
      * </pre>
      *
-     * <code>string organization = 2;</code>
+     * <code>string organization = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for organization to set.
      * @return This builder for chaining.
      */

@@ -310,7 +310,7 @@ public class ProtoUtils {
                 builder.setState(taskState(taskStatus.state()));
             }
             if (taskStatus.message() != null) {
-                builder.setUpdate(message(taskStatus.message()));
+                builder.setMessage(message(taskStatus.message()));
             }
             if (taskStatus.timestamp() != null) {
                 Instant instant = taskStatus.timestamp().toInstant();
@@ -626,7 +626,7 @@ public class ProtoUtils {
         private static io.a2a.grpc.AgentInterface agentInterface(AgentInterface agentInterface) {
             io.a2a.grpc.AgentInterface.Builder builder = io.a2a.grpc.AgentInterface.newBuilder();
             if (agentInterface.transport() != null) {
-                builder.setTransport(agentInterface.transport());
+                builder.setProtocolBinding(agentInterface.transport());
             }
             if (agentInterface.url() != null) {
                 builder.setUrl(agentInterface.url());
@@ -751,12 +751,8 @@ public class ProtoUtils {
             if (request.getHistoryLength() > 0) {
                 builder.historyLength(request.getHistoryLength());
             }
-            if (request.hasLastUpdatedTime()) {
-                Instant instant = Instant.ofEpochSecond(
-                        request.getLastUpdatedTime().getSeconds(),
-                        request.getLastUpdatedTime().getNanos());
-                builder.lastUpdatedAfter(instant);
-            }
+            Instant instant = Instant.ofEpochMilli(request.getLastUpdatedAfter());
+            builder.lastUpdatedAfter(instant);
             if (request.getIncludeArtifacts()) {
                 builder.includeArtifacts(true);
             }
@@ -781,8 +777,15 @@ public class ProtoUtils {
             return builder.build();
         }
 
-        public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequestOrBuilder request) {
-            return taskPushNotificationConfig(request.getConfig(), true);
+        public static TaskPushNotificationConfig setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequestOrBuilder config) {
+            String taskId = config.getParent();
+            if(taskId == null || taskId.isBlank()) {
+                taskId = config.getConfig().getName().split("/")[1];
+            } else {
+                taskId = taskId.split("/")[1];
+            }
+            PushNotificationConfig pnc = pushNotification(config.getConfig().getPushNotificationConfig(), config.getConfigId());
+            return new TaskPushNotificationConfig(taskId, pnc);
         }
 
         public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfigOrBuilder config) {
@@ -828,7 +831,7 @@ public class ProtoUtils {
             return new GetTaskPushNotificationConfigParams(taskId, configId);
         }
 
-        public static TaskIdParams taskIdParams(io.a2a.grpc.TaskSubscriptionRequestOrBuilder request) {
+        public static TaskIdParams taskIdParams(io.a2a.grpc.SubscribeToTaskRequestOrBuilder request) {
             String name = request.getName();
             String id = name.substring(name.lastIndexOf('/') + 1);
             return new TaskIdParams(id);
@@ -979,11 +982,11 @@ public class ProtoUtils {
 
         private static FilePart filePart(io.a2a.grpc.FilePartOrBuilder filePart) {
             if (filePart.hasFileWithBytes()) {
-                return new FilePart(new FileWithBytes(filePart.getMimeType(),
+                return new FilePart(new FileWithBytes(filePart.getMediaType(),
                         ! filePart.getName().isEmpty() ? filePart.getName() : null,
                         filePart.getFileWithBytes().toStringUtf8()));
             } else if (filePart.hasFileWithUri()) {
-                return new FilePart(new FileWithUri(filePart.getMimeType(),
+                return new FilePart(new FileWithUri(filePart.getMediaType(),
                         ! filePart.getName().isEmpty() ? filePart.getName() : null,
                         filePart.getFileWithUri()));
             }
@@ -1001,7 +1004,7 @@ public class ProtoUtils {
             }
             return new TaskStatus(
                     taskState(taskStatus.getState()),
-                    taskStatus.hasUpdate() ? message(taskStatus.getUpdateOrBuilder()) : null,
+                    taskStatus.hasMessage() ? message(taskStatus.getMessageOrBuilder()) : null,
                     OffsetDateTime.ofInstant(Instant.ofEpochSecond(taskStatus.getTimestamp().getSeconds(), taskStatus.getTimestamp().getNanos()), ZoneOffset.UTC)
             );
         }

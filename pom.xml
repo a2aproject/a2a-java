@@ -58,7 +58,7 @@
         <mockserver.version>5.15.0</mockserver.version>
         <mutiny-zero.version>1.1.1</mutiny-zero.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
-        <protobuf.version>4.31.1</protobuf.version>
+        <protobuf-java.version>4.31.1</protobuf-java.version>
         <protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
         <quarkus.platform.version>3.28.2</quarkus.platform.version>
         <rest-assured.version>5.5.1</rest-assured.version>
@@ -206,7 +206,7 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
-                <version>${protobuf.version}</version>
+                <version>${protobuf-java.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>

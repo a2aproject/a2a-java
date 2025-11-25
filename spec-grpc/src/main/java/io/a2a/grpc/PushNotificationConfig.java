@@ -107,7 +107,7 @@ private static final long serialVersionUID = 0L;
    * Url to send the notification too
    * </pre>
    *
-   * <code>string url = 2;</code>
+   * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The url.
    */
   @java.lang.Override
@@ -128,7 +128,7 @@ private static final long serialVersionUID = 0L;
    * Url to send the notification too
    * </pre>
    *
-   * <code>string url = 2;</code>
+   * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for url.
    */
   @java.lang.Override
@@ -721,7 +721,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2;</code>
+     * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The url.
      */
     public java.lang.String getUrl() {
@@ -741,7 +741,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2;</code>
+     * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for url.
      */
     public com.google.protobuf.ByteString
@@ -762,7 +762,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2;</code>
+     * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The url to set.
      * @return This builder for chaining.
      */
@@ -779,7 +779,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2;</code>
+     * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearUrl() {
@@ -793,7 +793,7 @@ private static final long serialVersionUID = 0L;
      * Url to send the notification too
      * </pre>
      *
-     * <code>string url = 2;</code>
+     * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for url to set.
      * @return This builder for chaining.
      */

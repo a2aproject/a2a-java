@@ -12,21 +12,21 @@ public interface AgentProviderOrBuilder extends
 
   /**
    * <pre>
-   * The providers reference url
+   * A URL for the agent provider's website or relevant documentation.
    * Example: "https://ai.google.dev"
    * </pre>
    *
-   * <code>string url = 1;</code>
+   * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The url.
    */
   java.lang.String getUrl();
   /**
    * <pre>
-   * The providers reference url
+   * A URL for the agent provider's website or relevant documentation.
    * Example: "https://ai.google.dev"
    * </pre>
    *
-   * <code>string url = 1;</code>
+   * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for url.
    */
   com.google.protobuf.ByteString
@@ -34,21 +34,21 @@ public interface AgentProviderOrBuilder extends
 
   /**
    * <pre>
-   * The providers organization name
+   * The name of the agent provider's organization.
    * Example: "Google"
    * </pre>
    *
-   * <code>string organization = 2;</code>
+   * <code>string organization = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The organization.
    */
   java.lang.String getOrganization();
   /**
    * <pre>
-   * The providers organization name
+   * The name of the agent provider's organization.
    * Example: "Google"
    * </pre>
    *
-   * <code>string organization = 2;</code>
+   * <code>string organization = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for organization.
    */
   com.google.protobuf.ByteString

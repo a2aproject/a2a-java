@@ -7,16 +7,16 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:GetAuthenticatedExtendedCardRequest]
+ * --8&lt;-- [start:GetExtendedAgentCardRequest]
  * </pre>
  *
- * Protobuf type {@code a2a.v1.GetAgentCardRequest}
+ * Protobuf type {@code a2a.v1.GetExtendedAgentCardRequest}
  */
 @com.google.protobuf.Generated
-public final class GetAgentCardRequest extends
+public final class GetExtendedAgentCardRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.GetAgentCardRequest)
-    GetAgentCardRequestOrBuilder {
+    // @@protoc_insertion_point(message_implements:a2a.v1.GetExtendedAgentCardRequest)
+    GetExtendedAgentCardRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -25,26 +25,26 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 31,
       /* patch= */ 1,
       /* suffix= */ "",
-      GetAgentCardRequest.class.getName());
+      GetExtendedAgentCardRequest.class.getName());
   }
-  // Use GetAgentCardRequest.newBuilder() to construct.
-  private GetAgentCardRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use GetExtendedAgentCardRequest.newBuilder() to construct.
+  private GetExtendedAgentCardRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private GetAgentCardRequest() {
+  private GetExtendedAgentCardRequest() {
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetAgentCardRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetAgentCardRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            io.a2a.grpc.GetAgentCardRequest.class, io.a2a.grpc.GetAgentCardRequest.Builder.class);
+            io.a2a.grpc.GetExtendedAgentCardRequest.class, io.a2a.grpc.GetExtendedAgentCardRequest.Builder.class);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -80,10 +80,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof io.a2a.grpc.GetAgentCardRequest)) {
+    if (!(obj instanceof io.a2a.grpc.GetExtendedAgentCardRequest)) {
       return super.equals(obj);
     }
-    io.a2a.grpc.GetAgentCardRequest other = (io.a2a.grpc.GetAgentCardRequest) obj;
+    io.a2a.grpc.GetExtendedAgentCardRequest other = (io.a2a.grpc.GetExtendedAgentCardRequest) obj;
 
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
@@ -101,44 +101,44 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(byte[] data)
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(java.io.InputStream input)
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -146,26 +146,26 @@ private static final long serialVersionUID = 0L;
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static io.a2a.grpc.GetAgentCardRequest parseDelimitedFrom(java.io.InputStream input)
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static io.a2a.grpc.GetAgentCardRequest parseDelimitedFrom(
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.GetAgentCardRequest parseFrom(
+  public static io.a2a.grpc.GetExtendedAgentCardRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -178,7 +178,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(io.a2a.grpc.GetAgentCardRequest prototype) {
+  public static Builder newBuilder(io.a2a.grpc.GetExtendedAgentCardRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -195,29 +195,29 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:GetAuthenticatedExtendedCardRequest]
+   * --8&lt;-- [start:GetExtendedAgentCardRequest]
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.GetAgentCardRequest}
+   * Protobuf type {@code a2a.v1.GetExtendedAgentCardRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.GetAgentCardRequest)
-      io.a2a.grpc.GetAgentCardRequestOrBuilder {
+      // @@protoc_insertion_point(builder_implements:a2a.v1.GetExtendedAgentCardRequest)
+      io.a2a.grpc.GetExtendedAgentCardRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetAgentCardRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetAgentCardRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.a2a.grpc.GetAgentCardRequest.class, io.a2a.grpc.GetAgentCardRequest.Builder.class);
+              io.a2a.grpc.GetExtendedAgentCardRequest.class, io.a2a.grpc.GetExtendedAgentCardRequest.Builder.class);
     }
 
-    // Construct using io.a2a.grpc.GetAgentCardRequest.newBuilder()
+    // Construct using io.a2a.grpc.GetExtendedAgentCardRequest.newBuilder()
     private Builder() {
 
     }
@@ -236,17 +236,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetAgentCardRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_descriptor;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.GetAgentCardRequest getDefaultInstanceForType() {
-      return io.a2a.grpc.GetAgentCardRequest.getDefaultInstance();
+    public io.a2a.grpc.GetExtendedAgentCardRequest getDefaultInstanceForType() {
+      return io.a2a.grpc.GetExtendedAgentCardRequest.getDefaultInstance();
     }
 
     @java.lang.Override
-    public io.a2a.grpc.GetAgentCardRequest build() {
-      io.a2a.grpc.GetAgentCardRequest result = buildPartial();
+    public io.a2a.grpc.GetExtendedAgentCardRequest build() {
+      io.a2a.grpc.GetExtendedAgentCardRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -254,24 +254,24 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.GetAgentCardRequest buildPartial() {
-      io.a2a.grpc.GetAgentCardRequest result = new io.a2a.grpc.GetAgentCardRequest(this);
+    public io.a2a.grpc.GetExtendedAgentCardRequest buildPartial() {
+      io.a2a.grpc.GetExtendedAgentCardRequest result = new io.a2a.grpc.GetExtendedAgentCardRequest(this);
       onBuilt();
       return result;
     }
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof io.a2a.grpc.GetAgentCardRequest) {
-        return mergeFrom((io.a2a.grpc.GetAgentCardRequest)other);
+      if (other instanceof io.a2a.grpc.GetExtendedAgentCardRequest) {
+        return mergeFrom((io.a2a.grpc.GetExtendedAgentCardRequest)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(io.a2a.grpc.GetAgentCardRequest other) {
-      if (other == io.a2a.grpc.GetAgentCardRequest.getDefaultInstance()) return this;
+    public Builder mergeFrom(io.a2a.grpc.GetExtendedAgentCardRequest other) {
+      if (other == io.a2a.grpc.GetExtendedAgentCardRequest.getDefaultInstance()) return this;
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -314,23 +314,23 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.GetAgentCardRequest)
+    // @@protoc_insertion_point(builder_scope:a2a.v1.GetExtendedAgentCardRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.GetAgentCardRequest)
-  private static final io.a2a.grpc.GetAgentCardRequest DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:a2a.v1.GetExtendedAgentCardRequest)
+  private static final io.a2a.grpc.GetExtendedAgentCardRequest DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new io.a2a.grpc.GetAgentCardRequest();
+    DEFAULT_INSTANCE = new io.a2a.grpc.GetExtendedAgentCardRequest();
   }
 
-  public static io.a2a.grpc.GetAgentCardRequest getDefaultInstance() {
+  public static io.a2a.grpc.GetExtendedAgentCardRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<GetAgentCardRequest>
-      PARSER = new com.google.protobuf.AbstractParser<GetAgentCardRequest>() {
+  private static final com.google.protobuf.Parser<GetExtendedAgentCardRequest>
+      PARSER = new com.google.protobuf.AbstractParser<GetExtendedAgentCardRequest>() {
     @java.lang.Override
-    public GetAgentCardRequest parsePartialFrom(
+    public GetExtendedAgentCardRequest parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -349,17 +349,17 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public static com.google.protobuf.Parser<GetAgentCardRequest> parser() {
+  public static com.google.protobuf.Parser<GetExtendedAgentCardRequest> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<GetAgentCardRequest> getParserForType() {
+  public com.google.protobuf.Parser<GetExtendedAgentCardRequest> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public io.a2a.grpc.GetAgentCardRequest getDefaultInstanceForType() {
+  public io.a2a.grpc.GetExtendedAgentCardRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

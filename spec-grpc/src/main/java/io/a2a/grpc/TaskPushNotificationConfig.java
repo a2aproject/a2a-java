@@ -8,6 +8,8 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:TaskPushNotificationConfig]
+ * A container associating a push notification configuration with a specific
+ * task.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.TaskPushNotificationConfig}
@@ -58,7 +60,7 @@ private static final long serialVersionUID = 0L;
    * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The name.
    */
   @java.lang.Override
@@ -80,7 +82,7 @@ private static final long serialVersionUID = 0L;
    * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for name.
    */
   @java.lang.Override
@@ -105,7 +107,7 @@ private static final long serialVersionUID = 0L;
    * The push notification configuration details.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the pushNotificationConfig field is set.
    */
   @java.lang.Override
@@ -117,7 +119,7 @@ private static final long serialVersionUID = 0L;
    * The push notification configuration details.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The pushNotificationConfig.
    */
   @java.lang.Override
@@ -129,7 +131,7 @@ private static final long serialVersionUID = 0L;
    * The push notification configuration details.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
@@ -311,6 +313,8 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:TaskPushNotificationConfig]
+   * A container associating a push notification configuration with a specific
+   * task.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.TaskPushNotificationConfig}
@@ -486,7 +490,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The name.
      */
     public java.lang.String getName() {
@@ -507,7 +511,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for name.
      */
     public com.google.protobuf.ByteString
@@ -529,7 +533,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The name to set.
      * @return This builder for chaining.
      */
@@ -547,7 +551,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearName() {
@@ -562,7 +566,7 @@ private static final long serialVersionUID = 0L;
      * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for name to set.
      * @return This builder for chaining.
      */
@@ -584,7 +588,7 @@ private static final long serialVersionUID = 0L;
      * The push notification configuration details.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the pushNotificationConfig field is set.
      */
     public boolean hasPushNotificationConfig() {
@@ -595,7 +599,7 @@ private static final long serialVersionUID = 0L;
      * The push notification configuration details.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The pushNotificationConfig.
      */
     public io.a2a.grpc.PushNotificationConfig getPushNotificationConfig() {
@@ -610,7 +614,7 @@ private static final long serialVersionUID = 0L;
      * The push notification configuration details.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setPushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
       if (pushNotificationConfigBuilder_ == null) {
@@ -630,7 +634,7 @@ private static final long serialVersionUID = 0L;
      * The push notification configuration details.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setPushNotificationConfig(
         io.a2a.grpc.PushNotificationConfig.Builder builderForValue) {
@@ -648,7 +652,7 @@ private static final long serialVersionUID = 0L;
      * The push notification configuration details.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergePushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
       if (pushNotificationConfigBuilder_ == null) {
@@ -673,7 +677,7 @@ private static final long serialVersionUID = 0L;
      * The push notification configuration details.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearPushNotificationConfig() {
       bitField0_ = (bitField0_ & ~0x00000002);
@@ -690,7 +694,7 @@ private static final long serialVersionUID = 0L;
      * The push notification configuration details.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.PushNotificationConfig.Builder getPushNotificationConfigBuilder() {
       bitField0_ |= 0x00000002;
@@ -702,7 +706,7 @@ private static final long serialVersionUID = 0L;
      * The push notification configuration details.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
       if (pushNotificationConfigBuilder_ != null) {
@@ -717,7 +721,7 @@ private static final long serialVersionUID = 0L;
      * The push notification configuration details.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> 

@@ -34,10 +34,19 @@ public interface GetTaskRequestOrBuilder extends
 
   /**
    * <pre>
-   * The number of most recent messages from the task's history to retrieve.
+   * The maximum number of messages to include in the history.
    * </pre>
    *
-   * <code>int32 history_length = 2;</code>
+   * <code>optional int32 history_length = 2;</code>
+   * @return Whether the historyLength field is set.
+   */
+  boolean hasHistoryLength();
+  /**
+   * <pre>
+   * The maximum number of messages to include in the history.
+   * </pre>
+   *
+   * <code>optional int32 history_length = 2;</code>
    * @return The historyLength.
    */
   int getHistoryLength();

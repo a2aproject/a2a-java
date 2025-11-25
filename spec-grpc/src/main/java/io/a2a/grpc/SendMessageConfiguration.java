@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:MessageSendConfiguration]
+ * --8&lt;-- [start:SendMessageConfiguration]
  * Configuration of a send message request.
  * </pre>
  *
@@ -146,11 +146,22 @@ private static final long serialVersionUID = 0L;
   private int historyLength_ = 0;
   /**
    * <pre>
-   * The maximum number of messages to include in the history. if 0, the
-   * history will be unlimited.
+   * The maximum number of messages to include in the history.
    * </pre>
    *
-   * <code>int32 history_length = 3;</code>
+   * <code>optional int32 history_length = 3;</code>
+   * @return Whether the historyLength field is set.
+   */
+  @java.lang.Override
+  public boolean hasHistoryLength() {
+    return ((bitField0_ & 0x00000002) != 0);
+  }
+  /**
+   * <pre>
+   * The maximum number of messages to include in the history.
+   * </pre>
+   *
+   * <code>optional int32 history_length = 3;</code>
    * @return The historyLength.
    */
   @java.lang.Override
@@ -162,10 +173,7 @@ private static final long serialVersionUID = 0L;
   private boolean blocking_ = false;
   /**
    * <pre>
-   * If true, the message will be blocking until the task is completed. If
-   * false, the message will be non-blocking and the task will be returned
-   * immediately. It is the caller's responsibility to check for any task
-   * updates.
+   * If true, the message will be blocking until the task is completed.
    * </pre>
    *
    * <code>bool blocking = 4;</code>
@@ -196,7 +204,7 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(2, getPushNotificationConfig());
     }
-    if (historyLength_ != 0) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       output.writeInt32(3, historyLength_);
     }
     if (blocking_ != false) {
@@ -223,7 +231,7 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, getPushNotificationConfig());
     }
-    if (historyLength_ != 0) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(3, historyLength_);
     }
@@ -253,8 +261,11 @@ private static final long serialVersionUID = 0L;
       if (!getPushNotificationConfig()
           .equals(other.getPushNotificationConfig())) return false;
     }
-    if (getHistoryLength()
-        != other.getHistoryLength()) return false;
+    if (hasHistoryLength() != other.hasHistoryLength()) return false;
+    if (hasHistoryLength()) {
+      if (getHistoryLength()
+          != other.getHistoryLength()) return false;
+    }
     if (getBlocking()
         != other.getBlocking()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
@@ -276,8 +287,10 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER;
       hash = (53 * hash) + getPushNotificationConfig().hashCode();
     }
-    hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
-    hash = (53 * hash) + getHistoryLength();
+    if (hasHistoryLength()) {
+      hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
+      hash = (53 * hash) + getHistoryLength();
+    }
     hash = (37 * hash) + BLOCKING_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getBlocking());
@@ -380,7 +393,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:MessageSendConfiguration]
+   * --8&lt;-- [start:SendMessageConfiguration]
    * Configuration of a send message request.
    * </pre>
    *
@@ -478,6 +491,7 @@ private static final long serialVersionUID = 0L;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.historyLength_ = historyLength_;
+        to_bitField0_ |= 0x00000002;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.blocking_ = blocking_;
@@ -510,7 +524,7 @@ private static final long serialVersionUID = 0L;
       if (other.hasPushNotificationConfig()) {
         mergePushNotificationConfig(other.getPushNotificationConfig());
       }
-      if (other.getHistoryLength() != 0) {
+      if (other.hasHistoryLength()) {
         setHistoryLength(other.getHistoryLength());
       }
       if (other.getBlocking() != false) {
@@ -889,11 +903,22 @@ private static final long serialVersionUID = 0L;
     private int historyLength_ ;
     /**
      * <pre>
-     * The maximum number of messages to include in the history. if 0, the
-     * history will be unlimited.
+     * The maximum number of messages to include in the history.
      * </pre>
      *
-     * <code>int32 history_length = 3;</code>
+     * <code>optional int32 history_length = 3;</code>
+     * @return Whether the historyLength field is set.
+     */
+    @java.lang.Override
+    public boolean hasHistoryLength() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+    /**
+     * <pre>
+     * The maximum number of messages to include in the history.
+     * </pre>
+     *
+     * <code>optional int32 history_length = 3;</code>
      * @return The historyLength.
      */
     @java.lang.Override
@@ -902,11 +927,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The maximum number of messages to include in the history. if 0, the
-     * history will be unlimited.
+     * The maximum number of messages to include in the history.
      * </pre>
      *
-     * <code>int32 history_length = 3;</code>
+     * <code>optional int32 history_length = 3;</code>
      * @param value The historyLength to set.
      * @return This builder for chaining.
      */
@@ -919,11 +943,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The maximum number of messages to include in the history. if 0, the
-     * history will be unlimited.
+     * The maximum number of messages to include in the history.
      * </pre>
      *
-     * <code>int32 history_length = 3;</code>
+     * <code>optional int32 history_length = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearHistoryLength() {
@@ -936,10 +959,7 @@ private static final long serialVersionUID = 0L;
     private boolean blocking_ ;
     /**
      * <pre>
-     * If true, the message will be blocking until the task is completed. If
-     * false, the message will be non-blocking and the task will be returned
-     * immediately. It is the caller's responsibility to check for any task
-     * updates.
+     * If true, the message will be blocking until the task is completed.
      * </pre>
      *
      * <code>bool blocking = 4;</code>
@@ -951,10 +971,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If true, the message will be blocking until the task is completed. If
-     * false, the message will be non-blocking and the task will be returned
-     * immediately. It is the caller's responsibility to check for any task
-     * updates.
+     * If true, the message will be blocking until the task is completed.
      * </pre>
      *
      * <code>bool blocking = 4;</code>
@@ -970,10 +987,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If true, the message will be blocking until the task is completed. If
-     * false, the message will be non-blocking and the task will be returned
-     * immediately. It is the caller's responsibility to check for any task
-     * updates.
+     * If true, the message will be blocking until the task is completed.
      * </pre>
      *
      * <code>bool blocking = 4;</code>

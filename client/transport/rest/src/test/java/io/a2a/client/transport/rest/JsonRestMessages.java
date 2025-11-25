@@ -88,13 +88,13 @@ public class JsonRestMessages {
                  {
                   "file": {
                      "file_with_uri": "file:///path/to/file.txt",
-                     "mimeType": "text/plain"
+                     "mediaType": "text/plain"
                   }
                  },
                  {
                   "file": {
                      "file_with_bytes": "aGVsbG8=",
-                     "mimeType": "text/plain"
+                     "mediaType": "text/plain"
                   }
                  }
                 ],
@@ -454,7 +454,7 @@ public class JsonRestMessages {
                  "kind": "file",
                  "file": {
                   "uri": "file:///path/to/image.jpg",
-                  "mimeType": "image/jpeg"
+                  "mediaType": "image/jpeg"
                  }
                 }
                ],
@@ -571,7 +571,7 @@ public class JsonRestMessages {
                  "file": {
                   "bytes": "aGVsbG8=",
                   "name": "chart.png",
-                  "mimeType": "image/png"
+                  "mediaType": "image/png"
                  }
                 },
                 {

@@ -8,7 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:AgentExtension]
- * A declaration of an extension supported by an Agent.
+ * A declaration of a protocol extension supported by an Agent.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.AgentExtension}
@@ -56,8 +56,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object uri_ = "";
   /**
    * <pre>
-   * The URI of the extension.
-   * Example: "https://developers.google.com/identity/protocols/oauth2"
+   * The unique URI identifying the extension.
    * </pre>
    *
    * <code>string uri = 1;</code>
@@ -78,8 +77,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The URI of the extension.
-   * Example: "https://developers.google.com/identity/protocols/oauth2"
+   * The unique URI identifying the extension.
    * </pre>
    *
    * <code>string uri = 1;</code>
@@ -105,8 +103,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object description_ = "";
   /**
    * <pre>
-   * A description of how this agent uses this extension.
-   * Example: "Google OAuth 2.0 authentication"
+   * A human-readable description of how this agent uses the extension.
    * </pre>
    *
    * <code>string description = 2;</code>
@@ -127,8 +124,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A description of how this agent uses this extension.
-   * Example: "Google OAuth 2.0 authentication"
+   * A human-readable description of how this agent uses the extension.
    * </pre>
    *
    * <code>string description = 2;</code>
@@ -153,8 +149,7 @@ private static final long serialVersionUID = 0L;
   private boolean required_ = false;
   /**
    * <pre>
-   * Whether the client must follow specific requirements of the extension.
-   * Example: false
+   * If true, the client must understand and comply with the extension's requirements.
    * </pre>
    *
    * <code>bool required = 3;</code>
@@ -169,7 +164,7 @@ private static final long serialVersionUID = 0L;
   private com.google.protobuf.Struct params_;
   /**
    * <pre>
-   * Optional configuration for the extension.
+   * Optional, extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -181,7 +176,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional configuration for the extension.
+   * Optional, extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -193,7 +188,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional configuration for the extension.
+   * Optional, extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -400,7 +395,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:AgentExtension]
-   * A declaration of an extension supported by an Agent.
+   * A declaration of a protocol extension supported by an Agent.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.AgentExtension}
@@ -598,8 +593,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object uri_ = "";
     /**
      * <pre>
-     * The URI of the extension.
-     * Example: "https://developers.google.com/identity/protocols/oauth2"
+     * The unique URI identifying the extension.
      * </pre>
      *
      * <code>string uri = 1;</code>
@@ -619,8 +613,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The URI of the extension.
-     * Example: "https://developers.google.com/identity/protocols/oauth2"
+     * The unique URI identifying the extension.
      * </pre>
      *
      * <code>string uri = 1;</code>
@@ -641,8 +634,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The URI of the extension.
-     * Example: "https://developers.google.com/identity/protocols/oauth2"
+     * The unique URI identifying the extension.
      * </pre>
      *
      * <code>string uri = 1;</code>
@@ -659,8 +651,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The URI of the extension.
-     * Example: "https://developers.google.com/identity/protocols/oauth2"
+     * The unique URI identifying the extension.
      * </pre>
      *
      * <code>string uri = 1;</code>
@@ -674,8 +665,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The URI of the extension.
-     * Example: "https://developers.google.com/identity/protocols/oauth2"
+     * The unique URI identifying the extension.
      * </pre>
      *
      * <code>string uri = 1;</code>
@@ -695,8 +685,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object description_ = "";
     /**
      * <pre>
-     * A description of how this agent uses this extension.
-     * Example: "Google OAuth 2.0 authentication"
+     * A human-readable description of how this agent uses the extension.
      * </pre>
      *
      * <code>string description = 2;</code>
@@ -716,8 +705,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A description of how this agent uses this extension.
-     * Example: "Google OAuth 2.0 authentication"
+     * A human-readable description of how this agent uses the extension.
      * </pre>
      *
      * <code>string description = 2;</code>
@@ -738,8 +726,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A description of how this agent uses this extension.
-     * Example: "Google OAuth 2.0 authentication"
+     * A human-readable description of how this agent uses the extension.
      * </pre>
      *
      * <code>string description = 2;</code>
@@ -756,8 +743,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A description of how this agent uses this extension.
-     * Example: "Google OAuth 2.0 authentication"
+     * A human-readable description of how this agent uses the extension.
      * </pre>
      *
      * <code>string description = 2;</code>
@@ -771,8 +757,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A description of how this agent uses this extension.
-     * Example: "Google OAuth 2.0 authentication"
+     * A human-readable description of how this agent uses the extension.
      * </pre>
      *
      * <code>string description = 2;</code>
@@ -792,8 +777,7 @@ private static final long serialVersionUID = 0L;
     private boolean required_ ;
     /**
      * <pre>
-     * Whether the client must follow specific requirements of the extension.
-     * Example: false
+     * If true, the client must understand and comply with the extension's requirements.
      * </pre>
      *
      * <code>bool required = 3;</code>
@@ -805,8 +789,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Whether the client must follow specific requirements of the extension.
-     * Example: false
+     * If true, the client must understand and comply with the extension's requirements.
      * </pre>
      *
      * <code>bool required = 3;</code>
@@ -822,8 +805,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Whether the client must follow specific requirements of the extension.
-     * Example: false
+     * If true, the client must understand and comply with the extension's requirements.
      * </pre>
      *
      * <code>bool required = 3;</code>
@@ -841,7 +823,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> paramsBuilder_;
     /**
      * <pre>
-     * Optional configuration for the extension.
+     * Optional, extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -852,7 +834,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional configuration for the extension.
+     * Optional, extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -867,7 +849,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional configuration for the extension.
+     * Optional, extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -887,7 +869,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional configuration for the extension.
+     * Optional, extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -905,7 +887,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional configuration for the extension.
+     * Optional, extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -930,7 +912,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional configuration for the extension.
+     * Optional, extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -947,7 +929,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional configuration for the extension.
+     * Optional, extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -959,7 +941,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional configuration for the extension.
+     * Optional, extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -974,7 +956,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional configuration for the extension.
+     * Optional, extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>

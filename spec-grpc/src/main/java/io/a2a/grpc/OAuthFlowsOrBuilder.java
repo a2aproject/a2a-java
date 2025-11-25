@@ -11,61 +11,109 @@ public interface OAuthFlowsOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   * <pre>
+   * Configuration for the OAuth Authorization Code flow.
+   * </pre>
+   *
    * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return Whether the authorizationCode field is set.
    */
   boolean hasAuthorizationCode();
   /**
+   * <pre>
+   * Configuration for the OAuth Authorization Code flow.
+   * </pre>
+   *
    * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return The authorizationCode.
    */
   io.a2a.grpc.AuthorizationCodeOAuthFlow getAuthorizationCode();
   /**
+   * <pre>
+   * Configuration for the OAuth Authorization Code flow.
+   * </pre>
+   *
    * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    */
   io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder getAuthorizationCodeOrBuilder();
 
   /**
+   * <pre>
+   * Configuration for the OAuth Client Credentials flow.
+   * </pre>
+   *
    * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return Whether the clientCredentials field is set.
    */
   boolean hasClientCredentials();
   /**
+   * <pre>
+   * Configuration for the OAuth Client Credentials flow.
+   * </pre>
+   *
    * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return The clientCredentials.
    */
   io.a2a.grpc.ClientCredentialsOAuthFlow getClientCredentials();
   /**
+   * <pre>
+   * Configuration for the OAuth Client Credentials flow.
+   * </pre>
+   *
    * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    */
   io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder getClientCredentialsOrBuilder();
 
   /**
+   * <pre>
+   * Configuration for the OAuth Implicit flow.
+   * </pre>
+   *
    * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
    * @return Whether the implicit field is set.
    */
   boolean hasImplicit();
   /**
+   * <pre>
+   * Configuration for the OAuth Implicit flow.
+   * </pre>
+   *
    * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
    * @return The implicit.
    */
   io.a2a.grpc.ImplicitOAuthFlow getImplicit();
   /**
+   * <pre>
+   * Configuration for the OAuth Implicit flow.
+   * </pre>
+   *
    * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
    */
   io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder();
 
   /**
+   * <pre>
+   * Configuration for the OAuth Resource Owner Password flow.
+   * </pre>
+   *
    * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
    * @return Whether the password field is set.
    */
   boolean hasPassword();
   /**
+   * <pre>
+   * Configuration for the OAuth Resource Owner Password flow.
+   * </pre>
+   *
    * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
    * @return The password.
    */
   io.a2a.grpc.PasswordOAuthFlow getPassword();
   /**
+   * <pre>
+   * Configuration for the OAuth Resource Owner Password flow.
+   * </pre>
+   *
    * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
    */
   io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder();
