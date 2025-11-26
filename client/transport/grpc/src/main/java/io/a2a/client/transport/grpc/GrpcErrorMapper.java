@@ -15,7 +15,7 @@ import io.a2a.spec.UnsupportedOperationError;
 import io.grpc.Status;
 
 /**
- * Utility class to map gRPC StatusRuntimeException to appropriate A2A error types
+ * Utility class to map gRPC exceptions to appropriate A2A error types
  */
 public class GrpcErrorMapper {
 
