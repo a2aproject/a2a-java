@@ -61,6 +61,36 @@ The Python A2A client (`test_client.py`) performs the following actions:
 6. Sends the same message as a streaming request.
 7. Prints each chunk of the server's streaming response as it arrives.
 
+## Enable OpenTelemetry (Optional)
+
+The server includes support for distributed tracing with OpenTelemetry. To enable it:
+
+1. **Run with the OpenTelemetry profile**:
+   ```bash
+   mvn quarkus:dev -Popentelemetry
+   ```
+
+2. **Access Grafana dashboard**:
+   - Quarkus Dev Services will automatically start a Grafana observability stack
+   - Open Grafana at `http://localhost:3001` (default credentials: admin/admin)
+   - View traces in the "Explore" section using the Tempo data source
+
+3. **What gets traced**:
+   - All A2A protocol operations (send message, get task, cancel task, etc.)
+   - Streaming message responses
+   - Task lifecycle events
+   - Custom operations in your `AgentExecutor` implementation (using `@Trace` annotation)
+
+4. **Configuration**:
+   - OpenTelemetry settings are in `application.properties`
+   - OTLP exporters run on ports 5317 (gRPC) and 5318 (HTTP)
+   - To use a custom OTLP endpoint, uncomment and modify:
+     ```properties
+     quarkus.otel.exporter.otlp.endpoint=http://localhost:4317
+     ```
+
+For more information, see the [OpenTelemetry extras module documentation](../../../extras/opentelemetry/README.md).
+
 ## Notes
 
 - Make sure the Java server is running before starting the Python client.

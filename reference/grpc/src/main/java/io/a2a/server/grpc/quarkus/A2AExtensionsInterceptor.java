@@ -13,7 +13,7 @@ import io.a2a.transport.grpc.context.GrpcContextKeys;
 /**
  * gRPC server interceptor that captures request metadata and context information,
  * providing equivalent functionality to Python's grpc.aio.ServicerContext.
- * 
+ *
  * This interceptor:
  * - Extracts A2A extension headers from incoming requests
  * - Captures ServerCall and Metadata for rich context access
@@ -23,7 +23,6 @@ import io.a2a.transport.grpc.context.GrpcContextKeys;
 @ApplicationScoped
 public class A2AExtensionsInterceptor implements ServerInterceptor {
 
-
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> serverCall,
@@ -31,18 +30,20 @@ public class A2AExtensionsInterceptor implements ServerInterceptor {
             ServerCallHandler<ReqT, RespT> serverCallHandler) {
 
         // Extract A2A extensions header
-        Metadata.Key<String> extensionsKey = 
-            Metadata.Key.of(A2AHeaders.X_A2A_EXTENSIONS, Metadata.ASCII_STRING_MARSHALLER);
+        Metadata.Key<String> extensionsKey
+                = Metadata.Key.of(A2AHeaders.X_A2A_EXTENSIONS, Metadata.ASCII_STRING_MARSHALLER);
         String extensions = metadata.get(extensionsKey);
 
         // Create enhanced context with rich information (equivalent to Python's ServicerContext)
         Context context = Context.current()
-            // Store complete metadata for full header access
-            .withValue(GrpcContextKeys.METADATA_KEY, metadata)
-            // Store method name (equivalent to Python's context.method())
-            .withValue(GrpcContextKeys.METHOD_NAME_KEY, serverCall.getMethodDescriptor().getFullMethodName())
-            // Store peer information for client connection details
-            .withValue(GrpcContextKeys.PEER_INFO_KEY, getPeerInfo(serverCall));
+                // Store complete metadata for full header access
+                .withValue(GrpcContextKeys.METADATA_KEY, metadata)
+                // Store Grpc method name 
+                .withValue(GrpcContextKeys.GRPC_METHOD_NAME_KEY, serverCall.getMethodDescriptor().getFullMethodName())
+                // Store method name (equivalent to Python's context.method())
+                .withValue(GrpcContextKeys.METHOD_NAME_KEY, GrpcContextKeys.METHOD_MAPPING.get(serverCall.getMethodDescriptor().getBareMethodName()))
+                // Store peer information for client connection details
+                .withValue(GrpcContextKeys.PEER_INFO_KEY, getPeerInfo(serverCall));
 
         // Store A2A extensions if present
         if (extensions != null) {
@@ -55,7 +56,7 @@ public class A2AExtensionsInterceptor implements ServerInterceptor {
 
     /**
      * Safely extracts peer information from the ServerCall.
-     * 
+     *
      * @param serverCall the gRPC ServerCall
      * @return peer information string, or "unknown" if not available
      */

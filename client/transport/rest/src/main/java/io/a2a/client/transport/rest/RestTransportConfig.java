@@ -4,7 +4,7 @@ import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.transport.spi.ClientTransportConfig;
 import org.jspecify.annotations.Nullable;
 
-public class RestTransportConfig extends ClientTransportConfig<RestTransport>  {
+public class RestTransportConfig extends ClientTransportConfig<RestTransport> {
 
     private final @Nullable A2AHttpClient httpClient;
 

@@ -21,6 +21,11 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
 /**
  * A simple example of using the A2A Java SDK to communicate with an A2A server.
@@ -33,6 +38,7 @@ public class HelloWorldClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static void main(String[] args) {
+        OpenTelemetrySdk openTelemetrySdk = null;
         try {
             AgentCard finalAgentCard = null;
             AgentCard publicAgentCard = new A2ACardResolver("http://localhost:9999").getAgentCard();
@@ -82,24 +88,36 @@ public class HelloWorldClient {
                 messageResponse.completeExceptionally(error);
             };
 
+            JSONRPCTransportConfig transportConfig = new JSONRPCTransportConfig();
+            if (Boolean.getBoolean("opentelemetry")) {
+                openTelemetrySdk = initOpenTelemetry();
+                transportConfig.setParameters(Map.of("io.a2a.extras.opentelemetry.Tracer",
+                        openTelemetrySdk.getTracer("helloworld-client")));
+            }
             Client client = Client
                     .builder(finalAgentCard)
                     .addConsumers(consumers)
                     .streamingErrorHandler(streamingErrorHandler)
-                    .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig())
+                    .withTransport(JSONRPCTransport.class, transportConfig)
                     .build();
 
             Message message = A2A.toUserMessage(MESSAGE_TEXT); // the message ID will be automatically generated for you
-            
-            System.out.println("Sending message: " + MESSAGE_TEXT);
-            client.sendMessage(message);
-            System.out.println("Message sent successfully. Responses will be handled by the configured consumers.");
-
             try {
+                System.out.println("Sending message: " + MESSAGE_TEXT);
+                client.sendMessage(message);
+                System.out.println("Message sent successfully. Responses will be handled by the configured consumers.");
+
                 String responseText = messageResponse.get();
                 System.out.println("Response: " + responseText);
             } catch (Exception e) {
                 System.err.println("Failed to get response: " + e.getMessage());
+            } finally {
+                // Ensure OpenTelemetry SDK is properly shut down to export all pending spans
+                if (openTelemetrySdk != null) {
+                    System.out.println("Shutting down OpenTelemetry SDK...");
+                    openTelemetrySdk.close();
+                    System.out.println("OpenTelemetry SDK shutdown complete.");
+                }
             }
         } catch (Exception e) {
             System.err.println("An error occurred: " + e.getMessage());
@@ -107,4 +125,21 @@ public class HelloWorldClient {
         }
     }
 
-} 
+    static OpenTelemetrySdk initOpenTelemetry() {
+        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+                .addSpanProcessor(BatchSpanProcessor.builder(
+                        OtlpGrpcSpanExporter.builder()
+                                .setEndpoint("http://localhost:5317")
+                                .build()
+                ).build())
+                .setResource(Resource.getDefault().toBuilder()
+                        .put("service.version", "1.0")
+                        .put("service.name", "helloworld-client")
+                        .build())
+                .build();
+
+        return OpenTelemetrySdk.builder()
+                .setTracerProvider(sdkTracerProvider)
+                .build();
+    }
+}

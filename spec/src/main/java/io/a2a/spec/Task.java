@@ -113,6 +113,11 @@ public final class Task implements EventKind, StreamingEventKind {
         return kind;
     }
 
+    @Override
+    public String toString() {
+        return "Task{" + "id=" + id + ", contextId=" + contextId + ", status=" + status + ", artifacts=" + artifacts + ", history=" + history + ", metadata=" + metadata + ", kind=" + kind + '}';
+    }
+
     /**
      * Builder for constructing immutable {@link Task} instances.
      * <p>

@@ -129,6 +129,11 @@ public final class Message implements EventKind, StreamingEventKind {
         return kind;
     }
 
+    @Override
+    public String toString() {
+        return "Message{" + "role=" + role + ", parts=" + parts + ", messageId=" + messageId + ", contextId=" + contextId + ", taskId=" + taskId + ", metadata=" + metadata + ", kind=" + kind + ", referenceTaskIds=" + referenceTaskIds + ", extensions=" + extensions + '}';
+    }
+
     /**
      * Defines the role of the message sender in the conversation.
      * <p>
