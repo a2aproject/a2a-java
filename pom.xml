@@ -38,7 +38,7 @@
 
 
     <properties>
-        <grpc.version>1.73.0</grpc.version>
+        <grpc.version>1.77.0</grpc.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>

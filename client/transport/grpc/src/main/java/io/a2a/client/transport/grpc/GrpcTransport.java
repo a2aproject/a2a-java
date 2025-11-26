@@ -48,6 +48,7 @@ import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskResubscriptionRequest;
 import io.grpc.Channel;
 import io.grpc.Metadata;
+import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
@@ -97,7 +98,7 @@ public class GrpcTransport implements ClientTransport {
             } else {
                 throw new A2AClientException("Server response did not contain a message or task");
             }
-        } catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to send message: ");
         }
     }
@@ -134,7 +135,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             return FromProto.task(stubWithMetadata.getTask(getTaskRequest));
-        } catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to get task: ");
         }
     }
@@ -152,7 +153,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             return FromProto.task(stubWithMetadata.cancelTask(cancelTaskRequest));
-        } catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to cancel task: ");
         }
     }
@@ -197,7 +198,7 @@ public class GrpcTransport implements ClientTransport {
                     grpcResponse.getTasksCount(),
                     grpcResponse.getNextPageToken().isEmpty() ? null : grpcResponse.getNextPageToken()
             );
-        } catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to list tasks: ");
         }
     }
@@ -219,7 +220,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             return FromProto.taskPushNotificationConfig(stubWithMetadata.createTaskPushNotificationConfig(grpcRequest));
-        } catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to create task push notification config: ");
         }
     }
@@ -239,7 +240,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             return FromProto.taskPushNotificationConfig(stubWithMetadata.getTaskPushNotificationConfig(grpcRequest));
-        } catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to get task push notification config: ");
         }
     }
@@ -261,7 +262,7 @@ public class GrpcTransport implements ClientTransport {
             return stubWithMetadata.listTaskPushNotificationConfig(grpcRequest).getConfigsList().stream()
                     .map(FromProto::taskPushNotificationConfig)
                     .collect(Collectors.toList());
-        } catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to list task push notification config: ");
         }
     }
@@ -280,7 +281,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             stubWithMetadata.deleteTaskPushNotificationConfig(grpcRequest);
-        } catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to delete task push notification config: ");
         }
     }

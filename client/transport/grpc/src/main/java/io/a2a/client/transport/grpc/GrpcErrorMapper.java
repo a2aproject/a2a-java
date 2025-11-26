@@ -13,20 +13,20 @@ import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.UnsupportedOperationError;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 
 /**
  * Utility class to map gRPC StatusRuntimeException to appropriate A2A error types
  */
 public class GrpcErrorMapper {
 
-    public static A2AClientException mapGrpcError(StatusRuntimeException e) {
+    public static A2AClientException mapGrpcError(Throwable e) {
         return mapGrpcError(e, "gRPC error: ");
     }
 
-    public static A2AClientException mapGrpcError(StatusRuntimeException e, String errorPrefix) {
-        Status.Code code = e.getStatus().getCode();
-        String description = e.getStatus().getDescription();
+    public static A2AClientException mapGrpcError(Throwable e, String errorPrefix) {
+        Status status = Status.fromThrowable(e);
+        Status.Code code = status.getCode();
+        String description = status.getDescription();
         
         // Extract the actual error type from the description if possible
         // (using description because the same code can map to multiple errors -
