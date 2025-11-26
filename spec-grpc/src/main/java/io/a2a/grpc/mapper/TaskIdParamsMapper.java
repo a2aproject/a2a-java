@@ -5,17 +5,16 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper for {@link io.a2a.spec.TaskIdParams} from various gRPC request types.
  * <p>
  * Extracts task ID from resource name format "tasks/{id}" using {@link ResourceNameParser}.
  */
-@Mapper(config = ProtoMapperConfig.class)
+@Mapper(config = A2AProtoMapperConfig.class)
 public interface TaskIdParamsMapper {
 
-    TaskIdParamsMapper INSTANCE = Mappers.getMapper(TaskIdParamsMapper.class);
+    TaskIdParamsMapper INSTANCE = A2AMappers.getMapper(TaskIdParamsMapper.class);
 
     /**
      * Converts proto CancelTaskRequest to domain TaskIdParams.

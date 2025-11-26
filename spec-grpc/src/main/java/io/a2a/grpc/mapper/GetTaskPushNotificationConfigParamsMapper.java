@@ -5,7 +5,6 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.grpc.GetTaskPushNotificationConfigRequest} and {@link io.a2a.spec.GetTaskPushNotificationConfigParams}.
@@ -15,10 +14,10 @@ import org.mapstruct.factory.Mappers;
  * - "tasks/{taskId}" (uses taskId as configId)
  * - "tasks/{taskId}/pushNotificationConfigs/{configId}"
  */
-@Mapper(config = ProtoMapperConfig.class)
+@Mapper(config = A2AProtoMapperConfig.class)
 public interface GetTaskPushNotificationConfigParamsMapper {
 
-    GetTaskPushNotificationConfigParamsMapper INSTANCE = Mappers.getMapper(GetTaskPushNotificationConfigParamsMapper.class);
+    GetTaskPushNotificationConfigParamsMapper INSTANCE = A2AMappers.getMapper(GetTaskPushNotificationConfigParamsMapper.class);
 
     /**
      * Converts proto GetTaskPushNotificationConfigRequest to domain GetTaskPushNotificationConfigParams.

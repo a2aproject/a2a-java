@@ -7,7 +7,6 @@ import io.a2a.spec.OAuth2SecurityScheme;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.SecurityScheme} and {@link io.a2a.grpc.SecurityScheme}.
@@ -19,7 +18,7 @@ import org.mapstruct.factory.Mappers;
  * <b>Manual Implementation Required:</b> Must use manual instanceof dispatch to handle sealed interface (5 permitted subtypes)
  * to protobuf oneof pattern, as MapStruct's @SubclassMapping cannot map different source types to different fields of the same target type.
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {
             APIKeySecuritySchemeMapper.class,
@@ -30,7 +29,7 @@ import org.mapstruct.factory.Mappers;
         })
 public interface SecuritySchemeMapper {
 
-    SecuritySchemeMapper INSTANCE = Mappers.getMapper(SecuritySchemeMapper.class);
+    SecuritySchemeMapper INSTANCE = A2AMappers.getMapper(SecuritySchemeMapper.class);
 
     /**
      * Converts a domain SecurityScheme to protobuf SecurityScheme.

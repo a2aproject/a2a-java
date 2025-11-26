@@ -1,18 +1,17 @@
 package io.a2a.grpc.mapper;
 
-import com.google.protobuf.Struct;
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.Value;
-import org.mapstruct.Mapper;
-import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
-
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.google.protobuf.Struct;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.Value;
+import org.mapstruct.Mapper;
+import org.mapstruct.Named;
 
 /**
  * Common field mapping utilities shared across all mappers.
@@ -27,10 +26,10 @@ import java.util.stream.Collectors;
  *   <li>Enum → null conversion (protobuf UNSPECIFIED/UNKNOWN handling)</li>
  * </ul>
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {TaskStateMapper.class})
-public interface CommonFieldMapper {
+@Mapper(config = A2AProtoMapperConfig.class, uses = {TaskStateMapper.class})
+public interface A2ACommonFieldMapper {
 
-    CommonFieldMapper INSTANCE = Mappers.getMapper(CommonFieldMapper.class);
+    A2ACommonFieldMapper INSTANCE = A2AMappers.getMapper(A2ACommonFieldMapper.class);
 
     /**
      * Converts protobuf empty strings to null for optional fields.

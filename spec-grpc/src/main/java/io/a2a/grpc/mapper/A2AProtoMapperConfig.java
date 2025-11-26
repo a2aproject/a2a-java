@@ -30,7 +30,7 @@ import org.mapstruct.ReportingPolicy;
     // 3. IGNORE null values when mapping to protobuf (builders don't accept null)
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
-public interface ProtoMapperConfig {
+public interface A2AProtoMapperConfig {
 
     // ========================================================================
     // 1. Enum Conversions

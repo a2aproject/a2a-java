@@ -5,7 +5,6 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.TaskStatusUpdateEvent} and {@link io.a2a.grpc.TaskStatusUpdateEvent}.
@@ -13,10 +12,10 @@ import org.mapstruct.factory.Mappers;
  * Now fully declarative using Builder pattern with @BeanMapping.
  * Builder's isFinal() method handles the Java "final" keyword mapping.
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {TaskStatusMapper.class, CommonFieldMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class, uses = {TaskStatusMapper.class, A2ACommonFieldMapper.class})
 public interface TaskStatusUpdateEventMapper {
 
-    TaskStatusUpdateEventMapper INSTANCE = Mappers.getMapper(TaskStatusUpdateEventMapper.class);
+    TaskStatusUpdateEventMapper INSTANCE = A2AMappers.getMapper(TaskStatusUpdateEventMapper.class);
 
     /**
      * Converts domain TaskStatusUpdateEvent to proto.

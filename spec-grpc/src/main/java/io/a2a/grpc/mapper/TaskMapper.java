@@ -6,7 +6,6 @@ import org.mapstruct.Builder;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.Task} and {@link io.a2a.grpc.Task}.
@@ -14,12 +13,12 @@ import org.mapstruct.factory.Mappers;
  * Uses ADDER_PREFERRED strategy for List fields (artifacts, history)
  * to use addAllArtifacts() and addAllHistory() methods.
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {TaskStatusMapper.class, ArtifactMapper.class, MessageMapper.class, CommonFieldMapper.class})
+        uses = {TaskStatusMapper.class, ArtifactMapper.class, MessageMapper.class, A2ACommonFieldMapper.class})
 public interface TaskMapper {
 
-    TaskMapper INSTANCE = Mappers.getMapper(TaskMapper.class);
+    TaskMapper INSTANCE = A2AMappers.getMapper(TaskMapper.class);
 
     /**
      * Converts domain Task to proto Task.

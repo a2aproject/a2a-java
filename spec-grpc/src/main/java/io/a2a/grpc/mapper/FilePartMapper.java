@@ -1,14 +1,13 @@
 package io.a2a.grpc.mapper;
 
+import java.nio.charset.StandardCharsets;
+
 import com.google.protobuf.ByteString;
 import io.a2a.spec.FileContent;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
 import io.a2a.spec.InvalidRequestError;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * Mapper between {@link io.a2a.spec.FilePart} and {@link io.a2a.grpc.FilePart}.
@@ -18,10 +17,10 @@ import java.nio.charset.StandardCharsets;
  * <b>Manual Implementation Required:</b> Must use manual default methods to handle protobuf oneof pattern
  * (file_with_bytes vs file_with_uri fields) and ByteString conversion, which MapStruct cannot automatically handle.
  */
-@Mapper(config = ProtoMapperConfig.class)
+@Mapper(config = A2AProtoMapperConfig.class)
 public interface FilePartMapper {
 
-    FilePartMapper INSTANCE = Mappers.getMapper(FilePartMapper.class);
+    FilePartMapper INSTANCE = A2AMappers.getMapper(FilePartMapper.class);
 
     /**
      * Converts domain FilePart to proto FilePart.

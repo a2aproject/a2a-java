@@ -5,7 +5,6 @@ import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * MapStruct mapper for SetTaskPushNotificationConfigRequest → TaskPushNotificationConfig.
@@ -21,10 +20,10 @@ import org.mapstruct.factory.Mappers;
  * <p>
  * <b>Compile-Time Safety:</b> If the proto changes fields, MapStruct will fail to compile.
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {PushNotificationConfigMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class, uses = {PushNotificationConfigMapper.class})
 public interface SetTaskPushNotificationConfigMapper {
 
-    SetTaskPushNotificationConfigMapper INSTANCE = Mappers.getMapper(SetTaskPushNotificationConfigMapper.class);
+    SetTaskPushNotificationConfigMapper INSTANCE = A2AMappers.getMapper(SetTaskPushNotificationConfigMapper.class);
 
     /**
      * Converts SetTaskPushNotificationConfigRequest to domain TaskPushNotificationConfig.

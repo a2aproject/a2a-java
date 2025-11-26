@@ -1,7 +1,6 @@
 package io.a2a.grpc.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.TaskState} and {@link io.a2a.grpc.TaskState}.
@@ -14,10 +13,10 @@ import org.mapstruct.factory.Mappers;
  * <b>Manual Implementation Required:</b> Uses manual switch statements instead of @ValueMapping
  * to avoid mapstruct-spi-protobuf enum strategy initialization issues.
  */
-@Mapper(config = ProtoMapperConfig.class)
+@Mapper(config = A2AProtoMapperConfig.class)
 public interface TaskStateMapper {
 
-    TaskStateMapper INSTANCE = Mappers.getMapper(TaskStateMapper.class);
+    TaskStateMapper INSTANCE = A2AMappers.getMapper(TaskStateMapper.class);
 
     /**
      * Converts domain TaskState to proto TaskState.

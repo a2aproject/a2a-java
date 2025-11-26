@@ -3,7 +3,6 @@ package io.a2a.grpc.mapper;
 import io.a2a.grpc.ListTasksRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * MapStruct mapper for ListTasksParams ↔ ListTasksRequest conversions.
@@ -11,10 +10,10 @@ import org.mapstruct.factory.Mappers;
  * Handles the conversion between domain ListTasksParams and protobuf ListTasksRequest,
  * with special handling for optional fields and timestamp conversions.
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {TaskStateMapper.class, CommonFieldMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class, uses = {TaskStateMapper.class, A2ACommonFieldMapper.class})
 public interface ListTasksParamsMapper {
 
-    ListTasksParamsMapper INSTANCE = Mappers.getMapper(ListTasksParamsMapper.class);
+    ListTasksParamsMapper INSTANCE = A2AMappers.getMapper(ListTasksParamsMapper.class);
 
     /**
      * Converts domain ListTasksParams to protobuf ListTasksRequest.

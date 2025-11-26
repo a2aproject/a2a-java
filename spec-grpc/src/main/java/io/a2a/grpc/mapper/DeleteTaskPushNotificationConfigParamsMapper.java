@@ -5,17 +5,16 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.grpc.DeleteTaskPushNotificationConfigRequest} and {@link io.a2a.spec.DeleteTaskPushNotificationConfigParams}.
  * <p>
  * Extracts task ID and config ID from resource name format "tasks/{taskId}/pushNotificationConfigs/{configId}" using {@link ResourceNameParser}.
  */
-@Mapper(config = ProtoMapperConfig.class)
+@Mapper(config = A2AProtoMapperConfig.class)
 public interface DeleteTaskPushNotificationConfigParamsMapper {
 
-    DeleteTaskPushNotificationConfigParamsMapper INSTANCE = Mappers.getMapper(DeleteTaskPushNotificationConfigParamsMapper.class);
+    DeleteTaskPushNotificationConfigParamsMapper INSTANCE = A2AMappers.getMapper(DeleteTaskPushNotificationConfigParamsMapper.class);
 
     /**
      * Converts proto DeleteTaskPushNotificationConfigRequest to domain DeleteTaskPushNotificationConfigParams.

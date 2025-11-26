@@ -3,17 +3,16 @@ package io.a2a.grpc.mapper;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.PushNotificationConfig} and {@link io.a2a.grpc.PushNotificationConfig}.
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {AuthenticationInfoMapper.class, CommonFieldMapper.class})
+        uses = {AuthenticationInfoMapper.class, A2ACommonFieldMapper.class})
 public interface PushNotificationConfigMapper {
 
-    PushNotificationConfigMapper INSTANCE = Mappers.getMapper(PushNotificationConfigMapper.class);
+    PushNotificationConfigMapper INSTANCE = A2AMappers.getMapper(PushNotificationConfigMapper.class);
 
     @Mapping(target = "url", source = "url", conditionExpression = "java(domain.url() != null)")
     @Mapping(target = "token", source = "token", conditionExpression = "java(domain.token() != null)")

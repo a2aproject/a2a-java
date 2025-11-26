@@ -4,7 +4,6 @@ import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * MapStruct mapper for TaskPushNotificationConfig with resource name handling.
@@ -19,10 +18,10 @@ import org.mapstruct.factory.Mappers;
  * <b>Compile-Time Safety:</b> If the proto adds/removes/renames fields, MapStruct will
  * fail to compile, ensuring we update the domain model accordingly.
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {PushNotificationConfigMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class, uses = {PushNotificationConfigMapper.class})
 public interface TaskPushNotificationConfigMapper {
 
-    TaskPushNotificationConfigMapper INSTANCE = Mappers.getMapper(TaskPushNotificationConfigMapper.class);
+    TaskPushNotificationConfigMapper INSTANCE = A2AMappers.getMapper(TaskPushNotificationConfigMapper.class);
 
     /**
      * Converts domain TaskPushNotificationConfig to protobuf TaskPushNotificationConfig.

@@ -4,7 +4,6 @@ import io.a2a.spec.Artifact;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.Artifact} and {@link io.a2a.grpc.Artifact}.
@@ -12,12 +11,12 @@ import org.mapstruct.factory.Mappers;
  * Uses ADDER_PREFERRED strategy to use addAllExtensions() method instead of
  * trying to instantiate ProtocolStringList. Enables full compile-time validation!
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {PartMapper.class, CommonFieldMapper.class})
+        uses = {PartMapper.class, A2ACommonFieldMapper.class})
 public interface ArtifactMapper {
 
-    ArtifactMapper INSTANCE = Mappers.getMapper(ArtifactMapper.class);
+    ArtifactMapper INSTANCE = A2AMappers.getMapper(ArtifactMapper.class);
 
     /**
      * Converts domain Artifact to proto Artifact.

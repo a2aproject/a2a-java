@@ -1,16 +1,14 @@
 package io.a2a.grpc.mapper;
 
-import com.google.protobuf.ProtocolStringList;
-import io.a2a.grpc.Security;
-import io.a2a.grpc.StringList;
-import org.mapstruct.Mapper;
-import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.protobuf.ProtocolStringList;
+import io.a2a.grpc.Security;
+import io.a2a.grpc.StringList;
+import org.mapstruct.Mapper;
 
 /**
  * Mapper between domain security requirements and protobuf Security messages.
@@ -36,10 +34,10 @@ import java.util.Map;
  * <b>Manual Implementation Required:</b> Handles complex nested structure ({@code List<Map<String, List<String>>>} ↔
  * {@code repeated Security} with {@code map<string, StringList>}) requiring manual iteration and StringList wrapper handling.
  */
-@Mapper(config = ProtoMapperConfig.class)
+@Mapper(config = A2AProtoMapperConfig.class)
 public interface SecurityMapper {
 
-    SecurityMapper INSTANCE = Mappers.getMapper(SecurityMapper.class);
+    SecurityMapper INSTANCE = A2AMappers.getMapper(SecurityMapper.class);
 
     /**
      * Converts a single domain security requirement map to a proto Security message.

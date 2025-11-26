@@ -2,7 +2,6 @@ package io.a2a.grpc.mapper;
 
 import io.a2a.spec.Message;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.Message.Role} and {@link io.a2a.grpc.Role}.
@@ -16,10 +15,10 @@ import org.mapstruct.factory.Mappers;
  * <b>Manual Implementation Required:</b> Uses manual switch statements instead of @ValueMapping
  * to avoid mapstruct-spi-protobuf enum strategy initialization issues.
  */
-@Mapper(config = ProtoMapperConfig.class)
+@Mapper(config = A2AProtoMapperConfig.class)
 public interface RoleMapper {
 
-    RoleMapper INSTANCE = Mappers.getMapper(RoleMapper.class);
+    RoleMapper INSTANCE = A2AMappers.getMapper(RoleMapper.class);
 
     /**
      * Converts domain Role to proto Role.

@@ -5,17 +5,16 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.MessageSendParams} and {@link io.a2a.grpc.SendMessageRequest}.
  * <p>
  * Handles bidirectional mapping with message/request field name difference and Struct conversions.
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {MessageMapper.class, MessageSendConfigurationMapper.class, CommonFieldMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class, uses = {MessageMapper.class, MessageSendConfigurationMapper.class, A2ACommonFieldMapper.class})
 public interface MessageSendParamsMapper {
 
-    MessageSendParamsMapper INSTANCE = Mappers.getMapper(MessageSendParamsMapper.class);
+    MessageSendParamsMapper INSTANCE = A2AMappers.getMapper(MessageSendParamsMapper.class);
 
     /**
      * Converts domain MessageSendParams to proto SendMessageRequest.

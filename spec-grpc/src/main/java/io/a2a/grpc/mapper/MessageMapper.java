@@ -6,7 +6,6 @@ import org.mapstruct.Builder;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.Message} and {@link io.a2a.grpc.Message}.
@@ -14,12 +13,12 @@ import org.mapstruct.factory.Mappers;
  * Uses ADDER_PREFERRED strategy for List fields (parts, extensions, referenceTaskIds)
  * to avoid ProtocolStringList instantiation issues.
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {RoleMapper.class, PartMapper.class, CommonFieldMapper.class})
+        uses = {RoleMapper.class, PartMapper.class, A2ACommonFieldMapper.class})
 public interface MessageMapper {
 
-    MessageMapper INSTANCE = Mappers.getMapper(MessageMapper.class);
+    MessageMapper INSTANCE = A2AMappers.getMapper(MessageMapper.class);
 
     /**
      * Converts domain Message to proto Message.
@@ -41,7 +40,7 @@ public interface MessageMapper {
     @Mapping(target = "contextId", source = "contextId", qualifiedByName = "emptyToNull")
     @Mapping(target = "taskId", source = "taskId", qualifiedByName = "emptyToNull")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
-    @Mapping(target = "extensions", expression = "java(io.a2a.grpc.mapper.CommonFieldMapper.INSTANCE.emptyListToNull(proto.getExtensionsList()))")
-    @Mapping(target = "referenceTaskIds", expression = "java(io.a2a.grpc.mapper.CommonFieldMapper.INSTANCE.emptyListToNull(proto.getReferenceTaskIdsList()))")
+    @Mapping(target = "extensions", expression = "java(io.a2a.grpc.mapper.A2ACommonFieldMapper.INSTANCE.emptyListToNull(proto.getExtensionsList()))")
+    @Mapping(target = "referenceTaskIds", expression = "java(io.a2a.grpc.mapper.A2ACommonFieldMapper.INSTANCE.emptyListToNull(proto.getReferenceTaskIdsList()))")
     Message fromProto(io.a2a.grpc.Message proto);
 }

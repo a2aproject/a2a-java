@@ -3,19 +3,18 @@ package io.a2a.grpc.mapper;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.AgentCardSignature} and {@link io.a2a.grpc.AgentCardSignature}.
  * <p>
  * Uses CommonFieldMapper for struct conversion (header field).
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {CommonFieldMapper.class})
+        uses = {A2ACommonFieldMapper.class})
 public interface AgentCardSignatureMapper {
 
-    AgentCardSignatureMapper INSTANCE = Mappers.getMapper(AgentCardSignatureMapper.class);
+    AgentCardSignatureMapper INSTANCE = A2AMappers.getMapper(AgentCardSignatureMapper.class);
 
     /**
      * Converts domain AgentCardSignature to proto AgentCardSignature.

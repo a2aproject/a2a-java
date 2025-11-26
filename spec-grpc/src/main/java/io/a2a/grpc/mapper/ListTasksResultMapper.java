@@ -3,7 +3,6 @@ package io.a2a.grpc.mapper;
 import io.a2a.spec.ListTasksResult;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.ListTasksResult} and {@link io.a2a.grpc.ListTasksResponse}.
@@ -11,12 +10,12 @@ import org.mapstruct.factory.Mappers;
  * Handles conversion with null handling for nextPageToken field.
  * Uses ADDER_PREFERRED strategy to avoid ProtocolMessageList instantiation issues.
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = org.mapstruct.CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {TaskMapper.class})
 public interface ListTasksResultMapper {
 
-    ListTasksResultMapper INSTANCE = Mappers.getMapper(ListTasksResultMapper.class);
+    ListTasksResultMapper INSTANCE = A2AMappers.getMapper(ListTasksResultMapper.class);
 
     /**
      * Converts domain ListTasksResult to proto ListTasksResponse.

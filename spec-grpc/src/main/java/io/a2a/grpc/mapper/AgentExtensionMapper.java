@@ -3,19 +3,18 @@ package io.a2a.grpc.mapper;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.AgentExtension} and {@link io.a2a.grpc.AgentExtension}.
  * <p>
  * Uses CommonFieldMapper for struct conversion (params field).
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {CommonFieldMapper.class})
+        uses = {A2ACommonFieldMapper.class})
 public interface AgentExtensionMapper {
 
-    AgentExtensionMapper INSTANCE = Mappers.getMapper(AgentExtensionMapper.class);
+    AgentExtensionMapper INSTANCE = A2AMappers.getMapper(AgentExtensionMapper.class);
 
     /**
      * Converts domain AgentExtension to proto AgentExtension.

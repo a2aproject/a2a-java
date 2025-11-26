@@ -3,12 +3,11 @@ package io.a2a.grpc.mapper;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.AgentCard} and {@link io.a2a.grpc.AgentCard}.
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {
             AgentProviderMapper.class,
@@ -21,7 +20,7 @@ import org.mapstruct.factory.Mappers;
         })
 public interface AgentCardMapper {
 
-    AgentCardMapper INSTANCE = Mappers.getMapper(AgentCardMapper.class);
+    AgentCardMapper INSTANCE = A2AMappers.getMapper(AgentCardMapper.class);
 
     @Mapping(target = "provider", source = "provider", conditionExpression = "java(domain.provider() != null)")
     @Mapping(target = "documentationUrl", source = "documentationUrl", conditionExpression = "java(domain.documentationUrl() != null)")

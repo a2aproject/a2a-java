@@ -5,7 +5,6 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.TaskStatus} and {@link io.a2a.grpc.TaskStatus}.
@@ -14,10 +13,10 @@ import org.mapstruct.factory.Mappers;
  * Uses TaskStateMapper for state conversion, MessageMapper for message conversion,
  * and CommonFieldMapper for timestamp conversion.
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {TaskStateMapper.class, MessageMapper.class, CommonFieldMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class, uses = {TaskStateMapper.class, MessageMapper.class, A2ACommonFieldMapper.class})
 public interface TaskStatusMapper {
 
-    TaskStatusMapper INSTANCE = Mappers.getMapper(TaskStatusMapper.class);
+    TaskStatusMapper INSTANCE = A2AMappers.getMapper(TaskStatusMapper.class);
 
     /**
      * Converts domain TaskStatus to proto TaskStatus.

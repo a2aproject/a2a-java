@@ -3,13 +3,10 @@ package io.a2a.grpc.utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import com.google.protobuf.Struct;
 import io.a2a.grpc.ListTasksRequest;
 import io.a2a.grpc.StreamResponse;
 import io.a2a.grpc.mapper.AgentCardMapper;
-import io.a2a.grpc.mapper.CommonFieldMapper;
 import io.a2a.grpc.mapper.DeleteTaskPushNotificationConfigParamsMapper;
 import io.a2a.grpc.mapper.GetTaskPushNotificationConfigParamsMapper;
 import io.a2a.grpc.mapper.ListTaskPushNotificationConfigParamsMapper;

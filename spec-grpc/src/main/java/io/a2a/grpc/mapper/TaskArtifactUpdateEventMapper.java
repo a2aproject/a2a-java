@@ -5,17 +5,16 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.TaskArtifactUpdateEvent} and {@link io.a2a.grpc.TaskArtifactUpdateEvent}.
  * <p>
  * Now fully declarative using Builder pattern with @BeanMapping.
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {ArtifactMapper.class, CommonFieldMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class, uses = {ArtifactMapper.class, A2ACommonFieldMapper.class})
 public interface TaskArtifactUpdateEventMapper {
 
-    TaskArtifactUpdateEventMapper INSTANCE = Mappers.getMapper(TaskArtifactUpdateEventMapper.class);
+    TaskArtifactUpdateEventMapper INSTANCE = A2AMappers.getMapper(TaskArtifactUpdateEventMapper.class);
 
     /**
      * Converts domain TaskArtifactUpdateEvent to proto.

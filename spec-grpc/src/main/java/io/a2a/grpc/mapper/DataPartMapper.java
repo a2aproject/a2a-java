@@ -3,7 +3,6 @@ package io.a2a.grpc.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.DataPart} and {@link io.a2a.grpc.DataPart}.
@@ -15,10 +14,10 @@ import org.mapstruct.factory.Mappers;
  * (inherited from Part), which is not persisted in the proto and will be null after conversion.
  * Uses @ObjectFactory to resolve constructor ambiguity.
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {CommonFieldMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class, uses = {A2ACommonFieldMapper.class})
 public interface DataPartMapper {
 
-    DataPartMapper INSTANCE = Mappers.getMapper(DataPartMapper.class);
+    DataPartMapper INSTANCE = A2AMappers.getMapper(DataPartMapper.class);
 
     /**
      * Converts domain DataPart to proto DataPart.
@@ -49,7 +48,7 @@ public interface DataPartMapper {
      */
     @ObjectFactory
     default io.a2a.spec.DataPart createDataPart(io.a2a.grpc.DataPart proto) {
-        java.util.Map<String, Object> data = CommonFieldMapper.INSTANCE.structToMap(proto.getData());
+        java.util.Map<String, Object> data = A2ACommonFieldMapper.INSTANCE.structToMap(proto.getData());
         return new io.a2a.spec.DataPart(data);
     }
 }

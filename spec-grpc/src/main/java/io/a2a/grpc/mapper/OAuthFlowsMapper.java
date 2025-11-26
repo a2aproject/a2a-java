@@ -2,13 +2,11 @@ package io.a2a.grpc.mapper;
 
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.OAuthFlows} and {@link io.a2a.grpc.OAuthFlows}.
  */
-@Mapper(config = ProtoMapperConfig.class,
+@Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {
             AuthorizationCodeOAuthFlowMapper.class,
@@ -18,7 +16,7 @@ import org.mapstruct.factory.Mappers;
         })
 public interface OAuthFlowsMapper {
 
-    OAuthFlowsMapper INSTANCE = Mappers.getMapper(OAuthFlowsMapper.class);
+    OAuthFlowsMapper INSTANCE = A2AMappers.getMapper(OAuthFlowsMapper.class);
 
     io.a2a.grpc.OAuthFlows toProto(io.a2a.spec.OAuthFlows domain);
 }

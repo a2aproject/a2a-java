@@ -6,7 +6,6 @@ import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper between {@link io.a2a.spec.Part} and {@link io.a2a.grpc.Part}.
@@ -21,10 +20,10 @@ import org.mapstruct.factory.Mappers;
  * <b>Manual Implementation Required:</b> Must use manual instanceof dispatch to handle protobuf oneof pattern
  * (text vs file vs data fields), as MapStruct's @SubclassMapping maps to different target types, not different fields of the same type.
  */
-@Mapper(config = ProtoMapperConfig.class, uses = {FilePartMapper.class, DataPartMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class, uses = {FilePartMapper.class, DataPartMapper.class})
 public interface PartMapper {
 
-    PartMapper INSTANCE = Mappers.getMapper(PartMapper.class);
+    PartMapper INSTANCE = A2AMappers.getMapper(PartMapper.class);
 
     /**
      * Converts domain Part to proto Part.
