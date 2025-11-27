@@ -1,6 +1,6 @@
 package io.a2a.server.tasks;
 
-import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
+    import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
 import static io.a2a.client.http.A2AHttpClient.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -16,17 +16,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.common.A2AHeaders;
-import io.a2a.util.Utils;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
+import io.a2a.util.Utils;
 
 public class PushNotificationSenderTest {
 
@@ -77,7 +78,11 @@ public class PushNotificationSenderTest {
                 }
                 
                 try {
-                    Task task = Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE);
+                    JsonNode root = Utils.OBJECT_MAPPER.readTree(body);
+                    // This assumes there is always one field in the outer JSON object.
+                    // This will need to be updated for #490 to unmarshall based on the kind of payload
+                    JsonNode taskNode = root.elements().next();
+                    Task task = Utils.OBJECT_MAPPER.treeToValue(taskNode, Task.TYPE_REFERENCE);
                     tasks.add(task);
                     urls.add(url);
                     headers.add(new java.util.HashMap<>(requestHeaders));

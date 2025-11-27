@@ -3,24 +3,24 @@ package io.a2a.server.tasks;
 import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
 import static io.a2a.client.http.A2AHttpClient.CONTENT_TYPE;
 import static io.a2a.common.A2AHeaders.X_A2A_NOTIFICATION_TOKEN;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.util.Utils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class BasePushNotificationSender implements PushNotificationSender {
@@ -80,7 +80,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
         String body;
         try {
-            body = Utils.OBJECT_MAPPER.writeValueAsString(task);
+            body = Utils.marshalFrom(task);
         } catch (JsonProcessingException e) {
             LOGGER.debug("Error writing value as string: {}", e.getMessage(), e);
             return false;
