@@ -2,6 +2,7 @@ package io.a2a.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Part;
+import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 
@@ -67,6 +69,21 @@ public class Utils {
      */
     public static <T> T unmarshalFrom(String data, TypeReference<T> typeRef) throws JsonProcessingException {
         return OBJECT_MAPPER.readValue(data, typeRef);
+    }
+
+    /**
+     * Serializes a StreamingEventKind in a JSON string
+     * <p>
+     * The StreamingEventKind object is wrapped in a JSON field named from its kind (e.g. "task") before
+     * it is serialized
+     *
+     * @param kind the StreamingEventKind to deserialize
+     * @return a JSON String
+     * @throws JsonProcessingException if JSON parsing fails
+     */
+    public static String marshalFrom(StreamingEventKind kind) throws JsonProcessingException {
+        Map<String, StreamingEventKind> wrapper = Map.of(kind.getKind(), kind);
+        return OBJECT_MAPPER.writeValueAsString(wrapper);
     }
 
     /**
