@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -14,6 +15,11 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import jakarta.enterprise.context.Dependent;
+
+import io.quarkus.arc.profile.IfBuildProfile;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
@@ -30,20 +36,15 @@ import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.Event;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
+import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
-import io.a2a.spec.Event;
 import io.a2a.spec.TextPart;
 import io.a2a.util.Utils;
-import io.quarkus.arc.profile.IfBuildProfile;
-import java.util.Map;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 
 public class AbstractA2ARequestHandlerTest {
 
@@ -199,7 +200,10 @@ public class AbstractA2ARequestHandlerTest {
 
             @Override
             public A2AHttpResponse post() throws IOException, InterruptedException {
-                tasks.add(Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE));
+                StreamingEventKind kind = Utils.unmarshalStreamingEventKindFrom(body);
+                if (kind instanceof Task task) {
+                    tasks.add(task);
+                }
                 try {
                     return new A2AHttpResponse() {
                         @Override
