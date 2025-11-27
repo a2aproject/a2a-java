@@ -57,7 +57,7 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
-import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.spec.SubscribeToTaskRequest;
 import io.a2a.client.transport.jsonrpc.sse.SSEEventListener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -328,13 +328,13 @@ public class JSONRPCTransport implements ClientTransport {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
         checkNotNullParam("errorConsumer", errorConsumer);
-        TaskResubscriptionRequest taskResubscriptionRequest = new TaskResubscriptionRequest.Builder()
+        SubscribeToTaskRequest taskResubscriptionRequest = new SubscribeToTaskRequest.Builder()
                 .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                .method(TaskResubscriptionRequest.METHOD)
+                .method(SubscribeToTaskRequest.METHOD)
                 .params(request)
                 .build(); // id will be randomly generated
 
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(TaskResubscriptionRequest.METHOD,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(SubscribeToTaskRequest.METHOD,
                 taskResubscriptionRequest, agentCard, context);
 
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();

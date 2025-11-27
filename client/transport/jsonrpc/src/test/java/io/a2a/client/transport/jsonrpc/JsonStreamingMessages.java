@@ -106,7 +106,7 @@ public class JsonStreamingMessages {
     public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST = """
             {
              "jsonrpc": "2.0",
-             "method": "message/stream",
+             "method": SendStreamingMessage,
              "params": {
               "message": {
                "role": "user",
@@ -138,7 +138,7 @@ public class JsonStreamingMessages {
     public static final String TASK_RESUBSCRIPTION_TEST_REQUEST = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/resubscribe",
+             "method": "SubscribeToTask",
              "params": {
                 "id": "task-1234"
              }

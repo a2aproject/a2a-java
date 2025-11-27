@@ -33,7 +33,7 @@ import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SendStreamingMessageResponse;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigResponse;
-import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.spec.SubscribeToTaskRequest;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
@@ -143,7 +143,7 @@ public class A2AServerRoutesTest {
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "message/stream",
+             "method": "SendStreamingMessage",
              "params": {
               "message": {
                "role": "user",
@@ -249,7 +249,7 @@ public class A2AServerRoutesTest {
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/resubscribe",
+             "method": "SubscribeToTask",
              "params": {
               "id": "de38c76d-d54c-436c-8b9f-4c2703648d64"
              }
@@ -258,7 +258,7 @@ public class A2AServerRoutesTest {
 
         @SuppressWarnings("unchecked")
         Flow.Publisher<SendStreamingMessageResponse> mockPublisher = mock(Flow.Publisher.class);
-        when(mockJsonRpcHandler.onResubscribeToTask(any(TaskResubscriptionRequest.class),
+        when(mockJsonRpcHandler.onSubscribeToTask(any(SubscribeToTaskRequest.class),
                 any(ServerCallContext.class))).thenReturn(mockPublisher);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -267,11 +267,11 @@ public class A2AServerRoutesTest {
         routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
 
         // Assert
-        verify(mockJsonRpcHandler).onResubscribeToTask(any(TaskResubscriptionRequest.class),
+        verify(mockJsonRpcHandler).onSubscribeToTask(any(SubscribeToTaskRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
-        assertEquals(TaskResubscriptionRequest.METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        assertEquals(SubscribeToTaskRequest.METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
     }
 
     @Test

@@ -646,7 +646,7 @@ public class JsonRestMessages {
     public static final String TASK_RESUBSCRIPTION_TEST_REQUEST = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/resubscribe",
+             "method": "SubscribeToTask",
              "params": {
                 "id": "task-1234"
              }

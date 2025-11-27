@@ -44,7 +44,6 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
-import io.a2a.spec.TaskResubscriptionRequest;
 import io.grpc.Channel;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
@@ -295,7 +294,7 @@ public class GrpcTransport implements ClientTransport {
         SubscribeToTaskRequest grpcRequest = SubscribeToTaskRequest.newBuilder()
                 .setName("tasks/" + request.id())
                 .build();
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(TaskResubscriptionRequest.METHOD,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SubscribeToTaskRequest.METHOD,
                 grpcRequest, agentCard, context);
 
         StreamObserver<StreamResponse> streamObserver = new EventStreamObserver(eventConsumer, errorConsumer);

@@ -371,7 +371,7 @@ public class RestTransport implements ClientTransport {
         checkNotNullParam("request", request);
         io.a2a.grpc.SubscribeToTaskRequest.Builder builder = io.a2a.grpc.SubscribeToTaskRequest.newBuilder();
         builder.setName("tasks/" + request.id());
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.TaskResubscriptionRequest.METHOD, builder,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SubscribeToTaskRequest.METHOD, builder,
                 agentCard, context);
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         RestSSEEventListener sseEventListener = new RestSSEEventListener(eventConsumer, errorConsumer);

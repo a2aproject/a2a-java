@@ -22,8 +22,8 @@ import jakarta.inject.Singleton;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.JsonEOFException;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.a2a.common.A2AHeaders;
+import io.a2a.grpc.utils.JSONRPCUtils;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
@@ -53,8 +53,7 @@ import io.a2a.spec.NonStreamingJSONRPCRequest;
 import io.a2a.spec.SendMessageRequest;
 import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
-import io.a2a.spec.StreamingJSONRPCRequest;
-import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.spec.SubscribeToTaskRequest;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
 import io.a2a.util.Utils;
@@ -90,26 +89,20 @@ public class A2AServerRoutes {
     @Route(path = "/", methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     @Authenticated
     public void invokeJSONRPCHandler(@Body String body, RoutingContext rc) {
+
         boolean streaming = false;
         ServerCallContext context = createCallContext(rc);
         JSONRPCResponse<?> nonStreamingResponse = null;
         Multi<? extends JSONRPCResponse<?>> streamingResponse = null;
         JSONRPCErrorResponse error = null;
         try {
-            JsonNode node = Utils.OBJECT_MAPPER.readTree(body);
-            JsonNode method = node != null ? node.get("method") : null;
-            streaming = method != null && (SendStreamingMessageRequest.METHOD.equals(method.asText())
-                    || TaskResubscriptionRequest.METHOD.equals(method.asText()));
-            String methodName = (method != null && method.isTextual()) ? method.asText() : null;
-            if (methodName != null) {
-                context.getState().put(METHOD_NAME_KEY, methodName);
-            }
-            if (streaming) {
-                StreamingJSONRPCRequest<?> request = Utils.OBJECT_MAPPER.treeToValue(node, StreamingJSONRPCRequest.class);
-                streamingResponse = processStreamingRequest(request, context);
+            JSONRPCRequest<?> request = JSONRPCUtils.parseBody(body);
+            context.getState().put(METHOD_NAME_KEY, request.getMethod());
+            if (request instanceof NonStreamingJSONRPCRequest nonStreamingRequest) {
+                nonStreamingResponse = processNonStreamingRequest(nonStreamingRequest, context);
             } else {
-                NonStreamingJSONRPCRequest<?> request = Utils.OBJECT_MAPPER.treeToValue(node, NonStreamingJSONRPCRequest.class);
-                nonStreamingResponse = processNonStreamingRequest(request, context);
+                streamingResponse = processStreamingRequest(request, context);
+                nonStreamingResponse = processNonStreamingRequest((NonStreamingJSONRPCRequest<?>) request, context);
             }
         } catch (JsonProcessingException e) {
             error = handleError(e);
@@ -201,8 +194,8 @@ public class A2AServerRoutes {
         Flow.Publisher<? extends JSONRPCResponse<?>> publisher;
         if (request instanceof SendStreamingMessageRequest req) {
             publisher = jsonRpcHandler.onMessageSendStream(req, context);
-        } else if (request instanceof TaskResubscriptionRequest req) {
-            publisher = jsonRpcHandler.onResubscribeToTask(req, context);
+        } else if (request instanceof SubscribeToTaskRequest req) {
+            publisher = jsonRpcHandler.onSubscribeToTask(req, context);
         } else {
             return Multi.createFrom().item(generateErrorResponse(request, new UnsupportedOperationError()));
         }
