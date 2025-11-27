@@ -1,6 +1,5 @@
 package io.a2a.grpc.utils;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +51,22 @@ public class ProtoUtils {
             return AgentCardMapper.INSTANCE.toProto(agentCard);
         }
 
+        public static io.a2a.grpc.GetTaskRequest getTaskRequest(TaskQueryParams params) {
+            return TaskQueryParamsMapper.INSTANCE.toProto(params);
+        }
+
+        public static io.a2a.grpc.CancelTaskRequest cancelTaskRequest(TaskIdParams params) {
+            return TaskIdParamsMapper.INSTANCE.toProtoCancelTaskRequest(params);
+        }
+
+        public static io.a2a.grpc.SetTaskPushNotificationConfigRequest setTaskPushNotificationConfigRequest(TaskPushNotificationConfig config) {
+            return SetTaskPushNotificationConfigMapper.INSTANCE.toProto(config);
+        }
+
+        public static io.a2a.grpc.GetTaskPushNotificationConfigRequest getTaskPushNotificationConfigRequest(GetTaskPushNotificationConfigParams params) {
+            return GetTaskPushNotificationConfigParamsMapper.INSTANCE.toProto(params);
+        }
+
         public static io.a2a.grpc.Task task(Task task) {
             return TaskMapper.INSTANCE.toProto(task);
         }
@@ -94,7 +109,7 @@ public class ProtoUtils {
 
         public static io.a2a.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfigResponse(List<TaskPushNotificationConfig> configs) {
             List<io.a2a.grpc.TaskPushNotificationConfig> confs = new ArrayList<>(configs.size());
-            for(TaskPushNotificationConfig config: configs) {
+            for (TaskPushNotificationConfig config : configs) {
                 confs.add(taskPushNotificationConfig(config));
             }
             return io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder().addAllConfigs(confs).build();
@@ -165,64 +180,64 @@ public class ProtoUtils {
 
         public static TaskQueryParams taskQueryParams(io.a2a.grpc.GetTaskRequestOrBuilder request) {
             io.a2a.grpc.GetTaskRequest reqProto = request instanceof io.a2a.grpc.GetTaskRequest
-                ? (io.a2a.grpc.GetTaskRequest) request
-                : ((io.a2a.grpc.GetTaskRequest.Builder) request).build();
+                    ? (io.a2a.grpc.GetTaskRequest) request
+                    : ((io.a2a.grpc.GetTaskRequest.Builder) request).build();
             return TaskQueryParamsMapper.INSTANCE.fromProto(reqProto);
         }
 
         public static io.a2a.spec.ListTasksParams listTasksParams(io.a2a.grpc.ListTasksRequestOrBuilder request) {
             ListTasksRequest reqProto = request instanceof ListTasksRequest
-                ? (ListTasksRequest) request
-                : ((ListTasksRequest.Builder) request).build();
+                    ? (ListTasksRequest) request
+                    : ((ListTasksRequest.Builder) request).build();
             return ListTasksParamsMapper.INSTANCE.fromProto(reqProto);
         }
 
         public static TaskIdParams taskIdParams(io.a2a.grpc.CancelTaskRequestOrBuilder request) {
             io.a2a.grpc.CancelTaskRequest reqProto = request instanceof io.a2a.grpc.CancelTaskRequest
-                ? (io.a2a.grpc.CancelTaskRequest) request
-                : ((io.a2a.grpc.CancelTaskRequest.Builder) request).build();
+                    ? (io.a2a.grpc.CancelTaskRequest) request
+                    : ((io.a2a.grpc.CancelTaskRequest.Builder) request).build();
             return TaskIdParamsMapper.INSTANCE.fromProtoCancelTaskRequest(reqProto);
         }
 
         public static MessageSendParams messageSendParams(io.a2a.grpc.SendMessageRequestOrBuilder request) {
             io.a2a.grpc.SendMessageRequest requestProto = request instanceof io.a2a.grpc.SendMessageRequest
-                ? (io.a2a.grpc.SendMessageRequest) request
-                : ((io.a2a.grpc.SendMessageRequest.Builder) request).build();
+                    ? (io.a2a.grpc.SendMessageRequest) request
+                    : ((io.a2a.grpc.SendMessageRequest.Builder) request).build();
             return MessageSendParamsMapper.INSTANCE.fromProto(requestProto);
         }
 
         public static TaskPushNotificationConfig setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequestOrBuilder config) {
             io.a2a.grpc.SetTaskPushNotificationConfigRequest reqProto = config instanceof io.a2a.grpc.SetTaskPushNotificationConfigRequest
-                ? (io.a2a.grpc.SetTaskPushNotificationConfigRequest) config
-                : ((io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder) config).build();
+                    ? (io.a2a.grpc.SetTaskPushNotificationConfigRequest) config
+                    : ((io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder) config).build();
             return SetTaskPushNotificationConfigMapper.INSTANCE.fromProto(reqProto);
         }
 
         public static TaskPushNotificationConfig taskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfigOrBuilder config) {
             io.a2a.grpc.TaskPushNotificationConfig proto = config instanceof io.a2a.grpc.TaskPushNotificationConfig
-                ? (io.a2a.grpc.TaskPushNotificationConfig) config
-                : ((io.a2a.grpc.TaskPushNotificationConfig.Builder) config).build();
+                    ? (io.a2a.grpc.TaskPushNotificationConfig) config
+                    : ((io.a2a.grpc.TaskPushNotificationConfig.Builder) config).build();
             return TaskPushNotificationConfigMapper.INSTANCE.fromProto(proto);
         }
 
         public static GetTaskPushNotificationConfigParams getTaskPushNotificationConfigParams(io.a2a.grpc.GetTaskPushNotificationConfigRequestOrBuilder request) {
             io.a2a.grpc.GetTaskPushNotificationConfigRequest reqProto = request instanceof io.a2a.grpc.GetTaskPushNotificationConfigRequest
-                ? (io.a2a.grpc.GetTaskPushNotificationConfigRequest) request
-                : ((io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder) request).build();
+                    ? (io.a2a.grpc.GetTaskPushNotificationConfigRequest) request
+                    : ((io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder) request).build();
             return GetTaskPushNotificationConfigParamsMapper.INSTANCE.fromProto(reqProto);
         }
 
         public static TaskIdParams taskIdParams(io.a2a.grpc.SubscribeToTaskRequestOrBuilder request) {
             io.a2a.grpc.SubscribeToTaskRequest reqProto = request instanceof io.a2a.grpc.SubscribeToTaskRequest
-                ? (io.a2a.grpc.SubscribeToTaskRequest) request
-                : ((io.a2a.grpc.SubscribeToTaskRequest.Builder) request).build();
+                    ? (io.a2a.grpc.SubscribeToTaskRequest) request
+                    : ((io.a2a.grpc.SubscribeToTaskRequest.Builder) request).build();
             return TaskIdParamsMapper.INSTANCE.fromProtoSubscribeToTaskRequest(reqProto);
         }
 
         public static List<TaskPushNotificationConfig> listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigResponseOrBuilder response) {
             List<io.a2a.grpc.TaskPushNotificationConfig> configs = response.getConfigsList();
             List<TaskPushNotificationConfig> result = new ArrayList<>(configs.size());
-            for(io.a2a.grpc.TaskPushNotificationConfig config : configs) {
+            for (io.a2a.grpc.TaskPushNotificationConfig config : configs) {
                 result.add(taskPushNotificationConfig(config));
             }
             return result;
@@ -230,22 +245,22 @@ public class ProtoUtils {
 
         public static ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigRequestOrBuilder request) {
             io.a2a.grpc.ListTaskPushNotificationConfigRequest reqProto = request instanceof io.a2a.grpc.ListTaskPushNotificationConfigRequest
-                ? (io.a2a.grpc.ListTaskPushNotificationConfigRequest) request
-                : ((io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder) request).build();
+                    ? (io.a2a.grpc.ListTaskPushNotificationConfigRequest) request
+                    : ((io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder) request).build();
             return ListTaskPushNotificationConfigParamsMapper.INSTANCE.fromProto(reqProto);
         }
 
         public static DeleteTaskPushNotificationConfigParams deleteTaskPushNotificationConfigParams(io.a2a.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder request) {
             io.a2a.grpc.DeleteTaskPushNotificationConfigRequest reqProto = request instanceof io.a2a.grpc.DeleteTaskPushNotificationConfigRequest
-                ? (io.a2a.grpc.DeleteTaskPushNotificationConfigRequest) request
-                : ((io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.Builder) request).build();
+                    ? (io.a2a.grpc.DeleteTaskPushNotificationConfigRequest) request
+                    : ((io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.Builder) request).build();
             return DeleteTaskPushNotificationConfigParamsMapper.INSTANCE.fromProto(reqProto);
         }
 
         public static Task task(io.a2a.grpc.TaskOrBuilder task) {
             io.a2a.grpc.Task taskProto = task instanceof io.a2a.grpc.Task
-                ? (io.a2a.grpc.Task) task
-                : ((io.a2a.grpc.Task.Builder) task).build();
+                    ? (io.a2a.grpc.Task) task
+                    : ((io.a2a.grpc.Task.Builder) task).build();
             return TaskMapper.INSTANCE.fromProto(taskProto);
         }
 
@@ -254,23 +269,30 @@ public class ProtoUtils {
                 throw new InvalidParamsError();
             }
             io.a2a.grpc.Message messageProto = message instanceof io.a2a.grpc.Message
-                ? (io.a2a.grpc.Message) message
-                : ((io.a2a.grpc.Message.Builder) message).build();
+                    ? (io.a2a.grpc.Message) message
+                    : ((io.a2a.grpc.Message.Builder) message).build();
             return MessageMapper.INSTANCE.fromProto(messageProto);
         }
 
         public static TaskStatusUpdateEvent taskStatusUpdateEvent(io.a2a.grpc.TaskStatusUpdateEventOrBuilder taskStatusUpdateEvent) {
             io.a2a.grpc.TaskStatusUpdateEvent eventProto = taskStatusUpdateEvent instanceof io.a2a.grpc.TaskStatusUpdateEvent
-                ? (io.a2a.grpc.TaskStatusUpdateEvent) taskStatusUpdateEvent
-                : ((io.a2a.grpc.TaskStatusUpdateEvent.Builder) taskStatusUpdateEvent).build();
+                    ? (io.a2a.grpc.TaskStatusUpdateEvent) taskStatusUpdateEvent
+                    : ((io.a2a.grpc.TaskStatusUpdateEvent.Builder) taskStatusUpdateEvent).build();
             return TaskStatusUpdateEventMapper.INSTANCE.fromProto(eventProto);
         }
 
         public static TaskArtifactUpdateEvent taskArtifactUpdateEvent(io.a2a.grpc.TaskArtifactUpdateEventOrBuilder taskArtifactUpdateEvent) {
             io.a2a.grpc.TaskArtifactUpdateEvent eventProto = taskArtifactUpdateEvent instanceof io.a2a.grpc.TaskArtifactUpdateEvent
-                ? (io.a2a.grpc.TaskArtifactUpdateEvent) taskArtifactUpdateEvent
-                : ((io.a2a.grpc.TaskArtifactUpdateEvent.Builder) taskArtifactUpdateEvent).build();
+                    ? (io.a2a.grpc.TaskArtifactUpdateEvent) taskArtifactUpdateEvent
+                    : ((io.a2a.grpc.TaskArtifactUpdateEvent.Builder) taskArtifactUpdateEvent).build();
             return TaskArtifactUpdateEventMapper.INSTANCE.fromProto(eventProto);
+        }
+
+        public static io.a2a.spec.ListTasksResult listTasksResult(io.a2a.grpc.ListTasksResponseOrBuilder listTasksResponse) {
+            io.a2a.grpc.ListTasksResponse eventProto = listTasksResponse instanceof io.a2a.grpc.ListTasksResponse
+                    ? (io.a2a.grpc.ListTasksResponse) listTasksResponse
+                    : ((io.a2a.grpc.ListTasksResponse.Builder) listTasksResponse).build();
+            return ListTasksResultMapper.INSTANCE.fromProto(eventProto);
         }
     }
 

@@ -38,6 +38,19 @@ public interface SetTaskPushNotificationConfigMapper {
     @Mapping(target = "pushNotificationConfig", expression = "java(mapPushNotificationConfigWithId(request))")
     TaskPushNotificationConfig fromProto(SetTaskPushNotificationConfigRequest request);
 
+        /**
+     * Converts SetTaskPushNotificationConfigRequest to domain TaskPushNotificationConfig.
+     * <p>
+     * Extracts taskId from parent resource name and maps PushNotificationConfig with
+     * ID override from config_id field.
+     *
+     * @param config the domainTaskPushNotificationConfig
+     * @return proto SetTaskPushNotificationConfigRequest
+     */
+    @Mapping(target = "parent", expression = "java(ResourceNameParser.defineTaskName(config.taskId()))")
+    @Mapping(target = "configId", expression = "java(config.pushNotificationConfig().id())")
+    @Mapping(target = "config", expression = "java(mapPushNotificationConfig(config))")
+    SetTaskPushNotificationConfigRequest toProto(TaskPushNotificationConfig config);
     /**
      * Extracts the task ID from the parent resource name.
      * <p>
@@ -93,5 +106,17 @@ public interface SetTaskPushNotificationConfigMapper {
         }
 
         return result;
+    }
+    
+    /**
+     * Maps the protobuf PushNotificationConfig to domain, injecting config_id from request.
+     * <p>
+     * The config_id from the request overrides the ID in the proto's PushNotificationConfig.
+     *
+     * @param request the protobuf SetTaskPushNotificationConfigRequest
+     * @return domain PushNotificationConfig with config_id injected
+     */
+    default io.a2a.grpc.TaskPushNotificationConfig mapPushNotificationConfig(TaskPushNotificationConfig domain) {
+        return TaskPushNotificationConfigMapper.INSTANCE.toProto(domain);
     }
 }

@@ -23,4 +23,7 @@ public interface ListTasksResultMapper {
      */
     @Mapping(target = "nextPageToken", source = "nextPageToken", conditionExpression = "java(domain.nextPageToken() != null)")
     io.a2a.grpc.ListTasksResponse toProto(ListTasksResult domain);
+
+    @Mapping(source = "nextPageToken", target = "nextPageToken", conditionExpression = "java(proto.getNextPageToken() != null)")
+    ListTasksResult fromProto(io.a2a.grpc.ListTasksResponse proto);
 }

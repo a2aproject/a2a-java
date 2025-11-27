@@ -96,7 +96,7 @@ public class A2AServerRoutes {
         Multi<? extends JSONRPCResponse<?>> streamingResponse = null;
         JSONRPCErrorResponse error = null;
         try {
-            JSONRPCRequest<?> request = JSONRPCUtils.parseBody(body);
+            JSONRPCRequest<?> request = JSONRPCUtils.parseRequestBody(body);
             context.getState().put(METHOD_NAME_KEY, request.getMethod());
             if (request instanceof NonStreamingJSONRPCRequest nonStreamingRequest) {
                 nonStreamingResponse = processNonStreamingRequest(nonStreamingRequest, context);

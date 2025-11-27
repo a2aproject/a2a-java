@@ -24,6 +24,15 @@ public interface TaskIdParamsMapper {
     @Mapping(target = "id", expression = "java(ResourceNameParser.extractTaskId(proto.getName()))")
     @Mapping(target = "metadata", ignore = true)
     TaskIdParams fromProtoCancelTaskRequest(io.a2a.grpc.CancelTaskRequest proto);
+    
+     /**
+     * Converts proto CancelTaskRequest to domain TaskIdParams.
+     * Extracts task ID from the resource name.
+     */
+    @BeanMapping(builder = @Builder(buildMethod = "build"))
+    @Mapping(target = "name", expression = "java(ResourceNameParser.defineTaskName(domain.id()))")
+    io.a2a.grpc.CancelTaskRequest toProtoCancelTaskRequest(TaskIdParams domain);
+
 
     /**
      * Converts proto SubscribeToTaskRequest to domain TaskIdParams.
