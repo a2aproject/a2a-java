@@ -3,6 +3,15 @@ package io.a2a.server.tasks;
 import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
 import static io.a2a.client.http.A2AHttpClient.CONTENT_TYPE;
 import static io.a2a.common.A2AHeaders.X_A2A_NOTIFICATION_TOKEN;
+import static io.a2a.spec.Message.MESSAGE;
+import static io.a2a.spec.Task.TASK;
+import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
+import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
+
+import io.a2a.spec.Message;
+import io.a2a.spec.StreamingEventKind;
+import io.a2a.spec.TaskArtifactUpdateEvent;
+import io.a2a.spec.TaskStatusUpdateEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -42,34 +51,45 @@ public class BasePushNotificationSender implements PushNotificationSender {
     }
 
     @Override
-    public void sendNotification(Task task) {
-        List<PushNotificationConfig> pushConfigs = configStore.getInfo(task.getId());
+    public void sendNotification(StreamingEventKind kind) {
+        String taskId = switch (kind.getKind()) {
+            case TASK -> ((Task) kind).getId();
+            case MESSAGE -> ((Message)kind).getTaskId();
+            case STATUS_UPDATE -> ((TaskStatusUpdateEvent)kind).getTaskId();
+            case ARTIFACT_UPDATE -> ((TaskArtifactUpdateEvent)kind).getTaskId();
+            default -> null;
+        };
+        if (taskId == null) {
+           return;
+        }
+
+        List<PushNotificationConfig> pushConfigs = configStore.getInfo(taskId);
         if (pushConfigs == null || pushConfigs.isEmpty()) {
             return;
         }
 
         List<CompletableFuture<Boolean>> dispatchResults = pushConfigs
                 .stream()
-                .map(pushConfig -> dispatch(task, pushConfig))
+                .map(pushConfig -> dispatch(kind, pushConfig))
                 .toList();
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(dispatchResults.toArray(new CompletableFuture[0]));
         CompletableFuture<Boolean> dispatchResult = allFutures.thenApply(v -> dispatchResults.stream()
                 .allMatch(CompletableFuture::join));
         try {
             boolean allSent = dispatchResult.get();
-            if (! allSent) {
-                LOGGER.warn("Some push notifications failed to send for taskId: " + task.getId());
+            if (!allSent) {
+                LOGGER.warn("Some push notifications failed to send for taskId: " + taskId);
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOGGER.warn("Some push notifications failed to send for taskId " + task.getId() + ": {}", e.getMessage(), e);
+            LOGGER.warn("Some push notifications failed to send for taskId " + taskId + ": {}", e.getMessage(), e);
         }
     }
 
-    private CompletableFuture<Boolean> dispatch(Task task, PushNotificationConfig pushInfo) {
-        return CompletableFuture.supplyAsync(() -> dispatchNotification(task, pushInfo));
+    private CompletableFuture<Boolean> dispatch(StreamingEventKind kind, PushNotificationConfig pushInfo) {
+        return CompletableFuture.supplyAsync(() -> dispatchNotification(kind, pushInfo));
     }
 
-    private boolean dispatchNotification(Task task, PushNotificationConfig pushInfo) {
+    private boolean dispatchNotification(StreamingEventKind kind, PushNotificationConfig pushInfo) {
         String url = pushInfo.url();
         String token = pushInfo.token();
 
@@ -80,7 +100,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
         String body;
         try {
-            body = Utils.OBJECT_MAPPER.writeValueAsString(task);
+            body = Utils.OBJECT_MAPPER.writeValueAsString(kind);
         } catch (JsonProcessingException e) {
             LOGGER.debug("Error writing value as string: {}", e.getMessage(), e);
             return false;

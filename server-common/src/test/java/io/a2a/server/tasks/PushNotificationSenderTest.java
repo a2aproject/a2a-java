@@ -16,6 +16,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import io.a2a.spec.Message;
+import io.a2a.spec.Part;
+import io.a2a.spec.StreamingEventKind;
+import io.a2a.spec.TextPart;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -67,6 +71,7 @@ public class PushNotificationSenderTest {
             @Override
             public PostBuilder body(String body) {
                 this.body = body;
+                System.out.println("body = " + body);
                 return this;
             }
 
@@ -80,6 +85,7 @@ public class PushNotificationSenderTest {
                     Task task = Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE);
                     tasks.add(task);
                     urls.add(url);
+                    System.out.println(requestHeaders);
                     headers.add(new java.util.HashMap<>(requestHeaders));
                     
                     return new A2AHttpResponse() {
@@ -95,7 +101,7 @@ public class PushNotificationSenderTest {
 
                         @Override
                         public String body() {
-                            return "";
+                            return body;
                         }
                     };
                 } finally {
@@ -316,4 +322,45 @@ public class PushNotificationSenderTest {
         // Verify no tasks were successfully processed due to the error
         assertEquals(0, testHttpClient.tasks.size());
     }
+
+    @Test
+    public void testSendNotificationWithMessage() throws InterruptedException {
+        String taskId = "task_send_notification_with_message";
+        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
+
+        // Set up the configuration in the store
+        configStore.setInfo(taskId, config);
+
+        // Set up latch to wait for async completion
+        testHttpClient.latch = new CountDownLatch(1);
+
+        Message message = new Message.Builder()
+                .taskId(taskId)
+                .messageId("task_push_notification_message")
+                .parts(Collections.singletonList(new TextPart("Message for task " + taskId)))
+                .role(Message.Role.USER)
+                .build();
+        sender.sendNotification(message);
+
+        // Wait for the async operation to complete
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
+
+        // Verify the task was sent via HTTP
+        assertEquals(1, testHttpClient.tasks.size());
+        Task sentTask = testHttpClient.tasks.get(0);
+        assertEquals(taskData.getId(), sentTask.getId());
+
+        // Verify that the X-A2A-Notification-Token header is sent with the correct token
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertEquals(2, sentHeaders.size());
+        assertTrue(sentHeaders.containsKey(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        assertEquals(config.token(), sentHeaders.get(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        // Content-Type header should always be present
+        assertTrue(sentHeaders.containsKey(CONTENT_TYPE));
+        assertEquals(APPLICATION_JSON, sentHeaders.get(CONTENT_TYPE));
+
+    }
+
 }

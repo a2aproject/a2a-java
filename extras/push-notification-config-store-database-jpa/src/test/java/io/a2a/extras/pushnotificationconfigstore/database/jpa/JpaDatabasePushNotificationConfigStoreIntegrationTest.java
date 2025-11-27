@@ -88,7 +88,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         mockPushNotificationSender.sendNotification(testTask);
 
         // Verify it was captured
-        Queue<Task> captured = mockPushNotificationSender.getCapturedTasks();
+        Queue<Task> captured = mockPushNotificationSender.getCapturedEvents();
         assertEquals(1, captured.size());
         assertEquals("direct-test-task", captured.peek().getId());
     }
@@ -151,7 +151,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         boolean notificationReceived = false;
 
         while (System.currentTimeMillis() < end) {
-            if (!mockPushNotificationSender.getCapturedTasks().isEmpty()) {
+            if (!mockPushNotificationSender.getCapturedEvents().isEmpty()) {
                 notificationReceived = true;
                 break;
             }
@@ -161,7 +161,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         assertTrue(notificationReceived, "Timeout waiting for push notification.");
 
         // Step 6: Verify the captured notification
-        Queue<Task> capturedTasks = mockPushNotificationSender.getCapturedTasks();
+        Queue<Task> capturedTasks = mockPushNotificationSender.getCapturedEvents();
 
         // Verify the notification contains the correct task with artifacts
         Task notifiedTaskWithArtifact = capturedTasks.stream()
