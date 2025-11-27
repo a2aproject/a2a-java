@@ -1,20 +1,29 @@
 package io.a2a.util;
 
+import static io.a2a.spec.Message.MESSAGE;
+import static io.a2a.spec.Task.TASK;
+import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
+import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.a2a.spec.Artifact;
+import io.a2a.spec.Message;
 import io.a2a.spec.Part;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
+import io.a2a.spec.TaskStatusUpdateEvent;
 
 /**
  * Utility class providing common helper methods for A2A Protocol operations.
@@ -69,6 +78,45 @@ public class Utils {
      */
     public static <T> T unmarshalFrom(String data, TypeReference<T> typeRef) throws JsonProcessingException {
         return OBJECT_MAPPER.readValue(data, typeRef);
+    }
+
+    /**
+     * Deserializes JSON string into a subtype of StreamingEventKind using Jackson.
+     * <p>
+     * This method parses JSON containing a StreamingEventKind wrapped into a JSON field
+     * corresponding to the kind of payload:
+     * <ul>
+     *   <li>"task" → {@link Task}</li>
+     *   <li>"message" → {@link Message}</li>
+     *   <li>"status-update" → {@link TaskStatusUpdateEvent}</li>
+     *   <li>"artifact-update" → {@link TaskArtifactUpdateEvent}</li>
+     * </ul>
+     *
+     * @param data JSON string to deserialize
+     * @return deserialized StreamingEventKind subclass instance
+     * @throws JsonProcessingException if JSON parsing fails or kind is unrecognized
+     */
+    public static <K extends StreamingEventKind> K unmarshalStreamingEventKindFrom(String data) throws JsonProcessingException {
+        JsonNode root = OBJECT_MAPPER.readTree(data);
+
+        // Validate that there is exactly one field at the root level
+        if (root.size() != 1) {
+            throw new JsonParseException(null,
+                String.format("Expected exactly one field at root level, but found %d fields", root.size()));
+        }
+
+        // Get the "kind" field to determine which type to deserialize to
+        Map.Entry<String, JsonNode> entry = root.fields().next();
+        String kind = entry.getKey();
+        JsonNode payload = entry.getValue();
+
+        return (K) switch (kind) {
+            case TASK -> OBJECT_MAPPER.treeToValue(payload, Task.TYPE_REFERENCE);
+            case MESSAGE -> OBJECT_MAPPER.treeToValue(payload, Message.TYPE_REFERENCE);
+            case STATUS_UPDATE -> OBJECT_MAPPER.treeToValue(payload, TaskStatusUpdateEvent.TYPE_REFERENCE);
+            case ARTIFACT_UPDATE -> OBJECT_MAPPER.treeToValue(payload, TaskArtifactUpdateEvent.TYPE_REFERENCE);
+            default -> throw new JsonParseException(null, "Unexpected kind of payload: " + kind);
+        };
     }
 
     /**

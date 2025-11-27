@@ -25,6 +25,7 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TextPart;
@@ -88,9 +89,9 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         mockPushNotificationSender.sendNotification(testTask);
 
         // Verify it was captured
-        Queue<Task> captured = mockPushNotificationSender.getCapturedTasks();
+        Queue<StreamingEventKind> captured = mockPushNotificationSender.getCapturedEvents();
         assertEquals(1, captured.size());
-        assertEquals("direct-test-task", captured.peek().getId());
+        assertEquals("direct-test-task", ((Task)captured.peek()).getId());
     }
 
     @Test
@@ -151,7 +152,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         boolean notificationReceived = false;
 
         while (System.currentTimeMillis() < end) {
-            if (!mockPushNotificationSender.getCapturedTasks().isEmpty()) {
+            if (!mockPushNotificationSender.getCapturedEvents().isEmpty()) {
                 notificationReceived = true;
                 break;
             }
@@ -161,10 +162,12 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         assertTrue(notificationReceived, "Timeout waiting for push notification.");
 
         // Step 6: Verify the captured notification
-        Queue<Task> capturedTasks = mockPushNotificationSender.getCapturedTasks();
+        Queue<StreamingEventKind> capturedTasks = mockPushNotificationSender.getCapturedEvents();
 
         // Verify the notification contains the correct task with artifacts
         Task notifiedTaskWithArtifact = capturedTasks.stream()
+            .filter(e -> Task.TASK.equals(e.getKind()))
+            .map(e -> (Task)e)
             .filter(t -> taskId.equals(t.getId()) && t.getArtifacts() != null && t.getArtifacts().size() > 0)
             .findFirst()
             .orElse(null);

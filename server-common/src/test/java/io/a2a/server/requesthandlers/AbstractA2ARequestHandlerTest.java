@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 
 import jakarta.enterprise.context.Dependent;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.profile.IfBuildProfile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -40,6 +39,7 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.Event;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
+import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
@@ -200,11 +200,10 @@ public class AbstractA2ARequestHandlerTest {
 
             @Override
             public A2AHttpResponse post() throws IOException, InterruptedException {
-                JsonNode root = Utils.OBJECT_MAPPER.readTree(body);
-                // This will need to be updated for #490 to unmarshall based on the kind of payload
-                JsonNode taskNode = root.elements().next();
-                Task task = Utils.OBJECT_MAPPER.treeToValue(taskNode, Task.TYPE_REFERENCE);
-                tasks.add(task);
+                StreamingEventKind kind = Utils.unmarshalStreamingEventKindFrom(body);
+                if (kind instanceof Task task) {
+                    tasks.add(task);
+                }
                 try {
                     return new A2AHttpResponse() {
                         @Override

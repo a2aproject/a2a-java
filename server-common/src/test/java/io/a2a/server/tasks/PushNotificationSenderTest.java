@@ -1,7 +1,12 @@
 package io.a2a.server.tasks;
 
-    import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
+import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
 import static io.a2a.client.http.A2AHttpClient.CONTENT_TYPE;
+import static io.a2a.spec.Message.MESSAGE;
+import static io.a2a.spec.Task.TASK;
+import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
+import static io.a2a.spec.TaskState.WORKING;
+import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,17 +21,23 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.common.A2AHeaders;
+import io.a2a.spec.Artifact;
+import io.a2a.spec.Message;
 import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
+import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
+import io.a2a.spec.TaskStatusUpdateEvent;
+import io.a2a.spec.TextPart;
+import io.a2a.spec.UpdateEvent;
 import io.a2a.util.Utils;
 
 public class PushNotificationSenderTest {
@@ -40,6 +51,9 @@ public class PushNotificationSenderTest {
      */
     private static class TestHttpClient implements A2AHttpClient {
         final List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
+        final List<Message> messages = Collections.synchronizedList(new ArrayList<>());
+        final List<TaskStatusUpdateEvent> statusUpdateEvents = Collections.synchronizedList(new ArrayList<>());
+        final List<TaskArtifactUpdateEvent> artifactUpdateEvents = Collections.synchronizedList(new ArrayList<>());
         final List<String> urls = Collections.synchronizedList(new ArrayList<>());
         final List<Map<String, String>> headers = Collections.synchronizedList(new ArrayList<>());
         volatile CountDownLatch latch;
@@ -78,12 +92,21 @@ public class PushNotificationSenderTest {
                 }
                 
                 try {
-                    JsonNode root = Utils.OBJECT_MAPPER.readTree(body);
-                    // This assumes there is always one field in the outer JSON object.
-                    // This will need to be updated for #490 to unmarshall based on the kind of payload
-                    JsonNode taskNode = root.elements().next();
-                    Task task = Utils.OBJECT_MAPPER.treeToValue(taskNode, Task.TYPE_REFERENCE);
-                    tasks.add(task);
+                    StreamingEventKind kind = Utils.unmarshalStreamingEventKindFrom(body);
+                    switch (kind.getKind()) {
+                        case TASK:
+                            tasks.add((Task) kind);
+                            break;
+                        case MESSAGE:
+                            messages.add((Message) kind);
+                            break;
+                        case STATUS_UPDATE:
+                            statusUpdateEvents.add((TaskStatusUpdateEvent)kind);
+                            break;
+                        case ARTIFACT_UPDATE:
+                            artifactUpdateEvents.add((TaskArtifactUpdateEvent) kind);
+                            break;
+                    }
                     urls.add(url);
                     headers.add(new java.util.HashMap<>(requestHeaders));
                     
@@ -320,5 +343,140 @@ public class PushNotificationSenderTest {
 
         // Verify no tasks were successfully processed due to the error
         assertEquals(0, testHttpClient.tasks.size());
+    }
+
+    @Test
+    public void testSendNotificationWithMessage() throws InterruptedException {
+        String taskId = "task_send_notification_with_message";
+        String messageId = taskId + "msg-0";
+        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
+
+        // Set up the configuration in the store
+        configStore.setInfo(taskId, config);
+
+        // Set up latch to wait for async completion
+        testHttpClient.latch = new CountDownLatch(1);
+
+        Message message = new Message.Builder()
+                .taskId(taskId)
+                .messageId(messageId)
+                .role(Message.Role.USER)
+                .parts(List.of(new TextPart("This is a message sent as a push notification")))
+                .build();
+
+        sender.sendNotification(message);
+
+        // Wait for the async operation to complete
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
+
+        // Verify the message was sent via HTTP
+        assertEquals(0, testHttpClient.tasks.size());
+        assertEquals(1, testHttpClient.messages.size());
+
+        Message sentMessage = testHttpClient.messages.get(0);
+        assertEquals(taskId, sentMessage.getTaskId());
+        assertEquals(messageId, sentMessage.getMessageId());
+
+        // Verify that the X-A2A-Notification-Token header is sent with the correct token
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertEquals(2, sentHeaders.size());
+        assertTrue(sentHeaders.containsKey(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        assertEquals(config.token(), sentHeaders.get(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        // Content-Type header should always be present
+        assertTrue(sentHeaders.containsKey(CONTENT_TYPE));
+        assertEquals(APPLICATION_JSON, sentHeaders.get(CONTENT_TYPE));
+    }
+
+    @Test
+    public void testSendNotificationWithStatusUpdateEvent() throws InterruptedException {
+        String taskId = "task_send_notification_with_status_update_event";
+        String contextId = taskId + "-context";
+
+        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
+
+        // Set up the configuration in the store
+        configStore.setInfo(taskId, config);
+
+        // Set up latch to wait for async completion
+        testHttpClient.latch = new CountDownLatch(1);
+
+        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                .taskId(taskId)
+                .status(new TaskStatus(WORKING))
+                .contextId(contextId)
+                .build();
+
+        sender.sendNotification(event);
+
+        // Wait for the async operation to complete
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
+
+        // Verify the event was sent via HTTP
+        assertEquals(1, testHttpClient.statusUpdateEvents.size());
+
+        TaskStatusUpdateEvent updateEvent = testHttpClient.statusUpdateEvents.get(0);
+        assertEquals(taskId, updateEvent.getTaskId());
+        assertEquals(contextId, updateEvent.getContextId());
+        assertEquals(WORKING, updateEvent.getStatus().state());
+
+        // Verify that the X-A2A-Notification-Token header is sent with the correct token
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertEquals(2, sentHeaders.size());
+        assertTrue(sentHeaders.containsKey(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        assertEquals(config.token(), sentHeaders.get(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        // Content-Type header should always be present
+        assertTrue(sentHeaders.containsKey(CONTENT_TYPE));
+        assertEquals(APPLICATION_JSON, sentHeaders.get(CONTENT_TYPE));
+    }
+
+    @Test
+    public void testSendNotificationWithArtifactUpdateEvent() throws InterruptedException {
+        String taskId = "task_send_notification_with_artifact_update_event";
+        String contextId = taskId + "-context";
+        String artifactId = taskId + "-artifact";
+
+        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
+
+        // Set up the configuration in the store
+        configStore.setInfo(taskId, config);
+
+        // Set up latch to wait for async completion
+        testHttpClient.latch = new CountDownLatch(1);
+
+        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+                .taskId(taskId)
+                .contextId(contextId)
+                .artifact(new Artifact.Builder()
+                        .artifactId(artifactId)
+                        .parts(List.of(new TextPart("This is a part of the artifact that is updated")))
+                        .build())
+                .lastChunk(false)
+                .build();
+
+        sender.sendNotification(event);
+
+        // Wait for the async operation to complete
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
+
+        // Verify the event was sent via HTTP
+        assertEquals(1, testHttpClient.artifactUpdateEvents.size());
+
+        TaskArtifactUpdateEvent updateEvent = testHttpClient.artifactUpdateEvents.get(0);
+        assertEquals(taskId, updateEvent.getTaskId());
+        assertEquals(contextId, updateEvent.getContextId());
+        assertEquals(artifactId, updateEvent.getArtifact().artifactId());
+        assertFalse(updateEvent.isLastChunk());
+
+        // Verify that the X-A2A-Notification-Token header is sent with the correct token
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertEquals(2, sentHeaders.size());
+        assertTrue(sentHeaders.containsKey(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        assertEquals(config.token(), sentHeaders.get(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        // Content-Type header should always be present
+        assertTrue(sentHeaders.containsKey(CONTENT_TYPE));
+        assertEquals(APPLICATION_JSON, sentHeaders.get(CONTENT_TYPE));
     }
 }

@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
@@ -19,6 +21,8 @@ import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKind, UpdateEvent {
+
+    public static final TypeReference<TaskStatusUpdateEvent> TYPE_REFERENCE = new TypeReference<>() {};
 
     public static final String STATUS_UPDATE = "status-update";
     private final String taskId;
