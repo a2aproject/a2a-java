@@ -30,7 +30,8 @@ public final class MultiInstanceReplicationAgentCards {
         return new AgentCard.Builder()
                 .name("Multi-Instance Test Agent " + instanceNumber)
                 .description("Test agent for multi-instance replication testing - Instance " + instanceNumber)
-                .url(url)
+                .supportedInterfaces(List.of(
+                        new AgentInterface(TransportProtocol.JSONRPC.asString(), url)))
                 .version("1.0.0")
                 .capabilities(new AgentCapabilities.Builder()
                         .streaming(true)
@@ -45,8 +46,6 @@ public final class MultiInstanceReplicationAgentCards {
                                 .description("Fire-and-forget agent for testing replication")
                                 .tags(Collections.singletonList("test"))
                                 .build()))
-                .additionalInterfaces(List.of(
-                        new AgentInterface(TransportProtocol.JSONRPC.asString(), url)))
                 .protocolVersion("0.3.0")
                 .build();
     }

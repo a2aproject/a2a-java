@@ -70,7 +70,7 @@ public class RestTransportTest {
     private static final AgentCard CARD = new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .url("http://localhost:4001")
+                .supportedInterfaces(Collections.singletonList(new io.a2a.spec.AgentInterface("HTTP+JSON", "http://localhost:4001")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()

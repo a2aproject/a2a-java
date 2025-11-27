@@ -28,7 +28,10 @@ public class AgentCardProducer {
         return new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .url(sutJsonRpcUrl)
+                .supportedInterfaces(List.of(
+                        new AgentInterface(TransportProtocol.JSONRPC.asString(), sutJsonRpcUrl),
+                        new AgentInterface(TransportProtocol.GRPC.asString(), sutGrpcUrl),
+                        new AgentInterface(TransportProtocol.HTTP_JSON.asString(), sutRestcUrl)))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()
@@ -46,10 +49,6 @@ public class AgentCardProducer {
                                 .examples(List.of("hi", "hello world"))
                                 .build()))
                 .protocolVersion("0.3.0")
-                .additionalInterfaces(List.of(
-                        new AgentInterface(TransportProtocol.JSONRPC.asString(), sutJsonRpcUrl),
-                        new AgentInterface(TransportProtocol.GRPC.asString(), sutGrpcUrl),
-                        new AgentInterface(TransportProtocol.HTTP_JSON.asString(), sutRestcUrl)))
                 .build();
     }
 

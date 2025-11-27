@@ -20,11 +20,13 @@ import io.a2a.client.config.ClientConfig;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TextPart;
+import io.a2a.spec.TransportProtocol;
 
 /**
  * Test client demonstrating multi-pod A2A agent deployment with modernized message protocol.
@@ -106,7 +108,10 @@ public class A2ACloudExampleClient {
 
         // Override agent card URL to use the port-forwarded URL instead of internal K8s service URL
         AgentCard agentCard = new AgentCard.Builder(fetchedCard)
-                .url(AGENT_URL)  // Use localhost URL for port-forwarded connection
+                .supportedInterfaces(
+                        Collections.singletonList(
+                                // Use localhost URL for port-forwarded connection
+                                new AgentInterface(TransportProtocol.JSONRPC.asString(), AGENT_URL)))
                 .build();
         System.out.println();
         return agentCard;

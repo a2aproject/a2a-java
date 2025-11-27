@@ -369,7 +369,7 @@ public class JSONRPCTransportTest {
         AgentCard agentCard = client.getAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent", agentCard.name());
         assertEquals("Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.", agentCard.description());
-        assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());
+        assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.supportedInterfaces().get(0).url());
         assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
         assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
         assertEquals("1.2.0", agentCard.version());
@@ -419,8 +419,8 @@ public class JSONRPCTransportTest {
         assertFalse(agentCard.supportsAuthenticatedExtendedCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
         assertEquals("0.2.9", agentCard.protocolVersion());
-        assertEquals("JSONRPC", agentCard.preferredTransport());
-        List<AgentInterface> additionalInterfaces = agentCard.additionalInterfaces();
+        assertEquals("JSONRPC", agentCard.supportedInterfaces().get(0).protocolBinding());
+        List<AgentInterface> additionalInterfaces = agentCard.supportedInterfaces();
         assertEquals(3, additionalInterfaces.size());
         AgentInterface jsonrpc = new AgentInterface(TransportProtocol.JSONRPC.asString(), "https://georoute-agent.example.com/a2a/v1");
         AgentInterface grpc = new AgentInterface(TransportProtocol.GRPC.asString(), "https://georoute-agent.example.com/a2a/grpc");
@@ -458,7 +458,7 @@ public class JSONRPCTransportTest {
         AgentCard agentCard = client.getAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
-        assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());
+        assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.supportedInterfaces().get(0).url());
         assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
         assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
         assertEquals("1.2.0", agentCard.version());

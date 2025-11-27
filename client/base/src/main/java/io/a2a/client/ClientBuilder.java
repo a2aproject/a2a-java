@@ -110,11 +110,8 @@ public class ClientBuilder {
 
     private Map<String, String> getServerPreferredTransports() {
         Map<String, String> serverPreferredTransports = new LinkedHashMap<>();
-        serverPreferredTransports.put(agentCard.preferredTransport(), agentCard.url());
-        if (agentCard.additionalInterfaces() != null) {
-            for (AgentInterface agentInterface : agentCard.additionalInterfaces()) {
-                serverPreferredTransports.putIfAbsent(agentInterface.protocolBinding(), agentInterface.url());
-            }
+        for (AgentInterface agentInterface : agentCard.supportedInterfaces()) {
+            serverPreferredTransports.putIfAbsent(agentInterface.protocolBinding(), agentInterface.url());
         }
         return serverPreferredTransports;
     }

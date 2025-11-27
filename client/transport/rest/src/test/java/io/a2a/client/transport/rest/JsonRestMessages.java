@@ -109,7 +109,9 @@ public class JsonRestMessages {
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
-                "url": "https://georoute-agent.example.com/a2a/v1",
+                "supportedInterfaces": [
+                  {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "HTTP+JSON"}
+                ],
                 "provider": {
                   "organization": "Example Geo Services Inc.",
                   "url": "https://www.examplegeoservices.com"
@@ -174,7 +176,9 @@ public class JsonRestMessages {
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
-                "url": "https://georoute-agent.example.com/a2a/v1",
+                "supportedInterfaces": [
+                  {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "HTTP+JSON"}
+                ],
                 "provider": {
                   "organization": "Example Geo Services Inc.",
                   "url": "https://www.examplegeoservices.com"
@@ -239,7 +243,9 @@ public class JsonRestMessages {
             {
                 "name": "GeoSpatial Route Planner Agent Extended",
                 "description": "Extended description",
-                "url": "https://georoute-agent.example.com/a2a/v1",
+                "supportedInterfaces": [
+                  {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "HTTP+JSON"}
+                ],
                 "provider": {
                   "organization": "Example Geo Services Inc.",
                   "url": "https://www.examplegeoservices.com"

@@ -24,7 +24,7 @@ public class ClientBuilderTest {
     private AgentCard card = new AgentCard.Builder()
             .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .url("http://localhost:9999")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()

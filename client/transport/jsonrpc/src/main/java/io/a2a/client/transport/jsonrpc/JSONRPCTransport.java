@@ -76,7 +76,7 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     public JSONRPCTransport(AgentCard agentCard) {
-        this(null, agentCard, agentCard.url(), null);
+        this(null, agentCard, agentCard.supportedInterfaces().get(0).url(), null);
     }
 
     public JSONRPCTransport(@Nullable A2AHttpClient httpClient, @Nullable AgentCard agentCard,

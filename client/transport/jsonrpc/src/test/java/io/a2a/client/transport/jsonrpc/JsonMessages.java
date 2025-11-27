@@ -11,9 +11,7 @@ public class JsonMessages {
                  "protocolVersion": "0.2.9",
                  "name": "GeoSpatial Route Planner Agent",
                  "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
-                 "url": "https://georoute-agent.example.com/a2a/v1",
-                 "preferredTransport": "JSONRPC",
-                 "additionalInterfaces" : [
+                 "supportedInterfaces" : [
                    {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC"},
                    {"url": "https://georoute-agent.example.com/a2a/grpc", "protocolBinding": "GRPC"},
                    {"url": "https://georoute-agent.example.com/a2a/json", "protocolBinding": "HTTP+JSON"}
@@ -87,7 +85,9 @@ public class JsonMessages {
             {
                 "name": "GeoSpatial Route Planner Agent Extended",
                 "description": "Extended description",
-                "url": "https://georoute-agent.example.com/a2a/v1",
+                "supportedInterfaces": [
+                  {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC"}
+                ],
                 "provider": {
                   "organization": "Example Geo Services Inc.",
                   "url": "https://www.examplegeoservices.com"
@@ -628,7 +628,9 @@ public class JsonMessages {
                 "result": {
                     "name": "GeoSpatial Route Planner Agent Extended",
                     "description": "Extended description",
-                    "url": "https://georoute-agent.example.com/a2a/v1",
+                    "supportedInterfaces": [
+                      {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC"}
+                    ],
                     "provider": {
                       "organization": "Example Geo Services Inc.",
                       "url": "https://www.examplegeoservices.com"
@@ -706,7 +708,9 @@ public class JsonMessages {
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
-                "url": "https://georoute-agent.example.com/a2a/v1",
+                "supportedInterfaces": [
+                  {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC"}
+                ],
                 "provider": {
                   "organization": "Example Geo Services Inc.",
                   "url": "https://www.examplegeoservices.com"

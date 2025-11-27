@@ -588,7 +588,9 @@ public abstract class AbstractA2AServerTest {
         assertNotNull(agentCard);
         assertEquals("test-card", agentCard.name());
         assertEquals("A test agent card", agentCard.description());
-        assertEquals(getTransportUrl(), agentCard.url());
+        assertNotNull(agentCard.supportedInterfaces());
+        assertFalse(agentCard.supportedInterfaces().isEmpty());
+        assertEquals(getTransportUrl(), agentCard.supportedInterfaces().get(0).url());
         assertEquals("1.0", agentCard.version());
         assertEquals("http://example.com/docs", agentCard.documentationUrl());
         assertTrue(agentCard.capabilities().pushNotifications());
@@ -1846,10 +1848,8 @@ public abstract class AbstractA2AServerTest {
         return new AgentCard.Builder()
                 .name("test-card")
                 .description("A test agent card")
-                .url(getTransportUrl())
                 .version("1.0")
                 .documentationUrl("http://example.com/docs")
-                .preferredTransport(getTransportProtocol())
                 .capabilities(new AgentCapabilities.Builder()
                         .streaming(true)
                         .pushNotifications(true)
@@ -1858,7 +1858,7 @@ public abstract class AbstractA2AServerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .additionalInterfaces(List.of(new AgentInterface(getTransportProtocol(), getTransportUrl())))
+                .supportedInterfaces(List.of(new AgentInterface(getTransportProtocol(), getTransportUrl())))
                 .protocolVersion("0.2.5")
                 .build();
     }

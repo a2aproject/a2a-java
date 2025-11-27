@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import io.a2a.grpc.SendMessageConfiguration;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.HTTPAuthSecurityScheme;
@@ -43,7 +44,7 @@ public class ToProtoTest {
         AgentCard agentCard = new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .url("http://localhost:9999")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()
@@ -65,7 +66,9 @@ public class ToProtoTest {
         io.a2a.grpc.AgentCard result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
         assertEquals("Just a hello world agent", result.getDescription());
-        assertEquals("http://localhost:9999", result.getUrl());
+        assertEquals(1, result.getSupportedInterfacesList().size());
+        assertEquals("http://localhost:9999", result.getSupportedInterfacesList().get(0).getUrl());
+        assertEquals("jsonrpc", result.getSupportedInterfacesList().get(0).getProtocolBinding());
         assertEquals("1.0.0", result.getVersion());
         assertEquals("http://example.com/docs", result.getDocumentationUrl());
         assertEquals(1, result.getDefaultInputModesCount());
@@ -76,7 +79,7 @@ public class ToProtoTest {
         agentCard = new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .url("http://localhost:9999")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()
@@ -93,7 +96,6 @@ public class ToProtoTest {
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
-                .preferredTransport("HTTP+JSON")
 //                .iconUrl("http://example.com/icon.svg")
                 .securitySchemes(Map.of("basic", new HTTPAuthSecurityScheme.Builder().scheme("basic").description("Basic Auth").build()))
                 .security(List.of(Map.of("oauth", List.of("read"))))
@@ -102,7 +104,9 @@ public class ToProtoTest {
        result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
         assertEquals("Just a hello world agent", result.getDescription());
-        assertEquals("http://localhost:9999", result.getUrl());
+        assertEquals(1, result.getSupportedInterfacesList().size());
+        assertEquals("http://localhost:9999", result.getSupportedInterfacesList().get(0).getUrl());
+        assertEquals("jsonrpc", result.getSupportedInterfacesList().get(0).getProtocolBinding());
         assertEquals("1.0.0", result.getVersion());
         assertEquals("http://example.com/docs", result.getDocumentationUrl());
         assertEquals(1, result.getDefaultInputModesCount());
@@ -110,7 +114,6 @@ public class ToProtoTest {
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
         assertEquals("0.2.5", result.getProtocolVersion());
-        assertEquals("HTTP+JSON", result.getPreferredTransport());
         assertEquals(1, result.getSecurityCount());
         assertEquals(1, result.getSecurity(0).getSchemesMap().size());
         assertEquals(true, result.getSecurity(0).getSchemesMap().containsKey("oauth"));

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,11 +23,13 @@ import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfig;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
+import io.a2a.spec.TransportProtocol;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -145,11 +148,15 @@ public class MultiInstanceReplicationTest {
 
             // Rebuild AgentCards with correct URLs (mapped ports, not container ports)
             app1Card = new AgentCard.Builder(originalApp1Card)
-                    .url(app1Url)
+                    .supportedInterfaces(Collections.singletonList(
+                            new AgentInterface(TransportProtocol.JSONRPC.asString(), app1Url)
+                    ))
                     .build();
 
             app2Card = new AgentCard.Builder(originalApp2Card)
-                    .url(app2Url)
+                    .supportedInterfaces(Collections.singletonList(
+                            new AgentInterface(TransportProtocol.JSONRPC.asString(), app2Url)
+                    ))
                     .build();
         } catch (Exception e) {
             System.err.println("=== Failed to get AgentCards ===");

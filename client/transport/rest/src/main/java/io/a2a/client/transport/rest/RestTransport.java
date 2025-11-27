@@ -61,7 +61,7 @@ public class RestTransport implements ClientTransport {
     private boolean needsExtendedCard = false;
 
     public RestTransport(AgentCard agentCard) {
-        this(null, agentCard, agentCard.url(), null);
+        this(null, agentCard, agentCard.supportedInterfaces().get(0).url(), null);
     }
 
     public RestTransport(@Nullable A2AHttpClient httpClient, AgentCard agentCard,
