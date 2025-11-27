@@ -7,6 +7,9 @@ import java.util.function.Consumer;
 
 public interface A2AHttpClient {
 
+    String CONTENT_TYPE= "Content-Type";
+    String APPLICATION_JSON= "application/json";
+
     GetBuilder createGet();
 
     PostBuilder createPost();

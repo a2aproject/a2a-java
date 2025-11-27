@@ -1,5 +1,7 @@
 package io.a2a.extras.pushnotificationconfigstore.database.jpa;
 
+import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
+import static io.a2a.client.http.A2AHttpClient.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -235,6 +237,7 @@ public class JpaPushNotificationConfigStoreTest {
         // Mock successful HTTP response
         when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
         when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.addHeader(CONTENT_TYPE, APPLICATION_JSON)).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
         when(mockHttpResponse.success()).thenReturn(true);
@@ -245,6 +248,7 @@ public class JpaPushNotificationConfigStoreTest {
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockHttpClient).createPost();
         verify(mockPostBuilder).url(config.url());
+        verify(mockPostBuilder).addHeader(CONTENT_TYPE, APPLICATION_JSON);
         verify(mockPostBuilder).body(bodyCaptor.capture());
         verify(mockPostBuilder).post();
 
