@@ -184,6 +184,13 @@ public class ProtoUtils {
 
     public static class FromProto {
 
+        public static AgentCard agentCard(io.a2a.grpc.AgentCardOrBuilder agentCard) {
+            io.a2a.grpc.AgentCard agentCardProto = agentCard instanceof io.a2a.grpc.AgentCard
+                    ? (io.a2a.grpc.AgentCard) agentCard
+                    : ((io.a2a.grpc.AgentCard.Builder) agentCard).build();
+            return AgentCardMapper.INSTANCE.fromProto(agentCardProto);
+        }
+
         public static TaskQueryParams taskQueryParams(io.a2a.grpc.GetTaskRequestOrBuilder request) {
             io.a2a.grpc.GetTaskRequest reqProto = request instanceof io.a2a.grpc.GetTaskRequest
                     ? (io.a2a.grpc.GetTaskRequest) request
