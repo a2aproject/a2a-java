@@ -10,11 +10,12 @@ public class JsonStreamingMessages {
                   "jsonrpc": "2.0",
                   "id": "1234",
                   "result": {
-                    "kind": "task",
-                    "id": "task-123",
-                    "contextId": "context-456",
-                    "status": {
-                      "state": "working"
+                    "task": {
+                      "id": "task-123",
+                      "contextId": "context-456",
+                      "status": {
+                        "state": "TASK_STATE_WORKING"
+                      }
                     }
                   }
             }
@@ -26,16 +27,16 @@ public class JsonStreamingMessages {
                   "jsonrpc": "2.0",
                   "id": "1234",
                   "result": {
-                    "kind": "message",
-                    "role": "agent",
-                    "messageId": "msg-123",
-                    "contextId": "context-456",
-                    "parts": [
-                      {
-                        "kind": "text",
-                        "text": "Hello, world!"
-                      }
-                    ]
+                    "msg": {
+                      "role": "ROLE_AGENT",
+                      "messageId": "msg-123",
+                      "contextId": "context-456",
+                      "parts": [
+                        {
+                          "text": "Hello, world!"
+                        }
+                      ]
+                    }
                   }
             }""";
 
@@ -44,13 +45,14 @@ public class JsonStreamingMessages {
                   "jsonrpc": "2.0",
                   "id": "1234",
                   "result": {
-                    "taskId": "1",
-                    "contextId": "2",
-                    "status": {
-                        "state": "submitted"
-                    },
-                    "final": false,
-                    "kind": "status-update"
+                    "statusUpdate": {
+                      "taskId": "1",
+                      "contextId": "2",
+                      "status": {
+                        "state": "TASK_STATE_SUBMITTED"
+                      },
+                      "final": false
+                    }
                   }
             }""";
 
@@ -59,13 +61,14 @@ public class JsonStreamingMessages {
                   "jsonrpc": "2.0",
                   "id": "1234",
                   "result": {
-                    "taskId": "1",
-                    "contextId": "2",
-                    "status": {
-                        "state": "completed"
-                    },
-                    "final": true,
-                    "kind": "status-update"
+                    "statusUpdate": {
+                      "taskId": "1",
+                      "contextId": "2",
+                      "status": {
+                        "state": "TASK_STATE_COMPLETED"
+                      },
+                      "final": true
+                    }
                   }
             }""";
 
@@ -74,22 +77,21 @@ public class JsonStreamingMessages {
                   "jsonrpc": "2.0",
                   "id": "1234",
                   "result": {
-                    "kind": "artifact-update",
-                    "taskId": "1",
-                    "contextId": "2",
-                    "append": false,
-                    "lastChunk": true,
-                    "artifact": {
+                    "artifactUpdate": {
+                      "taskId": "1",
+                      "contextId": "2",
+                      "append": false,
+                      "lastChunk": true,
+                      "artifact": {
                         "artifactId": "artifact-1",
                         "parts": [
-                         {
-                            "kind": "text",
+                          {
                             "text": "Why did the chicken cross the road? To get to the other side!"
-                         }
+                          }
                         ]
+                      }
                     }
                   }
-               }
             }""";
 
     public static final String STREAMING_ERROR_EVENT = """
@@ -106,7 +108,7 @@ public class JsonStreamingMessages {
     public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST = """
             {
              "jsonrpc": "2.0",
-             "method": SendStreamingMessage,
+             "method": "SendStreamingMessage",
              "params": {
               "message": {
                "role": "user",
@@ -123,7 +125,7 @@ public class JsonStreamingMessages {
               "configuration": {
                 "acceptedOutputModes": ["text"],
                 "blocking": false
-              },
+              }
              }
             }""";
 
