@@ -1,5 +1,6 @@
 package io.a2a.grpc.utils;
 
+import io.a2a.grpc.GetExtendedAgentCardRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +26,7 @@ import io.a2a.grpc.mapper.TaskStatusUpdateEventMapper;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
@@ -49,6 +51,10 @@ public class ProtoUtils {
 
         public static io.a2a.grpc.AgentCard agentCard(AgentCard agentCard) {
             return AgentCardMapper.INSTANCE.toProto(agentCard);
+        }
+
+        public static io.a2a.grpc.GetExtendedAgentCardRequest extendedAgentCard(GetAuthenticatedExtendedCardRequest request) {
+            return GetExtendedAgentCardRequest.newBuilder().build();
         }
 
         public static io.a2a.grpc.GetTaskRequest getTaskRequest(TaskQueryParams params) {

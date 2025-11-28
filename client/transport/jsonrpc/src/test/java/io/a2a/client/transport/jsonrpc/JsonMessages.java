@@ -161,119 +161,131 @@ public class JsonMessages {
               }""";
 
     static final String SEND_MESSAGE_TEST_REQUEST = """
-            {
-             "jsonrpc": "2.0",
-             "method": "message/send",
-             "params": {
-              "message": {
-               "role": "user",
-               "parts": [
-                {
-                 "kind": "text",
-                 "text": "tell me a joke"
+           {
+              "jsonrpc":"2.0",
+              "method":"message/send",
+              "params":{
+                "message":{
+                  "messageId":"message-1234",
+                  "contextId":"context-1234",
+                  "role":"ROLE_USER",
+                  "parts":[
+                    {
+                      "text":"tell me a joke"
+                    }
+                  ],
+                  "metadata":{
+                    
+                  }
                 }
-               ],
-               "messageId": "message-1234",
-               "contextId": "context-1234",
-               "kind": "message"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"],
-                "blocking": true
-              },
-             }
+              }
             }""";
 
     static final String SEND_MESSAGE_TEST_RESPONSE = """
-            {
-             "jsonrpc": "2.0",
-             "result": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
-              "status": {
-               "state": "completed"
-              },
-              "artifacts": [
-               {
-                "artifactId": "artifact-1",
-                "name": "joke",
-                "parts": [
-                 {
-                  "kind": "text",
-                  "text": "Why did the chicken cross the road? To get to the other side!"
-                 }
-                ]
-               }
-              ],
-              "metadata": {},
-              "kind": "task"
-             }
+           {
+              "jsonrpc":"2.0",
+              "result":{
+                "task":{
+                  "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                  "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
+                  "status":{
+                    "state":"TASK_STATE_COMPLETED"
+                  },
+                  "artifacts":[
+                    {
+                      "artifactId":"artifact-1",
+                      "name":"joke",
+                      "parts":[
+                        {
+                          "text":"Why did the chicken cross the road? To get to the other side!"
+                        }
+                      ]
+                    }
+                  ],
+                  "metadata":{
+                    
+                  }
+                }
+              }
             }""";
 
     static final String SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE = """
-            {
-             "jsonrpc": "2.0",
-             "method": "message/send",
-             "params": {
-              "message": {
-               "role": "user",
-               "parts": [
+        {
+          "jsonrpc":"2.0",
+          "method":"message/send",
+          "params":{
+            "message":{
+              "messageId":"message-1234",
+              "contextId":"context-1234",
+              "role":"ROLE_USER",
+              "parts":[
                 {
-                 "kind": "text",
-                 "text": "tell me a joke"
+                  "text":"tell me a joke"
                 }
-               ],
-               "messageId": "message-1234",
-               "contextId": "context-1234",
-               "kind": "message"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"],
-                "blocking": true
-              },
-             }
-            }""";
+              ],
+              "metadata":{
+              }
+            },
+            "configuration":{
+              "acceptedOutputModes":[
+                "text"
+              ],
+              "blocking":true
+            },
+            "metadata":{
 
+            }
+          }
+        }""";
 
     static final String SEND_MESSAGE_TEST_RESPONSE_WITH_MESSAGE_RESPONSE = """
             {
-             "jsonrpc": "2.0",
-             "id": 1,
-             "result": {
-              "role": "agent",
-                "parts": [
-                 {
-                  "kind": "text",
-                  "text": "Why did the chicken cross the road? To get to the other side!"
-                 }
-                ],
-                "messageId": "msg-456",
-                "kind": "message"
-             }
+              "jsonrpc":"2.0",
+              "id":1,
+              "result":{
+                "message": {
+                  "messageId":"msg-456",
+                  "contextId":"context-1234",
+                  "role":"ROLE_AGENT",
+                  "parts":[
+                    {
+                      "text":"Why did the chicken cross the road? To get to the other side!"
+                    }
+                  ],
+                  "metadata":{
+                  }
+                }
+              }
             }""";
 
     static final String SEND_MESSAGE_WITH_ERROR_TEST_REQUEST = """
             {
-             "jsonrpc": "2.0",
-             "method": "message/send",
-             "params": {
-              "message": {
-               "role": "user",
-               "parts": [
-                {
-                 "kind": "text",
-                 "text": "tell me a joke"
+              "jsonrpc":"2.0",
+              "method":"message/send",
+              "params":{
+                "message":{
+                  "messageId":"message-1234",
+                  "contextId":"context-1234",
+                  "role":"ROLE_USER",
+                  "parts":[
+                    {
+                      "text":"tell me a joke"
+                    }
+                  ],
+                  "metadata":{
+                    
+                  }
+                },
+                "configuration":{
+                  "acceptedOutputModes":[
+                    "text"
+                  ],
+                  "blocking":true
+                },
+                "metadata":{
+                  
                 }
-               ],
-               "messageId": "message-1234",
-               "contextId": "context-1234",
-               "kind": "message"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"],
-                "blocking": true
-              },
-             }
+              }
             }""";
 
     static final String SEND_MESSAGE_ERROR_TEST_RESPONSE = """
@@ -288,110 +300,104 @@ public class JsonMessages {
 
     static final String GET_TASK_TEST_REQUEST = """
             {
-             "jsonrpc": "2.0",
-             "method": "tasks/get",
-             "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "historyLength": 10
-             }
+              "jsonrpc":"2.0",
+              "method":"tasks/get",
+              "params":{
+                "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+                "historyLength":10
+              }
             }
             """;
 
     static final String GET_TASK_TEST_RESPONSE = """
             {
-             "jsonrpc": "2.0",
-             "result": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
-              "status": {
-               "state": "completed"
-              },
-              "artifacts": [
-               {
-                "artifactId": "artifact-1",
-                "parts": [
-                 {
-                  "kind": "text",
-                  "text": "Why did the chicken cross the road? To get to the other side!"
-                 }
-                ]
-               }
-              ],
-              "history": [
-               {
-                "role": "user",
-                "parts": [
-                 {
-                  "kind": "text",
-                  "text": "tell me a joke"
-                 },
-                 {
-                  "kind": "file",
-                  "file": {
-                     "uri": "file:///path/to/file.txt",
-                     "mimeType": "text/plain"
+              "jsonrpc":"2.0",
+              "result":{
+                "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
+                "status":{
+                  "state":"TASK_STATE_COMPLETED"
+                },
+                "artifacts":[
+                  {
+                    "artifactId":"artifact-1",
+                    "parts":[
+                      {
+                        "text":"Why did the chicken cross the road? To get to the other side!"
+                      }
+                    ]
                   }
-                 },
-                 {
-                  "kind": "file",
-                  "file": {
-                     "bytes": "aGVsbG8=",
-                     "name": "hello.txt"
-                  }
-                 }
                 ],
-                "messageId": "message-123",
-                "kind": "message"
-               }
-              ],
-              "metadata": {},
-              "kind": "task"
-             }
+                "history":[
+                  {
+                    "role":"ROLE_USER",
+                    "parts":[
+                      {
+                        "text":"tell me a joke"
+                      },
+                      {
+                        "file":{
+                          "file_with_uri":"file:///path/to/file.txt",
+                          "mediaType":"text/plain"
+                        }
+                      },
+                      {
+                        "file":{
+                          "file_with_bytes":"aGVsbG8=",
+                          "name":"hello.txt"
+                        }
+                      }
+                    ],
+                    "messageId":"message-123"
+                  }
+                ],
+                "metadata":{
+                  
+                }
+              }
             }
             """;
 
     static final String CANCEL_TASK_TEST_REQUEST = """
             {
-             "jsonrpc": "2.0",
-             "method": "tasks/cancel",
-             "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "metadata": {}
-             }
+              "jsonrpc":"2.0",
+              "method":"tasks/cancel",
+              "params":{
+                "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
+              }
             }
             """;
 
     static final String CANCEL_TASK_TEST_RESPONSE = """
             {
-             "jsonrpc": "2.0",
-             "result": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
-              "status": {
-               "state": "canceled"
-              },
-              "metadata": {},
-              "kind" : "task"
-             }
+              "jsonrpc":"2.0",
+              "result":{
+                  "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                  "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
+                  "status":{
+                    "state":"TASK_STATE_CANCELLED"
+                  },
+                  "metadata":{
+                    
+                  }
+              }
             }
             """;
 
     static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
             {
-             "jsonrpc": "2.0",
-             "method": "tasks/pushNotificationConfig/get",
-             "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "metadata": {},
-             }
-            }
-            """;
+              "jsonrpc":"2.0",
+              "method":"tasks/pushNotificationConfig/get",
+              "params":{
+                "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs"
+              }
+            }""";
 
     static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
              "jsonrpc": "2.0",
              "result": {
-              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
               "pushNotificationConfig": {
                "url": "https://example.com/callback",
                "authentication": {
@@ -403,25 +409,27 @@ public class JsonMessages {
             """;
 
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
-            {
-             "jsonrpc": "2.0",
-             "method": "tasks/pushNotificationConfig/set",
-             "params": {
-              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "pushNotificationConfig": {
-               "url": "https://example.com/callback",
-               "authentication": {
-                "schemes": ["jwt"]
-               }
+           {
+              "jsonrpc":"2.0",
+              "method":"tasks/pushNotificationConfig/set",
+              "params":{
+                "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs",
+                "pushNotificationConfig":{
+                  "url":"https://example.com/callback",
+                  "authentication":{
+                    "schemes":[
+                      "jwt"
+                    ]
+                  }
+                }
               }
-             }
             }""";
 
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
              "jsonrpc": "2.0",
              "result": {
-              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
               "pushNotificationConfig": {
                "url": "https://example.com/callback",
                "authentication": {
@@ -433,185 +441,209 @@ public class JsonMessages {
             """;
 
     static final String SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST = """
-            {
-             "jsonrpc": "2.0",
-             "method": "message/send",
-             "params": {
-              "message": {
-               "role": "user",
-               "parts": [
-                {
-                 "kind": "text",
-                 "text": "analyze this image"
-                },
-                {
-                 "kind": "file",
-                 "file": {
-                  "uri": "file:///path/to/image.jpg",
-                  "mimeType": "image/jpeg"
+             {
+               "jsonrpc":"2.0",
+               "method":"message/send",
+               "params":{
+                 "message":{
+                   "messageId":"message-1234-with-file",
+                   "contextId":"context-1234",
+                   "role":"ROLE_USER",
+                   "parts":[
+                     {
+                       "text":"analyze this image"
+                     },
+                     {
+                       "file":{
+                         "fileWithUri":"file:///path/to/image.jpg",
+                         "mediaType":"image/jpeg"
+                       }
+                     }
+                   ],
+                   "metadata":{
+                     
+                   }
+                 },
+                 "configuration":{
+                   "acceptedOutputModes":[
+                     "text"
+                   ],
+                   "blocking":true
+                 },
+                 "metadata":{
+                   
                  }
-                }
-               ],
-               "messageId": "message-1234-with-file",
-               "contextId": "context-1234",
-               "kind": "message"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"],
-                "blocking": true
-              }
-             }
-            }""";
+               }
+             }""";
 
     static final String SEND_MESSAGE_WITH_FILE_PART_TEST_RESPONSE = """
             {
-             "jsonrpc": "2.0",
-             "result": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
-              "status": {
-               "state": "completed"
-              },
-              "artifacts": [
-               {
-                "artifactId": "artifact-1",
-                "name": "image-analysis",
-                "parts": [
-                 {
-                  "kind": "text",
-                  "text": "This is an image of a cat sitting on a windowsill."
-                 }
-                ]
-               }
-              ],
-              "metadata": {},
-              "kind": "task"
-             }
+              "jsonrpc":"2.0",
+              "result":{
+                "task":{
+                  "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                  "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
+                  "status":{
+                    "state":"TASK_STATE_COMPLETED"
+                  },
+                  "artifacts":[
+                    {
+                      "artifactId":"artifact-1",
+                      "name":"image-analysis",
+                      "parts":[
+                        {
+                          "text":"This is an image of a cat sitting on a windowsill."
+                        }
+                      ]
+                    }
+                  ],
+                  "metadata":{
+                    "test":"metadata-test"
+                  }
+                }
+              }
             }""";
 
     static final String SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST = """
             {
-             "jsonrpc": "2.0",
-             "method": "message/send",
-             "params": {
-              "message": {
-               "role": "user",
-               "parts": [
-                {
-                 "kind": "text",
-                 "text": "process this data"
+              "jsonrpc":"2.0",
+              "method":"message/send",
+              "params":{
+                "message":{
+                  "messageId":"message-1234-with-data",
+                  "contextId":"context-1234",
+                  "role":"ROLE_USER",
+                  "parts":[
+                    {
+                      "text":"process this data"
+                    },
+                    {
+                      "data":{
+                        "data":{
+                          "temperature":25.5,
+                          "humidity":60.2,
+                          "location":"San Francisco",
+                          "timestamp":"2024-01-15T10:30:00Z"
+                        }
+                      }
+                    }
+                  ],
+                  "metadata":{
+                    
+                  }
                 },
-                {
-                 "kind": "data",
-                 "data": {
-                  "temperature": 25.5,
-                  "humidity": 60.2,
-                  "location": "San Francisco",
-                  "timestamp": "2024-01-15T10:30:00Z"
-                 }
+                "configuration":{
+                  "acceptedOutputModes":[
+                    "text"
+                  ],
+                  "blocking":true
+                },
+                "metadata":{
+                  
                 }
-               ],
-               "messageId": "message-1234-with-data",
-               "contextId": "context-1234",
-               "kind": "message"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"],
-                "blocking": true
               }
-             }
             }""";
 
     static final String SEND_MESSAGE_WITH_DATA_PART_TEST_RESPONSE = """
             {
-             "jsonrpc": "2.0",
-             "result": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
-              "status": {
-               "state": "completed"
-              },
-              "artifacts": [
-               {
-                "artifactId": "artifact-1",
-                "name": "data-analysis",
-                "parts": [
-                 {
-                  "kind": "text",
-                  "text": "Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco."
-                 }
-                ]
-               }
-              ],
-              "metadata": {},
-              "kind": "task"
-             }
+              "jsonrpc":"2.0",
+              "result":{
+                "task":{
+                  "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                  "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
+                  "status":{
+                    "state":"TASK_STATE_COMPLETED"
+                  },
+                  "artifacts":[
+                    {
+                      "artifactId":"artifact-1",
+                      "name":"data-analysis",
+                      "parts":[
+                        {
+                          "text":"Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco."
+                        }
+                      ]
+                    }
+                  ],
+                  "metadata":{
+                    
+                  }
+                }
+              }
             }""";
 
     static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST = """
             {
-             "jsonrpc": "2.0",
-             "method": "message/send",
-             "params": {
-              "message": {
-               "role": "user",
-               "parts": [
-                {
-                 "kind": "text",
-                 "text": "analyze this data and image"
+              "jsonrpc":"2.0",
+              "method":"message/send",
+              "params":{
+                "message":{
+                  "messageId":"message-1234-with-mixed",
+                  "contextId":"context-1234",
+                  "role":"ROLE_USER",
+                  "parts":[
+                    {
+                      "text":"analyze this data and image"
+                    },
+                    {
+                      "file":{
+                        "fileWithBytes":"aGVsbG8=",
+                        "mediaType":"image/png",
+                        "name":"chart.png"
+                      }
+                    },
+                    {
+                      "data":{
+                        "data":{
+                          "chartType":"bar",
+                          "dataPoints":[10.0, 20.0, 30.0, 40.0],
+                          "labels":["Q1", "Q2", "Q3", "Q4"]
+                        }
+                      }
+                    }
+                  ],
+                  "metadata":{
+                    
+                  }
                 },
-                {
-                 "kind": "file",
-                 "file": {
-                  "bytes": "aGVsbG8=",
-                  "name": "chart.png",
-                  "mimeType": "image/png"
-                 }
+                "configuration":{
+                  "acceptedOutputModes":[
+                    "text"
+                  ],
+                  "blocking":true
                 },
-                {
-                 "kind": "data",
-                 "data": {
-                  "chartType": "bar",
-                  "dataPoints": [10, 20, 30, 40],
-                  "labels": ["Q1", "Q2", "Q3", "Q4"]
-                 }
+                "metadata":{
+                  
                 }
-               ],
-               "messageId": "message-1234-with-mixed",
-               "contextId": "context-1234",
-               "kind": "message"
-              },
-              "configuration": {
-                "acceptedOutputModes": ["text"],
-                "blocking": true
               }
-             }
             }""";
 
     static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE = """
-            {
-             "jsonrpc": "2.0",
-             "result": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
-              "status": {
-               "state": "completed"
-              },
-              "artifacts": [
-               {
-                "artifactId": "artifact-1",
-                "name": "mixed-analysis",
-                "parts": [
-                 {
-                  "kind": "text",
-                  "text": "Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40]."
-                 }
-                ]
-               }
-              ],
-              "metadata": {},
-              "kind": "task"
-             }
+           {
+              "jsonrpc":"2.0",
+              "result":{
+                "task":{
+                  "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                  "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
+                  "status":{
+                    "state":"TASK_STATE_COMPLETED"
+                  },
+                  "artifacts":[
+                    {
+                      "artifactId":"artifact-1",
+                      "name":"mixed-analysis",
+                      "parts":[
+                        {
+                          "text":"Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40]."
+                        }
+                      ]
+                    }
+                  ],
+                  "metadata":{
+                    
+                  }
+                }
+              }
             }""";
 
     static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST = """

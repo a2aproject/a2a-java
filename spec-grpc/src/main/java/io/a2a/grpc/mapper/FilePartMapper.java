@@ -1,12 +1,12 @@
 package io.a2a.grpc.mapper;
 
-import java.nio.charset.StandardCharsets;
 
 import com.google.protobuf.ByteString;
 import io.a2a.spec.FileContent;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
 import io.a2a.spec.InvalidRequestError;
+import java.util.Base64;
 import org.mapstruct.Mapper;
 
 /**
@@ -35,7 +35,7 @@ public interface FilePartMapper {
         FileContent fileContent = domain.getFile();
 
         if (fileContent instanceof FileWithBytes fileWithBytes) {
-            builder.setFileWithBytes(ByteString.copyFrom(fileWithBytes.bytes(), StandardCharsets.UTF_8));
+            builder.setFileWithBytes(ByteString.copyFrom(Base64.getDecoder().decode(fileWithBytes.bytes())));
             if (fileWithBytes.mimeType() != null) {
                 builder.setMediaType(fileWithBytes.mimeType());
             }
@@ -68,7 +68,7 @@ public interface FilePartMapper {
         String name = proto.getName().isEmpty() ? null : proto.getName();
 
         if (proto.hasFileWithBytes()) {
-            String bytes = proto.getFileWithBytes().toStringUtf8();
+            String bytes = Base64.getEncoder().encodeToString(proto.getFileWithBytes().toByteArray());
             return new io.a2a.spec.FilePart(new FileWithBytes(mimeType, name, bytes));
         } else if (proto.hasFileWithUri()) {
             String uri = proto.getFileWithUri();

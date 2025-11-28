@@ -119,13 +119,16 @@ public class JSONRPCUtils {
                 throw new MethodNotFoundJsonMappingException("Invalid method", getIdIfPossible(jsonRpc));
         }
     }
-    
+
     public static JSONRPCResponse<?> parseResponseBody(String body, String method) throws JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
         Object id = getAndValidateId(jsonRpc);
         JsonElement paramsNode = jsonRpc.get("result");
+        if(jsonRpc.has("error")) {
+            return parseError(jsonRpc.getAsJsonObject("error"), id, method);
+        }
         switch (method) {
             case GetTaskRequest.METHOD -> {
                 io.a2a.grpc.Task.Builder builder = io.a2a.grpc.Task.newBuilder();
@@ -168,8 +171,46 @@ public class JSONRPCUtils {
             case DeleteTaskPushNotificationConfigRequest.METHOD -> {
                 return new DeleteTaskPushNotificationConfigResponse(id);
             }
+            case GetAuthenticatedExtendedCardRequest.METHOD -> {
+                return new DeleteTaskPushNotificationConfigResponse(id);
+            }
             default ->
                 throw new MethodNotFoundJsonMappingException("Invalid method", getIdIfPossible(jsonRpc));
+        }
+    }
+
+    public static JSONRPCResponse<?> parseError(JsonObject error, Object id, String method) throws JsonProcessingException {
+        String message = error.has("message") ? error.get("message").getAsString() : null;
+        Integer code = error.has("code") ? error.get("code").getAsInt() : null;
+        String data = error.has("data") ? error.get("data").toString(): null;
+        JSONRPCError rpcError = new JSONRPCError(code, message, data);
+        switch (method) {
+            case GetTaskRequest.METHOD -> {
+                return new GetTaskResponse(id, rpcError);
+            }
+            case CancelTaskRequest.METHOD -> {
+                return new CancelTaskResponse(id, rpcError);
+            }
+            case ListTasksRequest.METHOD -> {
+                return new ListTasksResponse(id, rpcError);
+            }
+            case SetTaskPushNotificationConfigRequest.METHOD -> {
+                return new SetTaskPushNotificationConfigResponse(id, rpcError);
+            }
+            case GetTaskPushNotificationConfigRequest.METHOD -> {
+                return new GetTaskPushNotificationConfigResponse(id, rpcError);
+            }
+            case SendMessageRequest.METHOD -> {
+                return new SendMessageResponse(id, rpcError);
+            }
+            case ListTaskPushNotificationConfigRequest.METHOD -> {
+                return new ListTaskPushNotificationConfigResponse(id, rpcError);
+            }
+            case DeleteTaskPushNotificationConfigRequest.METHOD -> {
+                return new DeleteTaskPushNotificationConfigResponse(id, rpcError);
+            }
+            default ->
+                throw new MethodNotFoundJsonMappingException("Invalid method",id);
         }
     }
 
@@ -226,8 +267,10 @@ public class JSONRPCUtils {
         return id;
     }
 
-    public static String toJsonRPCString(String requestId, String method, com.google.protobuf.MessageOrBuilder builder) {
-        try (StringWriter result = new StringWriter(); JsonWriter output = GSON.newJsonWriter(result).beginObject()) {
+    public static String toJsonRPCRequest(String requestId, String method, com.google.protobuf.MessageOrBuilder builder) {
+        try (StringWriter result = new StringWriter(); 
+                JsonWriter output = GSON.newJsonWriter(result)) {
+            output.beginObject();
             output.name("jsonrpc").value("2.0");
             String id = requestId;
             if (requestId == null) {
@@ -237,9 +280,36 @@ public class JSONRPCUtils {
             if (method != null) {
                 output.name("method").value(method);
             }
-            output.name("result").beginObject().jsonValue(JsonFormat.printer().print(builder));
-            output.endObject().endObject();
-            return result.toString();
+            String resultValue = JsonFormat.printer().print(builder);
+            output.name("params").jsonValue(resultValue);
+            output.endObject();
+            String jsonPayload = result.toString();
+            System.out.println("**********************");
+            System.out.println(jsonPayload);
+            System.out.println("**********************");
+            return jsonPayload;
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    public static String toJsonRPCResponse(String requestId, String method, com.google.protobuf.MessageOrBuilder builder) {
+        try (StringWriter result = new StringWriter(); 
+                JsonWriter output = GSON.newJsonWriter(result)) {
+            output.beginObject();
+            output.name("jsonrpc").value("2.0");
+            String id = requestId;
+            if (requestId == null) {
+                id = UUID.randomUUID().toString();
+            }
+            output.name("id").value(id);
+            if (method != null) {
+                output.name("method").value(method);
+            }
+            String resultValue = JsonFormat.printer().print(builder);
+            output.name("params").jsonValue(resultValue);
+            output.endObject();
+            String jsonPayload = result.toString();
+            return jsonPayload;
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

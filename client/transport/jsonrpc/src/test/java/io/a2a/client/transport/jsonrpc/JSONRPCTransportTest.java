@@ -212,7 +212,7 @@ public class JSONRPCTransportTest {
             client.sendMessage(params, null);
             fail(); // should not reach here
         } catch (A2AClientException e) {
-            assertTrue(e.getMessage().contains("Invalid parameters: Hello world"));
+            assertTrue(e.getMessage().contains("Invalid parameters: \"Hello world\""),e.getMessage());
         }
     }
 
@@ -562,7 +562,9 @@ public class JSONRPCTransportTest {
         Part<?> part = artifact.parts().get(0);
         assertEquals(Part.Kind.TEXT, part.getKind());
         assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        assertFalse(task.getMetadata().isEmpty());
+        assertEquals(1, task.getMetadata().size());
+        assertEquals("metadata-test", task.getMetadata().get("test"));
     }
 
     @Test

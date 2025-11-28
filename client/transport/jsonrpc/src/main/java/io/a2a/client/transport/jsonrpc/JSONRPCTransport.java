@@ -326,7 +326,7 @@ public class JSONRPCTransport implements ClientTransport {
                     .build(); // id will be randomly generated
 
             PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest.METHOD,
-                    getExtendedAgentCardRequest, agentCard, context);
+                    ProtoUtils.ToProto.extendedAgentCard(getExtendedAgentCardRequest), agentCard, context);
 
             try {
                 String httpResponseBody = sendPostRequest(payloadAndHeaders,GetAuthenticatedExtendedCardRequest.METHOD);
@@ -373,7 +373,7 @@ public class JSONRPCTransport implements ClientTransport {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(agentUrl)
                 .addHeader("Content-Type", "application/json")
-                .body(JSONRPCUtils.toJsonRPCString(null, method, (MessageOrBuilder) payloadAndHeaders.getPayload()));
+                .body(JSONRPCUtils.toJsonRPCRequest(null, method, (MessageOrBuilder) payloadAndHeaders.getPayload()));
 
         if (payloadAndHeaders.getHeaders() != null) {
             for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {

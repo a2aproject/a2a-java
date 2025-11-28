@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
+import java.util.Collections;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
@@ -18,12 +19,12 @@ import org.mapstruct.Named;
  * <p>
  * Provides reusable conversion methods for common protobuf ↔ domain transformations:
  * <ul>
- *   <li>Empty string → null conversion (protobuf optional string defaults)</li>
- *   <li>Timestamp conversions (OffsetDateTime ↔ Protobuf Timestamp, Instant ↔ millis)</li>
- *   <li>Metadata conversions (Map ↔ Protobuf Struct)</li>
- *   <li>Empty list → null conversion (protobuf repeated field defaults)</li>
- *   <li>Zero/false → null conversion (protobuf optional numeric/bool defaults)</li>
- *   <li>Enum → null conversion (protobuf UNSPECIFIED/UNKNOWN handling)</li>
+ * <li>Empty string → null conversion (protobuf optional string defaults)</li>
+ * <li>Timestamp conversions (OffsetDateTime ↔ Protobuf Timestamp, Instant ↔ millis)</li>
+ * <li>Metadata conversions (Map ↔ Protobuf Struct)</li>
+ * <li>Empty list → null conversion (protobuf repeated field defaults)</li>
+ * <li>Zero/false → null conversion (protobuf optional numeric/bool defaults)</li>
+ * <li>Enum → null conversion (protobuf UNSPECIFIED/UNKNOWN handling)</li>
  * </ul>
  */
 @Mapper(config = A2AProtoMapperConfig.class, uses = {TaskStateMapper.class})
@@ -244,13 +245,15 @@ public interface A2ACommonFieldMapper {
      */
     @Named("metadataFromProto")
     default Map<String, Object> metadataFromProto(Struct struct) {
+        if (struct == null || struct.getFieldsCount() == 0) {
+            return Collections.emptyMap();
+        }
         return structToMap(struct);
     }
 
     // ========================================================================
     // Optional Numeric/Boolean Conversions
     // ========================================================================
-
     /**
      * Converts protobuf int to Integer, treating 0 as null (unset).
      * <p>
@@ -296,7 +299,6 @@ public interface A2ACommonFieldMapper {
     // ========================================================================
     // Instant ↔ Millis Conversions (for int64 timestamp fields)
     // ========================================================================
-
     /**
      * Converts domain Instant to protobuf milliseconds-since-epoch (int64).
      * <p>
@@ -328,7 +330,6 @@ public interface A2ACommonFieldMapper {
     // ========================================================================
     // Enum Conversions (handling UNSPECIFIED/UNKNOWN)
     // ========================================================================
-
     /**
      * Converts protobuf TaskState to domain TaskState, treating UNSPECIFIED/UNKNOWN as null.
      * <p>
