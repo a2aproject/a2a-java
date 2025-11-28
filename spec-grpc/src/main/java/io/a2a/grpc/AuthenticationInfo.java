@@ -57,10 +57,10 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    * <pre>
-   * Supported authentication schemes - e.g. Basic, Bearer, etc
+   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
    * </pre>
    *
-   * <code>repeated string schemes = 1;</code>
+   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return A list containing the schemes.
    */
   public com.google.protobuf.ProtocolStringList
@@ -69,10 +69,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Supported authentication schemes - e.g. Basic, Bearer, etc
+   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
    * </pre>
    *
-   * <code>repeated string schemes = 1;</code>
+   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The count of schemes.
    */
   public int getSchemesCount() {
@@ -80,10 +80,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Supported authentication schemes - e.g. Basic, Bearer, etc
+   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
    * </pre>
    *
-   * <code>repeated string schemes = 1;</code>
+   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the element to return.
    * @return The schemes at the given index.
    */
@@ -92,10 +92,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Supported authentication schemes - e.g. Basic, Bearer, etc
+   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
    * </pre>
    *
-   * <code>repeated string schemes = 1;</code>
+   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the value to return.
    * @return The bytes of the schemes at the given index.
    */
@@ -499,10 +499,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Supported authentication schemes - e.g. Basic, Bearer, etc
+     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
      * </pre>
      *
-     * <code>repeated string schemes = 1;</code>
+     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return A list containing the schemes.
      */
     public com.google.protobuf.ProtocolStringList
@@ -512,10 +512,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Supported authentication schemes - e.g. Basic, Bearer, etc
+     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
      * </pre>
      *
-     * <code>repeated string schemes = 1;</code>
+     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The count of schemes.
      */
     public int getSchemesCount() {
@@ -523,10 +523,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Supported authentication schemes - e.g. Basic, Bearer, etc
+     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
      * </pre>
      *
-     * <code>repeated string schemes = 1;</code>
+     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param index The index of the element to return.
      * @return The schemes at the given index.
      */
@@ -535,10 +535,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Supported authentication schemes - e.g. Basic, Bearer, etc
+     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
      * </pre>
      *
-     * <code>repeated string schemes = 1;</code>
+     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param index The index of the value to return.
      * @return The bytes of the schemes at the given index.
      */
@@ -548,10 +548,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Supported authentication schemes - e.g. Basic, Bearer, etc
+     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
      * </pre>
      *
-     * <code>repeated string schemes = 1;</code>
+     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param index The index to set the value at.
      * @param value The schemes to set.
      * @return This builder for chaining.
@@ -567,10 +567,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Supported authentication schemes - e.g. Basic, Bearer, etc
+     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
      * </pre>
      *
-     * <code>repeated string schemes = 1;</code>
+     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The schemes to add.
      * @return This builder for chaining.
      */
@@ -585,10 +585,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Supported authentication schemes - e.g. Basic, Bearer, etc
+     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
      * </pre>
      *
-     * <code>repeated string schemes = 1;</code>
+     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param values The schemes to add.
      * @return This builder for chaining.
      */
@@ -603,10 +603,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Supported authentication schemes - e.g. Basic, Bearer, etc
+     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
      * </pre>
      *
-     * <code>repeated string schemes = 1;</code>
+     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearSchemes() {
@@ -618,10 +618,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Supported authentication schemes - e.g. Basic, Bearer, etc
+     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
      * </pre>
      *
-     * <code>repeated string schemes = 1;</code>
+     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes of the schemes to add.
      * @return This builder for chaining.
      */

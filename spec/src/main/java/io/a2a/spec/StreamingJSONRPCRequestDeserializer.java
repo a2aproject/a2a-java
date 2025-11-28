@@ -27,8 +27,8 @@ public class StreamingJSONRPCRequestDeserializer<T> extends JSONRPCRequestDeseri
         JsonNode paramsNode = treeNode.get("params");
 
         switch (method) {
-            case TaskResubscriptionRequest.METHOD -> {
-                return new TaskResubscriptionRequest(jsonrpc, id, method,
+            case SubscribeToTaskRequest.METHOD -> {
+                return new SubscribeToTaskRequest(jsonrpc, id, method,
                         getAndValidateParams(paramsNode, jsonParser, treeNode, TaskIdParams.class));
             }
             case SendStreamingMessageRequest.METHOD -> {

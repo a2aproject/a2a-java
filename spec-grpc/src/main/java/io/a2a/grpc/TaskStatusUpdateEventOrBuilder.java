@@ -15,7 +15,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The id of the task that is changed
    * </pre>
    *
-   * <code>string task_id = 1;</code>
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The taskId.
    */
   java.lang.String getTaskId();
@@ -24,7 +24,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The id of the task that is changed
    * </pre>
    *
-   * <code>string task_id = 1;</code>
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The id of the context that the task belongs to
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The contextId.
    */
   java.lang.String getContextId();
@@ -44,7 +44,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The id of the context that the task belongs to
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for contextId.
    */
   com.google.protobuf.ByteString
@@ -55,7 +55,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the status field is set.
    */
   boolean hasStatus();
@@ -64,7 +64,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The status.
    */
   io.a2a.grpc.TaskStatus getStatus();
@@ -73,16 +73,16 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder();
 
   /**
    * <pre>
-   * Whether this is the last status update expected for this task.
+   * If true, this is the final event in the stream for this interaction.
    * </pre>
    *
-   * <code>bool final = 4;</code>
+   * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The final.
    */
   boolean getFinal();

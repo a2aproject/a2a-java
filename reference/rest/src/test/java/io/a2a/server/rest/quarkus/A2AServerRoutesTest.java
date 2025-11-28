@@ -24,7 +24,7 @@ import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.SendMessageRequest;
 import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
-import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.spec.SubscribeToTaskRequest;
 import io.a2a.transport.rest.handler.RestHandler;
 import io.a2a.transport.rest.handler.RestHandler.HTTPRestResponse;
 import io.vertx.core.Future;
@@ -194,7 +194,7 @@ public class A2AServerRoutesTest {
         verify(mockRestHandler).resubscribeTask(eq("task123"), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
-        assertEquals(TaskResubscriptionRequest.METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        assertEquals(SubscribeToTaskRequest.METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
     }
 
     @Test

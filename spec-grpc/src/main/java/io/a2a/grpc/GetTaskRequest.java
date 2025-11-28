@@ -8,6 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:GetTaskRequest]
+ * Represents a request for the `tasks/get` method.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.GetTaskRequest}
@@ -48,6 +49,7 @@ private static final long serialVersionUID = 0L;
             io.a2a.grpc.GetTaskRequest.class, io.a2a.grpc.GetTaskRequest.Builder.class);
   }
 
+  private int bitField0_;
   public static final int NAME_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object name_ = "";
@@ -101,10 +103,22 @@ private static final long serialVersionUID = 0L;
   private int historyLength_ = 0;
   /**
    * <pre>
-   * The number of most recent messages from the task's history to retrieve.
+   * The maximum number of messages to include in the history.
    * </pre>
    *
-   * <code>int32 history_length = 2;</code>
+   * <code>optional int32 history_length = 2;</code>
+   * @return Whether the historyLength field is set.
+   */
+  @java.lang.Override
+  public boolean hasHistoryLength() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <pre>
+   * The maximum number of messages to include in the history.
+   * </pre>
+   *
+   * <code>optional int32 history_length = 2;</code>
    * @return The historyLength.
    */
   @java.lang.Override
@@ -129,7 +143,7 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 1, name_);
     }
-    if (historyLength_ != 0) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       output.writeInt32(2, historyLength_);
     }
     getUnknownFields().writeTo(output);
@@ -144,7 +158,7 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(1, name_);
     }
-    if (historyLength_ != 0) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(2, historyLength_);
     }
@@ -165,8 +179,11 @@ private static final long serialVersionUID = 0L;
 
     if (!getName()
         .equals(other.getName())) return false;
-    if (getHistoryLength()
-        != other.getHistoryLength()) return false;
+    if (hasHistoryLength() != other.hasHistoryLength()) return false;
+    if (hasHistoryLength()) {
+      if (getHistoryLength()
+          != other.getHistoryLength()) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -180,8 +197,10 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
-    hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
-    hash = (53 * hash) + getHistoryLength();
+    if (hasHistoryLength()) {
+      hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
+      hash = (53 * hash) + getHistoryLength();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -282,6 +301,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:GetTaskRequest]
+   * Represents a request for the `tasks/get` method.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.GetTaskRequest}
@@ -355,9 +375,12 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.name_ = name_;
       }
+      int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.historyLength_ = historyLength_;
+        to_bitField0_ |= 0x00000001;
       }
+      result.bitField0_ |= to_bitField0_;
     }
 
     @java.lang.Override
@@ -377,7 +400,7 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000001;
         onChanged();
       }
-      if (other.getHistoryLength() != 0) {
+      if (other.hasHistoryLength()) {
         setHistoryLength(other.getHistoryLength());
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -533,10 +556,22 @@ private static final long serialVersionUID = 0L;
     private int historyLength_ ;
     /**
      * <pre>
-     * The number of most recent messages from the task's history to retrieve.
+     * The maximum number of messages to include in the history.
      * </pre>
      *
-     * <code>int32 history_length = 2;</code>
+     * <code>optional int32 history_length = 2;</code>
+     * @return Whether the historyLength field is set.
+     */
+    @java.lang.Override
+    public boolean hasHistoryLength() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <pre>
+     * The maximum number of messages to include in the history.
+     * </pre>
+     *
+     * <code>optional int32 history_length = 2;</code>
      * @return The historyLength.
      */
     @java.lang.Override
@@ -545,10 +580,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The number of most recent messages from the task's history to retrieve.
+     * The maximum number of messages to include in the history.
      * </pre>
      *
-     * <code>int32 history_length = 2;</code>
+     * <code>optional int32 history_length = 2;</code>
      * @param value The historyLength to set.
      * @return This builder for chaining.
      */
@@ -561,10 +596,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The number of most recent messages from the task's history to retrieve.
+     * The maximum number of messages to include in the history.
      * </pre>
      *
-     * <code>int32 history_length = 2;</code>
+     * <code>optional int32 history_length = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearHistoryLength() {

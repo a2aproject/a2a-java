@@ -12,7 +12,7 @@ public interface APIKeySecuritySchemeOrBuilder extends
 
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -21,7 +21,7 @@ public interface APIKeySecuritySchemeOrBuilder extends
   java.lang.String getDescription();
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -32,19 +32,19 @@ public interface APIKeySecuritySchemeOrBuilder extends
 
   /**
    * <pre>
-   * Location of the API key, valid values are "query", "header", or "cookie"
+   * The location of the API key. Valid values are "query", "header", or "cookie".
    * </pre>
    *
-   * <code>string location = 2;</code>
+   * <code>string location = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The location.
    */
   java.lang.String getLocation();
   /**
    * <pre>
-   * Location of the API key, valid values are "query", "header", or "cookie"
+   * The location of the API key. Valid values are "query", "header", or "cookie".
    * </pre>
    *
-   * <code>string location = 2;</code>
+   * <code>string location = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for location.
    */
   com.google.protobuf.ByteString
@@ -52,19 +52,19 @@ public interface APIKeySecuritySchemeOrBuilder extends
 
   /**
    * <pre>
-   * Name of the header, query or cookie parameter to be used.
+   * The name of the header, query, or cookie parameter to be used.
    * </pre>
    *
-   * <code>string name = 3;</code>
+   * <code>string name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The name.
    */
   java.lang.String getName();
   /**
    * <pre>
-   * Name of the header, query or cookie parameter to be used.
+   * The name of the header, query, or cookie parameter to be used.
    * </pre>
    *
-   * <code>string name = 3;</code>
+   * <code>string name = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString

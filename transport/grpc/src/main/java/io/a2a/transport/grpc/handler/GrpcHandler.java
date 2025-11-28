@@ -152,7 +152,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
-    public void createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request,
+    public void setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequest request,
                                                StreamObserver<io.a2a.grpc.TaskPushNotificationConfig> responseObserver) {
         if (!getAgentCardInternal().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
@@ -161,7 +161,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
-            TaskPushNotificationConfig config = FromProto.taskPushNotificationConfig(request);
+            TaskPushNotificationConfig config = FromProto.setTaskPushNotificationConfig(request);
             TaskPushNotificationConfig responseConfig = getRequestHandler().onSetTaskPushNotificationConfig(config, context);
             responseObserver.onNext(ToProto.taskPushNotificationConfig(responseConfig));
             responseObserver.onCompleted();
@@ -248,7 +248,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
-    public void taskSubscription(io.a2a.grpc.TaskSubscriptionRequest request,
+    public void subscribeToTask(io.a2a.grpc.SubscribeToTaskRequest request,
                                  StreamObserver<io.a2a.grpc.StreamResponse> responseObserver) {
         if (!getAgentCardInternal().capabilities().streaming()) {
             handleError(responseObserver, new InvalidRequestError());
@@ -317,7 +317,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
-    public void getAgentCard(io.a2a.grpc.GetAgentCardRequest request,
+    public void getExtendedAgentCard(io.a2a.grpc.GetExtendedAgentCardRequest request,
                            StreamObserver<io.a2a.grpc.AgentCard> responseObserver) {
         try {
             responseObserver.onNext(ToProto.agentCard(getAgentCardInternal()));

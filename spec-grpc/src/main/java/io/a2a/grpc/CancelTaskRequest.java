@@ -8,6 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:CancelTaskRequest]
+ * Represents a request for the `tasks/cancel` method.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.CancelTaskRequest}
@@ -256,6 +257,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:CancelTaskRequest]
+   * Represents a request for the `tasks/cancel` method.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.CancelTaskRequest}

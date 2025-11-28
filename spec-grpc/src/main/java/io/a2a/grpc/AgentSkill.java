@@ -8,11 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:AgentSkill]
- * AgentSkill represents a unit of action/solution that the agent can perform.
- * One can think of this as a type of highly reliable solution that an agent
- * can be tasked to provide. Agents have the autonomy to choose how and when
- * to use specific skills, but clients should have confidence that if the
- * skill is defined that unit of action can be reliably performed.
+ * Represents a distinct capability or function that an agent can perform.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.AgentSkill}
@@ -69,10 +65,10 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object id_ = "";
   /**
    * <pre>
-   * Unique identifier of the skill within this agent.
+   * A unique identifier for the agent's skill.
    * </pre>
    *
-   * <code>string id = 1;</code>
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   @java.lang.Override
@@ -90,10 +86,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Unique identifier of the skill within this agent.
+   * A unique identifier for the agent's skill.
    * </pre>
    *
-   * <code>string id = 1;</code>
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   @java.lang.Override
@@ -116,10 +112,10 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object name_ = "";
   /**
    * <pre>
-   * A human readable name for the skill.
+   * A human-readable name for the skill.
    * </pre>
    *
-   * <code>string name = 2;</code>
+   * <code>string name = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The name.
    */
   @java.lang.Override
@@ -137,10 +133,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A human readable name for the skill.
+   * A human-readable name for the skill.
    * </pre>
    *
-   * <code>string name = 2;</code>
+   * <code>string name = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for name.
    */
   @java.lang.Override
@@ -163,11 +159,10 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object description_ = "";
   /**
    * <pre>
-   * A human (or llm) readable description of the skill
-   * details and behaviors.
+   * A detailed description of the skill.
    * </pre>
    *
-   * <code>string description = 3;</code>
+   * <code>string description = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The description.
    */
   @java.lang.Override
@@ -185,11 +180,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A human (or llm) readable description of the skill
-   * details and behaviors.
+   * A detailed description of the skill.
    * </pre>
    *
-   * <code>string description = 3;</code>
+   * <code>string description = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for description.
    */
   @java.lang.Override
@@ -213,11 +207,10 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    * <pre>
-   * A set of tags for the skill to enhance categorization/utilization.
-   * Example: ["cooking", "customer support", "billing"]
+   * A set of keywords describing the skill's capabilities.
    * </pre>
    *
-   * <code>repeated string tags = 4;</code>
+   * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return A list containing the tags.
    */
   public com.google.protobuf.ProtocolStringList
@@ -226,11 +219,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of tags for the skill to enhance categorization/utilization.
-   * Example: ["cooking", "customer support", "billing"]
+   * A set of keywords describing the skill's capabilities.
    * </pre>
    *
-   * <code>repeated string tags = 4;</code>
+   * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The count of tags.
    */
   public int getTagsCount() {
@@ -238,11 +230,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of tags for the skill to enhance categorization/utilization.
-   * Example: ["cooking", "customer support", "billing"]
+   * A set of keywords describing the skill's capabilities.
    * </pre>
    *
-   * <code>repeated string tags = 4;</code>
+   * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the element to return.
    * @return The tags at the given index.
    */
@@ -251,11 +242,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of tags for the skill to enhance categorization/utilization.
-   * Example: ["cooking", "customer support", "billing"]
+   * A set of keywords describing the skill's capabilities.
    * </pre>
    *
-   * <code>repeated string tags = 4;</code>
+   * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the value to return.
    * @return The bytes of the tags at the given index.
    */
@@ -270,10 +260,7 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    * <pre>
-   * A set of example queries that this skill is designed to address.
-   * These examples should help the caller to understand how to craft requests
-   * to the agent to achieve specific goals.
-   * Example: ["I need a recipe for bread"]
+   * Example prompts or scenarios that this skill can handle.
    * </pre>
    *
    * <code>repeated string examples = 5;</code>
@@ -285,10 +272,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of example queries that this skill is designed to address.
-   * These examples should help the caller to understand how to craft requests
-   * to the agent to achieve specific goals.
-   * Example: ["I need a recipe for bread"]
+   * Example prompts or scenarios that this skill can handle.
    * </pre>
    *
    * <code>repeated string examples = 5;</code>
@@ -299,10 +283,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of example queries that this skill is designed to address.
-   * These examples should help the caller to understand how to craft requests
-   * to the agent to achieve specific goals.
-   * Example: ["I need a recipe for bread"]
+   * Example prompts or scenarios that this skill can handle.
    * </pre>
    *
    * <code>repeated string examples = 5;</code>
@@ -314,10 +295,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of example queries that this skill is designed to address.
-   * These examples should help the caller to understand how to craft requests
-   * to the agent to achieve specific goals.
-   * Example: ["I need a recipe for bread"]
+   * Example prompts or scenarios that this skill can handle.
    * </pre>
    *
    * <code>repeated string examples = 5;</code>
@@ -335,7 +313,7 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    * <pre>
-   * Possible input modalities supported.
+   * The set of supported input media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string input_modes = 6;</code>
@@ -347,7 +325,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Possible input modalities supported.
+   * The set of supported input media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string input_modes = 6;</code>
@@ -358,7 +336,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Possible input modalities supported.
+   * The set of supported input media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string input_modes = 6;</code>
@@ -370,7 +348,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Possible input modalities supported.
+   * The set of supported input media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string input_modes = 6;</code>
@@ -388,7 +366,7 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    * <pre>
-   * Possible output modalities produced
+   * The set of supported output media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string output_modes = 7;</code>
@@ -400,7 +378,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Possible output modalities produced
+   * The set of supported output media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string output_modes = 7;</code>
@@ -411,7 +389,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Possible output modalities produced
+   * The set of supported output media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string output_modes = 7;</code>
@@ -423,7 +401,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Possible output modalities produced
+   * The set of supported output media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string output_modes = 7;</code>
@@ -441,10 +419,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -456,10 +431,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -472,10 +444,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -487,10 +456,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -502,10 +468,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -776,11 +739,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:AgentSkill]
-   * AgentSkill represents a unit of action/solution that the agent can perform.
-   * One can think of this as a type of highly reliable solution that an agent
-   * can be tasked to provide. Agents have the autonomy to choose how and when
-   * to use specific skills, but clients should have confidence that if the
-   * skill is defined that unit of action can be reliably performed.
+   * Represents a distinct capability or function that an agent can perform.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.AgentSkill}
@@ -1098,10 +1057,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object id_ = "";
     /**
      * <pre>
-     * Unique identifier of the skill within this agent.
+     * A unique identifier for the agent's skill.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The id.
      */
     public java.lang.String getId() {
@@ -1118,10 +1077,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique identifier of the skill within this agent.
+     * A unique identifier for the agent's skill.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for id.
      */
     public com.google.protobuf.ByteString
@@ -1139,10 +1098,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique identifier of the skill within this agent.
+     * A unique identifier for the agent's skill.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The id to set.
      * @return This builder for chaining.
      */
@@ -1156,10 +1115,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique identifier of the skill within this agent.
+     * A unique identifier for the agent's skill.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearId() {
@@ -1170,10 +1129,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique identifier of the skill within this agent.
+     * A unique identifier for the agent's skill.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for id to set.
      * @return This builder for chaining.
      */
@@ -1190,10 +1149,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object name_ = "";
     /**
      * <pre>
-     * A human readable name for the skill.
+     * A human-readable name for the skill.
      * </pre>
      *
-     * <code>string name = 2;</code>
+     * <code>string name = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The name.
      */
     public java.lang.String getName() {
@@ -1210,10 +1169,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human readable name for the skill.
+     * A human-readable name for the skill.
      * </pre>
      *
-     * <code>string name = 2;</code>
+     * <code>string name = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for name.
      */
     public com.google.protobuf.ByteString
@@ -1231,10 +1190,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human readable name for the skill.
+     * A human-readable name for the skill.
      * </pre>
      *
-     * <code>string name = 2;</code>
+     * <code>string name = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The name to set.
      * @return This builder for chaining.
      */
@@ -1248,10 +1207,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human readable name for the skill.
+     * A human-readable name for the skill.
      * </pre>
      *
-     * <code>string name = 2;</code>
+     * <code>string name = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearName() {
@@ -1262,10 +1221,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human readable name for the skill.
+     * A human-readable name for the skill.
      * </pre>
      *
-     * <code>string name = 2;</code>
+     * <code>string name = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for name to set.
      * @return This builder for chaining.
      */
@@ -1282,11 +1241,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object description_ = "";
     /**
      * <pre>
-     * A human (or llm) readable description of the skill
-     * details and behaviors.
+     * A detailed description of the skill.
      * </pre>
      *
-     * <code>string description = 3;</code>
+     * <code>string description = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The description.
      */
     public java.lang.String getDescription() {
@@ -1303,11 +1261,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human (or llm) readable description of the skill
-     * details and behaviors.
+     * A detailed description of the skill.
      * </pre>
      *
-     * <code>string description = 3;</code>
+     * <code>string description = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for description.
      */
     public com.google.protobuf.ByteString
@@ -1325,11 +1282,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human (or llm) readable description of the skill
-     * details and behaviors.
+     * A detailed description of the skill.
      * </pre>
      *
-     * <code>string description = 3;</code>
+     * <code>string description = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The description to set.
      * @return This builder for chaining.
      */
@@ -1343,11 +1299,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human (or llm) readable description of the skill
-     * details and behaviors.
+     * A detailed description of the skill.
      * </pre>
      *
-     * <code>string description = 3;</code>
+     * <code>string description = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearDescription() {
@@ -1358,11 +1313,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human (or llm) readable description of the skill
-     * details and behaviors.
+     * A detailed description of the skill.
      * </pre>
      *
-     * <code>string description = 3;</code>
+     * <code>string description = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for description to set.
      * @return This builder for chaining.
      */
@@ -1386,11 +1340,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of tags for the skill to enhance categorization/utilization.
-     * Example: ["cooking", "customer support", "billing"]
+     * A set of keywords describing the skill's capabilities.
      * </pre>
      *
-     * <code>repeated string tags = 4;</code>
+     * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return A list containing the tags.
      */
     public com.google.protobuf.ProtocolStringList
@@ -1400,11 +1353,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of tags for the skill to enhance categorization/utilization.
-     * Example: ["cooking", "customer support", "billing"]
+     * A set of keywords describing the skill's capabilities.
      * </pre>
      *
-     * <code>repeated string tags = 4;</code>
+     * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The count of tags.
      */
     public int getTagsCount() {
@@ -1412,11 +1364,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of tags for the skill to enhance categorization/utilization.
-     * Example: ["cooking", "customer support", "billing"]
+     * A set of keywords describing the skill's capabilities.
      * </pre>
      *
-     * <code>repeated string tags = 4;</code>
+     * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param index The index of the element to return.
      * @return The tags at the given index.
      */
@@ -1425,11 +1376,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of tags for the skill to enhance categorization/utilization.
-     * Example: ["cooking", "customer support", "billing"]
+     * A set of keywords describing the skill's capabilities.
      * </pre>
      *
-     * <code>repeated string tags = 4;</code>
+     * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param index The index of the value to return.
      * @return The bytes of the tags at the given index.
      */
@@ -1439,11 +1389,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of tags for the skill to enhance categorization/utilization.
-     * Example: ["cooking", "customer support", "billing"]
+     * A set of keywords describing the skill's capabilities.
      * </pre>
      *
-     * <code>repeated string tags = 4;</code>
+     * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param index The index to set the value at.
      * @param value The tags to set.
      * @return This builder for chaining.
@@ -1459,11 +1408,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of tags for the skill to enhance categorization/utilization.
-     * Example: ["cooking", "customer support", "billing"]
+     * A set of keywords describing the skill's capabilities.
      * </pre>
      *
-     * <code>repeated string tags = 4;</code>
+     * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The tags to add.
      * @return This builder for chaining.
      */
@@ -1478,11 +1426,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of tags for the skill to enhance categorization/utilization.
-     * Example: ["cooking", "customer support", "billing"]
+     * A set of keywords describing the skill's capabilities.
      * </pre>
      *
-     * <code>repeated string tags = 4;</code>
+     * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param values The tags to add.
      * @return This builder for chaining.
      */
@@ -1497,11 +1444,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of tags for the skill to enhance categorization/utilization.
-     * Example: ["cooking", "customer support", "billing"]
+     * A set of keywords describing the skill's capabilities.
      * </pre>
      *
-     * <code>repeated string tags = 4;</code>
+     * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearTags() {
@@ -1513,11 +1459,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of tags for the skill to enhance categorization/utilization.
-     * Example: ["cooking", "customer support", "billing"]
+     * A set of keywords describing the skill's capabilities.
      * </pre>
      *
-     * <code>repeated string tags = 4;</code>
+     * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes of the tags to add.
      * @return This builder for chaining.
      */
@@ -1542,10 +1487,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of example queries that this skill is designed to address.
-     * These examples should help the caller to understand how to craft requests
-     * to the agent to achieve specific goals.
-     * Example: ["I need a recipe for bread"]
+     * Example prompts or scenarios that this skill can handle.
      * </pre>
      *
      * <code>repeated string examples = 5;</code>
@@ -1558,10 +1500,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of example queries that this skill is designed to address.
-     * These examples should help the caller to understand how to craft requests
-     * to the agent to achieve specific goals.
-     * Example: ["I need a recipe for bread"]
+     * Example prompts or scenarios that this skill can handle.
      * </pre>
      *
      * <code>repeated string examples = 5;</code>
@@ -1572,10 +1511,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of example queries that this skill is designed to address.
-     * These examples should help the caller to understand how to craft requests
-     * to the agent to achieve specific goals.
-     * Example: ["I need a recipe for bread"]
+     * Example prompts or scenarios that this skill can handle.
      * </pre>
      *
      * <code>repeated string examples = 5;</code>
@@ -1587,10 +1523,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of example queries that this skill is designed to address.
-     * These examples should help the caller to understand how to craft requests
-     * to the agent to achieve specific goals.
-     * Example: ["I need a recipe for bread"]
+     * Example prompts or scenarios that this skill can handle.
      * </pre>
      *
      * <code>repeated string examples = 5;</code>
@@ -1603,10 +1536,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of example queries that this skill is designed to address.
-     * These examples should help the caller to understand how to craft requests
-     * to the agent to achieve specific goals.
-     * Example: ["I need a recipe for bread"]
+     * Example prompts or scenarios that this skill can handle.
      * </pre>
      *
      * <code>repeated string examples = 5;</code>
@@ -1625,10 +1555,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of example queries that this skill is designed to address.
-     * These examples should help the caller to understand how to craft requests
-     * to the agent to achieve specific goals.
-     * Example: ["I need a recipe for bread"]
+     * Example prompts or scenarios that this skill can handle.
      * </pre>
      *
      * <code>repeated string examples = 5;</code>
@@ -1646,10 +1573,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of example queries that this skill is designed to address.
-     * These examples should help the caller to understand how to craft requests
-     * to the agent to achieve specific goals.
-     * Example: ["I need a recipe for bread"]
+     * Example prompts or scenarios that this skill can handle.
      * </pre>
      *
      * <code>repeated string examples = 5;</code>
@@ -1667,10 +1591,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of example queries that this skill is designed to address.
-     * These examples should help the caller to understand how to craft requests
-     * to the agent to achieve specific goals.
-     * Example: ["I need a recipe for bread"]
+     * Example prompts or scenarios that this skill can handle.
      * </pre>
      *
      * <code>repeated string examples = 5;</code>
@@ -1685,10 +1606,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of example queries that this skill is designed to address.
-     * These examples should help the caller to understand how to craft requests
-     * to the agent to achieve specific goals.
-     * Example: ["I need a recipe for bread"]
+     * Example prompts or scenarios that this skill can handle.
      * </pre>
      *
      * <code>repeated string examples = 5;</code>
@@ -1716,7 +1634,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible input modalities supported.
+     * The set of supported input media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string input_modes = 6;</code>
@@ -1729,7 +1647,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible input modalities supported.
+     * The set of supported input media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string input_modes = 6;</code>
@@ -1740,7 +1658,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible input modalities supported.
+     * The set of supported input media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string input_modes = 6;</code>
@@ -1752,7 +1670,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible input modalities supported.
+     * The set of supported input media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string input_modes = 6;</code>
@@ -1765,7 +1683,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible input modalities supported.
+     * The set of supported input media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string input_modes = 6;</code>
@@ -1784,7 +1702,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible input modalities supported.
+     * The set of supported input media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string input_modes = 6;</code>
@@ -1802,7 +1720,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible input modalities supported.
+     * The set of supported input media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string input_modes = 6;</code>
@@ -1820,7 +1738,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible input modalities supported.
+     * The set of supported input media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string input_modes = 6;</code>
@@ -1835,7 +1753,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible input modalities supported.
+     * The set of supported input media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string input_modes = 6;</code>
@@ -1863,7 +1781,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible output modalities produced
+     * The set of supported output media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string output_modes = 7;</code>
@@ -1876,7 +1794,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible output modalities produced
+     * The set of supported output media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string output_modes = 7;</code>
@@ -1887,7 +1805,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible output modalities produced
+     * The set of supported output media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string output_modes = 7;</code>
@@ -1899,7 +1817,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible output modalities produced
+     * The set of supported output media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string output_modes = 7;</code>
@@ -1912,7 +1830,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible output modalities produced
+     * The set of supported output media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string output_modes = 7;</code>
@@ -1931,7 +1849,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible output modalities produced
+     * The set of supported output media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string output_modes = 7;</code>
@@ -1949,7 +1867,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible output modalities produced
+     * The set of supported output media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string output_modes = 7;</code>
@@ -1967,7 +1885,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible output modalities produced
+     * The set of supported output media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string output_modes = 7;</code>
@@ -1982,7 +1900,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Possible output modalities produced
+     * The set of supported output media types for this skill, overriding the agent's defaults.
      * </pre>
      *
      * <code>repeated string output_modes = 7;</code>
@@ -2015,10 +1933,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2033,10 +1948,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2051,10 +1963,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2069,10 +1978,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2094,10 +2000,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2116,10 +2019,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2140,10 +2040,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2165,10 +2062,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2187,10 +2081,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2209,10 +2100,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2232,10 +2120,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2253,10 +2138,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2274,10 +2156,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2289,10 +2168,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2307,10 +2183,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2326,10 +2199,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2341,10 +2211,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -2357,10 +2224,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * Security schemes necessary for the agent to leverage this skill.
-     * As in the overall AgentCard.security, this list represents a logical OR of
-     * security requirement objects. Each object is a set of security schemes
-     * that must be used together (a logical AND).
+     * Security schemes necessary for this skill.
      * </pre>
      *
      * <code>repeated .a2a.v1.Security security = 8;</code>

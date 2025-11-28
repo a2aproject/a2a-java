@@ -38,7 +38,7 @@ import io.a2a.util.Utils;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONRPCRequest<Void> {
 
-    public static final String METHOD = "agent/getAuthenticatedExtendedCard";
+    public static final String METHOD = "GetExtendedAgentCard";
 
     @JsonCreator
     public GetAuthenticatedExtendedCardRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,

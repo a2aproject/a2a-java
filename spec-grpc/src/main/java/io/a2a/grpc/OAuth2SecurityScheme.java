@@ -8,6 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:OAuth2SecurityScheme]
+ * Defines a security scheme using OAuth 2.0.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.OAuth2SecurityScheme}
@@ -55,7 +56,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object description_ = "";
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -76,7 +77,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -101,10 +102,10 @@ private static final long serialVersionUID = 0L;
   private io.a2a.grpc.OAuthFlows flows_;
   /**
    * <pre>
-   * An object containing configuration information for the flow types supported
+   * An object containing configuration information for the supported OAuth 2.0 flows.
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+   * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the flows field is set.
    */
   @java.lang.Override
@@ -113,10 +114,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * An object containing configuration information for the flow types supported
+   * An object containing configuration information for the supported OAuth 2.0 flows.
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+   * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The flows.
    */
   @java.lang.Override
@@ -125,10 +126,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * An object containing configuration information for the flow types supported
+   * An object containing configuration information for the supported OAuth 2.0 flows.
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+   * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.OAuthFlowsOrBuilder getFlowsOrBuilder() {
@@ -141,7 +142,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * URL to the oauth2 authorization server metadata
-   * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+   * RFC8414 (https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
    * </pre>
    *
    * <code>string oauth2_metadata_url = 3;</code>
@@ -163,7 +164,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * URL to the oauth2 authorization server metadata
-   * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+   * RFC8414 (https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
    * </pre>
    *
    * <code>string oauth2_metadata_url = 3;</code>
@@ -369,6 +370,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:OAuth2SecurityScheme]
+   * Defines a security scheme using OAuth 2.0.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.OAuth2SecurityScheme}
@@ -554,7 +556,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object description_ = "";
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -574,7 +576,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -595,7 +597,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -612,7 +614,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -626,7 +628,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -648,10 +650,10 @@ private static final long serialVersionUID = 0L;
         io.a2a.grpc.OAuthFlows, io.a2a.grpc.OAuthFlows.Builder, io.a2a.grpc.OAuthFlowsOrBuilder> flowsBuilder_;
     /**
      * <pre>
-     * An object containing configuration information for the flow types supported
+     * An object containing configuration information for the supported OAuth 2.0 flows.
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the flows field is set.
      */
     public boolean hasFlows() {
@@ -659,10 +661,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An object containing configuration information for the flow types supported
+     * An object containing configuration information for the supported OAuth 2.0 flows.
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The flows.
      */
     public io.a2a.grpc.OAuthFlows getFlows() {
@@ -674,10 +676,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An object containing configuration information for the flow types supported
+     * An object containing configuration information for the supported OAuth 2.0 flows.
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setFlows(io.a2a.grpc.OAuthFlows value) {
       if (flowsBuilder_ == null) {
@@ -694,10 +696,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An object containing configuration information for the flow types supported
+     * An object containing configuration information for the supported OAuth 2.0 flows.
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setFlows(
         io.a2a.grpc.OAuthFlows.Builder builderForValue) {
@@ -712,10 +714,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An object containing configuration information for the flow types supported
+     * An object containing configuration information for the supported OAuth 2.0 flows.
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeFlows(io.a2a.grpc.OAuthFlows value) {
       if (flowsBuilder_ == null) {
@@ -737,10 +739,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An object containing configuration information for the flow types supported
+     * An object containing configuration information for the supported OAuth 2.0 flows.
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearFlows() {
       bitField0_ = (bitField0_ & ~0x00000002);
@@ -754,10 +756,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An object containing configuration information for the flow types supported
+     * An object containing configuration information for the supported OAuth 2.0 flows.
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.OAuthFlows.Builder getFlowsBuilder() {
       bitField0_ |= 0x00000002;
@@ -766,10 +768,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An object containing configuration information for the flow types supported
+     * An object containing configuration information for the supported OAuth 2.0 flows.
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.OAuthFlowsOrBuilder getFlowsOrBuilder() {
       if (flowsBuilder_ != null) {
@@ -781,10 +783,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An object containing configuration information for the flow types supported
+     * An object containing configuration information for the supported OAuth 2.0 flows.
      * </pre>
      *
-     * <code>.a2a.v1.OAuthFlows flows = 2;</code>
+     * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.OAuthFlows, io.a2a.grpc.OAuthFlows.Builder, io.a2a.grpc.OAuthFlowsOrBuilder> 
@@ -804,7 +806,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * URL to the oauth2 authorization server metadata
-     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * RFC8414 (https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
      * </pre>
      *
      * <code>string oauth2_metadata_url = 3;</code>
@@ -825,7 +827,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * URL to the oauth2 authorization server metadata
-     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * RFC8414 (https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
      * </pre>
      *
      * <code>string oauth2_metadata_url = 3;</code>
@@ -847,7 +849,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * URL to the oauth2 authorization server metadata
-     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * RFC8414 (https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
      * </pre>
      *
      * <code>string oauth2_metadata_url = 3;</code>
@@ -865,7 +867,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * URL to the oauth2 authorization server metadata
-     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * RFC8414 (https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
      * </pre>
      *
      * <code>string oauth2_metadata_url = 3;</code>
@@ -880,7 +882,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * URL to the oauth2 authorization server metadata
-     * [RFC8414](https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+     * RFC8414 (https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
      * </pre>
      *
      * <code>string oauth2_metadata_url = 3;</code>

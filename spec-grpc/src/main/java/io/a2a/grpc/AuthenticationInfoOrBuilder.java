@@ -12,39 +12,39 @@ public interface AuthenticationInfoOrBuilder extends
 
   /**
    * <pre>
-   * Supported authentication schemes - e.g. Basic, Bearer, etc
+   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
    * </pre>
    *
-   * <code>repeated string schemes = 1;</code>
+   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return A list containing the schemes.
    */
   java.util.List<java.lang.String>
       getSchemesList();
   /**
    * <pre>
-   * Supported authentication schemes - e.g. Basic, Bearer, etc
+   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
    * </pre>
    *
-   * <code>repeated string schemes = 1;</code>
+   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The count of schemes.
    */
   int getSchemesCount();
   /**
    * <pre>
-   * Supported authentication schemes - e.g. Basic, Bearer, etc
+   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
    * </pre>
    *
-   * <code>repeated string schemes = 1;</code>
+   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the element to return.
    * @return The schemes at the given index.
    */
   java.lang.String getSchemes(int index);
   /**
    * <pre>
-   * Supported authentication schemes - e.g. Basic, Bearer, etc
+   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
    * </pre>
    *
-   * <code>repeated string schemes = 1;</code>
+   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the value to return.
    * @return The bytes of the schemes at the given index.
    */

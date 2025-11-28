@@ -8,6 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:ImplicitOAuthFlow]
+ * Defines configuration details for the OAuth 2.0 Implicit flow.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.ImplicitOAuthFlow}
@@ -66,11 +67,10 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object authorizationUrl_ = "";
   /**
    * <pre>
-   * The authorization URL to be used for this flow. This MUST be in the
-   * form of a URL. The OAuth2 standard requires the use of TLS
+   * The authorization URL to be used for this flow.
    * </pre>
    *
-   * <code>string authorization_url = 1;</code>
+   * <code>string authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The authorizationUrl.
    */
   @java.lang.Override
@@ -88,11 +88,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The authorization URL to be used for this flow. This MUST be in the
-   * form of a URL. The OAuth2 standard requires the use of TLS
+   * The authorization URL to be used for this flow.
    * </pre>
    *
-   * <code>string authorization_url = 1;</code>
+   * <code>string authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for authorizationUrl.
    */
   @java.lang.Override
@@ -115,8 +114,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object refreshUrl_ = "";
   /**
    * <pre>
-   * The URL to be used for obtaining refresh tokens. This MUST be in the
-   * form of a URL. The OAuth2 standard requires the use of TLS.
+   * The URL to be used for obtaining refresh tokens.
    * </pre>
    *
    * <code>string refresh_url = 2;</code>
@@ -137,8 +135,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The URL to be used for obtaining refresh tokens. This MUST be in the
-   * form of a URL. The OAuth2 standard requires the use of TLS.
+   * The URL to be used for obtaining refresh tokens.
    * </pre>
    *
    * <code>string refresh_url = 2;</code>
@@ -187,11 +184,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The available scopes for the OAuth2 security scheme. A map between the
-   * scope name and a short description for it. The map MAY be empty.
+   * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3;</code>
+   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public boolean containsScopes(
@@ -209,11 +205,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The available scopes for the OAuth2 security scheme. A map between the
-   * scope name and a short description for it. The map MAY be empty.
+   * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3;</code>
+   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.Map<java.lang.String, java.lang.String> getScopesMap() {
@@ -221,11 +216,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The available scopes for the OAuth2 security scheme. A map between the
-   * scope name and a short description for it. The map MAY be empty.
+   * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3;</code>
+   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public /* nullable */
@@ -240,11 +234,10 @@ java.lang.String defaultValue) {
   }
   /**
    * <pre>
-   * The available scopes for the OAuth2 security scheme. A map between the
-   * scope name and a short description for it. The map MAY be empty.
+   * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3;</code>
+   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.lang.String getScopesOrThrow(
@@ -449,6 +442,7 @@ java.lang.String defaultValue) {
   /**
    * <pre>
    * --8&lt;-- [start:ImplicitOAuthFlow]
+   * Defines configuration details for the OAuth 2.0 Implicit flow.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.ImplicitOAuthFlow}
@@ -644,11 +638,10 @@ java.lang.String defaultValue) {
     private java.lang.Object authorizationUrl_ = "";
     /**
      * <pre>
-     * The authorization URL to be used for this flow. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS
+     * The authorization URL to be used for this flow.
      * </pre>
      *
-     * <code>string authorization_url = 1;</code>
+     * <code>string authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The authorizationUrl.
      */
     public java.lang.String getAuthorizationUrl() {
@@ -665,11 +658,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The authorization URL to be used for this flow. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS
+     * The authorization URL to be used for this flow.
      * </pre>
      *
-     * <code>string authorization_url = 1;</code>
+     * <code>string authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for authorizationUrl.
      */
     public com.google.protobuf.ByteString
@@ -687,11 +679,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The authorization URL to be used for this flow. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS
+     * The authorization URL to be used for this flow.
      * </pre>
      *
-     * <code>string authorization_url = 1;</code>
+     * <code>string authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The authorizationUrl to set.
      * @return This builder for chaining.
      */
@@ -705,11 +696,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The authorization URL to be used for this flow. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS
+     * The authorization URL to be used for this flow.
      * </pre>
      *
-     * <code>string authorization_url = 1;</code>
+     * <code>string authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearAuthorizationUrl() {
@@ -720,11 +710,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The authorization URL to be used for this flow. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS
+     * The authorization URL to be used for this flow.
      * </pre>
      *
-     * <code>string authorization_url = 1;</code>
+     * <code>string authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for authorizationUrl to set.
      * @return This builder for chaining.
      */
@@ -741,8 +730,7 @@ java.lang.String defaultValue) {
     private java.lang.Object refreshUrl_ = "";
     /**
      * <pre>
-     * The URL to be used for obtaining refresh tokens. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS.
+     * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
      * <code>string refresh_url = 2;</code>
@@ -762,8 +750,7 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The URL to be used for obtaining refresh tokens. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS.
+     * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
      * <code>string refresh_url = 2;</code>
@@ -784,8 +771,7 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The URL to be used for obtaining refresh tokens. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS.
+     * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
      * <code>string refresh_url = 2;</code>
@@ -802,8 +788,7 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The URL to be used for obtaining refresh tokens. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS.
+     * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
      * <code>string refresh_url = 2;</code>
@@ -817,8 +802,7 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The URL to be used for obtaining refresh tokens. This MUST be in the
-     * form of a URL. The OAuth2 standard requires the use of TLS.
+     * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
      * <code>string refresh_url = 2;</code>
@@ -863,11 +847,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The available scopes for the OAuth2 security scheme. A map between the
-     * scope name and a short description for it. The map MAY be empty.
+     * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3;</code>
+     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     @java.lang.Override
     public boolean containsScopes(
@@ -885,11 +868,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The available scopes for the OAuth2 security scheme. A map between the
-     * scope name and a short description for it. The map MAY be empty.
+     * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3;</code>
+     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     @java.lang.Override
     public java.util.Map<java.lang.String, java.lang.String> getScopesMap() {
@@ -897,11 +879,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The available scopes for the OAuth2 security scheme. A map between the
-     * scope name and a short description for it. The map MAY be empty.
+     * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3;</code>
+     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     @java.lang.Override
     public /* nullable */
@@ -916,11 +897,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The available scopes for the OAuth2 security scheme. A map between the
-     * scope name and a short description for it. The map MAY be empty.
+     * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3;</code>
+     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     @java.lang.Override
     public java.lang.String getScopesOrThrow(
@@ -941,11 +921,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The available scopes for the OAuth2 security scheme. A map between the
-     * scope name and a short description for it. The map MAY be empty.
+     * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3;</code>
+     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder removeScopes(
         java.lang.String key) {
@@ -965,11 +944,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The available scopes for the OAuth2 security scheme. A map between the
-     * scope name and a short description for it. The map MAY be empty.
+     * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3;</code>
+     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder putScopes(
         java.lang.String key,
@@ -983,11 +961,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * The available scopes for the OAuth2 security scheme. A map between the
-     * scope name and a short description for it. The map MAY be empty.
+     * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3;</code>
+     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder putAllScopes(
         java.util.Map<java.lang.String, java.lang.String> values) {

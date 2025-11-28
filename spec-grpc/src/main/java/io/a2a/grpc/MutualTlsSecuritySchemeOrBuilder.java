@@ -12,7 +12,7 @@ public interface MutualTlsSecuritySchemeOrBuilder extends
 
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -21,7 +21,7 @@ public interface MutualTlsSecuritySchemeOrBuilder extends
   java.lang.String getDescription();
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>

@@ -8,6 +8,9 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:SecurityScheme]
+ * Defines a security scheme that can be used to secure an agent's endpoints.
+ * This is a discriminated union type based on the OpenAPI 3.2 Security Scheme Object.
+ * See: https://spec.openapis.org/oas/v3.2.0.html#security-scheme-object
  * </pre>
  *
  * Protobuf type {@code a2a.v1.SecurityScheme}
@@ -483,6 +486,9 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:SecurityScheme]
+   * Defines a security scheme that can be used to secure an agent's endpoints.
+   * This is a discriminated union type based on the OpenAPI 3.2 Security Scheme Object.
+   * See: https://spec.openapis.org/oas/v3.2.0.html#security-scheme-object
    * </pre>
    *
    * Protobuf type {@code a2a.v1.SecurityScheme}

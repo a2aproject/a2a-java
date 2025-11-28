@@ -12,7 +12,7 @@ public interface OpenIdConnectSecuritySchemeOrBuilder extends
 
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -21,7 +21,7 @@ public interface OpenIdConnectSecuritySchemeOrBuilder extends
   java.lang.String getDescription();
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -32,21 +32,21 @@ public interface OpenIdConnectSecuritySchemeOrBuilder extends
 
   /**
    * <pre>
-   * Well-known URL to discover the [[OpenID-Connect-Discovery]] provider
-   * metadata.
+   * The OpenID Connect Discovery URL for the OIDC provider's metadata.
+   * See: https://openid.net/specs/openid-connect-discovery-1_0.html
    * </pre>
    *
-   * <code>string open_id_connect_url = 2;</code>
+   * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The openIdConnectUrl.
    */
   java.lang.String getOpenIdConnectUrl();
   /**
    * <pre>
-   * Well-known URL to discover the [[OpenID-Connect-Discovery]] provider
-   * metadata.
+   * The OpenID Connect Discovery URL for the OIDC provider's metadata.
+   * See: https://openid.net/specs/openid-connect-discovery-1_0.html
    * </pre>
    *
-   * <code>string open_id_connect_url = 2;</code>
+   * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for openIdConnectUrl.
    */
   com.google.protobuf.ByteString

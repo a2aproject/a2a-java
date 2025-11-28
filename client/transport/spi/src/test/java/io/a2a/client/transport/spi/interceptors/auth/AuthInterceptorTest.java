@@ -13,6 +13,7 @@ import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
 import io.a2a.spec.APIKeySecurityScheme;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.HTTPAuthSecurityScheme;
 import io.a2a.spec.OAuth2SecurityScheme;
 import io.a2a.spec.OAuthFlows;
@@ -79,7 +80,7 @@ public class AuthInterceptorTest {
                 "session-id",
                 APIKeySecurityScheme.API_KEY,
                 "secret-api-key",
-                new APIKeySecurityScheme("header", "x-api-key", "API Key authentication"),
+                new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "x-api-key", "API Key authentication"),
                 "x-api-key",
                 "secret-api-key"
         );
@@ -137,7 +138,7 @@ public class AuthInterceptorTest {
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", authTestCase.sessionId), Map.of());
 
         PayloadAndHeaders result = authInterceptor.intercept(
-                "message/send",
+                "SendMessage",
                 requestPayload,
                 headers,
                 agentCard,
@@ -154,7 +155,7 @@ public class AuthInterceptorTest {
         Map<String, String> headers = Map.of("foo", "bar");
 
         PayloadAndHeaders result = authInterceptor.intercept(
-                "message/send",
+                "SendMessage",
                 requestPayload,
                 headers,
                 null, // no agent card
@@ -206,7 +207,7 @@ public class AuthInterceptorTest {
         Map<String, String> headers = Map.of();
 
         PayloadAndHeaders result = interceptor.intercept(
-                "message/send",
+                "SendMessage",
                 payload,
                 headers,
                 null,
@@ -229,7 +230,7 @@ public class AuthInterceptorTest {
         AgentCard agentCard = new AgentCard.Builder()
             .name("missing")
             .description("Uses missing scheme definition")
-            .url("http://agent.com/rpc")
+            .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
             .version("1.0")
             .capabilities(new AgentCapabilities.Builder().build())
             .defaultInputModes(List.of("text"))
@@ -244,7 +245,7 @@ public class AuthInterceptorTest {
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
 
         PayloadAndHeaders result = authInterceptor.intercept(
-            "message/send",
+            "SendMessage",
             requestPayload,
             headers,
             agentCard,
@@ -258,7 +259,7 @@ public class AuthInterceptorTest {
     @Test
     void testNoCredentialAvailable() {
         String schemeName = "apikey";
-        SecurityScheme securityScheme = new APIKeySecurityScheme("header", "X-API-Key", "API Key authentication");
+        SecurityScheme securityScheme = new APIKeySecurityScheme(APIKeySecurityScheme.Location.HEADER, "X-API-Key", "API Key authentication");
         AgentCard agentCard = createAgentCard(schemeName, securityScheme);
         
         Map<String, Object> requestPayload = Map.of("test", "payload");
@@ -266,7 +267,7 @@ public class AuthInterceptorTest {
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());
 
         PayloadAndHeaders result = authInterceptor.intercept(
-            "message/send",
+            "SendMessage",
             requestPayload,
             headers,
             agentCard,
@@ -283,7 +284,7 @@ public class AuthInterceptorTest {
         AgentCard agentCard = new AgentCard.Builder()
             .name("nosecuritybot")
             .description("A bot with no security requirements")
-            .url("http://agent.com/rpc")
+            .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
             .version("1.0")
             .capabilities(new AgentCapabilities.Builder().build())
             .defaultInputModes(List.of("text"))
@@ -297,7 +298,7 @@ public class AuthInterceptorTest {
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());
 
         PayloadAndHeaders result = authInterceptor.intercept(
-            "message/send",
+            "SendMessage",
             requestPayload,
             headers,
             agentCard,
@@ -315,7 +316,7 @@ public class AuthInterceptorTest {
         return new AgentCard.Builder()
             .name(schemeName + "bot")
             .description("A bot that uses " + schemeName)
-            .url("http://agent.com/rpc")
+            .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
             .version("1.0")
             .capabilities(new AgentCapabilities.Builder().build())
             .defaultInputModes(List.of("text"))

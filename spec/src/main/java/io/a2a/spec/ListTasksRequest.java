@@ -18,7 +18,7 @@ import io.a2a.util.Assert;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasksParams> {
 
-    public static final String METHOD = "tasks/list";
+    public static final String METHOD = "ListTask";
 
     @JsonCreator
     public ListTasksRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,

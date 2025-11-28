@@ -12,19 +12,21 @@ public interface AgentInterfaceOrBuilder extends
 
   /**
    * <pre>
-   * The url this interface is found at.
+   * The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
+   * Example: "https://api.example.com/a2a/v1", "https://grpc.example.com/a2a"
    * </pre>
    *
-   * <code>string url = 1;</code>
+   * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The url.
    */
   java.lang.String getUrl();
   /**
    * <pre>
-   * The url this interface is found at.
+   * The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
+   * Example: "https://api.example.com/a2a/v1", "https://grpc.example.com/a2a"
    * </pre>
    *
-   * <code>string url = 1;</code>
+   * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for url.
    */
   com.google.protobuf.ByteString
@@ -32,25 +34,27 @@ public interface AgentInterfaceOrBuilder extends
 
   /**
    * <pre>
-   * The transport supported this url. This is an open form string, to be
-   * easily extended for many transport protocols. The core ones officially
+   * The protocol binding supported at this URL. This is an open form string, to be
+   * easily extended for other protocol bindings. The core ones officially
    * supported are JSONRPC, GRPC and HTTP+JSON.
+   * Example: "JSONRPC", "GRPC", "HTTP+JSON"
    * </pre>
    *
-   * <code>string transport = 2;</code>
-   * @return The transport.
+   * <code>string protocol_binding = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The protocolBinding.
    */
-  java.lang.String getTransport();
+  java.lang.String getProtocolBinding();
   /**
    * <pre>
-   * The transport supported this url. This is an open form string, to be
-   * easily extended for many transport protocols. The core ones officially
+   * The protocol binding supported at this URL. This is an open form string, to be
+   * easily extended for other protocol bindings. The core ones officially
    * supported are JSONRPC, GRPC and HTTP+JSON.
+   * Example: "JSONRPC", "GRPC", "HTTP+JSON"
    * </pre>
    *
-   * <code>string transport = 2;</code>
-   * @return The bytes for transport.
+   * <code>string protocol_binding = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for protocolBinding.
    */
   com.google.protobuf.ByteString
-      getTransportBytes();
+      getProtocolBindingBytes();
 }

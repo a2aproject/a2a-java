@@ -16,7 +16,7 @@ public interface TaskPushNotificationConfigOrBuilder extends
    * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The name.
    */
   java.lang.String getName();
@@ -26,7 +26,7 @@ public interface TaskPushNotificationConfigOrBuilder extends
    * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString
@@ -37,7 +37,7 @@ public interface TaskPushNotificationConfigOrBuilder extends
    * The push notification configuration details.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the pushNotificationConfig field is set.
    */
   boolean hasPushNotificationConfig();
@@ -46,7 +46,7 @@ public interface TaskPushNotificationConfigOrBuilder extends
    * The push notification configuration details.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The pushNotificationConfig.
    */
   io.a2a.grpc.PushNotificationConfig getPushNotificationConfig();
@@ -55,7 +55,7 @@ public interface TaskPushNotificationConfigOrBuilder extends
    * The push notification configuration details.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder();
 }

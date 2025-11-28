@@ -12,8 +12,7 @@ public interface AgentExtensionOrBuilder extends
 
   /**
    * <pre>
-   * The URI of the extension.
-   * Example: "https://developers.google.com/identity/protocols/oauth2"
+   * The unique URI identifying the extension.
    * </pre>
    *
    * <code>string uri = 1;</code>
@@ -22,8 +21,7 @@ public interface AgentExtensionOrBuilder extends
   java.lang.String getUri();
   /**
    * <pre>
-   * The URI of the extension.
-   * Example: "https://developers.google.com/identity/protocols/oauth2"
+   * The unique URI identifying the extension.
    * </pre>
    *
    * <code>string uri = 1;</code>
@@ -34,8 +32,7 @@ public interface AgentExtensionOrBuilder extends
 
   /**
    * <pre>
-   * A description of how this agent uses this extension.
-   * Example: "Google OAuth 2.0 authentication"
+   * A human-readable description of how this agent uses the extension.
    * </pre>
    *
    * <code>string description = 2;</code>
@@ -44,8 +41,7 @@ public interface AgentExtensionOrBuilder extends
   java.lang.String getDescription();
   /**
    * <pre>
-   * A description of how this agent uses this extension.
-   * Example: "Google OAuth 2.0 authentication"
+   * A human-readable description of how this agent uses the extension.
    * </pre>
    *
    * <code>string description = 2;</code>
@@ -56,8 +52,7 @@ public interface AgentExtensionOrBuilder extends
 
   /**
    * <pre>
-   * Whether the client must follow specific requirements of the extension.
-   * Example: false
+   * If true, the client must understand and comply with the extension's requirements.
    * </pre>
    *
    * <code>bool required = 3;</code>
@@ -67,7 +62,7 @@ public interface AgentExtensionOrBuilder extends
 
   /**
    * <pre>
-   * Optional configuration for the extension.
+   * Optional, extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -76,7 +71,7 @@ public interface AgentExtensionOrBuilder extends
   boolean hasParams();
   /**
    * <pre>
-   * Optional configuration for the extension.
+   * Optional, extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -85,7 +80,7 @@ public interface AgentExtensionOrBuilder extends
   com.google.protobuf.Struct getParams();
   /**
    * <pre>
-   * Optional configuration for the extension.
+   * Optional, extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>

@@ -13,18 +13,30 @@ public interface AgentCardOrBuilder extends
   /**
    * <pre>
    * The version of the A2A protocol this agent supports.
+   * Default: "1.0"
    * </pre>
    *
-   * <code>string protocol_version = 16;</code>
+   * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return Whether the protocolVersion field is set.
+   */
+  boolean hasProtocolVersion();
+  /**
+   * <pre>
+   * The version of the A2A protocol this agent supports.
+   * Default: "1.0"
+   * </pre>
+   *
+   * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The protocolVersion.
    */
   java.lang.String getProtocolVersion();
   /**
    * <pre>
    * The version of the A2A protocol this agent supports.
+   * Default: "1.0"
    * </pre>
    *
-   * <code>string protocol_version = 16;</code>
+   * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for protocolVersion.
    */
   com.google.protobuf.ByteString
@@ -36,7 +48,7 @@ public interface AgentCardOrBuilder extends
    * Example: "Recipe Agent"
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The name.
    */
   java.lang.String getName();
@@ -46,7 +58,7 @@ public interface AgentCardOrBuilder extends
    * Example: "Recipe Agent"
    * </pre>
    *
-   * <code>string name = 1;</code>
+   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString
@@ -54,21 +66,23 @@ public interface AgentCardOrBuilder extends
 
   /**
    * <pre>
-   * A description of the agent's domain of action/solution space.
+   * A human-readable description of the agent, assisting users and other agents
+   * in understanding its purpose.
    * Example: "Agent that helps users with recipes and cooking."
    * </pre>
    *
-   * <code>string description = 2;</code>
+   * <code>string description = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The description.
    */
   java.lang.String getDescription();
   /**
    * <pre>
-   * A description of the agent's domain of action/solution space.
+   * A human-readable description of the agent, assisting users and other agents
+   * in understanding its purpose.
    * Example: "Agent that helps users with recipes and cooking."
    * </pre>
    *
-   * <code>string description = 2;</code>
+   * <code>string description = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -76,93 +90,160 @@ public interface AgentCardOrBuilder extends
 
   /**
    * <pre>
-   * A URL to the address the agent is hosted at. This represents the
-   * preferred endpoint as declared by the agent.
+   * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>string url = 3;</code>
-   * @return The url.
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
    */
-  java.lang.String getUrl();
+  java.util.List<io.a2a.grpc.AgentInterface> 
+      getSupportedInterfacesList();
   /**
    * <pre>
-   * A URL to the address the agent is hosted at. This represents the
-   * preferred endpoint as declared by the agent.
+   * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>string url = 3;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   */
+  io.a2a.grpc.AgentInterface getSupportedInterfaces(int index);
+  /**
+   * <pre>
+   * Ordered list of supported interfaces. First entry is preferred.
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   */
+  int getSupportedInterfacesCount();
+  /**
+   * <pre>
+   * Ordered list of supported interfaces. First entry is preferred.
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   */
+  java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
+      getSupportedInterfacesOrBuilderList();
+  /**
+   * <pre>
+   * Ordered list of supported interfaces. First entry is preferred.
+   * </pre>
+   *
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   */
+  io.a2a.grpc.AgentInterfaceOrBuilder getSupportedInterfacesOrBuilder(
+      int index);
+
+  /**
+   * <pre>
+   * DEPRECATED: Use 'supported_interfaces' instead.
+   * </pre>
+   *
+   * <code>optional string url = 3 [deprecated = true];</code>
+   * @deprecated a2a.v1.AgentCard.url is deprecated.
+   *     See a2a.proto;l=397
+   * @return Whether the url field is set.
+   */
+  @java.lang.Deprecated boolean hasUrl();
+  /**
+   * <pre>
+   * DEPRECATED: Use 'supported_interfaces' instead.
+   * </pre>
+   *
+   * <code>optional string url = 3 [deprecated = true];</code>
+   * @deprecated a2a.v1.AgentCard.url is deprecated.
+   *     See a2a.proto;l=397
+   * @return The url.
+   */
+  @java.lang.Deprecated java.lang.String getUrl();
+  /**
+   * <pre>
+   * DEPRECATED: Use 'supported_interfaces' instead.
+   * </pre>
+   *
+   * <code>optional string url = 3 [deprecated = true];</code>
+   * @deprecated a2a.v1.AgentCard.url is deprecated.
+   *     See a2a.proto;l=397
    * @return The bytes for url.
    */
-  com.google.protobuf.ByteString
+  @java.lang.Deprecated com.google.protobuf.ByteString
       getUrlBytes();
 
   /**
    * <pre>
-   * The transport of the preferred endpoint. If empty, defaults to JSONRPC.
+   * DEPRECATED: Use 'supported_interfaces' instead.
    * </pre>
    *
-   * <code>string preferred_transport = 14;</code>
-   * @return The preferredTransport.
+   * <code>optional string preferred_transport = 14 [deprecated = true];</code>
+   * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
+   *     See a2a.proto;l=399
+   * @return Whether the preferredTransport field is set.
    */
-  java.lang.String getPreferredTransport();
+  @java.lang.Deprecated boolean hasPreferredTransport();
   /**
    * <pre>
-   * The transport of the preferred endpoint. If empty, defaults to JSONRPC.
+   * DEPRECATED: Use 'supported_interfaces' instead.
    * </pre>
    *
-   * <code>string preferred_transport = 14;</code>
+   * <code>optional string preferred_transport = 14 [deprecated = true];</code>
+   * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
+   *     See a2a.proto;l=399
+   * @return The preferredTransport.
+   */
+  @java.lang.Deprecated java.lang.String getPreferredTransport();
+  /**
+   * <pre>
+   * DEPRECATED: Use 'supported_interfaces' instead.
+   * </pre>
+   *
+   * <code>optional string preferred_transport = 14 [deprecated = true];</code>
+   * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
+   *     See a2a.proto;l=399
    * @return The bytes for preferredTransport.
    */
-  com.google.protobuf.ByteString
+  @java.lang.Deprecated com.google.protobuf.ByteString
       getPreferredTransportBytes();
 
   /**
    * <pre>
-   * Announcement of additional supported transports. Client can use any of
-   * the supported transports.
+   * DEPRECATED: Use 'supported_interfaces' instead.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
    */
-  java.util.List<io.a2a.grpc.AgentInterface> 
+  @java.lang.Deprecated java.util.List<io.a2a.grpc.AgentInterface> 
       getAdditionalInterfacesList();
   /**
    * <pre>
-   * Announcement of additional supported transports. Client can use any of
-   * the supported transports.
+   * DEPRECATED: Use 'supported_interfaces' instead.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
    */
-  io.a2a.grpc.AgentInterface getAdditionalInterfaces(int index);
+  @java.lang.Deprecated io.a2a.grpc.AgentInterface getAdditionalInterfaces(int index);
   /**
    * <pre>
-   * Announcement of additional supported transports. Client can use any of
-   * the supported transports.
+   * DEPRECATED: Use 'supported_interfaces' instead.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
    */
-  int getAdditionalInterfacesCount();
+  @java.lang.Deprecated int getAdditionalInterfacesCount();
   /**
    * <pre>
-   * Announcement of additional supported transports. Client can use any of
-   * the supported transports.
+   * DEPRECATED: Use 'supported_interfaces' instead.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
    */
-  java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
+  @java.lang.Deprecated java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
       getAdditionalInterfacesOrBuilderList();
   /**
    * <pre>
-   * Announcement of additional supported transports. Client can use any of
-   * the supported transports.
+   * DEPRECATED: Use 'supported_interfaces' instead.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15;</code>
+   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
    */
-  io.a2a.grpc.AgentInterfaceOrBuilder getAdditionalInterfacesOrBuilder(
+  @java.lang.Deprecated io.a2a.grpc.AgentInterfaceOrBuilder getAdditionalInterfacesOrBuilder(
       int index);
 
   /**
@@ -198,7 +279,7 @@ public interface AgentCardOrBuilder extends
    * Example: "1.0.0"
    * </pre>
    *
-   * <code>string version = 5;</code>
+   * <code>string version = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The version.
    */
   java.lang.String getVersion();
@@ -208,7 +289,7 @@ public interface AgentCardOrBuilder extends
    * Example: "1.0.0"
    * </pre>
    *
-   * <code>string version = 5;</code>
+   * <code>string version = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for version.
    */
   com.google.protobuf.ByteString
@@ -219,7 +300,16 @@ public interface AgentCardOrBuilder extends
    * A url to provide additional documentation about the agent.
    * </pre>
    *
-   * <code>string documentation_url = 6;</code>
+   * <code>optional string documentation_url = 6;</code>
+   * @return Whether the documentationUrl field is set.
+   */
+  boolean hasDocumentationUrl();
+  /**
+   * <pre>
+   * A url to provide additional documentation about the agent.
+   * </pre>
+   *
+   * <code>optional string documentation_url = 6;</code>
    * @return The documentationUrl.
    */
   java.lang.String getDocumentationUrl();
@@ -228,7 +318,7 @@ public interface AgentCardOrBuilder extends
    * A url to provide additional documentation about the agent.
    * </pre>
    *
-   * <code>string documentation_url = 6;</code>
+   * <code>optional string documentation_url = 6;</code>
    * @return The bytes for documentationUrl.
    */
   com.google.protobuf.ByteString
@@ -239,7 +329,7 @@ public interface AgentCardOrBuilder extends
    * A2A Capability set supported by the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
+   * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the capabilities field is set.
    */
   boolean hasCapabilities();
@@ -248,7 +338,7 @@ public interface AgentCardOrBuilder extends
    * A2A Capability set supported by the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
+   * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The capabilities.
    */
   io.a2a.grpc.AgentCapabilities getCapabilities();
@@ -257,7 +347,7 @@ public interface AgentCardOrBuilder extends
    * A2A Capability set supported by the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentCapabilities capabilities = 7;</code>
+   * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.AgentCapabilitiesOrBuilder getCapabilitiesOrBuilder();
 
@@ -319,18 +409,6 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
-   * This list can be seen as an OR of ANDs. Each object in the list describes
-   * one possible set of security requirements that must be present on a
-   * request. This allows specifying, for example, "callers must either use
-   * OAuth OR an API Key AND mTLS."
-   * Example:
-   * security {
-   * schemes { key: "oauth" value { list: ["read"] } }
-   * }
-   * security {
-   * schemes { key: "api-key" }
-   * schemes { key: "mtls" }
-   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -341,18 +419,6 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
-   * This list can be seen as an OR of ANDs. Each object in the list describes
-   * one possible set of security requirements that must be present on a
-   * request. This allows specifying, for example, "callers must either use
-   * OAuth OR an API Key AND mTLS."
-   * Example:
-   * security {
-   * schemes { key: "oauth" value { list: ["read"] } }
-   * }
-   * security {
-   * schemes { key: "api-key" }
-   * schemes { key: "mtls" }
-   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -362,18 +428,6 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
-   * This list can be seen as an OR of ANDs. Each object in the list describes
-   * one possible set of security requirements that must be present on a
-   * request. This allows specifying, for example, "callers must either use
-   * OAuth OR an API Key AND mTLS."
-   * Example:
-   * security {
-   * schemes { key: "oauth" value { list: ["read"] } }
-   * }
-   * security {
-   * schemes { key: "api-key" }
-   * schemes { key: "mtls" }
-   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -383,18 +437,6 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
-   * This list can be seen as an OR of ANDs. Each object in the list describes
-   * one possible set of security requirements that must be present on a
-   * request. This allows specifying, for example, "callers must either use
-   * OAuth OR an API Key AND mTLS."
-   * Example:
-   * security {
-   * schemes { key: "oauth" value { list: ["read"] } }
-   * }
-   * security {
-   * schemes { key: "api-key" }
-   * schemes { key: "mtls" }
-   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -405,18 +447,6 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
-   * This list can be seen as an OR of ANDs. Each object in the list describes
-   * one possible set of security requirements that must be present on a
-   * request. This allows specifying, for example, "callers must either use
-   * OAuth OR an API Key AND mTLS."
-   * Example:
-   * security {
-   * schemes { key: "oauth" value { list: ["read"] } }
-   * }
-   * security {
-   * schemes { key: "api-key" }
-   * schemes { key: "mtls" }
-   * }
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 9;</code>
@@ -428,10 +458,10 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * The set of interaction modes that the agent supports across all skills.
-   * This can be overridden per skill. Defined as mime types.
+   * This can be overridden per skill. Defined as media types.
    * </pre>
    *
-   * <code>repeated string default_input_modes = 10;</code>
+   * <code>repeated string default_input_modes = 10 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return A list containing the defaultInputModes.
    */
   java.util.List<java.lang.String>
@@ -440,10 +470,10 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * The set of interaction modes that the agent supports across all skills.
-   * This can be overridden per skill. Defined as mime types.
+   * This can be overridden per skill. Defined as media types.
    * </pre>
    *
-   * <code>repeated string default_input_modes = 10;</code>
+   * <code>repeated string default_input_modes = 10 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The count of defaultInputModes.
    */
   int getDefaultInputModesCount();
@@ -451,10 +481,10 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * The set of interaction modes that the agent supports across all skills.
-   * This can be overridden per skill. Defined as mime types.
+   * This can be overridden per skill. Defined as media types.
    * </pre>
    *
-   * <code>repeated string default_input_modes = 10;</code>
+   * <code>repeated string default_input_modes = 10 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the element to return.
    * @return The defaultInputModes at the given index.
    */
@@ -463,10 +493,10 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * The set of interaction modes that the agent supports across all skills.
-   * This can be overridden per skill. Defined as mime types.
+   * This can be overridden per skill. Defined as media types.
    * </pre>
    *
-   * <code>repeated string default_input_modes = 10;</code>
+   * <code>repeated string default_input_modes = 10 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the value to return.
    * @return The bytes of the defaultInputModes at the given index.
    */
@@ -475,39 +505,39 @@ io.a2a.grpc.SecurityScheme defaultValue);
 
   /**
    * <pre>
-   * The mime types supported as outputs from this agent.
+   * The media types supported as outputs from this agent.
    * </pre>
    *
-   * <code>repeated string default_output_modes = 11;</code>
+   * <code>repeated string default_output_modes = 11 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return A list containing the defaultOutputModes.
    */
   java.util.List<java.lang.String>
       getDefaultOutputModesList();
   /**
    * <pre>
-   * The mime types supported as outputs from this agent.
+   * The media types supported as outputs from this agent.
    * </pre>
    *
-   * <code>repeated string default_output_modes = 11;</code>
+   * <code>repeated string default_output_modes = 11 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The count of defaultOutputModes.
    */
   int getDefaultOutputModesCount();
   /**
    * <pre>
-   * The mime types supported as outputs from this agent.
+   * The media types supported as outputs from this agent.
    * </pre>
    *
-   * <code>repeated string default_output_modes = 11;</code>
+   * <code>repeated string default_output_modes = 11 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the element to return.
    * @return The defaultOutputModes at the given index.
    */
   java.lang.String getDefaultOutputModes(int index);
   /**
    * <pre>
-   * The mime types supported as outputs from this agent.
+   * The media types supported as outputs from this agent.
    * </pre>
    *
-   * <code>repeated string default_output_modes = 11;</code>
+   * <code>repeated string default_output_modes = 11 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the value to return.
    * @return The bytes of the defaultOutputModes at the given index.
    */
@@ -521,7 +551,7 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<io.a2a.grpc.AgentSkill> 
       getSkillsList();
@@ -532,7 +562,7 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.AgentSkill getSkills(int index);
   /**
@@ -542,7 +572,7 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getSkillsCount();
   /**
@@ -552,7 +582,7 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<? extends io.a2a.grpc.AgentSkillOrBuilder> 
       getSkillsOrBuilderList();
@@ -563,19 +593,26 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * agent is highly likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12;</code>
+   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.AgentSkillOrBuilder getSkillsOrBuilder(
       int index);
 
   /**
    * <pre>
-   * Whether the agent supports providing an extended agent card when
-   * the user is authenticated, i.e. is the card from .well-known
-   * different than the card from GetAgentCard.
+   * Whether the agent supports providing an extended agent card when authenticated.
    * </pre>
    *
-   * <code>bool supports_authenticated_extended_card = 13;</code>
+   * <code>optional bool supports_authenticated_extended_card = 13;</code>
+   * @return Whether the supportsAuthenticatedExtendedCard field is set.
+   */
+  boolean hasSupportsAuthenticatedExtendedCard();
+  /**
+   * <pre>
+   * Whether the agent supports providing an extended agent card when authenticated.
+   * </pre>
+   *
+   * <code>optional bool supports_authenticated_extended_card = 13;</code>
    * @return The supportsAuthenticatedExtendedCard.
    */
   boolean getSupportsAuthenticatedExtendedCard();
@@ -629,7 +666,16 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * An optional URL to an icon for the agent.
    * </pre>
    *
-   * <code>string icon_url = 18;</code>
+   * <code>optional string icon_url = 18;</code>
+   * @return Whether the iconUrl field is set.
+   */
+  boolean hasIconUrl();
+  /**
+   * <pre>
+   * An optional URL to an icon for the agent.
+   * </pre>
+   *
+   * <code>optional string icon_url = 18;</code>
    * @return The iconUrl.
    */
   java.lang.String getIconUrl();
@@ -638,7 +684,7 @@ io.a2a.grpc.SecurityScheme defaultValue);
    * An optional URL to an icon for the agent.
    * </pre>
    *
-   * <code>string icon_url = 18;</code>
+   * <code>optional string icon_url = 18;</code>
    * @return The bytes for iconUrl.
    */
   com.google.protobuf.ByteString

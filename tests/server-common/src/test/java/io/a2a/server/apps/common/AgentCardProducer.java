@@ -13,6 +13,8 @@ import jakarta.enterprise.inject.Produces;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
+import io.a2a.spec.TransportProtocol;
 import io.quarkus.arc.profile.IfBuildProfile;
 import org.junit.jupiter.api.Assertions;
 
@@ -27,11 +29,11 @@ public class AgentCardProducer {
     @PublicAgentCard
     public AgentCard agentCard() {
         String port = System.getProperty("test.agent.card.port", "8081");
+        String preferredTransport = loadPreferredTransportFromProperties();
 
         AgentCard.Builder builder = new AgentCard.Builder()
                 .name("test-card")
                 .description("A test agent card")
-                .url("http://localhost:" + port)
                 .version("1.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()
@@ -42,13 +44,8 @@ public class AgentCardProducer {
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(new ArrayList<>())
-                .protocolVersion("0.2.5");
-
-        String preferredTransport = loadPreferredTransportFromProperties();
-        if (preferredTransport != null) {
-            builder.preferredTransport(preferredTransport);
-        }
-
+                .protocolVersion("0.2.5")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, "http://localhost:" + port)));
         return builder.build();
     }
 

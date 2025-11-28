@@ -6,7 +6,7 @@
 package io.a2a.grpc;
 
 @com.google.protobuf.Generated
-public interface GetAgentCardRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.GetAgentCardRequest)
+public interface GetExtendedAgentCardRequestOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:a2a.v1.GetExtendedAgentCardRequest)
     com.google.protobuf.MessageOrBuilder {
 }

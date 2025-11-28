@@ -16,7 +16,7 @@ public interface TaskOrBuilder extends
    * new task.
    * </pre>
    *
-   * <code>string id = 1;</code>
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   java.lang.String getId();
@@ -26,7 +26,7 @@ public interface TaskOrBuilder extends
    * new task.
    * </pre>
    *
-   * <code>string id = 1;</code>
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   com.google.protobuf.ByteString
@@ -38,7 +38,7 @@ public interface TaskOrBuilder extends
    * (tasks and messages). Created by the A2A server.
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The contextId.
    */
   java.lang.String getContextId();
@@ -48,7 +48,7 @@ public interface TaskOrBuilder extends
    * (tasks and messages). Created by the A2A server.
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for contextId.
    */
   com.google.protobuf.ByteString
@@ -59,7 +59,7 @@ public interface TaskOrBuilder extends
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the status field is set.
    */
   boolean hasStatus();
@@ -68,7 +68,7 @@ public interface TaskOrBuilder extends
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The status.
    */
   io.a2a.grpc.TaskStatus getStatus();
@@ -77,7 +77,7 @@ public interface TaskOrBuilder extends
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder();
 
@@ -178,6 +178,8 @@ public interface TaskOrBuilder extends
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * A key/value object to store custom metadata about a task.
+   * Optional metadata for extensions. The key is an extension-specific
+   * identifier.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -188,6 +190,8 @@ public interface TaskOrBuilder extends
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * A key/value object to store custom metadata about a task.
+   * Optional metadata for extensions. The key is an extension-specific
+   * identifier.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -198,6 +202,8 @@ public interface TaskOrBuilder extends
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * A key/value object to store custom metadata about a task.
+   * Optional metadata for extensions. The key is an extension-specific
+   * identifier.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>

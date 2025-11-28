@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentExtension;
+import io.a2a.spec.AgentInterface;
 
 class A2AExtensionsTest {
 
@@ -76,7 +77,7 @@ class A2AExtensionsTest {
                 .name("Test Agent")
                 .description("Test Agent Description")
                 .version("1.0")
-                .url("http://test.com")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://test.com")))
                 .skills(Collections.emptyList())
                 .defaultInputModes(Arrays.asList("text/plain"))
                 .defaultOutputModes(Arrays.asList("text/plain"))
@@ -96,7 +97,7 @@ class A2AExtensionsTest {
                 .name("Test Agent")
                 .description("Test Agent Description")
                 .version("1.0")
-                .url("http://test.com")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://test.com")))
                 .skills(Collections.emptyList())
                 .defaultInputModes(Arrays.asList("text/plain"))
                 .defaultOutputModes(Arrays.asList("text/plain"))
@@ -115,7 +116,7 @@ class A2AExtensionsTest {
                 .name("Test Agent")
                 .description("Test Agent Description")
                 .version("1.0")
-                .url("http://test.com")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://test.com")))
                 .skills(Collections.emptyList())
                 .defaultInputModes(Arrays.asList("text/plain"))
                 .defaultOutputModes(Arrays.asList("text/plain"))

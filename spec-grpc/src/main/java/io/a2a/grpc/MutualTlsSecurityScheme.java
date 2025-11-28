@@ -8,6 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:MutualTLSSecurityScheme]
+ * Defines a security scheme using mTLS authentication.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.MutualTlsSecurityScheme}
@@ -53,7 +54,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object description_ = "";
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -74,7 +75,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -254,6 +255,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:MutualTLSSecurityScheme]
+   * Defines a security scheme using mTLS authentication.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.MutualTlsSecurityScheme}
@@ -396,7 +398,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object description_ = "";
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -416,7 +418,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -437,7 +439,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -454,7 +456,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -468,7 +470,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>

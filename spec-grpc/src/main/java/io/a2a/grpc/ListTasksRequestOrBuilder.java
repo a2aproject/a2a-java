@@ -12,8 +12,7 @@ public interface ListTasksRequestOrBuilder extends
 
   /**
    * <pre>
-   * Filter tasks by context ID to get tasks from a specific conversation
-   * or session.
+   * Filter tasks by context ID to get tasks from a specific conversation or session.
    * </pre>
    *
    * <code>string context_id = 1;</code>
@@ -22,8 +21,7 @@ public interface ListTasksRequestOrBuilder extends
   java.lang.String getContextId();
   /**
    * <pre>
-   * Filter tasks by context ID to get tasks from a specific conversation
-   * or session.
+   * Filter tasks by context ID to get tasks from a specific conversation or session.
    * </pre>
    *
    * <code>string context_id = 1;</code>
@@ -57,15 +55,24 @@ public interface ListTasksRequestOrBuilder extends
    * Defaults to 50 if not specified.
    * </pre>
    *
-   * <code>int32 page_size = 3;</code>
+   * <code>optional int32 page_size = 3;</code>
+   * @return Whether the pageSize field is set.
+   */
+  boolean hasPageSize();
+  /**
+   * <pre>
+   * Maximum number of tasks to return. Must be between 1 and 100.
+   * Defaults to 50 if not specified.
+   * </pre>
+   *
+   * <code>optional int32 page_size = 3;</code>
    * @return The pageSize.
    */
   int getPageSize();
 
   /**
    * <pre>
-   * Token for pagination. Use the next_page_token from a previous
-   * ListTasksResponse.
+   * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -74,8 +81,7 @@ public interface ListTasksRequestOrBuilder extends
   java.lang.String getPageToken();
   /**
    * <pre>
-   * Token for pagination. Use the next_page_token from a previous
-   * ListTasksResponse.
+   * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -86,44 +92,33 @@ public interface ListTasksRequestOrBuilder extends
 
   /**
    * <pre>
-   * Number of recent messages to include in each task's history.
-   * Must be non-negative. Defaults to 0 if not specified.
+   * The maximum number of messages to include in each task's history.
    * </pre>
    *
-   * <code>int32 history_length = 5;</code>
+   * <code>optional int32 history_length = 5;</code>
+   * @return Whether the historyLength field is set.
+   */
+  boolean hasHistoryLength();
+  /**
+   * <pre>
+   * The maximum number of messages to include in each task's history.
+   * </pre>
+   *
+   * <code>optional int32 history_length = 5;</code>
    * @return The historyLength.
    */
   int getHistoryLength();
 
   /**
    * <pre>
-   * Filter tasks updated after this timestamp. Only tasks with a last
-   * updated time greater than or equal to this value will be returned.
+   * Filter tasks updated after this timestamp (milliseconds since epoch).
+   * Only tasks with a last updated time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-   * @return Whether the lastUpdatedTime field is set.
+   * <code>int64 last_updated_after = 6;</code>
+   * @return The lastUpdatedAfter.
    */
-  boolean hasLastUpdatedTime();
-  /**
-   * <pre>
-   * Filter tasks updated after this timestamp. Only tasks with a last
-   * updated time greater than or equal to this value will be returned.
-   * </pre>
-   *
-   * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-   * @return The lastUpdatedTime.
-   */
-  com.google.protobuf.Timestamp getLastUpdatedTime();
-  /**
-   * <pre>
-   * Filter tasks updated after this timestamp. Only tasks with a last
-   * updated time greater than or equal to this value will be returned.
-   * </pre>
-   *
-   * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-   */
-  com.google.protobuf.TimestampOrBuilder getLastUpdatedTimeOrBuilder();
+  long getLastUpdatedAfter();
 
   /**
    * <pre>
@@ -131,8 +126,45 @@ public interface ListTasksRequestOrBuilder extends
    * Defaults to false to reduce payload size.
    * </pre>
    *
-   * <code>bool include_artifacts = 7;</code>
+   * <code>optional bool include_artifacts = 7;</code>
+   * @return Whether the includeArtifacts field is set.
+   */
+  boolean hasIncludeArtifacts();
+  /**
+   * <pre>
+   * Whether to include artifacts in the returned tasks.
+   * Defaults to false to reduce payload size.
+   * </pre>
+   *
+   * <code>optional bool include_artifacts = 7;</code>
    * @return The includeArtifacts.
    */
   boolean getIncludeArtifacts();
+
+  /**
+   * <pre>
+   * Request-specific metadata.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 8;</code>
+   * @return Whether the metadata field is set.
+   */
+  boolean hasMetadata();
+  /**
+   * <pre>
+   * Request-specific metadata.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 8;</code>
+   * @return The metadata.
+   */
+  com.google.protobuf.Struct getMetadata();
+  /**
+   * <pre>
+   * Request-specific metadata.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 8;</code>
+   */
+  com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 }

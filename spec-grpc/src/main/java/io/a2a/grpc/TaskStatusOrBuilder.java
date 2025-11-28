@@ -12,19 +12,19 @@ public interface TaskStatusOrBuilder extends
 
   /**
    * <pre>
-   * The current state of this task
+   * The current state of this task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1;</code>
+   * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The enum numeric value on the wire for state.
    */
   int getStateValue();
   /**
    * <pre>
-   * The current state of this task
+   * The current state of this task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1;</code>
+   * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The state.
    */
   io.a2a.grpc.TaskState getState();
@@ -34,31 +34,31 @@ public interface TaskStatusOrBuilder extends
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
-   * @return Whether the update field is set.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return Whether the message field is set.
    */
-  boolean hasUpdate();
+  boolean hasMessage();
   /**
    * <pre>
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
-   * @return The update.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return The message.
    */
-  io.a2a.grpc.Message getUpdate();
+  io.a2a.grpc.Message getMessage();
   /**
    * <pre>
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
+   * <code>.a2a.v1.Message message = 2;</code>
    */
-  io.a2a.grpc.MessageOrBuilder getUpdateOrBuilder();
+  io.a2a.grpc.MessageOrBuilder getMessageOrBuilder();
 
   /**
    * <pre>
-   * Timestamp when the status was recorded.
+   * ISO 8601 Timestamp when the status was recorded.
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
@@ -68,7 +68,7 @@ public interface TaskStatusOrBuilder extends
   boolean hasTimestamp();
   /**
    * <pre>
-   * Timestamp when the status was recorded.
+   * ISO 8601 Timestamp when the status was recorded.
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
@@ -78,7 +78,7 @@ public interface TaskStatusOrBuilder extends
   com.google.protobuf.Timestamp getTimestamp();
   /**
    * <pre>
-   * Timestamp when the status was recorded.
+   * ISO 8601 Timestamp when the status was recorded.
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *

@@ -8,6 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:ListTasksRequest]
+ * Parameters for listing tasks with optional filtering criteria.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.ListTasksRequest}
@@ -56,8 +57,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object contextId_ = "";
   /**
    * <pre>
-   * Filter tasks by context ID to get tasks from a specific conversation
-   * or session.
+   * Filter tasks by context ID to get tasks from a specific conversation or session.
    * </pre>
    *
    * <code>string context_id = 1;</code>
@@ -78,8 +78,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Filter tasks by context ID to get tasks from a specific conversation
-   * or session.
+   * Filter tasks by context ID to get tasks from a specific conversation or session.
    * </pre>
    *
    * <code>string context_id = 1;</code>
@@ -134,7 +133,20 @@ private static final long serialVersionUID = 0L;
    * Defaults to 50 if not specified.
    * </pre>
    *
-   * <code>int32 page_size = 3;</code>
+   * <code>optional int32 page_size = 3;</code>
+   * @return Whether the pageSize field is set.
+   */
+  @java.lang.Override
+  public boolean hasPageSize() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <pre>
+   * Maximum number of tasks to return. Must be between 1 and 100.
+   * Defaults to 50 if not specified.
+   * </pre>
+   *
+   * <code>optional int32 page_size = 3;</code>
    * @return The pageSize.
    */
   @java.lang.Override
@@ -147,8 +159,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object pageToken_ = "";
   /**
    * <pre>
-   * Token for pagination. Use the next_page_token from a previous
-   * ListTasksResponse.
+   * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -169,8 +180,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Token for pagination. Use the next_page_token from a previous
-   * ListTasksResponse.
+   * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -195,11 +205,22 @@ private static final long serialVersionUID = 0L;
   private int historyLength_ = 0;
   /**
    * <pre>
-   * Number of recent messages to include in each task's history.
-   * Must be non-negative. Defaults to 0 if not specified.
+   * The maximum number of messages to include in each task's history.
    * </pre>
    *
-   * <code>int32 history_length = 5;</code>
+   * <code>optional int32 history_length = 5;</code>
+   * @return Whether the historyLength field is set.
+   */
+  @java.lang.Override
+  public boolean hasHistoryLength() {
+    return ((bitField0_ & 0x00000002) != 0);
+  }
+  /**
+   * <pre>
+   * The maximum number of messages to include in each task's history.
+   * </pre>
+   *
+   * <code>optional int32 history_length = 5;</code>
    * @return The historyLength.
    */
   @java.lang.Override
@@ -207,45 +228,20 @@ private static final long serialVersionUID = 0L;
     return historyLength_;
   }
 
-  public static final int LAST_UPDATED_TIME_FIELD_NUMBER = 6;
-  private com.google.protobuf.Timestamp lastUpdatedTime_;
+  public static final int LAST_UPDATED_AFTER_FIELD_NUMBER = 6;
+  private long lastUpdatedAfter_ = 0L;
   /**
    * <pre>
-   * Filter tasks updated after this timestamp. Only tasks with a last
-   * updated time greater than or equal to this value will be returned.
+   * Filter tasks updated after this timestamp (milliseconds since epoch).
+   * Only tasks with a last updated time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-   * @return Whether the lastUpdatedTime field is set.
+   * <code>int64 last_updated_after = 6;</code>
+   * @return The lastUpdatedAfter.
    */
   @java.lang.Override
-  public boolean hasLastUpdatedTime() {
-    return ((bitField0_ & 0x00000001) != 0);
-  }
-  /**
-   * <pre>
-   * Filter tasks updated after this timestamp. Only tasks with a last
-   * updated time greater than or equal to this value will be returned.
-   * </pre>
-   *
-   * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-   * @return The lastUpdatedTime.
-   */
-  @java.lang.Override
-  public com.google.protobuf.Timestamp getLastUpdatedTime() {
-    return lastUpdatedTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : lastUpdatedTime_;
-  }
-  /**
-   * <pre>
-   * Filter tasks updated after this timestamp. Only tasks with a last
-   * updated time greater than or equal to this value will be returned.
-   * </pre>
-   *
-   * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-   */
-  @java.lang.Override
-  public com.google.protobuf.TimestampOrBuilder getLastUpdatedTimeOrBuilder() {
-    return lastUpdatedTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : lastUpdatedTime_;
+  public long getLastUpdatedAfter() {
+    return lastUpdatedAfter_;
   }
 
   public static final int INCLUDE_ARTIFACTS_FIELD_NUMBER = 7;
@@ -256,12 +252,63 @@ private static final long serialVersionUID = 0L;
    * Defaults to false to reduce payload size.
    * </pre>
    *
-   * <code>bool include_artifacts = 7;</code>
+   * <code>optional bool include_artifacts = 7;</code>
+   * @return Whether the includeArtifacts field is set.
+   */
+  @java.lang.Override
+  public boolean hasIncludeArtifacts() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   * <pre>
+   * Whether to include artifacts in the returned tasks.
+   * Defaults to false to reduce payload size.
+   * </pre>
+   *
+   * <code>optional bool include_artifacts = 7;</code>
    * @return The includeArtifacts.
    */
   @java.lang.Override
   public boolean getIncludeArtifacts() {
     return includeArtifacts_;
+  }
+
+  public static final int METADATA_FIELD_NUMBER = 8;
+  private com.google.protobuf.Struct metadata_;
+  /**
+   * <pre>
+   * Request-specific metadata.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 8;</code>
+   * @return Whether the metadata field is set.
+   */
+  @java.lang.Override
+  public boolean hasMetadata() {
+    return ((bitField0_ & 0x00000008) != 0);
+  }
+  /**
+   * <pre>
+   * Request-specific metadata.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 8;</code>
+   * @return The metadata.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Struct getMetadata() {
+    return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+  }
+  /**
+   * <pre>
+   * Request-specific metadata.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 8;</code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
+    return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -284,20 +331,23 @@ private static final long serialVersionUID = 0L;
     if (status_ != io.a2a.grpc.TaskState.TASK_STATE_UNSPECIFIED.getNumber()) {
       output.writeEnum(2, status_);
     }
-    if (pageSize_ != 0) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       output.writeInt32(3, pageSize_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(pageToken_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 4, pageToken_);
     }
-    if (historyLength_ != 0) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       output.writeInt32(5, historyLength_);
     }
-    if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(6, getLastUpdatedTime());
+    if (lastUpdatedAfter_ != 0L) {
+      output.writeInt64(6, lastUpdatedAfter_);
     }
-    if (includeArtifacts_ != false) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       output.writeBool(7, includeArtifacts_);
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      output.writeMessage(8, getMetadata());
     }
     getUnknownFields().writeTo(output);
   }
@@ -315,24 +365,28 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(2, status_);
     }
-    if (pageSize_ != 0) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(3, pageSize_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(pageToken_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(4, pageToken_);
     }
-    if (historyLength_ != 0) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(5, historyLength_);
     }
-    if (((bitField0_ & 0x00000001) != 0)) {
+    if (lastUpdatedAfter_ != 0L) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, getLastUpdatedTime());
+        .computeInt64Size(6, lastUpdatedAfter_);
     }
-    if (includeArtifacts_ != false) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(7, includeArtifacts_);
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(8, getMetadata());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -352,19 +406,30 @@ private static final long serialVersionUID = 0L;
     if (!getContextId()
         .equals(other.getContextId())) return false;
     if (status_ != other.status_) return false;
-    if (getPageSize()
-        != other.getPageSize()) return false;
+    if (hasPageSize() != other.hasPageSize()) return false;
+    if (hasPageSize()) {
+      if (getPageSize()
+          != other.getPageSize()) return false;
+    }
     if (!getPageToken()
         .equals(other.getPageToken())) return false;
-    if (getHistoryLength()
-        != other.getHistoryLength()) return false;
-    if (hasLastUpdatedTime() != other.hasLastUpdatedTime()) return false;
-    if (hasLastUpdatedTime()) {
-      if (!getLastUpdatedTime()
-          .equals(other.getLastUpdatedTime())) return false;
+    if (hasHistoryLength() != other.hasHistoryLength()) return false;
+    if (hasHistoryLength()) {
+      if (getHistoryLength()
+          != other.getHistoryLength()) return false;
     }
-    if (getIncludeArtifacts()
-        != other.getIncludeArtifacts()) return false;
+    if (getLastUpdatedAfter()
+        != other.getLastUpdatedAfter()) return false;
+    if (hasIncludeArtifacts() != other.hasIncludeArtifacts()) return false;
+    if (hasIncludeArtifacts()) {
+      if (getIncludeArtifacts()
+          != other.getIncludeArtifacts()) return false;
+    }
+    if (hasMetadata() != other.hasMetadata()) return false;
+    if (hasMetadata()) {
+      if (!getMetadata()
+          .equals(other.getMetadata())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -380,19 +445,28 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getContextId().hashCode();
     hash = (37 * hash) + STATUS_FIELD_NUMBER;
     hash = (53 * hash) + status_;
-    hash = (37 * hash) + PAGE_SIZE_FIELD_NUMBER;
-    hash = (53 * hash) + getPageSize();
+    if (hasPageSize()) {
+      hash = (37 * hash) + PAGE_SIZE_FIELD_NUMBER;
+      hash = (53 * hash) + getPageSize();
+    }
     hash = (37 * hash) + PAGE_TOKEN_FIELD_NUMBER;
     hash = (53 * hash) + getPageToken().hashCode();
-    hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
-    hash = (53 * hash) + getHistoryLength();
-    if (hasLastUpdatedTime()) {
-      hash = (37 * hash) + LAST_UPDATED_TIME_FIELD_NUMBER;
-      hash = (53 * hash) + getLastUpdatedTime().hashCode();
+    if (hasHistoryLength()) {
+      hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
+      hash = (53 * hash) + getHistoryLength();
     }
-    hash = (37 * hash) + INCLUDE_ARTIFACTS_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getIncludeArtifacts());
+    hash = (37 * hash) + LAST_UPDATED_AFTER_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+        getLastUpdatedAfter());
+    if (hasIncludeArtifacts()) {
+      hash = (37 * hash) + INCLUDE_ARTIFACTS_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getIncludeArtifacts());
+    }
+    if (hasMetadata()) {
+      hash = (37 * hash) + METADATA_FIELD_NUMBER;
+      hash = (53 * hash) + getMetadata().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -493,6 +567,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:ListTasksRequest]
+   * Parameters for listing tasks with optional filtering criteria.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.ListTasksRequest}
@@ -527,7 +602,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
-        internalGetLastUpdatedTimeFieldBuilder();
+        internalGetMetadataFieldBuilder();
       }
     }
     @java.lang.Override
@@ -539,12 +614,13 @@ private static final long serialVersionUID = 0L;
       pageSize_ = 0;
       pageToken_ = "";
       historyLength_ = 0;
-      lastUpdatedTime_ = null;
-      if (lastUpdatedTimeBuilder_ != null) {
-        lastUpdatedTimeBuilder_.dispose();
-        lastUpdatedTimeBuilder_ = null;
-      }
+      lastUpdatedAfter_ = 0L;
       includeArtifacts_ = false;
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
+        metadataBuilder_ = null;
+      }
       return this;
     }
 
@@ -584,24 +660,30 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.status_ = status_;
       }
+      int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.pageSize_ = pageSize_;
+        to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.pageToken_ = pageToken_;
       }
       if (((from_bitField0_ & 0x00000010) != 0)) {
         result.historyLength_ = historyLength_;
+        to_bitField0_ |= 0x00000002;
       }
-      int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000020) != 0)) {
-        result.lastUpdatedTime_ = lastUpdatedTimeBuilder_ == null
-            ? lastUpdatedTime_
-            : lastUpdatedTimeBuilder_.build();
-        to_bitField0_ |= 0x00000001;
+        result.lastUpdatedAfter_ = lastUpdatedAfter_;
       }
       if (((from_bitField0_ & 0x00000040) != 0)) {
         result.includeArtifacts_ = includeArtifacts_;
+        to_bitField0_ |= 0x00000004;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.metadata_ = metadataBuilder_ == null
+            ? metadata_
+            : metadataBuilder_.build();
+        to_bitField0_ |= 0x00000008;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -626,7 +708,7 @@ private static final long serialVersionUID = 0L;
       if (other.status_ != 0) {
         setStatusValue(other.getStatusValue());
       }
-      if (other.getPageSize() != 0) {
+      if (other.hasPageSize()) {
         setPageSize(other.getPageSize());
       }
       if (!other.getPageToken().isEmpty()) {
@@ -634,14 +716,17 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000008;
         onChanged();
       }
-      if (other.getHistoryLength() != 0) {
+      if (other.hasHistoryLength()) {
         setHistoryLength(other.getHistoryLength());
       }
-      if (other.hasLastUpdatedTime()) {
-        mergeLastUpdatedTime(other.getLastUpdatedTime());
+      if (other.getLastUpdatedAfter() != 0L) {
+        setLastUpdatedAfter(other.getLastUpdatedAfter());
       }
-      if (other.getIncludeArtifacts() != false) {
+      if (other.hasIncludeArtifacts()) {
         setIncludeArtifacts(other.getIncludeArtifacts());
+      }
+      if (other.hasMetadata()) {
+        mergeMetadata(other.getMetadata());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -694,18 +779,23 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000010;
               break;
             } // case 40
-            case 50: {
-              input.readMessage(
-                  internalGetLastUpdatedTimeFieldBuilder().getBuilder(),
-                  extensionRegistry);
+            case 48: {
+              lastUpdatedAfter_ = input.readInt64();
               bitField0_ |= 0x00000020;
               break;
-            } // case 50
+            } // case 48
             case 56: {
               includeArtifacts_ = input.readBool();
               bitField0_ |= 0x00000040;
               break;
             } // case 56
+            case 66: {
+              input.readMessage(
+                  internalGetMetadataFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000080;
+              break;
+            } // case 66
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -726,8 +816,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object contextId_ = "";
     /**
      * <pre>
-     * Filter tasks by context ID to get tasks from a specific conversation
-     * or session.
+     * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
      * <code>string context_id = 1;</code>
@@ -747,8 +836,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Filter tasks by context ID to get tasks from a specific conversation
-     * or session.
+     * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
      * <code>string context_id = 1;</code>
@@ -769,8 +857,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Filter tasks by context ID to get tasks from a specific conversation
-     * or session.
+     * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
      * <code>string context_id = 1;</code>
@@ -787,8 +874,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Filter tasks by context ID to get tasks from a specific conversation
-     * or session.
+     * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
      * <code>string context_id = 1;</code>
@@ -802,8 +888,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Filter tasks by context ID to get tasks from a specific conversation
-     * or session.
+     * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
      * <code>string context_id = 1;</code>
@@ -898,7 +983,20 @@ private static final long serialVersionUID = 0L;
      * Defaults to 50 if not specified.
      * </pre>
      *
-     * <code>int32 page_size = 3;</code>
+     * <code>optional int32 page_size = 3;</code>
+     * @return Whether the pageSize field is set.
+     */
+    @java.lang.Override
+    public boolean hasPageSize() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+    /**
+     * <pre>
+     * Maximum number of tasks to return. Must be between 1 and 100.
+     * Defaults to 50 if not specified.
+     * </pre>
+     *
+     * <code>optional int32 page_size = 3;</code>
      * @return The pageSize.
      */
     @java.lang.Override
@@ -911,7 +1009,7 @@ private static final long serialVersionUID = 0L;
      * Defaults to 50 if not specified.
      * </pre>
      *
-     * <code>int32 page_size = 3;</code>
+     * <code>optional int32 page_size = 3;</code>
      * @param value The pageSize to set.
      * @return This builder for chaining.
      */
@@ -928,7 +1026,7 @@ private static final long serialVersionUID = 0L;
      * Defaults to 50 if not specified.
      * </pre>
      *
-     * <code>int32 page_size = 3;</code>
+     * <code>optional int32 page_size = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearPageSize() {
@@ -941,8 +1039,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object pageToken_ = "";
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous
-     * ListTasksResponse.
+     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -962,8 +1059,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous
-     * ListTasksResponse.
+     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -984,8 +1080,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous
-     * ListTasksResponse.
+     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -1002,8 +1097,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous
-     * ListTasksResponse.
+     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -1017,8 +1111,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous
-     * ListTasksResponse.
+     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
      * </pre>
      *
      * <code>string page_token = 4;</code>
@@ -1038,11 +1131,22 @@ private static final long serialVersionUID = 0L;
     private int historyLength_ ;
     /**
      * <pre>
-     * Number of recent messages to include in each task's history.
-     * Must be non-negative. Defaults to 0 if not specified.
+     * The maximum number of messages to include in each task's history.
      * </pre>
      *
-     * <code>int32 history_length = 5;</code>
+     * <code>optional int32 history_length = 5;</code>
+     * @return Whether the historyLength field is set.
+     */
+    @java.lang.Override
+    public boolean hasHistoryLength() {
+      return ((bitField0_ & 0x00000010) != 0);
+    }
+    /**
+     * <pre>
+     * The maximum number of messages to include in each task's history.
+     * </pre>
+     *
+     * <code>optional int32 history_length = 5;</code>
      * @return The historyLength.
      */
     @java.lang.Override
@@ -1051,11 +1155,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Number of recent messages to include in each task's history.
-     * Must be non-negative. Defaults to 0 if not specified.
+     * The maximum number of messages to include in each task's history.
      * </pre>
      *
-     * <code>int32 history_length = 5;</code>
+     * <code>optional int32 history_length = 5;</code>
      * @param value The historyLength to set.
      * @return This builder for chaining.
      */
@@ -1068,11 +1171,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Number of recent messages to include in each task's history.
-     * Must be non-negative. Defaults to 0 if not specified.
+     * The maximum number of messages to include in each task's history.
      * </pre>
      *
-     * <code>int32 history_length = 5;</code>
+     * <code>optional int32 history_length = 5;</code>
      * @return This builder for chaining.
      */
     public Builder clearHistoryLength() {
@@ -1082,170 +1184,51 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private com.google.protobuf.Timestamp lastUpdatedTime_;
-    private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> lastUpdatedTimeBuilder_;
+    private long lastUpdatedAfter_ ;
     /**
      * <pre>
-     * Filter tasks updated after this timestamp. Only tasks with a last
-     * updated time greater than or equal to this value will be returned.
+     * Filter tasks updated after this timestamp (milliseconds since epoch).
+     * Only tasks with a last updated time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-     * @return Whether the lastUpdatedTime field is set.
+     * <code>int64 last_updated_after = 6;</code>
+     * @return The lastUpdatedAfter.
      */
-    public boolean hasLastUpdatedTime() {
-      return ((bitField0_ & 0x00000020) != 0);
+    @java.lang.Override
+    public long getLastUpdatedAfter() {
+      return lastUpdatedAfter_;
     }
     /**
      * <pre>
-     * Filter tasks updated after this timestamp. Only tasks with a last
-     * updated time greater than or equal to this value will be returned.
+     * Filter tasks updated after this timestamp (milliseconds since epoch).
+     * Only tasks with a last updated time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-     * @return The lastUpdatedTime.
+     * <code>int64 last_updated_after = 6;</code>
+     * @param value The lastUpdatedAfter to set.
+     * @return This builder for chaining.
      */
-    public com.google.protobuf.Timestamp getLastUpdatedTime() {
-      if (lastUpdatedTimeBuilder_ == null) {
-        return lastUpdatedTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : lastUpdatedTime_;
-      } else {
-        return lastUpdatedTimeBuilder_.getMessage();
-      }
-    }
-    /**
-     * <pre>
-     * Filter tasks updated after this timestamp. Only tasks with a last
-     * updated time greater than or equal to this value will be returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-     */
-    public Builder setLastUpdatedTime(com.google.protobuf.Timestamp value) {
-      if (lastUpdatedTimeBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        lastUpdatedTime_ = value;
-      } else {
-        lastUpdatedTimeBuilder_.setMessage(value);
-      }
+    public Builder setLastUpdatedAfter(long value) {
+
+      lastUpdatedAfter_ = value;
       bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * Filter tasks updated after this timestamp. Only tasks with a last
-     * updated time greater than or equal to this value will be returned.
+     * Filter tasks updated after this timestamp (milliseconds since epoch).
+     * Only tasks with a last updated time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
+     * <code>int64 last_updated_after = 6;</code>
+     * @return This builder for chaining.
      */
-    public Builder setLastUpdatedTime(
-        com.google.protobuf.Timestamp.Builder builderForValue) {
-      if (lastUpdatedTimeBuilder_ == null) {
-        lastUpdatedTime_ = builderForValue.build();
-      } else {
-        lastUpdatedTimeBuilder_.setMessage(builderForValue.build());
-      }
-      bitField0_ |= 0x00000020;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * Filter tasks updated after this timestamp. Only tasks with a last
-     * updated time greater than or equal to this value will be returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-     */
-    public Builder mergeLastUpdatedTime(com.google.protobuf.Timestamp value) {
-      if (lastUpdatedTimeBuilder_ == null) {
-        if (((bitField0_ & 0x00000020) != 0) &&
-          lastUpdatedTime_ != null &&
-          lastUpdatedTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
-          getLastUpdatedTimeBuilder().mergeFrom(value);
-        } else {
-          lastUpdatedTime_ = value;
-        }
-      } else {
-        lastUpdatedTimeBuilder_.mergeFrom(value);
-      }
-      if (lastUpdatedTime_ != null) {
-        bitField0_ |= 0x00000020;
-        onChanged();
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * Filter tasks updated after this timestamp. Only tasks with a last
-     * updated time greater than or equal to this value will be returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-     */
-    public Builder clearLastUpdatedTime() {
+    public Builder clearLastUpdatedAfter() {
       bitField0_ = (bitField0_ & ~0x00000020);
-      lastUpdatedTime_ = null;
-      if (lastUpdatedTimeBuilder_ != null) {
-        lastUpdatedTimeBuilder_.dispose();
-        lastUpdatedTimeBuilder_ = null;
-      }
+      lastUpdatedAfter_ = 0L;
       onChanged();
       return this;
-    }
-    /**
-     * <pre>
-     * Filter tasks updated after this timestamp. Only tasks with a last
-     * updated time greater than or equal to this value will be returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-     */
-    public com.google.protobuf.Timestamp.Builder getLastUpdatedTimeBuilder() {
-      bitField0_ |= 0x00000020;
-      onChanged();
-      return internalGetLastUpdatedTimeFieldBuilder().getBuilder();
-    }
-    /**
-     * <pre>
-     * Filter tasks updated after this timestamp. Only tasks with a last
-     * updated time greater than or equal to this value will be returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-     */
-    public com.google.protobuf.TimestampOrBuilder getLastUpdatedTimeOrBuilder() {
-      if (lastUpdatedTimeBuilder_ != null) {
-        return lastUpdatedTimeBuilder_.getMessageOrBuilder();
-      } else {
-        return lastUpdatedTime_ == null ?
-            com.google.protobuf.Timestamp.getDefaultInstance() : lastUpdatedTime_;
-      }
-    }
-    /**
-     * <pre>
-     * Filter tasks updated after this timestamp. Only tasks with a last
-     * updated time greater than or equal to this value will be returned.
-     * </pre>
-     *
-     * <code>.google.protobuf.Timestamp last_updated_time = 6;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilder<
-        com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 
-        internalGetLastUpdatedTimeFieldBuilder() {
-      if (lastUpdatedTimeBuilder_ == null) {
-        lastUpdatedTimeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-            com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder>(
-                getLastUpdatedTime(),
-                getParentForChildren(),
-                isClean());
-        lastUpdatedTime_ = null;
-      }
-      return lastUpdatedTimeBuilder_;
     }
 
     private boolean includeArtifacts_ ;
@@ -1255,7 +1238,20 @@ private static final long serialVersionUID = 0L;
      * Defaults to false to reduce payload size.
      * </pre>
      *
-     * <code>bool include_artifacts = 7;</code>
+     * <code>optional bool include_artifacts = 7;</code>
+     * @return Whether the includeArtifacts field is set.
+     */
+    @java.lang.Override
+    public boolean hasIncludeArtifacts() {
+      return ((bitField0_ & 0x00000040) != 0);
+    }
+    /**
+     * <pre>
+     * Whether to include artifacts in the returned tasks.
+     * Defaults to false to reduce payload size.
+     * </pre>
+     *
+     * <code>optional bool include_artifacts = 7;</code>
      * @return The includeArtifacts.
      */
     @java.lang.Override
@@ -1268,7 +1264,7 @@ private static final long serialVersionUID = 0L;
      * Defaults to false to reduce payload size.
      * </pre>
      *
-     * <code>bool include_artifacts = 7;</code>
+     * <code>optional bool include_artifacts = 7;</code>
      * @param value The includeArtifacts to set.
      * @return This builder for chaining.
      */
@@ -1285,7 +1281,7 @@ private static final long serialVersionUID = 0L;
      * Defaults to false to reduce payload size.
      * </pre>
      *
-     * <code>bool include_artifacts = 7;</code>
+     * <code>optional bool include_artifacts = 7;</code>
      * @return This builder for chaining.
      */
     public Builder clearIncludeArtifacts() {
@@ -1293,6 +1289,163 @@ private static final long serialVersionUID = 0L;
       includeArtifacts_ = false;
       onChanged();
       return this;
+    }
+
+    private com.google.protobuf.Struct metadata_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
+    /**
+     * <pre>
+     * Request-specific metadata.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 8;</code>
+     * @return Whether the metadata field is set.
+     */
+    public boolean hasMetadata() {
+      return ((bitField0_ & 0x00000080) != 0);
+    }
+    /**
+     * <pre>
+     * Request-specific metadata.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 8;</code>
+     * @return The metadata.
+     */
+    public com.google.protobuf.Struct getMetadata() {
+      if (metadataBuilder_ == null) {
+        return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+      } else {
+        return metadataBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Request-specific metadata.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 8;</code>
+     */
+    public Builder setMetadata(com.google.protobuf.Struct value) {
+      if (metadataBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        metadata_ = value;
+      } else {
+        metadataBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Request-specific metadata.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 8;</code>
+     */
+    public Builder setMetadata(
+        com.google.protobuf.Struct.Builder builderForValue) {
+      if (metadataBuilder_ == null) {
+        metadata_ = builderForValue.build();
+      } else {
+        metadataBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Request-specific metadata.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 8;</code>
+     */
+    public Builder mergeMetadata(com.google.protobuf.Struct value) {
+      if (metadataBuilder_ == null) {
+        if (((bitField0_ & 0x00000080) != 0) &&
+          metadata_ != null &&
+          metadata_ != com.google.protobuf.Struct.getDefaultInstance()) {
+          getMetadataBuilder().mergeFrom(value);
+        } else {
+          metadata_ = value;
+        }
+      } else {
+        metadataBuilder_.mergeFrom(value);
+      }
+      if (metadata_ != null) {
+        bitField0_ |= 0x00000080;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Request-specific metadata.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 8;</code>
+     */
+    public Builder clearMetadata() {
+      bitField0_ = (bitField0_ & ~0x00000080);
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
+        metadataBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Request-specific metadata.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 8;</code>
+     */
+    public com.google.protobuf.Struct.Builder getMetadataBuilder() {
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return internalGetMetadataFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Request-specific metadata.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 8;</code>
+     */
+    public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
+      if (metadataBuilder_ != null) {
+        return metadataBuilder_.getMessageOrBuilder();
+      } else {
+        return metadata_ == null ?
+            com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+      }
+    }
+    /**
+     * <pre>
+     * Request-specific metadata.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 8;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        internalGetMetadataFieldBuilder() {
+      if (metadataBuilder_ == null) {
+        metadataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>(
+                getMetadata(),
+                getParentForChildren(),
+                isClean());
+        metadata_ = null;
+      }
+      return metadataBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.ListTasksRequest)

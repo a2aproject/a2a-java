@@ -12,21 +12,21 @@ public interface MessageOrBuilder extends
 
   /**
    * <pre>
-   * The unique identifier (e.g. UUID)of the message. This is required and
+   * The unique identifier (e.g. UUID) of the message. This is required and
    * created by the message creator.
    * </pre>
    *
-   * <code>string message_id = 1;</code>
+   * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The messageId.
    */
   java.lang.String getMessageId();
   /**
    * <pre>
-   * The unique identifier (e.g. UUID)of the message. This is required and
+   * The unique identifier (e.g. UUID) of the message. This is required and
    * created by the message creator.
    * </pre>
    *
-   * <code>string message_id = 1;</code>
+   * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for messageId.
    */
   com.google.protobuf.ByteString
@@ -78,19 +78,19 @@ public interface MessageOrBuilder extends
 
   /**
    * <pre>
-   * A role for the message.
+   * Identifies the sender of the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4;</code>
+   * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The enum numeric value on the wire for role.
    */
   int getRoleValue();
   /**
    * <pre>
-   * A role for the message.
+   * Identifies the sender of the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4;</code>
+   * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The role.
    */
   io.a2a.grpc.Role getRole();
@@ -101,7 +101,7 @@ public interface MessageOrBuilder extends
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<io.a2a.grpc.Part> 
       getPartsList();
@@ -111,7 +111,7 @@ public interface MessageOrBuilder extends
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.Part getParts(int index);
   /**
@@ -120,7 +120,7 @@ public interface MessageOrBuilder extends
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getPartsCount();
   /**
@@ -129,7 +129,7 @@ public interface MessageOrBuilder extends
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
       getPartsOrBuilderList();
@@ -139,7 +139,7 @@ public interface MessageOrBuilder extends
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
       int index);

@@ -24,7 +24,7 @@ We copy https://github.com/a2aproject/A2A/blob/main/specification/grpc/a2a.proto
 ```
 option java_package = "io.a2a.grpc";
 ```
-Then build the `spec-grpc` module with `mvn clean install -Pproto-compile` to regenerate the gRPC classes in the `io.a2a.grpc` package.
+Then build the `spec-grpc` module with `mvn clean install  -Dskip.protobuf.generate=false` to regenerate the gRPC classes in the `io.a2a.grpc` package.
 
 ## Examples
 

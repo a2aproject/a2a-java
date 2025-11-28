@@ -12,19 +12,19 @@ public interface TaskArtifactUpdateEventOrBuilder extends
 
   /**
    * <pre>
-   * The id of the task for this artifact
+   * The id of the task for this artifact.
    * </pre>
    *
-   * <code>string task_id = 1;</code>
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The taskId.
    */
   java.lang.String getTaskId();
   /**
    * <pre>
-   * The id of the task for this artifact
+   * The id of the task for this artifact.
    * </pre>
    *
-   * <code>string task_id = 1;</code>
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
@@ -32,19 +32,19 @@ public interface TaskArtifactUpdateEventOrBuilder extends
 
   /**
    * <pre>
-   * The id of the context that this task belongs too
+   * The id of the context that this task belongs to.
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The contextId.
    */
   java.lang.String getContextId();
   /**
    * <pre>
-   * The id of the context that this task belongs too
+   * The id of the context that this task belongs to.
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for contextId.
    */
   com.google.protobuf.ByteString
@@ -52,34 +52,35 @@ public interface TaskArtifactUpdateEventOrBuilder extends
 
   /**
    * <pre>
-   * The artifact itself
+   * The artifact that was generated or updated.
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3;</code>
+   * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the artifact field is set.
    */
   boolean hasArtifact();
   /**
    * <pre>
-   * The artifact itself
+   * The artifact that was generated or updated.
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3;</code>
+   * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The artifact.
    */
   io.a2a.grpc.Artifact getArtifact();
   /**
    * <pre>
-   * The artifact itself
+   * The artifact that was generated or updated.
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3;</code>
+   * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.ArtifactOrBuilder getArtifactOrBuilder();
 
   /**
    * <pre>
-   * Whether this should be appended to a prior one produced
+   * If true, the content of this artifact should be appended to a previously
+   * sent artifact with the same ID.
    * </pre>
    *
    * <code>bool append = 4;</code>
@@ -89,7 +90,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
 
   /**
    * <pre>
-   * Whether this represents the last part of an artifact
+   * If true, this is the final chunk of the artifact.
    * </pre>
    *
    * <code>bool last_chunk = 5;</code>

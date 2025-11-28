@@ -8,15 +8,16 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:SetTaskPushNotificationConfigRequest]
+ * Represents a request for the `tasks/pushNotificationConfig/set` method.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.CreateTaskPushNotificationConfigRequest}
+ * Protobuf type {@code a2a.v1.SetTaskPushNotificationConfigRequest}
  */
 @com.google.protobuf.Generated
-public final class CreateTaskPushNotificationConfigRequest extends
+public final class SetTaskPushNotificationConfigRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.CreateTaskPushNotificationConfigRequest)
-    CreateTaskPushNotificationConfigRequestOrBuilder {
+    // @@protoc_insertion_point(message_implements:a2a.v1.SetTaskPushNotificationConfigRequest)
+    SetTaskPushNotificationConfigRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -25,28 +26,28 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 31,
       /* patch= */ 1,
       /* suffix= */ "",
-      CreateTaskPushNotificationConfigRequest.class.getName());
+      SetTaskPushNotificationConfigRequest.class.getName());
   }
-  // Use CreateTaskPushNotificationConfigRequest.newBuilder() to construct.
-  private CreateTaskPushNotificationConfigRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use SetTaskPushNotificationConfigRequest.newBuilder() to construct.
+  private SetTaskPushNotificationConfigRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private CreateTaskPushNotificationConfigRequest() {
+  private SetTaskPushNotificationConfigRequest() {
     parent_ = "";
     configId_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            io.a2a.grpc.CreateTaskPushNotificationConfigRequest.class, io.a2a.grpc.CreateTaskPushNotificationConfigRequest.Builder.class);
+            io.a2a.grpc.SetTaskPushNotificationConfigRequest.class, io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder.class);
   }
 
   private int bitField0_;
@@ -236,10 +237,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof io.a2a.grpc.CreateTaskPushNotificationConfigRequest)) {
+    if (!(obj instanceof io.a2a.grpc.SetTaskPushNotificationConfigRequest)) {
       return super.equals(obj);
     }
-    io.a2a.grpc.CreateTaskPushNotificationConfigRequest other = (io.a2a.grpc.CreateTaskPushNotificationConfigRequest) obj;
+    io.a2a.grpc.SetTaskPushNotificationConfigRequest other = (io.a2a.grpc.SetTaskPushNotificationConfigRequest) obj;
 
     if (!getParent()
         .equals(other.getParent())) return false;
@@ -274,44 +275,44 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(byte[] data)
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(java.io.InputStream input)
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -319,26 +320,26 @@ private static final long serialVersionUID = 0L;
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseDelimitedFrom(java.io.InputStream input)
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseDelimitedFrom(
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest parseFrom(
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -351,7 +352,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(io.a2a.grpc.CreateTaskPushNotificationConfigRequest prototype) {
+  public static Builder newBuilder(io.a2a.grpc.SetTaskPushNotificationConfigRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -369,28 +370,29 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:SetTaskPushNotificationConfigRequest]
+   * Represents a request for the `tasks/pushNotificationConfig/set` method.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.CreateTaskPushNotificationConfigRequest}
+   * Protobuf type {@code a2a.v1.SetTaskPushNotificationConfigRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.CreateTaskPushNotificationConfigRequest)
-      io.a2a.grpc.CreateTaskPushNotificationConfigRequestOrBuilder {
+      // @@protoc_insertion_point(builder_implements:a2a.v1.SetTaskPushNotificationConfigRequest)
+      io.a2a.grpc.SetTaskPushNotificationConfigRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.a2a.grpc.CreateTaskPushNotificationConfigRequest.class, io.a2a.grpc.CreateTaskPushNotificationConfigRequest.Builder.class);
+              io.a2a.grpc.SetTaskPushNotificationConfigRequest.class, io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder.class);
     }
 
-    // Construct using io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder()
+    // Construct using io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -423,17 +425,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_descriptor;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.CreateTaskPushNotificationConfigRequest getDefaultInstanceForType() {
-      return io.a2a.grpc.CreateTaskPushNotificationConfigRequest.getDefaultInstance();
+    public io.a2a.grpc.SetTaskPushNotificationConfigRequest getDefaultInstanceForType() {
+      return io.a2a.grpc.SetTaskPushNotificationConfigRequest.getDefaultInstance();
     }
 
     @java.lang.Override
-    public io.a2a.grpc.CreateTaskPushNotificationConfigRequest build() {
-      io.a2a.grpc.CreateTaskPushNotificationConfigRequest result = buildPartial();
+    public io.a2a.grpc.SetTaskPushNotificationConfigRequest build() {
+      io.a2a.grpc.SetTaskPushNotificationConfigRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -441,14 +443,14 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.CreateTaskPushNotificationConfigRequest buildPartial() {
-      io.a2a.grpc.CreateTaskPushNotificationConfigRequest result = new io.a2a.grpc.CreateTaskPushNotificationConfigRequest(this);
+    public io.a2a.grpc.SetTaskPushNotificationConfigRequest buildPartial() {
+      io.a2a.grpc.SetTaskPushNotificationConfigRequest result = new io.a2a.grpc.SetTaskPushNotificationConfigRequest(this);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    private void buildPartial0(io.a2a.grpc.CreateTaskPushNotificationConfigRequest result) {
+    private void buildPartial0(io.a2a.grpc.SetTaskPushNotificationConfigRequest result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.parent_ = parent_;
@@ -468,16 +470,16 @@ private static final long serialVersionUID = 0L;
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof io.a2a.grpc.CreateTaskPushNotificationConfigRequest) {
-        return mergeFrom((io.a2a.grpc.CreateTaskPushNotificationConfigRequest)other);
+      if (other instanceof io.a2a.grpc.SetTaskPushNotificationConfigRequest) {
+        return mergeFrom((io.a2a.grpc.SetTaskPushNotificationConfigRequest)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(io.a2a.grpc.CreateTaskPushNotificationConfigRequest other) {
-      if (other == io.a2a.grpc.CreateTaskPushNotificationConfigRequest.getDefaultInstance()) return this;
+    public Builder mergeFrom(io.a2a.grpc.SetTaskPushNotificationConfigRequest other) {
+      if (other == io.a2a.grpc.SetTaskPushNotificationConfigRequest.getDefaultInstance()) return this;
       if (!other.getParent().isEmpty()) {
         parent_ = other.parent_;
         bitField0_ |= 0x00000001;
@@ -897,23 +899,23 @@ private static final long serialVersionUID = 0L;
       return configBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.CreateTaskPushNotificationConfigRequest)
+    // @@protoc_insertion_point(builder_scope:a2a.v1.SetTaskPushNotificationConfigRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.CreateTaskPushNotificationConfigRequest)
-  private static final io.a2a.grpc.CreateTaskPushNotificationConfigRequest DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:a2a.v1.SetTaskPushNotificationConfigRequest)
+  private static final io.a2a.grpc.SetTaskPushNotificationConfigRequest DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new io.a2a.grpc.CreateTaskPushNotificationConfigRequest();
+    DEFAULT_INSTANCE = new io.a2a.grpc.SetTaskPushNotificationConfigRequest();
   }
 
-  public static io.a2a.grpc.CreateTaskPushNotificationConfigRequest getDefaultInstance() {
+  public static io.a2a.grpc.SetTaskPushNotificationConfigRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<CreateTaskPushNotificationConfigRequest>
-      PARSER = new com.google.protobuf.AbstractParser<CreateTaskPushNotificationConfigRequest>() {
+  private static final com.google.protobuf.Parser<SetTaskPushNotificationConfigRequest>
+      PARSER = new com.google.protobuf.AbstractParser<SetTaskPushNotificationConfigRequest>() {
     @java.lang.Override
-    public CreateTaskPushNotificationConfigRequest parsePartialFrom(
+    public SetTaskPushNotificationConfigRequest parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -932,17 +934,17 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public static com.google.protobuf.Parser<CreateTaskPushNotificationConfigRequest> parser() {
+  public static com.google.protobuf.Parser<SetTaskPushNotificationConfigRequest> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<CreateTaskPushNotificationConfigRequest> getParserForType() {
+  public com.google.protobuf.Parser<SetTaskPushNotificationConfigRequest> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public io.a2a.grpc.CreateTaskPushNotificationConfigRequest getDefaultInstanceForType() {
+  public io.a2a.grpc.SetTaskPushNotificationConfigRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

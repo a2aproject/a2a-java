@@ -57,10 +57,10 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object taskId_ = "";
   /**
    * <pre>
-   * The id of the task for this artifact
+   * The id of the task for this artifact.
    * </pre>
    *
-   * <code>string task_id = 1;</code>
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The taskId.
    */
   @java.lang.Override
@@ -78,10 +78,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The id of the task for this artifact
+   * The id of the task for this artifact.
    * </pre>
    *
-   * <code>string task_id = 1;</code>
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for taskId.
    */
   @java.lang.Override
@@ -104,10 +104,10 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object contextId_ = "";
   /**
    * <pre>
-   * The id of the context that this task belongs too
+   * The id of the context that this task belongs to.
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The contextId.
    */
   @java.lang.Override
@@ -125,10 +125,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The id of the context that this task belongs too
+   * The id of the context that this task belongs to.
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for contextId.
    */
   @java.lang.Override
@@ -150,10 +150,10 @@ private static final long serialVersionUID = 0L;
   private io.a2a.grpc.Artifact artifact_;
   /**
    * <pre>
-   * The artifact itself
+   * The artifact that was generated or updated.
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3;</code>
+   * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the artifact field is set.
    */
   @java.lang.Override
@@ -162,10 +162,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The artifact itself
+   * The artifact that was generated or updated.
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3;</code>
+   * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The artifact.
    */
   @java.lang.Override
@@ -174,10 +174,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The artifact itself
+   * The artifact that was generated or updated.
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3;</code>
+   * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.ArtifactOrBuilder getArtifactOrBuilder() {
@@ -188,7 +188,8 @@ private static final long serialVersionUID = 0L;
   private boolean append_ = false;
   /**
    * <pre>
-   * Whether this should be appended to a prior one produced
+   * If true, the content of this artifact should be appended to a previously
+   * sent artifact with the same ID.
    * </pre>
    *
    * <code>bool append = 4;</code>
@@ -203,7 +204,7 @@ private static final long serialVersionUID = 0L;
   private boolean lastChunk_ = false;
   /**
    * <pre>
-   * Whether this represents the last part of an artifact
+   * If true, this is the final chunk of the artifact.
    * </pre>
    *
    * <code>bool last_chunk = 5;</code>
@@ -710,10 +711,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object taskId_ = "";
     /**
      * <pre>
-     * The id of the task for this artifact
+     * The id of the task for this artifact.
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The taskId.
      */
     public java.lang.String getTaskId() {
@@ -730,10 +731,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the task for this artifact
+     * The id of the task for this artifact.
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for taskId.
      */
     public com.google.protobuf.ByteString
@@ -751,10 +752,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the task for this artifact
+     * The id of the task for this artifact.
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The taskId to set.
      * @return This builder for chaining.
      */
@@ -768,10 +769,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the task for this artifact
+     * The id of the task for this artifact.
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearTaskId() {
@@ -782,10 +783,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the task for this artifact
+     * The id of the task for this artifact.
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for taskId to set.
      * @return This builder for chaining.
      */
@@ -802,10 +803,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object contextId_ = "";
     /**
      * <pre>
-     * The id of the context that this task belongs too
+     * The id of the context that this task belongs to.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The contextId.
      */
     public java.lang.String getContextId() {
@@ -822,10 +823,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the context that this task belongs too
+     * The id of the context that this task belongs to.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for contextId.
      */
     public com.google.protobuf.ByteString
@@ -843,10 +844,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the context that this task belongs too
+     * The id of the context that this task belongs to.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The contextId to set.
      * @return This builder for chaining.
      */
@@ -860,10 +861,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the context that this task belongs too
+     * The id of the context that this task belongs to.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearContextId() {
@@ -874,10 +875,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the context that this task belongs too
+     * The id of the context that this task belongs to.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for contextId to set.
      * @return This builder for chaining.
      */
@@ -896,10 +897,10 @@ private static final long serialVersionUID = 0L;
         io.a2a.grpc.Artifact, io.a2a.grpc.Artifact.Builder, io.a2a.grpc.ArtifactOrBuilder> artifactBuilder_;
     /**
      * <pre>
-     * The artifact itself
+     * The artifact that was generated or updated.
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3;</code>
+     * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the artifact field is set.
      */
     public boolean hasArtifact() {
@@ -907,10 +908,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The artifact itself
+     * The artifact that was generated or updated.
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3;</code>
+     * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The artifact.
      */
     public io.a2a.grpc.Artifact getArtifact() {
@@ -922,10 +923,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The artifact itself
+     * The artifact that was generated or updated.
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3;</code>
+     * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setArtifact(io.a2a.grpc.Artifact value) {
       if (artifactBuilder_ == null) {
@@ -942,10 +943,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The artifact itself
+     * The artifact that was generated or updated.
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3;</code>
+     * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setArtifact(
         io.a2a.grpc.Artifact.Builder builderForValue) {
@@ -960,10 +961,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The artifact itself
+     * The artifact that was generated or updated.
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3;</code>
+     * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeArtifact(io.a2a.grpc.Artifact value) {
       if (artifactBuilder_ == null) {
@@ -985,10 +986,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The artifact itself
+     * The artifact that was generated or updated.
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3;</code>
+     * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearArtifact() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -1002,10 +1003,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The artifact itself
+     * The artifact that was generated or updated.
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3;</code>
+     * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Artifact.Builder getArtifactBuilder() {
       bitField0_ |= 0x00000004;
@@ -1014,10 +1015,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The artifact itself
+     * The artifact that was generated or updated.
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3;</code>
+     * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.ArtifactOrBuilder getArtifactOrBuilder() {
       if (artifactBuilder_ != null) {
@@ -1029,10 +1030,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The artifact itself
+     * The artifact that was generated or updated.
      * </pre>
      *
-     * <code>.a2a.v1.Artifact artifact = 3;</code>
+     * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Artifact, io.a2a.grpc.Artifact.Builder, io.a2a.grpc.ArtifactOrBuilder> 
@@ -1051,7 +1052,8 @@ private static final long serialVersionUID = 0L;
     private boolean append_ ;
     /**
      * <pre>
-     * Whether this should be appended to a prior one produced
+     * If true, the content of this artifact should be appended to a previously
+     * sent artifact with the same ID.
      * </pre>
      *
      * <code>bool append = 4;</code>
@@ -1063,7 +1065,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Whether this should be appended to a prior one produced
+     * If true, the content of this artifact should be appended to a previously
+     * sent artifact with the same ID.
      * </pre>
      *
      * <code>bool append = 4;</code>
@@ -1079,7 +1082,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Whether this should be appended to a prior one produced
+     * If true, the content of this artifact should be appended to a previously
+     * sent artifact with the same ID.
      * </pre>
      *
      * <code>bool append = 4;</code>
@@ -1095,7 +1099,7 @@ private static final long serialVersionUID = 0L;
     private boolean lastChunk_ ;
     /**
      * <pre>
-     * Whether this represents the last part of an artifact
+     * If true, this is the final chunk of the artifact.
      * </pre>
      *
      * <code>bool last_chunk = 5;</code>
@@ -1107,7 +1111,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Whether this represents the last part of an artifact
+     * If true, this is the final chunk of the artifact.
      * </pre>
      *
      * <code>bool last_chunk = 5;</code>
@@ -1123,7 +1127,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Whether this represents the last part of an artifact
+     * If true, this is the final chunk of the artifact.
      * </pre>
      *
      * <code>bool last_chunk = 5;</code>

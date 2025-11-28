@@ -114,6 +114,15 @@ public final class Task implements EventKind, StreamingEventKind {
     }
 
     /**
+     * Creates a new Builder for constructing Task instances.
+     *
+     * @return a new Task.Builder instance
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing immutable {@link Task} instances.
      * <p>
      * The Builder pattern is used to enforce immutability of Task objects while providing

@@ -65,7 +65,7 @@ private static final long serialVersionUID = 0L;
    * new task.
    * </pre>
    *
-   * <code>string id = 1;</code>
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   @java.lang.Override
@@ -87,7 +87,7 @@ private static final long serialVersionUID = 0L;
    * new task.
    * </pre>
    *
-   * <code>string id = 1;</code>
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   @java.lang.Override
@@ -114,7 +114,7 @@ private static final long serialVersionUID = 0L;
    * (tasks and messages). Created by the A2A server.
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The contextId.
    */
   @java.lang.Override
@@ -136,7 +136,7 @@ private static final long serialVersionUID = 0L;
    * (tasks and messages). Created by the A2A server.
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for contextId.
    */
   @java.lang.Override
@@ -161,7 +161,7 @@ private static final long serialVersionUID = 0L;
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the status field is set.
    */
   @java.lang.Override
@@ -173,7 +173,7 @@ private static final long serialVersionUID = 0L;
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The status.
    */
   @java.lang.Override
@@ -185,7 +185,7 @@ private static final long serialVersionUID = 0L;
    * The current status of a Task, including state and a message.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
@@ -325,6 +325,8 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * A key/value object to store custom metadata about a task.
+   * Optional metadata for extensions. The key is an extension-specific
+   * identifier.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -338,6 +340,8 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * A key/value object to store custom metadata about a task.
+   * Optional metadata for extensions. The key is an extension-specific
+   * identifier.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -351,6 +355,8 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
    * A key/value object to store custom metadata about a task.
+   * Optional metadata for extensions. The key is an extension-specific
+   * identifier.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -918,7 +924,7 @@ private static final long serialVersionUID = 0L;
      * new task.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The id.
      */
     public java.lang.String getId() {
@@ -939,7 +945,7 @@ private static final long serialVersionUID = 0L;
      * new task.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for id.
      */
     public com.google.protobuf.ByteString
@@ -961,7 +967,7 @@ private static final long serialVersionUID = 0L;
      * new task.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The id to set.
      * @return This builder for chaining.
      */
@@ -979,7 +985,7 @@ private static final long serialVersionUID = 0L;
      * new task.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearId() {
@@ -994,7 +1000,7 @@ private static final long serialVersionUID = 0L;
      * new task.
      * </pre>
      *
-     * <code>string id = 1;</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for id to set.
      * @return This builder for chaining.
      */
@@ -1015,7 +1021,7 @@ private static final long serialVersionUID = 0L;
      * (tasks and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The contextId.
      */
     public java.lang.String getContextId() {
@@ -1036,7 +1042,7 @@ private static final long serialVersionUID = 0L;
      * (tasks and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for contextId.
      */
     public com.google.protobuf.ByteString
@@ -1058,7 +1064,7 @@ private static final long serialVersionUID = 0L;
      * (tasks and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The contextId to set.
      * @return This builder for chaining.
      */
@@ -1076,7 +1082,7 @@ private static final long serialVersionUID = 0L;
      * (tasks and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearContextId() {
@@ -1091,7 +1097,7 @@ private static final long serialVersionUID = 0L;
      * (tasks and messages). Created by the A2A server.
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for contextId to set.
      * @return This builder for chaining.
      */
@@ -1113,7 +1119,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
@@ -1124,7 +1130,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The status.
      */
     public io.a2a.grpc.TaskStatus getStatus() {
@@ -1139,7 +1145,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -1159,7 +1165,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setStatus(
         io.a2a.grpc.TaskStatus.Builder builderForValue) {
@@ -1177,7 +1183,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -1202,7 +1208,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearStatus() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -1219,7 +1225,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskStatus.Builder getStatusBuilder() {
       bitField0_ |= 0x00000004;
@@ -1231,7 +1237,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
       if (statusBuilder_ != null) {
@@ -1246,7 +1252,7 @@ private static final long serialVersionUID = 0L;
      * The current status of a Task, including state and a message.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskStatus, io.a2a.grpc.TaskStatus.Builder, io.a2a.grpc.TaskStatusOrBuilder> 
@@ -1911,6 +1917,8 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
      * A key/value object to store custom metadata about a task.
+     * Optional metadata for extensions. The key is an extension-specific
+     * identifier.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1923,6 +1931,8 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
      * A key/value object to store custom metadata about a task.
+     * Optional metadata for extensions. The key is an extension-specific
+     * identifier.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1939,6 +1949,8 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
      * A key/value object to store custom metadata about a task.
+     * Optional metadata for extensions. The key is an extension-specific
+     * identifier.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1960,6 +1972,8 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
      * A key/value object to store custom metadata about a task.
+     * Optional metadata for extensions. The key is an extension-specific
+     * identifier.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1979,6 +1993,8 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
      * A key/value object to store custom metadata about a task.
+     * Optional metadata for extensions. The key is an extension-specific
+     * identifier.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -2005,6 +2021,8 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
      * A key/value object to store custom metadata about a task.
+     * Optional metadata for extensions. The key is an extension-specific
+     * identifier.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -2023,6 +2041,8 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
      * A key/value object to store custom metadata about a task.
+     * Optional metadata for extensions. The key is an extension-specific
+     * identifier.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -2036,6 +2056,8 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
      * A key/value object to store custom metadata about a task.
+     * Optional metadata for extensions. The key is an extension-specific
+     * identifier.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -2052,6 +2074,8 @@ private static final long serialVersionUID = 0L;
      * <pre>
      * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
      * A key/value object to store custom metadata about a task.
+     * Optional metadata for extensions. The key is an extension-specific
+     * identifier.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>

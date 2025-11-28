@@ -1,5 +1,6 @@
 package io.a2a.extras.pushnotificationconfigstore.database.jpa;
 
+import java.util.Collections;
 import java.util.List;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -8,6 +9,7 @@ import jakarta.enterprise.inject.Produces;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.TransportProtocol;
 import io.quarkus.arc.profile.IfBuildProfile;
 
@@ -26,8 +28,9 @@ public class JpaDatabasePushNotificationConfigStoreTestAgentCardProducer {
                 .name("JPA PushNotificationConfigStore Integration Test Agent")
                 .description("Test agent for verifying JPA PushNotificationConfigStore integration")
                 .version("1.0.0")
-                .url("http://localhost:8081") // Port is managed by QuarkusTest
-                .preferredTransport(TransportProtocol.JSONRPC.asString())
+                .supportedInterfaces(
+                        Collections.singletonList(
+                                new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:8081"))) // Port is managed by QuarkusTest
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .capabilities(new AgentCapabilities.Builder()

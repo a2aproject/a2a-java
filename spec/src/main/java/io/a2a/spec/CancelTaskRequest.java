@@ -32,7 +32,7 @@ import io.a2a.util.Assert;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdParams> {
 
-    public static final String METHOD = "tasks/cancel";
+    public static final String METHOD = "CancelTask";
 
     @JsonCreator
     public CancelTaskRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,

@@ -7,7 +7,9 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:ListTaskPushNotificationConfigSuccessResponse]
+ * --8&lt;-- [start:ListTaskPushNotificationConfigResponse]
+ * Represents a successful response for the `tasks/pushNotificationConfig/list`
+ * method.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.ListTaskPushNotificationConfigResponse}
@@ -330,7 +332,9 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:ListTaskPushNotificationConfigSuccessResponse]
+   * --8&lt;-- [start:ListTaskPushNotificationConfigResponse]
+   * Represents a successful response for the `tasks/pushNotificationConfig/list`
+   * method.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.ListTaskPushNotificationConfigResponse}

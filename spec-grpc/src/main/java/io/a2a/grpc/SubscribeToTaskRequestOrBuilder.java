@@ -6,8 +6,8 @@
 package io.a2a.grpc;
 
 @com.google.protobuf.Generated
-public interface TaskSubscriptionRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.TaskSubscriptionRequest)
+public interface SubscribeToTaskRequestOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:a2a.v1.SubscribeToTaskRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**

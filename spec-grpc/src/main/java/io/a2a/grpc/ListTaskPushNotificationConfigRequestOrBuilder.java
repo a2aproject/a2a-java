@@ -34,9 +34,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * For AIP-158 these fields are present. Usually not used/needed.
    * The maximum number of configurations to return.
-   * If unspecified, all configs will be returned.
    * </pre>
    *
    * <code>int32 page_size = 2;</code>
@@ -46,12 +44,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * A page token received from a previous
-   * ListTaskPushNotificationConfigRequest call.
-   * Provide this to retrieve the subsequent page.
-   * When paginating, all other parameters provided to
-   * `ListTaskPushNotificationConfigRequest` must match the call that provided
-   * the page token.
+   * A page token received from a previous ListTaskPushNotificationConfigRequest call.
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -60,12 +53,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
   java.lang.String getPageToken();
   /**
    * <pre>
-   * A page token received from a previous
-   * ListTaskPushNotificationConfigRequest call.
-   * Provide this to retrieve the subsequent page.
-   * When paginating, all other parameters provided to
-   * `ListTaskPushNotificationConfigRequest` must match the call that provided
-   * the page token.
+   * A page token received from a previous ListTaskPushNotificationConfigRequest call.
    * </pre>
    *
    * <code>string page_token = 3;</code>

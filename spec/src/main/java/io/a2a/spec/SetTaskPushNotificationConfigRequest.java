@@ -29,7 +29,7 @@ import io.a2a.util.Assert;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {
 
-    public static final String METHOD = "tasks/pushNotificationConfig/set";
+    public static final String METHOD = "SetTaskPushNotificationConfig";
 
     @JsonCreator
     public SetTaskPushNotificationConfigRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,

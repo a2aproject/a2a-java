@@ -8,7 +8,8 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:AgentInterface]
- * Defines additional transport information for the agent.
+ * Declares a combination of a target URL and a transport protocol for interacting with the agent.
+ * This allows agents to expose the same functionality over multiple protocol binding mechanisms.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.AgentInterface}
@@ -34,7 +35,7 @@ private static final long serialVersionUID = 0L;
   }
   private AgentInterface() {
     url_ = "";
-    transport_ = "";
+    protocolBinding_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -55,10 +56,11 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object url_ = "";
   /**
    * <pre>
-   * The url this interface is found at.
+   * The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
+   * Example: "https://api.example.com/a2a/v1", "https://grpc.example.com/a2a"
    * </pre>
    *
-   * <code>string url = 1;</code>
+   * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The url.
    */
   @java.lang.Override
@@ -76,10 +78,11 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The url this interface is found at.
+   * The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
+   * Example: "https://api.example.com/a2a/v1", "https://grpc.example.com/a2a"
    * </pre>
    *
-   * <code>string url = 1;</code>
+   * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for url.
    */
   @java.lang.Override
@@ -97,51 +100,53 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int TRANSPORT_FIELD_NUMBER = 2;
+  public static final int PROTOCOL_BINDING_FIELD_NUMBER = 2;
   @SuppressWarnings("serial")
-  private volatile java.lang.Object transport_ = "";
+  private volatile java.lang.Object protocolBinding_ = "";
   /**
    * <pre>
-   * The transport supported this url. This is an open form string, to be
-   * easily extended for many transport protocols. The core ones officially
+   * The protocol binding supported at this URL. This is an open form string, to be
+   * easily extended for other protocol bindings. The core ones officially
    * supported are JSONRPC, GRPC and HTTP+JSON.
+   * Example: "JSONRPC", "GRPC", "HTTP+JSON"
    * </pre>
    *
-   * <code>string transport = 2;</code>
-   * @return The transport.
+   * <code>string protocol_binding = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The protocolBinding.
    */
   @java.lang.Override
-  public java.lang.String getTransport() {
-    java.lang.Object ref = transport_;
+  public java.lang.String getProtocolBinding() {
+    java.lang.Object ref = protocolBinding_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      transport_ = s;
+      protocolBinding_ = s;
       return s;
     }
   }
   /**
    * <pre>
-   * The transport supported this url. This is an open form string, to be
-   * easily extended for many transport protocols. The core ones officially
+   * The protocol binding supported at this URL. This is an open form string, to be
+   * easily extended for other protocol bindings. The core ones officially
    * supported are JSONRPC, GRPC and HTTP+JSON.
+   * Example: "JSONRPC", "GRPC", "HTTP+JSON"
    * </pre>
    *
-   * <code>string transport = 2;</code>
-   * @return The bytes for transport.
+   * <code>string protocol_binding = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for protocolBinding.
    */
   @java.lang.Override
   public com.google.protobuf.ByteString
-      getTransportBytes() {
-    java.lang.Object ref = transport_;
+      getProtocolBindingBytes() {
+    java.lang.Object ref = protocolBinding_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      transport_ = b;
+      protocolBinding_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -165,8 +170,8 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(url_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 1, url_);
     }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(transport_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 2, transport_);
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(protocolBinding_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, protocolBinding_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -180,8 +185,8 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(url_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(1, url_);
     }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(transport_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, transport_);
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(protocolBinding_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, protocolBinding_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -200,8 +205,8 @@ private static final long serialVersionUID = 0L;
 
     if (!getUrl()
         .equals(other.getUrl())) return false;
-    if (!getTransport()
-        .equals(other.getTransport())) return false;
+    if (!getProtocolBinding()
+        .equals(other.getProtocolBinding())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -215,8 +220,8 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + URL_FIELD_NUMBER;
     hash = (53 * hash) + getUrl().hashCode();
-    hash = (37 * hash) + TRANSPORT_FIELD_NUMBER;
-    hash = (53 * hash) + getTransport().hashCode();
+    hash = (37 * hash) + PROTOCOL_BINDING_FIELD_NUMBER;
+    hash = (53 * hash) + getProtocolBinding().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -317,7 +322,8 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:AgentInterface]
-   * Defines additional transport information for the agent.
+   * Declares a combination of a target URL and a transport protocol for interacting with the agent.
+   * This allows agents to expose the same functionality over multiple protocol binding mechanisms.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.AgentInterface}
@@ -354,7 +360,7 @@ private static final long serialVersionUID = 0L;
       super.clear();
       bitField0_ = 0;
       url_ = "";
-      transport_ = "";
+      protocolBinding_ = "";
       return this;
     }
 
@@ -392,7 +398,7 @@ private static final long serialVersionUID = 0L;
         result.url_ = url_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.transport_ = transport_;
+        result.protocolBinding_ = protocolBinding_;
       }
     }
 
@@ -413,8 +419,8 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000001;
         onChanged();
       }
-      if (!other.getTransport().isEmpty()) {
-        transport_ = other.transport_;
+      if (!other.getProtocolBinding().isEmpty()) {
+        protocolBinding_ = other.protocolBinding_;
         bitField0_ |= 0x00000002;
         onChanged();
       }
@@ -450,7 +456,7 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 10
             case 18: {
-              transport_ = input.readStringRequireUtf8();
+              protocolBinding_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000002;
               break;
             } // case 18
@@ -474,10 +480,11 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object url_ = "";
     /**
      * <pre>
-     * The url this interface is found at.
+     * The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
+     * Example: "https://api.example.com/a2a/v1", "https://grpc.example.com/a2a"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The url.
      */
     public java.lang.String getUrl() {
@@ -494,10 +501,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The url this interface is found at.
+     * The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
+     * Example: "https://api.example.com/a2a/v1", "https://grpc.example.com/a2a"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for url.
      */
     public com.google.protobuf.ByteString
@@ -515,10 +523,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The url this interface is found at.
+     * The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
+     * Example: "https://api.example.com/a2a/v1", "https://grpc.example.com/a2a"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The url to set.
      * @return This builder for chaining.
      */
@@ -532,10 +541,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The url this interface is found at.
+     * The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
+     * Example: "https://api.example.com/a2a/v1", "https://grpc.example.com/a2a"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearUrl() {
@@ -546,10 +556,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The url this interface is found at.
+     * The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
+     * Example: "https://api.example.com/a2a/v1", "https://grpc.example.com/a2a"
      * </pre>
      *
-     * <code>string url = 1;</code>
+     * <code>string url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for url to set.
      * @return This builder for chaining.
      */
@@ -563,24 +574,25 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object transport_ = "";
+    private java.lang.Object protocolBinding_ = "";
     /**
      * <pre>
-     * The transport supported this url. This is an open form string, to be
-     * easily extended for many transport protocols. The core ones officially
+     * The protocol binding supported at this URL. This is an open form string, to be
+     * easily extended for other protocol bindings. The core ones officially
      * supported are JSONRPC, GRPC and HTTP+JSON.
+     * Example: "JSONRPC", "GRPC", "HTTP+JSON"
      * </pre>
      *
-     * <code>string transport = 2;</code>
-     * @return The transport.
+     * <code>string protocol_binding = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The protocolBinding.
      */
-    public java.lang.String getTransport() {
-      java.lang.Object ref = transport_;
+    public java.lang.String getProtocolBinding() {
+      java.lang.Object ref = protocolBinding_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        transport_ = s;
+        protocolBinding_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
@@ -588,22 +600,23 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The transport supported this url. This is an open form string, to be
-     * easily extended for many transport protocols. The core ones officially
+     * The protocol binding supported at this URL. This is an open form string, to be
+     * easily extended for other protocol bindings. The core ones officially
      * supported are JSONRPC, GRPC and HTTP+JSON.
+     * Example: "JSONRPC", "GRPC", "HTTP+JSON"
      * </pre>
      *
-     * <code>string transport = 2;</code>
-     * @return The bytes for transport.
+     * <code>string protocol_binding = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The bytes for protocolBinding.
      */
     public com.google.protobuf.ByteString
-        getTransportBytes() {
-      java.lang.Object ref = transport_;
+        getProtocolBindingBytes() {
+      java.lang.Object ref = protocolBinding_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        transport_ = b;
+        protocolBinding_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -611,55 +624,58 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The transport supported this url. This is an open form string, to be
-     * easily extended for many transport protocols. The core ones officially
+     * The protocol binding supported at this URL. This is an open form string, to be
+     * easily extended for other protocol bindings. The core ones officially
      * supported are JSONRPC, GRPC and HTTP+JSON.
+     * Example: "JSONRPC", "GRPC", "HTTP+JSON"
      * </pre>
      *
-     * <code>string transport = 2;</code>
-     * @param value The transport to set.
+     * <code>string protocol_binding = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The protocolBinding to set.
      * @return This builder for chaining.
      */
-    public Builder setTransport(
+    public Builder setProtocolBinding(
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
-      transport_ = value;
+      protocolBinding_ = value;
       bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The transport supported this url. This is an open form string, to be
-     * easily extended for many transport protocols. The core ones officially
+     * The protocol binding supported at this URL. This is an open form string, to be
+     * easily extended for other protocol bindings. The core ones officially
      * supported are JSONRPC, GRPC and HTTP+JSON.
+     * Example: "JSONRPC", "GRPC", "HTTP+JSON"
      * </pre>
      *
-     * <code>string transport = 2;</code>
+     * <code>string protocol_binding = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
-    public Builder clearTransport() {
-      transport_ = getDefaultInstance().getTransport();
+    public Builder clearProtocolBinding() {
+      protocolBinding_ = getDefaultInstance().getProtocolBinding();
       bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The transport supported this url. This is an open form string, to be
-     * easily extended for many transport protocols. The core ones officially
+     * The protocol binding supported at this URL. This is an open form string, to be
+     * easily extended for other protocol bindings. The core ones officially
      * supported are JSONRPC, GRPC and HTTP+JSON.
+     * Example: "JSONRPC", "GRPC", "HTTP+JSON"
      * </pre>
      *
-     * <code>string transport = 2;</code>
-     * @param value The bytes for transport to set.
+     * <code>string protocol_binding = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The bytes for protocolBinding to set.
      * @return This builder for chaining.
      */
-    public Builder setTransportBytes(
+    public Builder setProtocolBindingBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
-      transport_ = value;
+      protocolBinding_ = value;
       bitField0_ |= 0x00000002;
       onChanged();
       return this;

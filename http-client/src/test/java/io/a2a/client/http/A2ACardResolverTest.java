@@ -1,7 +1,5 @@
 package io.a2a.client.http;
 
-import static io.a2a.util.Utils.OBJECT_MAPPER;
-import static io.a2a.util.Utils.unmarshalFrom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,7 +8,10 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
+import io.a2a.grpc.utils.JSONRPCUtils;
+import io.a2a.grpc.utils.ProtoUtils;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientJSONError;
 import io.a2a.spec.AgentCard;
@@ -20,7 +21,6 @@ import org.junit.jupiter.api.Test;
 public class A2ACardResolverTest {
 
     private static final String AGENT_CARD_PATH = "/.well-known/agent-card.json";
-    private static final TypeReference<AgentCard> AGENT_CARD_TYPE_REFERENCE = new TypeReference<>() {};
 
     @Test
     public void testConstructorStripsSlashes() throws Exception {
@@ -72,11 +72,21 @@ public class A2ACardResolverTest {
         A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/");
         AgentCard card = resolver.getAgentCard();
 
-        AgentCard expectedCard = unmarshalFrom(JsonMessages.AGENT_CARD, AGENT_CARD_TYPE_REFERENCE);
-        String expected = OBJECT_MAPPER.writeValueAsString(expectedCard);
+        AgentCard expectedCard = unmarshalFrom(JsonMessages.AGENT_CARD);
+        String expected = printAgentCard(expectedCard);
 
-        String requestCardString = OBJECT_MAPPER.writeValueAsString(card);
+        String requestCardString = printAgentCard(card);
         assertEquals(expected, requestCardString);
+    }
+
+    private AgentCard unmarshalFrom(String body) {
+        io.a2a.grpc.AgentCard.Builder agentCardBuilder = io.a2a.grpc.AgentCard.newBuilder();
+        JSONRPCUtils.parseJsonString(body, agentCardBuilder);
+        return ProtoUtils.FromProto.agentCard(agentCardBuilder);
+    }
+
+    private String printAgentCard(AgentCard agentCard) throws InvalidProtocolBufferException {
+        return JsonFormat.printer().print(ProtoUtils.ToProto.agentCard(agentCard));
     }
 
     @Test

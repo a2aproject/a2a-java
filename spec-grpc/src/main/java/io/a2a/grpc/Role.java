@@ -6,6 +6,11 @@
 package io.a2a.grpc;
 
 /**
+ * <pre>
+ * --8&lt;-- [start:Role]
+ * Defines the sender of a message in A2A protocol communication.
+ * </pre>
+ *
  * Protobuf enum {@code a2a.v1.Role}
  */
 @com.google.protobuf.Generated

@@ -8,9 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:Artifact]
- * Artifacts are the container for task completed results. These are similar
- * to Messages but are intended to be the product of a task, as opposed to
- * point-to-point communication.
+ * Artifacts represent task outputs.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.Artifact}
@@ -66,7 +64,7 @@ private static final long serialVersionUID = 0L;
    * within a task.
    * </pre>
    *
-   * <code>string artifact_id = 1;</code>
+   * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The artifactId.
    */
   @java.lang.Override
@@ -88,7 +86,7 @@ private static final long serialVersionUID = 0L;
    * within a task.
    * </pre>
    *
-   * <code>string artifact_id = 1;</code>
+   * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for artifactId.
    */
   @java.lang.Override
@@ -208,7 +206,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Part> getPartsList() {
@@ -219,7 +217,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
@@ -231,7 +229,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public int getPartsCount() {
@@ -242,7 +240,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Part getParts(int index) {
@@ -253,7 +251,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
@@ -577,9 +575,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:Artifact]
-   * Artifacts are the container for task completed results. These are similar
-   * to Messages but are intended to be the product of a task, as opposed to
-   * point-to-point communication.
+   * Artifacts represent task outputs.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.Artifact}
@@ -865,7 +861,7 @@ private static final long serialVersionUID = 0L;
      * within a task.
      * </pre>
      *
-     * <code>string artifact_id = 1;</code>
+     * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The artifactId.
      */
     public java.lang.String getArtifactId() {
@@ -886,7 +882,7 @@ private static final long serialVersionUID = 0L;
      * within a task.
      * </pre>
      *
-     * <code>string artifact_id = 1;</code>
+     * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for artifactId.
      */
     public com.google.protobuf.ByteString
@@ -908,7 +904,7 @@ private static final long serialVersionUID = 0L;
      * within a task.
      * </pre>
      *
-     * <code>string artifact_id = 1;</code>
+     * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The artifactId to set.
      * @return This builder for chaining.
      */
@@ -926,7 +922,7 @@ private static final long serialVersionUID = 0L;
      * within a task.
      * </pre>
      *
-     * <code>string artifact_id = 1;</code>
+     * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearArtifactId() {
@@ -941,7 +937,7 @@ private static final long serialVersionUID = 0L;
      * within a task.
      * </pre>
      *
-     * <code>string artifact_id = 1;</code>
+     * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for artifactId to set.
      * @return This builder for chaining.
      */
@@ -1156,7 +1152,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.Part> getPartsList() {
       if (partsBuilder_ == null) {
@@ -1170,7 +1166,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public int getPartsCount() {
       if (partsBuilder_ == null) {
@@ -1184,7 +1180,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part getParts(int index) {
       if (partsBuilder_ == null) {
@@ -1198,7 +1194,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setParts(
         int index, io.a2a.grpc.Part value) {
@@ -1219,7 +1215,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1237,7 +1233,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(io.a2a.grpc.Part value) {
       if (partsBuilder_ == null) {
@@ -1257,7 +1253,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         int index, io.a2a.grpc.Part value) {
@@ -1278,7 +1274,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         io.a2a.grpc.Part.Builder builderForValue) {
@@ -1296,7 +1292,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1314,7 +1310,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addAllParts(
         java.lang.Iterable<? extends io.a2a.grpc.Part> values) {
@@ -1333,7 +1329,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearParts() {
       if (partsBuilder_ == null) {
@@ -1350,7 +1346,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder removeParts(int index) {
       if (partsBuilder_ == null) {
@@ -1367,7 +1363,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder getPartsBuilder(
         int index) {
@@ -1378,7 +1374,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
         int index) {
@@ -1392,7 +1388,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
          getPartsOrBuilderList() {
@@ -1407,7 +1403,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder addPartsBuilder() {
       return internalGetPartsFieldBuilder().addBuilder(
@@ -1418,7 +1414,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder addPartsBuilder(
         int index) {
@@ -1430,7 +1426,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.Part.Builder> 
          getPartsBuilderList() {

@@ -7,16 +7,16 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:TaskResubscriptionRequest]
+ * --8&lt;-- [start:SubscribeToTaskRequest]
  * </pre>
  *
- * Protobuf type {@code a2a.v1.TaskSubscriptionRequest}
+ * Protobuf type {@code a2a.v1.SubscribeToTaskRequest}
  */
 @com.google.protobuf.Generated
-public final class TaskSubscriptionRequest extends
+public final class SubscribeToTaskRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.TaskSubscriptionRequest)
-    TaskSubscriptionRequestOrBuilder {
+    // @@protoc_insertion_point(message_implements:a2a.v1.SubscribeToTaskRequest)
+    SubscribeToTaskRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -25,27 +25,27 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 31,
       /* patch= */ 1,
       /* suffix= */ "",
-      TaskSubscriptionRequest.class.getName());
+      SubscribeToTaskRequest.class.getName());
   }
-  // Use TaskSubscriptionRequest.newBuilder() to construct.
-  private TaskSubscriptionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use SubscribeToTaskRequest.newBuilder() to construct.
+  private SubscribeToTaskRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private TaskSubscriptionRequest() {
+  private SubscribeToTaskRequest() {
     name_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskSubscriptionRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskSubscriptionRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            io.a2a.grpc.TaskSubscriptionRequest.class, io.a2a.grpc.TaskSubscriptionRequest.Builder.class);
+            io.a2a.grpc.SubscribeToTaskRequest.class, io.a2a.grpc.SubscribeToTaskRequest.Builder.class);
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
@@ -136,10 +136,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof io.a2a.grpc.TaskSubscriptionRequest)) {
+    if (!(obj instanceof io.a2a.grpc.SubscribeToTaskRequest)) {
       return super.equals(obj);
     }
-    io.a2a.grpc.TaskSubscriptionRequest other = (io.a2a.grpc.TaskSubscriptionRequest) obj;
+    io.a2a.grpc.SubscribeToTaskRequest other = (io.a2a.grpc.SubscribeToTaskRequest) obj;
 
     if (!getName()
         .equals(other.getName())) return false;
@@ -161,44 +161,44 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(byte[] data)
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(java.io.InputStream input)
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -206,26 +206,26 @@ private static final long serialVersionUID = 0L;
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static io.a2a.grpc.TaskSubscriptionRequest parseDelimitedFrom(java.io.InputStream input)
+  public static io.a2a.grpc.SubscribeToTaskRequest parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static io.a2a.grpc.TaskSubscriptionRequest parseDelimitedFrom(
+  public static io.a2a.grpc.SubscribeToTaskRequest parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.TaskSubscriptionRequest parseFrom(
+  public static io.a2a.grpc.SubscribeToTaskRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -238,7 +238,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(io.a2a.grpc.TaskSubscriptionRequest prototype) {
+  public static Builder newBuilder(io.a2a.grpc.SubscribeToTaskRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -255,29 +255,29 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:TaskResubscriptionRequest]
+   * --8&lt;-- [start:SubscribeToTaskRequest]
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.TaskSubscriptionRequest}
+   * Protobuf type {@code a2a.v1.SubscribeToTaskRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.TaskSubscriptionRequest)
-      io.a2a.grpc.TaskSubscriptionRequestOrBuilder {
+      // @@protoc_insertion_point(builder_implements:a2a.v1.SubscribeToTaskRequest)
+      io.a2a.grpc.SubscribeToTaskRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskSubscriptionRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskSubscriptionRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.a2a.grpc.TaskSubscriptionRequest.class, io.a2a.grpc.TaskSubscriptionRequest.Builder.class);
+              io.a2a.grpc.SubscribeToTaskRequest.class, io.a2a.grpc.SubscribeToTaskRequest.Builder.class);
     }
 
-    // Construct using io.a2a.grpc.TaskSubscriptionRequest.newBuilder()
+    // Construct using io.a2a.grpc.SubscribeToTaskRequest.newBuilder()
     private Builder() {
 
     }
@@ -298,17 +298,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskSubscriptionRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_descriptor;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.TaskSubscriptionRequest getDefaultInstanceForType() {
-      return io.a2a.grpc.TaskSubscriptionRequest.getDefaultInstance();
+    public io.a2a.grpc.SubscribeToTaskRequest getDefaultInstanceForType() {
+      return io.a2a.grpc.SubscribeToTaskRequest.getDefaultInstance();
     }
 
     @java.lang.Override
-    public io.a2a.grpc.TaskSubscriptionRequest build() {
-      io.a2a.grpc.TaskSubscriptionRequest result = buildPartial();
+    public io.a2a.grpc.SubscribeToTaskRequest build() {
+      io.a2a.grpc.SubscribeToTaskRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -316,14 +316,14 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.TaskSubscriptionRequest buildPartial() {
-      io.a2a.grpc.TaskSubscriptionRequest result = new io.a2a.grpc.TaskSubscriptionRequest(this);
+    public io.a2a.grpc.SubscribeToTaskRequest buildPartial() {
+      io.a2a.grpc.SubscribeToTaskRequest result = new io.a2a.grpc.SubscribeToTaskRequest(this);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    private void buildPartial0(io.a2a.grpc.TaskSubscriptionRequest result) {
+    private void buildPartial0(io.a2a.grpc.SubscribeToTaskRequest result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.name_ = name_;
@@ -332,16 +332,16 @@ private static final long serialVersionUID = 0L;
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof io.a2a.grpc.TaskSubscriptionRequest) {
-        return mergeFrom((io.a2a.grpc.TaskSubscriptionRequest)other);
+      if (other instanceof io.a2a.grpc.SubscribeToTaskRequest) {
+        return mergeFrom((io.a2a.grpc.SubscribeToTaskRequest)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(io.a2a.grpc.TaskSubscriptionRequest other) {
-      if (other == io.a2a.grpc.TaskSubscriptionRequest.getDefaultInstance()) return this;
+    public Builder mergeFrom(io.a2a.grpc.SubscribeToTaskRequest other) {
+      if (other == io.a2a.grpc.SubscribeToTaskRequest.getDefaultInstance()) return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
         bitField0_ |= 0x00000001;
@@ -492,23 +492,23 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.TaskSubscriptionRequest)
+    // @@protoc_insertion_point(builder_scope:a2a.v1.SubscribeToTaskRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.TaskSubscriptionRequest)
-  private static final io.a2a.grpc.TaskSubscriptionRequest DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:a2a.v1.SubscribeToTaskRequest)
+  private static final io.a2a.grpc.SubscribeToTaskRequest DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new io.a2a.grpc.TaskSubscriptionRequest();
+    DEFAULT_INSTANCE = new io.a2a.grpc.SubscribeToTaskRequest();
   }
 
-  public static io.a2a.grpc.TaskSubscriptionRequest getDefaultInstance() {
+  public static io.a2a.grpc.SubscribeToTaskRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<TaskSubscriptionRequest>
-      PARSER = new com.google.protobuf.AbstractParser<TaskSubscriptionRequest>() {
+  private static final com.google.protobuf.Parser<SubscribeToTaskRequest>
+      PARSER = new com.google.protobuf.AbstractParser<SubscribeToTaskRequest>() {
     @java.lang.Override
-    public TaskSubscriptionRequest parsePartialFrom(
+    public SubscribeToTaskRequest parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -527,17 +527,17 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public static com.google.protobuf.Parser<TaskSubscriptionRequest> parser() {
+  public static com.google.protobuf.Parser<SubscribeToTaskRequest> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<TaskSubscriptionRequest> getParserForType() {
+  public com.google.protobuf.Parser<SubscribeToTaskRequest> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public io.a2a.grpc.TaskSubscriptionRequest getDefaultInstanceForType() {
+  public io.a2a.grpc.SubscribeToTaskRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

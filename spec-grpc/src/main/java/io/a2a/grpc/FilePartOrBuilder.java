@@ -11,16 +11,28 @@ public interface FilePartOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
    * <code>string file_with_uri = 1;</code>
    * @return Whether the fileWithUri field is set.
    */
   boolean hasFileWithUri();
   /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
    * <code>string file_with_uri = 1;</code>
    * @return The fileWithUri.
    */
   java.lang.String getFileWithUri();
   /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
    * <code>string file_with_uri = 1;</code>
    * @return The bytes for fileWithUri.
    */
@@ -28,34 +40,58 @@ public interface FilePartOrBuilder extends
       getFileWithUriBytes();
 
   /**
+   * <pre>
+   * The base64-encoded content of the file.
+   * </pre>
+   *
    * <code>bytes file_with_bytes = 2;</code>
    * @return Whether the fileWithBytes field is set.
    */
   boolean hasFileWithBytes();
   /**
+   * <pre>
+   * The base64-encoded content of the file.
+   * </pre>
+   *
    * <code>bytes file_with_bytes = 2;</code>
    * @return The fileWithBytes.
    */
   com.google.protobuf.ByteString getFileWithBytes();
 
   /**
-   * <code>string mime_type = 3;</code>
-   * @return The mimeType.
+   * <pre>
+   * The media type of the file (e.g., "application/pdf").
+   * </pre>
+   *
+   * <code>string media_type = 3;</code>
+   * @return The mediaType.
    */
-  java.lang.String getMimeType();
+  java.lang.String getMediaType();
   /**
-   * <code>string mime_type = 3;</code>
-   * @return The bytes for mimeType.
+   * <pre>
+   * The media type of the file (e.g., "application/pdf").
+   * </pre>
+   *
+   * <code>string media_type = 3;</code>
+   * @return The bytes for mediaType.
    */
   com.google.protobuf.ByteString
-      getMimeTypeBytes();
+      getMediaTypeBytes();
 
   /**
+   * <pre>
+   * An optional name for the file (e.g., "document.pdf").
+   * </pre>
+   *
    * <code>string name = 4;</code>
    * @return The name.
    */
   java.lang.String getName();
   /**
+   * <pre>
+   * An optional name for the file (e.g., "document.pdf").
+   * </pre>
+   *
    * <code>string name = 4;</code>
    * @return The bytes for name.
    */

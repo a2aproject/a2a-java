@@ -88,7 +88,7 @@ public class SubTypeSerializationTest {
                 ),
                 Arguments.of(
                         new APIKeySecurityScheme.Builder()
-                                .in("test").name("name").description("description").build(),
+                                .location(APIKeySecurityScheme.Location.HEADER).name("name").description("description").build(),
                         "type", APIKeySecurityScheme.API_KEY
                 ),
                 Arguments.of(

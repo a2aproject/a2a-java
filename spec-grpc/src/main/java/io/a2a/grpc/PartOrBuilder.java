@@ -11,16 +11,28 @@ public interface PartOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   * <pre>
+   * The string content of the text part.
+   * </pre>
+   *
    * <code>string text = 1;</code>
    * @return Whether the text field is set.
    */
   boolean hasText();
   /**
+   * <pre>
+   * The string content of the text part.
+   * </pre>
+   *
    * <code>string text = 1;</code>
    * @return The text.
    */
   java.lang.String getText();
   /**
+   * <pre>
+   * The string content of the text part.
+   * </pre>
+   *
    * <code>string text = 1;</code>
    * @return The bytes for text.
    */
@@ -28,31 +40,55 @@ public interface PartOrBuilder extends
       getTextBytes();
 
   /**
+   * <pre>
+   * The file content, represented as either a URI or as base64-encoded bytes.
+   * </pre>
+   *
    * <code>.a2a.v1.FilePart file = 2;</code>
    * @return Whether the file field is set.
    */
   boolean hasFile();
   /**
+   * <pre>
+   * The file content, represented as either a URI or as base64-encoded bytes.
+   * </pre>
+   *
    * <code>.a2a.v1.FilePart file = 2;</code>
    * @return The file.
    */
   io.a2a.grpc.FilePart getFile();
   /**
+   * <pre>
+   * The file content, represented as either a URI or as base64-encoded bytes.
+   * </pre>
+   *
    * <code>.a2a.v1.FilePart file = 2;</code>
    */
   io.a2a.grpc.FilePartOrBuilder getFileOrBuilder();
 
   /**
+   * <pre>
+   * The structured data content.
+   * </pre>
+   *
    * <code>.a2a.v1.DataPart data = 3;</code>
    * @return Whether the data field is set.
    */
   boolean hasData();
   /**
+   * <pre>
+   * The structured data content.
+   * </pre>
+   *
    * <code>.a2a.v1.DataPart data = 3;</code>
    * @return The data.
    */
   io.a2a.grpc.DataPart getData();
   /**
+   * <pre>
+   * The structured data content.
+   * </pre>
+   *
    * <code>.a2a.v1.DataPart data = 3;</code>
    */
   io.a2a.grpc.DataPartOrBuilder getDataOrBuilder();

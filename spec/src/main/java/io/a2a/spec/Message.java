@@ -130,6 +130,15 @@ public final class Message implements EventKind, StreamingEventKind {
     }
 
     /**
+     * Creates a new Builder for constructing Message instances.
+     *
+     * @return a new Message.Builder instance
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Defines the role of the message sender in the conversation.
      * <p>
      * The role determines who originated the message and how it should be processed

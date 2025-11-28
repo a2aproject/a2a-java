@@ -54,7 +54,7 @@ import io.a2a.spec.ListTasksRequest;
 import io.a2a.spec.SendMessageRequest;
 import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
-import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.spec.SubscribeToTaskRequest;
 import org.jspecify.annotations.Nullable;
 
 @Singleton
@@ -220,7 +220,7 @@ public class A2AServerRoutes {
     @Route(regex = "^/v1/tasks/([^/]+):subscribe$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void resubscribeTask(RoutingContext rc) {
         String taskId = rc.pathParam("param0");
-        ServerCallContext context = createCallContext(rc, TaskResubscriptionRequest.METHOD);
+        ServerCallContext context = createCallContext(rc, SubscribeToTaskRequest.METHOD);
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {

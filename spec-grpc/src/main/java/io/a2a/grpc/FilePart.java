@@ -36,7 +36,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private FilePart() {
-    mimeType_ = "";
+    mediaType_ = "";
     name_ = "";
   }
 
@@ -97,6 +97,10 @@ private static final long serialVersionUID = 0L;
 
   public static final int FILE_WITH_URI_FIELD_NUMBER = 1;
   /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
    * <code>string file_with_uri = 1;</code>
    * @return Whether the fileWithUri field is set.
    */
@@ -104,6 +108,10 @@ private static final long serialVersionUID = 0L;
     return fileCase_ == 1;
   }
   /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
    * <code>string file_with_uri = 1;</code>
    * @return The fileWithUri.
    */
@@ -125,6 +133,10 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
    * <code>string file_with_uri = 1;</code>
    * @return The bytes for fileWithUri.
    */
@@ -149,6 +161,10 @@ private static final long serialVersionUID = 0L;
 
   public static final int FILE_WITH_BYTES_FIELD_NUMBER = 2;
   /**
+   * <pre>
+   * The base64-encoded content of the file.
+   * </pre>
+   *
    * <code>bytes file_with_bytes = 2;</code>
    * @return Whether the fileWithBytes field is set.
    */
@@ -157,6 +173,10 @@ private static final long serialVersionUID = 0L;
     return fileCase_ == 2;
   }
   /**
+   * <pre>
+   * The base64-encoded content of the file.
+   * </pre>
+   *
    * <code>bytes file_with_bytes = 2;</code>
    * @return The fileWithBytes.
    */
@@ -168,39 +188,47 @@ private static final long serialVersionUID = 0L;
     return com.google.protobuf.ByteString.EMPTY;
   }
 
-  public static final int MIME_TYPE_FIELD_NUMBER = 3;
+  public static final int MEDIA_TYPE_FIELD_NUMBER = 3;
   @SuppressWarnings("serial")
-  private volatile java.lang.Object mimeType_ = "";
+  private volatile java.lang.Object mediaType_ = "";
   /**
-   * <code>string mime_type = 3;</code>
-   * @return The mimeType.
+   * <pre>
+   * The media type of the file (e.g., "application/pdf").
+   * </pre>
+   *
+   * <code>string media_type = 3;</code>
+   * @return The mediaType.
    */
   @java.lang.Override
-  public java.lang.String getMimeType() {
-    java.lang.Object ref = mimeType_;
+  public java.lang.String getMediaType() {
+    java.lang.Object ref = mediaType_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      mimeType_ = s;
+      mediaType_ = s;
       return s;
     }
   }
   /**
-   * <code>string mime_type = 3;</code>
-   * @return The bytes for mimeType.
+   * <pre>
+   * The media type of the file (e.g., "application/pdf").
+   * </pre>
+   *
+   * <code>string media_type = 3;</code>
+   * @return The bytes for mediaType.
    */
   @java.lang.Override
   public com.google.protobuf.ByteString
-      getMimeTypeBytes() {
-    java.lang.Object ref = mimeType_;
+      getMediaTypeBytes() {
+    java.lang.Object ref = mediaType_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      mimeType_ = b;
+      mediaType_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -211,6 +239,10 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings("serial")
   private volatile java.lang.Object name_ = "";
   /**
+   * <pre>
+   * An optional name for the file (e.g., "document.pdf").
+   * </pre>
+   *
    * <code>string name = 4;</code>
    * @return The name.
    */
@@ -228,6 +260,10 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
+   * <pre>
+   * An optional name for the file (e.g., "document.pdf").
+   * </pre>
+   *
    * <code>string name = 4;</code>
    * @return The bytes for name.
    */
@@ -267,8 +303,8 @@ private static final long serialVersionUID = 0L;
       output.writeBytes(
           2, (com.google.protobuf.ByteString) file_);
     }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(mimeType_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 3, mimeType_);
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(mediaType_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, mediaType_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 4, name_);
@@ -290,8 +326,8 @@ private static final long serialVersionUID = 0L;
         .computeBytesSize(
             2, (com.google.protobuf.ByteString) file_);
     }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(mimeType_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, mimeType_);
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(mediaType_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, mediaType_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(4, name_);
@@ -311,8 +347,8 @@ private static final long serialVersionUID = 0L;
     }
     io.a2a.grpc.FilePart other = (io.a2a.grpc.FilePart) obj;
 
-    if (!getMimeType()
-        .equals(other.getMimeType())) return false;
+    if (!getMediaType()
+        .equals(other.getMediaType())) return false;
     if (!getName()
         .equals(other.getName())) return false;
     if (!getFileCase().equals(other.getFileCase())) return false;
@@ -339,8 +375,8 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + MIME_TYPE_FIELD_NUMBER;
-    hash = (53 * hash) + getMimeType().hashCode();
+    hash = (37 * hash) + MEDIA_TYPE_FIELD_NUMBER;
+    hash = (53 * hash) + getMediaType().hashCode();
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
     switch (fileCase_) {
@@ -494,7 +530,7 @@ private static final long serialVersionUID = 0L;
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      mimeType_ = "";
+      mediaType_ = "";
       name_ = "";
       fileCase_ = 0;
       file_ = null;
@@ -533,7 +569,7 @@ private static final long serialVersionUID = 0L;
     private void buildPartial0(io.a2a.grpc.FilePart result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000004) != 0)) {
-        result.mimeType_ = mimeType_;
+        result.mediaType_ = mediaType_;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.name_ = name_;
@@ -557,8 +593,8 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(io.a2a.grpc.FilePart other) {
       if (other == io.a2a.grpc.FilePart.getDefaultInstance()) return this;
-      if (!other.getMimeType().isEmpty()) {
-        mimeType_ = other.mimeType_;
+      if (!other.getMediaType().isEmpty()) {
+        mediaType_ = other.mediaType_;
         bitField0_ |= 0x00000004;
         onChanged();
       }
@@ -620,7 +656,7 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 18
             case 26: {
-              mimeType_ = input.readStringRequireUtf8();
+              mediaType_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000004;
               break;
             } // case 26
@@ -662,6 +698,10 @@ private static final long serialVersionUID = 0L;
     private int bitField0_;
 
     /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
      * <code>string file_with_uri = 1;</code>
      * @return Whether the fileWithUri field is set.
      */
@@ -670,6 +710,10 @@ private static final long serialVersionUID = 0L;
       return fileCase_ == 1;
     }
     /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
      * <code>string file_with_uri = 1;</code>
      * @return The fileWithUri.
      */
@@ -692,6 +736,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
      * <code>string file_with_uri = 1;</code>
      * @return The bytes for fileWithUri.
      */
@@ -715,6 +763,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
      * <code>string file_with_uri = 1;</code>
      * @param value The fileWithUri to set.
      * @return This builder for chaining.
@@ -728,6 +780,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
      * <code>string file_with_uri = 1;</code>
      * @return This builder for chaining.
      */
@@ -740,6 +796,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
      * <code>string file_with_uri = 1;</code>
      * @param value The bytes for fileWithUri to set.
      * @return This builder for chaining.
@@ -755,6 +815,10 @@ private static final long serialVersionUID = 0L;
     }
 
     /**
+     * <pre>
+     * The base64-encoded content of the file.
+     * </pre>
+     *
      * <code>bytes file_with_bytes = 2;</code>
      * @return Whether the fileWithBytes field is set.
      */
@@ -762,6 +826,10 @@ private static final long serialVersionUID = 0L;
       return fileCase_ == 2;
     }
     /**
+     * <pre>
+     * The base64-encoded content of the file.
+     * </pre>
+     *
      * <code>bytes file_with_bytes = 2;</code>
      * @return The fileWithBytes.
      */
@@ -772,6 +840,10 @@ private static final long serialVersionUID = 0L;
       return com.google.protobuf.ByteString.EMPTY;
     }
     /**
+     * <pre>
+     * The base64-encoded content of the file.
+     * </pre>
+     *
      * <code>bytes file_with_bytes = 2;</code>
      * @param value The fileWithBytes to set.
      * @return This builder for chaining.
@@ -784,6 +856,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The base64-encoded content of the file.
+     * </pre>
+     *
      * <code>bytes file_with_bytes = 2;</code>
      * @return This builder for chaining.
      */
@@ -796,73 +872,93 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object mimeType_ = "";
+    private java.lang.Object mediaType_ = "";
     /**
-     * <code>string mime_type = 3;</code>
-     * @return The mimeType.
+     * <pre>
+     * The media type of the file (e.g., "application/pdf").
+     * </pre>
+     *
+     * <code>string media_type = 3;</code>
+     * @return The mediaType.
      */
-    public java.lang.String getMimeType() {
-      java.lang.Object ref = mimeType_;
+    public java.lang.String getMediaType() {
+      java.lang.Object ref = mediaType_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        mimeType_ = s;
+        mediaType_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
       }
     }
     /**
-     * <code>string mime_type = 3;</code>
-     * @return The bytes for mimeType.
+     * <pre>
+     * The media type of the file (e.g., "application/pdf").
+     * </pre>
+     *
+     * <code>string media_type = 3;</code>
+     * @return The bytes for mediaType.
      */
     public com.google.protobuf.ByteString
-        getMimeTypeBytes() {
-      java.lang.Object ref = mimeType_;
+        getMediaTypeBytes() {
+      java.lang.Object ref = mediaType_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        mimeType_ = b;
+        mediaType_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
     /**
-     * <code>string mime_type = 3;</code>
-     * @param value The mimeType to set.
+     * <pre>
+     * The media type of the file (e.g., "application/pdf").
+     * </pre>
+     *
+     * <code>string media_type = 3;</code>
+     * @param value The mediaType to set.
      * @return This builder for chaining.
      */
-    public Builder setMimeType(
+    public Builder setMediaType(
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
-      mimeType_ = value;
+      mediaType_ = value;
       bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
     /**
-     * <code>string mime_type = 3;</code>
+     * <pre>
+     * The media type of the file (e.g., "application/pdf").
+     * </pre>
+     *
+     * <code>string media_type = 3;</code>
      * @return This builder for chaining.
      */
-    public Builder clearMimeType() {
-      mimeType_ = getDefaultInstance().getMimeType();
+    public Builder clearMediaType() {
+      mediaType_ = getDefaultInstance().getMediaType();
       bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
     /**
-     * <code>string mime_type = 3;</code>
-     * @param value The bytes for mimeType to set.
+     * <pre>
+     * The media type of the file (e.g., "application/pdf").
+     * </pre>
+     *
+     * <code>string media_type = 3;</code>
+     * @param value The bytes for mediaType to set.
      * @return This builder for chaining.
      */
-    public Builder setMimeTypeBytes(
+    public Builder setMediaTypeBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
-      mimeType_ = value;
+      mediaType_ = value;
       bitField0_ |= 0x00000004;
       onChanged();
       return this;
@@ -870,6 +966,10 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object name_ = "";
     /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
      * <code>string name = 4;</code>
      * @return The name.
      */
@@ -886,6 +986,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
      * <code>string name = 4;</code>
      * @return The bytes for name.
      */
@@ -903,6 +1007,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
      * <code>string name = 4;</code>
      * @param value The name to set.
      * @return This builder for chaining.
@@ -916,6 +1024,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
      * <code>string name = 4;</code>
      * @return This builder for chaining.
      */
@@ -926,6 +1038,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
      * <code>string name = 4;</code>
      * @param value The bytes for name to set.
      * @return This builder for chaining.

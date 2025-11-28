@@ -8,6 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:OpenIdConnectSecurityScheme]
+ * Defines a security scheme using OpenID Connect.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.OpenIdConnectSecurityScheme}
@@ -54,7 +55,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object description_ = "";
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -75,7 +76,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Description of this security scheme.
+   * An optional description for the security scheme.
    * </pre>
    *
    * <code>string description = 1;</code>
@@ -101,11 +102,11 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object openIdConnectUrl_ = "";
   /**
    * <pre>
-   * Well-known URL to discover the [[OpenID-Connect-Discovery]] provider
-   * metadata.
+   * The OpenID Connect Discovery URL for the OIDC provider's metadata.
+   * See: https://openid.net/specs/openid-connect-discovery-1_0.html
    * </pre>
    *
-   * <code>string open_id_connect_url = 2;</code>
+   * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The openIdConnectUrl.
    */
   @java.lang.Override
@@ -123,11 +124,11 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Well-known URL to discover the [[OpenID-Connect-Discovery]] provider
-   * metadata.
+   * The OpenID Connect Discovery URL for the OIDC provider's metadata.
+   * See: https://openid.net/specs/openid-connect-discovery-1_0.html
    * </pre>
    *
-   * <code>string open_id_connect_url = 2;</code>
+   * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for openIdConnectUrl.
    */
   @java.lang.Override
@@ -314,6 +315,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:OpenIdConnectSecurityScheme]
+   * Defines a security scheme using OpenID Connect.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.OpenIdConnectSecurityScheme}
@@ -470,7 +472,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object description_ = "";
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -490,7 +492,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -511,7 +513,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -528,7 +530,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -542,7 +544,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Description of this security scheme.
+     * An optional description for the security scheme.
      * </pre>
      *
      * <code>string description = 1;</code>
@@ -562,11 +564,11 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object openIdConnectUrl_ = "";
     /**
      * <pre>
-     * Well-known URL to discover the [[OpenID-Connect-Discovery]] provider
-     * metadata.
+     * The OpenID Connect Discovery URL for the OIDC provider's metadata.
+     * See: https://openid.net/specs/openid-connect-discovery-1_0.html
      * </pre>
      *
-     * <code>string open_id_connect_url = 2;</code>
+     * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The openIdConnectUrl.
      */
     public java.lang.String getOpenIdConnectUrl() {
@@ -583,11 +585,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Well-known URL to discover the [[OpenID-Connect-Discovery]] provider
-     * metadata.
+     * The OpenID Connect Discovery URL for the OIDC provider's metadata.
+     * See: https://openid.net/specs/openid-connect-discovery-1_0.html
      * </pre>
      *
-     * <code>string open_id_connect_url = 2;</code>
+     * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for openIdConnectUrl.
      */
     public com.google.protobuf.ByteString
@@ -605,11 +607,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Well-known URL to discover the [[OpenID-Connect-Discovery]] provider
-     * metadata.
+     * The OpenID Connect Discovery URL for the OIDC provider's metadata.
+     * See: https://openid.net/specs/openid-connect-discovery-1_0.html
      * </pre>
      *
-     * <code>string open_id_connect_url = 2;</code>
+     * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The openIdConnectUrl to set.
      * @return This builder for chaining.
      */
@@ -623,11 +625,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Well-known URL to discover the [[OpenID-Connect-Discovery]] provider
-     * metadata.
+     * The OpenID Connect Discovery URL for the OIDC provider's metadata.
+     * See: https://openid.net/specs/openid-connect-discovery-1_0.html
      * </pre>
      *
-     * <code>string open_id_connect_url = 2;</code>
+     * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearOpenIdConnectUrl() {
@@ -638,11 +640,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Well-known URL to discover the [[OpenID-Connect-Discovery]] provider
-     * metadata.
+     * The OpenID Connect Discovery URL for the OIDC provider's metadata.
+     * See: https://openid.net/specs/openid-connect-discovery-1_0.html
      * </pre>
      *
-     * <code>string open_id_connect_url = 2;</code>
+     * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for openIdConnectUrl to set.
      * @return This builder for chaining.
      */

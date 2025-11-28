@@ -8,8 +8,8 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:TaskStatusUpdateEvent]
- * TaskStatusUpdateEvent is a delta even on a task indicating that a task
- * has changed.
+ * An event sent by the agent to notify the client of a change in a task's
+ * status.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.TaskStatusUpdateEvent}
@@ -60,7 +60,7 @@ private static final long serialVersionUID = 0L;
    * The id of the task that is changed
    * </pre>
    *
-   * <code>string task_id = 1;</code>
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The taskId.
    */
   @java.lang.Override
@@ -81,7 +81,7 @@ private static final long serialVersionUID = 0L;
    * The id of the task that is changed
    * </pre>
    *
-   * <code>string task_id = 1;</code>
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for taskId.
    */
   @java.lang.Override
@@ -107,7 +107,7 @@ private static final long serialVersionUID = 0L;
    * The id of the context that the task belongs to
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The contextId.
    */
   @java.lang.Override
@@ -128,7 +128,7 @@ private static final long serialVersionUID = 0L;
    * The id of the context that the task belongs to
    * </pre>
    *
-   * <code>string context_id = 2;</code>
+   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for contextId.
    */
   @java.lang.Override
@@ -153,7 +153,7 @@ private static final long serialVersionUID = 0L;
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the status field is set.
    */
   @java.lang.Override
@@ -165,7 +165,7 @@ private static final long serialVersionUID = 0L;
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The status.
    */
   @java.lang.Override
@@ -177,7 +177,7 @@ private static final long serialVersionUID = 0L;
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3;</code>
+   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
@@ -188,10 +188,10 @@ private static final long serialVersionUID = 0L;
   private boolean final_ = false;
   /**
    * <pre>
-   * Whether this is the last status update expected for this task.
+   * If true, this is the final event in the stream for this interaction.
    * </pre>
    *
-   * <code>bool final = 4;</code>
+   * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The final.
    */
   @java.lang.Override
@@ -450,8 +450,8 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:TaskStatusUpdateEvent]
-   * TaskStatusUpdateEvent is a delta even on a task indicating that a task
-   * has changed.
+   * An event sent by the agent to notify the client of a change in a task's
+   * status.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.TaskStatusUpdateEvent}
@@ -674,7 +674,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The taskId.
      */
     public java.lang.String getTaskId() {
@@ -694,7 +694,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for taskId.
      */
     public com.google.protobuf.ByteString
@@ -715,7 +715,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The taskId to set.
      * @return This builder for chaining.
      */
@@ -732,7 +732,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearTaskId() {
@@ -746,7 +746,7 @@ private static final long serialVersionUID = 0L;
      * The id of the task that is changed
      * </pre>
      *
-     * <code>string task_id = 1;</code>
+     * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for taskId to set.
      * @return This builder for chaining.
      */
@@ -766,7 +766,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The contextId.
      */
     public java.lang.String getContextId() {
@@ -786,7 +786,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for contextId.
      */
     public com.google.protobuf.ByteString
@@ -807,7 +807,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The contextId to set.
      * @return This builder for chaining.
      */
@@ -824,7 +824,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearContextId() {
@@ -838,7 +838,7 @@ private static final long serialVersionUID = 0L;
      * The id of the context that the task belongs to
      * </pre>
      *
-     * <code>string context_id = 2;</code>
+     * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for contextId to set.
      * @return This builder for chaining.
      */
@@ -860,7 +860,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
@@ -871,7 +871,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The status.
      */
     public io.a2a.grpc.TaskStatus getStatus() {
@@ -886,7 +886,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -906,7 +906,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setStatus(
         io.a2a.grpc.TaskStatus.Builder builderForValue) {
@@ -924,7 +924,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -949,7 +949,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearStatus() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -966,7 +966,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskStatus.Builder getStatusBuilder() {
       bitField0_ |= 0x00000004;
@@ -978,7 +978,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
       if (statusBuilder_ != null) {
@@ -993,7 +993,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3;</code>
+     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskStatus, io.a2a.grpc.TaskStatus.Builder, io.a2a.grpc.TaskStatusOrBuilder> 
@@ -1012,10 +1012,10 @@ private static final long serialVersionUID = 0L;
     private boolean final_ ;
     /**
      * <pre>
-     * Whether this is the last status update expected for this task.
+     * If true, this is the final event in the stream for this interaction.
      * </pre>
      *
-     * <code>bool final = 4;</code>
+     * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The final.
      */
     @java.lang.Override
@@ -1024,10 +1024,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Whether this is the last status update expected for this task.
+     * If true, this is the final event in the stream for this interaction.
      * </pre>
      *
-     * <code>bool final = 4;</code>
+     * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The final to set.
      * @return This builder for chaining.
      */
@@ -1040,10 +1040,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Whether this is the last status update expected for this task.
+     * If true, this is the final event in the stream for this interaction.
      * </pre>
      *
-     * <code>bool final = 4;</code>
+     * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearFinal() {
