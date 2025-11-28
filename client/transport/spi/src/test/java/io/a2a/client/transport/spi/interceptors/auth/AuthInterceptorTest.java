@@ -138,7 +138,7 @@ public class AuthInterceptorTest {
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", authTestCase.sessionId), Map.of());
 
         PayloadAndHeaders result = authInterceptor.intercept(
-                "message/send",
+                "SendMessage",
                 requestPayload,
                 headers,
                 agentCard,
@@ -155,7 +155,7 @@ public class AuthInterceptorTest {
         Map<String, String> headers = Map.of("foo", "bar");
 
         PayloadAndHeaders result = authInterceptor.intercept(
-                "message/send",
+                "SendMessage",
                 requestPayload,
                 headers,
                 null, // no agent card
@@ -207,7 +207,7 @@ public class AuthInterceptorTest {
         Map<String, String> headers = Map.of();
 
         PayloadAndHeaders result = interceptor.intercept(
-                "message/send",
+                "SendMessage",
                 payload,
                 headers,
                 null,
@@ -245,7 +245,7 @@ public class AuthInterceptorTest {
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", sessionId), Map.of());
 
         PayloadAndHeaders result = authInterceptor.intercept(
-            "message/send",
+            "SendMessage",
             requestPayload,
             headers,
             agentCard,
@@ -267,7 +267,7 @@ public class AuthInterceptorTest {
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());
 
         PayloadAndHeaders result = authInterceptor.intercept(
-            "message/send",
+            "SendMessage",
             requestPayload,
             headers,
             agentCard,
@@ -298,7 +298,7 @@ public class AuthInterceptorTest {
         ClientCallContext context = new ClientCallContext(Map.of("sessionId", "session-id"), Map.of());
 
         PayloadAndHeaders result = authInterceptor.intercept(
-            "message/send",
+            "SendMessage",
             requestPayload,
             headers,
             agentCard,

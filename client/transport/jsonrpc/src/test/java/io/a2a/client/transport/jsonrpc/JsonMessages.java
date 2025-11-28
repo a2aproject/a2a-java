@@ -165,7 +165,7 @@ public class JsonMessages {
     static final String SEND_MESSAGE_TEST_REQUEST = """
            {
               "jsonrpc":"2.0",
-              "method":"message/send",
+              "method":"SendMessage",
               "params":{
                 "message":{
                   "messageId":"message-1234",
@@ -214,7 +214,7 @@ public class JsonMessages {
     static final String SEND_MESSAGE_TEST_REQUEST_WITH_MESSAGE_RESPONSE = """
         {
           "jsonrpc":"2.0",
-          "method":"message/send",
+          "method":"SendMessage",
           "params":{
             "message":{
               "messageId":"message-1234",
@@ -263,7 +263,7 @@ public class JsonMessages {
     static final String SEND_MESSAGE_WITH_ERROR_TEST_REQUEST = """
             {
               "jsonrpc":"2.0",
-              "method":"message/send",
+              "method":"SendMessage",
               "params":{
                 "message":{
                   "messageId":"message-1234",
@@ -303,7 +303,7 @@ public class JsonMessages {
     static final String GET_TASK_TEST_REQUEST = """
             {
               "jsonrpc":"2.0",
-              "method":"tasks/get",
+              "method":"GetTask",
               "params":{
                 "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
                 "historyLength":10
@@ -363,7 +363,7 @@ public class JsonMessages {
     static final String CANCEL_TASK_TEST_REQUEST = """
             {
               "jsonrpc":"2.0",
-              "method":"tasks/cancel",
+              "method":"CancelTask",
               "params":{
                 "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
               }
@@ -389,7 +389,7 @@ public class JsonMessages {
     static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
             {
               "jsonrpc":"2.0",
-              "method":"tasks/pushNotificationConfig/get",
+              "method":"GetTaskPushNotificationConfig",
               "params":{
                 "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs"
               }
@@ -413,7 +413,7 @@ public class JsonMessages {
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
            {
               "jsonrpc":"2.0",
-              "method":"tasks/pushNotificationConfig/set",
+              "method":"SetTaskPushNotificationConfig",
               "params":{
                 "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs",
                 "pushNotificationConfig":{
@@ -445,7 +445,7 @@ public class JsonMessages {
     static final String SEND_MESSAGE_WITH_FILE_PART_TEST_REQUEST = """
              {
                "jsonrpc":"2.0",
-               "method":"message/send",
+               "method":"SendMessage",
                "params":{
                  "message":{
                    "messageId":"message-1234-with-file",
@@ -509,7 +509,7 @@ public class JsonMessages {
     static final String SEND_MESSAGE_WITH_DATA_PART_TEST_REQUEST = """
             {
               "jsonrpc":"2.0",
-              "method":"message/send",
+              "method":"SendMessage",
               "params":{
                 "message":{
                   "messageId":"message-1234-with-data",
@@ -577,7 +577,7 @@ public class JsonMessages {
     static final String SEND_MESSAGE_WITH_MIXED_PARTS_TEST_REQUEST = """
             {
               "jsonrpc":"2.0",
-              "method":"message/send",
+              "method":"SendMessage",
               "params":{
                 "message":{
                   "messageId":"message-1234-with-mixed",
@@ -651,7 +651,7 @@ public class JsonMessages {
     static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST = """
             {
                 "jsonrpc": "2.0",
-                "method": "agent/getAuthenticatedExtendedCard"
+                "method": "GetExtendedAgentCard"
             }
             """;
 

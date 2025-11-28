@@ -1312,12 +1312,12 @@ public abstract class AbstractA2AServerTest {
                 "JSONRPC-specific test");
         
         String invalidParamsRequest = """
-            {"jsonrpc": "2.0", "method": "message/send", "params": "not_a_dict", "id": "1"}
+            {"jsonrpc": "2.0", "method": "SendMessage", "params": "not_a_dict", "id": "1"}
             """;
         testInvalidParams(invalidParamsRequest);
 
         invalidParamsRequest = """
-            {"jsonrpc": "2.0", "method": "message/send", "params": {"message": {"parts": "invalid"}}, "id": "1"}
+            {"jsonrpc": "2.0", "method": "SendMessage", "params": {"message": {"parts": "invalid"}}, "id": "1"}
             """;
         testInvalidParams(invalidParamsRequest);
     }
@@ -1345,7 +1345,7 @@ public abstract class AbstractA2AServerTest {
         
         String invalidRequest = """
             {
-             "method": "message/send",
+             "method": "SendMessage",
              "params": {}
             }
             """;
@@ -1391,7 +1391,7 @@ public abstract class AbstractA2AServerTest {
                 "JSONRPC-specific test");
         
         String invalidRequest = """
-            {"jsonrpc": "2.0", "method": "message/send", "params": {}, "id": {"bad": "type"}}
+            {"jsonrpc": "2.0", "method": "SendMessage", "params": {}, "id": {"bad": "type"}}
             """;
         JSONRPCErrorResponse response = given()
                 .contentType(MediaType.APPLICATION_JSON)

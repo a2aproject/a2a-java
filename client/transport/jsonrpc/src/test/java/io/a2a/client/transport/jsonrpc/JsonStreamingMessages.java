@@ -108,7 +108,7 @@ public class JsonStreamingMessages {
     public static final String SEND_MESSAGE_STREAMING_TEST_REQUEST = """
             {
               "jsonrpc":"2.0",
-              "method":"message/stream",
+              "method":"SendStreamingMessage",
               "params":{
                 "message":{
                   "messageId":"message-1234",
