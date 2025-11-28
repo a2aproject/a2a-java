@@ -110,14 +110,8 @@ public class JSONRPCTransport implements ClientTransport {
                                      @Nullable Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
-        SendStreamingMessageRequest sendStreamingMessageRequest = new SendStreamingMessageRequest.Builder()
-                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                .method(SendStreamingMessageRequest.METHOD)
-                .params(request)
-                .build(); // id will be randomly generated
-
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SendStreamingMessageRequest.METHOD,
-                sendStreamingMessageRequest, agentCard, context);
+                ProtoUtils.ToProto.sendMessageRequest(request), agentCard, context);
 
         final AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
@@ -279,14 +273,8 @@ public class JSONRPCTransport implements ClientTransport {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
         checkNotNullParam("errorConsumer", errorConsumer);
-        SubscribeToTaskRequest taskResubscriptionRequest = new SubscribeToTaskRequest.Builder()
-                .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                .method(SubscribeToTaskRequest.METHOD)
-                .params(request)
-                .build(); // id will be randomly generated
-
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SubscribeToTaskRequest.METHOD,
-                taskResubscriptionRequest, agentCard, context);
+                ProtoUtils.ToProto.subscribeToTaskRequest(request), agentCard, context);
 
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);

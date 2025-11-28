@@ -61,7 +61,7 @@ public class ToProtoTest {
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
-                .protocolVersion("0.2.5")
+                .protocolVersion("0.4.0")
                 .build();
         io.a2a.grpc.AgentCard result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
@@ -75,7 +75,7 @@ public class ToProtoTest {
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        assertEquals("0.2.5", result.getProtocolVersion());
+        assertEquals("0.4.0", result.getProtocolVersion());
         agentCard = new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
@@ -96,12 +96,12 @@ public class ToProtoTest {
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
-//                .iconUrl("http://example.com/icon.svg")
+                //                .iconUrl("http://example.com/icon.svg")
                 .securitySchemes(Map.of("basic", new HTTPAuthSecurityScheme.Builder().scheme("basic").description("Basic Auth").build()))
                 .security(List.of(Map.of("oauth", List.of("read"))))
-                .protocolVersion("0.2.5")
+                .protocolVersion("0.4.0")
                 .build();
-       result = ProtoUtils.ToProto.agentCard(agentCard);
+        result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
         assertEquals("Just a hello world agent", result.getDescription());
         assertEquals(1, result.getSupportedInterfacesList().size());
@@ -113,7 +113,7 @@ public class ToProtoTest {
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        assertEquals("0.2.5", result.getProtocolVersion());
+        assertEquals("0.4.0", result.getProtocolVersion());
         assertEquals(1, result.getSecurityCount());
         assertEquals(1, result.getSecurity(0).getSchemesMap().size());
         assertEquals(true, result.getSecurity(0).getSchemesMap().containsKey("oauth"));
@@ -163,7 +163,7 @@ public class ToProtoTest {
         assertEquals(false, result.getArtifacts(0).getParts(0).hasData());
         assertEquals("text", result.getArtifacts(0).getParts(0).getText());
         assertEquals(1, result.getHistoryCount());
-                assertEquals("context-1234", result.getHistory(0).getContextId());
+        assertEquals("context-1234", result.getHistory(0).getContextId());
         assertEquals("message-1234", result.getHistory(0).getMessageId());
         assertEquals(ROLE_USER, result.getHistory(0).getRole());
         assertEquals(1, result.getHistory(0).getPartsCount());

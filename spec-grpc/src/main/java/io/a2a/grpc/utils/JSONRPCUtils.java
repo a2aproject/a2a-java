@@ -12,11 +12,13 @@ import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import io.a2a.grpc.StreamResponse;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.CancelTaskResponse;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.spec.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
+import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetTaskRequest;
@@ -120,6 +122,20 @@ public class JSONRPCUtils {
         }
     }
 
+    public static StreamResponse parseResponseEvent(String body) throws JsonProcessingException {
+         JsonElement jelement = JsonParser.parseString(body);
+        JsonObject jsonRpc = jelement.getAsJsonObject();
+        String version = getAndValidateJsonrpc(jsonRpc);
+        Object id = getAndValidateId(jsonRpc);
+        JsonElement paramsNode = jsonRpc.get("result");
+        if(jsonRpc.has("error")) {
+            throw processError(jsonRpc.getAsJsonObject("error"));
+        }
+        StreamResponse.Builder builder = StreamResponse.newBuilder();
+        parseRequestBody(paramsNode, builder);
+        return builder.build();
+    }
+
     public static JSONRPCResponse<?> parseResponseBody(String body, String method) throws JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
@@ -172,7 +188,9 @@ public class JSONRPCUtils {
                 return new DeleteTaskPushNotificationConfigResponse(id);
             }
             case GetAuthenticatedExtendedCardRequest.METHOD -> {
-                return new DeleteTaskPushNotificationConfigResponse(id);
+                io.a2a.grpc.AgentCard.Builder builder = io.a2a.grpc.AgentCard.newBuilder();
+                parseRequestBody(paramsNode, builder);
+                return new GetAuthenticatedExtendedCardResponse(id, ProtoUtils.FromProto.agentCard(builder));
             }
             default ->
                 throw new MethodNotFoundJsonMappingException("Invalid method", getIdIfPossible(jsonRpc));
@@ -180,10 +198,7 @@ public class JSONRPCUtils {
     }
 
     public static JSONRPCResponse<?> parseError(JsonObject error, Object id, String method) throws JsonProcessingException {
-        String message = error.has("message") ? error.get("message").getAsString() : null;
-        Integer code = error.has("code") ? error.get("code").getAsInt() : null;
-        String data = error.has("data") ? error.get("data").toString(): null;
-        JSONRPCError rpcError = new JSONRPCError(code, message, data);
+        JSONRPCError rpcError = processError(error);
         switch (method) {
             case GetTaskRequest.METHOD -> {
                 return new GetTaskResponse(id, rpcError);
@@ -214,10 +229,17 @@ public class JSONRPCUtils {
         }
     }
 
+    private static JSONRPCError processError(JsonObject error) {
+        String message = error.has("message") ? error.get("message").getAsString() : null;
+        Integer code = error.has("code") ? error.get("code").getAsInt() : null;
+        String data = error.has("data") ? error.get("data").toString() : null;
+        return new JSONRPCError(code, message, data);
+    }
+
     protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder) throws JSONRPCError {
         try (Writer writer = new StringWriter()) {
             GSON.toJson(jsonRpc, writer);
-            JSONRPCUtils.parseRequestBody(writer.toString(), builder);
+            parseJsonString(writer.toString(), builder);
         } catch (IOException e) {
             log.log(Level.SEVERE, "Error parsing JSON request body: {0}", jsonRpc);
             log.log(Level.SEVERE, "Parse error details", e);
@@ -225,7 +247,7 @@ public class JSONRPCUtils {
         }
     }
 
-    protected static void parseRequestBody(String body, com.google.protobuf.Message.Builder builder) throws JSONRPCError {
+    public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder) throws JSONRPCError {
         try {
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {

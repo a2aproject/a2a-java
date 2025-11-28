@@ -17,7 +17,6 @@ import io.a2a.grpc.mapper.MessageSendConfigurationMapper;
 import io.a2a.grpc.mapper.MessageSendParamsMapper;
 import io.a2a.grpc.mapper.SetTaskPushNotificationConfigMapper;
 import io.a2a.grpc.mapper.StreamResponseMapper;
-import io.a2a.grpc.mapper.SubscribeToTaskRequestMapper;
 import io.a2a.grpc.mapper.TaskArtifactUpdateEventMapper;
 import io.a2a.grpc.mapper.TaskIdParamsMapper;
 import io.a2a.grpc.mapper.TaskMapper;
@@ -166,11 +165,6 @@ public class ProtoUtils {
                 throw new IllegalArgumentException("Unsupported event type: " + eventKind);
             }
         }
-
-        public static io.a2a.grpc.SubscribeToTaskRequest subscribeToTaskRequest(io.a2a.spec.SubscribeToTaskRequest request) {
-            return SubscribeToTaskRequestMapper.INSTANCE.toProto(request);
-        }
-
     }
 
     public static class FromProto {
