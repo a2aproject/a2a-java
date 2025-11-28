@@ -30,11 +30,12 @@ public class JsonMessages {
                  },
                  "securitySchemes": {
                    "google": {
-                     "type": "openIdConnect",
-                     "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
+                     "openIdConnectSecurityScheme": {
+                       "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
+                     }
                    }
                  },
-                 "security": [{ "google": ["openid", "profile", "email"] }],
+                 "security": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
                  "defaultInputModes": ["application/json", "text/plain"],
                  "defaultOutputModes": ["application/json", "image/png"],
                  "skills": [
@@ -102,11 +103,12 @@ public class JsonMessages {
                 },
                 "securitySchemes": {
                   "google": {
-                    "type": "openIdConnect",
-                    "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
+                    "openIdConnectSecurityScheme": {
+                      "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
+                    }
                   }
                 },
-                "security": [{ "google": ["openid", "profile", "email"] }],
+               "security": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
                 "defaultInputModes": ["application/json", "text/plain"],
                 "defaultOutputModes": ["application/json", "image/png"],
                 "skills": [
@@ -677,11 +679,12 @@ public class JsonMessages {
                     },
                     "securitySchemes": {
                       "google": {
-                        "type": "openIdConnect",
-                        "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
+                        "openIdConnectSecurityScheme": {
+                          "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
+                        }
                       }
                     },
-                    "security": [{ "google": ["openid", "profile", "email"] }],
+                    "security": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
                     "defaultInputModes": ["application/json", "text/plain"],
                     "defaultOutputModes": ["application/json", "image/png"],
                     "skills": [
@@ -757,11 +760,12 @@ public class JsonMessages {
                 },
                 "securitySchemes": {
                   "google": {
-                    "type": "openIdConnect",
-                    "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
+                    "openIdConnectSecurityScheme": {
+                      "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
+                    }
                   }
                 },
-                "security": [{ "google": ["openid", "profile", "email"] }],
+                "security": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
                 "defaultInputModes": ["application/json", "text/plain"],
                 "defaultOutputModes": ["application/json", "image/png"],
                 "skills": [
@@ -800,6 +804,6 @@ public class JsonMessages {
                   }
                 ],
                 "supportsAuthenticatedExtendedCard": true,
-                "protocolVersion": "0.2.5"
+                "protocolVersion": "0.4.0"
               }""";
 }
