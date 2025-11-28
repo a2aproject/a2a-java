@@ -1,6 +1,10 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS io.github.a2asdk:a2a-java-sdk-client:0.4.0.Alpha1-SNAPSHOT
 //DEPS io.github.a2asdk:a2a-java-sdk-client-transport-jsonrpc:0.4.0.Alpha1-SNAPSHOT
+//DEPS io.opentelemetry:opentelemetry-sdk:1.44.1
+//DEPS io.opentelemetry:opentelemetry-exporter-otlp:1.44.1
+//DEPS io.github.a2asdk:a2a-java-sdk-opentelemetry:0.4.0.Alpha1-SNAPSHOT
+//DEPS io.opentelemetry:opentelemetry-exporter-logging:1.44.1
 //SOURCES HelloWorldClient.java
 
 /**

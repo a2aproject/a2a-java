@@ -1,5 +1,6 @@
 package io.a2a.server.requesthandlers;
 
+import static io.a2a.server.interceptors.Kind.SERVER;
 import static io.a2a.server.util.async.AsyncUtils.convertingProcessor;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import static io.a2a.server.util.async.AsyncUtils.processor;
@@ -35,6 +36,7 @@ import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.QueueManager;
 import io.a2a.server.events.TaskQueueExistsException;
+import io.a2a.server.interceptors.Trace;
 import io.a2a.server.tasks.PushNotificationConfigStore;
 import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.server.tasks.ResultAggregator;
@@ -152,6 +154,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public Task onGetTask(TaskQueryParams params, ServerCallContext context) throws JSONRPCError {
         LOGGER.debug("onGetTask {}", params.id());
         Task task = taskStore.get(params.id());
@@ -185,6 +188,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws JSONRPCError {
         LOGGER.debug("onListTasks with contextId={}, status={}, pageSize={}, pageToken={}, lastUpdatedAfter={}",
                 params.contextId(), params.status(), params.pageSize(), params.pageToken(), params.lastUpdatedAfter());
@@ -207,6 +211,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public Task onCancelTask(TaskIdParams params, ServerCallContext context) throws JSONRPCError {
         Task task = taskStore.get(params.id());
         if (task == null) {
@@ -259,6 +264,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public EventKind onMessageSend(MessageSendParams params, ServerCallContext context) throws JSONRPCError {
         LOGGER.debug("onMessageSend - task: {}; context {}", params.message().getTaskId(), params.message().getContextId());
         MessageSendSetup mss = initMessageSend(params, context);
@@ -392,6 +398,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public Flow.Publisher<StreamingEventKind> onMessageSendStream(
             MessageSendParams params, ServerCallContext context) throws JSONRPCError {
         LOGGER.debug("onMessageSendStream START - task: {}; context: {}; runningAgents: {}; backgroundTasks: {}",
@@ -546,6 +553,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public TaskPushNotificationConfig onSetTaskPushNotificationConfig(
             TaskPushNotificationConfig params, ServerCallContext context) throws JSONRPCError {
         if (pushConfigStore == null) {
@@ -561,6 +569,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public TaskPushNotificationConfig onGetTaskPushNotificationConfig(
             GetTaskPushNotificationConfigParams params, ServerCallContext context) throws JSONRPCError {
         if (pushConfigStore == null) {
@@ -592,6 +601,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public Flow.Publisher<StreamingEventKind> onResubscribeToTask(
             TaskIdParams params, ServerCallContext context) throws JSONRPCError {
         LOGGER.debug("onResubscribeToTask - taskId: {}", params.id());
@@ -623,6 +633,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public List<TaskPushNotificationConfig> onListTaskPushNotificationConfig(
             ListTaskPushNotificationConfigParams params, ServerCallContext context) throws JSONRPCError {
         if (pushConfigStore == null) {
@@ -646,6 +657,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @Trace(extractor = RequestHandlerAttributeExtractor.class, kind = SERVER)
     public void onDeleteTaskPushNotificationConfig(
             DeleteTaskPushNotificationConfigParams params, ServerCallContext context) {
         if (pushConfigStore == null) {
