@@ -16,6 +16,7 @@ import io.a2a.grpc.mapper.MessageMapper;
 import io.a2a.grpc.mapper.MessageSendConfigurationMapper;
 import io.a2a.grpc.mapper.MessageSendParamsMapper;
 import io.a2a.grpc.mapper.SetTaskPushNotificationConfigMapper;
+import io.a2a.grpc.mapper.StreamResponseMapper;
 import io.a2a.grpc.mapper.TaskArtifactUpdateEventMapper;
 import io.a2a.grpc.mapper.TaskIdParamsMapper;
 import io.a2a.grpc.mapper.TaskMapper;
@@ -122,26 +123,7 @@ public class ProtoUtils {
         }
 
         public static StreamResponse streamResponse(StreamingEventKind streamingEventKind) {
-            // This makes a decision and wraps the MapStruct Mappers
-            if (streamingEventKind instanceof TaskStatusUpdateEvent) {
-                return StreamResponse.newBuilder()
-                        .setStatusUpdate(taskStatusUpdateEvent((TaskStatusUpdateEvent) streamingEventKind))
-                        .build();
-            } else if (streamingEventKind instanceof TaskArtifactUpdateEvent) {
-                return StreamResponse.newBuilder()
-                        .setArtifactUpdate(taskArtifactUpdateEvent((TaskArtifactUpdateEvent) streamingEventKind))
-                        .build();
-            } else if (streamingEventKind instanceof Message) {
-                return StreamResponse.newBuilder()
-                        .setMsg(message((Message) streamingEventKind))
-                        .build();
-            } else if (streamingEventKind instanceof Task) {
-                return StreamResponse.newBuilder()
-                        .setTask(task((Task) streamingEventKind))
-                        .build();
-            } else {
-                throw new IllegalArgumentException("Unsupported event type: " + streamingEventKind);
-            }
+            return StreamResponseMapper.INSTANCE.toProto(streamingEventKind);
         }
 
         public static io.a2a.grpc.SendMessageResponse taskOrMessage(EventKind eventKind) {
@@ -306,6 +288,13 @@ public class ProtoUtils {
                     ? (io.a2a.grpc.ListTasksResponse) listTasksResponse
                     : ((io.a2a.grpc.ListTasksResponse.Builder) listTasksResponse).build();
             return ListTasksResultMapper.INSTANCE.fromProto(eventProto);
+        }
+
+        public static StreamingEventKind streamingEventKind(io.a2a.grpc.StreamResponseOrBuilder streamResponse) {
+            io.a2a.grpc.StreamResponse streamResponseProto = streamResponse instanceof io.a2a.grpc.StreamResponse
+                    ? (io.a2a.grpc.StreamResponse) streamResponse
+                    : ((io.a2a.grpc.StreamResponse.Builder) streamResponse).build();
+            return StreamResponseMapper.INSTANCE.fromProto(streamResponseProto);
         }
     }
 
