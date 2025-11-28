@@ -17,4 +17,16 @@ public interface OAuth2SecuritySchemeMapper {
     @Mapping(target = "description", source = "description", conditionExpression = "java(domain.getDescription() != null)")
     @Mapping(target = "oauth2MetadataUrl", source = "oauth2MetadataUrl", conditionExpression = "java(domain.getOauth2MetadataUrl() != null)")
     io.a2a.grpc.OAuth2SecurityScheme toProto(io.a2a.spec.OAuth2SecurityScheme domain);
+
+    default io.a2a.spec.OAuth2SecurityScheme fromProto(io.a2a.grpc.OAuth2SecurityScheme proto) {
+        if (proto == null) {
+            return null;
+        }
+
+        io.a2a.spec.OAuthFlows flows = OAuthFlowsMapper.INSTANCE.fromProto(proto.getFlows());
+        String description = proto.getDescription().isEmpty() ? null : proto.getDescription();
+        String oauth2MetadataUrl = proto.getOauth2MetadataUrl().isEmpty() ? null : proto.getOauth2MetadataUrl();
+
+        return new io.a2a.spec.OAuth2SecurityScheme(flows, description, oauth2MetadataUrl);
+    }
 }

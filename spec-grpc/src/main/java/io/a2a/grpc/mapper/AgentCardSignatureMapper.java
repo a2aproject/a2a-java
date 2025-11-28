@@ -24,4 +24,13 @@ public interface AgentCardSignatureMapper {
     @Mapping(source = "protectedHeader", target = "protected")
     @Mapping(target = "header", source = "header", conditionExpression = "java(domain.header() != null)", qualifiedByName = "mapToStruct")
     io.a2a.grpc.AgentCardSignature toProto(io.a2a.spec.AgentCardSignature domain);
+
+    /**
+     * Converts proto AgentCardSignature to domain AgentCardSignature.
+     * <p>
+     * Maps protected field → protectedHeader and header from struct to map.
+     */
+    @Mapping(source = "protected", target = "protectedHeader")
+    @Mapping(target = "header", source = "header", qualifiedByName = "structToMap")
+    io.a2a.spec.AgentCardSignature fromProto(io.a2a.grpc.AgentCardSignature proto);
 }

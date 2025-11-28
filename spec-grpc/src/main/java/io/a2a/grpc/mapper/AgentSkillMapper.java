@@ -14,4 +14,6 @@ public interface AgentSkillMapper {
     AgentSkillMapper INSTANCE = A2AMappers.getMapper(AgentSkillMapper.class);
 
     io.a2a.grpc.AgentSkill toProto(io.a2a.spec.AgentSkill domain);
+
+    io.a2a.spec.AgentSkill fromProto(io.a2a.grpc.AgentSkill proto);
 }

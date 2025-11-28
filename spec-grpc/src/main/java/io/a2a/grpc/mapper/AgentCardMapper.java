@@ -29,4 +29,9 @@ public interface AgentCardMapper {
     @Mapping(target = "preferredTransport", ignore = true)  // Deprecated in proto, derived from supportedInterfaces[0]
     @Mapping(target = "additionalInterfaces", ignore = true)  // Deprecated in proto, use supportedInterfaces instead
     io.a2a.grpc.AgentCard toProto(io.a2a.spec.AgentCard domain);
+
+    @Mapping(target = "provider", source = "provider", conditionExpression = "java(proto.hasProvider())")
+    @Mapping(target = "documentationUrl", source = "documentationUrl", conditionExpression = "java(!proto.getDocumentationUrl().isEmpty())")
+    @Mapping(target = "iconUrl", source = "iconUrl", conditionExpression = "java(!proto.getIconUrl().isEmpty())")
+    io.a2a.spec.AgentCard fromProto(io.a2a.grpc.AgentCard proto);
 }

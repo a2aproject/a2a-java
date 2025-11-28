@@ -19,4 +19,6 @@ public interface OAuthFlowsMapper {
     OAuthFlowsMapper INSTANCE = A2AMappers.getMapper(OAuthFlowsMapper.class);
 
     io.a2a.grpc.OAuthFlows toProto(io.a2a.spec.OAuthFlows domain);
+
+    io.a2a.spec.OAuthFlows fromProto(io.a2a.grpc.OAuthFlows proto);
 }

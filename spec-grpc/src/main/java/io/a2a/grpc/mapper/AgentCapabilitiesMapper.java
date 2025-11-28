@@ -14,4 +14,6 @@ public interface AgentCapabilitiesMapper {
     AgentCapabilitiesMapper INSTANCE = A2AMappers.getMapper(AgentCapabilitiesMapper.class);
 
     io.a2a.grpc.AgentCapabilities toProto(io.a2a.spec.AgentCapabilities domain);
+
+    io.a2a.spec.AgentCapabilities fromProto(io.a2a.grpc.AgentCapabilities proto);
 }
