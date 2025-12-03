@@ -1,6 +1,7 @@
 package io.a2a.transport.rest.handler;
 
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
+import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -293,7 +294,7 @@ public class RestHandler {
         try {
             Utils.OBJECT_MAPPER.readTree(json);
         } catch (JacksonException e) {
-            throw new JSONParseError(JSONParseError.DEFAULT_CODE, "Failed to parse json", e.getMessage());
+            throw new JSONParseError(JSON_PARSE_ERROR_CODE, "Failed to parse json", e.getMessage());
         }
     }
 

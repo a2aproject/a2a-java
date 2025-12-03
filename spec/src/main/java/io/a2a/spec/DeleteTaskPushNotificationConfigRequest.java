@@ -27,7 +27,7 @@ import io.a2a.util.Utils;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<DeleteTaskPushNotificationConfigParams> {
 
-    public static final String METHOD = "tasks/pushNotificationConfig/delete";
+    public static final String METHOD = "DeleteTaskPushNotificationConfig";
 
     @JsonCreator
     public DeleteTaskPushNotificationConfigRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,

@@ -25,8 +25,13 @@ public interface AgentCardMapper {
     @Mapping(target = "provider", source = "provider", conditionExpression = "java(domain.provider() != null)")
     @Mapping(target = "documentationUrl", source = "documentationUrl", conditionExpression = "java(domain.documentationUrl() != null)")
     @Mapping(target = "iconUrl", source = "iconUrl", conditionExpression = "java(domain.iconUrl() != null)")
-    @Mapping(target = "url", source = "url", conditionExpression = "java(domain.url() != null)")
-    @Mapping(target = "preferredTransport", source = "preferredTransport", conditionExpression = "java(domain.preferredTransport() != null)")
-    @Mapping(source = "additionalInterfaces", target = "supportedInterfaces")
+    @Mapping(target = "url", ignore = true)  // Deprecated in proto, derived from supportedInterfaces[0]
+    @Mapping(target = "preferredTransport", ignore = true)  // Deprecated in proto, derived from supportedInterfaces[0]
+    @Mapping(target = "additionalInterfaces", ignore = true)  // Deprecated in proto, use supportedInterfaces instead
     io.a2a.grpc.AgentCard toProto(io.a2a.spec.AgentCard domain);
+
+    @Mapping(target = "provider", source = "provider", conditionExpression = "java(proto.hasProvider())")
+    @Mapping(target = "documentationUrl", source = "documentationUrl", conditionExpression = "java(!proto.getDocumentationUrl().isEmpty())")
+    @Mapping(target = "iconUrl", source = "iconUrl", conditionExpression = "java(!proto.getIconUrl().isEmpty())")
+    io.a2a.spec.AgentCard fromProto(io.a2a.grpc.AgentCard proto);
 }

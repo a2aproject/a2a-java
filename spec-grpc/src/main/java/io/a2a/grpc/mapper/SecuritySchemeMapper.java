@@ -70,4 +70,35 @@ public interface SecuritySchemeMapper {
 
         throw new IllegalArgumentException("Unknown SecurityScheme type: " + domain.getClass());
     }
+
+    /**
+     * Converts a protobuf SecurityScheme to domain SecurityScheme.
+     * <p>
+     * Uses oneof checks to determine which security scheme type is set, dispatching to the
+     * appropriate concrete mapper. This reverses the toProto conversion by checking which
+     * oneof field is populated.
+     *
+     * @param proto the protobuf SecurityScheme with a oneof field set
+     * @return the domain security scheme (sealed interface implementation)
+     */
+    default io.a2a.spec.SecurityScheme fromProto(io.a2a.grpc.SecurityScheme proto) {
+        if (proto == null) {
+            return null;
+        }
+
+        return switch (proto.getSchemeCase()) {
+            case API_KEY_SECURITY_SCHEME ->
+                APIKeySecuritySchemeMapper.INSTANCE.fromProto(proto.getApiKeySecurityScheme());
+            case HTTP_AUTH_SECURITY_SCHEME ->
+                HTTPAuthSecuritySchemeMapper.INSTANCE.fromProto(proto.getHttpAuthSecurityScheme());
+            case OAUTH2_SECURITY_SCHEME ->
+                OAuth2SecuritySchemeMapper.INSTANCE.fromProto(proto.getOauth2SecurityScheme());
+            case OPEN_ID_CONNECT_SECURITY_SCHEME ->
+                OpenIdConnectSecuritySchemeMapper.INSTANCE.fromProto(proto.getOpenIdConnectSecurityScheme());
+            case MTLS_SECURITY_SCHEME ->
+                MutualTLSSecuritySchemeMapper.INSTANCE.fromProto(proto.getMtlsSecurityScheme());
+            case SCHEME_NOT_SET ->
+                throw new IllegalArgumentException("SecurityScheme oneof field not set");
+        };
+    }
 }

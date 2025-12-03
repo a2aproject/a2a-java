@@ -3,6 +3,7 @@ package io.a2a.examples.cloud;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
@@ -30,7 +31,8 @@ public class CloudAgentCardProducer {
                 .name("Cloud Deployment Demo Agent")
                 .description("Demonstrates A2A multi-pod deployment with Kafka event replication, " +
                         "PostgreSQL persistence, and round-robin load balancing across Kubernetes pods")
-                .url(agentUrl)
+                .supportedInterfaces(Collections.singletonList(
+                        new AgentInterface("JSONRPC", agentUrl)))
                 .version("1.0.0")
                 .capabilities(new AgentCapabilities.Builder()
                         .streaming(true)

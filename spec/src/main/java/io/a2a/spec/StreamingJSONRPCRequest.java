@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(using = StreamingJSONRPCRequestDeserializer.class)
-public abstract sealed class StreamingJSONRPCRequest<T> extends JSONRPCRequest<T> permits TaskResubscriptionRequest,
+public abstract sealed class StreamingJSONRPCRequest<T> extends JSONRPCRequest<T> permits SubscribeToTaskRequest,
         SendStreamingMessageRequest {
 
 }

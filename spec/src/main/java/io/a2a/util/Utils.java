@@ -8,6 +8,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.a2a.spec.A2AClientException;
+import io.a2a.spec.AgentCard;
 
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Part;
@@ -197,6 +199,19 @@ public class Utils {
         } catch (JsonProcessingException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * Get the first defined URL in the supported interaces of the agent card.
+     * @param agentCard the agentcard where the interfaces are defined.
+     * @return the first defined URL in the supported interaces of the agent card.
+     * @throws A2AClientException
+     */
+    public static String getFavoriteInterface(AgentCard agentCard) throws A2AClientException {
+        if(agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {
+            throw new A2AClientException("No server interface available in the AgentCard");
+        }
+        return agentCard.supportedInterfaces().get(0).url();
     }
 
 }

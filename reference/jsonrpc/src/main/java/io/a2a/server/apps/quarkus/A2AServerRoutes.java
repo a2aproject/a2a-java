@@ -22,8 +22,9 @@ import jakarta.inject.Singleton;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.JsonEOFException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonSyntaxException;
 import io.a2a.common.A2AHeaders;
+import io.a2a.grpc.utils.JSONRPCUtils;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
@@ -31,10 +32,15 @@ import io.a2a.server.extensions.A2AExtensions;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
+import io.a2a.spec.CancelTaskResponse;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
+import io.a2a.spec.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
+import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
+import io.a2a.spec.GetTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetTaskRequest;
+import io.a2a.spec.GetTaskResponse;
 import io.a2a.spec.IdJsonMappingException;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidParamsError;
@@ -46,18 +52,21 @@ import io.a2a.spec.JSONRPCErrorResponse;
 import io.a2a.spec.JSONRPCRequest;
 import io.a2a.spec.JSONRPCResponse;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
+import io.a2a.spec.ListTaskPushNotificationConfigResponse;
 import io.a2a.spec.ListTasksRequest;
+import io.a2a.spec.ListTasksResponse;
 import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.MethodNotFoundJsonMappingException;
 import io.a2a.spec.NonStreamingJSONRPCRequest;
 import io.a2a.spec.SendMessageRequest;
+import io.a2a.spec.SendMessageResponse;
 import io.a2a.spec.SendStreamingMessageRequest;
+import io.a2a.spec.SendStreamingMessageResponse;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
-import io.a2a.spec.StreamingJSONRPCRequest;
-import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.spec.SetTaskPushNotificationConfigResponse;
+import io.a2a.spec.SubscribeToTaskRequest;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
-import io.a2a.util.Utils;
 import io.quarkus.security.Authenticated;
 import io.quarkus.vertx.web.Body;
 import io.quarkus.vertx.web.ReactiveRoutes;
@@ -96,23 +105,20 @@ public class A2AServerRoutes {
         Multi<? extends JSONRPCResponse<?>> streamingResponse = null;
         JSONRPCErrorResponse error = null;
         try {
-            JsonNode node = Utils.OBJECT_MAPPER.readTree(body);
-            JsonNode method = node != null ? node.get("method") : null;
-            streaming = method != null && (SendStreamingMessageRequest.METHOD.equals(method.asText())
-                    || TaskResubscriptionRequest.METHOD.equals(method.asText()));
-            String methodName = (method != null && method.isTextual()) ? method.asText() : null;
-            if (methodName != null) {
-                context.getState().put(METHOD_NAME_KEY, methodName);
-            }
-            if (streaming) {
-                StreamingJSONRPCRequest<?> request = Utils.OBJECT_MAPPER.treeToValue(node, StreamingJSONRPCRequest.class);
-                streamingResponse = processStreamingRequest(request, context);
+            JSONRPCRequest<?> request = JSONRPCUtils.parseRequestBody(body);
+            context.getState().put(METHOD_NAME_KEY, request.getMethod());
+            if (request instanceof NonStreamingJSONRPCRequest nonStreamingRequest) {
+                nonStreamingResponse = processNonStreamingRequest(nonStreamingRequest, context);
             } else {
-                NonStreamingJSONRPCRequest<?> request = Utils.OBJECT_MAPPER.treeToValue(node, NonStreamingJSONRPCRequest.class);
-                nonStreamingResponse = processNonStreamingRequest(request, context);
+                streaming = true;
+                streamingResponse = processStreamingRequest(request, context);
             }
+        } catch (JSONRPCError e) {
+            error = new JSONRPCErrorResponse(e);
         } catch (JsonProcessingException e) {
             error = handleError(e);
+        } catch (JsonSyntaxException e) {
+            error = new JSONRPCErrorResponse(new JSONParseError(e.getMessage()));
         } catch (Throwable t) {
             error = new JSONRPCErrorResponse(new InternalError(t.getMessage()));
         } finally {
@@ -120,7 +126,7 @@ public class A2AServerRoutes {
                 rc.response()
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .end(Utils.toJsonString(error));
+                        .end(serializeResponse(error));
             } else if (streaming) {
                 final Multi<? extends JSONRPCResponse<?>> finalStreamingResponse = streamingResponse;
                 executor.execute(() -> {
@@ -132,14 +138,14 @@ public class A2AServerRoutes {
                 rc.response()
                         .setStatusCode(200)
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .end(Utils.toJsonString(nonStreamingResponse));
+                        .end(serializeResponse(nonStreamingResponse));
             }
         }
     }
 
     private JSONRPCErrorResponse handleError(JsonProcessingException exception) {
         Object id = null;
-        JSONRPCError jsonRpcError = null;
+        JSONRPCError jsonRpcError;
         if (exception.getCause() instanceof JsonParseException) {
             jsonRpcError = new JSONParseError();
         } else if (exception instanceof JsonEOFException) {
@@ -171,29 +177,35 @@ public class A2AServerRoutes {
         return jsonRpcHandler.getAgentCard();
     }
 
-    private JSONRPCResponse<?> processNonStreamingRequest(
-            NonStreamingJSONRPCRequest<?> request, ServerCallContext context) {
+    private JSONRPCResponse<?> processNonStreamingRequest(NonStreamingJSONRPCRequest<?> request, ServerCallContext context) {
         if (request instanceof GetTaskRequest req) {
             return jsonRpcHandler.onGetTask(req, context);
-        } else if (request instanceof CancelTaskRequest req) {
-            return jsonRpcHandler.onCancelTask(req, context);
-        } else if (request instanceof ListTasksRequest req) {
-            return jsonRpcHandler.onListTasks(req, context);
-        } else if (request instanceof SetTaskPushNotificationConfigRequest req) {
-            return jsonRpcHandler.setPushNotificationConfig(req, context);
-        } else if (request instanceof GetTaskPushNotificationConfigRequest req) {
-            return jsonRpcHandler.getPushNotificationConfig(req, context);
-        } else if (request instanceof SendMessageRequest req) {
-            return jsonRpcHandler.onMessageSend(req, context);
-        } else if (request instanceof ListTaskPushNotificationConfigRequest req) {
-            return jsonRpcHandler.listPushNotificationConfig(req, context);
-        } else if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
-            return jsonRpcHandler.deletePushNotificationConfig(req, context);
-        } else if (request instanceof GetAuthenticatedExtendedCardRequest req) {
-            return jsonRpcHandler.onGetAuthenticatedExtendedCardRequest(req, context);
-        } else {
-            return generateErrorResponse(request, new UnsupportedOperationError());
         }
+        if (request instanceof CancelTaskRequest req) {
+            return jsonRpcHandler.onCancelTask(req, context);
+        }
+        if (request instanceof ListTasksRequest req) {
+            return jsonRpcHandler.onListTasks(req, context);
+        }
+        if (request instanceof SetTaskPushNotificationConfigRequest req) {
+            return jsonRpcHandler.setPushNotificationConfig(req, context);
+        }
+        if (request instanceof GetTaskPushNotificationConfigRequest req) {
+            return jsonRpcHandler.getPushNotificationConfig(req, context);
+        }
+        if (request instanceof SendMessageRequest req) {
+            return jsonRpcHandler.onMessageSend(req, context);
+        }
+        if (request instanceof ListTaskPushNotificationConfigRequest req) {
+            return jsonRpcHandler.listPushNotificationConfig(req, context);
+        }
+        if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
+            return jsonRpcHandler.deletePushNotificationConfig(req, context);
+        }
+        if (request instanceof GetAuthenticatedExtendedCardRequest req) {
+            return jsonRpcHandler.onGetAuthenticatedExtendedCardRequest(req, context);
+        }
+        return generateErrorResponse(request, new UnsupportedOperationError());
     }
 
     private Multi<? extends JSONRPCResponse<?>> processStreamingRequest(
@@ -201,8 +213,8 @@ public class A2AServerRoutes {
         Flow.Publisher<? extends JSONRPCResponse<?>> publisher;
         if (request instanceof SendStreamingMessageRequest req) {
             publisher = jsonRpcHandler.onMessageSendStream(req, context);
-        } else if (request instanceof TaskResubscriptionRequest req) {
-            publisher = jsonRpcHandler.onResubscribeToTask(req, context);
+        } else if (request instanceof SubscribeToTaskRequest req) {
+            publisher = jsonRpcHandler.onSubscribeToTask(req, context);
         } else {
             return Multi.createFrom().item(generateErrorResponse(request, new UnsupportedOperationError()));
         }
@@ -254,6 +266,46 @@ public class A2AServerRoutes {
         } else {
             CallContextFactory builder = callContextFactory.get();
             return builder.build(rc);
+        }
+    }
+
+    private static String serializeResponse(JSONRPCResponse<?> response) {
+        // For error responses, use Jackson serialization (errors are standardized)
+        if (response instanceof JSONRPCErrorResponse error) {
+            return JSONRPCUtils.toJsonRPCErrorResponse(error.getId(), error.getError());
+        }
+        if (response.getError() != null) {
+            return JSONRPCUtils.toJsonRPCErrorResponse(response.getId(), response.getError());
+        }
+        // Convert domain response to protobuf message and serialize
+        com.google.protobuf.MessageOrBuilder protoMessage = convertToProto(response);
+        return JSONRPCUtils.toJsonRPCResultResponse(response.getId(), protoMessage);
+    }
+
+    private static com.google.protobuf.MessageOrBuilder convertToProto(JSONRPCResponse<?> response) {
+        if (response instanceof GetTaskResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.task(r.getResult());
+        } else if (response instanceof CancelTaskResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.task(r.getResult());
+        } else if (response instanceof SendMessageResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.taskOrMessage(r.getResult());
+        } else if (response instanceof ListTasksResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.listTasksResult(r.getResult());
+        } else if (response instanceof SetTaskPushNotificationConfigResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.setTaskPushNotificationConfigResponse(r.getResult());
+        } else if (response instanceof GetTaskPushNotificationConfigResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
+        } else if (response instanceof ListTaskPushNotificationConfigResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(r.getResult());
+        } else if (response instanceof DeleteTaskPushNotificationConfigResponse) {
+            // DeleteTaskPushNotificationConfig has no result body, just return empty message
+            return com.google.protobuf.Empty.getDefaultInstance();
+        } else if (response instanceof GetAuthenticatedExtendedCardResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.getAuthenticatedExtendedCardResponse(r.getResult());
+        } else if (response instanceof SendStreamingMessageResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.taskOrMessageStream(r.getResult());
+        } else {
+            throw new IllegalArgumentException("Unknown response type: " + response.getClass().getName());
         }
     }
 
@@ -331,9 +383,11 @@ public class A2AServerRoutes {
                         ReactiveRoutes.ServerSentEvent<?> ev = (ReactiveRoutes.ServerSentEvent<?>) o;
                         long id = ev.id() != -1 ? ev.id() : count.getAndIncrement();
                         String e = ev.event() == null ? "" : "event: " + ev.event() + "\n";
-                        return Buffer.buffer(e + "data: " + Utils.toJsonString(ev.data()) + "\nid: " + id + "\n\n");
+                        String data = serializeResponse((JSONRPCResponse<?>) ev.data());
+                        return Buffer.buffer(e + "data: " + data + "\nid: " + id + "\n\n");
                     }
-                    return Buffer.buffer("data: " + Utils.toJsonString(o) + "\nid: " + count.getAndIncrement() + "\n\n");
+                    String data = serializeResponse((JSONRPCResponse<?>) o);
+                    return Buffer.buffer("data: " + data + "\nid: " + count.getAndIncrement() + "\n\n");
                 }
             }), rc);
         }

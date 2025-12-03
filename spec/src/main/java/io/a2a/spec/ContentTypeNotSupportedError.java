@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
+
 /**
  * A2A Protocol error indicating incompatibility between requested content types and agent capabilities.
  * <p>
@@ -44,15 +46,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContentTypeNotSupportedError extends JSONRPCError {
 
-    public final static Integer DEFAULT_CODE = -32005;
-
     @JsonCreator
     public ContentTypeNotSupportedError(
             @JsonProperty("code") Integer code,
             @JsonProperty("message") String message,
             @JsonProperty("data") Object data) {
-        super(
-                defaultIfNull(code, DEFAULT_CODE),
+        super(defaultIfNull(code, CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE),
                 defaultIfNull(message, "Incompatible content types"),
                 data);
     }

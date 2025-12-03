@@ -15,4 +15,14 @@ public interface MutualTLSSecuritySchemeMapper {
 
     @Mapping(target = "description", source = "description", conditionExpression = "java(domain.getDescription() != null)")
     io.a2a.grpc.MutualTlsSecurityScheme toProto(io.a2a.spec.MutualTLSSecurityScheme domain);
+
+    default io.a2a.spec.MutualTLSSecurityScheme fromProto(io.a2a.grpc.MutualTlsSecurityScheme proto) {
+        if (proto == null) {
+            return null;
+        }
+
+        String description = proto.getDescription().isEmpty() ? null : proto.getDescription();
+
+        return new io.a2a.spec.MutualTLSSecurityScheme(description);
+    }
 }

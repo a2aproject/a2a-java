@@ -25,4 +25,11 @@ public interface DeleteTaskPushNotificationConfigParamsMapper {
     @Mapping(target = "pushNotificationConfigId", expression = "java(ResourceNameParser.parseTaskPushNotificationConfigName(proto.getName())[1])")
     @Mapping(target = "metadata", ignore = true)
     DeleteTaskPushNotificationConfigParams fromProto(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest proto);
+
+    /**
+     * Converts domain DeleteTaskPushNotificationConfigParams to proto DeleteTaskPushNotificationConfigRequest.
+     * Constructs the name field from task ID and config ID.
+     */
+    @Mapping(target = "name", expression = "java(ResourceNameParser.defineTaskPushNotificationConfigName(domain.id(), domain.pushNotificationConfigId()))")
+    io.a2a.grpc.DeleteTaskPushNotificationConfigRequest toProto(DeleteTaskPushNotificationConfigParams domain);
 }

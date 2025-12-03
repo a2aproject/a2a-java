@@ -1,5 +1,6 @@
 package io.a2a.spec;
 
+import static io.a2a.spec.A2AErrorCodes.INTERNAL_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -34,15 +35,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InternalError extends JSONRPCError {
 
-    public final static Integer DEFAULT_CODE = -32603;
-
     @JsonCreator
     public InternalError(
             @JsonProperty("code") Integer code,
             @JsonProperty("message") String message,
             @JsonProperty("data") Object data) {
         super(
-                defaultIfNull(code, DEFAULT_CODE),
+                defaultIfNull(code, INTERNAL_ERROR_CODE),
                 defaultIfNull(message, "Internal Error"),
                 data);
     }

@@ -8,9 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import io.a2a.grpc.SendMessageConfiguration;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
+import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.HTTPAuthSecurityScheme;
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.AuthenticationInfo;
@@ -43,7 +46,7 @@ public class ToProtoTest {
         AgentCard agentCard = new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .url("http://localhost:9999")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()
@@ -60,23 +63,25 @@ public class ToProtoTest {
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
-                .protocolVersion("0.2.5")
+                .protocolVersion("1.0.0")
                 .build();
         io.a2a.grpc.AgentCard result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
         assertEquals("Just a hello world agent", result.getDescription());
-        assertEquals("http://localhost:9999", result.getUrl());
+        assertEquals(1, result.getSupportedInterfacesList().size());
+        assertEquals("http://localhost:9999", result.getSupportedInterfacesList().get(0).getUrl());
+        assertEquals("jsonrpc", result.getSupportedInterfacesList().get(0).getProtocolBinding());
         assertEquals("1.0.0", result.getVersion());
         assertEquals("http://example.com/docs", result.getDocumentationUrl());
         assertEquals(1, result.getDefaultInputModesCount());
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        assertEquals("0.2.5", result.getProtocolVersion());
+        assertEquals("1.0.0", result.getProtocolVersion());
         agentCard = new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .url("http://localhost:9999")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()
@@ -93,24 +98,24 @@ public class ToProtoTest {
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
-                .preferredTransport("HTTP+JSON")
-//                .iconUrl("http://example.com/icon.svg")
+                //                .iconUrl("http://example.com/icon.svg")
                 .securitySchemes(Map.of("basic", new HTTPAuthSecurityScheme.Builder().scheme("basic").description("Basic Auth").build()))
                 .security(List.of(Map.of("oauth", List.of("read"))))
-                .protocolVersion("0.2.5")
+                .protocolVersion("1.0.0")
                 .build();
-       result = ProtoUtils.ToProto.agentCard(agentCard);
+        result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
         assertEquals("Just a hello world agent", result.getDescription());
-        assertEquals("http://localhost:9999", result.getUrl());
+        assertEquals(1, result.getSupportedInterfacesList().size());
+        assertEquals("http://localhost:9999", result.getSupportedInterfacesList().get(0).getUrl());
+        assertEquals("jsonrpc", result.getSupportedInterfacesList().get(0).getProtocolBinding());
         assertEquals("1.0.0", result.getVersion());
         assertEquals("http://example.com/docs", result.getDocumentationUrl());
         assertEquals(1, result.getDefaultInputModesCount());
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        assertEquals("0.2.5", result.getProtocolVersion());
-        assertEquals("HTTP+JSON", result.getPreferredTransport());
+        assertEquals("1.0.0", result.getProtocolVersion());
         assertEquals(1, result.getSecurityCount());
         assertEquals(1, result.getSecurity(0).getSchemesMap().size());
         assertEquals(true, result.getSecurity(0).getSchemesMap().containsKey("oauth"));
@@ -160,7 +165,7 @@ public class ToProtoTest {
         assertEquals(false, result.getArtifacts(0).getParts(0).hasData());
         assertEquals("text", result.getArtifacts(0).getParts(0).getText());
         assertEquals(1, result.getHistoryCount());
-                assertEquals("context-1234", result.getHistory(0).getContextId());
+        assertEquals("context-1234", result.getHistory(0).getContextId());
         assertEquals("message-1234", result.getHistory(0).getMessageId());
         assertEquals(ROLE_USER, result.getHistory(0).getRole());
         assertEquals(1, result.getHistory(0).getPartsCount());
@@ -288,5 +293,39 @@ public class ToProtoTest {
         assertEquals(TaskState.COMPLETED, status.state());
         assertNotNull(status.timestamp());
         assertEquals(expectedTimestamp, status.timestamp());
+    }
+
+    @Test
+    public void convertDeleteTaskPushNotificationConfigRequest() {
+        DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(
+                "task-123",
+                "config-456"
+        );
+
+        io.a2a.grpc.DeleteTaskPushNotificationConfigRequest result =
+                ProtoUtils.ToProto.deleteTaskPushNotificationConfigRequest(params);
+
+        assertEquals("tasks/task-123/pushNotificationConfigs/config-456", result.getName());
+
+        // Test round-trip conversion
+        DeleteTaskPushNotificationConfigParams convertedBack =
+                ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(result);
+        assertEquals("task-123", convertedBack.id());
+        assertEquals("config-456", convertedBack.pushNotificationConfigId());
+    }
+
+    @Test
+    public void convertListTaskPushNotificationConfigRequest() {
+        ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams("task-789");
+
+        io.a2a.grpc.ListTaskPushNotificationConfigRequest result =
+                ProtoUtils.ToProto.listTaskPushNotificationConfigRequest(params);
+
+        assertEquals("tasks/task-789", result.getParent());
+
+        // Test round-trip conversion
+        ListTaskPushNotificationConfigParams convertedBack =
+                ProtoUtils.FromProto.listTaskPushNotificationConfigParams(result);
+        assertEquals("task-789", convertedBack.id());
     }
 }

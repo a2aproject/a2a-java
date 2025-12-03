@@ -16,4 +16,15 @@ public interface HTTPAuthSecuritySchemeMapper {
     @Mapping(target = "bearerFormat", source = "bearerFormat", conditionExpression = "java(domain.getBearerFormat() != null)")
     @Mapping(target = "description", source = "description", conditionExpression = "java(domain.getDescription() != null)")
     io.a2a.grpc.HTTPAuthSecurityScheme toProto(io.a2a.spec.HTTPAuthSecurityScheme domain);
+
+    default io.a2a.spec.HTTPAuthSecurityScheme fromProto(io.a2a.grpc.HTTPAuthSecurityScheme proto) {
+        if (proto == null) {
+            return null;
+        }
+
+        String bearerFormat = proto.getBearerFormat().isEmpty() ? null : proto.getBearerFormat();
+        String description = proto.getDescription().isEmpty() ? null : proto.getDescription();
+
+        return new io.a2a.spec.HTTPAuthSecurityScheme(bearerFormat, proto.getScheme(), description);
+    }
 }

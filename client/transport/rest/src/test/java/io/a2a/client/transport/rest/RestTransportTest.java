@@ -70,7 +70,7 @@ public class RestTransportTest {
     private static final AgentCard CARD = new AgentCard.Builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .url("http://localhost:4001")
+                .supportedInterfaces(Collections.singletonList(new io.a2a.spec.AgentInterface("HTTP+JSON", "http://localhost:4001")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()
@@ -149,7 +149,7 @@ public class RestTransportTest {
         assertEquals(1, history.getParts().size());
         assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
         assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).getText());
-        assertNull(history.getMetadata());
+        assertNull(task.getMetadata());
         assertNull(history.getReferenceTaskIds());
     }
 
@@ -176,7 +176,8 @@ public class RestTransportTest {
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
         assertEquals(TaskState.CANCELED, task.getStatus().state());
         assertNull(task.getStatus().message());
-        assertNull(task.getMetadata());
+        assertNotNull(task.getMetadata());
+        assertTrue(task.getMetadata().isEmpty());
     }
 
     /**
@@ -201,7 +202,8 @@ public class RestTransportTest {
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
         assertEquals(TaskState.COMPLETED, task.getStatus().state());
         assertNull(task.getStatus().message());
-        assertNull(task.getMetadata());
+        assertNotNull(task.getMetadata());
+        assertTrue(task.getMetadata().isEmpty());
         assertEquals(false, task.getArtifacts().isEmpty());
         assertEquals(1, task.getArtifacts().size());
         Artifact artifact = task.getArtifacts().get(0);
@@ -225,7 +227,7 @@ public class RestTransportTest {
         part = (FilePart) history.getParts().get(2);
         assertEquals(Kind.FILE, part.getKind());
         assertEquals("text/plain", part.getFile().mimeType());
-        assertEquals("hello", ((FileWithBytes) part.getFile()).bytes());
+        assertEquals("aGVsbG8=", ((FileWithBytes) part.getFile()).bytes());
         assertNull(history.getMetadata());
         assertNull(history.getReferenceTaskIds());
     }
@@ -302,6 +304,7 @@ public class RestTransportTest {
         TaskPushNotificationConfig pushedConfig = new TaskPushNotificationConfig(
                 "de38c76d-d54c-436c-8b9f-4c2703648d64",
                 new PushNotificationConfig.Builder()
+                        .id("default-config-id")
                         .url("https://example.com/callback")
                         .authenticationInfo(
                                 new AuthenticationInfo(Collections.singletonList("jwt"), null))

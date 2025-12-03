@@ -30,6 +30,7 @@ import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
@@ -113,7 +114,7 @@ public class AbstractA2ARequestHandlerTest {
         AgentCard.Builder builder = new AgentCard.Builder()
                 .name("test-card")
                 .description("A test agent card")
-                .url("http://example.com")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, "http://example.com")))
                 .version("1.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(new AgentCapabilities.Builder()
@@ -123,7 +124,6 @@ public class AbstractA2ARequestHandlerTest {
                         .build())
                 .defaultInputModes(new ArrayList<>())
                 .defaultOutputModes(new ArrayList<>())
-                .preferredTransport(preferredTransport)
                 .skills(new ArrayList<>())
                 .protocolVersion("0.2.5");
         return builder.build();

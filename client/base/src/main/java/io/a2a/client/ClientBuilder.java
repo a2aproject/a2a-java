@@ -108,13 +108,13 @@ public class ClientBuilder {
         return clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface.url());
     }
 
-    private Map<String, String> getServerPreferredTransports() {
+    private Map<String, String> getServerPreferredTransports() throws A2AClientException {
         Map<String, String> serverPreferredTransports = new LinkedHashMap<>();
-        serverPreferredTransports.put(agentCard.preferredTransport(), agentCard.url());
-        if (agentCard.additionalInterfaces() != null) {
-            for (AgentInterface agentInterface : agentCard.additionalInterfaces()) {
-                serverPreferredTransports.putIfAbsent(agentInterface.protocolBinding(), agentInterface.url());
-            }
+        if(agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {
+            throw new A2AClientException("No server interface available in the AgentCard");
+        }
+        for (AgentInterface agentInterface : agentCard.supportedInterfaces()) {
+            serverPreferredTransports.putIfAbsent(agentInterface.protocolBinding(), agentInterface.url());
         }
         return serverPreferredTransports;
     }

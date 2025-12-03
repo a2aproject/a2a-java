@@ -1,7 +1,6 @@
 package io.a2a.client.transport.jsonrpc.sse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskStatusUpdateEvent;
@@ -10,8 +9,9 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-import static io.a2a.util.Utils.OBJECT_MAPPER;
-
+import io.a2a.grpc.StreamResponse;
+import io.a2a.grpc.utils.JSONRPCUtils;
+import io.a2a.grpc.utils.ProtoUtils;
 import org.jspecify.annotations.Nullable;
 
 public class SSEEventListener {
@@ -29,11 +29,7 @@ public class SSEEventListener {
     }
 
     public void onMessage(String message, @Nullable Future<Void> completableFuture) {
-        try {
-            handleMessage(OBJECT_MAPPER.readTree(message), completableFuture);
-        } catch (JsonProcessingException e) {
-            log.warning("Failed to parse JSON message: " + message);
-        }
+        handleMessage(message, completableFuture);
     }
 
     public void onError(Throwable throwable, @Nullable Future<Void> future) {
@@ -63,25 +59,20 @@ public class SSEEventListener {
         }
     }
 
-    private void handleMessage(JsonNode jsonNode, @Nullable Future<Void> future) {
+    private void handleMessage(String message, @Nullable Future<Void> future) {
         try {
-            if (jsonNode.has("error")) {
-                JSONRPCError error = OBJECT_MAPPER.treeToValue(jsonNode.get("error"), JSONRPCError.class);
-                if (errorHandler != null) {
-                    errorHandler.accept(error);
+            StreamResponse response = JSONRPCUtils.parseResponseEvent(message);
+
+            StreamingEventKind event = ProtoUtils.FromProto.streamingEventKind(response);
+            eventHandler.accept(event);
+            if (event instanceof TaskStatusUpdateEvent && ((TaskStatusUpdateEvent) event).isFinal()) {
+                if (future != null) {
+                    future.cancel(true); // close SSE channel
                 }
-            } else if (jsonNode.has("result")) {
-                // result can be a Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent
-                JsonNode result = jsonNode.path("result");
-                StreamingEventKind event = OBJECT_MAPPER.treeToValue(result, StreamingEventKind.class);
-                eventHandler.accept(event);
-                if (event instanceof TaskStatusUpdateEvent && ((TaskStatusUpdateEvent) event).isFinal()) {
-                    if (future != null) {
-                        future.cancel(true); // close SSE channel
-                    }
-                }
-            } else {
-                throw new IllegalArgumentException("Unknown message type");
+            }
+        } catch (JSONRPCError error) {
+            if (errorHandler != null) {
+                errorHandler.accept(error);
             }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

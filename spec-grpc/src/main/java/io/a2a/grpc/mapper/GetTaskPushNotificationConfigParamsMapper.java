@@ -28,4 +28,12 @@ public interface GetTaskPushNotificationConfigParamsMapper {
     @Mapping(target = "pushNotificationConfigId", expression = "java(ResourceNameParser.parseGetTaskPushNotificationConfigName(proto.getName())[1])")
     @Mapping(target = "metadata", ignore = true)
     GetTaskPushNotificationConfigParams fromProto(io.a2a.grpc.GetTaskPushNotificationConfigRequest proto);
+
+    /**
+     * Converts domain Message to proto Message.Uses CommonFieldMapper for metadata conversion and ADDER_PREFERRED for lists.
+     * @param domain
+     * @return 
+     */
+    @Mapping(target = "name", expression = "java(ResourceNameParser.defineGetTaskPushNotificationConfigName(domain.id(), domain.pushNotificationConfigId()))")
+    io.a2a.grpc.GetTaskPushNotificationConfigRequest toProto(GetTaskPushNotificationConfigParams domain);
 }

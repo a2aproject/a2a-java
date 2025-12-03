@@ -77,7 +77,6 @@ public class AuthenticationAuthorizationTest {
         agentCard = new AgentCard.Builder()
                 .name("Test Agent")
                 .description("Test agent for auth tests")
-                .url(AGENT_URL)
                 .version("1.0.0")
                 .capabilities(new AgentCapabilities.Builder()
                         .streaming(true)  // Support streaming for all tests
@@ -91,7 +90,7 @@ public class AuthenticationAuthorizationTest {
                         .tags(Collections.singletonList("test"))
                         .build()))
                 .protocolVersion("0.3.0")
-                .additionalInterfaces(java.util.Arrays.asList(
+                .supportedInterfaces(java.util.Arrays.asList(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), AGENT_URL),
                         new AgentInterface(TransportProtocol.HTTP_JSON.asString(), AGENT_URL),
                         new AgentInterface(TransportProtocol.GRPC.asString(), grpcServerName)))

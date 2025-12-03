@@ -72,6 +72,7 @@
 
         <!-- Redirect test output to file -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+        <quarkus.jvm.args>--add-opens=java.base/java.lang=ALL-UNNAMED</quarkus.jvm.args>
 
         <!-- release properties -->
         <release.auto.publish>false</release.auto.publish>
@@ -390,6 +391,9 @@
                     <artifactId>quarkus-maven-plugin</artifactId>
                     <extensions>true</extensions>
                     <version>${quarkus.platform.version}</version>
+                    <configuration>
+                        <jvmArgs>${quarkus.jvm.args}</jvmArgs>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
@@ -535,6 +539,7 @@
                 <error-prone.version>2.42.0</error-prone.version>
                 <nullaway.version>0.12.10</nullaway.version>
                 <error-prone.flag></error-prone.flag>
+                <quarkus.jvm.args></quarkus.jvm.args>
             </properties>
         </profile>
     </profiles>

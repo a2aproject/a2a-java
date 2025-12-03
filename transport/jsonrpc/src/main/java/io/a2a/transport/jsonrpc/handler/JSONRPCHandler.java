@@ -1,6 +1,7 @@
 package io.a2a.transport.jsonrpc.handler;
 
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -47,8 +48,8 @@ import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
-import io.a2a.spec.TaskResubscriptionRequest;
 import io.a2a.server.util.async.Internal;
+import io.a2a.spec.SubscribeToTaskRequest;
 import mutiny.zero.ZeroPublisher;
 import org.jspecify.annotations.Nullable;
 
@@ -124,8 +125,8 @@ public class JSONRPCHandler {
         }
     }
 
-    public Flow.Publisher<SendStreamingMessageResponse> onResubscribeToTask(
-            TaskResubscriptionRequest request, ServerCallContext context) {
+    public Flow.Publisher<SendStreamingMessageResponse> onSubscribeToTask(
+            SubscribeToTaskRequest request, ServerCallContext context) {
         if (!agentCard.capabilities().streaming()) {
             return ZeroPublisher.fromItems(
                     new SendStreamingMessageResponse(

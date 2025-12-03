@@ -19,6 +19,16 @@ public class ResourceNameParser {
     }
 
     /**
+     * Define the task name form its taskId as in "tasks/{taskId}".
+     *
+     * @param taskId the taskId 
+     * @return the task name
+     */
+    public static String defineTaskName(String taskId) {
+        return "tasks/" + taskId;
+    }
+
+    /**
      * Parses a task push notification config resource name and extracts taskId and configId.
      * <p>
      * Expected format: "tasks/{taskId}/pushNotificationConfigs/{configId}"
@@ -62,6 +72,26 @@ public class ResourceNameParser {
         }
 
         return new String[]{taskId, configId};
+    }
+    public static String defineGetTaskPushNotificationConfigName(String taskId, String configId) {
+        String name= "tasks/" + taskId ;
+        if(configId != null && !configId.isBlank()) {
+            name = name + "/pushNotificationConfigs/" + configId;
+        }
+        return name;
+    }
+
+    /**
+     * Constructs a task push notification config resource name from task ID and config ID.
+     * <p>
+     * Format: "tasks/{taskId}/pushNotificationConfigs/{configId}"
+     *
+     * @param taskId the task identifier
+     * @param configId the push notification config identifier
+     * @return the formatted resource name
+     */
+    public static String defineTaskPushNotificationConfigName(String taskId, String configId) {
+        return "tasks/" + taskId + "/pushNotificationConfigs/" + configId;
     }
 
     /**

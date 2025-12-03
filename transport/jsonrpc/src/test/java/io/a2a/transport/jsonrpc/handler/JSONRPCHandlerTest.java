@@ -62,7 +62,7 @@ import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
-import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.spec.SubscribeToTaskRequest;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
@@ -672,12 +672,13 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         TaskPushNotificationConfig taskPushConfig =
                 new TaskPushNotificationConfig(
-                        MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().url("http://example.com").build());
+                        MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().url("http://example.com")
+                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4").build());
         SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
         SetTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
         TaskPushNotificationConfig taskPushConfigResult =
                 new TaskPushNotificationConfig(
-                        MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().url("http://example.com").id(MINIMAL_TASK.getId()).build());
+                        MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().url("http://example.com").id("c295ea44-7543-4f78-b524-7a38915ad6e4").build());
         Assertions.assertEquals(taskPushConfigResult, response.getResult());
     }
 
@@ -692,7 +693,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         TaskPushNotificationConfig taskPushConfig =
                 new TaskPushNotificationConfig(
-                        MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().url("http://example.com").build());
+                        MINIMAL_TASK.getId(), new PushNotificationConfig.Builder()
+                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build());
 
         SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
@@ -702,7 +704,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         GetTaskPushNotificationConfigResponse getResponse = handler.getPushNotificationConfig(getRequest, callContext);
 
         TaskPushNotificationConfig expectedConfig = new TaskPushNotificationConfig(MINIMAL_TASK.getId(),
-                new PushNotificationConfig.Builder().id(MINIMAL_TASK.getId()).url("http://example.com").build());
+                new PushNotificationConfig.Builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build());
         assertEquals(expectedConfig, getResponse.getResult());
     }
 
@@ -738,7 +740,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         TaskPushNotificationConfig config = new TaskPushNotificationConfig(
                 MINIMAL_TASK.getId(),
-                new PushNotificationConfig.Builder().url("http://example.com").build());
+                new PushNotificationConfig.Builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build());
         SetTaskPushNotificationConfigRequest stpnRequest = new SetTaskPushNotificationConfigRequest("1", config);
         SetTaskPushNotificationConfigResponse stpnResponse = handler.setPushNotificationConfig(stpnRequest, callContext);
         assertNull(stpnResponse.getError());
@@ -823,8 +825,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             //eventQueue.enqueueEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        TaskResubscriptionRequest request = new TaskResubscriptionRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
-        Flow.Publisher<SendStreamingMessageResponse> response = handler.onResubscribeToTask(request, callContext);
+        SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
+        Flow.Publisher<SendStreamingMessageResponse> response = handler.onSubscribeToTask(request, callContext);
 
         // We need to send some events in order for those to end up in the queue
         Message message = new Message.Builder()
@@ -900,13 +902,13 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .status(new TaskStatus(TaskState.WORKING))
                         .build());
 
-        TaskResubscriptionRequest request = new TaskResubscriptionRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
+        SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
         Flow.Publisher<SendStreamingMessageResponse> response;
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
                     Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();})){
-            response = handler.onResubscribeToTask(request, callContext);
+            response = handler.onSubscribeToTask(request, callContext);
         }
 
         CompletableFuture<Void> future = new CompletableFuture<>();
@@ -955,8 +957,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnResubscribeNoExistingTaskError() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
 
-        TaskResubscriptionRequest request = new TaskResubscriptionRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
-        Flow.Publisher<SendStreamingMessageResponse> response = handler.onResubscribeToTask(request, callContext);
+        SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
+        Flow.Publisher<SendStreamingMessageResponse> response = handler.onSubscribeToTask(request, callContext);
 
         List<SendStreamingMessageResponse> results = new ArrayList<>();
         AtomicReference<Throwable> error = new AtomicReference<>();
@@ -1049,8 +1051,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         AgentCard card = createAgentCard(false, true, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
-        TaskResubscriptionRequest request = new TaskResubscriptionRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
-        Flow.Publisher<SendStreamingMessageResponse> response = handler.onResubscribeToTask(request, callContext);
+        SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.getId()));
+        Flow.Publisher<SendStreamingMessageResponse> response = handler.onSubscribeToTask(request, callContext);
 
         List<SendStreamingMessageResponse> results = new ArrayList<>();
         AtomicReference<Throwable> error = new AtomicReference<>();
@@ -1100,6 +1102,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 new TaskPushNotificationConfig(
                         MINIMAL_TASK.getId(),
                         new PushNotificationConfig.Builder()
+                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
                                 .url("http://example.com")
                                 .build());
 
@@ -1143,6 +1146,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 new TaskPushNotificationConfig(
                         MINIMAL_TASK.getId(),
                         new PushNotificationConfig.Builder()
+                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
                                 .url("http://example.com")
                                 .build());
 

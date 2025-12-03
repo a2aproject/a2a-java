@@ -15,4 +15,14 @@ public interface OpenIdConnectSecuritySchemeMapper {
 
     @Mapping(target = "description", source = "description", conditionExpression = "java(domain.getDescription() != null)")
     io.a2a.grpc.OpenIdConnectSecurityScheme toProto(io.a2a.spec.OpenIdConnectSecurityScheme domain);
+
+    default io.a2a.spec.OpenIdConnectSecurityScheme fromProto(io.a2a.grpc.OpenIdConnectSecurityScheme proto) {
+        if (proto == null) {
+            return null;
+        }
+
+        String description = proto.getDescription().isEmpty() ? null : proto.getDescription();
+
+        return new io.a2a.spec.OpenIdConnectSecurityScheme(proto.getOpenIdConnectUrl(), description);
+    }
 }

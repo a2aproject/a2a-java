@@ -85,41 +85,22 @@ public class AgentCardValidator {
             throw new IllegalStateException(errorMessage);
         }
 
-        // check that the primary URL matches the URL for the preferred transport
-        if (agentCard.additionalInterfaces() != null) {
-            agentCard.additionalInterfaces().stream()
-                    .filter(agentInterface -> agentInterface.protocolBinding().equals(agentCard.preferredTransport()))
-                    .findFirst()
-                    .ifPresent(preferredTransportAgentInterface -> {
-                if (!preferredTransportAgentInterface.url().equals(agentCard.url())) {
-                    LOGGER.warning(String.format(
-                            "AgentCard's URL=%s does not correspond to the URL of the preferred transport=%s.",
-                            agentCard.url(),
-                            preferredTransportAgentInterface.url()
-                    ));
-                }
-            });
-        }
+        // Validation no longer needed - supportedInterfaces is now the single source of truth
+        // The first entry in supportedInterfaces is the preferred interface
     }
     
     /**
      * Extracts all transport protocols specified in the AgentCard.
-     * Includes both the preferred transport and additional interface transports.
-     * 
+     *
      * @param agentCard the agent card to analyze
      * @return set of transport protocols specified in the agent card
      */
     private static Set<String> getAgentCardTransports(AgentCard agentCard) {
         List<String> transportStrings = new ArrayList<>();
-        
-        // Add preferred transport
-        if (agentCard.preferredTransport() != null) {
-            transportStrings.add(agentCard.preferredTransport());
-        }
-        
-        // Add additional interface transports
-        if (agentCard.additionalInterfaces() != null) {
-            for (AgentInterface agentInterface : agentCard.additionalInterfaces()) {
+
+        // Get all transports from supportedInterfaces
+        if (agentCard.supportedInterfaces() != null) {
+            for (AgentInterface agentInterface : agentCard.supportedInterfaces()) {
                 if (agentInterface.protocolBinding() != null) {
                     transportStrings.add(agentInterface.protocolBinding());
                 }
