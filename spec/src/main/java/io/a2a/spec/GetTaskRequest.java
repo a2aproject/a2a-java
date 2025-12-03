@@ -57,7 +57,7 @@ public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryPa
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method = "GetTask";
+        private String method = METHOD;
         private TaskQueryParams params;
 
         public GetTaskRequest.Builder jsonrpc(String jsonrpc) {
