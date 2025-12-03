@@ -49,7 +49,7 @@ public class ResultAggregatorTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        aggregator = new ResultAggregator(mockTaskManager, null, testExecutor);
+        aggregator = new ResultAggregator(mockTaskManager, null, testExecutor, null);
     }
 
     // Helper methods for creating sample data
@@ -75,7 +75,7 @@ public class ResultAggregatorTest {
     @Test
     void testConstructorWithMessage() {
         Message initialMessage = createSampleMessage("initial", "msg1", Message.Role.USER);
-        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, initialMessage, testExecutor);
+        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, initialMessage, testExecutor, null);
 
         // Test that the message is properly stored by checking getCurrentResult
         assertEquals(initialMessage, aggregatorWithMessage.getCurrentResult());
@@ -86,7 +86,7 @@ public class ResultAggregatorTest {
     @Test
     void testGetCurrentResultWithMessageSet() {
         Message sampleMessage = createSampleMessage("hola", "msg1", Message.Role.USER);
-        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, sampleMessage, testExecutor);
+        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, sampleMessage, testExecutor, null);
 
         EventKind result = aggregatorWithMessage.getCurrentResult();
 
@@ -121,7 +121,7 @@ public class ResultAggregatorTest {
 
     @Test
     void testConstructorWithNullMessage() {
-        ResultAggregator aggregatorWithNullMessage = new ResultAggregator(mockTaskManager, null, testExecutor);
+        ResultAggregator aggregatorWithNullMessage = new ResultAggregator(mockTaskManager, null, testExecutor, null);
         Task expectedTask = createSampleTask("null_msg_task", TaskState.WORKING, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
@@ -181,7 +181,7 @@ public class ResultAggregatorTest {
     void testGetCurrentResultWithMessageTakesPrecedence() {
         // Test that when both message and task are available, message takes precedence
         Message message = createSampleMessage("priority message", "pri1", Message.Role.USER);
-        ResultAggregator messageAggregator = new ResultAggregator(mockTaskManager, message, testExecutor);
+        ResultAggregator messageAggregator = new ResultAggregator(mockTaskManager, message, testExecutor, null);
 
         // Even if we set up the task manager to return something, message should take precedence
         Task task = createSampleTask("should_not_be_returned", TaskState.WORKING, "ctx1");
@@ -221,11 +221,14 @@ public class ResultAggregatorTest {
 
         assertEquals(firstEvent, result.eventType());
         assertTrue(result.interrupted());
-        verify(mockTaskManager).process(firstEvent);
-        // getTask() is called at least once for the return value (line 255)
-        // May be called once more if debug logging executes in time (line 209)
-        // The async consumer may or may not execute before verification, so we accept 1-2 calls
+        verify(mockTaskManager).processEvent(firstEvent);
+        // getTask() is called multiple times in the new TaskStateProcessor implementation:
+        // - For return value (line 259)
+        // - For logging (line 213 if debug enabled)
+        // - Within TaskStateProcessor methods
+        // - Background consumption final persistence
+        // The async consumer may or may not execute before verification, so we accept 1-5 calls
         verify(mockTaskManager, atLeast(1)).getTask();
-        verify(mockTaskManager, atMost(2)).getTask();
+        verify(mockTaskManager, atMost(5)).getTask();
     }
 }

@@ -1,13 +1,6 @@
 package io.a2a.server.tasks;
 
-import static io.a2a.spec.TaskState.SUBMITTED;
 import static io.a2a.util.Assert.checkNotNullParam;
-import static io.a2a.util.Utils.appendArtifactToTask;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
@@ -15,7 +8,6 @@ import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
-import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,100 +16,119 @@ public class TaskManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskManager.class);
 
-    private volatile String taskId;
-    private volatile String contextId;
     private final TaskStore taskStore;
+    private final TaskStateProcessor stateProcessor;
+    private String taskId;
+    private String contextId;
     private final Message initialMessage;
-    private volatile Task currentTask;
 
-    public TaskManager(String taskId, String contextId, TaskStore taskStore, Message initialMessage) {
+    public TaskManager(String taskId, String contextId, TaskStore taskStore, TaskStateProcessor stateProcessor, Message initialMessage) {
         checkNotNullParam("taskStore", taskStore);
+        checkNotNullParam("stateProcessor", stateProcessor);
+        this.taskStore = taskStore;
+        this.stateProcessor = stateProcessor;
         this.taskId = taskId;
         this.contextId = contextId;
-        this.taskStore = taskStore;
         this.initialMessage = initialMessage;
+
+        // Load existing task from store if it exists
+        if (taskId != null) {
+            Task existingTask = taskStore.get(taskId);
+            if (existingTask != null) {
+                stateProcessor.setTask(existingTask);
+            }
+        }
     }
 
     String getTaskId() {
-        return taskId;
+        Task task = stateProcessor.getTask(taskId);
+        return task != null ? task.getId() : taskId;
     }
 
     String getContextId() {
-        return contextId;
+        Task task = stateProcessor.getTask(taskId);
+        return task != null ? task.getContextId() : contextId;
     }
 
     public Task getTask() {
-        if (taskId == null) {
-            return null;
+        Task task = stateProcessor.getTask(taskId);
+        // If we don't have a task in the processor yet, try loading from store
+        if (task == null && taskId != null) {
+            task = taskStore.get(taskId);
+            if (task != null) {
+                stateProcessor.setTask(task);
+            }
         }
-        if (currentTask != null) {
-            return currentTask;
-        }
-        currentTask = taskStore.get(taskId);
-        return currentTask;
+        return task;
     }
 
-    Task saveTaskEvent(Task task) throws A2AServerException {
-        checkIdsAndUpdateIfNecessary(task.getId(), task.getContextId());
+    /**
+     * Processes an event to build the updated task state WITHOUT persisting.
+     * This separates state building from persistence, allowing callers to
+     * decide when to persist the task.
+     *
+     * @param event the event to process
+     * @return the updated task state (not yet persisted)
+     * @throws A2AServerException if the event contains invalid data
+     */
+    public Task processEvent(Event event) throws A2AServerException {
+        String eventTaskId = extractTaskId(event);
+        String eventContextId = extractContextId(event);
+
+        if (eventTaskId != null) {
+            checkIdsAndUpdateIfNecessary(eventTaskId, eventContextId);
+        }
+
+        // Ensure we have the latest task from the store before processing the event
+        // This is important for events that update existing tasks
+        getTask();
+
+        return stateProcessor.processEvent(event, initialMessage);
+    }
+
+    /**
+     * Processes an event and immediately persists the resulting task state.
+     * This is a convenience method that combines processEvent() and saveTask().
+     *
+     * @param event the event to process
+     * @return the persisted task
+     * @throws A2AServerException if the event contains invalid data
+     */
+    public Task processAndSave(Event event) throws A2AServerException {
+        Task task = processEvent(event);
         return saveTask(task);
     }
 
-    Task saveTaskEvent(TaskStatusUpdateEvent event) throws A2AServerException {
-        checkIdsAndUpdateIfNecessary(event.getTaskId(), event.getContextId());
-        Task task = ensureTask(event.getTaskId(), event.getContextId());
-
-
-        Task.Builder builder = new Task.Builder(task)
-                .status(event.getStatus());
-
-        if (task.getStatus().message() != null) {
-            List<Message> newHistory = task.getHistory() == null ? new ArrayList<>() : new ArrayList<>(task.getHistory());
-            newHistory.add(task.getStatus().message());
-            builder.history(newHistory);
-        }
-
-        // Handle metadata from the event
-        if (event.getMetadata() != null) {
-            Map<String, Object> metadata = task.getMetadata() == null ? new HashMap<>() : new HashMap<>(task.getMetadata());
-            metadata.putAll(event.getMetadata());
-            builder.metadata(metadata);
-        }
-
-        task = builder.build();
-        return saveTask(task);
-    }
-
-    Task saveTaskEvent(TaskArtifactUpdateEvent event) throws A2AServerException {
-        checkIdsAndUpdateIfNecessary(event.getTaskId(), event.getContextId());
-        Task task = ensureTask(event.getTaskId(), event.getContextId());
-        task = appendArtifactToTask(task, event, taskId);
-        return saveTask(task);
-    }
-
-    public Event process(Event event) throws A2AServerException {
+    /**
+     * Extracts the task ID from an event.
+     */
+    private String extractTaskId(Event event) {
         if (event instanceof Task task) {
-            saveTaskEvent(task);
+            return task.getId();
         } else if (event instanceof TaskStatusUpdateEvent taskStatusUpdateEvent) {
-            saveTaskEvent(taskStatusUpdateEvent);
+            return taskStatusUpdateEvent.getTaskId();
         } else if (event instanceof TaskArtifactUpdateEvent taskArtifactUpdateEvent) {
-            saveTaskEvent(taskArtifactUpdateEvent);
+            return taskArtifactUpdateEvent.getTaskId();
         }
-        return event;
+        return null;
+    }
+
+    /**
+     * Extracts the context ID from an event.
+     */
+    private String extractContextId(Event event) {
+        if (event instanceof Task task) {
+            return task.getContextId();
+        } else if (event instanceof TaskStatusUpdateEvent taskStatusUpdateEvent) {
+            return taskStatusUpdateEvent.getContextId();
+        } else if (event instanceof TaskArtifactUpdateEvent taskArtifactUpdateEvent) {
+            return taskArtifactUpdateEvent.getContextId();
+        }
+        return null;
     }
 
     public Task updateWithMessage(Message message, Task task) {
-        List<Message> history = new ArrayList<>(task.getHistory());
-
-        TaskStatus status = task.getStatus();
-        if (status.message() != null) {
-            history.add(status.message());
-            status = new TaskStatus(status.state(), null, status.timestamp());
-        }
-        history.add(message);
-        task = new Task.Builder(task)
-                .status(status)
-                .history(history)
-                .build();
+        task = stateProcessor.addMessageToHistory(task.getId(), message);
         saveTask(task);
         return task;
     }
@@ -128,6 +139,7 @@ public class TaskManager {
                     "Invalid task id",
                     new InvalidParamsError(String.format("Task in event doesn't match TaskManager ")));
         }
+        // Update taskId and contextId if they were null
         if (taskId == null) {
             taskId = eventTaskId;
         }
@@ -136,36 +148,19 @@ public class TaskManager {
         }
     }
 
-    private Task ensureTask(String eventTaskId, String eventContextId) {
-        Task task = currentTask;
-        if (task != null) {
-            return task;
-        }
-        task = taskStore.get(taskId);
+    /**
+     * Persists a task to the TaskStore.
+     *
+     * @param task the task to save
+     * @return the saved task
+     */
+    public Task saveTask(Task task) {
         if (task == null) {
-            task = createTask(eventTaskId, eventContextId);
-            saveTask(task);
+            return null;
         }
-        return task;
-    }
-
-    private Task createTask(String taskId, String contextId) {
-        List<Message> history = initialMessage != null ? List.of(initialMessage) : null;
-        return new Task.Builder()
-                .id(taskId)
-                .contextId(contextId)
-                .status(new TaskStatus(SUBMITTED))
-                .history(history)
-                .build();
-    }
-
-    private Task saveTask(Task task) {
         taskStore.save(task);
-        if (taskId == null) {
-            taskId = task.getId();
-            contextId = task.getContextId();
-        }
-        currentTask = task;
-        return currentTask;
+        // Ensure the task is in the state processor
+        stateProcessor.setTask(task);
+        return task;
     }
 }

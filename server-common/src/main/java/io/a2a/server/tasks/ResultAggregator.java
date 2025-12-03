@@ -30,12 +30,14 @@ public class ResultAggregator {
 
     private final TaskManager taskManager;
     private final Executor executor;
+    private final TaskStateProcessor stateProcessor;
     private volatile Message message;
 
-    public ResultAggregator(TaskManager taskManager, Message message, Executor executor) {
+    public ResultAggregator(TaskManager taskManager, Message message, Executor executor, TaskStateProcessor stateProcessor) {
         this.taskManager = taskManager;
         this.message = message;
         this.executor = executor;
+        this.stateProcessor = stateProcessor;
     }
 
     public EventKind getCurrentResult() {
@@ -48,12 +50,12 @@ public class ResultAggregator {
     public Flow.Publisher<EventQueueItem> consumeAndEmit(EventConsumer consumer) {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
 
-        // Process items conditionally - only save non-replicated events to database
+        // Process items to build state without persisting
         return processor(createTubeConfig(), allItems, (errorConsumer, item) -> {
-            // Only process non-replicated events to avoid duplicate database writes
+            // Build state for non-replicated events (don't persist yet)
             if (!item.isReplicated()) {
                 try {
-                    callTaskManagerProcess(item.getEvent());
+                    taskManager.processEvent(item.getEvent());
                 } catch (A2AServerException e) {
                     errorConsumer.accept(e);
                     return false;
@@ -80,10 +82,10 @@ public class ResultAggregator {
                             return false;
                         }
                     }
-                    // Only process non-replicated events to avoid duplicate database writes
+                    // Build state for non-replicated events (don't persist yet)
                     if (!item.isReplicated()) {
                         try {
-                            callTaskManagerProcess(event);
+                            taskManager.processEvent(event);
                         } catch (A2AServerException e) {
                             error.set(e);
                             return false;
@@ -140,10 +142,10 @@ public class ResultAggregator {
                         return false;
                     }
 
-                    // Process event through TaskManager - only for non-replicated events
+                    // Build state for non-replicated events (don't persist yet)
                     if (!item.isReplicated()) {
                         try {
-                            callTaskManagerProcess(event);
+                            taskManager.processEvent(event);
                         } catch (A2AServerException e) {
                             errorRef.set(e);
                             completionFuture.completeExceptionally(e);
@@ -226,6 +228,21 @@ public class ResultAggregator {
                         consumptionCompletionFuture.completeExceptionally(throwable);
                     } else {
                         // onComplete - subscription finished normally
+                        // For non-blocking calls, persist the final task state after consumption completes
+                        if (!blocking) {
+                            Task finalTask = taskManager.getTask();
+                            if (finalTask != null) {
+                                taskManager.saveTask(finalTask);
+                                if (LOGGER.isDebugEnabled()) {
+                                    LOGGER.debug("Persisted final task state after background consumption: {}", taskIdForLogging());
+                                }
+                                // Remove task from state processor after final persistence
+                                if (stateProcessor != null) {
+                                    stateProcessor.removeTask(finalTask.getId());
+                                    LOGGER.debug("Removed task {} from state processor after background consumption", finalTask.getId());
+                                }
+                            }
+                        }
                         completionFuture.complete(null);
                         consumptionCompletionFuture.complete(null);
                     }
@@ -259,10 +276,6 @@ public class ResultAggregator {
                 message.get() != null ? message.get() : taskManager.getTask(),
                 interrupted.get(),
                 consumptionCompletionFuture);
-    }
-
-    private void callTaskManagerProcess(Event event) throws A2AServerException {
-        taskManager.process(event);
     }
 
     private String taskIdForLogging() {

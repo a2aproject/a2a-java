@@ -23,6 +23,7 @@ import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.util.Utils;
+import io.a2a.server.tasks.TaskStateProcessor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,13 +38,15 @@ public class TaskManagerTest {
 
     Task minimalTask;
     TaskStore taskStore;
+    TaskStateProcessor stateProcessor;
     TaskManager taskManager;
 
     @BeforeEach
     public void init() throws Exception {
         minimalTask = Utils.unmarshalFrom(TASK_JSON, Task.TYPE_REFERENCE);
         taskStore = new InMemoryTaskStore();
-        taskManager = new TaskManager(minimalTask.getId(), minimalTask.getContextId(), taskStore, null);
+        stateProcessor = new TaskStateProcessor();
+        taskManager = new TaskManager(minimalTask.getId(), minimalTask.getContextId(), taskStore, stateProcessor, null);
     }
 
     @Test
@@ -62,7 +65,7 @@ public class TaskManagerTest {
 
     @Test
     public void testSaveTaskEventNewTask() throws A2AServerException {
-        Task saved = taskManager.saveTaskEvent(minimalTask);
+        Task saved = taskManager.processAndSave(minimalTask);
         Task retrieved = taskManager.getTask();
         assertSame(minimalTask, retrieved);
         assertSame(retrieved, saved);
@@ -89,7 +92,7 @@ public class TaskManagerTest {
                 new HashMap<>());
 
 
-        Task saved = taskManager.saveTaskEvent(event);
+        Task saved = taskManager.processAndSave(event);
         Task updated = taskManager.getTask();
 
         assertNotSame(initialTask, updated);
@@ -115,7 +118,7 @@ public class TaskManagerTest {
                 .contextId(minimalTask.getContextId())
                 .artifact(newArtifact)
                 .build();
-        Task saved = taskManager.saveTaskEvent(event);
+        Task saved = taskManager.processAndSave(event);
 
         Task updatedTask = taskManager.getTask();
         assertSame(updatedTask, saved);
@@ -137,7 +140,7 @@ public class TaskManagerTest {
     @Test
     public void testEnsureTaskNonExistentForStatusUpdate() throws A2AServerException {
         // Tests that an update event instantiates a new task and that
-        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
+        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, stateProcessor, null);
         TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
                 .taskId("new-task")
                 .contextId("some-context")
@@ -145,7 +148,7 @@ public class TaskManagerTest {
                 .isFinal(false)
                 .build();
 
-        Task task = taskManagerWithoutId.saveTaskEvent(event);
+        Task task = taskManagerWithoutId.processAndSave(event);
         assertEquals(event.getTaskId(), taskManagerWithoutId.getTaskId());
         assertEquals(event.getContextId(), taskManagerWithoutId.getContextId());
 
@@ -158,14 +161,14 @@ public class TaskManagerTest {
 
     @Test
     public void testSaveTaskEventNewTaskNoTaskId() throws A2AServerException {
-        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
+        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, stateProcessor, null);
         Task task = new Task.Builder()
                 .id("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
 
-        Task saved = taskManagerWithoutId.saveTaskEvent(task);
+        Task saved = taskManagerWithoutId.processAndSave(task);
         assertEquals(task.getId(), taskManagerWithoutId.getTaskId());
         assertEquals(task.getContextId(), taskManagerWithoutId.getContextId());
 
@@ -176,7 +179,7 @@ public class TaskManagerTest {
 
     @Test
     public void testGetTaskNoTaskId() {
-        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
+        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, stateProcessor, null);
         Task retrieved = taskManagerWithoutId.getTask();
         assertNull(retrieved);
     }
@@ -210,7 +213,7 @@ public class TaskManagerTest {
                 .append(true)
                 .build();
 
-        Task updatedTask = taskManager.saveTaskEvent(event);
+        Task updatedTask = taskManager.processAndSave(event);
 
         assertEquals(1, updatedTask.getArtifacts().size());
         Artifact updatedArtifact = updatedTask.getArtifacts().get(0);
@@ -239,7 +242,7 @@ public class TaskManagerTest {
                 .append(true)
                 .build();
 
-        Task saved = taskManager.saveTaskEvent(event);
+        Task saved = taskManager.processAndSave(event);
         Task updatedTask = taskManager.getTask();
 
         // Should have no artifacts since append was ignored
@@ -273,7 +276,7 @@ public class TaskManagerTest {
                 .append(false)
                 .build();
 
-        Task saved = taskManager.saveTaskEvent(event);
+        Task saved = taskManager.processAndSave(event);
         Task updatedTask = taskManager.getTask();
 
         assertEquals(1, updatedTask.getArtifacts().size());
@@ -309,7 +312,7 @@ public class TaskManagerTest {
                 .artifact(newArtifact)
                 .build(); // append is null
 
-        Task saved = taskManager.saveTaskEvent(event);
+        Task saved = taskManager.processAndSave(event);
         Task updatedTask = taskManager.getTask();
 
         assertEquals(1, updatedTask.getArtifacts().size());
@@ -322,7 +325,7 @@ public class TaskManagerTest {
     @Test
     public void testAddingTaskWithDifferentIdFails() {
         // Test that adding a task with a different id from the taskmanager's taskId fails
-        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
+        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, stateProcessor, null);
         
         Task differentTask = new Task.Builder()
                 .id("different-task-id")
@@ -331,14 +334,14 @@ public class TaskManagerTest {
                 .build();
 
         assertThrows(A2AServerException.class, () -> {
-            taskManagerWithId.saveTaskEvent(differentTask);
+            taskManagerWithId.processAndSave(differentTask);
         });
     }
 
     @Test
     public void testAddingTaskWithDifferentIdViaStatusUpdateFails() {
         // Test that adding a status update with different taskId fails
-        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
+        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, stateProcessor, null);
         
         TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
                 .taskId("different-task-id")
@@ -348,14 +351,14 @@ public class TaskManagerTest {
                 .build();
 
         assertThrows(A2AServerException.class, () -> {
-            taskManagerWithId.saveTaskEvent(event);
+            taskManagerWithId.processAndSave(event);
         });
     }
 
     @Test
     public void testAddingTaskWithDifferentIdViaArtifactUpdateFails() {
         // Test that adding an artifact update with different taskId fails
-        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
+        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, stateProcessor, null);
         
         Artifact artifact = new Artifact.Builder()
                 .artifactId("artifact-id")
@@ -369,7 +372,7 @@ public class TaskManagerTest {
                 .build();
 
         assertThrows(A2AServerException.class, () -> {
-            taskManagerWithId.saveTaskEvent(event);
+            taskManagerWithId.processAndSave(event);
         });
     }
 
@@ -383,7 +386,7 @@ public class TaskManagerTest {
                 .messageId("initial-msg-id")
                 .build();
         
-        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
+        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, stateProcessor, initialMessage);
         
         // Use a status update event instead of a Task to trigger createTask
         TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
@@ -393,7 +396,7 @@ public class TaskManagerTest {
                 .isFinal(false)
                 .build();
 
-        Task saved = taskManagerWithInitialMessage.saveTaskEvent(event);
+        Task saved = taskManagerWithInitialMessage.processAndSave(event);
         Task retrieved = taskManagerWithInitialMessage.getTask();
 
         // Check that the task has the initial message in its history
@@ -414,7 +417,7 @@ public class TaskManagerTest {
                 .messageId("initial-msg-id")
                 .build();
         
-        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
+        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, stateProcessor, initialMessage);
         
         Message taskMessage = new Message.Builder()
                 .role(Message.Role.AGENT)
@@ -430,7 +433,7 @@ public class TaskManagerTest {
                 .isFinal(false)
                 .build();
 
-        Task saved = taskManagerWithInitialMessage.saveTaskEvent(event);
+        Task saved = taskManagerWithInitialMessage.processAndSave(event);
         Task retrieved = taskManagerWithInitialMessage.getTask();
 
         // There should now be a history containing the initialMessage
@@ -461,7 +464,7 @@ public class TaskManagerTest {
                 .contextId(minimalTask.getContextId())
                 .artifact(artifact1)
                 .build();
-        taskManager.saveTaskEvent(event1);
+        taskManager.processAndSave(event1);
 
         // Add second artifact with same artifactId (should replace the first)
         Artifact artifact2 = new Artifact.Builder()
@@ -474,7 +477,7 @@ public class TaskManagerTest {
                 .contextId(minimalTask.getContextId())
                 .artifact(artifact2)
                 .build();
-        taskManager.saveTaskEvent(event2);
+        taskManager.processAndSave(event2);
 
         Task updatedTask = taskManager.getTask();
         assertEquals(1, updatedTask.getArtifacts().size());
@@ -501,7 +504,7 @@ public class TaskManagerTest {
                 .contextId(minimalTask.getContextId())
                 .artifact(artifact1)
                 .build();
-        taskManager.saveTaskEvent(event1);
+        taskManager.processAndSave(event1);
 
         // Add second artifact with different artifactId (should be added)
         Artifact artifact2 = new Artifact.Builder()
@@ -514,7 +517,7 @@ public class TaskManagerTest {
                 .contextId(minimalTask.getContextId())
                 .artifact(artifact2)
                 .build();
-        taskManager.saveTaskEvent(event2);
+        taskManager.processAndSave(event2);
 
         Task updatedTask = taskManager.getTask();
         assertEquals(2, updatedTask.getArtifacts().size());
@@ -534,11 +537,11 @@ public class TaskManagerTest {
     @Test
     public void testInvalidTaskIdValidation() {
         // Test that creating TaskManager with null taskId is allowed (Python allows None)
-        TaskManager taskManagerWithNullId = new TaskManager(null, "context", taskStore, null);
+        TaskManager taskManagerWithNullId = new TaskManager(null, "context", taskStore, stateProcessor, null);
         assertNull(taskManagerWithNullId.getTaskId());
 
         // Test that empty string task ID is handled (Java doesn't have explicit validation like Python)
-        TaskManager taskManagerWithEmptyId = new TaskManager("", "context", taskStore, null);
+        TaskManager taskManagerWithEmptyId = new TaskManager("", "context", taskStore, stateProcessor, null);
         assertEquals("", taskManagerWithEmptyId.getTaskId());
     }
 
@@ -559,7 +562,7 @@ public class TaskManagerTest {
                 .metadata(newMetadata)
                 .build();
 
-        taskManager.saveTaskEvent(event);
+        taskManager.processAndSave(event);
 
         Task updatedTask = taskManager.getTask();
         assertEquals(newMetadata, updatedTask.getMetadata());
@@ -579,7 +582,7 @@ public class TaskManagerTest {
                 .metadata(null)
                 .build();
 
-        taskManager.saveTaskEvent(event);
+        taskManager.processAndSave(event);
 
         Task updatedTask = taskManager.getTask();
         // Should preserve original task's metadata (which is likely null for minimal task)
@@ -608,7 +611,7 @@ public class TaskManagerTest {
                 .metadata(newMetadata)
                 .build();
 
-        taskManager.saveTaskEvent(event);
+        taskManager.processAndSave(event);
 
         Task updatedTask = taskManager.getTask();
 
@@ -626,7 +629,7 @@ public class TaskManagerTest {
                 .messageId("initial-msg-id")
                 .build();
 
-        TaskManager taskManagerWithMessage = new TaskManager(null, null, taskStore, initialMessage);
+        TaskManager taskManagerWithMessage = new TaskManager(null, null, taskStore, stateProcessor, initialMessage);
 
         TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
                 .taskId("new-task-id")
@@ -635,7 +638,7 @@ public class TaskManagerTest {
                 .isFinal(false)
                 .build();
 
-        Task savedTask = taskManagerWithMessage.saveTaskEvent(event);
+        Task savedTask = taskManagerWithMessage.processAndSave(event);
 
         // Verify task was created properly
         assertNotNull(savedTask);
@@ -654,7 +657,7 @@ public class TaskManagerTest {
     @Test
     public void testCreateTaskWithoutInitialMessage() throws A2AServerException {
         // Test task creation without initial message
-        TaskManager taskManagerWithoutMessage = new TaskManager(null, null, taskStore, null);
+        TaskManager taskManagerWithoutMessage = new TaskManager(null, null, taskStore, stateProcessor, null);
 
         TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
                 .taskId("new-task-id")
@@ -663,7 +666,7 @@ public class TaskManagerTest {
                 .isFinal(false)
                 .build();
 
-        Task savedTask = taskManagerWithoutMessage.saveTaskEvent(event);
+        Task savedTask = taskManagerWithoutMessage.processAndSave(event);
 
         // Verify task was created properly
         assertNotNull(savedTask);
@@ -677,8 +680,8 @@ public class TaskManagerTest {
 
     @Test
     public void testSaveTaskInternal() throws A2AServerException {
-        // Test equivalent of _save_task functionality through saveTaskEvent
-        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
+        // Test equivalent of _save_task functionality through processAndSave
+        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, stateProcessor, null);
         
         Task newTask = new Task.Builder()
                 .id("test-task-id")
@@ -686,7 +689,7 @@ public class TaskManagerTest {
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
 
-        Task savedTask = taskManagerWithoutId.saveTaskEvent(newTask);
+        Task savedTask = taskManagerWithoutId.processAndSave(newTask);
 
         // Verify internal state was updated
         assertEquals("test-task-id", taskManagerWithoutId.getTaskId());
@@ -702,7 +705,7 @@ public class TaskManagerTest {
                 .messageId("initial-msg-id")
                 .build();
 
-        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
+        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, stateProcessor, initialMessage);
 
         Message taskMessage = new Message.Builder()
                 .role(Message.Role.AGENT)
@@ -717,7 +720,7 @@ public class TaskManagerTest {
                 .isFinal(false)
                 .build();
 
-        Task saved = taskManagerWithInitialMessage.saveTaskEvent(event);
+        Task saved = taskManagerWithInitialMessage.processAndSave(event);
 
         Message updateMessage = new Message.Builder()
                 .role(Message.Role.USER)

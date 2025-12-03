@@ -101,7 +101,7 @@ public class ClientTaskManager {
                     .contextId(contextId == null ? "" : contextId)
                     .build();
         }
-        currentTask = appendArtifactToTask(task, taskArtifactUpdateEvent, taskId);
+        currentTask = appendArtifactToTask(task, taskArtifactUpdateEvent);
         return currentTask;
     }
 

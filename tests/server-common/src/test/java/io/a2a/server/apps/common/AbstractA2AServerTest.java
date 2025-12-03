@@ -446,40 +446,46 @@ public abstract class AbstractA2AServerTest {
 
     @Test
     public void testSendMessageNewMessageSuccess() throws Exception {
+        // Ensure cleanup from any previous tests
+        deleteTaskInTaskStore(MINIMAL_TASK.getId());
         assertTrue(getTaskFromTaskStore(MINIMAL_TASK.getId()) == null);
         Message message = new Message.Builder(MESSAGE)
                 .taskId(MINIMAL_TASK.getId())
                 .contextId(MINIMAL_TASK.getContextId())
                 .build();
 
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<Message> receivedMessage = new AtomicReference<>();
-        AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
-        BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
-            if (event instanceof MessageEvent messageEvent) {
-                if (latch.getCount() > 0) {
-                    receivedMessage.set(messageEvent.getMessage());
-                    latch.countDown();
+        try {
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<Message> receivedMessage = new AtomicReference<>();
+            AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
+            BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
+                if (event instanceof MessageEvent messageEvent) {
+                    if (latch.getCount() > 0) {
+                        receivedMessage.set(messageEvent.getMessage());
+                        latch.countDown();
+                    } else {
+                        wasUnexpectedEvent.set(true);
+                    }
                 } else {
                     wasUnexpectedEvent.set(true);
                 }
-            } else {
-                wasUnexpectedEvent.set(true);
-            }
-        };
+            };
 
-        // testing the non-streaming send message
-        getNonStreamingClient().sendMessage(message, List.of(consumer), null);
+            // testing the non-streaming send message
+            getNonStreamingClient().sendMessage(message, List.of(consumer), null);
 
-        assertTrue(latch.await(10, TimeUnit.SECONDS));
-        assertFalse(wasUnexpectedEvent.get());
-        Message messageResponse = receivedMessage.get();
-        assertNotNull(messageResponse);
-        assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
-        assertEquals(MESSAGE.getRole(), messageResponse.getRole());
-        Part<?> part = messageResponse.getParts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("test message", ((TextPart) part).getText());
+            assertTrue(latch.await(10, TimeUnit.SECONDS));
+            assertFalse(wasUnexpectedEvent.get());
+            Message messageResponse = receivedMessage.get();
+            assertNotNull(messageResponse);
+            assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
+            assertEquals(MESSAGE.getRole(), messageResponse.getRole());
+            Part<?> part = messageResponse.getParts().get(0);
+            assertEquals(Part.Kind.TEXT, part.getKind());
+            assertEquals("test message", ((TextPart) part).getText());
+        } finally {
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
+        }
     }
 
     @Test
@@ -1666,7 +1672,8 @@ public abstract class AbstractA2AServerTest {
                 .DELETE()
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        if (response.statusCode() != 200) {
+        // Accept both 200 (deleted) and 404 (not found) as successful cleanup
+        if (response.statusCode() != 200 && response.statusCode() != 404) {
             throw new RuntimeException(response.statusCode() + ": Deleting task failed!" + response.body());
         }
     }
