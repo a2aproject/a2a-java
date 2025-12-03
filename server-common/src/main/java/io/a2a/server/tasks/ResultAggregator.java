@@ -154,70 +154,51 @@ public class ResultAggregator {
                     }
 
                     // Determine interrupt behavior
-                    boolean shouldInterrupt = false;
-                    boolean continueInBackground = false;
                     boolean isFinalEvent = (event instanceof Task task && task.getStatus().state().isFinal())
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.isFinal());
                     boolean isAuthRequired = (event instanceof Task task && task.getStatus().state() == TaskState.AUTH_REQUIRED)
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.getStatus().state() == TaskState.AUTH_REQUIRED);
 
-                    // Always interrupt on auth_required, as it needs external action.
-                    if (isAuthRequired) {
                         // auth-required is a special state: the message should be
                         // escalated back to the caller, but the agent is expected to
                         // continue producing events once the authorization is received
                         // out-of-band. This is in contrast to input-required, where a
                         // new request is expected in order for the agent to make progress,
                         // so the agent should exit.
-                        shouldInterrupt = true;
-                        continueInBackground = true;
-                    }
-                    else if (!blocking) {
-                        // For non-blocking calls, interrupt as soon as a task is available.
-                        shouldInterrupt = true;
-                        continueInBackground = true;
-                    }
-                    else if (blocking) {
+                    if (!blocking) {
                         // For blocking calls: Interrupt to free Vert.x thread, but continue in background
                         // Python's async consumption doesn't block threads, but Java's does
                         // So we interrupt to return quickly, then rely on background consumption
                         // DefaultRequestHandler will fetch the final state from TaskStore
-                        shouldInterrupt = true;
-                        continueInBackground = true;
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug("Blocking call for task {}: {} event, returning with background consumption",
                                 taskIdForLogging(), isFinalEvent ? "final" : "non-final");
                         }
                     }
 
-                    if (shouldInterrupt) {
-                        // Complete the future to unblock the main thread
-                        interrupted.set(true);
-                        completionFuture.complete(null);
+                    // Complete the future to unblock the main thread
+                    interrupted.set(true);
+                    completionFuture.complete(null);
 
-                        // For blocking calls, DON'T complete consumptionCompletionFuture here.
-                        // Let it complete naturally when subscription finishes (onComplete callback below).
-                        // This ensures all events are processed and persisted to TaskStore before
-                        // DefaultRequestHandler.cleanupProducer() proceeds with cleanup.
-                        //
-                        // For non-blocking and auth-required calls, complete immediately to allow
-                        // cleanup to proceed while consumption continues in background.
-                        if (!blocking) {
-                            consumptionCompletionFuture.complete(null);
-                        }
-                        // else: blocking calls wait for actual consumption completion in onComplete
-
-                        // Continue consuming in background - keep requesting events
-                        // Note: continueInBackground is always true when shouldInterrupt is true
-                        // (auth-required, non-blocking, or blocking all set it to true)
-                        if (LOGGER.isDebugEnabled()) {
-                            String reason = isAuthRequired ? "auth-required" : (blocking ? "blocking" : "non-blocking");
-                            LOGGER.debug("Task {}: Continuing background consumption (reason: {})", taskIdForLogging(), reason);
-                        }
-                        return true;
+                    // For blocking calls, DON'T complete consumptionCompletionFuture here.
+                    // Let it complete naturally when subscription finishes (onComplete callback below).
+                    // This ensures all events are processed and persisted to TaskStore before
+                    // DefaultRequestHandler.cleanupProducer() proceeds with cleanup.
+                    //
+                    // For non-blocking and auth-required calls, complete immediately to allow
+                    // cleanup to proceed while consumption continues in background.
+                    if (!blocking) {
+                        consumptionCompletionFuture.complete(null);
                     }
+                    // else: blocking calls wait for actual consumption completion in onComplete
 
-                    // Continue processing
+                    // Continue consuming in background - keep requesting events
+                    // Note: continueInBackground is always true when shouldInterrupt is true
+                    // (auth-required, non-blocking, or blocking all set it to true)
+                    if (LOGGER.isDebugEnabled()) {
+                        String reason = isAuthRequired ? "auth-required" : (blocking ? "blocking" : "non-blocking");
+                        LOGGER.debug("Task {}: Continuing background consumption (reason: {})", taskIdForLogging(), reason);
+                    }
                     return true;
                 },
                 throwable -> {
