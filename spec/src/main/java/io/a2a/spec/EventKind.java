@@ -43,4 +43,6 @@ public interface EventKind {
      * @return the event kind string (e.g., "task", "message")
      */
     String getKind();
+
+    String getContextId();
 }

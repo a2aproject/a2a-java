@@ -53,6 +53,7 @@ public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKin
         this.kind = kind;
     }
 
+    @Override
     public String getTaskId() {
         return taskId;
     }
@@ -61,6 +62,7 @@ public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKin
         return status;
     }
 
+    @Override
     public String getContextId() {
         return contextId;
     }

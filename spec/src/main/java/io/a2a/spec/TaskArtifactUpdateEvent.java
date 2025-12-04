@@ -80,6 +80,7 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
         this.kind = kind;
     }
 
+    @Override
     public String getTaskId() {
         return taskId;
     }
@@ -88,6 +89,7 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
         return artifact;
     }
 
+    @Override
     public String getContextId() {
         return contextId;
     }

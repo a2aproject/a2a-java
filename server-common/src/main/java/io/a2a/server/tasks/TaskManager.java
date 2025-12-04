@@ -4,11 +4,13 @@ import static io.a2a.util.Assert.checkNotNullParam;
 
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
+import io.a2a.spec.EventKind;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.Message;
+import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
-import io.a2a.spec.TaskArtifactUpdateEvent;
-import io.a2a.spec.TaskStatusUpdateEvent;
+import io.a2a.spec.UpdateEvent;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,10 +107,8 @@ public class TaskManager {
     private String extractTaskId(Event event) {
         if (event instanceof Task task) {
             return task.getId();
-        } else if (event instanceof TaskStatusUpdateEvent taskStatusUpdateEvent) {
-            return taskStatusUpdateEvent.getTaskId();
-        } else if (event instanceof TaskArtifactUpdateEvent taskArtifactUpdateEvent) {
-            return taskArtifactUpdateEvent.getTaskId();
+        } else if (event instanceof UpdateEvent update) {
+            return update.getTaskId();
         }
         return null;
     }
@@ -117,12 +117,10 @@ public class TaskManager {
      * Extracts the context ID from an event.
      */
     private String extractContextId(Event event) {
-        if (event instanceof Task task) {
-            return task.getContextId();
-        } else if (event instanceof TaskStatusUpdateEvent taskStatusUpdateEvent) {
-            return taskStatusUpdateEvent.getContextId();
-        } else if (event instanceof TaskArtifactUpdateEvent taskArtifactUpdateEvent) {
-            return taskArtifactUpdateEvent.getContextId();
+        if (event instanceof EventKind kind) {
+            return kind.getContextId();
+        } else if (event instanceof StreamingEventKind kind) {
+            return kind.getContextId();
         }
         return null;
     }
