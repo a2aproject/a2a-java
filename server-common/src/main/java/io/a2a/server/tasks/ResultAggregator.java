@@ -3,6 +3,7 @@ package io.a2a.server.tasks;
 import static io.a2a.server.util.async.AsyncUtils.consumer;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import static io.a2a.server.util.async.AsyncUtils.processor;
+import static io.a2a.util.Assert.checkNotNullParam;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -34,6 +35,9 @@ public class ResultAggregator {
     private volatile Message message;
 
     public ResultAggregator(TaskManager taskManager, Message message, Executor executor, TaskStateProcessor stateProcessor) {
+        checkNotNullParam("taskManager", taskManager);
+        checkNotNullParam("executor", executor);
+        checkNotNullParam("stateProcessor", stateProcessor);
         this.taskManager = taskManager;
         this.message = message;
         this.executor = executor;
@@ -218,10 +222,8 @@ public class ResultAggregator {
                                     LOGGER.debug("Persisted final task state after background consumption: {}", taskIdForLogging());
                                 }
                                 // Remove task from state processor after final persistence
-                                if (stateProcessor != null) {
-                                    stateProcessor.removeTask(finalTask.getId());
-                                    LOGGER.debug("Removed task {} from state processor after background consumption", finalTask.getId());
-                                }
+                                stateProcessor.removeTask(finalTask.getId());
+                                LOGGER.debug("Removed task {} from state processor after background consumption", finalTask.getId());
                             }
                         }
                         completionFuture.complete(null);
