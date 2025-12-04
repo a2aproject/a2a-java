@@ -127,7 +127,7 @@ public interface SetTaskPushNotificationConfigMapper {
      * <p>
      * The config_id from the request overrides the ID in the proto's PushNotificationConfig.
      *
-     * @param request the protobuf SetTaskPushNotificationConfigRequest
+     * @param domain the protobuf SetTaskPushNotificationConfigRequest
      * @return domain PushNotificationConfig with config_id injected
      */
     default io.a2a.grpc.TaskPushNotificationConfig mapPushNotificationConfig(TaskPushNotificationConfig domain) {

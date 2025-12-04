@@ -116,7 +116,7 @@ public interface A2ACommonFieldMapper {
     /**
      * Converts domain Map to protobuf Struct (generic conversion).
      * <p>
-     * Used for any Map<String, Object> field that maps to protobuf Struct (header, params, etc.).
+     * Used for any {@code Map<String, Object>} field that maps to protobuf Struct (header, params, etc.).
      * Use this with {@code @Mapping(qualifiedByName = "mapToStruct")}.
      *
      * @param map the domain map
@@ -135,7 +135,7 @@ public interface A2ACommonFieldMapper {
     /**
      * Converts protobuf Struct to domain Map (generic conversion).
      * <p>
-     * Used for any protobuf Struct field that maps to Map<String, Object> (header, params, etc.).
+     * Used for any protobuf Struct field that maps to {@code Map<String, Object>} (header, params, etc.).
      * Use this with {@code @Mapping(qualifiedByName = "structToMap")}.
      *
      * @param struct the protobuf Struct
