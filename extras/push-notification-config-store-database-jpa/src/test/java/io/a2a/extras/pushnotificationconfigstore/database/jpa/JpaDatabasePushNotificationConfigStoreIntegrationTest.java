@@ -78,7 +78,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         // Simple test to verify the mock notification mechanism works
         mockPushNotificationSender.clear();
 
-        Task testTask = new io.a2a.spec.Task.Builder()
+        Task testTask = io.a2a.spec.Task.builder()
             .id("direct-test-task")
             .contextId("test-context")
             .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.SUBMITTED))
@@ -90,7 +90,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         // Verify it was captured
         Queue<Task> captured = mockPushNotificationSender.getCapturedTasks();
         assertEquals(1, captured.size());
-        assertEquals("direct-test-task", captured.peek().getId());
+        assertEquals("direct-test-task", captured.peek().id());
     }
 
     @Test
@@ -165,13 +165,13 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         // Verify the notification contains the correct task with artifacts
         Task notifiedTaskWithArtifact = capturedTasks.stream()
-            .filter(t -> taskId.equals(t.getId()) && t.getArtifacts() != null && t.getArtifacts().size() > 0)
+            .filter(t -> taskId.equals(t.id()) && t.artifacts() != null && t.artifacts().size() > 0)
             .findFirst()
             .orElse(null);
 
         assertNotNull(notifiedTaskWithArtifact, "Notification should contain the updated task with artifacts");
-        assertEquals(taskId, notifiedTaskWithArtifact.getId());
-        assertEquals(1, notifiedTaskWithArtifact.getArtifacts().size(), "Task should have one artifact from the update");
+        assertEquals(taskId, notifiedTaskWithArtifact.id());
+        assertEquals(1, notifiedTaskWithArtifact.artifacts().size(), "Task should have one artifact from the update");
 
         // Step 7: Clean up - delete the push notification configuration
         client.deleteTaskPushNotificationConfigurations(

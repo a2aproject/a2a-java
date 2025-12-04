@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.Task.TASK;
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
 
 /**
  * Represents a single, stateful operation or conversation between a client and an agent in the A2A Protocol.
@@ -31,7 +32,8 @@ import static io.a2a.spec.Task.TASK;
  *   <li><b>Streaming:</b> Client subscribes to Task updates and receives incremental artifacts as they are produced</li>
  * </ul>
  * <p>
- * Tasks are immutable once created and use the Builder pattern for construction. Updates to a Task's
+ * Tasks are immutable once created (including their history, artifacts and metadata attributes).
+ * They use the Builder pattern for construction. Updates to a Task's
  * state are communicated via new Task instances or TaskStatusUpdateEvent/TaskArtifactUpdateEvent objects.
  * <p>
  * This class implements {@link EventKind} and {@link StreamingEventKind}, allowing Task instances to
@@ -46,71 +48,80 @@ import static io.a2a.spec.Task.TASK;
 @JsonTypeName(TASK)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class Task implements EventKind, StreamingEventKind {
+public record Task(
+        @JsonProperty("id") String id,
+        @JsonProperty("contextId") String contextId,
+        @JsonProperty("status") TaskStatus status,
+        @JsonProperty("artifacts") List<Artifact> artifacts,
+        @JsonProperty("history") List<Message> history,
+        @JsonProperty("metadata") Map<String, Object> metadata
+) implements EventKind, StreamingEventKind {
 
     public static final TypeReference<Task> TYPE_REFERENCE = new TypeReference<>() {};
 
     public static final String TASK = "task";
-    private final String id;
-    private final String contextId;
-    private final TaskStatus status;
-    private final List<Artifact> artifacts;
-    private final List<Message> history;
-    private final Map<String, Object> metadata;
-    private final String kind;
-
-    public Task(String id, String contextId, TaskStatus status, List<Artifact> artifacts,
-                List<Message> history, Map<String, Object> metadata) {
-        this(id, contextId, status, artifacts, history, metadata, TASK);
-    }
 
     @JsonCreator
-    public Task(@JsonProperty("id") String id, @JsonProperty("contextId") String contextId, @JsonProperty("status") TaskStatus status,
-                @JsonProperty("artifacts") List<Artifact> artifacts, @JsonProperty("history") List<Message> history,
-                @JsonProperty("metadata") Map<String, Object> metadata, @JsonProperty("kind") String kind) {
+    public Task {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("contextId", contextId);
         Assert.checkNotNullParam("status", status);
-        Assert.checkNotNullParam("kind", kind);
-        if (! kind.equals(TASK)) {
-            throw new IllegalArgumentException("Invalid Task");
-        }
-        this.id = id;
-        this.contextId = contextId;
-        this.status = status;
-        this.artifacts = artifacts != null ? List.copyOf(artifacts) : List.of();
-        this.history = history != null ? List.copyOf(history) : List.of();
-        this.metadata = metadata;
-        this.kind = kind;
+        artifacts = artifacts != null ? List.copyOf(artifacts) : List.of();
+        history = history != null ? List.copyOf(history) : List.of();
+        metadata = (metadata != null) ? Map.copyOf(metadata) : null;
     }
 
+    /**
+     * @deprecated Use {@link #id()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public String getId() {
         return id;
     }
 
+    /**
+     * @deprecated Use {@link #contextId()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public String getContextId() {
         return contextId;
     }
 
+    /**
+     * @deprecated Use {@link #status()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public TaskStatus getStatus() {
         return status;
     }
 
+    /**
+     * @deprecated Use {@link #artifacts()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public List<Artifact> getArtifacts() {
         return artifacts;
     }
 
+    /**
+     * @deprecated Use {@link #history()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public List<Message> getHistory() {
         return history;
     }
 
+    /**
+     * @deprecated Use {@link #metadata()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public Map<String, Object> getMetadata() {
         return metadata;
     }
 
     @Override
     public String getKind() {
-        return kind;
+        return TASK;
     }
 
     /**
@@ -123,6 +134,18 @@ public final class Task implements EventKind, StreamingEventKind {
     }
 
     /**
+     * Creates a new Builder initialized with values from an existing Task.
+     * <p>
+     * This constructor allows for creating a modified copy of an existing Task
+     * by copying all fields and then selectively updating specific values.
+     *
+     * @param task the Task to copy values from
+     */
+    public static Builder builder(Task task) {
+        return new Builder(task);
+    }
+
+    /**
      * Builder for constructing immutable {@link Task} instances.
      * <p>
      * The Builder pattern is used to enforce immutability of Task objects while providing
@@ -132,7 +155,7 @@ public final class Task implements EventKind, StreamingEventKind {
      * <p>
      * Example usage:
      * <pre>{@code
-     * Task task = new Task.Builder()
+     * Task task = Task.builder()
      *     .id("task-123")
      *     .contextId("context-456")
      *     .status(new TaskStatus(TaskState.WORKING))
@@ -151,27 +174,23 @@ public final class Task implements EventKind, StreamingEventKind {
         private Map<String, Object> metadata;
 
         /**
-         * Creates a new Builder with all fields unset.
+         * @deprecated Use {@link Task#builder()} instead
          */
+        @Deprecated(since = SPEC_VERSION_1_0)
         public Builder() {
-
         }
 
         /**
-         * Creates a new Builder initialized with values from an existing Task.
-         * <p>
-         * This constructor allows for creating a modified copy of an existing Task
-         * by copying all fields and then selectively updating specific values.
-         *
-         * @param task the Task to copy values from
+         * @deprecated Use {@link Task#builder(Task)} instead
          */
+        @Deprecated(since = SPEC_VERSION_1_0)
         public Builder(Task task) {
-            id = task.id;
-            contextId = task.contextId;
-            status = task.status;
-            artifacts = task.artifacts;
-            history = task.history;
-            metadata = task.metadata;
+            id = task.id();
+            contextId = task.contextId();
+            status = task.status();
+            artifacts = task.artifacts();
+            history = task.history();
+            metadata = task.metadata();
 
         }
 

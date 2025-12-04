@@ -117,7 +117,7 @@ public class JpaTask {
     public void setTask(Task task) throws JsonProcessingException {
         taskJson = Utils.OBJECT_MAPPER.writeValueAsString(task);
         if (id == null) {
-            id = task.getId();
+            id = task.id();
         }
         this.task = task;
         updateDenormalizedFields(task);
@@ -126,7 +126,7 @@ public class JpaTask {
 
     static JpaTask createFromTask(Task task) throws JsonProcessingException {
         String json = Utils.OBJECT_MAPPER.writeValueAsString(task);
-        JpaTask jpaTask = new JpaTask(task.getId(), json);
+        JpaTask jpaTask = new JpaTask(task.id(), json);
         jpaTask.task = task;
         jpaTask.updateDenormalizedFields(task);
         jpaTask.updateFinalizedTimestamp(task);
@@ -140,14 +140,14 @@ public class JpaTask {
      * @param task the task to extract fields from
      */
     private void updateDenormalizedFields(Task task) {
-        this.contextId = task.getContextId();
-        if (task.getStatus() != null) {
-            io.a2a.spec.TaskState taskState = task.getStatus().state();
+        this.contextId = task.contextId();
+        if (task.status() != null) {
+            io.a2a.spec.TaskState taskState = task.status().state();
             this.state = (taskState != null) ? taskState.asString() : null;
             // Extract status timestamp for efficient querying and sorting
             // Truncate to milliseconds for keyset pagination consistency (pageToken uses millis)
-            this.statusTimestamp = (task.getStatus().timestamp() != null)
-                    ? task.getStatus().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+            this.statusTimestamp = (task.status().timestamp() != null)
+                    ? task.status().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
                     : null;
         } else {
             this.state = null;
@@ -162,8 +162,8 @@ public class JpaTask {
      * @param task the task to check for finalization
      */
     private void updateFinalizedTimestamp(Task task) {
-        if (task.getStatus() != null && task.getStatus().state() != null) {
-            setFinalizedAt(Instant.now(), task.getStatus().state().isFinal());
+        if (task.status() != null && task.status().state() != null) {
+            setFinalizedAt(Instant.now(), task.status().state().isFinal());
         }
     }
 }

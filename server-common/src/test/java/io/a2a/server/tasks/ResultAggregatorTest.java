@@ -62,7 +62,7 @@ public class ResultAggregatorTest {
     }
 
     private Task createSampleTask(String taskId, TaskState statusState, String contextId) {
-        return new Task.Builder()
+        return Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(statusState))

@@ -58,7 +58,7 @@ public class TaskManager {
     }
 
     Task saveTaskEvent(Task task) throws A2AServerException {
-        checkIdsAndUpdateIfNecessary(task.getId(), task.getContextId());
+        checkIdsAndUpdateIfNecessary(task.id(), task.contextId());
         return saveTask(task);
     }
 
@@ -67,18 +67,18 @@ public class TaskManager {
         Task task = ensureTask(event.getTaskId(), event.getContextId());
 
 
-        Task.Builder builder = new Task.Builder(task)
+        Task.Builder builder = Task.builder(task)
                 .status(event.getStatus());
 
-        if (task.getStatus().message() != null) {
-            List<Message> newHistory = task.getHistory() == null ? new ArrayList<>() : new ArrayList<>(task.getHistory());
-            newHistory.add(task.getStatus().message());
+        if (task.status().message() != null) {
+            List<Message> newHistory = new ArrayList<>(task.history());
+            newHistory.add(task.status().message());
             builder.history(newHistory);
         }
 
         // Handle metadata from the event
         if (event.getMetadata() != null) {
-            Map<String, Object> metadata = task.getMetadata() == null ? new HashMap<>() : new HashMap<>(task.getMetadata());
+            Map<String, Object> metadata = task.metadata() == null ? new HashMap<>() : new HashMap<>(task.metadata());
             metadata.putAll(event.getMetadata());
             builder.metadata(metadata);
         }
@@ -106,15 +106,15 @@ public class TaskManager {
     }
 
     public Task updateWithMessage(Message message, Task task) {
-        List<Message> history = new ArrayList<>(task.getHistory());
+        List<Message> history = new ArrayList<>(task.history());
 
-        TaskStatus status = task.getStatus();
+        TaskStatus status = task.status();
         if (status.message() != null) {
             history.add(status.message());
             status = new TaskStatus(status.state(), null, status.timestamp());
         }
         history.add(message);
-        task = new Task.Builder(task)
+        task = Task.builder(task)
                 .status(status)
                 .history(history)
                 .build();
@@ -151,7 +151,7 @@ public class TaskManager {
 
     private Task createTask(String taskId, String contextId) {
         List<Message> history = initialMessage != null ? List.of(initialMessage) : null;
-        return new Task.Builder()
+        return Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(SUBMITTED))
@@ -162,8 +162,8 @@ public class TaskManager {
     private Task saveTask(Task task) {
         taskStore.save(task);
         if (taskId == null) {
-            taskId = task.getId();
-            contextId = task.getContextId();
+            taskId = task.id();
+            contextId = task.contextId();
         }
         currentTask = task;
         return currentTask;

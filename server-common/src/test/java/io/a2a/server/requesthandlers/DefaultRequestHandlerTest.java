@@ -4,11 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -86,14 +84,14 @@ public class DefaultRequestHandlerTest {
             Task task = context.getTask();
             if (task == null) {
                 // First message: create SUBMITTED task
-                task = new Task.Builder()
+                task = Task.builder()
                     .id(context.getTaskId())
                     .contextId(context.getContextId())
                     .status(new TaskStatus(TaskState.SUBMITTED))
                     .build();
             } else {
                 // Subsequent messages: emit WORKING task (non-final)
-                task = new Task.Builder()
+                task = Task.builder()
                     .id(context.getTaskId())
                     .contextId(context.getContextId())
                     .status(new TaskStatus(TaskState.WORKING))
@@ -117,8 +115,8 @@ public class DefaultRequestHandlerTest {
 
         assertTrue(result1 instanceof Task);
         Task task1 = (Task) result1;
-        assertTrue(task1.getId().equals(taskId));
-        assertTrue(task1.getStatus().state() == TaskState.SUBMITTED);
+        assertTrue(task1.id().equals(taskId));
+        assertTrue(task1.status().state() == TaskState.SUBMITTED);
 
         // Second blocking message to SAME taskId - should not hang
         Message message2 = new Message.Builder()
@@ -147,7 +145,7 @@ public class DefaultRequestHandlerTest {
         String contextId = "track-ctx-1";
 
         // Create a task that will trigger background cleanup
-        Task task = new Task.Builder()
+        Task task = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.SUBMITTED))
@@ -264,7 +262,7 @@ public class DefaultRequestHandlerTest {
         String contextId = "reconn-ctx-1";
 
         // Create initial task
-        Task initialTask = new Task.Builder()
+        Task initialTask = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.WORKING))
@@ -291,7 +289,7 @@ public class DefaultRequestHandlerTest {
             agentStarted.countDown();
 
             // Emit first event
-            Task firstEvent = new Task.Builder()
+            Task firstEvent = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
@@ -307,7 +305,7 @@ public class DefaultRequestHandlerTest {
             }
 
             // Emit second event
-            Task secondEvent = new Task.Builder()
+            Task secondEvent = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -373,7 +371,7 @@ public class DefaultRequestHandlerTest {
             agentStarted.countDown();
 
             // Emit working status
-            Task workingTask = new Task.Builder()
+            Task workingTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
@@ -388,7 +386,7 @@ public class DefaultRequestHandlerTest {
             }
 
             // Emit final completed status
-            Task completedTask = new Task.Builder()
+            Task completedTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -416,9 +414,9 @@ public class DefaultRequestHandlerTest {
         if (persistedTask != null) {
             // If task was persisted, it should have the final state
             assertTrue(
-                persistedTask.getStatus().state() == TaskState.COMPLETED ||
-                persistedTask.getStatus().state() == TaskState.WORKING,
-                "Task should be persisted with working or completed state, got: " + persistedTask.getStatus().state()
+                persistedTask.status().state() == TaskState.COMPLETED ||
+                persistedTask.status().state() == TaskState.WORKING,
+                "Task should be persisted with working or completed state, got: " + persistedTask.status().state()
             );
         }
         // Note: In some architectures, the task might not be persisted if the
@@ -482,15 +480,15 @@ public class DefaultRequestHandlerTest {
         Task returnedTask = (Task) result;
 
         // Verify task is in WORKING state (non-final, fire-and-forget)
-        assertEquals(TaskState.WORKING, returnedTask.getStatus().state(),
-            "Returned task should be WORKING (fire-and-forget), got: " + returnedTask.getStatus().state());
+        assertEquals(TaskState.WORKING, returnedTask.status().state(),
+            "Returned task should be WORKING (fire-and-forget), got: " + returnedTask.status().state());
 
         // Verify artifacts are included in the returned task
-        assertNotNull(returnedTask.getArtifacts(),
+        assertNotNull(returnedTask.artifacts(),
             "Returned task should have artifacts");
-        assertTrue(returnedTask.getArtifacts().size() >= 1,
+        assertTrue(returnedTask.artifacts().size() >= 1,
             "Returned task should have at least 1 artifact, got: " +
-            returnedTask.getArtifacts().size());
+            returnedTask.artifacts().size());
     }
 
     /**
@@ -532,7 +530,7 @@ public class DefaultRequestHandlerTest {
             agentStarted.countDown();
 
             // Emit first event (WORKING state)
-            Task workingTask = new Task.Builder()
+            Task workingTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
@@ -558,7 +556,7 @@ public class DefaultRequestHandlerTest {
 
             // Emit final event (COMPLETED state)
             // This event should be persisted to TaskStore in background
-            Task completedTask = new Task.Builder()
+            Task completedTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -572,8 +570,8 @@ public class DefaultRequestHandlerTest {
         // Assertion 1: The immediate result should be the first event (WORKING)
         assertTrue(result instanceof Task, "Result should be a Task");
         Task immediateTask = (Task) result;
-        assertEquals(TaskState.WORKING, immediateTask.getStatus().state(),
-            "Non-blocking should return immediately with WORKING state, got: " + immediateTask.getStatus().state());
+        assertEquals(TaskState.WORKING, immediateTask.status().state(),
+            "Non-blocking should return immediately with WORKING state, got: " + immediateTask.status().state());
 
         // At this point, the non-blocking call has returned, but the agent is still running
 
@@ -589,7 +587,7 @@ public class DefaultRequestHandlerTest {
 
         while (System.currentTimeMillis() - startTime < timeoutMs) {
             persistedTask = taskStore.get(taskId);
-            if (persistedTask != null && persistedTask.getStatus().state() == TaskState.COMPLETED) {
+            if (persistedTask != null && persistedTask.status().state() == TaskState.COMPLETED) {
                 completedStateFound = true;
                 break;
             }
@@ -600,7 +598,7 @@ public class DefaultRequestHandlerTest {
         assertTrue(
             completedStateFound,
             "Final task state should be COMPLETED (background consumption should have processed it), got: " +
-            (persistedTask != null ? persistedTask.getStatus().state() : "null") +
+            (persistedTask != null ? persistedTask.status().state() : "null") +
             " after " + (System.currentTimeMillis() - startTime) + "ms"
         );
     }
@@ -616,7 +614,7 @@ public class DefaultRequestHandlerTest {
         String contextId = "fire-ctx";
 
         // Create initial task in WORKING state (non-final)
-        Task initialTask = new Task.Builder()
+        Task initialTask = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.WORKING))
@@ -641,7 +639,7 @@ public class DefaultRequestHandlerTest {
             agentStarted.countDown();
 
             // Emit WORKING status (non-final)
-            Task workingTask = new Task.Builder()
+            Task workingTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
@@ -700,7 +698,7 @@ public class DefaultRequestHandlerTest {
         String contextId = "completed-ctx";
 
         // Create initial task in COMPLETED state (already finalized)
-        Task completedTask = new Task.Builder()
+        Task completedTask = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.COMPLETED))
@@ -787,15 +785,15 @@ public class DefaultRequestHandlerTest {
         Task returnedTask = (Task) result;
 
         // Verify task is completed
-        assertEquals(TaskState.COMPLETED, returnedTask.getStatus().state(),
+        assertEquals(TaskState.COMPLETED, returnedTask.status().state(),
             "Returned task should be COMPLETED");
 
         // Verify artifacts are included in the returned task
-        assertNotNull(returnedTask.getArtifacts(),
+        assertNotNull(returnedTask.artifacts(),
             "Returned task should have artifacts");
-        assertTrue(returnedTask.getArtifacts().size() >= 2,
+        assertTrue(returnedTask.artifacts().size() >= 2,
             "Returned task should have at least 2 artifacts, got: " +
-            returnedTask.getArtifacts().size());
+            returnedTask.artifacts().size());
     }
 
     /**
@@ -863,7 +861,7 @@ public class DefaultRequestHandlerTest {
         // Verify result is a task
         assertTrue(result instanceof Task, "Result should be a Task");
         Task returnedTask = (Task) result;
-        assertEquals(taskId, returnedTask.getId());
+        assertEquals(taskId, returnedTask.id());
 
         // THE KEY ASSERTION: Verify pushNotificationConfig was stored
         List<PushNotificationConfig> storedConfigs = pushConfigStore.getInfo(taskId);
@@ -898,7 +896,7 @@ public class DefaultRequestHandlerTest {
         );
 
         // Create EXISTING task in store
-        Task existingTask = new Task.Builder()
+        Task existingTask = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.WORKING))
@@ -980,7 +978,7 @@ public class DefaultRequestHandlerTest {
                     executeCallback.call(context, eventQueue);
                 } else {
                     // No custom callback - emit default completion event
-                    Task completedTask = new Task.Builder()
+                    Task completedTask = Task.builder()
                         .id(context.getTaskId())
                         .contextId(context.getContextId())
                         .status(new TaskStatus(TaskState.COMPLETED))

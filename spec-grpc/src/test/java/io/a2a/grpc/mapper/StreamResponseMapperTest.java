@@ -22,7 +22,7 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertTask_ToProto() {
         // Arrange
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -59,9 +59,9 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
-        assertEquals("task-123", task.getId());
-        assertEquals("context-456", task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
+        assertEquals("task-123", task.id());
+        assertEquals("context-456", task.contextId());
+        assertEquals(TaskState.COMPLETED, task.status().state());
     }
 
     @Test
@@ -230,7 +230,7 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertStreamResponse_Roundtrip_Task() {
         // Arrange
-        Task originalTask = new Task.Builder()
+        Task originalTask = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -244,9 +244,9 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(Task.class, result);
         Task roundtrippedTask = (Task) result;
-        assertEquals(originalTask.getId(), roundtrippedTask.getId());
-        assertEquals(originalTask.getContextId(), roundtrippedTask.getContextId());
-        assertEquals(originalTask.getStatus().state(), roundtrippedTask.getStatus().state());
+        assertEquals(originalTask.id(), roundtrippedTask.id());
+        assertEquals(originalTask.contextId(), roundtrippedTask.contextId());
+        assertEquals(originalTask.status().state(), roundtrippedTask.status().state());
     }
 
     @Test

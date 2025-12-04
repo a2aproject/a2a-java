@@ -155,8 +155,8 @@ public class KafkaReplicationIntegrationTest {
 
         Task task = createdTask.get();
         assertNotNull(task, "Task should be created");
-        assertEquals(taskId, task.getId());
-        assertEquals(TaskState.SUBMITTED, task.getStatus().state());
+        assertEquals(taskId, task.id());
+        assertEquals(TaskState.SUBMITTED, task.status().state());
 
         // Wait for the event to be replicated to Kafka
         ReplicatedEventQueueItem replicatedEvent = testConsumer.waitForEvent(taskId, 30);
@@ -212,7 +212,7 @@ public class KafkaReplicationIntegrationTest {
         assertTrue(createLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
         Task initialTask = createdTask.get();
         assertNotNull(initialTask, "Task should be created");
-        assertEquals(TaskState.SUBMITTED, initialTask.getStatus().state(), "Initial task should be in SUBMITTED state");
+        assertEquals(TaskState.SUBMITTED, initialTask.status().state(), "Initial task should be in SUBMITTED state");
 
         // Add a small delay to ensure the task is fully processed before resubscription
         Thread.sleep(1000);
@@ -311,7 +311,7 @@ public class KafkaReplicationIntegrationTest {
 
         pollingClient.sendMessage(workingMessage, List.of((ClientEvent event, AgentCard card) -> {
             if (event instanceof TaskEvent taskEvent) {
-                taskIdRef.set(taskEvent.getTask().getId());
+                taskIdRef.set(taskEvent.getTask().id());
                 workingLatch.countDown();
             } else if (event instanceof TaskUpdateEvent tue && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
                 if (status.getStatus().state() == TaskState.WORKING) {

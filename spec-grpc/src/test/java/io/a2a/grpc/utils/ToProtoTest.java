@@ -131,7 +131,7 @@ public class ToProtoTest {
 
     @Test
     public void convertTask() {
-        Task task = new Task.Builder().id("cancel-task-123")
+        Task task = Task.builder().id("cancel-task-123")
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build();
@@ -141,7 +141,7 @@ public class ToProtoTest {
         assertEquals(io.a2a.grpc.TaskState.TASK_STATE_SUBMITTED, result.getStatus().getState());
         assertEquals(0, result.getArtifactsCount());
         assertEquals(0, result.getHistoryCount());
-        task = new Task.Builder().id("cancel-task-123")
+        task = Task.builder().id("cancel-task-123")
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .artifacts(List.of(new Artifact.Builder()
@@ -281,7 +281,7 @@ public class ToProtoTest {
     public void convertTaskTimestampStatus() {
         OffsetDateTime expectedTimestamp = OffsetDateTime.parse("2024-10-05T12:34:56Z");
         TaskStatus testStatus = new TaskStatus(TaskState.COMPLETED, null, expectedTimestamp);
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
                 .status(testStatus)
@@ -289,7 +289,7 @@ public class ToProtoTest {
 
         io.a2a.grpc.Task grpcTask = ProtoUtils.ToProto.task(task);
         task = ProtoUtils.FromProto.task(grpcTask);
-        TaskStatus status = task.getStatus();
+        TaskStatus status = task.status();
         assertEquals(TaskState.COMPLETED, status.state());
         assertNotNull(status.timestamp());
         assertEquals(expectedTimestamp, status.timestamp());

@@ -29,7 +29,7 @@ public class AgentExecutorProducer {
             Task task = context.getTask();
 
             if (task == null) {
-                task = new Task.Builder()
+                task = Task.builder()
                         .id(context.getTaskId())
                         .contextId(context.getContextId())
                         .status(new TaskStatus(TaskState.SUBMITTED))
@@ -63,12 +63,12 @@ public class AgentExecutorProducer {
             System.out.println("====> task cancel request received");
             Task task = context.getTask();
 
-            if (task.getStatus().state() == TaskState.CANCELED) {
+            if (task.status().state() == TaskState.CANCELED) {
                 System.out.println("====> task already canceled");
                 throw new TaskNotCancelableError();
             }
             
-            if (task.getStatus().state() == TaskState.COMPLETED) {
+            if (task.status().state() == TaskState.COMPLETED) {
                 System.out.println("====> task already completed");
                 throw new TaskNotCancelableError();
             }
@@ -76,8 +76,8 @@ public class AgentExecutorProducer {
             TaskUpdater updater = new TaskUpdater(context, eventQueue);
             updater.cancel();
             eventQueue.enqueueEvent(new TaskStatusUpdateEvent.Builder()
-                    .taskId(task.getId())
-                    .contextId(task.getContextId())
+                    .taskId(task.id())
+                    .contextId(task.contextId())
                     .status(new TaskStatus(TaskState.CANCELED))
                     .isFinal(true)
                     .build());

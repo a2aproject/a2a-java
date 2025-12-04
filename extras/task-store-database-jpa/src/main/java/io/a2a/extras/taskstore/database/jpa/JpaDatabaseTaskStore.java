@@ -65,22 +65,22 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
     @Transactional
     @Override
     public void save(Task task) {
-        LOGGER.debug("Saving task with ID: {}", task.getId());
+        LOGGER.debug("Saving task with ID: {}", task.id());
         try {
             JpaTask jpaTask = JpaTask.createFromTask(task);
             em.merge(jpaTask);
-            LOGGER.debug("Persisted/updated task with ID: {}", task.getId());
+            LOGGER.debug("Persisted/updated task with ID: {}", task.id());
 
-            if (task.getStatus() != null && task.getStatus().state() != null && task.getStatus().state().isFinal()) {
+            if (task.status() != null && task.status().state() != null && task.status().state().isFinal()) {
                 // Fire CDI event if task reached final state
                 // IMPORTANT: The event will be delivered AFTER transaction commits (AFTER_SUCCESS observers)
                 // This ensures the task's final state is durably stored before the QueueClosedEvent poison pill is sent
-                LOGGER.debug("Task {} is in final state, firing TaskFinalizedEvent", task.getId());
-                taskFinalizedEvent.fire(new TaskFinalizedEvent(task.getId()));
+                LOGGER.debug("Task {} is in final state, firing TaskFinalizedEvent", task.id());
+                taskFinalizedEvent.fire(new TaskFinalizedEvent(task.id()));
             }
         } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to serialize task with ID: {}", task.getId(), e);
-            throw new RuntimeException("Failed to serialize task with ID: " + task.getId(), e);
+            LOGGER.error("Failed to serialize task with ID: {}", task.id(), e);
+            throw new RuntimeException("Failed to serialize task with ID: " + task.id(), e);
         }
     }
 
@@ -147,7 +147,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             Task task = jpaTask.getTask();
 
             // Task is active if not in final state
-            if (task.getStatus() == null || task.getStatus().state() == null || !task.getStatus().state().isFinal()) {
+            if (task.status() == null || task.status().state() == null || !task.status().state().isFinal()) {
                 LOGGER.debug("Task is not in final state, considering active: {}", taskId);
                 return true;
             }
@@ -207,9 +207,9 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             Task task = jpaTask.getTask();
 
             // Task is finalized if in final state (ignore grace period)
-            boolean isFinalized = task.getStatus() != null
-                && task.getStatus().state() != null
-                && task.getStatus().state().isFinal();
+            boolean isFinalized = task.status() != null
+                && task.status().state() != null
+                && task.status().state().isFinal();
 
             LOGGER.debug("Task {} finalization check: {}", taskId, isFinalized);
             return isFinalized;
@@ -343,8 +343,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         if (hasMore && !tasks.isEmpty()) {
             Task lastTask = tasks.get(tasks.size() - 1);
             // All tasks have timestamps (TaskStatus canonical constructor ensures this)
-            long timestampMillis = lastTask.getStatus().timestamp().toInstant().toEpochMilli();
-            nextPageToken = timestampMillis + ":" + lastTask.getId();
+            long timestampMillis = lastTask.status().timestamp().toInstant().toEpochMilli();
+            nextPageToken = timestampMillis + ":" + lastTask.id();
         }
 
         // Apply post-processing transformations (history limiting, artifact removal)
@@ -361,21 +361,21 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     private Task transformTask(Task task, int historyLength, boolean includeArtifacts) {
         // Limit history if needed (keep most recent N messages)
-        List<Message> history = task.getHistory();
+        List<Message> history = task.history();
         if (historyLength > 0 && history != null && history.size() > historyLength) {
             history = history.subList(history.size() - historyLength, history.size());
         }
 
         // Remove artifacts if not requested
-        List<Artifact> artifacts = includeArtifacts ? task.getArtifacts() : List.of();
+        List<Artifact> artifacts = includeArtifacts ? task.artifacts() : List.of();
 
         // If no transformation needed, return original task
-        if (history == task.getHistory() && artifacts == task.getArtifacts()) {
+        if (history == task.history() && artifacts == task.artifacts()) {
             return task;
         }
 
         // Build new task with transformed data
-        return new Task.Builder(task)
+        return Task.builder(task)
                 .artifacts(artifacts)
                 .history(history)
                 .build();

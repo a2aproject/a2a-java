@@ -172,14 +172,14 @@ public class DefaultRequestHandler implements RequestHandler {
      * @return the task with limited history, or the original task if no limiting needed
      */
     private static Task limitTaskHistory(Task task, int historyLength) {
-        if (task.getHistory() == null || historyLength <= 0 || historyLength >= task.getHistory().size()) {
+        if (historyLength <= 0 || historyLength >= task.history().size()) {
             return task;
         }
         // Keep only the most recent historyLength messages
-        List<Message> limitedHistory = task.getHistory().subList(
-                task.getHistory().size() - historyLength,
-                task.getHistory().size());
-        return new Task.Builder(task)
+        List<Message> limitedHistory = task.history().subList(
+                task.history().size() - historyLength,
+                task.history().size());
+        return Task.builder(task)
                 .history(limitedHistory)
                 .build();
     }
@@ -214,33 +214,33 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         // Check if task is in a non-cancelable state (completed, canceled, failed, rejected)
-        if (task.getStatus().state().isFinal()) {
+        if (task.status().state().isFinal()) {
             throw new TaskNotCancelableError(
-                    "Task cannot be canceled - current state: " + task.getStatus().state().asString());
+                    "Task cannot be canceled - current state: " + task.status().state().asString());
         }
 
         TaskManager taskManager = new TaskManager(
-                task.getId(),
-                task.getContextId(),
+                task.id(),
+                task.contextId(),
                 taskStore,
                 null);
 
         ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor);
 
-        EventQueue queue = queueManager.tap(task.getId());
+        EventQueue queue = queueManager.tap(task.id());
         if (queue == null) {
-            queue = queueManager.getEventQueueBuilder(task.getId()).build();
+            queue = queueManager.getEventQueueBuilder(task.id()).build();
         }
         agentExecutor.cancel(
                 requestContextBuilder.get()
-                        .setTaskId(task.getId())
-                        .setContextId(task.getContextId())
+                        .setTaskId(task.id())
+                        .setContextId(task.contextId())
                         .setTask(task)
                         .setServerCallContext(context)
                         .build(),
                 queue);
 
-        Optional.ofNullable(runningAgents.get(task.getId()))
+        Optional.ofNullable(runningAgents.get(task.id()))
                 .ifPresent(cf -> cf.cancel(true));
 
         EventConsumer consumer = new EventConsumer(queue);
@@ -250,9 +250,9 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         // Verify task was actually canceled (not completed concurrently)
-        if (tempTask.getStatus().state() != TaskState.CANCELED) {
+        if (tempTask.status().state() != TaskState.CANCELED) {
             throw new TaskNotCancelableError(
-                    "Task cannot be canceled - current state: " + tempTask.getStatus().state().asString());
+                    "Task cannot be canceled - current state: " + tempTask.status().state().asString());
         }
 
         return tempTask;
@@ -310,8 +310,8 @@ public class DefaultRequestHandler implements RequestHandler {
             // Store push notification config for newly created tasks (mirrors streaming logic)
             // Only for NEW tasks - existing tasks are handled by initMessageSend()
             if (mss.task() == null && kind instanceof Task createdTask && shouldAddPushInfo(params)) {
-                LOGGER.debug("Storing push notification config for new task {}", createdTask.getId());
-                pushConfigStore.setInfo(createdTask.getId(), params.configuration().pushNotificationConfig());
+                LOGGER.debug("Storing push notification config for new task {}", createdTask.id());
+                pushConfigStore.setInfo(createdTask.id(), params.configuration().pushNotificationConfig());
             }
 
             if (blocking && interruptedOrNonBlocking) {
@@ -366,12 +366,12 @@ public class DefaultRequestHandler implements RequestHandler {
                     kind = updatedTask;
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Fetched final task for {} with state {} and {} artifacts",
-                            taskId, updatedTask.getStatus().state(),
-                            updatedTask.getArtifacts().size());
+                            taskId, updatedTask.status().state(),
+                            updatedTask.artifacts().size());
                     }
                 }
             }
-            if (kind instanceof Task taskResult && !taskId.equals(taskResult.getId())) {
+            if (kind instanceof Task taskResult && !taskId.equals(taskResult.id())) {
                 throw new InternalError("Task ID mismatch in agent response");
             }
 
@@ -420,15 +420,15 @@ public class DefaultRequestHandler implements RequestHandler {
                     processor(createTubeConfig(), results, ((errorConsumer, item) -> {
                 Event event = item.getEvent();
                 if (event instanceof Task createdTask) {
-                    if (!Objects.equals(taskId.get(), createdTask.getId())) {
+                    if (!Objects.equals(taskId.get(), createdTask.id())) {
                         errorConsumer.accept(new InternalError("Task ID mismatch in agent response"));
                     }
 
                     // TODO the Python implementation no longer has the following block but removing it causes
                     //  failures here
                     try {
-                        queueManager.add(createdTask.getId(), queue);
-                        taskId.set(createdTask.getId());
+                        queueManager.add(createdTask.id(), queue);
+                        taskId.set(createdTask.id());
                     } catch (TaskQueueExistsException e) {
                         // TODO Log
                     }
@@ -437,7 +437,7 @@ public class DefaultRequestHandler implements RequestHandler {
                             params.configuration().pushNotificationConfig() != null) {
 
                         pushConfigStore.setInfo(
-                                createdTask.getId(),
+                                createdTask.id(),
                                 params.configuration().pushNotificationConfig());
                     }
 
@@ -600,20 +600,20 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new TaskNotFoundError();
         }
 
-        TaskManager taskManager = new TaskManager(task.getId(), task.getContextId(), taskStore, null);
+        TaskManager taskManager = new TaskManager(task.id(), task.contextId(), taskStore, null);
         ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor);
-        EventQueue queue = queueManager.tap(task.getId());
+        EventQueue queue = queueManager.tap(task.id());
         LOGGER.debug("onResubscribeToTask - tapped queue: {}", queue != null ? System.identityHashCode(queue) : "null");
 
         if (queue == null) {
             // If task is in final state, queue legitimately doesn't exist anymore
-            if (task.getStatus().state().isFinal()) {
+            if (task.status().state().isFinal()) {
                 throw new TaskNotFoundError();
             }
             // For non-final tasks, recreate the queue so client can receive future events
             // (Note: historical events from before queue closed are not available)
-            LOGGER.debug("Queue not found for active task {}, creating new queue for future events", task.getId());
-            queue = queueManager.createOrTap(task.getId());
+            LOGGER.debug("Queue not found for active task {}, creating new queue for future events", task.id());
+            queue = queueManager.createOrTap(task.id());
         }
 
         EventConsumer consumer = new EventConsumer(queue);
@@ -806,13 +806,13 @@ public class DefaultRequestHandler implements RequestHandler {
 
             if (shouldAddPushInfo(params)) {
                 LOGGER.debug("Adding push info");
-                pushConfigStore.setInfo(task.getId(), params.configuration().pushNotificationConfig());
+                pushConfigStore.setInfo(task.id(), params.configuration().pushNotificationConfig());
             }
         }
 
         RequestContext requestContext = requestContextBuilder.get()
                 .setParams(params)
-                .setTaskId(task == null ? null : task.getId())
+                .setTaskId(task == null ? null : task.id())
                 .setContextId(params.message().getContextId())
                 .setTask(task)
                 .setServerCallContext(context)

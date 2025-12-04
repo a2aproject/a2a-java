@@ -36,6 +36,10 @@ import io.a2a.spec.TaskArtifactUpdateEvent;
  */
 public class Utils {
 
+    /** Version 1.0 of the A2A specification
+     */
+    public static final String SPEC_VERSION_1_0 = "1.0";
+
     /**
      * Pre-configured Jackson {@link ObjectMapper} for JSON operations.
      * <p>
@@ -129,7 +133,7 @@ public class Utils {
      */
     public static Task appendArtifactToTask(Task task, TaskArtifactUpdateEvent event, String taskId) {
         // Append artifacts
-        List<Artifact> artifacts = task.getArtifacts() == null ? new ArrayList<>() : new ArrayList<>(task.getArtifacts());
+        List<Artifact> artifacts = new ArrayList<>(task.artifacts());
 
         Artifact newArtifact = event.getArtifact();
         String artifactId = newArtifact.artifactId();
@@ -177,7 +181,7 @@ public class Utils {
                     artifactId, taskId));
         }
 
-        return new Task.Builder(task)
+        return Task.builder(task)
                 .artifacts(artifacts)
                 .build();
 

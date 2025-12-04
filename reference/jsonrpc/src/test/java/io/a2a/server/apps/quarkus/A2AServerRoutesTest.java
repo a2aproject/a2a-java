@@ -133,7 +133,7 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with a Task
-        Task responseTask = new Task.Builder()
+        Task responseTask = Task.builder()
                 .id("task-123")
                 .contextId("context-1234")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -217,7 +217,7 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with a Task
-        Task responseTask = new Task.Builder()
+        Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -253,7 +253,7 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with a Task
-        Task responseTask = new Task.Builder()
+        Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
                 .status(new TaskStatus(TaskState.CANCELED))

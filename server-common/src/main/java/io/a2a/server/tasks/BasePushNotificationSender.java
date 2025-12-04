@@ -43,7 +43,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     @Override
     public void sendNotification(Task task) {
-        List<PushNotificationConfig> pushConfigs = configStore.getInfo(task.getId());
+        List<PushNotificationConfig> pushConfigs = configStore.getInfo(task.id());
         if (pushConfigs == null || pushConfigs.isEmpty()) {
             return;
         }
@@ -58,10 +58,10 @@ public class BasePushNotificationSender implements PushNotificationSender {
         try {
             boolean allSent = dispatchResult.get();
             if (! allSent) {
-                LOGGER.warn("Some push notifications failed to send for taskId: " + task.getId());
+                LOGGER.warn("Some push notifications failed to send for taskId: " + task.id());
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOGGER.warn("Some push notifications failed to send for taskId " + task.getId() + ": {}", e.getMessage(), e);
+            LOGGER.warn("Some push notifications failed to send for taskId " + task.id() + ": {}", e.getMessage(), e);
         }
     }
 

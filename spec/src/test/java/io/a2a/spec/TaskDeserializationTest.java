@@ -24,11 +24,11 @@ public class TaskDeserializationTest {
 
         Task task = objectMapper.readValue(json, Task.class);
 
-        assertNotNull(task.getHistory(), "history should not be null");
-        assertNotNull(task.getArtifacts(), "artifacts should not be null");
+        assertNotNull(task.history(), "history should not be null");
+        assertNotNull(task.artifacts(), "artifacts should not be null");
 
-        assertTrue(task.getHistory().isEmpty(), "history should be empty list when not provided");
-        assertTrue(task.getArtifacts().isEmpty(), "artifacts should be empty list when not provided");
+        assertTrue(task.history().isEmpty(), "history should be empty list when not provided");
+        assertTrue(task.artifacts().isEmpty(), "artifacts should be empty list when not provided");
     }
 
     @Test
@@ -50,11 +50,11 @@ public class TaskDeserializationTest {
         Task task = objectMapper.readValue(json, Task.class);
 
         // Should never be null even with explicit null in JSON
-        assertNotNull(task.getHistory(), "history should not be null even when JSON contains null");
-        assertNotNull(task.getArtifacts(), "artifacts should not be null even when JSON contains null");
+        assertNotNull(task.history(), "history should not be null even when JSON contains null");
+        assertNotNull(task.artifacts(), "artifacts should not be null even when JSON contains null");
 
-        assertTrue(task.getHistory().isEmpty());
-        assertTrue(task.getArtifacts().isEmpty());
+        assertTrue(task.history().isEmpty());
+        assertTrue(task.artifacts().isEmpty());
     }
 
     @Test
@@ -81,10 +81,10 @@ public class TaskDeserializationTest {
 
         Task task = objectMapper.readValue(json, Task.class);
 
-        assertNotNull(task.getHistory());
-        assertEquals(1, task.getHistory().size());
+        assertNotNull(task.history());
+        assertEquals(1, task.history().size());
 
-        assertNotNull(task.getArtifacts());
-        assertTrue(task.getArtifacts().isEmpty());
+        assertNotNull(task.artifacts());
+        assertTrue(task.artifacts().isEmpty());
     }
 }

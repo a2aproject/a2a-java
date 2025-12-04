@@ -69,12 +69,12 @@ class InMemoryPushNotificationConfigStoreTest {
         
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
-        assertTrue(sentBody.contains(task.getId()));
-        assertTrue(sentBody.contains(task.getStatus().state().asString()));
+        assertTrue(sentBody.contains(task.id()));
+        assertTrue(sentBody.contains(task.status().state().asString()));
     }
 
     private Task createSampleTask(String taskId, TaskState state) {
-        return new Task.Builder()
+        return Task.builder()
                 .id(taskId)
                 .contextId("ctx456")
                 .status(new TaskStatus(state))
@@ -246,8 +246,8 @@ class InMemoryPushNotificationConfigStoreTest {
         
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
-        assertTrue(sentBody.contains(task.getId()));
-        assertTrue(sentBody.contains(task.getStatus().state().asString()));
+        assertTrue(sentBody.contains(task.id()));
+        assertTrue(sentBody.contains(task.status().state().asString()));
     }
 
     @Test
@@ -278,8 +278,8 @@ class InMemoryPushNotificationConfigStoreTest {
         
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
-        assertTrue(sentBody.contains(task.getId()));
-        assertTrue(sentBody.contains(task.getStatus().state().asString()));
+        assertTrue(sentBody.contains(task.id()));
+        assertTrue(sentBody.contains(task.status().state().asString()));
     }
 
     @Test

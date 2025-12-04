@@ -133,14 +133,14 @@ public class RestTransportTest {
         EventKind result = instance.sendMessage(messageSendParams, context);
         assertEquals("task", result.getKind());
         Task task = (Task) result;
-        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", task.getId());
-        assertEquals("context-1234", task.getContextId());
-        assertEquals(TaskState.SUBMITTED, task.getStatus().state());
-        assertNull(task.getStatus().message());
-        assertNull(task.getMetadata());
-        assertEquals(true, task.getArtifacts().isEmpty());
-        assertEquals(1, task.getHistory().size());
-        Message history = task.getHistory().get(0);
+        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", task.id());
+        assertEquals("context-1234", task.contextId());
+        assertEquals(TaskState.SUBMITTED, task.status().state());
+        assertNull(task.status().message());
+        assertNull(task.metadata());
+        assertEquals(true, task.artifacts().isEmpty());
+        assertEquals(1, task.history().size());
+        Message history = task.history().get(0);
         assertEquals("message", history.getKind());
         assertEquals(Message.Role.USER, history.getRole());
         assertEquals("context-1234", history.getContextId());
@@ -149,7 +149,7 @@ public class RestTransportTest {
         assertEquals(1, history.getParts().size());
         assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
         assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).getText());
-        assertNull(task.getMetadata());
+        assertNull(task.metadata());
         assertNull(history.getReferenceTaskIds());
     }
 
@@ -173,11 +173,11 @@ public class RestTransportTest {
         RestTransport instance = new RestTransport(CARD);
         Task task = instance.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
                 new HashMap<>()), context);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals(TaskState.CANCELED, task.getStatus().state());
-        assertNull(task.getStatus().message());
-        assertNotNull(task.getMetadata());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertEquals(TaskState.CANCELED, task.status().state());
+        assertNull(task.status().message());
+        assertNotNull(task.metadata());
+        assertTrue(task.metadata().isEmpty());
     }
 
     /**
@@ -199,21 +199,21 @@ public class RestTransportTest {
         TaskQueryParams request = new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64", 10);
         RestTransport instance = new RestTransport(CARD);
         Task task = instance.getTask(request, context);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertNull(task.getStatus().message());
-        assertNotNull(task.getMetadata());
-        assertTrue(task.getMetadata().isEmpty());
-        assertEquals(false, task.getArtifacts().isEmpty());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertNull(task.status().message());
+        assertNotNull(task.metadata());
+        assertTrue(task.metadata().isEmpty());
+        assertEquals(false, task.artifacts().isEmpty());
+        assertEquals(1, task.artifacts().size());
+        Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertNull(artifact.name());
         assertEquals(false, artifact.parts().isEmpty());
         assertEquals(Kind.TEXT, artifact.parts().get(0).getKind());
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).getText());
-        assertEquals(1, task.getHistory().size());
-        Message history = task.getHistory().get(0);
+        assertEquals(1, task.history().size());
+        Message history = task.history().get(0);
         assertEquals("message", history.getKind());
         assertEquals(Message.Role.USER, history.getRole());
         assertEquals("message-123", history.getMessageId());
@@ -280,7 +280,7 @@ public class RestTransportTest {
         assertNotNull(receivedEvent.get());
         assertEquals("task", receivedEvent.get().getKind());
         Task task = (Task) receivedEvent.get();
-        assertEquals("2", task.getId());
+        assertEquals("2", task.id());
     }
 
     /**
@@ -440,10 +440,10 @@ public class RestTransportTest {
         assertNotNull(eventKind);
         assertInstanceOf(Task.class, eventKind);
         Task task = (Task) eventKind;
-        assertEquals("2", task.getId());
-        assertEquals("context-1234", task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        List<Artifact> artifacts = task.getArtifacts();
+        assertEquals("2", task.id());
+        assertEquals("context-1234", task.contextId());
+        assertEquals(TaskState.COMPLETED, task.status().state());
+        List<Artifact> artifacts = task.artifacts();
         assertEquals(1, artifacts.size());
         Artifact artifact = artifacts.get(0);
         assertEquals("artifact-1", artifact.artifactId());

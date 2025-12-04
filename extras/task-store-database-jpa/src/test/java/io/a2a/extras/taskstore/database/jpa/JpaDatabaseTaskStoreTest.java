@@ -46,7 +46,7 @@ public class JpaDatabaseTaskStoreTest {
     @Transactional
     public void testSaveAndRetrieveTask() {
         // Create a test task
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("test-task-1")
                 .contextId("test-context-1")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -60,9 +60,9 @@ public class JpaDatabaseTaskStoreTest {
         Task retrieved = taskStore.get("test-task-1");
         
         assertNotNull(retrieved);
-        assertEquals("test-task-1", retrieved.getId());
-        assertEquals("test-context-1", retrieved.getContextId());
-        assertEquals(TaskState.SUBMITTED, retrieved.getStatus().state());
+        assertEquals("test-task-1", retrieved.id());
+        assertEquals("test-context-1", retrieved.contextId());
+        assertEquals(TaskState.SUBMITTED, retrieved.status().state());
     }
 
     @Test
@@ -76,7 +76,7 @@ public class JpaDatabaseTaskStoreTest {
                 .build();
 
         // Create a task with history
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("test-task-2")
                 .contextId("test-context-2")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -90,19 +90,19 @@ public class JpaDatabaseTaskStoreTest {
         Task retrieved = taskStore.get("test-task-2");
         
         assertNotNull(retrieved);
-        assertEquals("test-task-2", retrieved.getId());
-        assertEquals("test-context-2", retrieved.getContextId());
-        assertEquals(TaskState.WORKING, retrieved.getStatus().state());
-        assertEquals(1, retrieved.getHistory().size());
-        assertEquals("msg-1", retrieved.getHistory().get(0).getMessageId());
-        assertEquals("Hello, agent!", ((TextPart) retrieved.getHistory().get(0).getParts().get(0)).getText());
+        assertEquals("test-task-2", retrieved.id());
+        assertEquals("test-context-2", retrieved.contextId());
+        assertEquals(TaskState.WORKING, retrieved.status().state());
+        assertEquals(1, retrieved.history().size());
+        assertEquals("msg-1", retrieved.history().get(0).getMessageId());
+        assertEquals("Hello, agent!", ((TextPart) retrieved.history().get(0).getParts().get(0)).getText());
     }
 
     @Test
     @Transactional
     public void testUpdateExistingTask() {
         // Create and save initial task
-        Task initialTask = new Task.Builder()
+        Task initialTask = Task.builder()
                 .id("test-task-3")
                 .contextId("test-context-3")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -111,7 +111,7 @@ public class JpaDatabaseTaskStoreTest {
         taskStore.save(initialTask);
 
         // Update the task
-        Task updatedTask = new Task.Builder()
+        Task updatedTask = Task.builder()
                 .id("test-task-3")
                 .contextId("test-context-3")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -123,8 +123,8 @@ public class JpaDatabaseTaskStoreTest {
         Task retrieved = taskStore.get("test-task-3");
         
         assertNotNull(retrieved);
-        assertEquals("test-task-3", retrieved.getId());
-        assertEquals(TaskState.COMPLETED, retrieved.getStatus().state());
+        assertEquals("test-task-3", retrieved.id());
+        assertEquals(TaskState.COMPLETED, retrieved.status().state());
     }
 
     @Test
@@ -138,7 +138,7 @@ public class JpaDatabaseTaskStoreTest {
     @Transactional
     public void testDeleteTask() {
         // Create and save a task
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("test-task-4")
                 .contextId("test-context-4")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -172,7 +172,7 @@ public class JpaDatabaseTaskStoreTest {
         metadata.put("key2", 42);
         metadata.put("key3", true);
         
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("test-task-5")
                 .contextId("test-context-5")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -184,18 +184,18 @@ public class JpaDatabaseTaskStoreTest {
         Task retrieved = taskStore.get("test-task-5");
         
         assertNotNull(retrieved);
-        assertEquals("test-task-5", retrieved.getId());
-        assertNotNull(retrieved.getMetadata());
-        assertEquals("value1", retrieved.getMetadata().get("key1"));
-        assertEquals(42, retrieved.getMetadata().get("key2"));
-        assertEquals(true, retrieved.getMetadata().get("key3"));
+        assertEquals("test-task-5", retrieved.id());
+        assertNotNull(retrieved.metadata());
+        assertEquals("value1", retrieved.metadata().get("key1"));
+        assertEquals(42, retrieved.metadata().get("key2"));
+        assertEquals(true, retrieved.metadata().get("key3"));
     }
 
     @Test
     @Transactional
     public void testIsTaskActiveForNonFinalTask() {
         // Create a task in non-final state
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("test-task-active-1")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -214,7 +214,7 @@ public class JpaDatabaseTaskStoreTest {
     @Transactional
     public void testIsTaskActiveForFinalTaskWithinGracePeriod() {
         // Create a task and update it to final state
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("test-task-active-2")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -223,7 +223,7 @@ public class JpaDatabaseTaskStoreTest {
         taskStore.save(task);
         
         // Update to final state
-        Task finalTask = new Task.Builder()
+        Task finalTask = Task.builder()
                 .id("test-task-active-2")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -242,7 +242,7 @@ public class JpaDatabaseTaskStoreTest {
     @Transactional
     public void testIsTaskActiveForFinalTaskBeyondGracePeriod() {
         // Create and save a task in final state
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("test-task-active-3")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -303,19 +303,19 @@ public class JpaDatabaseTaskStoreTest {
     @Transactional
     public void testListTasksFilterByContextId() {
         // Create tasks with different context IDs
-        Task task1 = new Task.Builder()
+        Task task1 = Task.builder()
                 .id("task-context-1")
                 .contextId("context-A")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build();
 
-        Task task2 = new Task.Builder()
+        Task task2 = Task.builder()
                 .id("task-context-2")
                 .contextId("context-A")
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
 
-        Task task3 = new Task.Builder()
+        Task task3 = Task.builder()
                 .id("task-context-3")
                 .contextId("context-B")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -334,26 +334,26 @@ public class JpaDatabaseTaskStoreTest {
         assertEquals(2, result.totalSize());
         assertEquals(2, result.pageSize());
         assertEquals(2, result.tasks().size());
-        assertTrue(result.tasks().stream().allMatch(t -> "context-A".equals(t.getContextId())));
+        assertTrue(result.tasks().stream().allMatch(t -> "context-A".equals(t.contextId())));
     }
 
     @Test
     @Transactional
     public void testListTasksFilterByStatus() {
         // Create tasks with different statuses - use unique context
-        Task task1 = new Task.Builder()
+        Task task1 = Task.builder()
                 .id("task-status-filter-1")
                 .contextId("context-status-filter-test")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build();
 
-        Task task2 = new Task.Builder()
+        Task task2 = Task.builder()
                 .id("task-status-filter-2")
                 .contextId("context-status-filter-test")
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
 
-        Task task3 = new Task.Builder()
+        Task task3 = Task.builder()
                 .id("task-status-filter-3")
                 .contextId("context-status-filter-test")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -373,26 +373,26 @@ public class JpaDatabaseTaskStoreTest {
         assertEquals(1, result.totalSize());
         assertEquals(1, result.pageSize());
         assertEquals(1, result.tasks().size());
-        assertEquals(TaskState.WORKING, result.tasks().get(0).getStatus().state());
+        assertEquals(TaskState.WORKING, result.tasks().get(0).status().state());
     }
 
     @Test
     @Transactional
     public void testListTasksCombinedFilters() {
         // Create tasks with various context IDs and statuses
-        Task task1 = new Task.Builder()
+        Task task1 = Task.builder()
                 .id("task-combined-1")
                 .contextId("context-X")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build();
 
-        Task task2 = new Task.Builder()
+        Task task2 = Task.builder()
                 .id("task-combined-2")
                 .contextId("context-X")
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
 
-        Task task3 = new Task.Builder()
+        Task task3 = Task.builder()
                 .id("task-combined-3")
                 .contextId("context-Y")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -411,9 +411,9 @@ public class JpaDatabaseTaskStoreTest {
 
         assertEquals(1, result.totalSize());
         assertEquals(1, result.pageSize());
-        assertEquals("task-combined-2", result.tasks().get(0).getId());
-        assertEquals("context-X", result.tasks().get(0).getContextId());
-        assertEquals(TaskState.WORKING, result.tasks().get(0).getStatus().state());
+        assertEquals("task-combined-2", result.tasks().get(0).id());
+        assertEquals("context-X", result.tasks().get(0).contextId());
+        assertEquals(TaskState.WORKING, result.tasks().get(0).status().state());
     }
 
     @Test
@@ -423,7 +423,7 @@ public class JpaDatabaseTaskStoreTest {
         // (With timestamp DESC sorting, same timestamps allow ID ASC tie-breaking)
         OffsetDateTime sameTimestamp = OffsetDateTime.now(java.time.ZoneOffset.UTC);
         for (int i = 1; i <= 5; i++) {
-            Task task = new Task.Builder()
+            Task task = Task.builder()
                     .id("task-page-" + i)
                     .contextId("context-pagination")
                     .status(new TaskStatus(TaskState.SUBMITTED, null, sameTimestamp))
@@ -476,7 +476,7 @@ public class JpaDatabaseTaskStoreTest {
         OffsetDateTime now = OffsetDateTime.now(java.time.ZoneOffset.UTC);
 
         // Task 1: 10 minutes ago, ID="task-diff-a"
-        Task task1 = new Task.Builder()
+        Task task1 = Task.builder()
                 .id("task-diff-a")
                 .contextId("context-diff-timestamps")
                 .status(new TaskStatus(TaskState.WORKING, null, now.minusMinutes(10)))
@@ -484,7 +484,7 @@ public class JpaDatabaseTaskStoreTest {
         taskStore.save(task1);
 
         // Task 2: 5 minutes ago, ID="task-diff-b"
-        Task task2 = new Task.Builder()
+        Task task2 = Task.builder()
                 .id("task-diff-b")
                 .contextId("context-diff-timestamps")
                 .status(new TaskStatus(TaskState.WORKING, null, now.minusMinutes(5)))
@@ -492,7 +492,7 @@ public class JpaDatabaseTaskStoreTest {
         taskStore.save(task2);
 
         // Task 3: 5 minutes ago, ID="task-diff-c" (same timestamp as task2, tests ID tie-breaker)
-        Task task3 = new Task.Builder()
+        Task task3 = Task.builder()
                 .id("task-diff-c")
                 .contextId("context-diff-timestamps")
                 .status(new TaskStatus(TaskState.WORKING, null, now.minusMinutes(5)))
@@ -500,7 +500,7 @@ public class JpaDatabaseTaskStoreTest {
         taskStore.save(task3);
 
         // Task 4: Now, ID="task-diff-d"
-        Task task4 = new Task.Builder()
+        Task task4 = Task.builder()
                 .id("task-diff-d")
                 .contextId("context-diff-timestamps")
                 .status(new TaskStatus(TaskState.WORKING, null, now))
@@ -508,7 +508,7 @@ public class JpaDatabaseTaskStoreTest {
         taskStore.save(task4);
 
         // Task 5: 1 minute ago, ID="task-diff-e"
-        Task task5 = new Task.Builder()
+        Task task5 = Task.builder()
                 .id("task-diff-e")
                 .contextId("context-diff-timestamps")
                 .status(new TaskStatus(TaskState.WORKING, null, now.minusMinutes(1)))
@@ -534,8 +534,8 @@ public class JpaDatabaseTaskStoreTest {
         assertNotNull(result1.nextPageToken(), "Should have next page token");
 
         // Verify first page order
-        assertEquals("task-diff-d", result1.tasks().get(0).getId(), "First task should be most recent");
-        assertEquals("task-diff-e", result1.tasks().get(1).getId(), "Second task should be 1 min ago");
+        assertEquals("task-diff-d", result1.tasks().get(0).id(), "First task should be most recent");
+        assertEquals("task-diff-e", result1.tasks().get(1).id(), "Second task should be 1 min ago");
 
         // Verify pageToken format: "timestamp_millis:taskId"
         assertTrue(result1.nextPageToken().contains(":"), "PageToken should have format timestamp:id");
@@ -556,8 +556,8 @@ public class JpaDatabaseTaskStoreTest {
         assertNotNull(result2.nextPageToken(), "Should have next page token");
 
         // Verify second page order (tasks with same timestamp, sorted by ID)
-        assertEquals("task-diff-b", result2.tasks().get(0).getId(), "Third task should be 5 min ago, ID 'b'");
-        assertEquals("task-diff-c", result2.tasks().get(1).getId(), "Fourth task should be 5 min ago, ID 'c'");
+        assertEquals("task-diff-b", result2.tasks().get(0).id(), "Third task should be 5 min ago, ID 'b'");
+        assertEquals("task-diff-c", result2.tasks().get(1).id(), "Fourth task should be 5 min ago, ID 'c'");
 
         // Page 3: Get last task
         ListTasksParams params3 = new ListTasksParams.Builder()
@@ -572,13 +572,13 @@ public class JpaDatabaseTaskStoreTest {
         assertNull(result3.nextPageToken(), "Last page should have no next page token");
 
         // Verify last task
-        assertEquals("task-diff-a", result3.tasks().get(0).getId(), "Last task should be oldest");
+        assertEquals("task-diff-a", result3.tasks().get(0).id(), "Last task should be oldest");
 
         // Verify no duplicates across all pages
         List<String> allTaskIds = new ArrayList<>();
-        allTaskIds.addAll(result1.tasks().stream().map(Task::getId).toList());
-        allTaskIds.addAll(result2.tasks().stream().map(Task::getId).toList());
-        allTaskIds.addAll(result3.tasks().stream().map(Task::getId).toList());
+        allTaskIds.addAll(result1.tasks().stream().map(Task::id).toList());
+        allTaskIds.addAll(result2.tasks().stream().map(Task::id).toList());
+        allTaskIds.addAll(result3.tasks().stream().map(Task::id).toList());
 
         assertEquals(5, allTaskIds.size(), "Should have exactly 5 tasks across all pages");
         assertEquals(5, allTaskIds.stream().distinct().count(), "Should have no duplicate tasks");
@@ -599,7 +599,7 @@ public class JpaDatabaseTaskStoreTest {
         }
 
         // Create task with long history - use unique context
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("task-history-limit-unique-1")
                 .contextId("context-history-limit-unique")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -617,11 +617,11 @@ public class JpaDatabaseTaskStoreTest {
 
         assertEquals(1, result.tasks().size());
         Task retrieved = result.tasks().get(0);
-        assertEquals(3, retrieved.getHistory().size());
+        assertEquals(3, retrieved.history().size());
         // Should have messages 8, 9, 10 (last 3)
-        assertEquals("msg-history-limit-8", retrieved.getHistory().get(0).getMessageId());
-        assertEquals("msg-history-limit-9", retrieved.getHistory().get(1).getMessageId());
-        assertEquals("msg-history-limit-10", retrieved.getHistory().get(2).getMessageId());
+        assertEquals("msg-history-limit-8", retrieved.history().get(0).getMessageId());
+        assertEquals("msg-history-limit-9", retrieved.history().get(1).getMessageId());
+        assertEquals("msg-history-limit-10", retrieved.history().get(2).getMessageId());
     }
 
     @Test
@@ -636,7 +636,7 @@ public class JpaDatabaseTaskStoreTest {
                 .build();
         artifacts.add(artifact);
 
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("task-artifact-unique-1")
                 .contextId("context-artifact-unique")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -652,7 +652,7 @@ public class JpaDatabaseTaskStoreTest {
         ListTasksResult resultWithout = taskStore.list(paramsWithoutArtifacts);
 
         assertEquals(1, resultWithout.tasks().size());
-        assertTrue(resultWithout.tasks().get(0).getArtifacts().isEmpty(),
+        assertTrue(resultWithout.tasks().get(0).artifacts().isEmpty(),
                 "By default, artifacts should be excluded");
 
         // List with artifacts - filter by unique context
@@ -663,9 +663,9 @@ public class JpaDatabaseTaskStoreTest {
         ListTasksResult resultWith = taskStore.list(paramsWithArtifacts);
 
         assertEquals(1, resultWith.tasks().size());
-        assertEquals(1, resultWith.tasks().get(0).getArtifacts().size(),
+        assertEquals(1, resultWith.tasks().get(0).artifacts().size(),
                 "When includeArtifacts=true, artifacts should be included");
-        assertEquals("artifact-unique-1", resultWith.tasks().get(0).getArtifacts().get(0).artifactId());
+        assertEquals("artifact-unique-1", resultWith.tasks().get(0).artifacts().get(0).artifactId());
     }
 
     @Test
@@ -673,7 +673,7 @@ public class JpaDatabaseTaskStoreTest {
     public void testListTasksDefaultPageSize() {
         // Create 100 tasks (more than default page size of 50)
         for (int i = 1; i <= 100; i++) {
-            Task task = new Task.Builder()
+            Task task = Task.builder()
                     .id("task-default-pagesize-" + String.format("%03d", i))
                     .contextId("context-default-pagesize")
                     .status(new TaskStatus(TaskState.SUBMITTED))
@@ -696,7 +696,7 @@ public class JpaDatabaseTaskStoreTest {
     @Transactional
     public void testListTasksInvalidPageTokenFormat() {
         // Create a task
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("task-invalid-token")
                 .contextId("context-invalid-token")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -742,19 +742,19 @@ public class JpaDatabaseTaskStoreTest {
         // (spec requires sorting by timestamp DESC, then ID ASC)
         OffsetDateTime sameTimestamp = OffsetDateTime.now(java.time.ZoneOffset.UTC);
 
-        Task task1 = new Task.Builder()
+        Task task1 = Task.builder()
                 .id("task-order-a")
                 .contextId("context-order")
                 .status(new TaskStatus(TaskState.SUBMITTED, null, sameTimestamp))
                 .build();
 
-        Task task2 = new Task.Builder()
+        Task task2 = Task.builder()
                 .id("task-order-b")
                 .contextId("context-order")
                 .status(new TaskStatus(TaskState.SUBMITTED, null, sameTimestamp))
                 .build();
 
-        Task task3 = new Task.Builder()
+        Task task3 = Task.builder()
                 .id("task-order-c")
                 .contextId("context-order")
                 .status(new TaskStatus(TaskState.SUBMITTED, null, sameTimestamp))
@@ -772,8 +772,8 @@ public class JpaDatabaseTaskStoreTest {
         ListTasksResult result = taskStore.list(params);
 
         assertEquals(3, result.tasks().size());
-        assertEquals("task-order-a", result.tasks().get(0).getId());
-        assertEquals("task-order-b", result.tasks().get(1).getId());
-        assertEquals("task-order-c", result.tasks().get(2).getId());
+        assertEquals("task-order-a", result.tasks().get(0).id());
+        assertEquals("task-order-b", result.tasks().get(1).id());
+        assertEquals("task-order-c", result.tasks().get(2).id());
     }
 }

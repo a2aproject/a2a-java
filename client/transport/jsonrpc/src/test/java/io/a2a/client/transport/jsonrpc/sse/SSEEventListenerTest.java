@@ -49,9 +49,9 @@ public class SSEEventListenerTest {
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof Task);
         Task task = (Task) receivedEvent.get();
-        assertEquals("task-123", task.getId());
-        assertEquals("context-456", task.getContextId());
-        assertEquals(TaskState.WORKING, task.getStatus().state());
+        assertEquals("task-123", task.id());
+        assertEquals("context-456", task.contextId());
+        assertEquals(TaskState.WORKING, task.status().state());
     }
 
     @Test
