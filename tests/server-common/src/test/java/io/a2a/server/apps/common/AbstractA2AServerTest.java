@@ -480,8 +480,8 @@ public abstract class AbstractA2AServerTest {
         assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
         assertEquals(MESSAGE.getRole(), messageResponse.getRole());
         Part<?> part = messageResponse.getParts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("test message", ((TextPart) part).getText());
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("test message", ((TextPart) part).text());
     }
 
     @Test
@@ -518,8 +518,8 @@ public abstract class AbstractA2AServerTest {
             assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
             assertEquals(MESSAGE.getRole(), messageResponse.getRole());
             Part<?> part = messageResponse.getParts().get(0);
-            assertEquals(Part.Kind.TEXT, part.getKind());
-            assertEquals("test message", ((TextPart) part).getText());
+            assertEquals(Part.Kind.TEXT, part.kind());
+            assertEquals("test message", ((TextPart) part).text());
         } catch (A2AClientException e) {
             fail("Unexpected exception during sendMessage: " + e.getMessage(), e);
         } finally {
@@ -699,8 +699,8 @@ public abstract class AbstractA2AServerTest {
             assertEquals(MINIMAL_TASK.id(), receivedArtifactEvent.getTaskId());
             assertEquals(MINIMAL_TASK.contextId(), receivedArtifactEvent.getContextId());
             Part<?> part = receivedArtifactEvent.getArtifact().parts().get(0);
-            assertEquals(Part.Kind.TEXT, part.getKind());
-            assertEquals("text", ((TextPart) part).getText());
+            assertEquals(Part.Kind.TEXT, part.kind());
+            assertEquals("text", ((TextPart) part).text());
 
             // Verify status update event
             TaskStatusUpdateEvent receivedStatusEvent = statusUpdateEvent.get();
@@ -900,7 +900,7 @@ public abstract class AbstractA2AServerTest {
             TaskArtifactUpdateEvent receivedEvent = secondConsumerEvent.get();
             assertNotNull(receivedEvent);
             assertEquals("artifact-2", receivedEvent.getArtifact().artifactId());
-            assertEquals("Second artifact", ((TextPart) receivedEvent.getArtifact().parts().get(0)).getText());
+            assertEquals("Second artifact", ((TextPart) receivedEvent.getArtifact().parts().get(0)).text());
 
         } finally {
             deleteTaskInTaskStore(MINIMAL_TASK.id());
@@ -1277,7 +1277,7 @@ public abstract class AbstractA2AServerTest {
                 .orElseThrow();
         assertEquals("artifact-2", resubArtifact.getArtifact().artifactId());
         assertEquals("Second message artifact",
-                ((TextPart) resubArtifact.getArtifact().parts().get(0)).getText());
+                ((TextPart) resubArtifact.getArtifact().parts().get(0)).text());
 
         // Verify artifact-2 details from streaming
         TaskArtifactUpdateEvent streamArtifact = (TaskArtifactUpdateEvent) streamReceivedEvents.stream()
@@ -1286,7 +1286,7 @@ public abstract class AbstractA2AServerTest {
                 .orElseThrow();
         assertEquals("artifact-2", streamArtifact.getArtifact().artifactId());
         assertEquals("Second message artifact",
-                ((TextPart) streamArtifact.getArtifact().parts().get(0)).getText());
+                ((TextPart) streamArtifact.getArtifact().parts().get(0)).text());
     }
 
     @Test
@@ -1487,8 +1487,8 @@ public abstract class AbstractA2AServerTest {
                         assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
                         assertEquals(MESSAGE.getRole(), messageResponse.getRole());
                         Part<?> part = messageResponse.getParts().get(0);
-                        assertEquals(Part.Kind.TEXT, part.getKind());
-                        assertEquals("test message", ((TextPart) part).getText());
+                        assertEquals(Part.Kind.TEXT, part.kind());
+                        assertEquals("test message", ((TextPart) part).text());
                         latch.countDown();
                     }
                 } catch (JsonProcessingException e) {
@@ -1553,8 +1553,8 @@ public abstract class AbstractA2AServerTest {
             assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
             assertEquals(MESSAGE.getRole(), messageResponse.getRole());
             Part<?> part = messageResponse.getParts().get(0);
-            assertEquals(Part.Kind.TEXT, part.getKind());
-            assertEquals("test message", ((TextPart) part).getText());
+            assertEquals(Part.Kind.TEXT, part.kind());
+            assertEquals("test message", ((TextPart) part).text());
         } catch (A2AClientException e) {
             fail("Unexpected exception during sendMessage: " + e.getMessage(), e);
         } finally {

@@ -1,5 +1,7 @@
 package io.a2a.spec;
 
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
+
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -38,25 +40,25 @@ import com.fasterxml.jackson.annotation.JsonValue;
         @JsonSubTypes.Type(value = FilePart.class, name = FilePart.FILE),
         @JsonSubTypes.Type(value = DataPart.class, name = DataPart.DATA)
 })
-public abstract class Part<T> {
+public sealed interface Part<T> permits DataPart, FilePart, TextPart {
     /**
      * Enum defining the different types of content parts.
      */
-    public enum Kind {
+    enum Kind {
         /**
          * Plain text content part.
          */
-        TEXT("text"),
+        TEXT(TextPart.TEXT),
 
         /**
          * File content part (bytes or URI).
          */
-        FILE("file"),
+        FILE(FilePart.FILE),
 
         /**
          * Structured data content part (JSON).
          */
-        DATA("data");
+        DATA(DataPart.DATA);
 
         private final String kind;
 
@@ -76,17 +78,32 @@ public abstract class Part<T> {
     }
 
     /**
+     * @deprecated Use {@link #metadata()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
+    default Kind getKind() {
+        return kind();
+    }
+
+    /**
      * Returns the kind of this part.
      *
      * @return the Part.Kind indicating the content type
      */
-    public abstract Kind getKind();
+    Kind kind();
+
+    /**
+     * @deprecated Use {@link #metadata()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
+    default Map<String, Object> getMetadata() {
+        return metadata();
+    }
 
     /**
      * Returns optional metadata associated with this part.
      *
      * @return map of metadata key-value pairs, or null if no metadata
      */
-    public abstract Map<String, Object> getMetadata();
-
+    Map<String, Object> metadata();
 }

@@ -216,8 +216,8 @@ public class TaskManagerTest {
         Artifact updatedArtifact = updatedTask.artifacts().get(0);
         assertEquals("artifact-id", updatedArtifact.artifactId());
         assertEquals(2, updatedArtifact.parts().size());
-        assertEquals("existing content", ((TextPart) updatedArtifact.parts().get(0)).getText());
-        assertEquals("new content", ((TextPart) updatedArtifact.parts().get(1)).getText());
+        assertEquals("existing content", ((TextPart) updatedArtifact.parts().get(0)).text());
+        assertEquals("new content", ((TextPart) updatedArtifact.parts().get(1)).text());
     }
 
     @Test
@@ -280,7 +280,7 @@ public class TaskManagerTest {
         Artifact updatedArtifact = updatedTask.artifacts().get(0);
         assertEquals("artifact-id", updatedArtifact.artifactId());
         assertEquals(1, updatedArtifact.parts().size());
-        assertEquals("replacement content", ((TextPart) updatedArtifact.parts().get(0)).getText());
+        assertEquals("replacement content", ((TextPart) updatedArtifact.parts().get(0)).text());
     }
 
     @Test
@@ -316,7 +316,7 @@ public class TaskManagerTest {
         Artifact updatedArtifact = updatedTask.artifacts().get(0);
         assertEquals("artifact-id", updatedArtifact.artifactId());
         assertEquals(1, updatedArtifact.parts().size());
-        assertEquals("replacement content", ((TextPart) updatedArtifact.parts().get(0)).getText());
+        assertEquals("replacement content", ((TextPart) updatedArtifact.parts().get(0)).text());
     }
 
     @Test
@@ -402,7 +402,7 @@ public class TaskManagerTest {
         Message historyMessage = retrieved.history().get(0);
         assertEquals(initialMessage.getMessageId(), historyMessage.getMessageId());
         assertEquals(initialMessage.getRole(), historyMessage.getRole());
-        assertEquals("initial message", ((TextPart) historyMessage.getParts().get(0)).getText());
+        assertEquals("initial message", ((TextPart) historyMessage.getParts().get(0)).text());
     }
 
     @Test
@@ -437,11 +437,11 @@ public class TaskManagerTest {
         // But the current message (taskMessage) should be in the state, not in the history
         assertNotNull(retrieved.history());
         assertEquals(1, retrieved.history().size());
-        assertEquals("initial message", ((TextPart) retrieved.history().get(0).getParts().get(0)).getText());
+        assertEquals("initial message", ((TextPart) retrieved.history().get(0).getParts().get(0)).text());
         
         // The message in the current state should be taskMessage
         assertNotNull(retrieved.status().message());
-        assertEquals("task message", ((TextPart) retrieved.status().message().getParts().get(0)).getText());
+        assertEquals("task message", ((TextPart) retrieved.status().message().getParts().get(0)).text());
     }
 
     @Test
@@ -481,7 +481,7 @@ public class TaskManagerTest {
         Artifact finalArtifact = updatedTask.artifacts().get(0);
         assertEquals("artifact-id", finalArtifact.artifactId());
         assertEquals("artifact-2", finalArtifact.name());
-        assertEquals("content 2", ((TextPart) finalArtifact.parts().get(0)).getText());
+        assertEquals("content 2", ((TextPart) finalArtifact.parts().get(0)).text());
     }
 
     @Test
@@ -523,11 +523,11 @@ public class TaskManagerTest {
         List<Artifact> artifacts = updatedTask.artifacts();
         assertTrue(artifacts.stream()
                 .anyMatch(a -> "artifact-id-1".equals(a.artifactId()) 
-                        && "content 1".equals(((TextPart) a.parts().get(0)).getText()))
+                        && "content 1".equals(((TextPart) a.parts().get(0)).text()))
                 , "Artifact 1 should be present");
         assertTrue(artifacts.stream()
                 .anyMatch(a -> "artifact-id-2".equals(a.artifactId()) 
-                && "content 2".equals(((TextPart) a.parts().get(0)).getText()))
+                && "content 2".equals(((TextPart) a.parts().get(0)).text()))
                 , "Artifact 2 should be present");
     }
 
@@ -648,7 +648,7 @@ public class TaskManagerTest {
         assertEquals(1, savedTask.history().size());
         Message historyMessage = savedTask.history().get(0);
         assertEquals("initial-msg-id", historyMessage.getMessageId());
-        assertEquals("initial message", ((TextPart) historyMessage.getParts().get(0)).getText());
+        assertEquals("initial message", ((TextPart) historyMessage.getParts().get(0)).text());
     }
 
     @Test
@@ -730,11 +730,11 @@ public class TaskManagerTest {
         // There should now be a history containing the initialMessage, task message and update message
         assertNotNull(updated.history());
         assertEquals(3, updated.history().size());
-        assertEquals("initial message", ((TextPart) updated.history().get(0).getParts().get(0)).getText());
+        assertEquals("initial message", ((TextPart) updated.history().get(0).getParts().get(0)).text());
 
         // The message in the current state should be null
         assertNull(updated.status().message());
-        assertEquals("task message", ((TextPart) updated.history().get(1).getParts().get(0)).getText());
-        assertEquals("update message", ((TextPart) updated.history().get(2).getParts().get(0)).getText());
+        assertEquals("task message", ((TextPart) updated.history().get(1).getParts().get(0)).text());
+        assertEquals("update message", ((TextPart) updated.history().get(2).getParts().get(0)).text());
     }
 }

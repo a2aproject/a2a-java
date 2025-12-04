@@ -37,7 +37,7 @@ public interface PartMapper {
         io.a2a.grpc.Part.Builder builder = io.a2a.grpc.Part.newBuilder();
 
         if (domain instanceof TextPart textPart) {
-            builder.setText(textPart.getText());
+            builder.setText(textPart.text());
         } else if (domain instanceof FilePart filePart) {
             builder.setFile(FilePartMapper.INSTANCE.toProto(filePart));
         } else if (domain instanceof DataPart dataPart) {

@@ -802,7 +802,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(MINIMAL_TASK.status().state(), curr.status().state());
         assertEquals(1, curr.artifacts().size());
         assertEquals(1, curr.artifacts().get(0).parts().size());
-        assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).getText());
+        assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).text());
 
         curr = httpClient.tasks.get(2);
         assertEquals(MINIMAL_TASK.id(), curr.id());
@@ -810,7 +810,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(TaskState.COMPLETED, curr.status().state());
         assertEquals(1, curr.artifacts().size());
         assertEquals(1, curr.artifacts().get(0).parts().size());
-        assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).getText());
+        assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).text());
     }
 
     @Test

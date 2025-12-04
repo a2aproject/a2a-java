@@ -65,7 +65,7 @@ public class HelloWorldClient {
                     if (responseMessage.getParts() != null) {
                         for (Part<?> part : responseMessage.getParts()) {
                             if (part instanceof TextPart textPart) {
-                                textBuilder.append(textPart.getText());
+                                textBuilder.append(textPart.text());
                             }
                         }
                     }

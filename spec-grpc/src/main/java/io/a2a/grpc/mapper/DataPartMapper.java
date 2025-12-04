@@ -1,8 +1,16 @@
 package io.a2a.grpc.mapper;
 
+import java.util.Base64;
+import java.util.Map;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
+
+import io.a2a.spec.DataPart;
+import io.a2a.spec.FileWithBytes;
+import io.a2a.spec.FileWithUri;
+import io.a2a.spec.InvalidRequestError;
 
 /**
  * Mapper between {@link io.a2a.spec.DataPart} and {@link io.a2a.grpc.DataPart}.
@@ -29,13 +37,15 @@ public interface DataPartMapper {
 
     /**
      * Converts proto DataPart to domain DataPart.
-     * Uses CommonFieldMapper for Struct → Map conversion.
-     * Uses factory method to construct DataPart with single-arg constructor.
-     * Metadata is ignored (not part of proto definition).
      */
-    @Mapping(target = "metadata", ignore = true)
-    @Mapping(target = "data", source = "data", qualifiedByName = "structToMap")
-    io.a2a.spec.DataPart fromProto(io.a2a.grpc.DataPart proto);
+    default io.a2a.spec.DataPart fromProto(io.a2a.grpc.DataPart proto) {
+        if (proto == null) {
+            return null;
+        }
+
+        Map<String, Object> data = A2ACommonFieldMapper.INSTANCE.structToMap(proto.getData());
+        return new DataPart(data);
+    }
 
     /**
      * Object factory for creating DataPart instances.

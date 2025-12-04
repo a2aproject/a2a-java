@@ -56,8 +56,8 @@ public class JpaDatabaseTaskStoreTestAgentExecutor {
 
     private String getLastTextPart(Message message) throws JSONRPCError {
         Part<?> part = message.getParts().get(message.getParts().size() - 1);
-        if (part.getKind() == Part.Kind.TEXT) {
-            return ((TextPart) part).getText();
+        if (part.kind() == Part.Kind.TEXT) {
+            return ((TextPart) part).text();
         }
         throw new InvalidRequestError("No parts");
     }

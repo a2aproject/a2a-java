@@ -79,7 +79,7 @@ public class SSEEventListenerTest {
         assertEquals("context-456", message.getContextId());
         assertEquals(1, message.getParts().size());
         assertTrue(message.getParts().get(0) instanceof TextPart);
-        assertEquals("Hello, world!", ((TextPart) message.getParts().get(0)).getText());
+        assertEquals("Hello, world!", ((TextPart) message.getParts().get(0)).text());
     }
 
     @Test
@@ -136,8 +136,8 @@ public class SSEEventListenerTest {
         Artifact artifact = taskArtifactUpdateEvent.getArtifact();
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals(1, artifact.parts().size());
-        assertEquals(Part.Kind.TEXT, artifact.parts().get(0).getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).getText());
+        assertEquals(Part.Kind.TEXT, artifact.parts().get(0).kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).text());
     }
 
     @Test

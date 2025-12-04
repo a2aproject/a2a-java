@@ -25,8 +25,8 @@ public class MultiInstanceReplicationAgentExecutor implements AgentExecutor {
         // Check if message contains "close" signal
         boolean shouldClose = context.getMessage().getParts().stream()
                 .anyMatch(part -> part instanceof TextPart tp &&
-                                 tp.getText() != null &&
-                                 tp.getText().toLowerCase().contains("close"));
+                                 tp.text() != null &&
+                                 tp.text().toLowerCase().contains("close"));
 
         if (shouldClose) {
             // Close the task

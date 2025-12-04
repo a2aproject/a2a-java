@@ -75,7 +75,7 @@ public class JSONRPCTransportStreamingTest {
         assertEquals(message, params.message());
         assertEquals(configuration, params.configuration());
         assertEquals(Message.Role.USER, params.message().getRole());
-        assertEquals("test message", ((TextPart) params.message().getParts().get(0)).getText());
+        assertEquals("test message", ((TextPart) params.message().getParts().get(0)).text());
     }
 
     @Test
@@ -168,7 +168,7 @@ public class JSONRPCTransportStreamingTest {
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("joke", artifact.name());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
     }
 } 

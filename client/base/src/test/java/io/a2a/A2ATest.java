@@ -22,7 +22,7 @@ public class A2ATest {
         
         assertEquals(Message.Role.USER, message.getRole());
         assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).getText());
+        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
         assertNotNull(message.getMessageId());
         assertNull(message.getContextId());
         assertNull(message.getTaskId());
@@ -45,7 +45,7 @@ public class A2ATest {
         
         assertEquals(Message.Role.AGENT, message.getRole());
         assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).getText());
+        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
         assertNotNull(message.getMessageId());
     }
 
@@ -71,7 +71,7 @@ public class A2ATest {
         assertEquals(contextId, message.getContextId());
         assertEquals(taskId, message.getTaskId());
         assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).getText());
+        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
         assertNotNull(message.getMessageId());
         assertNull(message.getMetadata());
         assertNull(message.getReferenceTaskIds());
@@ -87,7 +87,7 @@ public class A2ATest {
         assertNull(message.getContextId());
         assertNull(message.getTaskId());
         assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).getText());
+        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class A2ATest {
         assertEquals(contextId, message.getContextId());
         assertEquals(taskId, message.getTaskId());
         assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).getText());
+        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
         assertNotNull(message.getMessageId());
     }
 
@@ -121,8 +121,8 @@ public class A2ATest {
         assertEquals(contextId, message.getContextId());
         assertEquals(taskId, message.getTaskId());
         assertEquals(2, message.getParts().size());
-        assertEquals("Part 1", ((TextPart) message.getParts().get(0)).getText());
-        assertEquals("Part 2", ((TextPart) message.getParts().get(1)).getText());
+        assertEquals("Part 1", ((TextPart) message.getParts().get(0)).text());
+        assertEquals("Part 2", ((TextPart) message.getParts().get(1)).text());
     }
 
     @Test

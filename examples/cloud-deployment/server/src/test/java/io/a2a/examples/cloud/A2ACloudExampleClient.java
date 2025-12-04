@@ -385,7 +385,7 @@ public class A2ACloudExampleClient {
         if (event.getArtifact() != null) {
             for (Part<?> part : event.getArtifact().parts()) {
                 if (part instanceof TextPart textPart) {
-                    text.append(textPart.getText());
+                    text.append(textPart.text());
                 }
             }
         }

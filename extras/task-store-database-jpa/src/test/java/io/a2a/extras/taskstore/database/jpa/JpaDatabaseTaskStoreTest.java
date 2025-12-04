@@ -95,7 +95,7 @@ public class JpaDatabaseTaskStoreTest {
         assertEquals(TaskState.WORKING, retrieved.status().state());
         assertEquals(1, retrieved.history().size());
         assertEquals("msg-1", retrieved.history().get(0).getMessageId());
-        assertEquals("Hello, agent!", ((TextPart) retrieved.history().get(0).getParts().get(0)).getText());
+        assertEquals("Hello, agent!", ((TextPart) retrieved.history().get(0).getParts().get(0)).text());
     }
 
     @Test

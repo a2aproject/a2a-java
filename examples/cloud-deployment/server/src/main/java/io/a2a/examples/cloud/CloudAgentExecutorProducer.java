@@ -122,7 +122,7 @@ public class CloudAgentExecutorProducer {
             if (message.getParts() != null) {
                 for (Part<?> part : message.getParts()) {
                     if (part instanceof TextPart textPart) {
-                        textBuilder.append(textPart.getText());
+                        textBuilder.append(textPart.text());
                     }
                 }
             }

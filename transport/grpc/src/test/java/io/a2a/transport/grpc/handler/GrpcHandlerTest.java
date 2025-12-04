@@ -63,7 +63,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             .setContextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId())
             .setMessageId(AbstractA2ARequestHandlerTest.MESSAGE.getMessageId())
             .setRole(Role.ROLE_AGENT)
-            .addParts(Part.newBuilder().setText(((TextPart) AbstractA2ARequestHandlerTest.MESSAGE.getParts().get(0)).getText()).build())
+            .addParts(Part.newBuilder().setText(((TextPart) AbstractA2ARequestHandlerTest.MESSAGE.getParts().get(0)).text()).build())
             .setMetadata(Struct.newBuilder().build())
             .build();
 
@@ -478,7 +478,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.status().state(), curr.status().state());
         Assertions.assertEquals(1, curr.artifacts().size());
         Assertions.assertEquals(1, curr.artifacts().get(0).parts().size());
-        Assertions.assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).getText());
+        Assertions.assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).text());
 
         curr = httpClient.tasks.get(2);
         Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), curr.id());
@@ -486,7 +486,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(io.a2a.spec.TaskState.COMPLETED, curr.status().state());
         Assertions.assertEquals(1, curr.artifacts().size());
         Assertions.assertEquals(1, curr.artifacts().get(0).parts().size());
-        Assertions.assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).getText());
+        Assertions.assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).text());
     }
 
     @Test

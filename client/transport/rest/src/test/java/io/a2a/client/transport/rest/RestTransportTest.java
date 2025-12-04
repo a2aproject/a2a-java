@@ -147,8 +147,8 @@ public class RestTransportTest {
         assertEquals("message-1234", history.getMessageId());
         assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.getTaskId());
         assertEquals(1, history.getParts().size());
-        assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
-        assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).getText());
+        assertEquals(Kind.TEXT, history.getParts().get(0).kind());
+        assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).text());
         assertNull(task.metadata());
         assertNull(history.getReferenceTaskIds());
     }
@@ -210,24 +210,24 @@ public class RestTransportTest {
         assertEquals("artifact-1", artifact.artifactId());
         assertNull(artifact.name());
         assertEquals(false, artifact.parts().isEmpty());
-        assertEquals(Kind.TEXT, artifact.parts().get(0).getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).getText());
+        assertEquals(Kind.TEXT, artifact.parts().get(0).kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).text());
         assertEquals(1, task.history().size());
         Message history = task.history().get(0);
         assertEquals("message", history.getKind());
         assertEquals(Message.Role.USER, history.getRole());
         assertEquals("message-123", history.getMessageId());
         assertEquals(3, history.getParts().size());
-        assertEquals(Kind.TEXT, history.getParts().get(0).getKind());
-        assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).getText());
-        assertEquals(Kind.FILE, history.getParts().get(1).getKind());
+        assertEquals(Kind.TEXT, history.getParts().get(0).kind());
+        assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).text());
+        assertEquals(Kind.FILE, history.getParts().get(1).kind());
         FilePart part = (FilePart) history.getParts().get(1);
-        assertEquals("text/plain", part.getFile().mimeType());
-        assertEquals("file:///path/to/file.txt", ((FileWithUri) part.getFile()).uri());
+        assertEquals("text/plain", part.file().mimeType());
+        assertEquals("file:///path/to/file.txt", ((FileWithUri) part.file()).uri());
         part = (FilePart) history.getParts().get(2);
-        assertEquals(Kind.FILE, part.getKind());
-        assertEquals("text/plain", part.getFile().mimeType());
-        assertEquals("aGVsbG8=", ((FileWithBytes) part.getFile()).bytes());
+        assertEquals(Kind.FILE, part.kind());
+        assertEquals("text/plain", part.file().mimeType());
+        assertEquals("aGVsbG8=", ((FileWithBytes) part.file()).bytes());
         assertNull(history.getMetadata());
         assertNull(history.getReferenceTaskIds());
     }
@@ -449,7 +449,7 @@ public class RestTransportTest {
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("joke", artifact.name());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
     }
 }
