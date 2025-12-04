@@ -68,7 +68,7 @@ public class SubTypeSerializationTest {
                         MINIMAL_TASK, "kind", Task.TASK
                 ),
                 Arguments.of(
-                        new Message.Builder()
+                        Message.builder()
                                 .role(Message.Role.USER)
                                 .parts(new TextPart("tell me some jokes"))
                                 .contextId("context-1234")

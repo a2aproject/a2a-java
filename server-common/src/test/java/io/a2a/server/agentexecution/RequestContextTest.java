@@ -37,7 +37,7 @@ public class RequestContextTest {
 
     @Test
     public void testInitWithParamsNoIds() {
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
 
         UUID taskId = UUID.fromString("00000000-0000-0000-0000-000000000001");
@@ -50,54 +50,53 @@ public class RequestContextTest {
 
             RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
 
-            assertEquals(mockParams.message(), context.getMessage());
             assertEquals(taskId.toString(), context.getTaskId());
-            assertEquals(mockParams.message().getTaskId(), taskId.toString());
             assertEquals(contextId.toString(), context.getContextId());
-            assertEquals(mockParams.message().getContextId(), contextId.toString());
+            assertEquals(taskId.toString(), context.getMessage().taskId());
+            assertEquals(contextId.toString(), context.getMessage().contextId());
         }
     }
 
     @Test
     public void testInitWithTaskId() {
         String taskId = "task-123";
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId(taskId).build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId(taskId).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
 
         RequestContext context = new RequestContext(mockParams, taskId, null, null, null, null);
 
         assertEquals(taskId, context.getTaskId());
-        assertEquals(taskId, mockParams.message().getTaskId());
+        assertEquals(taskId, mockParams.message().taskId());
     }
 
     @Test
     public void testInitWithContextId() {
         String contextId = "context-456";
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).contextId(contextId).build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).contextId(contextId).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
         RequestContext context = new RequestContext(mockParams, null, contextId, null, null, null);
 
         assertEquals(contextId, context.getContextId());
-        assertEquals(contextId, mockParams.message().getContextId());
+        assertEquals(contextId, mockParams.message().contextId());
     }
 
     @Test
     public void testInitWithBothIds() {
         String taskId = "task-123";
         String contextId = "context-456";
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId(taskId).contextId(contextId).build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId(taskId).contextId(contextId).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
         RequestContext context = new RequestContext(mockParams, taskId, contextId, null, null, null);
 
         assertEquals(taskId, context.getTaskId());
-        assertEquals(taskId, mockParams.message().getTaskId());
+        assertEquals(taskId, mockParams.message().taskId());
         assertEquals(contextId, context.getContextId());
-        assertEquals(contextId, mockParams.message().getContextId());
+        assertEquals(contextId, mockParams.message().contextId());
     }
 
     @Test
     public void testInitWithTask() {
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
         var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
 
@@ -132,31 +131,31 @@ public class RequestContextTest {
     @Test
     public void testCheckOrGenerateTaskIdWithExistingTaskId() {
         String existingId = "existing-task-id";
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId(existingId).build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId(existingId).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
 
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
 
         assertEquals(existingId, context.getTaskId());
-        assertEquals(existingId, mockParams.message().getTaskId());
+        assertEquals(existingId, mockParams.message().taskId());
     }
 
     @Test
     public void testCheckOrGenerateContextIdWithExistingContextId() {
         String existingId = "existing-context-id";
 
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).contextId(existingId).build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).contextId(existingId).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
 
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
 
         assertEquals(existingId, context.getContextId());
-        assertEquals(existingId, mockParams.message().getContextId());
+        assertEquals(existingId, mockParams.message().contextId());
     }
 
     @Test
     public void testInitRaisesErrorOnTaskIdMismatch() {
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
         var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
 
@@ -168,7 +167,7 @@ public class RequestContextTest {
 
     @Test
     public void testInitRaisesErrorOnContextIdMismatch() {
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").contextId("context-456").build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").contextId("context-456").build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
         var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
 
@@ -200,11 +199,12 @@ public class RequestContextTest {
 
     @Test
     public void testMessagePropertyWithParams() {
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
 
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
-        assertEquals(mockParams.message(), context.getMessage());
+        assertNotNull(context.getMessage().messageId());
+        assertNotNull(context.getMessage().contextId());
     }
 
     @Test
@@ -212,7 +212,7 @@ public class RequestContextTest {
         String existingTaskId = "existing-task-id";
         String existingContextId = "existing-context-id";
 
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart("")))
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart("")))
                 .taskId(existingTaskId).contextId(existingContextId).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
 
@@ -224,7 +224,7 @@ public class RequestContextTest {
 
     @Test
     public void testInitWithTaskIdAndExistingTaskIdMatch() {
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").contextId("context-456").build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").contextId("context-456").build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
         var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
 
@@ -237,7 +237,7 @@ public class RequestContextTest {
 
     @Test
     public void testInitWithContextIdAndExistingContextIdMatch() {
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").contextId("context-456").build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").contextId("context-456").build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
         var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
 
@@ -250,20 +250,20 @@ public class RequestContextTest {
 
     @Test
     void testMessageBuilderGeneratesId() {
-        var mockMessage = new Message.Builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
+        var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
 
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
-        assertNotNull(mockMessage.getMessageId());
-        assertFalse(mockMessage.getMessageId().isEmpty());
+        assertNotNull(mockMessage.messageId());
+        assertFalse(mockMessage.messageId().isEmpty());
     }
 
     @Test
     void testMessageBuilderUsesProvidedId() {
-        var mockMessage = new Message.Builder().messageId("123").role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
+        var mockMessage = Message.builder().messageId("123").role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
         var mockParams = new MessageSendParams.Builder().message(mockMessage).build();
 
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
-        assertEquals("123", mockMessage.getMessageId());
+        assertEquals("123", mockMessage.messageId());
     }
 }

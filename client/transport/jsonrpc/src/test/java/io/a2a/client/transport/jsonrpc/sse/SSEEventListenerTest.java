@@ -74,12 +74,12 @@ public class SSEEventListenerTest {
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof Message);
         Message message = (Message) receivedEvent.get();
-        assertEquals(Message.Role.AGENT, message.getRole());
-        assertEquals("msg-123", message.getMessageId());
-        assertEquals("context-456", message.getContextId());
-        assertEquals(1, message.getParts().size());
-        assertTrue(message.getParts().get(0) instanceof TextPart);
-        assertEquals("Hello, world!", ((TextPart) message.getParts().get(0)).text());
+        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals("msg-123", message.messageId());
+        assertEquals("context-456", message.contextId());
+        assertEquals(1, message.parts().size());
+        assertTrue(message.parts().get(0) instanceof TextPart);
+        assertEquals("Hello, world!", ((TextPart) message.parts().get(0)).text());
     }
 
     @Test

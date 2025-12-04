@@ -75,7 +75,7 @@ public class TaskManagerTest {
 
         TaskStatus newStatus = new TaskStatus(
                 TaskState.WORKING,
-                new Message.Builder()
+                Message.builder()
                         .role(Message.Role.AGENT)
                         .parts(Collections.singletonList(new TextPart("content")))
                         .messageId("messageId")
@@ -377,7 +377,7 @@ public class TaskManagerTest {
     public void testTaskWithNoMessageUsesInitialMessage() throws A2AServerException {
         // Test that adding a task with no message, and there is a TaskManager.initialMessage, 
         // the initialMessage gets used
-        Message initialMessage = new Message.Builder()
+        Message initialMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
@@ -400,15 +400,15 @@ public class TaskManagerTest {
         assertNotNull(retrieved.history());
         assertEquals(1, retrieved.history().size());
         Message historyMessage = retrieved.history().get(0);
-        assertEquals(initialMessage.getMessageId(), historyMessage.getMessageId());
-        assertEquals(initialMessage.getRole(), historyMessage.getRole());
-        assertEquals("initial message", ((TextPart) historyMessage.getParts().get(0)).text());
+        assertEquals(initialMessage.messageId(), historyMessage.messageId());
+        assertEquals(initialMessage.role(), historyMessage.role());
+        assertEquals("initial message", ((TextPart) historyMessage.parts().get(0)).text());
     }
 
     @Test
     public void testTaskWithMessageDoesNotUseInitialMessage() throws A2AServerException {
         // Test that adding a task with a message does not use the initial message
-        Message initialMessage = new Message.Builder()
+        Message initialMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
@@ -416,7 +416,7 @@ public class TaskManagerTest {
         
         TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
         
-        Message taskMessage = new Message.Builder()
+        Message taskMessage = Message.builder()
                 .role(Message.Role.AGENT)
                 .parts(Collections.singletonList(new TextPart("task message")))
                 .messageId("task-msg-id")
@@ -437,11 +437,11 @@ public class TaskManagerTest {
         // But the current message (taskMessage) should be in the state, not in the history
         assertNotNull(retrieved.history());
         assertEquals(1, retrieved.history().size());
-        assertEquals("initial message", ((TextPart) retrieved.history().get(0).getParts().get(0)).text());
+        assertEquals("initial message", ((TextPart) retrieved.history().get(0).parts().get(0)).text());
         
         // The message in the current state should be taskMessage
         assertNotNull(retrieved.status().message());
-        assertEquals("task message", ((TextPart) retrieved.status().message().getParts().get(0)).text());
+        assertEquals("task message", ((TextPart) retrieved.status().message().parts().get(0)).text());
     }
 
     @Test
@@ -620,7 +620,7 @@ public class TaskManagerTest {
     @Test
     public void testCreateTaskWithInitialMessage() throws A2AServerException {
         // Test equivalent of _init_task_obj functionality
-        Message initialMessage = new Message.Builder()
+        Message initialMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
@@ -647,8 +647,8 @@ public class TaskManagerTest {
         assertNotNull(savedTask.history());
         assertEquals(1, savedTask.history().size());
         Message historyMessage = savedTask.history().get(0);
-        assertEquals("initial-msg-id", historyMessage.getMessageId());
-        assertEquals("initial message", ((TextPart) historyMessage.getParts().get(0)).text());
+        assertEquals("initial-msg-id", historyMessage.messageId());
+        assertEquals("initial message", ((TextPart) historyMessage.parts().get(0)).text());
     }
 
     @Test
@@ -696,7 +696,7 @@ public class TaskManagerTest {
 
     @Test
     public void testUpdateWithMessage() throws A2AServerException {
-        Message initialMessage = new Message.Builder()
+        Message initialMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
@@ -704,7 +704,7 @@ public class TaskManagerTest {
 
         TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
 
-        Message taskMessage = new Message.Builder()
+        Message taskMessage = Message.builder()
                 .role(Message.Role.AGENT)
                 .parts(Collections.singletonList(new TextPart("task message")))
                 .messageId("task-msg-id")
@@ -719,7 +719,7 @@ public class TaskManagerTest {
 
         Task saved = taskManagerWithInitialMessage.saveTaskEvent(event);
 
-        Message updateMessage = new Message.Builder()
+        Message updateMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("update message")))
                 .messageId("update-msg-id")
@@ -730,11 +730,11 @@ public class TaskManagerTest {
         // There should now be a history containing the initialMessage, task message and update message
         assertNotNull(updated.history());
         assertEquals(3, updated.history().size());
-        assertEquals("initial message", ((TextPart) updated.history().get(0).getParts().get(0)).text());
+        assertEquals("initial message", ((TextPart) updated.history().get(0).parts().get(0)).text());
 
         // The message in the current state should be null
         assertNull(updated.status().message());
-        assertEquals("task message", ((TextPart) updated.history().get(1).getParts().get(0)).text());
-        assertEquals("update message", ((TextPart) updated.history().get(2).getParts().get(0)).text());
+        assertEquals("task message", ((TextPart) updated.history().get(1).parts().get(0)).text());
+        assertEquals("update message", ((TextPart) updated.history().get(2).parts().get(0)).text());
     }
 }

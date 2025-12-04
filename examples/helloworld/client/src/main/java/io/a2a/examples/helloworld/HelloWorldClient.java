@@ -62,8 +62,8 @@ public class HelloWorldClient {
                 if (event instanceof MessageEvent messageEvent) {
                     Message responseMessage = messageEvent.getMessage();
                     StringBuilder textBuilder = new StringBuilder();
-                    if (responseMessage.getParts() != null) {
-                        for (Part<?> part : responseMessage.getParts()) {
+                    if (responseMessage.parts() != null) {
+                        for (Part<?> part : responseMessage.parts()) {
                             if (part instanceof TextPart textPart) {
                                 textBuilder.append(textPart.text());
                             }

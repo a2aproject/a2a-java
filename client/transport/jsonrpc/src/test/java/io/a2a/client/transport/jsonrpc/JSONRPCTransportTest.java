@@ -104,7 +104,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
@@ -152,7 +152,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
@@ -170,11 +170,11 @@ public class JSONRPCTransportTest {
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Message.class, result);
         Message agentMessage = (Message) result;
-        assertEquals(Message.Role.AGENT, agentMessage.getRole());
-        Part<?> part = agentMessage.getParts().get(0);
+        assertEquals(Message.Role.AGENT, agentMessage.role());
+        Part<?> part = agentMessage.parts().get(0);
         assertEquals(Part.Kind.TEXT, part.kind());
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
-        assertEquals("msg-456", agentMessage.getMessageId());
+        assertEquals("msg-456", agentMessage.messageId());
     }
 
 
@@ -194,7 +194,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
@@ -250,8 +250,8 @@ public class JSONRPCTransportTest {
         assertNotNull(history);
         assertEquals(1, history.size());
         Message message = history.get(0);
-        assertEquals(Message.Role.USER, message.getRole());
-        List<Part<?>> parts = message.getParts();
+        assertEquals(Message.Role.USER, message.role());
+        List<Part<?>> parts = message.parts();
         assertNotNull(parts);
         assertEquals(3, parts.size());
         part = parts.get(0);
@@ -532,7 +532,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
                         new TextPart("analyze this image"),
@@ -592,7 +592,7 @@ public class JSONRPCTransportTest {
         data.put("location", "San Francisco");
         data.put("timestamp", "2024-01-15T10:30:00Z");
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
                         new TextPart("process this data"),
@@ -649,7 +649,7 @@ public class JSONRPCTransportTest {
         data.put("dataPoints", List.of(10, 20, 30, 40));
         data.put("labels", List.of("Q1", "Q2", "Q3", "Q4"));
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
                         new TextPart("analyze this data and image"),

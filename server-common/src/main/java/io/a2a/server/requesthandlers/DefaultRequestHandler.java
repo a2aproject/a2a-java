@@ -260,7 +260,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public EventKind onMessageSend(MessageSendParams params, ServerCallContext context) throws JSONRPCError {
-        LOGGER.debug("onMessageSend - task: {}; context {}", params.message().getTaskId(), params.message().getContextId());
+        LOGGER.debug("onMessageSend - task: {}; context {}", params.message().taskId(), params.message().contextId());
         MessageSendSetup mss = initMessageSend(params, context);
 
         String taskId = mss.requestContext.getTaskId();
@@ -395,7 +395,7 @@ public class DefaultRequestHandler implements RequestHandler {
     public Flow.Publisher<StreamingEventKind> onMessageSendStream(
             MessageSendParams params, ServerCallContext context) throws JSONRPCError {
         LOGGER.debug("onMessageSendStream START - task: {}; context: {}; runningAgents: {}; backgroundTasks: {}",
-                params.message().getTaskId(), params.message().getContextId(), runningAgents.size(), backgroundTasks.size());
+                params.message().taskId(), params.message().contextId(), runningAgents.size(), backgroundTasks.size());
         MessageSendSetup mss = initMessageSend(params, context);
 
         AtomicReference<String> taskId = new AtomicReference<>(mss.requestContext.getTaskId());
@@ -794,8 +794,8 @@ public class DefaultRequestHandler implements RequestHandler {
 
     private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) {
         TaskManager taskManager = new TaskManager(
-                params.message().getTaskId(),
-                params.message().getContextId(),
+                params.message().taskId(),
+                params.message().contextId(),
                 taskStore,
                 params.message());
 
@@ -813,7 +813,7 @@ public class DefaultRequestHandler implements RequestHandler {
         RequestContext requestContext = requestContextBuilder.get()
                 .setParams(params)
                 .setTaskId(task == null ? null : task.id())
-                .setContextId(params.message().getContextId())
+                .setContextId(params.message().contextId())
                 .setTask(task)
                 .setServerCallContext(context)
                 .build();

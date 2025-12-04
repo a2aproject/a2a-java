@@ -54,7 +54,7 @@ public class ResultAggregatorTest {
 
     // Helper methods for creating sample data
     private Message createSampleMessage(String content, String msgId, Message.Role role) {
-        return new Message.Builder()
+        return Message.builder()
                 .messageId(msgId)
                 .role(role)
                 .parts(Collections.singletonList(new TextPart(content)))

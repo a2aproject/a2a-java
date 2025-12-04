@@ -74,7 +74,7 @@ public class EventSerializationTest {
     @Test
     public void testMessageSerialization() throws JsonProcessingException {
         // Create a Message
-        Message originalMessage = new Message.Builder()
+        Message originalMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(new TextPart("Hello, world!")))
                 .taskId("test-task-789")
@@ -92,10 +92,10 @@ public class EventSerializationTest {
         assertInstanceOf(Message.class, deserializedEvent, "Should deserialize to Message");
 
         Message deserializedMessage = (Message) deserializedEvent;
-        assertEquals(originalMessage.getTaskId(), deserializedMessage.getTaskId());
+        assertEquals(originalMessage.taskId(), deserializedMessage.taskId());
         assertEquals(originalMessage.getKind(), deserializedMessage.getKind());
-        assertEquals(originalMessage.getRole(), deserializedMessage.getRole());
-        assertEquals(originalMessage.getParts().size(), deserializedMessage.getParts().size());
+        assertEquals(originalMessage.role(), deserializedMessage.role());
+        assertEquals(originalMessage.parts().size(), deserializedMessage.parts().size());
 
         // Test as StreamingEventKind
         StreamingEventKind deserializedAsStreaming = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);

@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 public class ToProtoTest {
 
-    private static final Message SIMPLE_MESSAGE = new Message.Builder()
+    private static final Message SIMPLE_MESSAGE = Message.builder()
             .role(Message.Role.USER)
             .parts(Collections.singletonList(new TextPart("tell me a joke")))
             .contextId("context-1234")
@@ -184,7 +184,7 @@ public class ToProtoTest {
         assertEquals("tell me a joke", result.getParts(0).getText());
         assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getParts(0).getFile());
         assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getParts(0).getData());
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.AGENT)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .messageId("message-1234")

@@ -157,7 +157,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         agentExecutorExecute = (context, eventQueue) -> {
             eventQueue.enqueueEvent(context.getMessage());
         };
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -177,7 +177,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageNewMessageSuccessMocks() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
 
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -201,7 +201,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         agentExecutorExecute = (context, eventQueue) -> {
             eventQueue.enqueueEvent(context.getMessage());
         };
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -222,7 +222,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -247,7 +247,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         agentExecutorExecute = (context, eventQueue) -> {
             eventQueue.enqueueEvent(new UnsupportedOperationError());
         };
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -261,7 +261,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageErrorMocks() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -286,7 +286,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             eventQueue.enqueueEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
             .taskId(MINIMAL_TASK.id())
             .contextId(MINIMAL_TASK.contextId())
             .build();
@@ -370,7 +370,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             eventQueue.enqueueEvent(statusEvent);
         };
 
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -465,7 +465,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .status(new TaskStatus(TaskState.COMPLETED))
                         .build());
 
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
             .taskId(MINIMAL_TASK.id())
             .contextId(MINIMAL_TASK.contextId())
             .build();
@@ -525,7 +525,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
         taskStore.save(task);
 
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
             .taskId(task.id())
             .contextId(task.contextId())
             .build();
@@ -612,7 +612,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .status(new TaskStatus(TaskState.WORKING))
                         .build());
 
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
             .taskId(task.id())
             .contextId(task.contextId())
             .build();
@@ -745,7 +745,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SetTaskPushNotificationConfigResponse stpnResponse = handler.setPushNotificationConfig(stpnRequest, callContext);
         assertNull(stpnResponse.getError());
 
-        Message msg = new Message.Builder(MESSAGE)
+        Message msg = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .build();
         SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(msg, null, null));
@@ -829,7 +829,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         Flow.Publisher<SendStreamingMessageResponse> response = handler.onSubscribeToTask(request, callContext);
 
         // We need to send some events in order for those to end up in the queue
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .role(Message.Role.AGENT)
@@ -1234,7 +1234,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         taskStore.save(MINIMAL_TASK);
 
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -1529,7 +1529,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             eventQueue.enqueueEvent(context.getMessage());
         };
 
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();

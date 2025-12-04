@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.Message.MESSAGE;
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
 
 /**
  * Represents a single message in the conversation between a user and an agent in the A2A Protocol.
@@ -37,105 +38,115 @@ import static io.a2a.spec.Message.MESSAGE;
 @JsonTypeName(MESSAGE)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class Message implements EventKind, StreamingEventKind {
+public record Message(@JsonProperty("role") Role role, @JsonProperty("parts") List<Part<?>> parts,
+                      @JsonProperty("messageId") String messageId, @JsonProperty("contextId") String contextId,
+                      @JsonProperty("taskId") String taskId, @JsonProperty("referenceTaskIds") List<String> referenceTaskIds,
+                      @JsonProperty("metadata") Map<String, Object> metadata, @JsonProperty("extensions") List<String> extensions
+) implements EventKind, StreamingEventKind {
 
     public static final TypeReference<Message> TYPE_REFERENCE = new TypeReference<>() {};
 
     public static final String MESSAGE = "message";
-    private final Role role;
-    private final List<Part<?>> parts;
-    private final String messageId;
-    private String contextId;
-    private String taskId;
-    private final Map<String, Object> metadata;
-    private final String kind;
-    private final List<String> referenceTaskIds;
-    private final List<String> extensions;
-
-    public Message(Role role, List<Part<?>> parts, String messageId, String contextId, String taskId,
-                   List<String> referenceTaskIds, Map<String, Object> metadata, List<String> extensions) {
-        this(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata, extensions, MESSAGE);
-    }
 
     @JsonCreator
-    public Message(@JsonProperty("role") Role role, @JsonProperty("parts") List<Part<?>> parts,
-                   @JsonProperty("messageId") String messageId, @JsonProperty("contextId") String contextId,
-                   @JsonProperty("taskId") String taskId, @JsonProperty("referenceTaskIds") List<String> referenceTaskIds,
-                   @JsonProperty("metadata") Map<String, Object> metadata, @JsonProperty("extensions") List<String> extensions,
-                   @JsonProperty("kind") String kind) {
-        Assert.checkNotNullParam("kind", kind);
+    public Message {
+        Assert.checkNotNullParam("role", role);
         Assert.checkNotNullParam("parts", parts);
+        Assert.checkNotNullParam("messageId", messageId);
         if (parts.isEmpty()) {
             throw new IllegalArgumentException("Parts cannot be empty");
         }
-        Assert.checkNotNullParam("role", role);
-        if (! kind.equals(MESSAGE)) {
-            throw new IllegalArgumentException("Invalid Message");
-        }
-        Assert.checkNotNullParam("messageId", messageId);
-        this.role = role;
-        this.parts = parts;
-        this.messageId = messageId;
-        this.contextId = contextId;
-        this.taskId = taskId;
-        this.referenceTaskIds = referenceTaskIds;
-        this.metadata = metadata;
-        this.extensions = extensions;
-        this.kind = kind;
+        parts = List.copyOf(parts);
+        referenceTaskIds = referenceTaskIds != null ? List.copyOf(referenceTaskIds) : null;
+        extensions = extensions != null ? List.copyOf(extensions) : null;
+        metadata = (metadata != null) ? Map.copyOf(metadata) : null;
     }
 
+    /**
+     * @deprecated Use {@link #role()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public Role getRole() {
         return role;
     }
 
+    /**
+     * @deprecated Use {@link #parts()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public List<Part<?>> getParts() {
         return parts;
     }
 
+    /**
+     * @deprecated Use {@link #messageId()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public String getMessageId() {
         return messageId;
     }
 
+    /**
+     * @deprecated Use {@link #contextId()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public String getContextId() {
         return contextId;
     }
 
+    /**
+     * @deprecated Use {@link #taskId()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public String getTaskId() {
         return taskId;
     }
 
+    /**
+     * @deprecated Use {@link #metadata()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public Map<String, Object> getMetadata() {
         return metadata;
     }
 
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
-    }
-
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
-    }
-
+    /**
+     * @deprecated Use {@link #referenceTaskIds()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public List<String> getReferenceTaskIds() {
         return referenceTaskIds;
     }
 
+    /**
+     * @deprecated Use {@link #extensions()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public List<String> getExtensions() {
         return extensions;
     }
 
     @Override
     public String getKind() {
-        return kind;
+        return MESSAGE;
     }
 
     /**
      * Creates a new Builder for constructing Message instances.
      *
-     * @return a new Message.Builder instance
+     * @return a Message.builder instance
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    /**
+     * Creates a new Builder initialized with values from an existing Message.
+     *
+     * @param message the Message to copy values from
+     */
+    public static Builder builder(Message message) {
+        return new Builder(message);
     }
 
     /**
@@ -180,7 +191,7 @@ public final class Message implements EventKind, StreamingEventKind {
      * <p>
      * Example usage:
      * <pre>{@code
-     * Message userMessage = new Message.Builder()
+     * Message userMessage = Message.builder()
      *     .role(Message.Role.USER)
      *     .parts(List.of(new TextPart("Hello, agent!", null)))
      *     .contextId("conv-123")
@@ -199,25 +210,25 @@ public final class Message implements EventKind, StreamingEventKind {
         private List<String> extensions;
 
         /**
-         * Creates a new Builder with all fields unset.
+         * @deprecated Use {@link Message#builder()} instead
          */
+        @Deprecated(since = SPEC_VERSION_1_0)
         public Builder() {
         }
 
         /**
-         * Creates a new Builder initialized with values from an existing Message.
-         *
-         * @param message the Message to copy values from
+         * @deprecated Use {@link Message#builder(Message)} instead
          */
+        @Deprecated(since = SPEC_VERSION_1_0)
         public Builder(Message message) {
-            role = message.role;
-            parts = message.parts;
-            messageId = message.messageId;
-            contextId = message.contextId;
-            taskId = message.taskId;
-            referenceTaskIds = message.referenceTaskIds;
-            metadata = message.metadata;
-            extensions = message.extensions;
+            role = message.role();
+            parts = message.parts();
+            messageId = message.messageId();
+            contextId = message.contextId();
+            taskId = message.taskId();
+            referenceTaskIds = message.referenceTaskIds();
+            metadata = message.metadata();
+            extensions = message.extensions();
         }
 
         /**

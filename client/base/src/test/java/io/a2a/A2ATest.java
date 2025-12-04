@@ -20,12 +20,12 @@ public class A2ATest {
         String text = "Hello, world!";
         Message message = A2A.toUserMessage(text);
         
-        assertEquals(Message.Role.USER, message.getRole());
-        assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
-        assertNotNull(message.getMessageId());
-        assertNull(message.getContextId());
-        assertNull(message.getTaskId());
+        assertEquals(Message.Role.USER, message.role());
+        assertEquals(1, message.parts().size());
+        assertEquals(text, ((TextPart) message.parts().get(0)).text());
+        assertNotNull(message.messageId());
+        assertNull(message.contextId());
+        assertNull(message.taskId());
     }
 
     @Test
@@ -34,8 +34,8 @@ public class A2ATest {
         String messageId = "test-message-id";
         Message message = A2A.toUserMessage(text, messageId);
         
-        assertEquals(Message.Role.USER, message.getRole());
-        assertEquals(messageId, message.getMessageId());
+        assertEquals(Message.Role.USER, message.role());
+        assertEquals(messageId, message.messageId());
     }
 
     @Test
@@ -43,10 +43,10 @@ public class A2ATest {
         String text = "Hello, I'm an agent!";
         Message message = A2A.toAgentMessage(text);
         
-        assertEquals(Message.Role.AGENT, message.getRole());
-        assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
-        assertNotNull(message.getMessageId());
+        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(1, message.parts().size());
+        assertEquals(text, ((TextPart) message.parts().get(0)).text());
+        assertNotNull(message.messageId());
     }
 
     @Test
@@ -55,8 +55,8 @@ public class A2ATest {
         String messageId = "agent-message-id";
         Message message = A2A.toAgentMessage(text, messageId);
         
-        assertEquals(Message.Role.AGENT, message.getRole());
-        assertEquals(messageId, message.getMessageId());
+        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(messageId, message.messageId());
     }
 
     @Test
@@ -67,14 +67,14 @@ public class A2ATest {
         
         Message message = A2A.createUserTextMessage(text, contextId, taskId);
         
-        assertEquals(Message.Role.USER, message.getRole());
-        assertEquals(contextId, message.getContextId());
-        assertEquals(taskId, message.getTaskId());
-        assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
-        assertNotNull(message.getMessageId());
-        assertNull(message.getMetadata());
-        assertNull(message.getReferenceTaskIds());
+        assertEquals(Message.Role.USER, message.role());
+        assertEquals(contextId, message.contextId());
+        assertEquals(taskId, message.taskId());
+        assertEquals(1, message.parts().size());
+        assertEquals(text, ((TextPart) message.parts().get(0)).text());
+        assertNotNull(message.messageId());
+        assertNull(message.metadata());
+        assertNull(message.referenceTaskIds());
     }
 
     @Test
@@ -83,11 +83,11 @@ public class A2ATest {
         
         Message message = A2A.createUserTextMessage(text, null, null);
         
-        assertEquals(Message.Role.USER, message.getRole());
-        assertNull(message.getContextId());
-        assertNull(message.getTaskId());
-        assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
+        assertEquals(Message.Role.USER, message.role());
+        assertNull(message.contextId());
+        assertNull(message.taskId());
+        assertEquals(1, message.parts().size());
+        assertEquals(text, ((TextPart) message.parts().get(0)).text());
     }
 
     @Test
@@ -98,12 +98,12 @@ public class A2ATest {
         
         Message message = A2A.createAgentTextMessage(text, contextId, taskId);
         
-        assertEquals(Message.Role.AGENT, message.getRole());
-        assertEquals(contextId, message.getContextId());
-        assertEquals(taskId, message.getTaskId());
-        assertEquals(1, message.getParts().size());
-        assertEquals(text, ((TextPart) message.getParts().get(0)).text());
-        assertNotNull(message.getMessageId());
+        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(contextId, message.contextId());
+        assertEquals(taskId, message.taskId());
+        assertEquals(1, message.parts().size());
+        assertEquals(text, ((TextPart) message.parts().get(0)).text());
+        assertNotNull(message.messageId());
     }
 
     @Test
@@ -117,12 +117,12 @@ public class A2ATest {
         
         Message message = A2A.createAgentPartsMessage(parts, contextId, taskId);
         
-        assertEquals(Message.Role.AGENT, message.getRole());
-        assertEquals(contextId, message.getContextId());
-        assertEquals(taskId, message.getTaskId());
-        assertEquals(2, message.getParts().size());
-        assertEquals("Part 1", ((TextPart) message.getParts().get(0)).text());
-        assertEquals("Part 2", ((TextPart) message.getParts().get(1)).text());
+        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(contextId, message.contextId());
+        assertEquals(taskId, message.taskId());
+        assertEquals(2, message.parts().size());
+        assertEquals("Part 1", ((TextPart) message.parts().get(0)).text());
+        assertEquals("Part 2", ((TextPart) message.parts().get(1)).text());
     }
 
     @Test

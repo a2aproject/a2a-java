@@ -278,7 +278,7 @@ public class A2ACloudExampleClient {
                     .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
                     .build();
 
-            Message message = new Message.Builder()
+            Message message = Message.builder()
                     .role(Message.Role.USER)
                     .parts(new TextPart("process"))
                     .taskId(serverTaskId)
@@ -323,7 +323,7 @@ public class A2ACloudExampleClient {
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
                 .build();
 
-        Message completeMessage = new Message.Builder()
+        Message completeMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(new TextPart("complete"))
                 .taskId(serverTaskId)

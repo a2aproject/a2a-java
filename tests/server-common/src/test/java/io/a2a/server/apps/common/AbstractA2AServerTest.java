@@ -110,7 +110,7 @@ public abstract class AbstractA2AServerTest {
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    protected static final Message MESSAGE = new Message.Builder()
+    protected static final Message MESSAGE = Message.builder()
             .messageId("111")
             .role(Message.Role.AGENT)
             .parts(new TextPart("test message"))
@@ -411,10 +411,10 @@ public abstract class AbstractA2AServerTest {
     public void testListTasksWithHistoryLimit() throws Exception {
         // Create task with multiple history messages
         List<Message> history = List.of(
-                new Message.Builder(MESSAGE).messageId("msg-1").build(),
-                new Message.Builder(MESSAGE).messageId("msg-2").build(),
-                new Message.Builder(MESSAGE).messageId("msg-3").build(),
-                new Message.Builder(MESSAGE).messageId("msg-4").build()
+                Message.builder(MESSAGE).messageId("msg-1").build(),
+                Message.builder(MESSAGE).messageId("msg-2").build(),
+                Message.builder(MESSAGE).messageId("msg-3").build(),
+                Message.builder(MESSAGE).messageId("msg-4").build()
         );
         Task taskWithHistory = Task.builder()
                 .id("list-task-history")
@@ -439,8 +439,8 @@ public abstract class AbstractA2AServerTest {
             assertNotNull(task.history());
             assertEquals(2, task.history().size(), "History should be limited to 2 most recent messages");
             // Verify we get the most recent messages (msg-3 and msg-4)
-            assertEquals("msg-3", task.history().get(0).getMessageId());
-            assertEquals("msg-4", task.history().get(1).getMessageId());
+            assertEquals("msg-3", task.history().get(0).messageId());
+            assertEquals("msg-4", task.history().get(1).messageId());
         } finally {
             deleteTaskInTaskStore(taskWithHistory.id());
         }
@@ -449,7 +449,7 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testSendMessageNewMessageSuccess() throws Exception {
         assertTrue(getTaskFromTaskStore(MINIMAL_TASK.id()) == null);
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -477,9 +477,9 @@ public abstract class AbstractA2AServerTest {
         assertFalse(wasUnexpectedEvent.get());
         Message messageResponse = receivedMessage.get();
         assertNotNull(messageResponse);
-        assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
-        assertEquals(MESSAGE.getRole(), messageResponse.getRole());
-        Part<?> part = messageResponse.getParts().get(0);
+        assertEquals(MESSAGE.messageId(), messageResponse.messageId());
+        assertEquals(MESSAGE.role(), messageResponse.role());
+        Part<?> part = messageResponse.parts().get(0);
         assertEquals(Part.Kind.TEXT, part.kind());
         assertEquals("test message", ((TextPart) part).text());
     }
@@ -488,7 +488,7 @@ public abstract class AbstractA2AServerTest {
     public void testSendMessageExistingTaskSuccess() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
-            Message message = new Message.Builder(MESSAGE)
+            Message message = Message.builder(MESSAGE)
                     .taskId(MINIMAL_TASK.id())
                     .contextId(MINIMAL_TASK.contextId())
                     .build();
@@ -515,9 +515,9 @@ public abstract class AbstractA2AServerTest {
             assertTrue(latch.await(10, TimeUnit.SECONDS));
             Message messageResponse = receivedMessage.get();
             assertNotNull(messageResponse);
-            assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
-            assertEquals(MESSAGE.getRole(), messageResponse.getRole());
-            Part<?> part = messageResponse.getParts().get(0);
+            assertEquals(MESSAGE.messageId(), messageResponse.messageId());
+            assertEquals(MESSAGE.role(), messageResponse.role());
+            Part<?> part = messageResponse.parts().get(0);
             assertEquals(Part.Kind.TEXT, part.kind());
             assertEquals("test message", ((TextPart) part).text());
         } catch (A2AClientException e) {
@@ -571,7 +571,7 @@ public abstract class AbstractA2AServerTest {
 
     @Test
     public void testError() throws A2AClientException {
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(SEND_MESSAGE_NOT_SUPPORTED.id())
                 .contextId(SEND_MESSAGE_NOT_SUPPORTED.contextId())
                 .build();
@@ -1151,7 +1151,7 @@ public abstract class AbstractA2AServerTest {
     @Timeout(value = 1, unit = TimeUnit.MINUTES)
     public void testNonBlockingWithMultipleMessages() throws Exception {
         // 1. Send first non-blocking message to create task in WORKING state
-        Message message1 = new Message.Builder(MESSAGE)
+        Message message1 = Message.builder(MESSAGE)
                 .taskId("multi-event-test")
                 .contextId("test-context")
                 .parts(new TextPart("First request"))
@@ -1212,7 +1212,7 @@ public abstract class AbstractA2AServerTest {
         assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
 
         // 3. Send second streaming message to same taskId
-        Message message2 = new Message.Builder(MESSAGE)
+        Message message2 = Message.builder(MESSAGE)
                 .taskId("multi-event-test") // Same taskId
                 .contextId("test-context")
                 .parts(new TextPart("Second request"))
@@ -1460,7 +1460,7 @@ public abstract class AbstractA2AServerTest {
     }
 
     private void testSendStreamingMessageWithHttpClient(String mediaType) throws Exception {
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
                 .build();
@@ -1484,9 +1484,9 @@ public abstract class AbstractA2AServerTest {
                         assertNull(jsonResponse.getError());
                         System.out.println("#################################### Response " + jsonResponse);
                         Message messageResponse = (Message) jsonResponse.getResult();
-                        assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
-                        assertEquals(MESSAGE.getRole(), messageResponse.getRole());
-                        Part<?> part = messageResponse.getParts().get(0);
+                        assertEquals(MESSAGE.messageId(), messageResponse.messageId());
+                        assertEquals(MESSAGE.role(), messageResponse.role());
+                        Part<?> part = messageResponse.parts().get(0);
                         assertEquals(Part.Kind.TEXT, part.kind());
                         assertEquals("test message", ((TextPart) part).text());
                         latch.countDown();
@@ -1514,7 +1514,7 @@ public abstract class AbstractA2AServerTest {
             saveTaskInTaskStore(MINIMAL_TASK);
         }
         try {
-            Message message = new Message.Builder(MESSAGE)
+            Message message = Message.builder(MESSAGE)
                     .taskId(MINIMAL_TASK.id())
                     .contextId(MINIMAL_TASK.contextId())
                     .build();
@@ -1550,9 +1550,9 @@ public abstract class AbstractA2AServerTest {
             assertNull(errorRef.get());
             Message messageResponse = receivedMessage.get();
             assertNotNull(messageResponse);
-            assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
-            assertEquals(MESSAGE.getRole(), messageResponse.getRole());
-            Part<?> part = messageResponse.getParts().get(0);
+            assertEquals(MESSAGE.messageId(), messageResponse.messageId());
+            assertEquals(MESSAGE.role(), messageResponse.role());
+            Part<?> part = messageResponse.parts().get(0);
             assertEquals(Part.Kind.TEXT, part.kind());
             assertEquals("test message", ((TextPart) part).text());
         } catch (A2AClientException e) {
@@ -1927,7 +1927,7 @@ public abstract class AbstractA2AServerTest {
             ensureQueueForTask(taskId);
 
             // Send a message that will leave task in WORKING state (fire-and-forget pattern)
-            Message message = new Message.Builder(MESSAGE)
+            Message message = Message.builder(MESSAGE)
                     .taskId(taskId)
                     .contextId(contextId)
                     .parts(new TextPart("fire and forget"))
@@ -2027,7 +2027,7 @@ public abstract class AbstractA2AServerTest {
         String contextId = "completed-ctx";
 
         // Send a message that will create and complete the task
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(taskId)
                 .contextId(contextId)
                 .parts(new TextPart("complete task"))

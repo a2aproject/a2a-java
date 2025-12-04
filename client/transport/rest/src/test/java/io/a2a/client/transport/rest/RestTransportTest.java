@@ -108,7 +108,7 @@ public class RestTransportTest {
      */
     @Test
     public void testSendMessage() throws Exception {
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
@@ -142,15 +142,15 @@ public class RestTransportTest {
         assertEquals(1, task.history().size());
         Message history = task.history().get(0);
         assertEquals("message", history.getKind());
-        assertEquals(Message.Role.USER, history.getRole());
-        assertEquals("context-1234", history.getContextId());
-        assertEquals("message-1234", history.getMessageId());
-        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.getTaskId());
-        assertEquals(1, history.getParts().size());
-        assertEquals(Kind.TEXT, history.getParts().get(0).kind());
-        assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).text());
+        assertEquals(Message.Role.USER, history.role());
+        assertEquals("context-1234", history.contextId());
+        assertEquals("message-1234", history.messageId());
+        assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.taskId());
+        assertEquals(1, history.parts().size());
+        assertEquals(Kind.TEXT, history.parts().get(0).kind());
+        assertEquals("tell me a joke", ((TextPart) history.parts().get(0)).text());
         assertNull(task.metadata());
-        assertNull(history.getReferenceTaskIds());
+        assertNull(history.referenceTaskIds());
     }
 
     /**
@@ -215,21 +215,21 @@ public class RestTransportTest {
         assertEquals(1, task.history().size());
         Message history = task.history().get(0);
         assertEquals("message", history.getKind());
-        assertEquals(Message.Role.USER, history.getRole());
-        assertEquals("message-123", history.getMessageId());
-        assertEquals(3, history.getParts().size());
-        assertEquals(Kind.TEXT, history.getParts().get(0).kind());
-        assertEquals("tell me a joke", ((TextPart) history.getParts().get(0)).text());
-        assertEquals(Kind.FILE, history.getParts().get(1).kind());
-        FilePart part = (FilePart) history.getParts().get(1);
+        assertEquals(Message.Role.USER, history.role());
+        assertEquals("message-123", history.messageId());
+        assertEquals(3, history.parts().size());
+        assertEquals(Kind.TEXT, history.parts().get(0).kind());
+        assertEquals("tell me a joke", ((TextPart) history.parts().get(0)).text());
+        assertEquals(Kind.FILE, history.parts().get(1).kind());
+        FilePart part = (FilePart) history.parts().get(1);
         assertEquals("text/plain", part.file().mimeType());
         assertEquals("file:///path/to/file.txt", ((FileWithUri) part.file()).uri());
-        part = (FilePart) history.getParts().get(2);
+        part = (FilePart) history.parts().get(2);
         assertEquals(Kind.FILE, part.kind());
         assertEquals("text/plain", part.file().mimeType());
         assertEquals("aGVsbG8=", ((FileWithBytes) part.file()).bytes());
-        assertNull(history.getMetadata());
-        assertNull(history.getReferenceTaskIds());
+        assertNull(history.metadata());
+        assertNull(history.referenceTaskIds());
     }
 
     /**
@@ -251,7 +251,7 @@ public class RestTransportTest {
                 );
 
         RestTransport client = new RestTransport(CARD);
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me some jokes")))
                 .contextId("context-1234")

@@ -19,9 +19,9 @@ public class SimpleRequestContextBuilder extends RequestContext.Builder {
     public RequestContext build() {
         List<Task> relatedTasks = null;
         if (taskStore != null && shouldPopulateReferredTasks && getParams() != null
-                && getParams().message().getReferenceTaskIds() != null) {
+                && getParams().message().referenceTaskIds() != null) {
             relatedTasks = new ArrayList<>();
-            for (String taskId : getParams().message().getReferenceTaskIds()) {
+            for (String taskId : getParams().message().referenceTaskIds()) {
                 Task task = taskStore.get(taskId);
                 if (task != null) {
                     relatedTasks.add(task);

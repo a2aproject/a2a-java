@@ -67,7 +67,7 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertMessage_ToProto() {
         // Arrange
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .messageId("msg-123")
                 .contextId("context-456")
                 .role(Message.Role.USER)
@@ -106,9 +106,9 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(Message.class, result);
         Message message = (Message) result;
-        assertEquals("msg-123", message.getMessageId());
-        assertEquals("context-456", message.getContextId());
-        assertEquals(Message.Role.USER, message.getRole());
+        assertEquals("msg-123", message.messageId());
+        assertEquals("context-456", message.contextId());
+        assertEquals(Message.Role.USER, message.role());
     }
 
     @Test
@@ -252,7 +252,7 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertStreamResponse_Roundtrip_Message() {
         // Arrange
-        Message originalMessage = new Message.Builder()
+        Message originalMessage = Message.builder()
                 .messageId("msg-123")
                 .contextId("context-456")
                 .role(Message.Role.AGENT)
@@ -267,8 +267,8 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(Message.class, result);
         Message roundtrippedMessage = (Message) result;
-        assertEquals(originalMessage.getMessageId(), roundtrippedMessage.getMessageId());
-        assertEquals(originalMessage.getContextId(), roundtrippedMessage.getContextId());
-        assertEquals(originalMessage.getRole(), roundtrippedMessage.getRole());
+        assertEquals(originalMessage.messageId(), roundtrippedMessage.messageId());
+        assertEquals(originalMessage.contextId(), roundtrippedMessage.contextId());
+        assertEquals(originalMessage.role(), roundtrippedMessage.role());
     }
 }

@@ -102,7 +102,7 @@ public class DefaultRequestHandlerTest {
         });
 
         // First blocking message - should return SUBMITTED task
-        Message message1 = new Message.Builder()
+        Message message1 = Message.builder()
             .messageId("msg-1")
             .role(Message.Role.USER)
             .parts(new TextPart("first message"))
@@ -119,7 +119,7 @@ public class DefaultRequestHandlerTest {
         assertTrue(task1.status().state() == TaskState.SUBMITTED);
 
         // Second blocking message to SAME taskId - should not hang
-        Message message2 = new Message.Builder()
+        Message message2 = Message.builder()
             .messageId("msg-2")
             .role(Message.Role.USER)
             .parts(new TextPart("second message"))
@@ -153,7 +153,7 @@ public class DefaultRequestHandlerTest {
 
         taskStore.save(task);
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-track")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -204,7 +204,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "disc-task-1";
         String contextId = "disc-ctx-1";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("mid")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -270,7 +270,7 @@ public class DefaultRequestHandlerTest {
 
         taskStore.save(initialTask);
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-reconn")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -353,7 +353,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "persist-task-1";
         String contextId = "persist-ctx-1";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-persist")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -442,7 +442,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "blocking-fire-forget-task";
         String contextId = "blocking-fire-forget-ctx";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-blocking-fire-forget")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -506,7 +506,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "blocking-persist-task";
         String contextId = "blocking-persist-ctx";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-nonblocking-persist")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -621,7 +621,7 @@ public class DefaultRequestHandlerTest {
             .build();
         taskStore.save(initialTask);
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-fire")
             .role(Message.Role.USER)
             .parts(new TextPart("fire and forget"))
@@ -742,7 +742,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "blocking-artifacts-task";
         String contextId = "blocking-artifacts-ctx";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-blocking-artifacts")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -833,7 +833,7 @@ public class DefaultRequestHandlerTest {
             .build();
 
         // Create message with pushNotificationConfig
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-push-config")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -910,7 +910,7 @@ public class DefaultRequestHandlerTest {
             .token("existing-token-789")
             .build();
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-push-existing")
             .role(Message.Role.USER)
             .parts(new TextPart("update existing task"))

@@ -69,7 +69,7 @@ public class JpaDatabaseTaskStoreTest {
     @Transactional
     public void testSaveAndRetrieveTaskWithHistory() {
         // Create a message for the task history
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("Hello, agent!")))
                 .messageId("msg-1")
@@ -94,8 +94,8 @@ public class JpaDatabaseTaskStoreTest {
         assertEquals("test-context-2", retrieved.contextId());
         assertEquals(TaskState.WORKING, retrieved.status().state());
         assertEquals(1, retrieved.history().size());
-        assertEquals("msg-1", retrieved.history().get(0).getMessageId());
-        assertEquals("Hello, agent!", ((TextPart) retrieved.history().get(0).getParts().get(0)).text());
+        assertEquals("msg-1", retrieved.history().get(0).messageId());
+        assertEquals("Hello, agent!", ((TextPart) retrieved.history().get(0).parts().get(0)).text());
     }
 
     @Test
@@ -590,7 +590,7 @@ public class JpaDatabaseTaskStoreTest {
         // Create messages for history
         List<Message> longHistory = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
-            Message message = new Message.Builder()
+            Message message = Message.builder()
                     .role(Message.Role.USER)
                     .parts(Collections.singletonList(new TextPart("Message " + i)))
                     .messageId("msg-history-limit-" + i)
@@ -619,9 +619,9 @@ public class JpaDatabaseTaskStoreTest {
         Task retrieved = result.tasks().get(0);
         assertEquals(3, retrieved.history().size());
         // Should have messages 8, 9, 10 (last 3)
-        assertEquals("msg-history-limit-8", retrieved.history().get(0).getMessageId());
-        assertEquals("msg-history-limit-9", retrieved.history().get(1).getMessageId());
-        assertEquals("msg-history-limit-10", retrieved.history().get(2).getMessageId());
+        assertEquals("msg-history-limit-8", retrieved.history().get(0).messageId());
+        assertEquals("msg-history-limit-9", retrieved.history().get(1).messageId());
+        assertEquals("msg-history-limit-10", retrieved.history().get(2).messageId());
     }
 
     @Test

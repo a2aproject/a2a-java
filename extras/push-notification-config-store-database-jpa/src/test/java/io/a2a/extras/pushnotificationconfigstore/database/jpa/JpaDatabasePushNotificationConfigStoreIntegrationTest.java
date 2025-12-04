@@ -99,7 +99,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         final String contextId = "test-context";
 
         // Step 1: Create the task
-        Message createMessage = new Message.Builder()
+        Message createMessage = Message.builder()
             .role(Message.Role.USER)
             .parts(List.of(new TextPart("create"))) // Send the "create" command
             .taskId(taskId)
@@ -134,7 +134,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         assertEquals("test-token-123", storedConfig.pushNotificationConfig().token());
 
         // Step 4: Update the task to trigger the notification
-        Message updateMessage = new Message.Builder()
+        Message updateMessage = Message.builder()
             .role(Message.Role.USER)
             .parts(List.of(new TextPart("update"))) // Send the "update" command
             .taskId(taskId)

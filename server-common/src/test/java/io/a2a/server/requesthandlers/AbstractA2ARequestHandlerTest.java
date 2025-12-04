@@ -56,7 +56,7 @@ public class AbstractA2ARequestHandlerTest {
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    protected static final Message MESSAGE = new Message.Builder()
+    protected static final Message MESSAGE = Message.builder()
             .messageId("111")
             .role(Message.Role.AGENT)
             .parts(new TextPart("test message"))
