@@ -96,7 +96,7 @@ public abstract class EventQueue implements AutoCloseable {
 
     public abstract void awaitQueuePollerStart() throws InterruptedException ;
 
-    abstract void signalQueuePollerStarted();
+    public abstract void signalQueuePollerStarted();
 
     public void enqueueEvent(Event event) {
         enqueueItem(new LocalEventQueueItem(event));
@@ -119,7 +119,7 @@ public abstract class EventQueue implements AutoCloseable {
         LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
     }
 
-    abstract EventQueue tap();
+    public abstract EventQueue tap();
 
     /**
      * Dequeues an EventQueueItem from the queue.
@@ -265,7 +265,7 @@ public abstract class EventQueue implements AutoCloseable {
                     taskId, onCloseCallbacks.size(), taskStateProvider != null);
         }
 
-        EventQueue tap() {
+        public EventQueue tap() {
             ChildQueue child = new ChildQueue(this);
             children.add(child);
             return child;
@@ -310,7 +310,7 @@ public abstract class EventQueue implements AutoCloseable {
         }
 
         @Override
-        void signalQueuePollerStarted() {
+        public void signalQueuePollerStarted() {
             if (pollingStarted.get()) {
                 return;
             }
@@ -415,7 +415,7 @@ public abstract class EventQueue implements AutoCloseable {
         }
 
         @Override
-        EventQueue tap() {
+        public EventQueue tap() {
             throw new IllegalStateException("Can only tap the main queue");
         }
 
@@ -425,7 +425,7 @@ public abstract class EventQueue implements AutoCloseable {
         }
 
         @Override
-        void signalQueuePollerStarted() {
+        public void signalQueuePollerStarted() {
             parent.signalQueuePollerStarted();
         }
 
