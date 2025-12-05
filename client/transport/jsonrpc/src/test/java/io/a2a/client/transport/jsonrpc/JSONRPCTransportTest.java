@@ -104,7 +104,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
@@ -122,18 +122,18 @@ public class JSONRPCTransportTest {
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState.COMPLETED,task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertNotNull(task.contextId());
+        assertEquals(TaskState.COMPLETED,task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("joke", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
+        assertTrue(task.metadata().isEmpty());
     }
 
     @Test
@@ -152,7 +152,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
@@ -170,11 +170,11 @@ public class JSONRPCTransportTest {
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Message.class, result);
         Message agentMessage = (Message) result;
-        assertEquals(Message.Role.AGENT, agentMessage.getRole());
-        Part<?> part = agentMessage.getParts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
-        assertEquals("msg-456", agentMessage.getMessageId());
+        assertEquals(Message.Role.AGENT, agentMessage.role());
+        Part<?> part = agentMessage.parts().get(0);
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
+        assertEquals("msg-456", agentMessage.messageId());
     }
 
 
@@ -194,7 +194,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
@@ -235,39 +235,39 @@ public class JSONRPCTransportTest {
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Task task = client.getTask(new TaskQueryParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
                 10), null);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.contextId());
+        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact artifact = task.artifacts().get(0);
         assertEquals(1, artifact.parts().size());
         assertEquals("artifact-1", artifact.artifactId());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
-        List<Message> history = task.getHistory();
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
+        assertTrue(task.metadata().isEmpty());
+        List<Message> history = task.history();
         assertNotNull(history);
         assertEquals(1, history.size());
         Message message = history.get(0);
-        assertEquals(Message.Role.USER, message.getRole());
-        List<Part<?>> parts = message.getParts();
+        assertEquals(Message.Role.USER, message.role());
+        List<Part<?>> parts = message.parts();
         assertNotNull(parts);
         assertEquals(3, parts.size());
         part = parts.get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("tell me a joke", ((TextPart)part).getText());
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("tell me a joke", ((TextPart)part).text());
         part = parts.get(1);
-        assertEquals(Part.Kind.FILE, part.getKind());
-        FileContent filePart = ((FilePart) part).getFile();
+        assertEquals(Part.Kind.FILE, part.kind());
+        FileContent filePart = ((FilePart) part).file();
         assertEquals("file:///path/to/file.txt", ((FileWithUri) filePart).uri());
         assertEquals("text/plain", filePart.mimeType());
         part = parts.get(2);
-        assertEquals(Part.Kind.FILE, part.getKind());
-        filePart = ((FilePart) part).getFile();
+        assertEquals(Part.Kind.FILE, part.kind());
+        filePart = ((FilePart) part).file();
         assertEquals("aGVsbG8=", ((FileWithBytes) filePart).bytes());
         assertEquals("hello.txt", filePart.name());
-        assertTrue(task.getMetadata().isEmpty());
+        assertTrue(task.metadata().isEmpty());
     }
 
     @Test
@@ -288,10 +288,10 @@ public class JSONRPCTransportTest {
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Task task = client.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
                 new HashMap<>()), null);
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.getContextId());
-        assertEquals(TaskState.CANCELED, task.getStatus().state());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.contextId());
+        assertEquals(TaskState.CANCELED, task.status().state());
+        assertTrue(task.metadata().isEmpty());
     }
 
     @Test
@@ -532,7 +532,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
                         new TextPart("analyze this image"),
@@ -553,20 +553,20 @@ public class JSONRPCTransportTest {
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertNotNull(task.contextId());
+        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("image-analysis", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart) part).getText());
-        assertFalse(task.getMetadata().isEmpty());
-        assertEquals(1, task.getMetadata().size());
-        assertEquals("metadata-test", task.getMetadata().get("test"));
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart) part).text());
+        assertFalse(task.metadata().isEmpty());
+        assertEquals(1, task.metadata().size());
+        assertEquals("metadata-test", task.metadata().get("test"));
     }
 
     @Test
@@ -592,7 +592,7 @@ public class JSONRPCTransportTest {
         data.put("location", "San Francisco");
         data.put("timestamp", "2024-01-15T10:30:00Z");
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
                         new TextPart("process this data"),
@@ -613,18 +613,18 @@ public class JSONRPCTransportTest {
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertNotNull(task.contextId());
+        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("data-analysis", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco.", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco.", ((TextPart) part).text());
+        assertTrue(task.metadata().isEmpty());
     }
 
     @Test
@@ -649,7 +649,7 @@ public class JSONRPCTransportTest {
         data.put("dataPoints", List.of(10, 20, 30, 40));
         data.put("labels", List.of("Q1", "Q2", "Q3", "Q4"));
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
                         new TextPart("analyze this data and image"),
@@ -671,17 +671,17 @@ public class JSONRPCTransportTest {
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
-        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
-        assertNotNull(task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        assertEquals(1, task.getArtifacts().size());
-        Artifact artifact = task.getArtifacts().get(0);
+        assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
+        assertNotNull(task.contextId());
+        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(1, task.artifacts().size());
+        Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("mixed-analysis", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart) part).text());
+        assertTrue(task.metadata().isEmpty());
     }
 }

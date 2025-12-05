@@ -77,7 +77,7 @@ class ArtifactUtilsTest {
         
         // Then
         TextPart textPart = (TextPart) artifact.parts().get(0);
-        assertEquals(text, textPart.getText());
+        assertEquals(text, textPart.text());
     }
 
     @Test
@@ -120,7 +120,7 @@ class ArtifactUtilsTest {
         
         // Then
         DataPart dataPart = (DataPart) artifact.parts().get(0);
-        assertEquals(sampleData, dataPart.getData());
+        assertEquals(sampleData, dataPart.data());
     }
 
     @Test

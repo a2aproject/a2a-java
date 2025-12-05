@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SubTypeSerializationTest {
 
-    private static final Task MINIMAL_TASK = new Task.Builder()
+    private static final Task MINIMAL_TASK = Task.builder()
             .id("task-123")
             .contextId("session-xyz")
             .status(new TaskStatus(TaskState.SUBMITTED))
@@ -48,16 +48,16 @@ public class SubTypeSerializationTest {
         return Stream.of(
                 Arguments.of(
                         new TaskStatusUpdateEvent.Builder()
-                                .taskId(MINIMAL_TASK.getId())
-                                .contextId(MINIMAL_TASK.getContextId())
+                                .taskId(MINIMAL_TASK.id())
+                                .contextId(MINIMAL_TASK.contextId())
                                 .status(new TaskStatus(TaskState.COMPLETED))
                                 .isFinal(true)
                                 .build(), "kind", TaskStatusUpdateEvent.STATUS_UPDATE
                 ),
                 Arguments.of(
                         new TaskArtifactUpdateEvent.Builder()
-                                .taskId(MINIMAL_TASK.getId())
-                                .contextId(MINIMAL_TASK.getContextId())
+                                .taskId(MINIMAL_TASK.id())
+                                .contextId(MINIMAL_TASK.contextId())
                                 .artifact(new Artifact.Builder()
                                         .artifactId("11")
                                         .parts(new TextPart("text"))
@@ -68,7 +68,7 @@ public class SubTypeSerializationTest {
                         MINIMAL_TASK, "kind", Task.TASK
                 ),
                 Arguments.of(
-                        new Message.Builder()
+                        Message.builder()
                                 .role(Message.Role.USER)
                                 .parts(new TextPart("tell me some jokes"))
                                 .contextId("context-1234")

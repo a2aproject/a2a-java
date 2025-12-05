@@ -50,13 +50,13 @@ public class AbstractA2ARequestHandlerTest {
 
     protected static final AgentCard CARD = createAgentCard(true, true, true);
 
-    protected static final Task MINIMAL_TASK = new Task.Builder()
+    protected static final Task MINIMAL_TASK = Task.builder()
             .id("task-123")
             .contextId("session-xyz")
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    protected static final Message MESSAGE = new Message.Builder()
+    protected static final Message MESSAGE = Message.builder()
             .messageId("111")
             .role(Message.Role.AGENT)
             .parts(new TextPart("test message"))

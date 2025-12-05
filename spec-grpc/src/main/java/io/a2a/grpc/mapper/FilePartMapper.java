@@ -32,7 +32,7 @@ public interface FilePartMapper {
         }
 
         io.a2a.grpc.FilePart.Builder builder = io.a2a.grpc.FilePart.newBuilder();
-        FileContent fileContent = domain.getFile();
+        FileContent fileContent = domain.file();
 
         if (fileContent instanceof FileWithBytes fileWithBytes) {
             builder.setFileWithBytes(ByteString.copyFrom(Base64.getDecoder().decode(fileWithBytes.bytes())));

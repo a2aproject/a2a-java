@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.TextPart.TEXT;
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
 
 /**
  * Represents a plain text content part within a {@link Message} or {@link Artifact}.
@@ -33,36 +34,31 @@ import static io.a2a.spec.TextPart.TEXT;
 @JsonTypeName(TEXT)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TextPart extends Part<String> {
+public record TextPart(@JsonProperty("text") String text,
+                       @JsonProperty("metadata")Map<String, Object> metadata) implements Part<String> {
 
     public static final String TEXT = "text";
-    private final String text;
-    private final Map<String, Object> metadata;
-    private final Kind kind;
+
+    @JsonCreator
+    public TextPart {
+        Assert.checkNotNullParam("text", text);
+        metadata = (metadata != null) ? Map.copyOf(metadata) : null;
+    }
 
     public TextPart(String text) {
         this(text, null);
     }
 
-    @JsonCreator
-    public TextPart(@JsonProperty("text") String text, @JsonProperty("metadata") Map<String, Object> metadata) {
-        Assert.checkNotNullParam("text", text);
-        this.text = text;
-        this.metadata = metadata;
-        this.kind = Kind.TEXT;
-    }
-
     @Override
-    public Kind getKind() {
-        return kind;
+    public Kind kind() {
+        return Kind.TEXT;
     }
 
+    /**
+     * @deprecated Use {@link #text()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public String getText() {
         return text;
-    }
-
-    @Override
-    public Map<String, Object> getMetadata() {
-        return metadata;
     }
 }

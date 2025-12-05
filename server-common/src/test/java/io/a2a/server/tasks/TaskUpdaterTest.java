@@ -29,7 +29,7 @@ public class TaskUpdaterTest {
     public static final String TEST_TASK_ID = "test-task-id";
     public static final String TEST_TASK_CONTEXT_ID = "test-task-context-id";
 
-    private static final Message SAMPLE_MESSAGE = new Message.Builder()
+    private static final Message SAMPLE_MESSAGE = Message.builder()
             .taskId(TEST_TASK_ID)
             .contextId(TEST_TASK_CONTEXT_ID)
             .parts(new TextPart("Test message"))
@@ -215,12 +215,12 @@ public class TaskUpdaterTest {
     public void testNewAgentMessage() throws Exception {
         Message message = taskUpdater.newAgentMessage(SAMPLE_PARTS, null);
 
-        assertEquals(AGENT, message.getRole());
-        assertEquals(TEST_TASK_ID, message.getTaskId());
-        assertEquals(TEST_TASK_CONTEXT_ID, message.getContextId());
-        assertNotNull(message.getMessageId());
-        assertEquals(SAMPLE_PARTS, message.getParts());
-        assertNull(message.getMetadata());
+        assertEquals(AGENT, message.role());
+        assertEquals(TEST_TASK_ID, message.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
+        assertNotNull(message.messageId());
+        assertEquals(SAMPLE_PARTS, message.parts());
+        assertNull(message.metadata());
     }
 
     @Test
@@ -228,12 +228,12 @@ public class TaskUpdaterTest {
         Map<String, Object> metadata = Map.of("key", "value");
         Message message = taskUpdater.newAgentMessage(SAMPLE_PARTS, metadata);
 
-        assertEquals(AGENT, message.getRole());
-        assertEquals(TEST_TASK_ID, message.getTaskId());
-        assertEquals(TEST_TASK_CONTEXT_ID, message.getContextId());
-        assertNotNull(message.getMessageId());
-        assertEquals(SAMPLE_PARTS, message.getParts());
-        assertEquals(metadata, message.getMetadata());
+        assertEquals(AGENT, message.role());
+        assertEquals(TEST_TASK_ID, message.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
+        assertNotNull(message.messageId());
+        assertEquals(SAMPLE_PARTS, message.parts());
+        assertEquals(metadata, message.metadata());
     }
 
     @Test

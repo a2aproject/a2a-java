@@ -54,7 +54,7 @@ public class JSONRPCTransportStreamingTest {
     public void testSendStreamingMessageParams() {
         // The goal here is just to verify the correct parameters are being used
         // This is a unit test of the parameter construction, not the streaming itself
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-test")
@@ -74,8 +74,8 @@ public class JSONRPCTransportStreamingTest {
         assertNotNull(params);
         assertEquals(message, params.message());
         assertEquals(configuration, params.configuration());
-        assertEquals(Message.Role.USER, params.message().getRole());
-        assertEquals("test message", ((TextPart) params.message().getParts().get(0)).getText());
+        assertEquals(Message.Role.USER, params.message().role());
+        assertEquals("test message", ((TextPart) params.message().parts().get(0)).text());
     }
 
     @Test
@@ -95,7 +95,7 @@ public class JSONRPCTransportStreamingTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me some jokes")))
                 .contextId("context-1234")
@@ -159,16 +159,16 @@ public class JSONRPCTransportStreamingTest {
         assertNotNull(eventKind);
         assertInstanceOf(Task.class, eventKind);
         Task task = (Task) eventKind;
-        assertEquals("2", task.getId());
-        assertEquals("context-1234", task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        List<Artifact> artifacts = task.getArtifacts();
+        assertEquals("2", task.id());
+        assertEquals("context-1234", task.contextId());
+        assertEquals(TaskState.COMPLETED, task.status().state());
+        List<Artifact> artifacts = task.artifacts();
         assertEquals(1, artifacts.size());
         Artifact artifact = artifacts.get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("joke", artifact.name());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
+        assertEquals(Part.Kind.TEXT, part.kind());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
     }
 } 

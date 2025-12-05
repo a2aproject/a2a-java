@@ -177,7 +177,7 @@ public class TaskUpdater {
     }
 
     public Message newAgentMessage(List<Part<?>> parts, Map<String, Object> metadata) {
-        return new Message.Builder()
+        return Message.builder()
                 .role(Message.Role.AGENT)
                 .taskId(taskId)
                 .contextId(contextId)
