@@ -21,4 +21,7 @@ package io.a2a.spec;
  * @see TaskArtifactUpdateEvent
  */
 public sealed interface UpdateEvent permits TaskStatusUpdateEvent, TaskArtifactUpdateEvent {
+    String getContextId();
+
+    String getTaskId();
 }

@@ -28,6 +28,7 @@ import jakarta.inject.Inject;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
+import io.a2a.server.tasks.TaskStateProcessor;
 import io.a2a.server.agentexecution.SimpleRequestContextBuilder;
 import io.a2a.server.events.EnhancedRunnable;
 import io.a2a.server.events.EventConsumer;
@@ -103,6 +104,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
     private final AgentExecutor agentExecutor;
     private final TaskStore taskStore;
+    private final TaskStateProcessor stateProcessor;
     private final QueueManager queueManager;
     private final PushNotificationConfigStore pushConfigStore;
     private final PushNotificationSender pushSender;
@@ -119,6 +121,7 @@ public class DefaultRequestHandler implements RequestHandler {
                                  PushNotificationSender pushSender, @Internal Executor executor) {
         this.agentExecutor = agentExecutor;
         this.taskStore = taskStore;
+        this.stateProcessor = new TaskStateProcessor();
         this.queueManager = queueManager;
         this.pushConfigStore = pushConfigStore;
         this.pushSender = pushSender;
@@ -223,9 +226,10 @@ public class DefaultRequestHandler implements RequestHandler {
                 task.getId(),
                 task.getContextId(),
                 taskStore,
+                stateProcessor,
                 null);
 
-        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor);
+        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, stateProcessor);
 
         EventQueue queue = queueManager.tap(task.getId());
         if (queue == null) {
@@ -249,13 +253,26 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new InternalError("Agent did not return valid response for cancel");
         }
 
-        // Verify task was actually canceled (not completed concurrently)
-        if (tempTask.getStatus().state() != TaskState.CANCELED) {
-            throw new TaskNotCancelableError(
-                    "Task cannot be canceled - current state: " + tempTask.getStatus().state().asString());
+        // Persist the final task state (after all cancel events have been processed)
+        // This ensures state is saved ONCE before returning to client
+        Task finalTask = taskManager.getTask();
+        if (finalTask != null) {
+            finalTask = taskManager.saveTask(finalTask);
+        } else {
+            finalTask = tempTask;
         }
 
-        return tempTask;
+        // Verify task was actually canceled (not completed concurrently)
+        if (finalTask.getStatus().state() != TaskState.CANCELED) {
+            throw new TaskNotCancelableError(
+                    "Task cannot be canceled - current state: " + finalTask.getStatus().state().asString());
+        }
+
+        // Remove task from state processor after cancellation is complete
+        stateProcessor.removeTask(finalTask.getId());
+        LOGGER.debug("Removed task {} from state processor after cancellation", finalTask.getId());
+
+        return finalTask;
     }
 
     @Override
@@ -267,7 +284,7 @@ public class DefaultRequestHandler implements RequestHandler {
         LOGGER.debug("Request context taskId: {}", taskId);
 
         EventQueue queue = queueManager.createOrTap(taskId);
-        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor);
+        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, stateProcessor);
 
         boolean blocking = true; // Default to blocking behavior
         if (params.configuration() != null && Boolean.FALSE.equals(params.configuration().blocking())) {
@@ -320,7 +337,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 // 1. Wait for agent to finish enqueueing events
                 // 2. Close the queue to signal consumption can complete
                 // 3. Wait for consumption to finish processing events
-                // 4. Fetch final task state from TaskStore
+                // 4. Persist final task state ONCE to TaskStore
 
                 try {
                     // Step 1: Wait for agent to finish (with configurable timeout)
@@ -360,15 +377,29 @@ public class DefaultRequestHandler implements RequestHandler {
                     throw new InternalError(msg);
                 }
 
-                // Step 4: Fetch the final task state from TaskStore (all events have been processed)
-                Task updatedTask = taskStore.get(taskId);
-                if (updatedTask != null) {
-                    kind = updatedTask;
+                // Step 4: Persist the final task state (all events have been processed into currentTask)
+                // This ensures task state is saved ONCE before returning to client
+                Task finalTask = mss.taskManager.getTask();
+                if (finalTask != null) {
+                    finalTask = mss.taskManager.saveTask(finalTask);
+                    kind = finalTask;
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Fetched final task for {} with state {} and {} artifacts",
-                            taskId, updatedTask.getStatus().state(),
-                            updatedTask.getArtifacts().size());
+                        LOGGER.debug("Persisted final task for {} with state {} and {} artifacts",
+                            taskId, finalTask.getStatus().state(),
+                            finalTask.getArtifacts().size());
                     }
+                    // Remove task from state processor after final persistence
+                    stateProcessor.removeTask(taskId);
+                    LOGGER.debug("Removed task {} from state processor after final persistence", taskId);
+                }
+            } else if (interruptedOrNonBlocking) {
+                // For non-blocking calls: persist the current state immediately
+                // Note: Do NOT remove from state processor here - background consumption may still be running
+                Task currentTask = mss.taskManager.getTask();
+                if (currentTask != null) {
+                    currentTask = mss.taskManager.saveTask(currentTask);
+                    kind = currentTask;
+                    LOGGER.debug("Persisted task state for non-blocking call: {}", taskId);
                 }
             }
             if (kind instanceof Task taskResult && !taskId.equals(taskResult.getId())) {
@@ -401,7 +432,7 @@ public class DefaultRequestHandler implements RequestHandler {
         AtomicReference<String> taskId = new AtomicReference<>(mss.requestContext.getTaskId());
         EventQueue queue = queueManager.createOrTap(taskId.get());
         LOGGER.debug("Created/tapped queue for task {}: {}", taskId.get(), queue);
-        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor);
+        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, stateProcessor);
 
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(taskId.get(), mss.requestContext, queue);
 
@@ -419,6 +450,14 @@ public class DefaultRequestHandler implements RequestHandler {
             Flow.Publisher<EventQueueItem> processed =
                     processor(createTubeConfig(), results, ((errorConsumer, item) -> {
                 Event event = item.getEvent();
+
+                // For streaming: persist task state after each event before propagating
+                // This ensures state is saved BEFORE the event is sent to the client
+                Task currentTaskState = mss.taskManager.getTask();
+                if (currentTaskState != null) {
+                    mss.taskManager.saveTask(currentTaskState);
+                }
+
                 if (event instanceof Task createdTask) {
                     if (!Objects.equals(taskId.get(), createdTask.getId())) {
                         errorConsumer.accept(new InternalError("Task ID mismatch in agent response"));
@@ -600,8 +639,8 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new TaskNotFoundError();
         }
 
-        TaskManager taskManager = new TaskManager(task.getId(), task.getContextId(), taskStore, null);
-        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor);
+        TaskManager taskManager = new TaskManager(task.getId(), task.getContextId(), taskStore, stateProcessor, null);
+        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, stateProcessor);
         EventQueue queue = queueManager.tap(task.getId());
         LOGGER.debug("onResubscribeToTask - tapped queue: {}", queue != null ? System.identityHashCode(queue) : "null");
 
@@ -797,6 +836,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 params.message().getTaskId(),
                 params.message().getContextId(),
                 taskStore,
+                stateProcessor,
                 params.message());
 
         Task task = taskManager.getTask();

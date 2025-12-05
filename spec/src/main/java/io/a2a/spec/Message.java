@@ -96,6 +96,7 @@ public final class Message implements EventKind, StreamingEventKind {
         return messageId;
     }
 
+    @Override
     public String getContextId() {
         return contextId;
     }

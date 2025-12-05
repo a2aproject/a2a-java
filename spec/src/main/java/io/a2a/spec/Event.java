@@ -19,6 +19,7 @@ package io.a2a.spec;
  *   <li>{@link Message} - Message exchange</li>
  *   <li>{@link TaskStatusUpdateEvent} - Task status changes</li>
  *   <li>{@link TaskArtifactUpdateEvent} - Artifact creation/updates</li>
+ *   <li>{@link A2AError} - Error</li>
  * </ul>
  *
  * @see EventKind

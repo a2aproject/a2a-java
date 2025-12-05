@@ -3,6 +3,7 @@ package io.a2a.server.tasks;
 import static io.a2a.server.util.async.AsyncUtils.consumer;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import static io.a2a.server.util.async.AsyncUtils.processor;
+import static io.a2a.util.Assert.checkNotNullParam;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -30,12 +31,17 @@ public class ResultAggregator {
 
     private final TaskManager taskManager;
     private final Executor executor;
+    private final TaskStateProcessor stateProcessor;
     private volatile Message message;
 
-    public ResultAggregator(TaskManager taskManager, Message message, Executor executor) {
+    public ResultAggregator(TaskManager taskManager, Message message, Executor executor, TaskStateProcessor stateProcessor) {
+        checkNotNullParam("taskManager", taskManager);
+        checkNotNullParam("executor", executor);
+        checkNotNullParam("stateProcessor", stateProcessor);
         this.taskManager = taskManager;
         this.message = message;
         this.executor = executor;
+        this.stateProcessor = stateProcessor;
     }
 
     public EventKind getCurrentResult() {
@@ -48,12 +54,12 @@ public class ResultAggregator {
     public Flow.Publisher<EventQueueItem> consumeAndEmit(EventConsumer consumer) {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
 
-        // Process items conditionally - only save non-replicated events to database
+        // Process items to build state without persisting
         return processor(createTubeConfig(), allItems, (errorConsumer, item) -> {
-            // Only process non-replicated events to avoid duplicate database writes
+            // Build state for non-replicated events (don't persist yet)
             if (!item.isReplicated()) {
                 try {
-                    callTaskManagerProcess(item.getEvent());
+                    taskManager.processEvent(item.getEvent());
                 } catch (A2AServerException e) {
                     errorConsumer.accept(e);
                     return false;
@@ -80,10 +86,10 @@ public class ResultAggregator {
                             return false;
                         }
                     }
-                    // Only process non-replicated events to avoid duplicate database writes
+                    // Build state for non-replicated events (don't persist yet)
                     if (!item.isReplicated()) {
                         try {
-                            callTaskManagerProcess(event);
+                            taskManager.processEvent(event);
                         } catch (A2AServerException e) {
                             error.set(e);
                             return false;
@@ -140,10 +146,10 @@ public class ResultAggregator {
                         return false;
                     }
 
-                    // Process event through TaskManager - only for non-replicated events
+                    // Build state for non-replicated events (don't persist yet)
                     if (!item.isReplicated()) {
                         try {
-                            callTaskManagerProcess(event);
+                            taskManager.processEvent(event);
                         } catch (A2AServerException e) {
                             errorRef.set(e);
                             completionFuture.completeExceptionally(e);
@@ -152,70 +158,51 @@ public class ResultAggregator {
                     }
 
                     // Determine interrupt behavior
-                    boolean shouldInterrupt = false;
-                    boolean continueInBackground = false;
                     boolean isFinalEvent = (event instanceof Task task && task.getStatus().state().isFinal())
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.isFinal());
                     boolean isAuthRequired = (event instanceof Task task && task.getStatus().state() == TaskState.AUTH_REQUIRED)
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.getStatus().state() == TaskState.AUTH_REQUIRED);
 
-                    // Always interrupt on auth_required, as it needs external action.
-                    if (isAuthRequired) {
                         // auth-required is a special state: the message should be
                         // escalated back to the caller, but the agent is expected to
                         // continue producing events once the authorization is received
                         // out-of-band. This is in contrast to input-required, where a
                         // new request is expected in order for the agent to make progress,
                         // so the agent should exit.
-                        shouldInterrupt = true;
-                        continueInBackground = true;
-                    }
-                    else if (!blocking) {
-                        // For non-blocking calls, interrupt as soon as a task is available.
-                        shouldInterrupt = true;
-                        continueInBackground = true;
-                    }
-                    else if (blocking) {
+                    if (!blocking) {
                         // For blocking calls: Interrupt to free Vert.x thread, but continue in background
                         // Python's async consumption doesn't block threads, but Java's does
                         // So we interrupt to return quickly, then rely on background consumption
                         // DefaultRequestHandler will fetch the final state from TaskStore
-                        shouldInterrupt = true;
-                        continueInBackground = true;
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug("Blocking call for task {}: {} event, returning with background consumption",
                                 taskIdForLogging(), isFinalEvent ? "final" : "non-final");
                         }
                     }
 
-                    if (shouldInterrupt) {
-                        // Complete the future to unblock the main thread
-                        interrupted.set(true);
-                        completionFuture.complete(null);
+                    // Complete the future to unblock the main thread
+                    interrupted.set(true);
+                    completionFuture.complete(null);
 
-                        // For blocking calls, DON'T complete consumptionCompletionFuture here.
-                        // Let it complete naturally when subscription finishes (onComplete callback below).
-                        // This ensures all events are processed and persisted to TaskStore before
-                        // DefaultRequestHandler.cleanupProducer() proceeds with cleanup.
-                        //
-                        // For non-blocking and auth-required calls, complete immediately to allow
-                        // cleanup to proceed while consumption continues in background.
-                        if (!blocking) {
-                            consumptionCompletionFuture.complete(null);
-                        }
-                        // else: blocking calls wait for actual consumption completion in onComplete
-
-                        // Continue consuming in background - keep requesting events
-                        // Note: continueInBackground is always true when shouldInterrupt is true
-                        // (auth-required, non-blocking, or blocking all set it to true)
-                        if (LOGGER.isDebugEnabled()) {
-                            String reason = isAuthRequired ? "auth-required" : (blocking ? "blocking" : "non-blocking");
-                            LOGGER.debug("Task {}: Continuing background consumption (reason: {})", taskIdForLogging(), reason);
-                        }
-                        return true;
+                    // For blocking calls, DON'T complete consumptionCompletionFuture here.
+                    // Let it complete naturally when subscription finishes (onComplete callback below).
+                    // This ensures all events are processed and persisted to TaskStore before
+                    // DefaultRequestHandler.cleanupProducer() proceeds with cleanup.
+                    //
+                    // For non-blocking and auth-required calls, complete immediately to allow
+                    // cleanup to proceed while consumption continues in background.
+                    if (!blocking) {
+                        consumptionCompletionFuture.complete(null);
                     }
+                    // else: blocking calls wait for actual consumption completion in onComplete
 
-                    // Continue processing
+                    // Continue consuming in background - keep requesting events
+                    // Note: continueInBackground is always true when shouldInterrupt is true
+                    // (auth-required, non-blocking, or blocking all set it to true)
+                    if (LOGGER.isDebugEnabled()) {
+                        String reason = isAuthRequired ? "auth-required" : (blocking ? "blocking" : "non-blocking");
+                        LOGGER.debug("Task {}: Continuing background consumption (reason: {})", taskIdForLogging(), reason);
+                    }
                     return true;
                 },
                 throwable -> {
@@ -226,6 +213,19 @@ public class ResultAggregator {
                         consumptionCompletionFuture.completeExceptionally(throwable);
                     } else {
                         // onComplete - subscription finished normally
+                        // For non-blocking calls, persist the final task state after consumption completes
+                        if (!blocking) {
+                            Task finalTask = taskManager.getTask();
+                            if (finalTask != null) {
+                                taskManager.saveTask(finalTask);
+                                if (LOGGER.isDebugEnabled()) {
+                                    LOGGER.debug("Persisted final task state after background consumption: {}", taskIdForLogging());
+                                }
+                                // Remove task from state processor after final persistence
+                                stateProcessor.removeTask(finalTask.getId());
+                                LOGGER.debug("Removed task {} from state processor after background consumption", finalTask.getId());
+                            }
+                        }
                         completionFuture.complete(null);
                         consumptionCompletionFuture.complete(null);
                     }
@@ -259,10 +259,6 @@ public class ResultAggregator {
                 message.get() != null ? message.get() : taskManager.getTask(),
                 interrupted.get(),
                 consumptionCompletionFuture);
-    }
-
-    private void callTaskManagerProcess(Event event) throws A2AServerException {
-        taskManager.process(event);
     }
 
     private String taskIdForLogging() {

@@ -88,6 +88,7 @@ public final class Task implements EventKind, StreamingEventKind {
         return id;
     }
 
+    @Override
     public String getContextId() {
         return contextId;
     }

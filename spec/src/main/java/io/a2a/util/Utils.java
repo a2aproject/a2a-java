@@ -27,7 +27,7 @@ import io.a2a.spec.TaskArtifactUpdateEvent;
  * <ul>
  *   <li>JSON processing with pre-configured {@link ObjectMapper}</li>
  *   <li>Null-safe value defaults via {@link #defaultIfNull(Object, Object)}</li>
- *   <li>Artifact streaming support via {@link #appendArtifactToTask(Task, TaskArtifactUpdateEvent, String)}</li>
+ *   <li>Artifact streaming support via {@link #appendArtifactToTask(Task, TaskArtifactUpdateEvent)}</li>
  *   <li>Type-safe exception rethrowing via {@link #rethrow(Throwable)}</li>
  * </ul>
  *
@@ -120,14 +120,14 @@ public class Utils {
      *   <li>{@code true}: Append the new artifact's parts to an existing artifact with matching {@code artifactId}</li>
      * </ul>
      *
-     * @param task the current task to update
+     * @param task  the current task to update
      * @param event the artifact update event containing the new/updated artifact
-     * @param taskId the task ID (for logging purposes)
      * @return a new Task instance with the updated artifacts list
      * @see TaskArtifactUpdateEvent for streaming artifact updates
      * @see Artifact for artifact structure
      */
-    public static Task appendArtifactToTask(Task task, TaskArtifactUpdateEvent event, String taskId) {
+    // FIXME manipulation & update of Task could be provide by methods on the Task class
+    public static Task appendArtifactToTask(Task task, TaskArtifactUpdateEvent event) {
         // Append artifacts
         List<Artifact> artifacts = task.getArtifacts() == null ? new ArrayList<>() : new ArrayList<>(task.getArtifacts());
 
@@ -151,18 +151,18 @@ public class Utils {
             // This represents the first chunk for this artifact index
             if (existingArtifactIndex >= 0) {
                 // Replace the existing artifact entirely with the new artifact
-                log.fine(String.format("Replacing artifact at id %s for task %s", artifactId, taskId));
+                log.fine(String.format("Replacing artifact at id %s for task %s", artifactId, task.getId()));
                 artifacts.set(existingArtifactIndex, newArtifact);
             } else {
                 // Append the new artifact since no artifact with this id/index exists yet
-                log.fine(String.format("Adding artifact at id %s for task %s", artifactId, taskId));
+                log.fine(String.format("Adding artifact at id %s for task %s", artifactId, task.getId()));
                 artifacts.add(newArtifact);
             }
 
         } else if (existingArtifact != null) {
             // Append new parts to the existing artifact's parts list
             // Do this to a copy
-            log.fine(String.format("Appending parts to artifact id %s for task %s", artifactId, taskId));
+            log.fine(String.format("Appending parts to artifact id %s for task %s", artifactId, task.getId()));
             List<Part<?>> parts = new ArrayList<>(existingArtifact.parts());
             parts.addAll(newArtifact.parts());
             Artifact updated = new Artifact.Builder(existingArtifact)
@@ -174,7 +174,7 @@ public class Utils {
             // We will ignore this chunk
             log.warning(
                     String.format("Received append=true for nonexistent artifact index for artifact %s in task %s. Ignoring chunk.",
-                    artifactId, taskId));
+                    artifactId, task.getId()));
         }
 
         return new Task.Builder(task)
