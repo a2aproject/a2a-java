@@ -1,5 +1,7 @@
 package io.a2a.server.tasks;
 
+import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
+import static io.a2a.client.http.A2AHttpClient.CONTENT_TYPE;
 import static io.a2a.common.A2AHeaders.X_A2A_NOTIFICATION_TOKEN;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -90,6 +92,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
         try {
             postBuilder
                     .url(url)
+                    .addHeader(CONTENT_TYPE, APPLICATION_JSON)
                     .body(body)
                     .post();
         } catch (IOException | InterruptedException e) {

@@ -29,7 +29,7 @@ import io.a2a.util.Assert;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryParams> {
 
-    public static final String METHOD = "tasks/get";
+    public static final String METHOD = "GetTask";
 
     @JsonCreator
     public GetTaskRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
@@ -57,7 +57,7 @@ public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryPa
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method = "tasks/get";
+        private String method = METHOD;
         private TaskQueryParams params;
 
         public GetTaskRequest.Builder jsonrpc(String jsonrpc) {

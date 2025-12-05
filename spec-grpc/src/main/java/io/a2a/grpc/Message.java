@@ -69,11 +69,11 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object messageId_ = "";
   /**
    * <pre>
-   * The unique identifier (e.g. UUID)of the message. This is required and
+   * The unique identifier (e.g. UUID) of the message. This is required and
    * created by the message creator.
    * </pre>
    *
-   * <code>string message_id = 1;</code>
+   * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The messageId.
    */
   @java.lang.Override
@@ -91,11 +91,11 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The unique identifier (e.g. UUID)of the message. This is required and
+   * The unique identifier (e.g. UUID) of the message. This is required and
    * created by the message creator.
    * </pre>
    *
-   * <code>string message_id = 1;</code>
+   * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for messageId.
    */
   @java.lang.Override
@@ -215,10 +215,10 @@ private static final long serialVersionUID = 0L;
   private int role_ = 0;
   /**
    * <pre>
-   * A role for the message.
+   * Identifies the sender of the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4;</code>
+   * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The enum numeric value on the wire for role.
    */
   @java.lang.Override public int getRoleValue() {
@@ -226,10 +226,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A role for the message.
+   * Identifies the sender of the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4;</code>
+   * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The role.
    */
   @java.lang.Override public io.a2a.grpc.Role getRole() {
@@ -246,7 +246,7 @@ private static final long serialVersionUID = 0L;
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Part> getPartsList() {
@@ -258,7 +258,7 @@ private static final long serialVersionUID = 0L;
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
@@ -271,7 +271,7 @@ private static final long serialVersionUID = 0L;
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public int getPartsCount() {
@@ -283,7 +283,7 @@ private static final long serialVersionUID = 0L;
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Part getParts(int index) {
@@ -295,7 +295,7 @@ private static final long serialVersionUID = 0L;
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5;</code>
+   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
@@ -1024,11 +1024,11 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object messageId_ = "";
     /**
      * <pre>
-     * The unique identifier (e.g. UUID)of the message. This is required and
+     * The unique identifier (e.g. UUID) of the message. This is required and
      * created by the message creator.
      * </pre>
      *
-     * <code>string message_id = 1;</code>
+     * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The messageId.
      */
     public java.lang.String getMessageId() {
@@ -1045,11 +1045,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The unique identifier (e.g. UUID)of the message. This is required and
+     * The unique identifier (e.g. UUID) of the message. This is required and
      * created by the message creator.
      * </pre>
      *
-     * <code>string message_id = 1;</code>
+     * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for messageId.
      */
     public com.google.protobuf.ByteString
@@ -1067,11 +1067,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The unique identifier (e.g. UUID)of the message. This is required and
+     * The unique identifier (e.g. UUID) of the message. This is required and
      * created by the message creator.
      * </pre>
      *
-     * <code>string message_id = 1;</code>
+     * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The messageId to set.
      * @return This builder for chaining.
      */
@@ -1085,11 +1085,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The unique identifier (e.g. UUID)of the message. This is required and
+     * The unique identifier (e.g. UUID) of the message. This is required and
      * created by the message creator.
      * </pre>
      *
-     * <code>string message_id = 1;</code>
+     * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearMessageId() {
@@ -1100,11 +1100,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The unique identifier (e.g. UUID)of the message. This is required and
+     * The unique identifier (e.g. UUID) of the message. This is required and
      * created by the message creator.
      * </pre>
      *
-     * <code>string message_id = 1;</code>
+     * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for messageId to set.
      * @return This builder for chaining.
      */
@@ -1315,10 +1315,10 @@ private static final long serialVersionUID = 0L;
     private int role_ = 0;
     /**
      * <pre>
-     * A role for the message.
+     * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4;</code>
+     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The enum numeric value on the wire for role.
      */
     @java.lang.Override public int getRoleValue() {
@@ -1326,10 +1326,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A role for the message.
+     * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4;</code>
+     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The enum numeric value on the wire for role to set.
      * @return This builder for chaining.
      */
@@ -1341,10 +1341,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A role for the message.
+     * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4;</code>
+     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The role.
      */
     @java.lang.Override
@@ -1354,10 +1354,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A role for the message.
+     * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4;</code>
+     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The role to set.
      * @return This builder for chaining.
      */
@@ -1370,10 +1370,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A role for the message.
+     * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4;</code>
+     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearRole() {
@@ -1401,7 +1401,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.Part> getPartsList() {
       if (partsBuilder_ == null) {
@@ -1416,7 +1416,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public int getPartsCount() {
       if (partsBuilder_ == null) {
@@ -1431,7 +1431,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part getParts(int index) {
       if (partsBuilder_ == null) {
@@ -1446,7 +1446,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setParts(
         int index, io.a2a.grpc.Part value) {
@@ -1468,7 +1468,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1487,7 +1487,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(io.a2a.grpc.Part value) {
       if (partsBuilder_ == null) {
@@ -1508,7 +1508,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         int index, io.a2a.grpc.Part value) {
@@ -1530,7 +1530,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         io.a2a.grpc.Part.Builder builderForValue) {
@@ -1549,7 +1549,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1568,7 +1568,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addAllParts(
         java.lang.Iterable<? extends io.a2a.grpc.Part> values) {
@@ -1588,7 +1588,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearParts() {
       if (partsBuilder_ == null) {
@@ -1606,7 +1606,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder removeParts(int index) {
       if (partsBuilder_ == null) {
@@ -1624,7 +1624,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder getPartsBuilder(
         int index) {
@@ -1636,7 +1636,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
         int index) {
@@ -1651,7 +1651,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
          getPartsOrBuilderList() {
@@ -1667,7 +1667,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder addPartsBuilder() {
       return internalGetPartsFieldBuilder().addBuilder(
@@ -1679,7 +1679,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder addPartsBuilder(
         int index) {
@@ -1692,7 +1692,7 @@ private static final long serialVersionUID = 0L;
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5;</code>
+     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.Part.Builder> 
          getPartsBuilderList() {

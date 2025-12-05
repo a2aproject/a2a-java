@@ -24,7 +24,7 @@ import java.util.UUID;
  *   <li>Retrieving final results for completed tasks</li>
  * </ul>
  * <p>
- * This class implements the JSON-RPC {@code tasks/resubscribe} method as specified in the A2A Protocol.
+ * This class implements the JSON-RPC {@code SubscribeToTask} method as specified in the A2A Protocol.
  *
  * @see TaskIdParams for the parameter structure
  * @see StreamingEventKind for the types of events that can be streamed
@@ -32,12 +32,12 @@ import java.util.UUID;
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class TaskResubscriptionRequest extends StreamingJSONRPCRequest<TaskIdParams> {
+public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskIdParams> {
 
-    public static final String METHOD = "tasks/resubscribe";
+    public static final String METHOD = "SubscribeToTask";
 
     @JsonCreator
-    public TaskResubscriptionRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
+    public SubscribeToTaskRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
                                      @JsonProperty("method") String method, @JsonProperty("params") TaskIdParams params) {
         if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
@@ -53,7 +53,7 @@ public final class TaskResubscriptionRequest extends StreamingJSONRPCRequest<Tas
         this.params = params;
     }
 
-    public TaskResubscriptionRequest(Object id, TaskIdParams params) {
+    public SubscribeToTaskRequest(Object id, TaskIdParams params) {
         this(null, id, METHOD, params);
     }
 
@@ -63,31 +63,31 @@ public final class TaskResubscriptionRequest extends StreamingJSONRPCRequest<Tas
         private String method = METHOD;
         private TaskIdParams params;
 
-        public TaskResubscriptionRequest.Builder jsonrpc(String jsonrpc) {
+        public SubscribeToTaskRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
 
-        public TaskResubscriptionRequest.Builder id(Object id) {
+        public SubscribeToTaskRequest.Builder id(Object id) {
             this.id = id;
             return this;
         }
 
-        public TaskResubscriptionRequest.Builder method(String method) {
+        public SubscribeToTaskRequest.Builder method(String method) {
             this.method = method;
             return this;
         }
 
-        public TaskResubscriptionRequest.Builder params(TaskIdParams params) {
+        public SubscribeToTaskRequest.Builder params(TaskIdParams params) {
             this.params = params;
             return this;
         }
 
-        public TaskResubscriptionRequest build() {
+        public SubscribeToTaskRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new TaskResubscriptionRequest(jsonrpc, id, method, params);
+            return new SubscribeToTaskRequest(jsonrpc, id, method, params);
         }
     }
 }

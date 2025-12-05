@@ -1,6 +1,7 @@
 package io.a2a.transport.rest.handler;
 
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
+import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -62,8 +63,7 @@ public class RestHandler {
 
     private static final Logger log = Logger.getLogger(RestHandler.class.getName());
     private AgentCard agentCard;
-    private @Nullable
-    Instance<AgentCard> extendedAgentCard;
+    private @Nullable Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
     private final Executor executor;
 
@@ -143,9 +143,9 @@ public class RestHandler {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
-            io.a2a.grpc.CreateTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
+            io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder();
             parseRequestBody(body, builder);
-            TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils.FromProto.taskPushNotificationConfig(builder), context);
+            TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils.FromProto.setTaskPushNotificationConfig(builder), context);
             return createSuccessResponse(201, io.a2a.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(result)));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
@@ -294,7 +294,7 @@ public class RestHandler {
         try {
             Utils.OBJECT_MAPPER.readTree(json);
         } catch (JacksonException e) {
-            throw new JSONParseError(JSONParseError.DEFAULT_CODE, "Failed to parse json", e.getMessage());
+            throw new JSONParseError(JSON_PARSE_ERROR_CODE, "Failed to parse json", e.getMessage());
         }
     }
 

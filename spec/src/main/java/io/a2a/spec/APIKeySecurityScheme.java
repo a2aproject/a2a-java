@@ -29,7 +29,7 @@ import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
 public final class APIKeySecurityScheme implements SecurityScheme {
 
     public static final String API_KEY = "apiKey";
-    private final String in;
+    private final Location location;
     private final String name;
     private final String type;
     private final String description;
@@ -70,20 +70,20 @@ public final class APIKeySecurityScheme implements SecurityScheme {
         }
     }
 
-    public APIKeySecurityScheme(String in, String name, String description) {
-        this(in, name, description, API_KEY);
+    public APIKeySecurityScheme(Location location, String name, String description) {
+        this(location, name, description, API_KEY);
     }
 
     @JsonCreator
-    public APIKeySecurityScheme(@JsonProperty("in") String in, @JsonProperty("name") String name,
+    public APIKeySecurityScheme(@JsonProperty("location") Location location, @JsonProperty("name") String name,
                                 @JsonProperty("description") String description, @JsonProperty("type") String type) {
-        Assert.checkNotNullParam("in", in);
+        Assert.checkNotNullParam("location", location);
         Assert.checkNotNullParam("name", name);
         Assert.checkNotNullParam("type", type);
         if (! type.equals(API_KEY)) {
             throw new IllegalArgumentException("Invalid type for APIKeySecurityScheme");
         }
-        this.in = in;
+        this.location = location;
         this.name = name;
         this.description = description;
         this.type = type;
@@ -94,9 +94,8 @@ public final class APIKeySecurityScheme implements SecurityScheme {
         return description;
     }
 
-
-    public String getIn() {
-        return in;
+    public Location getLocation() {
+        return location;
     }
 
     public String getName() {
@@ -108,12 +107,12 @@ public final class APIKeySecurityScheme implements SecurityScheme {
     }
 
     public static class Builder {
-        private String in;
+        private Location location;
         private String name;
         private String description;
 
-        public Builder in(String in) {
-            this.in = in;
+        public Builder location(Location location) {
+            this.location = location;
             return this;
         }
 
@@ -128,7 +127,7 @@ public final class APIKeySecurityScheme implements SecurityScheme {
         }
 
         public APIKeySecurityScheme build() {
-            return new APIKeySecurityScheme(in, name, description);
+            return new APIKeySecurityScheme(location, name, description);
         }
     }
 }

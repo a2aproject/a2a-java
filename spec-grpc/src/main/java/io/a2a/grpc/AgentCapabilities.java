@@ -8,7 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:AgentCapabilities]
- * Defines the A2A feature set supported by the agent
+ * Defines optional capabilities supported by an agent.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.AgentCapabilities}
@@ -49,14 +49,27 @@ private static final long serialVersionUID = 0L;
             io.a2a.grpc.AgentCapabilities.class, io.a2a.grpc.AgentCapabilities.Builder.class);
   }
 
+  private int bitField0_;
   public static final int STREAMING_FIELD_NUMBER = 1;
   private boolean streaming_ = false;
   /**
    * <pre>
-   * If the agent will support streaming responses
+   * Indicates if the agent supports streaming responses.
    * </pre>
    *
-   * <code>bool streaming = 1;</code>
+   * <code>optional bool streaming = 1;</code>
+   * @return Whether the streaming field is set.
+   */
+  @java.lang.Override
+  public boolean hasStreaming() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <pre>
+   * Indicates if the agent supports streaming responses.
+   * </pre>
+   *
+   * <code>optional bool streaming = 1;</code>
    * @return The streaming.
    */
   @java.lang.Override
@@ -68,10 +81,22 @@ private static final long serialVersionUID = 0L;
   private boolean pushNotifications_ = false;
   /**
    * <pre>
-   * If the agent can send push notifications to the clients webhook
+   * Indicates if the agent supports sending push notifications for asynchronous task updates.
    * </pre>
    *
-   * <code>bool push_notifications = 2;</code>
+   * <code>optional bool push_notifications = 2;</code>
+   * @return Whether the pushNotifications field is set.
+   */
+  @java.lang.Override
+  public boolean hasPushNotifications() {
+    return ((bitField0_ & 0x00000002) != 0);
+  }
+  /**
+   * <pre>
+   * Indicates if the agent supports sending push notifications for asynchronous task updates.
+   * </pre>
+   *
+   * <code>optional bool push_notifications = 2;</code>
    * @return The pushNotifications.
    */
   @java.lang.Override
@@ -84,7 +109,7 @@ private static final long serialVersionUID = 0L;
   private java.util.List<io.a2a.grpc.AgentExtension> extensions_;
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -95,7 +120,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -107,7 +132,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -118,7 +143,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -129,7 +154,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -144,10 +169,22 @@ private static final long serialVersionUID = 0L;
   private boolean stateTransitionHistory_ = false;
   /**
    * <pre>
-   * If the agent provides a history of state transitions for a task.
+   * Indicates if the agent provides a history of state transitions for a task.
    * </pre>
    *
-   * <code>bool state_transition_history = 4;</code>
+   * <code>optional bool state_transition_history = 4;</code>
+   * @return Whether the stateTransitionHistory field is set.
+   */
+  @java.lang.Override
+  public boolean hasStateTransitionHistory() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   * <pre>
+   * Indicates if the agent provides a history of state transitions for a task.
+   * </pre>
+   *
+   * <code>optional bool state_transition_history = 4;</code>
    * @return The stateTransitionHistory.
    */
   @java.lang.Override
@@ -169,16 +206,16 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (streaming_ != false) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       output.writeBool(1, streaming_);
     }
-    if (pushNotifications_ != false) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       output.writeBool(2, pushNotifications_);
     }
     for (int i = 0; i < extensions_.size(); i++) {
       output.writeMessage(3, extensions_.get(i));
     }
-    if (stateTransitionHistory_ != false) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       output.writeBool(4, stateTransitionHistory_);
     }
     getUnknownFields().writeTo(output);
@@ -190,11 +227,11 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (streaming_ != false) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(1, streaming_);
     }
-    if (pushNotifications_ != false) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(2, pushNotifications_);
     }
@@ -202,7 +239,7 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, extensions_.get(i));
     }
-    if (stateTransitionHistory_ != false) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(4, stateTransitionHistory_);
     }
@@ -221,14 +258,23 @@ private static final long serialVersionUID = 0L;
     }
     io.a2a.grpc.AgentCapabilities other = (io.a2a.grpc.AgentCapabilities) obj;
 
-    if (getStreaming()
-        != other.getStreaming()) return false;
-    if (getPushNotifications()
-        != other.getPushNotifications()) return false;
+    if (hasStreaming() != other.hasStreaming()) return false;
+    if (hasStreaming()) {
+      if (getStreaming()
+          != other.getStreaming()) return false;
+    }
+    if (hasPushNotifications() != other.hasPushNotifications()) return false;
+    if (hasPushNotifications()) {
+      if (getPushNotifications()
+          != other.getPushNotifications()) return false;
+    }
     if (!getExtensionsList()
         .equals(other.getExtensionsList())) return false;
-    if (getStateTransitionHistory()
-        != other.getStateTransitionHistory()) return false;
+    if (hasStateTransitionHistory() != other.hasStateTransitionHistory()) return false;
+    if (hasStateTransitionHistory()) {
+      if (getStateTransitionHistory()
+          != other.getStateTransitionHistory()) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -240,19 +286,25 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + STREAMING_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getStreaming());
-    hash = (37 * hash) + PUSH_NOTIFICATIONS_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getPushNotifications());
+    if (hasStreaming()) {
+      hash = (37 * hash) + STREAMING_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getStreaming());
+    }
+    if (hasPushNotifications()) {
+      hash = (37 * hash) + PUSH_NOTIFICATIONS_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getPushNotifications());
+    }
     if (getExtensionsCount() > 0) {
       hash = (37 * hash) + EXTENSIONS_FIELD_NUMBER;
       hash = (53 * hash) + getExtensionsList().hashCode();
     }
-    hash = (37 * hash) + STATE_TRANSITION_HISTORY_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getStateTransitionHistory());
+    if (hasStateTransitionHistory()) {
+      hash = (37 * hash) + STATE_TRANSITION_HISTORY_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getStateTransitionHistory());
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -353,7 +405,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:AgentCapabilities]
-   * Defines the A2A feature set supported by the agent
+   * Defines optional capabilities supported by an agent.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.AgentCapabilities}
@@ -445,15 +497,20 @@ private static final long serialVersionUID = 0L;
 
     private void buildPartial0(io.a2a.grpc.AgentCapabilities result) {
       int from_bitField0_ = bitField0_;
+      int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.streaming_ = streaming_;
+        to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.pushNotifications_ = pushNotifications_;
+        to_bitField0_ |= 0x00000002;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.stateTransitionHistory_ = stateTransitionHistory_;
+        to_bitField0_ |= 0x00000004;
       }
+      result.bitField0_ |= to_bitField0_;
     }
 
     @java.lang.Override
@@ -468,10 +525,10 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(io.a2a.grpc.AgentCapabilities other) {
       if (other == io.a2a.grpc.AgentCapabilities.getDefaultInstance()) return this;
-      if (other.getStreaming() != false) {
+      if (other.hasStreaming()) {
         setStreaming(other.getStreaming());
       }
-      if (other.getPushNotifications() != false) {
+      if (other.hasPushNotifications()) {
         setPushNotifications(other.getPushNotifications());
       }
       if (extensionsBuilder_ == null) {
@@ -500,7 +557,7 @@ private static final long serialVersionUID = 0L;
           }
         }
       }
-      if (other.getStateTransitionHistory() != false) {
+      if (other.hasStateTransitionHistory()) {
         setStateTransitionHistory(other.getStateTransitionHistory());
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -577,10 +634,22 @@ private static final long serialVersionUID = 0L;
     private boolean streaming_ ;
     /**
      * <pre>
-     * If the agent will support streaming responses
+     * Indicates if the agent supports streaming responses.
      * </pre>
      *
-     * <code>bool streaming = 1;</code>
+     * <code>optional bool streaming = 1;</code>
+     * @return Whether the streaming field is set.
+     */
+    @java.lang.Override
+    public boolean hasStreaming() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <pre>
+     * Indicates if the agent supports streaming responses.
+     * </pre>
+     *
+     * <code>optional bool streaming = 1;</code>
      * @return The streaming.
      */
     @java.lang.Override
@@ -589,10 +658,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If the agent will support streaming responses
+     * Indicates if the agent supports streaming responses.
      * </pre>
      *
-     * <code>bool streaming = 1;</code>
+     * <code>optional bool streaming = 1;</code>
      * @param value The streaming to set.
      * @return This builder for chaining.
      */
@@ -605,10 +674,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If the agent will support streaming responses
+     * Indicates if the agent supports streaming responses.
      * </pre>
      *
-     * <code>bool streaming = 1;</code>
+     * <code>optional bool streaming = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearStreaming() {
@@ -621,10 +690,22 @@ private static final long serialVersionUID = 0L;
     private boolean pushNotifications_ ;
     /**
      * <pre>
-     * If the agent can send push notifications to the clients webhook
+     * Indicates if the agent supports sending push notifications for asynchronous task updates.
      * </pre>
      *
-     * <code>bool push_notifications = 2;</code>
+     * <code>optional bool push_notifications = 2;</code>
+     * @return Whether the pushNotifications field is set.
+     */
+    @java.lang.Override
+    public boolean hasPushNotifications() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <pre>
+     * Indicates if the agent supports sending push notifications for asynchronous task updates.
+     * </pre>
+     *
+     * <code>optional bool push_notifications = 2;</code>
      * @return The pushNotifications.
      */
     @java.lang.Override
@@ -633,10 +714,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If the agent can send push notifications to the clients webhook
+     * Indicates if the agent supports sending push notifications for asynchronous task updates.
      * </pre>
      *
-     * <code>bool push_notifications = 2;</code>
+     * <code>optional bool push_notifications = 2;</code>
      * @param value The pushNotifications to set.
      * @return This builder for chaining.
      */
@@ -649,10 +730,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If the agent can send push notifications to the clients webhook
+     * Indicates if the agent supports sending push notifications for asynchronous task updates.
      * </pre>
      *
-     * <code>bool push_notifications = 2;</code>
+     * <code>optional bool push_notifications = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearPushNotifications() {
@@ -676,7 +757,7 @@ private static final long serialVersionUID = 0L;
 
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -690,7 +771,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -704,7 +785,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -718,7 +799,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -739,7 +820,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -757,7 +838,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -777,7 +858,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -798,7 +879,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -816,7 +897,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -834,7 +915,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -853,7 +934,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -870,7 +951,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -887,7 +968,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -898,7 +979,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -912,7 +993,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -927,7 +1008,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -938,7 +1019,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -950,7 +1031,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Extensions supported by this agent.
+     * A list of protocol extensions supported by the agent.
      * </pre>
      *
      * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -977,10 +1058,22 @@ private static final long serialVersionUID = 0L;
     private boolean stateTransitionHistory_ ;
     /**
      * <pre>
-     * If the agent provides a history of state transitions for a task.
+     * Indicates if the agent provides a history of state transitions for a task.
      * </pre>
      *
-     * <code>bool state_transition_history = 4;</code>
+     * <code>optional bool state_transition_history = 4;</code>
+     * @return Whether the stateTransitionHistory field is set.
+     */
+    @java.lang.Override
+    public boolean hasStateTransitionHistory() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <pre>
+     * Indicates if the agent provides a history of state transitions for a task.
+     * </pre>
+     *
+     * <code>optional bool state_transition_history = 4;</code>
      * @return The stateTransitionHistory.
      */
     @java.lang.Override
@@ -989,10 +1082,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If the agent provides a history of state transitions for a task.
+     * Indicates if the agent provides a history of state transitions for a task.
      * </pre>
      *
-     * <code>bool state_transition_history = 4;</code>
+     * <code>optional bool state_transition_history = 4;</code>
      * @param value The stateTransitionHistory to set.
      * @return This builder for chaining.
      */
@@ -1005,10 +1098,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If the agent provides a history of state transitions for a task.
+     * Indicates if the agent provides a history of state transitions for a task.
      * </pre>
      *
-     * <code>bool state_transition_history = 4;</code>
+     * <code>optional bool state_transition_history = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearStateTransitionHistory() {

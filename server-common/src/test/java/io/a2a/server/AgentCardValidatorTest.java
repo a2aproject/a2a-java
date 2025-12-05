@@ -24,7 +24,8 @@ public class AgentCardValidatorTest {
         return new AgentCard.Builder()
                 .name("Test Agent")
                 .description("Test Description")
-                .url("http://localhost:9999")
+                .supportedInterfaces(Collections.singletonList(
+                        new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
                 .version("1.0.0")
                 .capabilities(new AgentCapabilities.Builder().build())
                 .defaultInputModes(Collections.singletonList("text"))
@@ -49,8 +50,7 @@ public class AgentCardValidatorTest {
     void testValidationWithMultipleTransports() {
         // Create AgentCard that specifies multiple transports
         AgentCard agentCard = createTestAgentCardBuilder()
-                .preferredTransport(TransportProtocol.JSONRPC.asString())
-                .additionalInterfaces(List.of(
+                .supportedInterfaces(List.of(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999"),
                         new AgentInterface(TransportProtocol.GRPC.asString(), "http://localhost:9000")
                 ))
@@ -68,7 +68,7 @@ public class AgentCardValidatorTest {
     void testLogWarningWhenExtraTransportsFound() {
         // Create an AgentCard with only JSONRPC
         AgentCard agentCard = createTestAgentCardBuilder()
-                .preferredTransport(TransportProtocol.JSONRPC.asString())
+                .supportedInterfaces(Collections.singletonList(new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
                 .build();
 
         // Define available transports (more than in AgentCard)
@@ -126,7 +126,7 @@ public class AgentCardValidatorTest {
         System.setProperty(AgentCardValidator.SKIP_JSONRPC_PROPERTY, "true");
         try {
             AgentCard agentCard = createTestAgentCardBuilder()
-                    .preferredTransport(TransportProtocol.JSONRPC.asString())
+                    .supportedInterfaces(Collections.singletonList(new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
                     .build();
 
             Set<String> availableTransports = Set.of(TransportProtocol.GRPC.asString());
@@ -142,7 +142,7 @@ public class AgentCardValidatorTest {
         System.setProperty(AgentCardValidator.SKIP_GRPC_PROPERTY, "true");
         try {
             AgentCard agentCard = createTestAgentCardBuilder()
-                    .preferredTransport(TransportProtocol.GRPC.asString())
+                    .supportedInterfaces(Collections.singletonList(new AgentInterface(TransportProtocol.GRPC.asString(), "http://localhost:9000")))
                     .build();
 
             Set<String> availableTransports = Set.of(TransportProtocol.JSONRPC.asString());
@@ -158,7 +158,7 @@ public class AgentCardValidatorTest {
         System.setProperty(AgentCardValidator.SKIP_REST_PROPERTY, "true");
         try {
             AgentCard agentCard = createTestAgentCardBuilder()
-                    .additionalInterfaces(List.of(
+                    .supportedInterfaces(List.of(
                             new AgentInterface(TransportProtocol.HTTP_JSON.asString(), "http://localhost:8080")
                     ))
                     .build();
@@ -176,8 +176,8 @@ public class AgentCardValidatorTest {
         System.setProperty(AgentCardValidator.SKIP_GRPC_PROPERTY, "true");
         try {
             AgentCard agentCard = createTestAgentCardBuilder()
-                    .preferredTransport(TransportProtocol.JSONRPC.asString())
-                    .additionalInterfaces(List.of(
+                    .supportedInterfaces(List.of(
+                            new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999"),
                             new AgentInterface(TransportProtocol.GRPC.asString(), "http://localhost:9000"),
                             new AgentInterface(TransportProtocol.HTTP_JSON.asString(), "http://localhost:8080")
                     ))
@@ -198,7 +198,7 @@ public class AgentCardValidatorTest {
         System.setProperty(AgentCardValidator.SKIP_GRPC_PROPERTY, "true");
         try {
             AgentCard agentCard = createTestAgentCardBuilder()
-                    .preferredTransport(TransportProtocol.JSONRPC.asString())
+                    .supportedInterfaces(Collections.singletonList(new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
                     .build();
 
             Set<String> availableTransports = Set.of(
@@ -227,37 +227,6 @@ public class AgentCardValidatorTest {
         } finally {
             System.clearProperty(AgentCardValidator.SKIP_GRPC_PROPERTY);
         }
-    }
-
-    @Test
-    void testPrimaryURLMatchesPreferredTransport() {
-        // Create a simple AgentCard (with preferred HTTP_JSON transport even though primary URL points to JSONRPC transport)
-        AgentCard agentCard = createTestAgentCardBuilder()
-                .preferredTransport(TransportProtocol.HTTP_JSON.asString())
-                .additionalInterfaces(List.of(
-                        new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999"),
-                        new AgentInterface(TransportProtocol.GRPC.asString(), "http://localhost:9000"),
-                        new AgentInterface(TransportProtocol.HTTP_JSON.asString(), "http://localhost:8000")
-                ))
-                .build();
-
-        // Define available transports
-        Set<String> availableTransports = Set.of(TransportProtocol.JSONRPC.asString(), TransportProtocol.GRPC.asString(), TransportProtocol.HTTP_JSON.asString());
-
-        // Capture logs
-        Logger logger = Logger.getLogger(AgentCardValidator.class.getName());
-        TestLogHandler testLogHandler = new TestLogHandler();
-        logger.addHandler(testLogHandler);
-
-        try {
-            AgentCardValidator.validateTransportConfiguration(agentCard, availableTransports);
-        } finally {
-            logger.removeHandler(testLogHandler);
-        }
-
-        // Test that the warning was logged
-        assertTrue(testLogHandler.getLogMessages().stream()
-                .anyMatch(msg -> msg.contains("AgentCard's URL=http://localhost:9999 does not correspond to the URL of the preferred transport=http://localhost:8000.")));
     }
 
     // A simple log handler for testing

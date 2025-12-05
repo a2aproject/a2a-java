@@ -25,10 +25,8 @@ public class ReplicationTestAgentCardProducer {
         return new AgentCard.Builder()
                 .name("replication-test-agent")
                 .description("Test agent for replicated queue manager integration testing")
-                .url("http://localhost:8081")
                 .version("1.0.0")
                 .documentationUrl("http://localhost:8081/docs")
-                .preferredTransport(TransportProtocol.JSONRPC.asString())
                 .capabilities(new AgentCapabilities.Builder()
                         .streaming(true)
                         .pushNotifications(true)
@@ -37,7 +35,8 @@ public class ReplicationTestAgentCardProducer {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .additionalInterfaces(List.of(new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:8081")))
+                .supportedInterfaces(List.of(
+                        new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:8081")))
                 .protocolVersion("0.2.5")
                 .build();
     }

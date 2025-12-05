@@ -1,5 +1,6 @@
 package io.a2a.spec;
 
+import static io.a2a.spec.A2AErrorCodes.INVALID_REQUEST_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -38,8 +39,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InvalidRequestError extends JSONRPCError {
 
-    public final static Integer DEFAULT_CODE = -32600;
-
     public InvalidRequestError() {
         this(null, null, null);
     }
@@ -50,7 +49,7 @@ public class InvalidRequestError extends JSONRPCError {
             @JsonProperty("message") String message,
             @JsonProperty("data") Object data) {
         super(
-                defaultIfNull(code, DEFAULT_CODE),
+                defaultIfNull(code, INVALID_REQUEST_ERROR_CODE),
                 defaultIfNull(message, "Request payload validation error"),
                 data);
     }

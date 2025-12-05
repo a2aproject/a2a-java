@@ -15,6 +15,9 @@
 
     <name>Java SDK A2A Spec: gRPC</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - Spec: gRPC</description>
+    <properties>
+        <skip.protobuf.generate>true</skip.protobuf.generate>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -48,12 +51,19 @@
             <artifactId>proto-google-common-protos</artifactId>
         </dependency>
 
+
         <!-- Annotation dependency for generated code -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -69,78 +79,42 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
-        <extensions>
-            <!--
-                Seems to be needed by the protobuf-maven-plugin.
-                Adding these extensions to the profile is not possible
-            -->
-            <extension>
-                <groupId>kr.motd.maven</groupId>
-                <artifactId>os-maven-plugin</artifactId>
-                <version>${os-maven-plugin.version}</version>
-            </extension>
-        </extensions>
+        <plugins>
+            <!-- Protocol Buffers Compiler Plugin -->
+            <plugin>
+                <groupId>io.github.ascopes</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>4.0.2</version>
+                <configuration>
+                    <skip>${skip.protobuf.generate}</skip>
+                    <cleanOutputDirectories>true</cleanOutputDirectories>
+                    <protoc>${protobuf-java.version}</protoc>
+                    <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+                    <binaryMavenPlugins>
+                        <binaryMavenPlugin>
+                            <groupId>io.grpc</groupId>
+                            <artifactId>protoc-gen-grpc-java</artifactId>
+                            <version>${grpc.version}</version>
+                        </binaryMavenPlugin>
+                    </binaryMavenPlugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>proto-compile</id>
-                <build>
-
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-clean-plugin</artifactId>
-                            <version>${maven-clean-plugin.version}</version>
-                            <executions>
-                                <execution>
-                                    <id>remove-generated-files</id>
-                                    <phase>initialize</phase>
-                                    <goals>
-                                        <goal>clean</goal>
-                                    </goals>
-                                    <configuration>
-                                        <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                                        <filesets>
-                                            <fileset>
-                                                <directory>${project.basedir}/src/main/java/io/a2a/grpc</directory>
-                                                <followSymlinks>false</followSymlinks>
-                                                <includes>
-                                                    <include>*.java</include>
-                                                </includes>
-                                            </fileset>
-                                        </filesets>
-                                    </configuration>
-                                </execution>
-                            </executions>
-                        </plugin>
-                        <!-- Protocol Buffers Compiler Plugin -->
-                        <plugin>
-                            <groupId>org.xolstice.maven.plugins</groupId>
-                            <artifactId>protobuf-maven-plugin</artifactId>
-                            <version>${protobuf-maven-plugin.version}</version>
-                            <configuration>
-                                <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
-                                <pluginId>grpc-java</pluginId>
-                                <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
-                                <outputDirectory>src/main/java</outputDirectory>
-                                <clearOutputDirectory>false</clearOutputDirectory>
-                            </configuration>
-                            <executions>
-                                <execution>
-                                    <goals>
-                                        <goal>compile</goal>
-                                        <goal>compile-custom</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                        </plugin>
-                    </plugins>
-                </build>
-
-        </profile>
-    </profiles>
 </project>

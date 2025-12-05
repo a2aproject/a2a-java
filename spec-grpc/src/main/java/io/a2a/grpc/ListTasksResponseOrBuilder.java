@@ -15,7 +15,7 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<io.a2a.grpc.Task> 
       getTasksList();
@@ -24,7 +24,7 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.Task getTasks(int index);
   /**
@@ -32,7 +32,7 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getTasksCount();
   /**
@@ -40,7 +40,7 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<? extends io.a2a.grpc.TaskOrBuilder> 
       getTasksOrBuilderList();
@@ -49,28 +49,26 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1;</code>
+   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.TaskOrBuilder getTasksOrBuilder(
       int index);
 
   /**
    * <pre>
-   * Token for retrieving the next page of results.
-   * Empty string if no more results.
+   * Token for retrieving the next page. Empty string if no more results.
    * </pre>
    *
-   * <code>string next_page_token = 2;</code>
+   * <code>string next_page_token = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The nextPageToken.
    */
   java.lang.String getNextPageToken();
   /**
    * <pre>
-   * Token for retrieving the next page of results.
-   * Empty string if no more results.
+   * Token for retrieving the next page. Empty string if no more results.
    * </pre>
    *
-   * <code>string next_page_token = 2;</code>
+   * <code>string next_page_token = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for nextPageToken.
    */
   com.google.protobuf.ByteString
@@ -78,10 +76,20 @@ public interface ListTasksResponseOrBuilder extends
 
   /**
    * <pre>
+   * The size of page requested.
+   * </pre>
+   *
+   * <code>int32 page_size = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The pageSize.
+   */
+  int getPageSize();
+
+  /**
+   * <pre>
    * Total number of tasks available (before pagination).
    * </pre>
    *
-   * <code>int32 total_size = 3;</code>
+   * <code>int32 total_size = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The totalSize.
    */
   int getTotalSize();

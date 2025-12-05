@@ -54,10 +54,10 @@ private static final long serialVersionUID = 0L;
   private int state_ = 0;
   /**
    * <pre>
-   * The current state of this task
+   * The current state of this task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1;</code>
+   * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The enum numeric value on the wire for state.
    */
   @java.lang.Override public int getStateValue() {
@@ -65,10 +65,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The current state of this task
+   * The current state of this task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1;</code>
+   * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The state.
    */
   @java.lang.Override public io.a2a.grpc.TaskState getState() {
@@ -76,18 +76,18 @@ private static final long serialVersionUID = 0L;
     return result == null ? io.a2a.grpc.TaskState.UNRECOGNIZED : result;
   }
 
-  public static final int UPDATE_FIELD_NUMBER = 2;
-  private io.a2a.grpc.Message update_;
+  public static final int MESSAGE_FIELD_NUMBER = 2;
+  private io.a2a.grpc.Message message_;
   /**
    * <pre>
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
-   * @return Whether the update field is set.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return Whether the message field is set.
    */
   @java.lang.Override
-  public boolean hasUpdate() {
+  public boolean hasMessage() {
     return ((bitField0_ & 0x00000001) != 0);
   }
   /**
@@ -95,30 +95,30 @@ private static final long serialVersionUID = 0L;
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
-   * @return The update.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return The message.
    */
   @java.lang.Override
-  public io.a2a.grpc.Message getUpdate() {
-    return update_ == null ? io.a2a.grpc.Message.getDefaultInstance() : update_;
+  public io.a2a.grpc.Message getMessage() {
+    return message_ == null ? io.a2a.grpc.Message.getDefaultInstance() : message_;
   }
   /**
    * <pre>
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
+   * <code>.a2a.v1.Message message = 2;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.MessageOrBuilder getUpdateOrBuilder() {
-    return update_ == null ? io.a2a.grpc.Message.getDefaultInstance() : update_;
+  public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
+    return message_ == null ? io.a2a.grpc.Message.getDefaultInstance() : message_;
   }
 
   public static final int TIMESTAMP_FIELD_NUMBER = 3;
   private com.google.protobuf.Timestamp timestamp_;
   /**
    * <pre>
-   * Timestamp when the status was recorded.
+   * ISO 8601 Timestamp when the status was recorded.
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
@@ -131,7 +131,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Timestamp when the status was recorded.
+   * ISO 8601 Timestamp when the status was recorded.
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
@@ -144,7 +144,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Timestamp when the status was recorded.
+   * ISO 8601 Timestamp when the status was recorded.
    * Example: "2023-10-27T10:00:00Z"
    * </pre>
    *
@@ -173,7 +173,7 @@ private static final long serialVersionUID = 0L;
       output.writeEnum(1, state_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(2, getUpdate());
+      output.writeMessage(2, getMessage());
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(3, getTimestamp());
@@ -193,7 +193,7 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getUpdate());
+        .computeMessageSize(2, getMessage());
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
@@ -215,10 +215,10 @@ private static final long serialVersionUID = 0L;
     io.a2a.grpc.TaskStatus other = (io.a2a.grpc.TaskStatus) obj;
 
     if (state_ != other.state_) return false;
-    if (hasUpdate() != other.hasUpdate()) return false;
-    if (hasUpdate()) {
-      if (!getUpdate()
-          .equals(other.getUpdate())) return false;
+    if (hasMessage() != other.hasMessage()) return false;
+    if (hasMessage()) {
+      if (!getMessage()
+          .equals(other.getMessage())) return false;
     }
     if (hasTimestamp() != other.hasTimestamp()) return false;
     if (hasTimestamp()) {
@@ -238,9 +238,9 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + STATE_FIELD_NUMBER;
     hash = (53 * hash) + state_;
-    if (hasUpdate()) {
-      hash = (37 * hash) + UPDATE_FIELD_NUMBER;
-      hash = (53 * hash) + getUpdate().hashCode();
+    if (hasMessage()) {
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
     }
     if (hasTimestamp()) {
       hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
@@ -381,7 +381,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
-        internalGetUpdateFieldBuilder();
+        internalGetMessageFieldBuilder();
         internalGetTimestampFieldBuilder();
       }
     }
@@ -390,10 +390,10 @@ private static final long serialVersionUID = 0L;
       super.clear();
       bitField0_ = 0;
       state_ = 0;
-      update_ = null;
-      if (updateBuilder_ != null) {
-        updateBuilder_.dispose();
-        updateBuilder_ = null;
+      message_ = null;
+      if (messageBuilder_ != null) {
+        messageBuilder_.dispose();
+        messageBuilder_ = null;
       }
       timestamp_ = null;
       if (timestampBuilder_ != null) {
@@ -438,9 +438,9 @@ private static final long serialVersionUID = 0L;
       }
       int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.update_ = updateBuilder_ == null
-            ? update_
-            : updateBuilder_.build();
+        result.message_ = messageBuilder_ == null
+            ? message_
+            : messageBuilder_.build();
         to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
@@ -467,8 +467,8 @@ private static final long serialVersionUID = 0L;
       if (other.state_ != 0) {
         setStateValue(other.getStateValue());
       }
-      if (other.hasUpdate()) {
-        mergeUpdate(other.getUpdate());
+      if (other.hasMessage()) {
+        mergeMessage(other.getMessage());
       }
       if (other.hasTimestamp()) {
         mergeTimestamp(other.getTimestamp());
@@ -506,7 +506,7 @@ private static final long serialVersionUID = 0L;
             } // case 8
             case 18: {
               input.readMessage(
-                  internalGetUpdateFieldBuilder().getBuilder(),
+                  internalGetMessageFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000002;
               break;
@@ -538,10 +538,10 @@ private static final long serialVersionUID = 0L;
     private int state_ = 0;
     /**
      * <pre>
-     * The current state of this task
+     * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1;</code>
+     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The enum numeric value on the wire for state.
      */
     @java.lang.Override public int getStateValue() {
@@ -549,10 +549,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current state of this task
+     * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1;</code>
+     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The enum numeric value on the wire for state to set.
      * @return This builder for chaining.
      */
@@ -564,10 +564,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current state of this task
+     * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1;</code>
+     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The state.
      */
     @java.lang.Override
@@ -577,10 +577,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current state of this task
+     * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1;</code>
+     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The state to set.
      * @return This builder for chaining.
      */
@@ -593,10 +593,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current state of this task
+     * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1;</code>
+     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearState() {
@@ -606,18 +606,18 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private io.a2a.grpc.Message update_;
+    private io.a2a.grpc.Message message_;
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> updateBuilder_;
+        io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> messageBuilder_;
     /**
      * <pre>
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
-     * @return Whether the update field is set.
+     * <code>.a2a.v1.Message message = 2;</code>
+     * @return Whether the message field is set.
      */
-    public boolean hasUpdate() {
+    public boolean hasMessage() {
       return ((bitField0_ & 0x00000002) != 0);
     }
     /**
@@ -625,14 +625,14 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
-     * @return The update.
+     * <code>.a2a.v1.Message message = 2;</code>
+     * @return The message.
      */
-    public io.a2a.grpc.Message getUpdate() {
-      if (updateBuilder_ == null) {
-        return update_ == null ? io.a2a.grpc.Message.getDefaultInstance() : update_;
+    public io.a2a.grpc.Message getMessage() {
+      if (messageBuilder_ == null) {
+        return message_ == null ? io.a2a.grpc.Message.getDefaultInstance() : message_;
       } else {
-        return updateBuilder_.getMessage();
+        return messageBuilder_.getMessage();
       }
     }
     /**
@@ -640,16 +640,16 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public Builder setUpdate(io.a2a.grpc.Message value) {
-      if (updateBuilder_ == null) {
+    public Builder setMessage(io.a2a.grpc.Message value) {
+      if (messageBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        update_ = value;
+        message_ = value;
       } else {
-        updateBuilder_.setMessage(value);
+        messageBuilder_.setMessage(value);
       }
       bitField0_ |= 0x00000002;
       onChanged();
@@ -660,14 +660,14 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public Builder setUpdate(
+    public Builder setMessage(
         io.a2a.grpc.Message.Builder builderForValue) {
-      if (updateBuilder_ == null) {
-        update_ = builderForValue.build();
+      if (messageBuilder_ == null) {
+        message_ = builderForValue.build();
       } else {
-        updateBuilder_.setMessage(builderForValue.build());
+        messageBuilder_.setMessage(builderForValue.build());
       }
       bitField0_ |= 0x00000002;
       onChanged();
@@ -678,21 +678,21 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public Builder mergeUpdate(io.a2a.grpc.Message value) {
-      if (updateBuilder_ == null) {
+    public Builder mergeMessage(io.a2a.grpc.Message value) {
+      if (messageBuilder_ == null) {
         if (((bitField0_ & 0x00000002) != 0) &&
-          update_ != null &&
-          update_ != io.a2a.grpc.Message.getDefaultInstance()) {
-          getUpdateBuilder().mergeFrom(value);
+          message_ != null &&
+          message_ != io.a2a.grpc.Message.getDefaultInstance()) {
+          getMessageBuilder().mergeFrom(value);
         } else {
-          update_ = value;
+          message_ = value;
         }
       } else {
-        updateBuilder_.mergeFrom(value);
+        messageBuilder_.mergeFrom(value);
       }
-      if (update_ != null) {
+      if (message_ != null) {
         bitField0_ |= 0x00000002;
         onChanged();
       }
@@ -703,14 +703,14 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public Builder clearUpdate() {
+    public Builder clearMessage() {
       bitField0_ = (bitField0_ & ~0x00000002);
-      update_ = null;
-      if (updateBuilder_ != null) {
-        updateBuilder_.dispose();
-        updateBuilder_ = null;
+      message_ = null;
+      if (messageBuilder_ != null) {
+        messageBuilder_.dispose();
+        messageBuilder_ = null;
       }
       onChanged();
       return this;
@@ -720,26 +720,26 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public io.a2a.grpc.Message.Builder getUpdateBuilder() {
+    public io.a2a.grpc.Message.Builder getMessageBuilder() {
       bitField0_ |= 0x00000002;
       onChanged();
-      return internalGetUpdateFieldBuilder().getBuilder();
+      return internalGetMessageFieldBuilder().getBuilder();
     }
     /**
      * <pre>
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public io.a2a.grpc.MessageOrBuilder getUpdateOrBuilder() {
-      if (updateBuilder_ != null) {
-        return updateBuilder_.getMessageOrBuilder();
+    public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
+      if (messageBuilder_ != null) {
+        return messageBuilder_.getMessageOrBuilder();
       } else {
-        return update_ == null ?
-            io.a2a.grpc.Message.getDefaultInstance() : update_;
+        return message_ == null ?
+            io.a2a.grpc.Message.getDefaultInstance() : message_;
       }
     }
     /**
@@ -747,20 +747,20 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message update = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> 
-        internalGetUpdateFieldBuilder() {
-      if (updateBuilder_ == null) {
-        updateBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+        internalGetMessageFieldBuilder() {
+      if (messageBuilder_ == null) {
+        messageBuilder_ = new com.google.protobuf.SingleFieldBuilder<
             io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder>(
-                getUpdate(),
+                getMessage(),
                 getParentForChildren(),
                 isClean());
-        update_ = null;
+        message_ = null;
       }
-      return updateBuilder_;
+      return messageBuilder_;
     }
 
     private com.google.protobuf.Timestamp timestamp_;
@@ -768,7 +768,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> timestampBuilder_;
     /**
      * <pre>
-     * Timestamp when the status was recorded.
+     * ISO 8601 Timestamp when the status was recorded.
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
@@ -780,7 +780,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Timestamp when the status was recorded.
+     * ISO 8601 Timestamp when the status was recorded.
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
@@ -796,7 +796,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Timestamp when the status was recorded.
+     * ISO 8601 Timestamp when the status was recorded.
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
@@ -817,7 +817,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Timestamp when the status was recorded.
+     * ISO 8601 Timestamp when the status was recorded.
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
@@ -836,7 +836,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Timestamp when the status was recorded.
+     * ISO 8601 Timestamp when the status was recorded.
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
@@ -862,7 +862,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Timestamp when the status was recorded.
+     * ISO 8601 Timestamp when the status was recorded.
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
@@ -880,7 +880,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Timestamp when the status was recorded.
+     * ISO 8601 Timestamp when the status was recorded.
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
@@ -893,7 +893,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Timestamp when the status was recorded.
+     * ISO 8601 Timestamp when the status was recorded.
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *
@@ -909,7 +909,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Timestamp when the status was recorded.
+     * ISO 8601 Timestamp when the status was recorded.
      * Example: "2023-10-27T10:00:00Z"
      * </pre>
      *

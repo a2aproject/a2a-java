@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * The A2A Protocol defines two primary streaming operations:
  * <ul>
  *   <li>{@link SendStreamingMessageRequest} - Stream task execution events in real-time</li>
- *   <li>{@link TaskResubscriptionRequest} - Resubscribe to events from an existing task</li>
+ *   <li>{@link SubscribeToTaskRequest} - Resubscribe to events from an existing task</li>
  * </ul>
  * <p>
  * Streaming requests follow the JSON-RPC 2.0 specification structure but the response
@@ -27,14 +27,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  *
  * @param <T> the type of the params object for this streaming request
  * @see SendStreamingMessageRequest
- * @see TaskResubscriptionRequest
+ * @see SubscribeToTaskRequest
  * @see StreamingEventKind
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(using = StreamingJSONRPCRequestDeserializer.class)
-public abstract sealed class StreamingJSONRPCRequest<T> extends JSONRPCRequest<T> permits TaskResubscriptionRequest,
+public abstract sealed class StreamingJSONRPCRequest<T> extends JSONRPCRequest<T> permits SubscribeToTaskRequest,
         SendStreamingMessageRequest {
 
 }

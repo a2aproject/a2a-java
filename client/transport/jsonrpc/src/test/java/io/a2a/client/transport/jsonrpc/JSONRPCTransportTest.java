@@ -55,7 +55,7 @@ import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
 import io.a2a.spec.Part;
-import io.a2a.spec.PushNotificationAuthenticationInfo;
+import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.SecurityScheme;
 import io.a2a.spec.Task;
@@ -65,6 +65,7 @@ import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.TransportProtocol;
+import io.a2a.util.Utils;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -212,7 +213,7 @@ public class JSONRPCTransportTest {
             client.sendMessage(params, null);
             fail(); // should not reach here
         } catch (A2AClientException e) {
-            assertTrue(e.getMessage().contains("Invalid parameters: Hello world"));
+            assertTrue(e.getMessage().contains("Invalid parameters: \"Hello world\""),e.getMessage());
         }
     }
 
@@ -310,12 +311,12 @@ public class JSONRPCTransportTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
-                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", null,
+                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "c295ea44-7543-4f78-b524-7a38915ad6e4",
                         new HashMap<>()), null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+        AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
         assertTrue(authenticationInfo.schemes().size() == 1);
         assertEquals("jwt", authenticationInfo.schemes().get(0));
     }
@@ -339,14 +340,15 @@ public class JSONRPCTransportTest {
         TaskPushNotificationConfig taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(
                 new TaskPushNotificationConfig("de38c76d-d54c-436c-8b9f-4c2703648d64",
                         new PushNotificationConfig.Builder()
+                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
                                 .url("https://example.com/callback")
-                                .authenticationInfo(new PushNotificationAuthenticationInfo(Collections.singletonList("jwt"),
+                                .authenticationInfo(new AuthenticationInfo(Collections.singletonList("jwt"),
                                         null))
                                 .build()), null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        PushNotificationAuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+        AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
         assertEquals(1, authenticationInfo.schemes().size());
         assertEquals("jwt", authenticationInfo.schemes().get(0));
     }
@@ -369,7 +371,7 @@ public class JSONRPCTransportTest {
         AgentCard agentCard = client.getAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent", agentCard.name());
         assertEquals("Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.", agentCard.description());
-        assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());
+        assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard));
         assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
         assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
         assertEquals("1.2.0", agentCard.version());
@@ -419,8 +421,8 @@ public class JSONRPCTransportTest {
         assertFalse(agentCard.supportsAuthenticatedExtendedCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
         assertEquals("0.2.9", agentCard.protocolVersion());
-        assertEquals("JSONRPC", agentCard.preferredTransport());
-        List<AgentInterface> additionalInterfaces = agentCard.additionalInterfaces();
+        assertEquals("JSONRPC", agentCard.supportedInterfaces().get(0).protocolBinding());
+        List<AgentInterface> additionalInterfaces = agentCard.supportedInterfaces();
         assertEquals(3, additionalInterfaces.size());
         AgentInterface jsonrpc = new AgentInterface(TransportProtocol.JSONRPC.asString(), "https://georoute-agent.example.com/a2a/v1");
         AgentInterface grpc = new AgentInterface(TransportProtocol.GRPC.asString(), "https://georoute-agent.example.com/a2a/grpc");
@@ -458,7 +460,7 @@ public class JSONRPCTransportTest {
         AgentCard agentCard = client.getAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
-        assertEquals("https://georoute-agent.example.com/a2a/v1", agentCard.url());
+        assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard));
         assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
         assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
         assertEquals("1.2.0", agentCard.version());
@@ -562,7 +564,9 @@ public class JSONRPCTransportTest {
         Part<?> part = artifact.parts().get(0);
         assertEquals(Part.Kind.TEXT, part.getKind());
         assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart) part).getText());
-        assertTrue(task.getMetadata().isEmpty());
+        assertFalse(task.getMetadata().isEmpty());
+        assertEquals(1, task.getMetadata().size());
+        assertEquals("metadata-test", task.getMetadata().get("test"));
     }
 
     @Test

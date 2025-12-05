@@ -1,0 +1,26 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package io.a2a.spec;
+
+/**
+ * All the error codes for A2A errors.
+ */
+public interface A2AErrorCodes {
+
+    int TASK_NOT_FOUND_ERROR_CODE = -32001;
+    int TASK_NOT_CANCELABLE_ERROR_CODE = -32002;
+    int PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE = -32003;
+    int UNSUPPORTED_OPERATION_ERROR_CODE = -32004;
+    int CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE = -32005;
+    int INVALID_AGENT_RESPONSE_ERROR_CODE = -32006;
+    int AUTHENTICATED_EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE = -32007;
+
+    int INVALID_REQUEST_ERROR_CODE = -32600;
+    int METHOD_NOT_FOUND_ERROR_CODE = -32601;
+    int INVALID_PARAMS_ERROR_CODE = -32602;
+    int INTERNAL_ERROR_CODE = -32603;
+
+    int JSON_PARSE_ERROR_CODE = -32700;
+}

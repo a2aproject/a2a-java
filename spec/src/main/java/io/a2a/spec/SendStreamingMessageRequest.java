@@ -31,7 +31,7 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<MessageSendParams> {
 
-    public static final String METHOD = "message/stream";
+    public static final String METHOD = "SendStreamingMessage";
 
     @JsonCreator
     public SendStreamingMessageRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
@@ -92,7 +92,7 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
             /**
              * Sets the JSON-RPC method name.
              *
-             * @param method the method name (defaults to "message/stream")
+             * @param method the method name (defaults to "SendStreamingMessage")
              * @return this builder
              */
             public Builder method(String method) {

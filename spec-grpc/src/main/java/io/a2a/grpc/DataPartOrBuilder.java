@@ -11,17 +11,29 @@ public interface DataPartOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.google.protobuf.Struct data = 1;</code>
+   * <pre>
+   * The structured data content.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct data = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the data field is set.
    */
   boolean hasData();
   /**
-   * <code>.google.protobuf.Struct data = 1;</code>
+   * <pre>
+   * The structured data content.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct data = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The data.
    */
   com.google.protobuf.Struct getData();
   /**
-   * <code>.google.protobuf.Struct data = 1;</code>
+   * <pre>
+   * The structured data content.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct data = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   com.google.protobuf.StructOrBuilder getDataOrBuilder();
 }

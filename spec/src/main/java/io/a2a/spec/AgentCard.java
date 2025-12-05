@@ -23,7 +23,6 @@ import io.a2a.util.Assert;
  *
  * @param name the human-readable name of the agent (required)
  * @param description a brief description of the agent's purpose and functionality (required)
- * @param url the base URL where the agent can be accessed (required)
  * @param provider information about the organization or entity providing the agent (optional)
  * @param version the version of the agent implementation (required)
  * @param documentationUrl URL to human-readable documentation for the agent (optional)
@@ -35,8 +34,7 @@ import io.a2a.util.Assert;
  * @param securitySchemes map of security scheme names to their definitions (optional)
  * @param security list of security requirements for accessing the agent (optional)
  * @param iconUrl URL to an icon representing the agent (optional)
- * @param additionalInterfaces list of additional transport interfaces beyond the primary url/transport (optional)
- * @param preferredTransport the preferred transport protocol, e.g., "jsonrpc", "grpc" (defaults to "jsonrpc")
+ * @param supportedInterfaces ordered list of supported interfaces. First entry is preferred. (required)
  * @param protocolVersion the version of the A2A Protocol this agent implements (defaults to {@link #DEFAULT_PROTOCOL_VERSION})
  * @param signatures digital signatures verifying the authenticity of the agent card (optional)
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
@@ -46,7 +44,6 @@ import io.a2a.util.Assert;
 public record AgentCard(
         String name,
         String description,
-        String url,
         AgentProvider provider,
         String version,
         String documentationUrl,
@@ -58,15 +55,12 @@ public record AgentCard(
         Map<String, SecurityScheme> securitySchemes,
         List<Map<String, List<String>>> security,
         String iconUrl,
-        List<AgentInterface> additionalInterfaces,
-        String preferredTransport,
+        List<AgentInterface> supportedInterfaces,
         String protocolVersion,
         List<AgentCardSignature> signatures) {
 
     /** The default A2A Protocol version used when not explicitly specified. */
-    public static final String DEFAULT_PROTOCOL_VERSION = "0.3.0";
-
-    private static final TransportProtocol DEFAULT_TRANSPORT = TransportProtocol.JSONRPC;
+    public static final String DEFAULT_PROTOCOL_VERSION = "1.0.0";
 
     /**
      * Compact constructor that validates required fields and sets defaults.
@@ -80,14 +74,23 @@ public record AgentCard(
         Assert.checkNotNullParam("description", description);
         Assert.checkNotNullParam("name", name);
         Assert.checkNotNullParam("skills", skills);
-        Assert.checkNotNullParam("url", url);
+        Assert.checkNotNullParam("supportedInterfaces", supportedInterfaces);
         Assert.checkNotNullParam("version", version);
+
         if (protocolVersion == null) {
             protocolVersion = DEFAULT_PROTOCOL_VERSION;
         }
-        if (preferredTransport == null) {
-            preferredTransport = DEFAULT_TRANSPORT.asString();
-        }
+    }
+
+    /**
+     * Returns the list of additional interfaces.
+     *
+     * @return the list of supported interfaces
+     * @deprecated Use {@link #supportedInterfaces()} instead. This field has been renamed to 'supportedInterfaces'.
+     */
+    @Deprecated(since = "0.4.0", forRemoval = true)
+    public List<AgentInterface> additionalInterfaces() {
+        return supportedInterfaces;
     }
 
     /**
@@ -103,7 +106,8 @@ public record AgentCard(
      * AgentCard card = new AgentCard.Builder()
      *     .name("Weather Agent")
      *     .description("Provides weather information")
-     *     .url("http://localhost:9999")
+     *     .supportedInterfaces(List.of(
+     *         new AgentInterface("JSONRPC", "http://localhost:9999")))
      *     .version("1.0.0")
      *     .capabilities(new AgentCapabilities.Builder()
      *         .streaming(true)
@@ -122,7 +126,6 @@ public record AgentCard(
     public static class Builder {
         private String name;
         private String description;
-        private String url;
         private AgentProvider provider;
         private String version;
         private String documentationUrl;
@@ -134,8 +137,7 @@ public record AgentCard(
         private Map<String, SecurityScheme> securitySchemes;
         private List<Map<String, List<String>>> security;
         private String iconUrl;
-        private List<AgentInterface> additionalInterfaces;
-        private String preferredTransport;
+        private List<AgentInterface> supportedInterfaces;
         private String protocolVersion;
         private List<AgentCardSignature> signatures;
 
@@ -157,7 +159,6 @@ public record AgentCard(
         public Builder(AgentCard card) {
             this.name = card.name;
             this.description = card.description;
-            this.url = card.url;
             this.provider = card.provider;
             this.version = card.version;
             this.documentationUrl = card.documentationUrl;
@@ -169,8 +170,7 @@ public record AgentCard(
             this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
             this.security = card.security != null ? new ArrayList<>(card.security) : null;
             this.iconUrl = card.iconUrl;
-            this.additionalInterfaces = card.additionalInterfaces != null ? new ArrayList<>(card.additionalInterfaces) : null;
-            this.preferredTransport = card.preferredTransport;
+            this.supportedInterfaces = card.supportedInterfaces != null ? new ArrayList<>(card.supportedInterfaces) : null;
             this.protocolVersion = card.protocolVersion;
             this.signatures = card.signatures != null ? new ArrayList<>(card.signatures) : null;
         }
@@ -197,16 +197,6 @@ public record AgentCard(
             return this;
         }
 
-        /**
-         * Sets the base URL where the agent can be accessed.
-         *
-         * @param url the agent URL (required)
-         * @return this builder for method chaining
-         */
-        public Builder url(String url) {
-            this.url = url;
-            return this;
-        }
 
         /**
          * Sets information about the organization or entity providing the agent.
@@ -353,6 +343,20 @@ public record AgentCard(
         }
 
         /**
+         * Sets the ordered list of supported interfaces (first entry is preferred).
+         * <p>
+         * Each interface defines a combination of protocol binding and URL for accessing the agent.
+         *
+         * @param supportedInterfaces the ordered list of supported interfaces (optional)
+         * @return this builder for method chaining
+         * @see AgentInterface
+         */
+        public Builder supportedInterfaces(List<AgentInterface> supportedInterfaces) {
+            this.supportedInterfaces = supportedInterfaces;
+            return this;
+        }
+
+        /**
          * Sets the list of additional transport interfaces.
          * <p>
          * Additional interfaces allow the agent to be accessed through multiple
@@ -361,25 +365,14 @@ public record AgentCard(
          * @param additionalInterfaces the list of additional interfaces (optional)
          * @return this builder for method chaining
          * @see AgentInterface
+         * @deprecated Use {@link #supportedInterfaces(List)} instead. This field has been renamed to 'supportedInterfaces'.
          */
+        @Deprecated(since = "0.4.0", forRemoval = true)
         public Builder additionalInterfaces(List<AgentInterface> additionalInterfaces) {
-            this.additionalInterfaces = additionalInterfaces;
+            this.supportedInterfaces = additionalInterfaces;
             return this;
         }
 
-        /**
-         * Sets the preferred transport protocol.
-         * <p>
-         * Valid values include "jsonrpc", "grpc", and "rest". If not set, defaults to "jsonrpc".
-         *
-         * @param preferredTransport the preferred transport protocol name
-         * @return this builder for method chaining
-         * @see TransportProtocol
-         */
-        public Builder preferredTransport(String preferredTransport) {
-            this.preferredTransport = preferredTransport;
-            return this;
-        }
 
         /**
          * Sets the version of the A2A Protocol this agent implements.
@@ -412,26 +405,16 @@ public record AgentCard(
         /**
          * Builds an immutable {@link AgentCard} from the current builder state.
          * <p>
-         * This method applies default values for optional fields and creates an entry
-         * in additionalInterfaces matching the primary url and preferredTransport if
-         * additionalInterfaces was not explicitly set.
+         * This method applies default values for optional fields.
          *
          * @return a new AgentCard instance
          * @throws IllegalArgumentException if any required field is null
          */
         public AgentCard build() {
-            if (preferredTransport == null) {
-                preferredTransport = DEFAULT_TRANSPORT.asString();
-            }
-            if (additionalInterfaces == null) {
-                // should include an entry matching the main 'url' and 'preferredTransport'
-                additionalInterfaces = new ArrayList<>();
-                additionalInterfaces.add(new AgentInterface(preferredTransport, url));
-            }
-            return new AgentCard(name, description, url, provider, version, documentationUrl,
+            return new AgentCard(name, description, provider, version, documentationUrl,
                     capabilities, defaultInputModes, defaultOutputModes, skills,
                     supportsAuthenticatedExtendedCard, securitySchemes, security, iconUrl,
-                    additionalInterfaces, preferredTransport, protocolVersion, signatures);
+                    supportedInterfaces, protocolVersion, signatures);
         }
     }
 }

@@ -16,36 +16,32 @@ import io.a2a.common.A2AHeaders;
 import io.a2a.grpc.A2AServiceGrpc;
 import io.a2a.grpc.A2AServiceGrpc.A2AServiceBlockingV2Stub;
 import io.a2a.grpc.A2AServiceGrpc.A2AServiceStub;
-import io.a2a.grpc.CancelTaskRequest;
-import io.a2a.grpc.CreateTaskPushNotificationConfigRequest;
-import io.a2a.grpc.DeleteTaskPushNotificationConfigRequest;
-import io.a2a.grpc.GetTaskPushNotificationConfigRequest;
-import io.a2a.grpc.GetTaskRequest;
-import io.a2a.grpc.ListTaskPushNotificationConfigRequest;
-import io.a2a.grpc.ListTasksRequest;
-import io.a2a.grpc.SendMessageRequest;
-import io.a2a.grpc.SendMessageResponse;
-import io.a2a.grpc.StreamResponse;
-import io.a2a.grpc.TaskSubscriptionRequest;
 import io.a2a.grpc.utils.ProtoUtils.FromProto;
 import io.a2a.grpc.utils.ProtoUtils.ToProto;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
+import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
+import io.a2a.spec.GetTaskPushNotificationConfigRequest;
+import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.ListTasksRequest;
 import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.MessageSendParams;
+import io.a2a.spec.SendMessageRequest;
 import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import io.a2a.spec.StreamingEventKind;
+import io.a2a.spec.SubscribeToTaskRequest;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
-import io.a2a.spec.TaskResubscriptionRequest;
 import io.grpc.Channel;
 import io.grpc.Metadata;
 import io.grpc.StatusException;
@@ -84,13 +80,13 @@ public class GrpcTransport implements ClientTransport {
     public EventKind sendMessage(MessageSendParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(request, context);
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.SendMessageRequest.METHOD, sendMessageRequest,
+        io.a2a.grpc.SendMessageRequest sendMessageRequest = createGrpcSendMessageRequest(request, context);
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(SendMessageRequest.METHOD, sendMessageRequest,
                 agentCard, context);
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            SendMessageResponse response = stubWithMetadata.sendMessage(sendMessageRequest);
+            io.a2a.grpc.SendMessageResponse response = stubWithMetadata.sendMessage(sendMessageRequest);
             if (response.hasMsg()) {
                 return FromProto.message(response.getMsg());
             } else if (response.hasTask()) {
@@ -108,10 +104,10 @@ public class GrpcTransport implements ClientTransport {
                                      Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
-        SendMessageRequest grpcRequest = createGrpcSendMessageRequest(request, context);
+        io.a2a.grpc.SendMessageRequest grpcRequest = createGrpcSendMessageRequest(request, context);
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SendStreamingMessageRequest.METHOD,
                 grpcRequest, agentCard, context);
-        StreamObserver<StreamResponse> streamObserver = new EventStreamObserver(eventConsumer, errorConsumer);
+        StreamObserver<io.a2a.grpc.StreamResponse> streamObserver = new EventStreamObserver(eventConsumer, errorConsumer);
 
         try {
             A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
@@ -125,11 +121,11 @@ public class GrpcTransport implements ClientTransport {
     public Task getTask(TaskQueryParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        GetTaskRequest.Builder requestBuilder = GetTaskRequest.newBuilder();
+        io.a2a.grpc.GetTaskRequest.Builder requestBuilder = io.a2a.grpc.GetTaskRequest.newBuilder();
         requestBuilder.setName("tasks/" + request.id());
         requestBuilder.setHistoryLength(request.historyLength());
-        GetTaskRequest getTaskRequest = requestBuilder.build();
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskRequest.METHOD, getTaskRequest,
+        io.a2a.grpc.GetTaskRequest getTaskRequest = requestBuilder.build();
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetTaskRequest.METHOD, getTaskRequest,
                 agentCard, context);
 
         try {
@@ -144,10 +140,10 @@ public class GrpcTransport implements ClientTransport {
     public Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        CancelTaskRequest cancelTaskRequest = CancelTaskRequest.newBuilder()
+        io.a2a.grpc.CancelTaskRequest cancelTaskRequest = io.a2a.grpc.CancelTaskRequest.newBuilder()
                 .setName("tasks/" + request.id())
                 .build();
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.CancelTaskRequest.METHOD, cancelTaskRequest,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(CancelTaskRequest.METHOD, cancelTaskRequest,
                 agentCard, context);
 
         try {
@@ -162,35 +158,37 @@ public class GrpcTransport implements ClientTransport {
     public ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        ListTasksRequest.Builder requestBuilder = ListTasksRequest.newBuilder();
+        io.a2a.grpc.ListTasksRequest.Builder builder = io.a2a.grpc.ListTasksRequest.newBuilder();
         if (request.contextId() != null) {
-            requestBuilder.setContextId(request.contextId());
+            builder.setContextId(request.contextId());
         }
         if (request.status() != null) {
-            requestBuilder.setStatus(ToProto.taskState(request.status()));
+            builder.setStatus(ToProto.taskState(request.status()));
         }
         if (request.pageSize() != null) {
-            requestBuilder.setPageSize(request.pageSize());
+            builder.setPageSize(request.pageSize());
         }
         if (request.pageToken() != null) {
-            requestBuilder.setPageToken(request.pageToken());
+            builder.setPageToken(request.pageToken());
         }
         if (request.historyLength() != null) {
-            requestBuilder.setHistoryLength(request.historyLength());
+            builder.setHistoryLength(request.historyLength());
         }
-        if (request.includeArtifacts() != null && request.includeArtifacts()) {
-            requestBuilder.setIncludeArtifacts(true);
+        if (request.lastUpdatedAfter() != null) {
+            builder.setLastUpdatedAfter(request.lastUpdatedAfter().toEpochMilli());
         }
-
-        ListTasksRequest listTasksRequest = requestBuilder.build();
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.ListTasksRequest.METHOD, listTasksRequest,
+        if (request.includeArtifacts() != null) {
+            builder.setIncludeArtifacts(request.includeArtifacts());
+        }
+        io.a2a.grpc.ListTasksRequest listTasksRequest = builder.build();
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(ListTasksRequest.METHOD, listTasksRequest,
                 agentCard, context);
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             io.a2a.grpc.ListTasksResponse grpcResponse = stubWithMetadata.listTasks(listTasksRequest);
 
-            return new io.a2a.spec.ListTasksResult(
+            return new ListTasksResult(
                     grpcResponse.getTasksList().stream()
                             .map(FromProto::task)
                             .collect(Collectors.toList()),
@@ -209,7 +207,7 @@ public class GrpcTransport implements ClientTransport {
         checkNotNullParam("request", request);
 
         String configId = request.pushNotificationConfig().id();
-        CreateTaskPushNotificationConfigRequest grpcRequest = CreateTaskPushNotificationConfigRequest.newBuilder()
+        io.a2a.grpc.SetTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder()
                 .setParent("tasks/" + request.taskId())
                 .setConfig(ToProto.taskPushNotificationConfig(request))
                 .setConfigId(configId != null ? configId : request.taskId())
@@ -219,8 +217,8 @@ public class GrpcTransport implements ClientTransport {
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.taskPushNotificationConfig(stubWithMetadata.createTaskPushNotificationConfig(grpcRequest));
-        } catch (StatusRuntimeException | StatusException e) {
+            return FromProto.taskPushNotificationConfig(stubWithMetadata.setTaskPushNotificationConfig(grpcRequest));
+        } catch (StatusRuntimeException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to create task push notification config: ");
         }
     }
@@ -231,10 +229,10 @@ public class GrpcTransport implements ClientTransport {
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        GetTaskPushNotificationConfigRequest grpcRequest = GetTaskPushNotificationConfigRequest.newBuilder()
+        io.a2a.grpc.GetTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder()
                 .setName(getTaskPushNotificationConfigName(request))
                 .build();
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskPushNotificationConfigRequest.METHOD,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetTaskPushNotificationConfigRequest.METHOD,
                 grpcRequest, agentCard, context);
 
         try {
@@ -251,10 +249,10 @@ public class GrpcTransport implements ClientTransport {
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        ListTaskPushNotificationConfigRequest grpcRequest = ListTaskPushNotificationConfigRequest.newBuilder()
+        io.a2a.grpc.ListTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder()
                 .setParent("tasks/" + request.id())
                 .build();
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.ListTaskPushNotificationConfigRequest.METHOD,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(ListTaskPushNotificationConfigRequest.METHOD,
                 grpcRequest, agentCard, context);
 
         try {
@@ -272,10 +270,10 @@ public class GrpcTransport implements ClientTransport {
                                                          @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        DeleteTaskPushNotificationConfigRequest grpcRequest = DeleteTaskPushNotificationConfigRequest.newBuilder()
+        io.a2a.grpc.DeleteTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder()
                 .setName(getTaskPushNotificationConfigName(request.id(), request.pushNotificationConfigId()))
                 .build();
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.DeleteTaskPushNotificationConfigRequest.METHOD,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(DeleteTaskPushNotificationConfigRequest.METHOD,
                 grpcRequest, agentCard, context);
 
         try {
@@ -292,17 +290,17 @@ public class GrpcTransport implements ClientTransport {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);
 
-        TaskSubscriptionRequest grpcRequest = TaskSubscriptionRequest.newBuilder()
+        io.a2a.grpc.SubscribeToTaskRequest grpcRequest = io.a2a.grpc.SubscribeToTaskRequest.newBuilder()
                 .setName("tasks/" + request.id())
                 .build();
-        PayloadAndHeaders payloadAndHeaders = applyInterceptors(TaskResubscriptionRequest.METHOD,
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(SubscribeToTaskRequest.METHOD,
                 grpcRequest, agentCard, context);
 
-        StreamObserver<StreamResponse> streamObserver = new EventStreamObserver(eventConsumer, errorConsumer);
+        StreamObserver<io.a2a.grpc.StreamResponse> streamObserver = new EventStreamObserver(eventConsumer, errorConsumer);
 
         try {
             A2AServiceStub stubWithMetadata = createAsyncStubWithMetadata(context, payloadAndHeaders);
-            stubWithMetadata.taskSubscription(grpcRequest, streamObserver);
+            stubWithMetadata.subscribeToTask(grpcRequest, streamObserver);
         } catch (StatusRuntimeException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to resubscribe task push notification config: ");
         }
@@ -318,16 +316,8 @@ public class GrpcTransport implements ClientTransport {
     public void close() {
     }
 
-    private SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams, @Nullable ClientCallContext context) {
-        SendMessageRequest.Builder builder = SendMessageRequest.newBuilder();
-        builder.setRequest(ToProto.message(messageSendParams.message()));
-        if (messageSendParams.configuration() != null) {
-            builder.setConfiguration(ToProto.messageSendConfiguration(messageSendParams.configuration()));
-        }
-        if (messageSendParams.metadata() != null) {
-            builder.setMetadata(ToProto.struct(messageSendParams.metadata()));
-        }
-        return builder.build();
+    private io.a2a.grpc.SendMessageRequest createGrpcSendMessageRequest(MessageSendParams messageSendParams, @Nullable ClientCallContext context) {
+        return ToProto.sendMessageRequest(messageSendParams);
     }
 
     /**

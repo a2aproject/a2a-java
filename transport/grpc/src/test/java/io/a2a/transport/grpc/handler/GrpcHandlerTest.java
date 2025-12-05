@@ -12,7 +12,6 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.Struct;
 import io.a2a.grpc.AuthenticationInfo;
 import io.a2a.grpc.CancelTaskRequest;
-import io.a2a.grpc.CreateTaskPushNotificationConfigRequest;
 import io.a2a.grpc.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskRequest;
@@ -24,12 +23,13 @@ import io.a2a.grpc.PushNotificationConfig;
 import io.a2a.grpc.Role;
 import io.a2a.grpc.SendMessageRequest;
 import io.a2a.grpc.SendMessageResponse;
+import io.a2a.grpc.SetTaskPushNotificationConfigRequest;
 import io.a2a.grpc.StreamResponse;
 import io.a2a.grpc.Task;
 import io.a2a.grpc.TaskPushNotificationConfig;
 import io.a2a.grpc.TaskState;
 import io.a2a.grpc.TaskStatus;
-import io.a2a.grpc.TaskSubscriptionRequest;
+import io.a2a.grpc.SubscribeToTaskRequest;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.requesthandlers.AbstractA2ARequestHandlerTest;
@@ -492,11 +492,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnResubscribeNoExistingTaskError() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
-        TaskSubscriptionRequest request = TaskSubscriptionRequest.newBuilder()
+        SubscribeToTaskRequest request = SubscribeToTaskRequest.newBuilder()
                 .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId())
                 .build();
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
-        handler.taskSubscription(request, streamRecorder);
+        handler.subscribeToTask(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         assertGrpcError(streamRecorder, Status.Code.NOT_FOUND);
     }
@@ -512,10 +512,10 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
-        TaskSubscriptionRequest request = TaskSubscriptionRequest.newBuilder()
+        SubscribeToTaskRequest request = SubscribeToTaskRequest.newBuilder()
                 .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId())
                 .build();
-        handler.taskSubscription(request, streamRecorder);
+        handler.subscribeToTask(request, streamRecorder);
 
         // We need to send some events in order for those to end up in the queue
         SendMessageRequest sendMessageRequest = SendMessageRequest.newBuilder()
@@ -558,14 +558,14 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                         .build());
 
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
-        TaskSubscriptionRequest request = TaskSubscriptionRequest.newBuilder()
+        SubscribeToTaskRequest request = SubscribeToTaskRequest.newBuilder()
                 .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId())
                 .build();
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
                     Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();})){
-            handler.taskSubscription(request, streamRecorder);
+            handler.subscribeToTask(request, streamRecorder);
             streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         }
         List<StreamResponse> result = streamRecorder.getValues();
@@ -593,11 +593,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         // This test does not exist in the Python implementation
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
-        TaskSubscriptionRequest request = TaskSubscriptionRequest.newBuilder()
+        SubscribeToTaskRequest request = SubscribeToTaskRequest.newBuilder()
                 .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId())
                 .build();
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
-        handler.taskSubscription(request, streamRecorder);
+        handler.subscribeToTask(request, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
     }
@@ -822,17 +822,20 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK);
         PushNotificationConfig config = PushNotificationConfig.newBuilder()
                 .setUrl("http://example.com")
+                .setId("config456")
                 .build();
         TaskPushNotificationConfig taskPushNotificationConfig = TaskPushNotificationConfig.newBuilder()
                 .setName(name)
                 .setPushNotificationConfig(config)
                 .build();
-        CreateTaskPushNotificationConfigRequest setRequest = CreateTaskPushNotificationConfigRequest.newBuilder()
+        SetTaskPushNotificationConfigRequest setRequest = SetTaskPushNotificationConfigRequest.newBuilder()
                 .setConfig(taskPushNotificationConfig)
+                .setConfigId("config456")
+                .setParent("tasks/" + MINIMAL_TASK.getId())
                 .build();
 
         StreamRecorder<TaskPushNotificationConfig> streamRecorder = StreamRecorder.create();
-        handler.createTaskPushNotificationConfig(setRequest, streamRecorder);
+        handler.setTaskPushNotificationConfig(setRequest, streamRecorder);
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         return streamRecorder;
     }

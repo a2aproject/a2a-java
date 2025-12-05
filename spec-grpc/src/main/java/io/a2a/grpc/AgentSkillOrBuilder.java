@@ -12,19 +12,19 @@ public interface AgentSkillOrBuilder extends
 
   /**
    * <pre>
-   * Unique identifier of the skill within this agent.
+   * A unique identifier for the agent's skill.
    * </pre>
    *
-   * <code>string id = 1;</code>
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   java.lang.String getId();
   /**
    * <pre>
-   * Unique identifier of the skill within this agent.
+   * A unique identifier for the agent's skill.
    * </pre>
    *
-   * <code>string id = 1;</code>
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   com.google.protobuf.ByteString
@@ -32,19 +32,19 @@ public interface AgentSkillOrBuilder extends
 
   /**
    * <pre>
-   * A human readable name for the skill.
+   * A human-readable name for the skill.
    * </pre>
    *
-   * <code>string name = 2;</code>
+   * <code>string name = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The name.
    */
   java.lang.String getName();
   /**
    * <pre>
-   * A human readable name for the skill.
+   * A human-readable name for the skill.
    * </pre>
    *
-   * <code>string name = 2;</code>
+   * <code>string name = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString
@@ -52,21 +52,19 @@ public interface AgentSkillOrBuilder extends
 
   /**
    * <pre>
-   * A human (or llm) readable description of the skill
-   * details and behaviors.
+   * A detailed description of the skill.
    * </pre>
    *
-   * <code>string description = 3;</code>
+   * <code>string description = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The description.
    */
   java.lang.String getDescription();
   /**
    * <pre>
-   * A human (or llm) readable description of the skill
-   * details and behaviors.
+   * A detailed description of the skill.
    * </pre>
    *
-   * <code>string description = 3;</code>
+   * <code>string description = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -74,43 +72,39 @@ public interface AgentSkillOrBuilder extends
 
   /**
    * <pre>
-   * A set of tags for the skill to enhance categorization/utilization.
-   * Example: ["cooking", "customer support", "billing"]
+   * A set of keywords describing the skill's capabilities.
    * </pre>
    *
-   * <code>repeated string tags = 4;</code>
+   * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return A list containing the tags.
    */
   java.util.List<java.lang.String>
       getTagsList();
   /**
    * <pre>
-   * A set of tags for the skill to enhance categorization/utilization.
-   * Example: ["cooking", "customer support", "billing"]
+   * A set of keywords describing the skill's capabilities.
    * </pre>
    *
-   * <code>repeated string tags = 4;</code>
+   * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The count of tags.
    */
   int getTagsCount();
   /**
    * <pre>
-   * A set of tags for the skill to enhance categorization/utilization.
-   * Example: ["cooking", "customer support", "billing"]
+   * A set of keywords describing the skill's capabilities.
    * </pre>
    *
-   * <code>repeated string tags = 4;</code>
+   * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the element to return.
    * @return The tags at the given index.
    */
   java.lang.String getTags(int index);
   /**
    * <pre>
-   * A set of tags for the skill to enhance categorization/utilization.
-   * Example: ["cooking", "customer support", "billing"]
+   * A set of keywords describing the skill's capabilities.
    * </pre>
    *
-   * <code>repeated string tags = 4;</code>
+   * <code>repeated string tags = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @param index The index of the value to return.
    * @return The bytes of the tags at the given index.
    */
@@ -119,10 +113,7 @@ public interface AgentSkillOrBuilder extends
 
   /**
    * <pre>
-   * A set of example queries that this skill is designed to address.
-   * These examples should help the caller to understand how to craft requests
-   * to the agent to achieve specific goals.
-   * Example: ["I need a recipe for bread"]
+   * Example prompts or scenarios that this skill can handle.
    * </pre>
    *
    * <code>repeated string examples = 5;</code>
@@ -132,10 +123,7 @@ public interface AgentSkillOrBuilder extends
       getExamplesList();
   /**
    * <pre>
-   * A set of example queries that this skill is designed to address.
-   * These examples should help the caller to understand how to craft requests
-   * to the agent to achieve specific goals.
-   * Example: ["I need a recipe for bread"]
+   * Example prompts or scenarios that this skill can handle.
    * </pre>
    *
    * <code>repeated string examples = 5;</code>
@@ -144,10 +132,7 @@ public interface AgentSkillOrBuilder extends
   int getExamplesCount();
   /**
    * <pre>
-   * A set of example queries that this skill is designed to address.
-   * These examples should help the caller to understand how to craft requests
-   * to the agent to achieve specific goals.
-   * Example: ["I need a recipe for bread"]
+   * Example prompts or scenarios that this skill can handle.
    * </pre>
    *
    * <code>repeated string examples = 5;</code>
@@ -157,10 +142,7 @@ public interface AgentSkillOrBuilder extends
   java.lang.String getExamples(int index);
   /**
    * <pre>
-   * A set of example queries that this skill is designed to address.
-   * These examples should help the caller to understand how to craft requests
-   * to the agent to achieve specific goals.
-   * Example: ["I need a recipe for bread"]
+   * Example prompts or scenarios that this skill can handle.
    * </pre>
    *
    * <code>repeated string examples = 5;</code>
@@ -172,7 +154,7 @@ public interface AgentSkillOrBuilder extends
 
   /**
    * <pre>
-   * Possible input modalities supported.
+   * The set of supported input media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string input_modes = 6;</code>
@@ -182,7 +164,7 @@ public interface AgentSkillOrBuilder extends
       getInputModesList();
   /**
    * <pre>
-   * Possible input modalities supported.
+   * The set of supported input media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string input_modes = 6;</code>
@@ -191,7 +173,7 @@ public interface AgentSkillOrBuilder extends
   int getInputModesCount();
   /**
    * <pre>
-   * Possible input modalities supported.
+   * The set of supported input media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string input_modes = 6;</code>
@@ -201,7 +183,7 @@ public interface AgentSkillOrBuilder extends
   java.lang.String getInputModes(int index);
   /**
    * <pre>
-   * Possible input modalities supported.
+   * The set of supported input media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string input_modes = 6;</code>
@@ -213,7 +195,7 @@ public interface AgentSkillOrBuilder extends
 
   /**
    * <pre>
-   * Possible output modalities produced
+   * The set of supported output media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string output_modes = 7;</code>
@@ -223,7 +205,7 @@ public interface AgentSkillOrBuilder extends
       getOutputModesList();
   /**
    * <pre>
-   * Possible output modalities produced
+   * The set of supported output media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string output_modes = 7;</code>
@@ -232,7 +214,7 @@ public interface AgentSkillOrBuilder extends
   int getOutputModesCount();
   /**
    * <pre>
-   * Possible output modalities produced
+   * The set of supported output media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string output_modes = 7;</code>
@@ -242,7 +224,7 @@ public interface AgentSkillOrBuilder extends
   java.lang.String getOutputModes(int index);
   /**
    * <pre>
-   * Possible output modalities produced
+   * The set of supported output media types for this skill, overriding the agent's defaults.
    * </pre>
    *
    * <code>repeated string output_modes = 7;</code>
@@ -255,10 +237,7 @@ public interface AgentSkillOrBuilder extends
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -268,10 +247,7 @@ public interface AgentSkillOrBuilder extends
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -280,10 +256,7 @@ public interface AgentSkillOrBuilder extends
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -292,10 +265,7 @@ public interface AgentSkillOrBuilder extends
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>
@@ -305,10 +275,7 @@ public interface AgentSkillOrBuilder extends
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * Security schemes necessary for the agent to leverage this skill.
-   * As in the overall AgentCard.security, this list represents a logical OR of
-   * security requirement objects. Each object is a set of security schemes
-   * that must be used together (a logical AND).
+   * Security schemes necessary for this skill.
    * </pre>
    *
    * <code>repeated .a2a.v1.Security security = 8;</code>

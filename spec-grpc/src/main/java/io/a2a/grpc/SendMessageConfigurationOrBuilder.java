@@ -80,21 +80,26 @@ public interface SendMessageConfigurationOrBuilder extends
 
   /**
    * <pre>
-   * The maximum number of messages to include in the history. if 0, the
-   * history will be unlimited.
+   * The maximum number of messages to include in the history.
    * </pre>
    *
-   * <code>int32 history_length = 3;</code>
+   * <code>optional int32 history_length = 3;</code>
+   * @return Whether the historyLength field is set.
+   */
+  boolean hasHistoryLength();
+  /**
+   * <pre>
+   * The maximum number of messages to include in the history.
+   * </pre>
+   *
+   * <code>optional int32 history_length = 3;</code>
    * @return The historyLength.
    */
   int getHistoryLength();
 
   /**
    * <pre>
-   * If true, the message will be blocking until the task is completed. If
-   * false, the message will be non-blocking and the task will be returned
-   * immediately. It is the caller's responsibility to check for any task
-   * updates.
+   * If true, the message will be blocking until the task is completed.
    * </pre>
    *
    * <code>bool blocking = 4;</code>

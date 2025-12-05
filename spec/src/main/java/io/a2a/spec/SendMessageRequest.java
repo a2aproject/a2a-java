@@ -40,15 +40,15 @@ import io.a2a.util.Assert;
 public final class SendMessageRequest extends NonStreamingJSONRPCRequest<MessageSendParams> {
 
     /**
-     * The JSON-RPC method name for sending a message: "message/send".
+     * The JSON-RPC method name for sending a message: "SendMessage".
      */
-    public static final String METHOD = "message/send";
+    public static final String METHOD = "SendMessage";
 
     /**
      * Constructs a SendMessageRequest with the specified JSON-RPC fields.
      * <p>
      * This constructor is used by Jackson for JSON deserialization and validates
-     * that the method name is exactly "message/send".
+     * that the method name is exactly "SendMessage".
      *
      * @param jsonrpc the JSON-RPC version (must be "2.0")
      * @param id the request correlation identifier (String, Integer, or null)

@@ -12,27 +12,45 @@ public interface AgentCapabilitiesOrBuilder extends
 
   /**
    * <pre>
-   * If the agent will support streaming responses
+   * Indicates if the agent supports streaming responses.
    * </pre>
    *
-   * <code>bool streaming = 1;</code>
+   * <code>optional bool streaming = 1;</code>
+   * @return Whether the streaming field is set.
+   */
+  boolean hasStreaming();
+  /**
+   * <pre>
+   * Indicates if the agent supports streaming responses.
+   * </pre>
+   *
+   * <code>optional bool streaming = 1;</code>
    * @return The streaming.
    */
   boolean getStreaming();
 
   /**
    * <pre>
-   * If the agent can send push notifications to the clients webhook
+   * Indicates if the agent supports sending push notifications for asynchronous task updates.
    * </pre>
    *
-   * <code>bool push_notifications = 2;</code>
+   * <code>optional bool push_notifications = 2;</code>
+   * @return Whether the pushNotifications field is set.
+   */
+  boolean hasPushNotifications();
+  /**
+   * <pre>
+   * Indicates if the agent supports sending push notifications for asynchronous task updates.
+   * </pre>
+   *
+   * <code>optional bool push_notifications = 2;</code>
    * @return The pushNotifications.
    */
   boolean getPushNotifications();
 
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -41,7 +59,7 @@ public interface AgentCapabilitiesOrBuilder extends
       getExtensionsList();
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -49,7 +67,7 @@ public interface AgentCapabilitiesOrBuilder extends
   io.a2a.grpc.AgentExtension getExtensions(int index);
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -57,7 +75,7 @@ public interface AgentCapabilitiesOrBuilder extends
   int getExtensionsCount();
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -66,7 +84,7 @@ public interface AgentCapabilitiesOrBuilder extends
       getExtensionsOrBuilderList();
   /**
    * <pre>
-   * Extensions supported by this agent.
+   * A list of protocol extensions supported by the agent.
    * </pre>
    *
    * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
@@ -76,10 +94,19 @@ public interface AgentCapabilitiesOrBuilder extends
 
   /**
    * <pre>
-   * If the agent provides a history of state transitions for a task.
+   * Indicates if the agent provides a history of state transitions for a task.
    * </pre>
    *
-   * <code>bool state_transition_history = 4;</code>
+   * <code>optional bool state_transition_history = 4;</code>
+   * @return Whether the stateTransitionHistory field is set.
+   */
+  boolean hasStateTransitionHistory();
+  /**
+   * <pre>
+   * Indicates if the agent provides a history of state transitions for a task.
+   * </pre>
+   *
+   * <code>optional bool state_transition_history = 4;</code>
    * @return The stateTransitionHistory.
    */
   boolean getStateTransitionHistory();

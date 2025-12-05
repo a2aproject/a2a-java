@@ -1,6 +1,9 @@
 package io.a2a.server.tasks;
 
+import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
+import static io.a2a.client.http.A2AHttpClient.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -158,7 +161,12 @@ public class PushNotificationSenderTest {
         // Verify that no authentication header was sent (invalid token should not add header)
         assertEquals(1, testHttpClient.headers.size());
         Map<String, String> sentHeaders = testHttpClient.headers.get(0);
-        assertTrue(sentHeaders.isEmpty(), "No headers should be sent when token is invalid");
+        assertEquals(1, sentHeaders.size());
+        assertFalse(sentHeaders.containsKey(A2AHeaders.X_A2A_NOTIFICATION_TOKEN),
+                "X-A2A-Notification-Token header should not be sent when token is invalid");
+        // Content-Type header should always be present
+        assertTrue(sentHeaders.containsKey(CONTENT_TYPE));
+        assertEquals(APPLICATION_JSON, sentHeaders.get(CONTENT_TYPE));
     }
 
     private Task createSampleTask(String taskId, TaskState state) {
@@ -227,8 +235,13 @@ public class PushNotificationSenderTest {
         // Verify that the X-A2A-Notification-Token header is sent with the correct token
         assertEquals(1, testHttpClient.headers.size());
         Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertEquals(2, sentHeaders.size());
         assertTrue(sentHeaders.containsKey(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
         assertEquals(config.token(), sentHeaders.get(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        // Content-Type header should always be present
+        assertTrue(sentHeaders.containsKey(CONTENT_TYPE));
+        assertEquals(APPLICATION_JSON, sentHeaders.get(CONTENT_TYPE));
+
     }
 
     @Test
@@ -290,10 +303,10 @@ public class PushNotificationSenderTest {
         String taskId = "task_send_http_err";
         Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/http_error", "cfg1", null);
-        
+
         // Set up the configuration in the store
         configStore.setInfo(taskId, config);
-        
+
         // Configure the test client to throw an exception
         testHttpClient.shouldThrowException = true;
 

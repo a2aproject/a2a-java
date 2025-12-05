@@ -28,5 +28,6 @@ public record TaskPushNotificationConfig(String taskId, PushNotificationConfig p
     public TaskPushNotificationConfig {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("pushNotificationConfig", pushNotificationConfig);
+        Assert.checkNotNullParam("configId", pushNotificationConfig.id());
     }
 }

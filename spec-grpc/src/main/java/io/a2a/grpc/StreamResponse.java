@@ -7,16 +7,8 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:SendStreamingMessageSuccessResponse]
- * The stream response for a message. The stream should be one of the following
- * sequences:
- * If the response is a message, the stream should contain one, and only one,
- * message and then close
- * If the response is a task lifecycle, the first response should be a Task
- * object followed by zero or more TaskStatusUpdateEvents and
- * TaskArtifactUpdateEvents. The stream should complete when the Task
- * if in an interrupted or terminal state. A stream that ends before these
- * conditions are met are
+ * --8&lt;-- [start:StreamResponse]
+ * Response message containing task updates or messages.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.StreamResponse}
@@ -443,16 +435,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:SendStreamingMessageSuccessResponse]
-   * The stream response for a message. The stream should be one of the following
-   * sequences:
-   * If the response is a message, the stream should contain one, and only one,
-   * message and then close
-   * If the response is a task lifecycle, the first response should be a Task
-   * object followed by zero or more TaskStatusUpdateEvents and
-   * TaskArtifactUpdateEvents. The stream should complete when the Task
-   * if in an interrupted or terminal state. A stream that ends before these
-   * conditions are met are
+   * --8&lt;-- [start:StreamResponse]
+   * Response message containing task updates or messages.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.StreamResponse}

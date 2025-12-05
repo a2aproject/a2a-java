@@ -1,5 +1,6 @@
 package io.a2a.spec;
 
+import static io.a2a.spec.A2AErrorCodes.AUTHENTICATED_EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -36,15 +37,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthenticatedExtendedCardNotConfiguredError extends JSONRPCError {
 
-    public final static Integer DEFAULT_CODE = -32007;
-
     @JsonCreator
     public AuthenticatedExtendedCardNotConfiguredError(
             @JsonProperty("code") Integer code,
             @JsonProperty("message") String message,
             @JsonProperty("data") Object data) {
         super(
-                defaultIfNull(code, DEFAULT_CODE),
+                defaultIfNull(code, AUTHENTICATED_EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE),
                 defaultIfNull(message, "Authenticated Extended Card not configured"),
                 data);
     }

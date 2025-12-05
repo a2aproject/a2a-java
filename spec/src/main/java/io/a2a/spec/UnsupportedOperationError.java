@@ -1,5 +1,6 @@
 package io.a2a.spec;
 
+import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -39,15 +40,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UnsupportedOperationError extends JSONRPCError {
 
-    public final static Integer DEFAULT_CODE = -32004;
-
     @JsonCreator
     public UnsupportedOperationError(
             @JsonProperty("code") Integer code,
             @JsonProperty("message") String message,
             @JsonProperty("data") Object data) {
         super(
-                defaultIfNull(code, DEFAULT_CODE),
+                defaultIfNull(code, UNSUPPORTED_OPERATION_ERROR_CODE),
                 defaultIfNull(message, "This operation is not supported"),
                 data);
     }

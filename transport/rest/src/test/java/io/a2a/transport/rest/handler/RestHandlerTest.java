@@ -221,8 +221,9 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             {
               "parent": "tasks/%s",
               "config": {
-                "name": "tasks/%s/pushNotificationConfigs/",
+                "name": "tasks/%s/pushNotificationConfigs/default-config-id",
                 "pushNotificationConfig": {
+                  "id":"default-config-id",
                   "url": "https://example.com/callback",
                   "authentication": {
                     "schemes": ["jwt"]
@@ -268,8 +269,9 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             {
               "parent": "tasks/%s",
               "config": {
-                "name": "tasks/%s/pushNotificationConfigs/",
+                "name": "tasks/%s/pushNotificationConfigs/default-config-id",
                 "pushNotificationConfig": {
+                  "id":"default-config-id",
                   "url": "https://example.com/callback",
                   "authentication": {
                     "schemes": ["jwt"]

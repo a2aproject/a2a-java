@@ -12,21 +12,19 @@ public interface ImplicitOAuthFlowOrBuilder extends
 
   /**
    * <pre>
-   * The authorization URL to be used for this flow. This MUST be in the
-   * form of a URL. The OAuth2 standard requires the use of TLS
+   * The authorization URL to be used for this flow.
    * </pre>
    *
-   * <code>string authorization_url = 1;</code>
+   * <code>string authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The authorizationUrl.
    */
   java.lang.String getAuthorizationUrl();
   /**
    * <pre>
-   * The authorization URL to be used for this flow. This MUST be in the
-   * form of a URL. The OAuth2 standard requires the use of TLS
+   * The authorization URL to be used for this flow.
    * </pre>
    *
-   * <code>string authorization_url = 1;</code>
+   * <code>string authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for authorizationUrl.
    */
   com.google.protobuf.ByteString
@@ -34,8 +32,7 @@ public interface ImplicitOAuthFlowOrBuilder extends
 
   /**
    * <pre>
-   * The URL to be used for obtaining refresh tokens. This MUST be in the
-   * form of a URL. The OAuth2 standard requires the use of TLS.
+   * The URL to be used for obtaining refresh tokens.
    * </pre>
    *
    * <code>string refresh_url = 2;</code>
@@ -44,8 +41,7 @@ public interface ImplicitOAuthFlowOrBuilder extends
   java.lang.String getRefreshUrl();
   /**
    * <pre>
-   * The URL to be used for obtaining refresh tokens. This MUST be in the
-   * form of a URL. The OAuth2 standard requires the use of TLS.
+   * The URL to be used for obtaining refresh tokens.
    * </pre>
    *
    * <code>string refresh_url = 2;</code>
@@ -56,20 +52,18 @@ public interface ImplicitOAuthFlowOrBuilder extends
 
   /**
    * <pre>
-   * The available scopes for the OAuth2 security scheme. A map between the
-   * scope name and a short description for it. The map MAY be empty.
+   * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3;</code>
+   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getScopesCount();
   /**
    * <pre>
-   * The available scopes for the OAuth2 security scheme. A map between the
-   * scope name and a short description for it. The map MAY be empty.
+   * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3;</code>
+   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   boolean containsScopes(
       java.lang.String key);
@@ -81,21 +75,19 @@ public interface ImplicitOAuthFlowOrBuilder extends
   getScopes();
   /**
    * <pre>
-   * The available scopes for the OAuth2 security scheme. A map between the
-   * scope name and a short description for it. The map MAY be empty.
+   * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3;</code>
+   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.Map<java.lang.String, java.lang.String>
   getScopesMap();
   /**
    * <pre>
-   * The available scopes for the OAuth2 security scheme. A map between the
-   * scope name and a short description for it. The map MAY be empty.
+   * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3;</code>
+   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   /* nullable */
 java.lang.String getScopesOrDefault(
@@ -104,11 +96,10 @@ java.lang.String getScopesOrDefault(
 java.lang.String defaultValue);
   /**
    * <pre>
-   * The available scopes for the OAuth2 security scheme. A map between the
-   * scope name and a short description for it. The map MAY be empty.
+   * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3;</code>
+   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.lang.String getScopesOrThrow(
       java.lang.String key);

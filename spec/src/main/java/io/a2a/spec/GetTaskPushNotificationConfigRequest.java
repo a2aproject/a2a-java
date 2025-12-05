@@ -26,7 +26,7 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<GetTaskPushNotificationConfigParams> {
 
-    public static final String METHOD = "tasks/pushNotificationConfig/get";
+    public static final String METHOD = "GetTaskPushNotificationConfig";
 
     @JsonCreator
     public GetTaskPushNotificationConfigRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,

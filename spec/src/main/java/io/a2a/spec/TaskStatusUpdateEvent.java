@@ -79,6 +79,15 @@ public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKin
         return kind;
     }
 
+    /**
+     * Creates a new Builder for constructing TaskStatusUpdateEvent instances.
+     *
+     * @return a new TaskStatusUpdateEvent.Builder instance
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private String taskId;
         private TaskStatus status;

@@ -9,12 +9,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 
 import jakarta.enterprise.inject.Instance;
 
 import io.a2a.server.ServerCallContext;
+import io.a2a.spec.AgentCapabilities;
+import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
+import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.CancelTaskResponse;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
@@ -24,6 +29,7 @@ import io.a2a.spec.GetAuthenticatedExtendedCardResponse;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetTaskRequest;
+import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.GetTaskResponse;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigResponse;
@@ -33,7 +39,11 @@ import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SendStreamingMessageResponse;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigResponse;
-import io.a2a.spec.TaskResubscriptionRequest;
+import io.a2a.spec.SubscribeToTaskRequest;
+import io.a2a.spec.Task;
+import io.a2a.spec.TaskPushNotificationConfig;
+import io.a2a.spec.TaskState;
+import io.a2a.spec.TaskStatus;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
@@ -95,35 +105,42 @@ public class A2AServerRoutesTest {
 
     @Test
     public void testSendMessage_MethodNameSetInContext() {
-        // Arrange - using valid JSON from JsonMessages test file
+        // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "message/send",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "SendMessage",
              "params": {
               "message": {
-               "role": "user",
+               "messageId": "message-1234",
+               "contextId": "context-1234",
+               "role": "ROLE_USER",
                "parts": [
                 {
-                 "kind": "text",
                  "text": "tell me a joke"
                 }
                ],
-               "messageId": "message-1234",
-               "contextId": "context-1234",
-               "kind": "message"
+               "metadata": {}
               },
               "configuration": {
                 "acceptedOutputModes": ["text"],
-                "blocking": true
-              }
+                 "blocking": true
+              },
+              "metadata": {}
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        SendMessageResponse mockResponse = mock(SendMessageResponse.class);
+        // Create a real response with a Task
+        Task responseTask = new Task.Builder()
+                .id("task-123")
+                .contextId("context-1234")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        SendMessageResponse realResponse = new SendMessageResponse("1", responseTask);
         when(mockJsonRpcHandler.onMessageSend(any(SendMessageRequest.class), any(ServerCallContext.class)))
-                .thenReturn(mockResponse);
+                .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -139,28 +156,29 @@ public class A2AServerRoutesTest {
 
     @Test
     public void testSendStreamingMessage_MethodNameSetInContext() {
-        // Arrange - using the same valid format as testSendMessage
+        // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "message/stream",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "SendStreamingMessage",
              "params": {
               "message": {
-               "role": "user",
+               "messageId": "message-1234",
+               "contextId": "context-1234",
+               "role": "ROLE_USER",
                "parts": [
                 {
-                 "kind": "text",
                  "text": "tell me a joke"
                 }
                ],
-               "messageId": "message-1234",
-               "contextId": "context-1234",
-               "kind": "message"
+               "metadata": {}
               },
               "configuration": {
                 "acceptedOutputModes": ["text"],
                 "blocking": true
-              }
+              },
+              "metadata": {}
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
@@ -185,21 +203,28 @@ public class A2AServerRoutesTest {
 
     @Test
     public void testGetTask_MethodNameSetInContext() {
-        // Arrange - based on GET_TASK_TEST_REQUEST from JsonMessages
+        // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/get",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "GetTask",
              "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
               "historyLength": 10
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        GetTaskResponse mockResponse = mock(GetTaskResponse.class);
+        // Create a real response with a Task
+        Task responseTask = new Task.Builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .contextId("context-1234")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
         when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
-                .thenReturn(mockResponse);
+                .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -215,21 +240,27 @@ public class A2AServerRoutesTest {
 
     @Test
     public void testCancelTask_MethodNameSetInContext() {
-        // Arrange - based on CANCEL_TASK_TEST_REQUEST from JsonMessages
+        // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/cancel",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "CancelTask",
              "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "metadata": {}
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        CancelTaskResponse mockResponse = mock(CancelTaskResponse.class);
+        // Create a real response with a Task
+        Task responseTask = new Task.Builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .contextId("context-1234")
+                .status(new TaskStatus(TaskState.CANCELED))
+                .build();
+        CancelTaskResponse realResponse = new CancelTaskResponse("1", responseTask);
         when(mockJsonRpcHandler.onCancelTask(any(CancelTaskRequest.class), any(ServerCallContext.class)))
-                .thenReturn(mockResponse);
+                .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -245,20 +276,21 @@ public class A2AServerRoutesTest {
 
     @Test
     public void testTaskResubscription_MethodNameSetInContext() {
-        // Arrange - minimal valid JSON for task resubscription
+        // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/resubscribe",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "SubscribeToTask",
              "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64"
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         @SuppressWarnings("unchecked")
         Flow.Publisher<SendStreamingMessageResponse> mockPublisher = mock(Flow.Publisher.class);
-        when(mockJsonRpcHandler.onResubscribeToTask(any(TaskResubscriptionRequest.class),
+        when(mockJsonRpcHandler.onSubscribeToTask(any(SubscribeToTaskRequest.class),
                 any(ServerCallContext.class))).thenReturn(mockPublisher);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -267,35 +299,49 @@ public class A2AServerRoutesTest {
         routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
 
         // Assert
-        verify(mockJsonRpcHandler).onResubscribeToTask(any(TaskResubscriptionRequest.class),
+        verify(mockJsonRpcHandler).onSubscribeToTask(any(SubscribeToTaskRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
-        assertEquals(TaskResubscriptionRequest.METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        assertEquals(SubscribeToTaskRequest.METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
     }
 
     @Test
     public void testSetTaskPushNotificationConfig_MethodNameSetInContext() {
-        // Arrange - based on SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST from JsonMessages
+        // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/pushNotificationConfig/set",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "SetTaskPushNotificationConfig",
              "params": {
-              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "pushNotificationConfig": {
-               "url": "https://example.com/callback",
-               "authentication": {
-                "schemes": ["jwt"]
+              "parent": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "configId": "config-123",
+              "config": {
+               "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/config-123",
+               "pushNotificationConfig": {
+                "url": "https://example.com/callback",
+                "authentication": {
+                 "schemes": ["jwt"]
+                }
                }
               }
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        SetTaskPushNotificationConfigResponse mockResponse = mock(SetTaskPushNotificationConfigResponse.class);
+        // Create a real response with a TaskPushNotificationConfig
+        TaskPushNotificationConfig responseConfig = new TaskPushNotificationConfig(
+                "de38c76d-d54c-436c-8b9f-4c2703648d64",
+                new PushNotificationConfig.Builder()
+                        .id("config-123")
+                        .url("https://example.com/callback")
+                        .authenticationInfo(new AuthenticationInfo(Collections.singletonList("jwt"), null))
+                        .build()
+        );
+        SetTaskPushNotificationConfigResponse realResponse = new SetTaskPushNotificationConfigResponse("1", responseConfig);
         when(mockJsonRpcHandler.setPushNotificationConfig(any(SetTaskPushNotificationConfigRequest.class),
-                any(ServerCallContext.class))).thenReturn(mockResponse);
+                any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -312,21 +358,29 @@ public class A2AServerRoutesTest {
 
     @Test
     public void testGetTaskPushNotificationConfig_MethodNameSetInContext() {
-        // Arrange - based on GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST from JsonMessages
+        // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/pushNotificationConfig/get",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "GetTaskPushNotificationConfig",
              "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "metadata": {}
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/config-456"
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        GetTaskPushNotificationConfigResponse mockResponse = mock(GetTaskPushNotificationConfigResponse.class);
+        // Create a real response with a TaskPushNotificationConfig
+        TaskPushNotificationConfig responseConfig = new TaskPushNotificationConfig(
+                "de38c76d-d54c-436c-8b9f-4c2703648d64",
+                new PushNotificationConfig.Builder()
+                        .id("config-456")
+                        .url("https://example.com/callback")
+                        .build()
+        );
+        GetTaskPushNotificationConfigResponse realResponse = new GetTaskPushNotificationConfigResponse("1", responseConfig);
         when(mockJsonRpcHandler.getPushNotificationConfig(any(GetTaskPushNotificationConfigRequest.class),
-                any(ServerCallContext.class))).thenReturn(mockResponse);
+                any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -343,20 +397,29 @@ public class A2AServerRoutesTest {
 
     @Test
     public void testListTaskPushNotificationConfig_MethodNameSetInContext() {
-        // Arrange - minimal valid JSON for list task push notification config
+        // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/pushNotificationConfig/list",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "ListTaskPushNotificationConfig",
              "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64"
+              "parent": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        ListTaskPushNotificationConfigResponse mockResponse = mock(ListTaskPushNotificationConfigResponse.class);
+        // Create a real response with a list of TaskPushNotificationConfig
+        TaskPushNotificationConfig config = new TaskPushNotificationConfig(
+                "de38c76d-d54c-436c-8b9f-4c2703648d64",
+                new PushNotificationConfig.Builder()
+                        .id("config-123")
+                        .url("https://example.com/callback")
+                        .build()
+        );
+        ListTaskPushNotificationConfigResponse realResponse = new ListTaskPushNotificationConfigResponse("1", Collections.singletonList(config));
         when(mockJsonRpcHandler.listPushNotificationConfig(any(ListTaskPushNotificationConfigRequest.class),
-                any(ServerCallContext.class))).thenReturn(mockResponse);
+                any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -373,21 +436,22 @@ public class A2AServerRoutesTest {
 
     @Test
     public void testDeleteTaskPushNotificationConfig_MethodNameSetInContext() {
-        // Arrange - minimal valid JSON for delete task push notification config
+        // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
-             "method": "tasks/pushNotificationConfig/delete",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "DeleteTaskPushNotificationConfig",
              "params": {
-              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "pushNotificationConfigId": "config-456"
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/config-456"
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        DeleteTaskPushNotificationConfigResponse mockResponse = mock(DeleteTaskPushNotificationConfigResponse.class);
+        // Create a real response with id
+        DeleteTaskPushNotificationConfigResponse realResponse = new DeleteTaskPushNotificationConfigResponse("1");
         when(mockJsonRpcHandler.deletePushNotificationConfig(any(DeleteTaskPushNotificationConfigRequest.class),
-                any(ServerCallContext.class))).thenReturn(mockResponse);
+                any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -405,14 +469,26 @@ public class A2AServerRoutesTest {
     @Test
     public void testGetAuthenticatedExtendedCard_MethodNameSetInContext() {
         // Arrange
-        String jsonRpcRequest = "{\"jsonrpc\":\"2.0\",\"method\":\"" + GetAuthenticatedExtendedCardRequest.METHOD
+        String jsonRpcRequest = "{\"jsonrpc\":\"2.0\",\"id\":\"5\",\"method\":\"" + GetAuthenticatedExtendedCardRequest.METHOD
                 + "\",\"id\":1}";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
-        GetAuthenticatedExtendedCardResponse mockResponse = mock(GetAuthenticatedExtendedCardResponse.class);
+        // Create a real response with an AgentCard
+        AgentCard agentCard = new AgentCard.Builder()
+                .name("Test Agent")
+                .description("Test agent description")
+                .version("1.0.0")
+                .protocolVersion("1.0.0")
+                .capabilities(new AgentCapabilities.Builder().build())
+                .defaultInputModes(Collections.singletonList("text"))
+                .defaultOutputModes(Collections.singletonList("text"))
+                .skills(Collections.emptyList())
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
+                .build();
+        GetAuthenticatedExtendedCardResponse realResponse = new GetAuthenticatedExtendedCardResponse(1, agentCard);
         when(mockJsonRpcHandler.onGetAuthenticatedExtendedCardRequest(
                 any(GetAuthenticatedExtendedCardRequest.class), any(ServerCallContext.class)))
-                .thenReturn(mockResponse);
+                .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 

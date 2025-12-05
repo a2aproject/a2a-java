@@ -1,5 +1,7 @@
 package io.a2a.spec;
 
+import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -34,8 +36,6 @@ import static io.a2a.util.Utils.defaultIfNull;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JSONParseError extends JSONRPCError implements A2AError {
 
-    public final static Integer DEFAULT_CODE = -32700;
-
     public JSONParseError() {
         this(null, null, null);
     }
@@ -50,7 +50,7 @@ public class JSONParseError extends JSONRPCError implements A2AError {
             @JsonProperty("message") String message,
             @JsonProperty("data") Object data) {
         super(
-                defaultIfNull(code, DEFAULT_CODE),
+                defaultIfNull(code, JSON_PARSE_ERROR_CODE),
                 defaultIfNull(message, "Invalid JSON payload"),
                 data);
     }

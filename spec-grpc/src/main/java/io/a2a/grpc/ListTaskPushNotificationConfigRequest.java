@@ -102,9 +102,7 @@ private static final long serialVersionUID = 0L;
   private int pageSize_ = 0;
   /**
    * <pre>
-   * For AIP-158 these fields are present. Usually not used/needed.
    * The maximum number of configurations to return.
-   * If unspecified, all configs will be returned.
    * </pre>
    *
    * <code>int32 page_size = 2;</code>
@@ -120,12 +118,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object pageToken_ = "";
   /**
    * <pre>
-   * A page token received from a previous
-   * ListTaskPushNotificationConfigRequest call.
-   * Provide this to retrieve the subsequent page.
-   * When paginating, all other parameters provided to
-   * `ListTaskPushNotificationConfigRequest` must match the call that provided
-   * the page token.
+   * A page token received from a previous ListTaskPushNotificationConfigRequest call.
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -146,12 +139,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A page token received from a previous
-   * ListTaskPushNotificationConfigRequest call.
-   * Provide this to retrieve the subsequent page.
-   * When paginating, all other parameters provided to
-   * `ListTaskPushNotificationConfigRequest` must match the call that provided
-   * the page token.
+   * A page token received from a previous ListTaskPushNotificationConfigRequest call.
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -617,9 +605,7 @@ private static final long serialVersionUID = 0L;
     private int pageSize_ ;
     /**
      * <pre>
-     * For AIP-158 these fields are present. Usually not used/needed.
      * The maximum number of configurations to return.
-     * If unspecified, all configs will be returned.
      * </pre>
      *
      * <code>int32 page_size = 2;</code>
@@ -631,9 +617,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * For AIP-158 these fields are present. Usually not used/needed.
      * The maximum number of configurations to return.
-     * If unspecified, all configs will be returned.
      * </pre>
      *
      * <code>int32 page_size = 2;</code>
@@ -649,9 +633,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * For AIP-158 these fields are present. Usually not used/needed.
      * The maximum number of configurations to return.
-     * If unspecified, all configs will be returned.
      * </pre>
      *
      * <code>int32 page_size = 2;</code>
@@ -667,12 +649,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object pageToken_ = "";
     /**
      * <pre>
-     * A page token received from a previous
-     * ListTaskPushNotificationConfigRequest call.
-     * Provide this to retrieve the subsequent page.
-     * When paginating, all other parameters provided to
-     * `ListTaskPushNotificationConfigRequest` must match the call that provided
-     * the page token.
+     * A page token received from a previous ListTaskPushNotificationConfigRequest call.
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -692,12 +669,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A page token received from a previous
-     * ListTaskPushNotificationConfigRequest call.
-     * Provide this to retrieve the subsequent page.
-     * When paginating, all other parameters provided to
-     * `ListTaskPushNotificationConfigRequest` must match the call that provided
-     * the page token.
+     * A page token received from a previous ListTaskPushNotificationConfigRequest call.
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -718,12 +690,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A page token received from a previous
-     * ListTaskPushNotificationConfigRequest call.
-     * Provide this to retrieve the subsequent page.
-     * When paginating, all other parameters provided to
-     * `ListTaskPushNotificationConfigRequest` must match the call that provided
-     * the page token.
+     * A page token received from a previous ListTaskPushNotificationConfigRequest call.
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -740,12 +707,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A page token received from a previous
-     * ListTaskPushNotificationConfigRequest call.
-     * Provide this to retrieve the subsequent page.
-     * When paginating, all other parameters provided to
-     * `ListTaskPushNotificationConfigRequest` must match the call that provided
-     * the page token.
+     * A page token received from a previous ListTaskPushNotificationConfigRequest call.
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -759,12 +721,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A page token received from a previous
-     * ListTaskPushNotificationConfigRequest call.
-     * Provide this to retrieve the subsequent page.
-     * When paginating, all other parameters provided to
-     * `ListTaskPushNotificationConfigRequest` must match the call that provided
-     * the page token.
+     * A page token received from a previous ListTaskPushNotificationConfigRequest call.
      * </pre>
      *
      * <code>string page_token = 3;</code>

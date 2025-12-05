@@ -1,5 +1,7 @@
 package io.a2a.server.tasks;
 
+import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
+import static io.a2a.client.http.A2AHttpClient.CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -50,6 +52,7 @@ class InMemoryPushNotificationConfigStoreTest {
     private void setupBasicMockHttpResponse() throws Exception {
         when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
         when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.addHeader(CONTENT_TYPE, APPLICATION_JSON)).thenReturn(mockPostBuilder);
         when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
         when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
         when(mockHttpResponse.success()).thenReturn(true);
@@ -230,11 +233,7 @@ class InMemoryPushNotificationConfigStoreTest {
         configStore.setInfo(taskId, config);
 
         // Mock successful HTTP response
-        when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.url(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.body(any(String.class))).thenReturn(mockPostBuilder);
-        when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
-        when(mockHttpResponse.success()).thenReturn(true);
+        setupBasicMockHttpResponse();
 
         notificationSender.sendNotification(task);
 
