@@ -1,0 +1,4 @@
+org.springframework.a2a.server.autoconfigure.JsonRpcAutoConfiguration
+org.springframework.a2a.server.autoconfigure.A2AServerHandler
+org.springframework.a2a.server.autoconfigure.A2AServerRouter
+org.springframework.a2a.server.autoconfigure.SecurityConfiguration
