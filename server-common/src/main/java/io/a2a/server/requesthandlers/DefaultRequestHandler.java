@@ -11,13 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -122,7 +120,6 @@ import org.slf4j.LoggerFactory;
  *   <li>{@link EventConsumer} polls and processes events on Vert.x worker thread</li>
  *   <li>Queue closes automatically on final event (COMPLETED/FAILED/CANCELED)</li>
  *   <li>Cleanup waits for both agent execution AND event consumption to complete</li>
- *   <li>Background tasks tracked via {@link #trackBackgroundTask(CompletableFuture)}</li>
  * </ul>
  *
  * <h2>Threading Model</h2>
@@ -217,7 +214,6 @@ public class DefaultRequestHandler implements RequestHandler {
     private Supplier<RequestContext.Builder> requestContextBuilder;
 
     private final ConcurrentMap<String, CompletableFuture<Void>> runningAgents = new ConcurrentHashMap<>();
-    private final Set<CompletableFuture<Void>> backgroundTasks = ConcurrentHashMap.newKeySet();
 
     private Executor executor;
 
@@ -509,9 +505,9 @@ public class DefaultRequestHandler implements RequestHandler {
             CompletableFuture<Void> agentFuture = runningAgents.remove(taskId);
             LOGGER.debug("Removed agent for task {} from runningAgents in finally block, size after: {}", taskId, runningAgents.size());
 
-            // Track cleanup as background task to avoid blocking Vert.x threads
+            // Cleanup as background task to avoid blocking Vert.x threads
             // Pass the consumption future to ensure cleanup waits for background consumption to complete
-            trackBackgroundTask(cleanupProducer(agentFuture, etai != null ? etai.consumptionFuture() : null, taskId, queue, false));
+            cleanupProducer(agentFuture, etai != null ? etai.consumptionFuture() : null, taskId, queue, false);
         }
 
         LOGGER.debug("Returning: {}", kind);
@@ -521,8 +517,8 @@ public class DefaultRequestHandler implements RequestHandler {
     @Override
     public Flow.Publisher<StreamingEventKind> onMessageSendStream(
             MessageSendParams params, ServerCallContext context) throws A2AError {
-        LOGGER.debug("onMessageSendStream START - task: {}; context: {}; runningAgents: {}; backgroundTasks: {}",
-                params.message().taskId(), params.message().contextId(), runningAgents.size(), backgroundTasks.size());
+        LOGGER.debug("onMessageSendStream START - task: {}; context: {}; runningAgents: {}",
+                params.message().taskId(), params.message().contextId(), runningAgents.size());
         MessageSendSetup mss = initMessageSend(params, context);
 
         @Nullable String initialTaskId = mss.requestContext.getTaskId();
@@ -530,7 +526,7 @@ public class DefaultRequestHandler implements RequestHandler {
         // Use a temporary ID for queue creation if needed
         String queueTaskId = initialTaskId != null ? initialTaskId : "temp-" + java.util.UUID.randomUUID();
 
-        AtomicReference<@NonNull String> taskId = new AtomicReference<>(queueTaskId);
+        final AtomicReference<@NonNull String> taskId = new AtomicReference<>(queueTaskId);
         @SuppressWarnings("NullAway")
         EventQueue queue = queueManager.createOrTap(taskId.get());
         LOGGER.debug("Created/tapped queue for task {}: {}", taskId.get(), queue);
@@ -539,11 +535,8 @@ public class DefaultRequestHandler implements RequestHandler {
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(queueTaskId, mss.requestContext, queue);
 
         // Move consumer creation and callback registration outside try block
-        // so consumer is available for background consumption on client disconnect
         EventConsumer consumer = new EventConsumer(queue);
         producerRunnable.addDoneCallback(consumer.createAgentRunnableDoneCallback());
-
-        AtomicBoolean backgroundConsumeStarted = new AtomicBoolean(false);
 
         try {
             Flow.Publisher<EventQueueItem> results = resultAggregator.consumeAndEmit(consumer);
@@ -583,7 +576,8 @@ public class DefaultRequestHandler implements RequestHandler {
 
             Flow.Publisher<StreamingEventKind> finalPublisher = convertingProcessor(eventPublisher, event -> (StreamingEventKind) event);
 
-            // Wrap publisher to detect client disconnect and continue background consumption
+            // Wrap publisher to detect client disconnect and immediately close ChildQueue
+            // This prevents ChildQueue backpressure from blocking MainEventBusProcessor
             return subscriber -> {
                 String currentTaskId = taskId.get();
                 LOGGER.debug("Creating subscription wrapper for task {}", currentTaskId);
@@ -604,8 +598,10 @@ public class DefaultRequestHandler implements RequestHandler {
 
                             @Override
                             public void cancel() {
-                                LOGGER.debug("Client cancelled subscription for task {}, starting background consumption", taskId.get());
-                                startBackgroundConsumption();
+                                LOGGER.debug("Client cancelled subscription for task {}, closing ChildQueue immediately", taskId.get());
+                                // Close ChildQueue immediately to prevent backpressure
+                                // (clears queue and releases semaphore permits)
+                                queue.close(true);  // immediate=true
                                 subscription.cancel();
                             }
                         });
@@ -630,8 +626,8 @@ public class DefaultRequestHandler implements RequestHandler {
                             subscriber.onComplete();
                         } catch (IllegalStateException e) {
                             // Client already disconnected and response closed - this is expected
-                            // for streaming responses where client disconnect triggers background
-                            // consumption. Log and ignore.
+                            // for streaming responses where client disconnect closes ChildQueue.
+                            // Log and ignore.
                             if (e.getMessage() != null && e.getMessage().contains("Response has already been written")) {
                                 LOGGER.debug("Client disconnected before onComplete, response already closed for task {}", taskId.get());
                             } else {
@@ -639,36 +635,21 @@ public class DefaultRequestHandler implements RequestHandler {
                             }
                         }
                     }
-
-                    private void startBackgroundConsumption() {
-                        if (backgroundConsumeStarted.compareAndSet(false, true)) {
-                            LOGGER.debug("Starting background consumption for task {}", taskId.get());
-                            // Client disconnected: continue consuming and persisting events in background
-                            CompletableFuture<Void> bgTask = CompletableFuture.runAsync(() -> {
-                                try {
-                                    LOGGER.debug("Background consumption thread started for task {}", taskId.get());
-                                    resultAggregator.consumeAll(consumer);
-                                    LOGGER.debug("Background consumption completed for task {}", taskId.get());
-                                } catch (Exception e) {
-                                    LOGGER.error("Error during background consumption for task {}", taskId.get(), e);
-                                }
-                            }, executor);
-                            trackBackgroundTask(bgTask);
-                        } else {
-                            LOGGER.debug("Background consumption already started for task {}", taskId.get());
-                        }
-                    }
                 });
             };
         } finally {
-            LOGGER.debug("onMessageSendStream FINALLY - task: {}; runningAgents: {}; backgroundTasks: {}",
-                    taskId.get(), runningAgents.size(), backgroundTasks.size());
+            // Needed to satisfy Nullaway
+            String idOfTask = taskId.get();
+            if (idOfTask != null) {
+                LOGGER.debug("onMessageSendStream FINALLY - task: {}; runningAgents: {}",
+                        idOfTask, runningAgents.size());
 
-            // Remove agent from map immediately to prevent accumulation
-            CompletableFuture<Void> agentFuture = runningAgents.remove(taskId.get());
-            LOGGER.debug("Removed agent for task {} from runningAgents in finally block, size after: {}", taskId.get(), runningAgents.size());
+                // Remove agent from map immediately to prevent accumulation
+                CompletableFuture<Void> agentFuture = runningAgents.remove(idOfTask);
+                LOGGER.debug("Removed agent for task {} from runningAgents in finally block, size after: {}", taskId.get(), runningAgents.size());
 
-            trackBackgroundTask(cleanupProducer(agentFuture, null, Objects.requireNonNull(taskId.get()), queue, true));
+                cleanupProducer(agentFuture, null, idOfTask, queue, true);
+            }
         }
     }
 
@@ -826,47 +807,6 @@ public class DefaultRequestHandler implements RequestHandler {
         return runnable;
     }
 
-    private void trackBackgroundTask(CompletableFuture<Void> task) {
-        backgroundTasks.add(task);
-        LOGGER.debug("Tracking background task (total: {}): {}", backgroundTasks.size(), task);
-
-        task.whenComplete((result, throwable) -> {
-            try {
-                if (throwable != null) {
-                    // Unwrap CompletionException to check for CancellationException
-                    Throwable cause = throwable;
-                    if (throwable instanceof java.util.concurrent.CompletionException && throwable.getCause() != null) {
-                        cause = throwable.getCause();
-                    }
-
-                    if (cause instanceof java.util.concurrent.CancellationException) {
-                        LOGGER.debug("Background task cancelled: {}", task);
-                    } else {
-                        LOGGER.error("Background task failed", throwable);
-                    }
-                }
-            } finally {
-                backgroundTasks.remove(task);
-                LOGGER.debug("Removed background task (remaining: {}): {}", backgroundTasks.size(), task);
-            }
-        });
-    }
-
-    /**
-     * Wait for all background tasks to complete.
-     * Useful for testing to ensure cleanup completes before assertions.
-     *
-     * @return CompletableFuture that completes when all background tasks finish
-     */
-    public CompletableFuture<Void> waitForBackgroundTasks() {
-        CompletableFuture<?>[] tasks = backgroundTasks.toArray(new CompletableFuture[0]);
-        if (tasks.length == 0) {
-            return CompletableFuture.completedFuture(null);
-        }
-        LOGGER.debug("Waiting for {} background tasks to complete", tasks.length);
-        return CompletableFuture.allOf(tasks);
-    }
-
     private CompletableFuture<Void> cleanupProducer(@Nullable CompletableFuture<Void> agentFuture, @Nullable CompletableFuture<Void> consumptionFuture, String taskId, EventQueue queue, boolean isStreaming) {
         LOGGER.debug("Starting cleanup for task {} (streaming={})", taskId, isStreaming);
         logThreadStats("CLEANUP START");
@@ -968,7 +908,6 @@ public class DefaultRequestHandler implements RequestHandler {
         LOGGER.debug("=== THREAD STATS: {} ===", label);
         LOGGER.debug("Active threads: {}", activeThreads);
         LOGGER.debug("Running agents: {}", runningAgents.size());
-        LOGGER.debug("Background tasks: {}", backgroundTasks.size());
         LOGGER.debug("Queue manager active queues: {}", queueManager.getClass().getSimpleName());
 
         // List running agents
@@ -979,13 +918,6 @@ public class DefaultRequestHandler implements RequestHandler {
             );
         }
 
-        // List background tasks
-        if (!backgroundTasks.isEmpty()) {
-            LOGGER.debug("Background tasks:");
-            backgroundTasks.forEach(task ->
-                LOGGER.debug("  - {}: {}", task, task.isDone() ? "DONE" : "RUNNING")
-            );
-        }
         LOGGER.debug("=== END THREAD STATS ===");
     }
 
