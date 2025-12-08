@@ -15,7 +15,9 @@ public interface QueueManager {
     void awaitQueuePollerStart(EventQueue eventQueue) throws InterruptedException;
 
     default EventQueue.EventQueueBuilder getEventQueueBuilder(String taskId) {
-        return EventQueue.builder();
+        throw new UnsupportedOperationException(
+            "QueueManager implementations must override getEventQueueBuilder() to provide MainEventBus"
+        );
     }
 
     /**
@@ -35,7 +37,9 @@ public interface QueueManager {
      * @return a builder with base configuration specific to this QueueManager implementation
      */
     default EventQueue.EventQueueBuilder createBaseEventQueueBuilder(String taskId) {
-        return EventQueue.builder().taskId(taskId);
+        throw new UnsupportedOperationException(
+            "QueueManager implementations must override createBaseEventQueueBuilder() to provide MainEventBus"
+        );
     }
 
     /**

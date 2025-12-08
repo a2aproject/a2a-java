@@ -151,9 +151,11 @@ class ReplicatedQueueManagerTest {
         assertNotNull(queue, "Queue should be created when processing replicated event for non-existent task");
 
         // Verify the event was enqueued by dequeuing it
+        // Need to tap() the MainQueue to get a ChildQueue for consumption
+        EventQueue childQueue = queue.tap();
         Event dequeuedEvent;
         try {
-            dequeuedEvent = queue.dequeueEventItem(100).getEvent();
+            dequeuedEvent = childQueue.dequeueEventItem(100).getEvent();
         } catch (EventQueueClosedException e) {
             fail("Queue should not be closed");
             return;
@@ -351,9 +353,11 @@ class ReplicatedQueueManagerTest {
         assertNotNull(queue, "Queue should be created for active task");
 
         // Verify the event was enqueued
+        // Need to tap() the MainQueue to get a ChildQueue for consumption
+        EventQueue childQueue = queue.tap();
         Event dequeuedEvent;
         try {
-            dequeuedEvent = queue.dequeueEventItem(100).getEvent();
+            dequeuedEvent = childQueue.dequeueEventItem(100).getEvent();
         } catch (EventQueueClosedException e) {
             fail("Queue should not be closed");
             return;
