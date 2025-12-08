@@ -54,7 +54,7 @@ public class EventConsumerTest {
 
     @BeforeEach
     public void init() {
-        eventQueue = EventQueue.builder().build();
+        eventQueue = EventQueueUtil.getEventQueueBuilder().build().tap();
         eventConsumer = new EventConsumer(eventQueue);
     }
 
@@ -332,7 +332,7 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeAllStopsOnQueueClosed() throws Exception {
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build().tap();
         EventConsumer consumer = new EventConsumer(queue);
 
         // Close the queue immediately
@@ -378,12 +378,20 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeAllHandlesQueueClosedException() throws Exception {
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build().tap();
         EventConsumer consumer = new EventConsumer(queue);
 
         // Add a message event (which will complete the stream)
         Event message = fromJson(MESSAGE_PAYLOAD, Message.class);
         queue.enqueueEvent(message);
+
+        // Poll for event to arrive in ChildQueue (async MainEventBusProcessor distribution)
+        long startTime = System.currentTimeMillis();
+        long timeout = 2000;
+        while (queue.size() == 0 && (System.currentTimeMillis() - startTime) < timeout) {
+            Thread.sleep(50);
+        }
+        assertTrue(queue.size() > 0, "Event should arrive in ChildQueue within timeout");
 
         // Close the queue before consuming
         queue.close();
@@ -428,7 +436,7 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeAllTerminatesOnQueueClosedEvent() throws Exception {
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build().tap();
         EventConsumer consumer = new EventConsumer(queue);
 
         // Enqueue a QueueClosedEvent (poison pill)
@@ -478,7 +486,19 @@ public class EventConsumerTest {
 
     private void enqueueAndConsumeOneEvent(Event event) throws Exception {
         eventQueue.enqueueEvent(event);
-        Event result = eventConsumer.consumeOne();
+        // Poll for event with 2-second timeout
+        long startTime = System.currentTimeMillis();
+        long timeout = 2000;
+        Event result = null;
+        while (result == null && (System.currentTimeMillis() - startTime) < timeout) {
+            try {
+                result = eventConsumer.consumeOne();
+            } catch (A2AServerException e) {
+                // Event not available yet, wait a bit and try again
+                Thread.sleep(50);
+            }
+        }
+        assertNotNull(result, "Event should arrive within timeout");
         assertSame(event, result);
     }
 

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
+import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.EventQueueUtil;
 import io.a2a.spec.Event;
 import io.a2a.spec.Message;
@@ -45,7 +46,7 @@ public class TaskUpdaterTest {
 
     @BeforeEach
     public void init() {
-        eventQueue = EventQueueUtil.getEventQueueBuilder().build();
+        eventQueue = EventQueueUtil.getEventQueueBuilder().build().tap();
         RequestContext context = new RequestContext.Builder()
                 .setTaskId(TEST_TASK_ID)
                 .setContextId(TEST_TASK_CONTEXT_ID)
@@ -56,7 +57,9 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactWithCustomIdAndName() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "custom-artifact-id", "Custom Artifact", null);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -239,7 +242,9 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactWithAppendTrue() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, true, null);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -258,7 +263,9 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactWithLastChunkTrue() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, null, true);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -273,7 +280,9 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactWithAppendAndLastChunk() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, true, false);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -287,7 +296,9 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactGeneratesIdWhenNull() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, null, "Test Artifact", null);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -383,7 +394,9 @@ public class TaskUpdaterTest {
         thread2.join();
 
         // Exactly one event should have been queued
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskStatusUpdateEvent.class, event);
 
@@ -396,7 +409,10 @@ public class TaskUpdaterTest {
     }
 
     private TaskStatusUpdateEvent checkTaskStatusUpdateEventOnQueue(boolean isFinal, TaskState state, Message statusMessage) throws Exception {
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        // Wait up to 5 seconds for event (async MainEventBusProcessor needs time to distribute)
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
 
         assertNotNull(event);
         assertInstanceOf(TaskStatusUpdateEvent.class, event);
@@ -408,6 +424,7 @@ public class TaskUpdaterTest {
         assertEquals(state, tsue.status().state());
         assertEquals(statusMessage, tsue.status().message());
 
+        // Check no additional events (still use 0 timeout for this check)
         assertNull(eventQueue.dequeueEventItem(0));
 
         return tsue;

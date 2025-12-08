@@ -154,11 +154,10 @@ public class InMemoryQueueManager implements QueueManager {
 
     @Override
     public EventQueue.EventQueueBuilder createBaseEventQueueBuilder(String taskId) {
-        return EventQueue.builder()
+        return EventQueue.builder(mainEventBus)
                 .taskId(taskId)
                 .addOnCloseCallback(getCleanupCallback(taskId))
-                .taskStateProvider(taskStateProvider)
-                .mainEventBus(mainEventBus);
+                .taskStateProvider(taskStateProvider);
     }
 
     /**
