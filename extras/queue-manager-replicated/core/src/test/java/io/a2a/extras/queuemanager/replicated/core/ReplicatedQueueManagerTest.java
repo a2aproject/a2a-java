@@ -22,7 +22,12 @@ import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.EventQueueClosedException;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.EventQueueTestHelper;
+import io.a2a.server.events.EventQueueUtil;
+import io.a2a.server.events.MainEventBus;
+import io.a2a.server.events.MainEventBusProcessor;
 import io.a2a.server.events.QueueClosedEvent;
+import io.a2a.server.tasks.InMemoryTaskStore;
+import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.spec.Event;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskState;
@@ -35,10 +40,24 @@ class ReplicatedQueueManagerTest {
 
     private ReplicatedQueueManager queueManager;
     private StreamingEventKind testEvent;
+    private MainEventBus mainEventBus;
+    private MainEventBusProcessor mainEventBusProcessor;
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
 
     @BeforeEach
     void setUp() {
-        queueManager = new ReplicatedQueueManager(new NoOpReplicationStrategy(), new MockTaskStateProvider(true));
+        // Create MainEventBus and MainEventBusProcessor for tests
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        mainEventBus = new MainEventBus();
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER);
+        EventQueueUtil.start(mainEventBusProcessor);
+
+        queueManager = new ReplicatedQueueManager(
+            new NoOpReplicationStrategy(),
+            new MockTaskStateProvider(true),
+            mainEventBus
+        );
+
         testEvent = TaskStatusUpdateEvent.builder()
                 .taskId("test-task")
                 .contextId("test-context")
@@ -50,7 +69,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicationStrategyTriggeredOnNormalEnqueue() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true));
+        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "test-task-1";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -65,7 +84,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicationStrategyNotTriggeredOnReplicatedEvent() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true));
+        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "test-task-2";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -79,7 +98,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicationStrategyWithCountingImplementation() throws InterruptedException {
         CountingReplicationStrategy countingStrategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(countingStrategy, new MockTaskStateProvider(true));
+        queueManager = new ReplicatedQueueManager(countingStrategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "test-task-3";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -170,7 +189,7 @@ class ReplicatedQueueManagerTest {
     void testQueueToTaskIdMappingMaintained() throws InterruptedException {
         String taskId = "test-task-6";
         CountingReplicationStrategy countingStrategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(countingStrategy, new MockTaskStateProvider(true));
+        queueManager = new ReplicatedQueueManager(countingStrategy, new MockTaskStateProvider(true), mainEventBus);
 
         EventQueue queue = queueManager.createOrTap(taskId);
         queue.enqueueEvent(testEvent);
@@ -217,7 +236,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testParallelReplicationBehavior() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true));
+        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "parallel-test-task";
         EventQueue queue = queueManager.createOrTap(taskId);
@@ -297,7 +316,7 @@ class ReplicatedQueueManagerTest {
     void testReplicatedEventSkippedWhenTaskInactive() throws InterruptedException {
         // Create a task state provider that returns false (task is inactive)
         MockTaskStateProvider stateProvider = new MockTaskStateProvider(false);
-        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider);
+        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider, mainEventBus);
 
         String taskId = "inactive-task";
 
@@ -316,7 +335,7 @@ class ReplicatedQueueManagerTest {
     void testReplicatedEventProcessedWhenTaskActive() throws InterruptedException {
         // Create a task state provider that returns true (task is active)
         MockTaskStateProvider stateProvider = new MockTaskStateProvider(true);
-        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider);
+        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider, mainEventBus);
 
         String taskId = "active-task";
 
@@ -347,7 +366,7 @@ class ReplicatedQueueManagerTest {
     void testReplicatedEventToExistingQueueWhenTaskBecomesInactive() throws InterruptedException {
         // Create a task state provider that returns true initially
         MockTaskStateProvider stateProvider = new MockTaskStateProvider(true);
-        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider);
+        queueManager = new ReplicatedQueueManager(new CountingReplicationStrategy(), stateProvider, mainEventBus);
 
         String taskId = "task-becomes-inactive";
 
@@ -387,7 +406,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testPoisonPillSentViaTransactionAwareEvent() throws InterruptedException {
         CountingReplicationStrategy strategy = new CountingReplicationStrategy();
-        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true));
+        queueManager = new ReplicatedQueueManager(strategy, new MockTaskStateProvider(true), mainEventBus);
 
         String taskId = "poison-pill-test";
         EventQueue queue = queueManager.createOrTap(taskId);

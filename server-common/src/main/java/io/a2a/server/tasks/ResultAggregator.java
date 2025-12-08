@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.spec.A2AError;
-import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.Message;
@@ -49,18 +48,10 @@ public class ResultAggregator {
     public Flow.Publisher<EventQueueItem> consumeAndEmit(EventConsumer consumer) {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
 
-        // Process items conditionally - only save non-replicated events to database
+        // Just stream events - no persistence needed
+        // TaskStore update moved to MainEventBusProcessor
         return processor(createTubeConfig(), allItems, (errorConsumer, item) -> {
-            // Only process non-replicated events to avoid duplicate database writes
-            if (!item.isReplicated()) {
-                try {
-                    callTaskManagerProcess(item.getEvent());
-                } catch (A2AServerException e) {
-                    errorConsumer.accept(e);
-                    return false;
-                }
-            }
-            // Continue processing and emit (both replicated and non-replicated)
+            // Continue processing and emit all events
             return true;
         });
     }
@@ -81,15 +72,7 @@ public class ResultAggregator {
                             return false;
                         }
                     }
-                    // Only process non-replicated events to avoid duplicate database writes
-                    if (!item.isReplicated()) {
-                        try {
-                            callTaskManagerProcess(event);
-                        } catch (A2AServerException e) {
-                            error.set(e);
-                            return false;
-                        }
-                    }
+                    // TaskStore update moved to MainEventBusProcessor
                     return true;
                 },
                 error::set);
@@ -146,16 +129,7 @@ public class ResultAggregator {
                         return false;
                     }
 
-                    // Process event through TaskManager - only for non-replicated events
-                    if (!item.isReplicated()) {
-                        try {
-                            callTaskManagerProcess(event);
-                        } catch (A2AServerException e) {
-                            errorRef.set(e);
-                            completionFuture.completeExceptionally(e);
-                            return false;
-                        }
-                    }
+                    // TaskStore update moved to MainEventBusProcessor
 
                     // Determine interrupt behavior
                     boolean shouldInterrupt = false;
@@ -185,7 +159,6 @@ public class ResultAggregator {
                         // For blocking calls: Interrupt to free Vert.x thread, but continue in background
                         // Python's async consumption doesn't block threads, but Java's does
                         // So we interrupt to return quickly, then rely on background consumption
-                        // DefaultRequestHandler will fetch the final state from TaskStore
                         shouldInterrupt = true;
                         continueInBackground = true;
                         if (LOGGER.isDebugEnabled()) {
@@ -201,8 +174,7 @@ public class ResultAggregator {
 
                         // For blocking calls, DON'T complete consumptionCompletionFuture here.
                         // Let it complete naturally when subscription finishes (onComplete callback below).
-                        // This ensures all events are processed and persisted to TaskStore before
-                        // DefaultRequestHandler.cleanupProducer() proceeds with cleanup.
+                        // This ensures all events are fully processed before cleanup.
                         //
                         // For non-blocking and auth-required calls, complete immediately to allow
                         // cleanup to proceed while consumption continues in background.
@@ -277,10 +249,6 @@ public class ResultAggregator {
                 eventType,
                 interrupted.get(),
                 consumptionCompletionFuture);
-    }
-
-    private void callTaskManagerProcess(Event event) throws A2AServerException {
-        taskManager.process(event);
     }
 
     private String taskIdForLogging() {

@@ -30,6 +30,8 @@ import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
+import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
@@ -37,12 +39,12 @@ import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageResponse;
 import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
-import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
-import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.events.EventConsumer;
+import io.a2a.server.events.MainEventBusProcessor;
+import io.a2a.server.events.MainEventBusProcessorCallback;
 import io.a2a.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import io.a2a.server.requesthandlers.DefaultRequestHandler;
 import io.a2a.server.tasks.ResultAggregator;
@@ -52,16 +54,15 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentExtension;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.Artifact;
-import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
-import io.a2a.spec.ExtensionSupportRequiredError;
-import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
+import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidRequestError;
-import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.PushNotificationConfig;
@@ -78,6 +79,7 @@ import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.spec.VersionNotSupportedError;
 import mutiny.zero.ZeroPublisher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -174,36 +176,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
         SendMessageResponse response = handler.onMessageSend(request, callContext);
         assertNull(response.getError());
-        // The Python implementation returns a Task here, but then again they are using hardcoded mocks and
-        // bypassing the whole EventQueue.
-        // If we were to send a Task in agentExecutorExecute EventConsumer.consumeAll() would not exit due to
-        // the Task not having a 'final' state
-        //
-        // See testOnMessageNewMessageSuccessMocks() for a test more similar to the Python implementation
         Assertions.assertSame(message, response.getResult());
-    }
-
-    @Test
-    public void testOnMessageNewMessageSuccessMocks() {
-        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
-
-        Message message = Message.builder(MESSAGE)
-                .taskId(MINIMAL_TASK.id())
-                .contextId(MINIMAL_TASK.contextId())
-                .build();
-
-        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
-        SendMessageResponse response;
-        try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
-                EventConsumer.class,
-                (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromItems(wrapEvent(MINIMAL_TASK))).when(mock).consumeAll();
-                    Mockito.doCallRealMethod().when(mock).createAgentRunnableDoneCallback();
-                })) {
-            response = handler.onMessageSend(request, callContext);
-        }
-        assertNull(response.getError());
-        Assertions.assertSame(MINIMAL_TASK, response.getResult());
     }
 
     @Test
@@ -220,36 +193,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
         SendMessageResponse response = handler.onMessageSend(request, callContext);
         assertNull(response.getError());
-        // The Python implementation returns a Task here, but then again they are using hardcoded mocks and
-        // bypassing the whole EventQueue.
-        // If we were to send a Task in agentExecutorExecute EventConsumer.consumeAll() would not exit due to
-        // the Task not having a 'final' state
-        //
-        // See testOnMessageNewMessageWithExistingTaskSuccessMocks() for a test more similar to the Python implementation
         Assertions.assertSame(message, response.getResult());
-    }
-
-    @Test
-    public void testOnMessageNewMessageWithExistingTaskSuccessMocks() {
-        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
-        taskStore.save(MINIMAL_TASK);
-
-        Message message = Message.builder(MESSAGE)
-                .taskId(MINIMAL_TASK.id())
-                .contextId(MINIMAL_TASK.contextId())
-                .build();
-        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
-        SendMessageResponse response;
-        try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
-                EventConsumer.class,
-                (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromItems(wrapEvent(MINIMAL_TASK))).when(mock).consumeAll();
-                })) {
-            response = handler.onMessageSend(request, callContext);
-        }
-        assertNull(response.getError());
-        Assertions.assertSame(MINIMAL_TASK, response.getResult());
-
     }
 
     @Test
@@ -352,9 +296,24 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageStreamNewMessageMultipleEventsSuccess() throws InterruptedException {
-        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        // Setup callback to wait for all 3 events to be processed by MainEventBusProcessor
+        CountDownLatch processingLatch = new CountDownLatch(3);
+        MainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                processingLatch.countDown();
+            }
 
-        // Create multiple events to be sent during streaming
+            @Override
+            public void onTaskFinalized(String taskId) {
+                // Not needed for this test
+            }
+        });
+
+        try {
+            JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+
+            // Create multiple events to be sent during streaming
         Task taskEvent = Task.builder(MINIMAL_TASK)
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
@@ -429,33 +388,40 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-        // Wait for all events to be received
-        Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS),
-                "Expected to receive 3 events within timeout");
+            // Wait for all events to be received (increased timeout for async processing)
+            Assertions.assertTrue(latch.await(10, TimeUnit.SECONDS),
+                    "Expected to receive 3 events within timeout");
 
-        // Assert no error occurred during streaming
-        Assertions.assertNull(error.get(), "No error should occur during streaming");
+            // Wait for MainEventBusProcessor to complete processing all 3 events
+            Assertions.assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+                    "MainEventBusProcessor should have processed all 3 events");
 
-        // Verify that all 3 events were received
-        assertEquals(3, results.size(), "Should have received exactly 3 events");
+            // Assert no error occurred during streaming
+            Assertions.assertNull(error.get(), "No error should occur during streaming");
 
-        // Verify the first event is the task
-        Task receivedTask = assertInstanceOf(Task.class, results.get(0), "First event should be a Task");
-        assertEquals(MINIMAL_TASK.id(), receivedTask.id());
-        assertEquals(MINIMAL_TASK.contextId(), receivedTask.contextId());
-        assertEquals(TaskState.WORKING, receivedTask.status().state());
+            // Verify that all 3 events were received
+            assertEquals(3, results.size(), "Should have received exactly 3 events");
 
-        // Verify the second event is the artifact update
-        TaskArtifactUpdateEvent receivedArtifact = assertInstanceOf(TaskArtifactUpdateEvent.class, results.get(1),
-                "Second event should be a TaskArtifactUpdateEvent");
-        assertEquals(MINIMAL_TASK.id(), receivedArtifact.taskId());
-        assertEquals("artifact-1", receivedArtifact.artifact().artifactId());
+            // Verify the first event is the task
+            Task receivedTask = assertInstanceOf(Task.class, results.get(0), "First event should be a Task");
+            assertEquals(MINIMAL_TASK.id(), receivedTask.id());
+            assertEquals(MINIMAL_TASK.contextId(), receivedTask.contextId());
+            assertEquals(TaskState.WORKING, receivedTask.status().state());
 
-        // Verify the third event is the status update
-        TaskStatusUpdateEvent receivedStatus = assertInstanceOf(TaskStatusUpdateEvent.class, results.get(2),
-                "Third event should be a TaskStatusUpdateEvent");
-        assertEquals(MINIMAL_TASK.id(), receivedStatus.taskId());
-        assertEquals(TaskState.COMPLETED, receivedStatus.status().state());
+            // Verify the second event is the artifact update
+            TaskArtifactUpdateEvent receivedArtifact = assertInstanceOf(TaskArtifactUpdateEvent.class, results.get(1),
+                    "Second event should be a TaskArtifactUpdateEvent");
+            assertEquals(MINIMAL_TASK.id(), receivedArtifact.taskId());
+            assertEquals("artifact-1", receivedArtifact.artifact().artifactId());
+
+            // Verify the third event is the status update
+            TaskStatusUpdateEvent receivedStatus = assertInstanceOf(TaskStatusUpdateEvent.class, results.get(2),
+                    "Third event should be a TaskStatusUpdateEvent");
+            assertEquals(MINIMAL_TASK.id(), receivedStatus.taskId());
+            assertEquals(TaskState.COMPLETED, receivedStatus.status().state());
+        } finally {
+            MainEventBusProcessor.setCallback(null);
+        }
     }
 
     @Test
@@ -729,106 +695,130 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageStreamNewMessageSendPushNotificationSuccess() throws Exception {
-        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
-        taskStore.save(MINIMAL_TASK);
-
-        List<Event> events = List.of(
-                MINIMAL_TASK,
-                TaskArtifactUpdateEvent.builder()
-                        .taskId(MINIMAL_TASK.id())
-                        .contextId(MINIMAL_TASK.contextId())
-                        .artifact(Artifact.builder()
-                                .artifactId("11")
-                                .parts(new TextPart("text"))
-                                .build())
-                        .build(),
-                TaskStatusUpdateEvent.builder()
-                        .taskId(MINIMAL_TASK.id())
-                        .contextId(MINIMAL_TASK.contextId())
-                        .status(new TaskStatus(TaskState.COMPLETED))
-                        .build());
-
-        agentExecutorExecute = (context, eventQueue) -> {
-            // Hardcode the events to send here
-            for (Event event : events) {
-                eventQueue.enqueueEvent(event);
+        // Setup callback to wait for all 3 events to be processed by MainEventBusProcessor
+        CountDownLatch processingLatch = new CountDownLatch(3);
+        MainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                processingLatch.countDown();
             }
-        };
 
-        TaskPushNotificationConfig config = new TaskPushNotificationConfig(
-                MINIMAL_TASK.id(),
-                PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
-
-        SetTaskPushNotificationConfigRequest stpnRequest = new SetTaskPushNotificationConfigRequest("1", config);
-        SetTaskPushNotificationConfigResponse stpnResponse = handler.setPushNotificationConfig(stpnRequest, callContext);
-        assertNull(stpnResponse.getError());
-
-        Message msg = Message.builder(MESSAGE)
-                .taskId(MINIMAL_TASK.id())
-                .build();
-        SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(msg, null, null));
-        Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
-
-        final List<StreamingEventKind> results = Collections.synchronizedList(new ArrayList<>());
-        final AtomicReference<Flow.Subscription> subscriptionRef = new AtomicReference<>();
-        final CountDownLatch latch = new CountDownLatch(6);
-        httpClient.latch = latch;
-
-        Executors.newSingleThreadExecutor().execute(() -> {
-            response.subscribe(new Flow.Subscriber<>() {
-                @Override
-                public void onSubscribe(Flow.Subscription subscription) {
-                    subscriptionRef.set(subscription);
-                    subscription.request(1);
-                }
-
-                @Override
-                public void onNext(SendStreamingMessageResponse item) {
-                    System.out.println("-> " + item.getResult());
-                    results.add(item.getResult());
-                    System.out.println(results);
-                    subscriptionRef.get().request(1);
-                    latch.countDown();
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-                    subscriptionRef.get().cancel();
-                }
-
-                @Override
-                public void onComplete() {
-                    subscriptionRef.get().cancel();
-                }
-            });
+            @Override
+            public void onTaskFinalized(String taskId) {
+                // Not needed for this test
+            }
         });
 
-        Assertions.assertTrue(latch.await(5, TimeUnit.SECONDS));
-        subscriptionRef.get().cancel();
-        assertEquals(3, results.size());
-        assertEquals(3, httpClient.tasks.size());
+        try {
+            JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+            taskStore.save(MINIMAL_TASK);
 
-        Task curr = httpClient.tasks.get(0);
-        assertEquals(MINIMAL_TASK.id(), curr.id());
-        assertEquals(MINIMAL_TASK.contextId(), curr.contextId());
-        assertEquals(MINIMAL_TASK.status().state(), curr.status().state());
-        assertEquals(0, curr.artifacts() == null ? 0 : curr.artifacts().size());
+            List<Event> events = List.of(
+                    MINIMAL_TASK,
+                    TaskArtifactUpdateEvent.builder()
+                            .taskId(MINIMAL_TASK.id())
+                            .contextId(MINIMAL_TASK.contextId())
+                            .artifact(Artifact.builder()
+                                    .artifactId("11")
+                                    .parts(new TextPart("text"))
+                                    .build())
+                            .build(),
+                    TaskStatusUpdateEvent.builder()
+                            .taskId(MINIMAL_TASK.id())
+                            .contextId(MINIMAL_TASK.contextId())
+                            .status(new TaskStatus(TaskState.COMPLETED))
+                            .build());
 
-        curr = httpClient.tasks.get(1);
-        assertEquals(MINIMAL_TASK.id(), curr.id());
-        assertEquals(MINIMAL_TASK.contextId(), curr.contextId());
-        assertEquals(MINIMAL_TASK.status().state(), curr.status().state());
-        assertEquals(1, curr.artifacts().size());
-        assertEquals(1, curr.artifacts().get(0).parts().size());
-        assertEquals("text", ((TextPart) curr.artifacts().get(0).parts().get(0)).text());
 
-        curr = httpClient.tasks.get(2);
-        assertEquals(MINIMAL_TASK.id(), curr.id());
-        assertEquals(MINIMAL_TASK.contextId(), curr.contextId());
-        assertEquals(TaskState.COMPLETED, curr.status().state());
-        assertEquals(1, curr.artifacts().size());
-        assertEquals(1, curr.artifacts().get(0).parts().size());
-        assertEquals("text", ((TextPart) curr.artifacts().get(0).parts().get(0)).text());
+            agentExecutorExecute = (context, eventQueue) -> {
+                // Hardcode the events to send here
+                for (Event event : events) {
+                    eventQueue.enqueueEvent(event);
+                }
+            };
+
+            TaskPushNotificationConfig config = new TaskPushNotificationConfig(
+                    MINIMAL_TASK.id(),
+                    PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
+
+            SetTaskPushNotificationConfigRequest stpnRequest = new SetTaskPushNotificationConfigRequest("1", config);
+            SetTaskPushNotificationConfigResponse stpnResponse = handler.setPushNotificationConfig(stpnRequest, callContext);
+            assertNull(stpnResponse.getError());
+
+            Message msg = Message.builder(MESSAGE)
+                    .taskId(MINIMAL_TASK.id())
+                    .build();
+            SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(msg, null, null));
+            Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
+
+            final List<StreamingEventKind> results = Collections.synchronizedList(new ArrayList<>());
+            final AtomicReference<Flow.Subscription> subscriptionRef = new AtomicReference<>();
+            final CountDownLatch latch = new CountDownLatch(6);
+            httpClient.latch = latch;
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                response.subscribe(new Flow.Subscriber<>() {
+                    @Override
+                    public void onSubscribe(Flow.Subscription subscription) {
+                        subscriptionRef.set(subscription);
+                        subscription.request(1);
+                    }
+
+                    @Override
+                    public void onNext(SendStreamingMessageResponse item) {
+                        System.out.println("-> " + item.getResult());
+                        results.add(item.getResult());
+                        System.out.println(results);
+                        subscriptionRef.get().request(1);
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        subscriptionRef.get().cancel();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        subscriptionRef.get().cancel();
+                    }
+                });
+            });
+
+            Assertions.assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+            // Wait for MainEventBusProcessor to complete processing all 3 events
+            Assertions.assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+                    "MainEventBusProcessor should have processed all 3 events");
+
+            subscriptionRef.get().cancel();
+            assertEquals(3, results.size());
+            assertEquals(3, httpClient.tasks.size());
+
+            Task curr = httpClient.tasks.get(0);
+            assertEquals(MINIMAL_TASK.id(), curr.id());
+            assertEquals(MINIMAL_TASK.contextId(), curr.contextId());
+            assertEquals(MINIMAL_TASK.status().state(), curr.status().state());
+            assertEquals(0, curr.artifacts() == null ? 0 : curr.artifacts().size());
+
+            curr = httpClient.tasks.get(1);
+            assertEquals(MINIMAL_TASK.id(), curr.id());
+            assertEquals(MINIMAL_TASK.contextId(), curr.contextId());
+            assertEquals(MINIMAL_TASK.status().state(), curr.status().state());
+            assertEquals(1, curr.artifacts().size());
+            assertEquals(1, curr.artifacts().get(0).parts().size());
+            assertEquals("text", ((TextPart) curr.artifacts().get(0).parts().get(0)).text());
+
+            curr = httpClient.tasks.get(2);
+            assertEquals(MINIMAL_TASK.id(), curr.id());
+            assertEquals(MINIMAL_TASK.contextId(), curr.contextId());
+            assertEquals(TaskState.COMPLETED, curr.status().state());
+            assertEquals(1, curr.artifacts().size());
+            assertEquals(1, curr.artifacts().get(0).parts().size());
+            assertEquals("text", ((TextPart) curr.artifacts().get(0).parts().get(0)).text());
+        } finally {
+            MainEventBusProcessor.setCallback(null);
+        }
     }
 
     @Test
@@ -1136,7 +1126,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnGetPushNotificationNoPushNotifierConfig() {
         // Create request handler without a push notifier
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, null, internalExecutor);
+                executor, taskStore, queueManager, null, internalExecutor);
         AgentCard card = createAgentCard(false, true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1155,7 +1145,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnSetPushNotificationNoPushNotifierConfig() {
         // Create request handler without a push notifier
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, null, internalExecutor);
+                executor, taskStore, queueManager, null, internalExecutor);
         AgentCard card = createAgentCard(false, true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1247,7 +1237,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageSendErrorHandling() {
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, null, internalExecutor);
+                executor, taskStore, queueManager, null, internalExecutor);
         AgentCard card = createAgentCard(false, true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1293,16 +1283,31 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testOnMessageStreamTaskIdMismatch() {
-        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
-        taskStore.save(MINIMAL_TASK);
+    public void testOnMessageStreamTaskIdMismatch() throws InterruptedException {
+        // Setup callback to wait for the 1 event to be processed by MainEventBusProcessor
+        CountDownLatch processingLatch = new CountDownLatch(1);
+        MainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                processingLatch.countDown();
+            }
 
-        agentExecutorExecute = ((context, eventQueue) -> {
-            eventQueue.enqueueEvent(MINIMAL_TASK);
+            @Override
+            public void onTaskFinalized(String taskId) {
+                // Not needed for this test
+            }
         });
 
-        SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null));
-        Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
+        try {
+            JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+            taskStore.save(MINIMAL_TASK);
+
+            agentExecutorExecute = ((context, eventQueue) -> {
+                eventQueue.enqueueEvent(MINIMAL_TASK);
+            });
+
+            SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null));
+            Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
 
         CompletableFuture<Void> future = new CompletableFuture<>();
         List<SendStreamingMessageResponse> results = new ArrayList<>();
@@ -1337,11 +1342,18 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-        future.join();
+            future.join();
 
-        Assertions.assertNull(error.get());
-        Assertions.assertEquals(1, results.size());
-        Assertions.assertInstanceOf(InternalError.class, results.get(0).getError());
+            // Wait for MainEventBusProcessor to complete processing the event
+            Assertions.assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+                    "MainEventBusProcessor should have processed the event");
+
+            Assertions.assertNull(error.get());
+            Assertions.assertEquals(1, results.size());
+            Assertions.assertInstanceOf(InternalError.class, results.get(0).getError());
+        } finally {
+            MainEventBusProcessor.setCallback(null);
+        }
     }
 
     @Test
@@ -1405,7 +1417,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testListPushNotificationConfigNoPushConfigStore() {
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, null, internalExecutor);
+                executor, taskStore, queueManager, null, internalExecutor);
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {
@@ -1496,8 +1508,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testDeletePushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, null, internalExecutor);
+        DefaultRequestHandler requestHandler =
+                DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor);
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {

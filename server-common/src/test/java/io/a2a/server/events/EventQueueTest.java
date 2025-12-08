@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import io.a2a.server.tasks.InMemoryTaskStore;
+import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Event;
@@ -23,12 +25,15 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class EventQueueTest {
 
     private EventQueue eventQueue;
+    private MainEventBus mainEventBus;
+    private MainEventBusProcessor mainEventBusProcessor;
 
     private static final String MINIMAL_TASK = """
             {
@@ -46,11 +51,37 @@ public class EventQueueTest {
             }
             """;
 
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
 
     @BeforeEach
     public void init() {
-        eventQueue = EventQueue.builder().build();
+        // Set up MainEventBus and processor for production-like test environment
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        mainEventBus = new MainEventBus();
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER);
+        EventQueueUtil.start(mainEventBusProcessor);
 
+        eventQueue = EventQueue.builder()
+                .taskId("test-task")
+                .mainEventBus(mainEventBus)
+                .build();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (mainEventBusProcessor != null) {
+            EventQueueUtil.stop(mainEventBusProcessor);
+        }
+    }
+
+    /**
+     * Helper to create a queue with MainEventBus configured (for tests that need event distribution).
+     */
+    private EventQueue createQueueWithEventBus(String taskId) {
+        return EventQueue.builder()
+                .taskId(taskId)
+                .mainEventBus(mainEventBus)
+                .build();
     }
 
     @Test
@@ -95,15 +126,16 @@ public class EventQueueTest {
 
     @Test
     public void testEnqueueEventPropagagesToChildren() throws Exception {
-        EventQueue parentQueue = EventQueue.builder().build();
+        EventQueue parentQueue = createQueueWithEventBus("test-propagate");
         EventQueue childQueue = parentQueue.tap();
 
         Event event = fromJson(MINIMAL_TASK, Task.class);
         parentQueue.enqueueEvent(event);
 
         // Event should be available in both parent and child queues
-        Event parentEvent = parentQueue.dequeueEventItem(-1).getEvent();
-        Event childEvent = childQueue.dequeueEventItem(-1).getEvent();
+        // Note: MainEventBusProcessor runs async, so we use dequeueEventItem with timeout
+        Event parentEvent = parentQueue.dequeueEventItem(5000).getEvent();
+        Event childEvent = childQueue.dequeueEventItem(5000).getEvent();
 
         assertSame(event, parentEvent);
         assertSame(event, childEvent);
@@ -111,7 +143,7 @@ public class EventQueueTest {
 
     @Test
     public void testMultipleChildQueuesReceiveEvents() throws Exception {
-        EventQueue parentQueue = EventQueue.builder().build();
+        EventQueue parentQueue = createQueueWithEventBus("test-multiple");
         EventQueue childQueue1 = parentQueue.tap();
         EventQueue childQueue2 = parentQueue.tap();
 
@@ -122,42 +154,43 @@ public class EventQueueTest {
         parentQueue.enqueueEvent(event2);
 
         // All queues should receive both events
-        assertSame(event1, parentQueue.dequeueEventItem(-1).getEvent());
-        assertSame(event2, parentQueue.dequeueEventItem(-1).getEvent());
+        // Note: Use timeout for async processing
+        assertSame(event1, parentQueue.dequeueEventItem(5000).getEvent());
+        assertSame(event2, parentQueue.dequeueEventItem(5000).getEvent());
 
-        assertSame(event1, childQueue1.dequeueEventItem(-1).getEvent());
-        assertSame(event2, childQueue1.dequeueEventItem(-1).getEvent());
+        assertSame(event1, childQueue1.dequeueEventItem(5000).getEvent());
+        assertSame(event2, childQueue1.dequeueEventItem(5000).getEvent());
 
-        assertSame(event1, childQueue2.dequeueEventItem(-1).getEvent());
-        assertSame(event2, childQueue2.dequeueEventItem(-1).getEvent());
+        assertSame(event1, childQueue2.dequeueEventItem(5000).getEvent());
+        assertSame(event2, childQueue2.dequeueEventItem(5000).getEvent());
     }
 
     @Test
     public void testChildQueueDequeueIndependently() throws Exception {
-        EventQueue parentQueue = EventQueue.builder().build();
+        EventQueue parentQueue = createQueueWithEventBus("test-independent");
         EventQueue childQueue1 = parentQueue.tap();
         EventQueue childQueue2 = parentQueue.tap();
 
         Event event = fromJson(MINIMAL_TASK, Task.class);
         parentQueue.enqueueEvent(event);
 
-        // Dequeue from child1 first
-        Event child1Event = childQueue1.dequeueEventItem(-1).getEvent();
+        // Dequeue from child1 first (use timeout for async processing)
+        Event child1Event = childQueue1.dequeueEventItem(5000).getEvent();
         assertSame(event, child1Event);
 
         // child2 should still have the event available
-        Event child2Event = childQueue2.dequeueEventItem(-1).getEvent();
+        Event child2Event = childQueue2.dequeueEventItem(5000).getEvent();
         assertSame(event, child2Event);
 
         // Parent should still have the event available
-        Event parentEvent = parentQueue.dequeueEventItem(-1).getEvent();
+        Event parentEvent = parentQueue.dequeueEventItem(5000).getEvent();
         assertSame(event, parentEvent);
     }
 
 
     @Test
     public void testCloseImmediatePropagationToChildren() throws Exception {
-        EventQueue parentQueue = EventQueue.builder().build();
+        EventQueue parentQueue = createQueueWithEventBus("test-close");
         EventQueue childQueue = parentQueue.tap();
 
         // Add events to both parent and child
@@ -166,7 +199,7 @@ public class EventQueueTest {
 
         assertFalse(childQueue.isClosed());
         try {
-            assertNotNull(childQueue.dequeueEventItem(-1)); // Child has the event
+            assertNotNull(childQueue.dequeueEventItem(5000)); // Child has the event (use timeout)
         } catch (EventQueueClosedException e) {
             // This is fine if queue closed before dequeue
         }

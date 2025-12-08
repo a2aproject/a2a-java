@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.InMemoryQueueManager;
+import io.a2a.server.events.MainEventBus;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
@@ -203,8 +204,9 @@ public class ResultAggregatorTest {
         when(mockTaskManager.getTask()).thenReturn(firstEvent);
 
         // Create an event queue using QueueManager (which has access to builder)
+        MainEventBus mainEventBus = new MainEventBus();
         InMemoryQueueManager queueManager =
-            new InMemoryQueueManager(new MockTaskStateProvider());
+            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
 
         EventQueue queue = queueManager.getEventQueueBuilder("test-task").build();
         queue.enqueueEvent(firstEvent);
@@ -221,7 +223,8 @@ public class ResultAggregatorTest {
 
         assertEquals(firstEvent, result.eventType());
         assertTrue(result.interrupted());
-        verify(mockTaskManager).process(firstEvent);
+        // NOTE: ResultAggregator no longer calls taskManager.process()
+        // That responsibility has moved to MainEventBusProcessor for centralized persistence
         // getTask() is called at least once for the return value (line 255)
         // May be called once more if debug logging executes in time (line 209)
         // The async consumer may or may not execute before verification, so we accept 1-2 calls
