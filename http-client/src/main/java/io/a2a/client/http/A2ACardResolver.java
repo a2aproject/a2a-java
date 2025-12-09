@@ -1,14 +1,12 @@
 package io.a2a.client.http;
 
-import static io.a2a.util.Utils.unmarshalFrom;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientJSONError;
 import io.a2a.spec.AgentCard;
@@ -20,8 +18,6 @@ public class A2ACardResolver {
     private final @Nullable Map<String, String> authHeaders;
 
     private static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
-
-    private static final TypeReference<AgentCard> AGENT_CARD_TYPE_REFERENCE = new TypeReference<>() {};
 
     /**
      * Get the agent card for an A2A agent.
@@ -106,7 +102,7 @@ public class A2ACardResolver {
         }
 
         try {
-            return unmarshalFrom(body, AGENT_CARD_TYPE_REFERENCE);
+            return JsonUtil.fromJson(body, AgentCard.class);
         } catch (JsonProcessingException e) {
             throw new A2AClientJSONError("Could not unmarshal agent card response", e);
         }

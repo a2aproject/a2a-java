@@ -19,7 +19,7 @@ public class InMemoryTaskStoreTest {
     @Test
     public void testSaveAndGet() throws Exception {
         InMemoryTaskStore store = new InMemoryTaskStore();
-        Task task = Utils.unmarshalFrom(TASK_JSON, Task.TYPE_REFERENCE);
+        Task task = Utils.unmarshalFrom(TASK_JSON, Task.class);
         store.save(task);
         Task retrieved = store.get(task.getId());
         assertSame(task, retrieved);
@@ -35,7 +35,7 @@ public class InMemoryTaskStoreTest {
     @Test
     public void testDelete() throws Exception {
         InMemoryTaskStore store = new InMemoryTaskStore();
-        Task task = Utils.unmarshalFrom(TASK_JSON, Task.TYPE_REFERENCE);
+        Task task = Utils.unmarshalFrom(TASK_JSON, Task.class);
         store.save(task);
         store.delete(task.getId());
         Task retrieved = store.get(task.getId());

@@ -89,8 +89,7 @@ public class JsonStreamingMessages {
                         ]
                     }
                   }
-               }
-            }""";
+               }""";
 
     public static final String STREAMING_ERROR_EVENT = """
             data: {

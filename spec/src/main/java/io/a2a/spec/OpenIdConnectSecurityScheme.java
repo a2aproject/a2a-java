@@ -1,10 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.OpenIdConnectSecurityScheme.OPENID_CONNECT;
@@ -12,9 +7,6 @@ import static io.a2a.spec.OpenIdConnectSecurityScheme.OPENID_CONNECT;
 /**
  * Defines a security scheme using OpenID Connect.
  */
-@JsonTypeName(OPENID_CONNECT)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class OpenIdConnectSecurityScheme implements SecurityScheme {
 
     public static final String OPENID_CONNECT = "openIdConnect";
@@ -26,9 +18,7 @@ public final class OpenIdConnectSecurityScheme implements SecurityScheme {
         this(openIdConnectUrl, description, OPENID_CONNECT);
     }
 
-    @JsonCreator
-    public OpenIdConnectSecurityScheme(@JsonProperty("openIdConnectUrl") String openIdConnectUrl,
-                                       @JsonProperty("description") String description, @JsonProperty("type") String type) {
+    public OpenIdConnectSecurityScheme(String openIdConnectUrl, String description, String type) {
         Assert.checkNotNullParam("type", type);
         Assert.checkNotNullParam("openIdConnectUrl", openIdConnectUrl);
         if (!type.equals(OPENID_CONNECT)) {

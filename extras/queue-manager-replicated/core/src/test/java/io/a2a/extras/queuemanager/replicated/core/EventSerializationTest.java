@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.a2a.json.JsonProcessingException;
 import io.a2a.server.events.QueueClosedEvent;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Event;
@@ -32,7 +32,7 @@ import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -52,12 +52,12 @@ public class EventSerializationTest {
                 .build();
 
         // Test serialization as Event
-        String json = Utils.OBJECT_MAPPER.writeValueAsString((Event) originalTask);
+        String json = JsonUtil.toJson(originalTask);
         assertTrue(json.contains("\"kind\":\"task\""), "JSON should contain task kind");
         assertTrue(json.contains("\"id\":\"test-task-123\""), "JSON should contain task ID");
 
         // Test deserialization back to StreamingEventKind
-        StreamingEventKind deserializedEvent = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);
+        StreamingEventKind deserializedEvent = JsonUtil.fromJson(json, StreamingEventKind.class);
         assertInstanceOf(Task.class, deserializedEvent, "Should deserialize to Task");
 
         Task deserializedTask = (Task) deserializedEvent;
@@ -67,7 +67,7 @@ public class EventSerializationTest {
         assertEquals(originalTask.getStatus().state(), deserializedTask.getStatus().state());
 
         // Test as StreamingEventKind
-        StreamingEventKind deserializedAsStreaming = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);
+        StreamingEventKind deserializedAsStreaming = JsonUtil.fromJson(json, StreamingEventKind.class);
         assertInstanceOf(Task.class, deserializedAsStreaming, "Should deserialize to Task as StreamingEventKind");
     }
 
@@ -83,12 +83,12 @@ public class EventSerializationTest {
                 .build();
 
         // Test serialization as Event
-        String json = Utils.OBJECT_MAPPER.writeValueAsString((Event) originalMessage);
+        String json = JsonUtil.toJson(originalMessage);
         assertTrue(json.contains("\"kind\":\"message\""), "JSON should contain message kind");
         assertTrue(json.contains("\"taskId\":\"test-task-789\""), "JSON should contain task ID");
 
         // Test deserialization back to StreamingEventKind
-        StreamingEventKind deserializedEvent = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);
+        StreamingEventKind deserializedEvent = JsonUtil.fromJson(json, StreamingEventKind.class);
         assertInstanceOf(Message.class, deserializedEvent, "Should deserialize to Message");
 
         Message deserializedMessage = (Message) deserializedEvent;
@@ -98,7 +98,7 @@ public class EventSerializationTest {
         assertEquals(originalMessage.getParts().size(), deserializedMessage.getParts().size());
 
         // Test as StreamingEventKind
-        StreamingEventKind deserializedAsStreaming = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);
+        StreamingEventKind deserializedAsStreaming = JsonUtil.fromJson(json, StreamingEventKind.class);
         assertInstanceOf(Message.class, deserializedAsStreaming, "Should deserialize to Message as StreamingEventKind");
     }
 
@@ -114,13 +114,13 @@ public class EventSerializationTest {
                 .build();
 
         // Test serialization as Event
-        String json = Utils.OBJECT_MAPPER.writeValueAsString((Event) originalEvent);
+        String json = JsonUtil.toJson((Event) originalEvent);
         assertTrue(json.contains("\"kind\":\"status-update\""), "JSON should contain status-update kind");
         assertTrue(json.contains("\"taskId\":\"test-task-abc\""), "JSON should contain task ID");
         assertTrue(json.contains("\"final\":true"), "JSON should contain final flag");
 
         // Test deserialization back to StreamingEventKind
-        StreamingEventKind deserializedEvent = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);
+        StreamingEventKind deserializedEvent = JsonUtil.fromJson(json, StreamingEventKind.class);
         assertInstanceOf(TaskStatusUpdateEvent.class, deserializedEvent, "Should deserialize to TaskStatusUpdateEvent");
 
         TaskStatusUpdateEvent deserializedStatusEvent = (TaskStatusUpdateEvent) deserializedEvent;
@@ -131,7 +131,7 @@ public class EventSerializationTest {
         assertEquals(originalEvent.isFinal(), deserializedStatusEvent.isFinal());
 
         // Test as StreamingEventKind
-        StreamingEventKind deserializedAsStreaming = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);
+        StreamingEventKind deserializedAsStreaming = JsonUtil.fromJson(json, StreamingEventKind.class);
         assertInstanceOf(TaskStatusUpdateEvent.class, deserializedAsStreaming, "Should deserialize to TaskStatusUpdateEvent as StreamingEventKind");
     }
 
@@ -147,13 +147,13 @@ public class EventSerializationTest {
                 .build();
 
         // Test serialization as Event
-        String json = Utils.OBJECT_MAPPER.writeValueAsString((Event) originalEvent);
+        String json = JsonUtil.toJson((Event) originalEvent);
         assertTrue(json.contains("\"kind\":\"artifact-update\""), "JSON should contain artifact-update kind");
         assertTrue(json.contains("\"taskId\":\"test-task-xyz\""), "JSON should contain task ID");
         assertTrue(json.contains("\"test-artifact-123\""), "JSON should contain artifact ID");
 
         // Test deserialization back to StreamingEventKind
-        StreamingEventKind deserializedEvent = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);
+        StreamingEventKind deserializedEvent = JsonUtil.fromJson(json, StreamingEventKind.class);
         assertInstanceOf(TaskArtifactUpdateEvent.class, deserializedEvent, "Should deserialize to TaskArtifactUpdateEvent");
 
         TaskArtifactUpdateEvent deserializedArtifactEvent = (TaskArtifactUpdateEvent) deserializedEvent;
@@ -164,7 +164,7 @@ public class EventSerializationTest {
         assertEquals(originalEvent.getArtifact().name(), deserializedArtifactEvent.getArtifact().name());
 
         // Test as StreamingEventKind
-        StreamingEventKind deserializedAsStreaming = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);
+        StreamingEventKind deserializedAsStreaming = JsonUtil.fromJson(json, StreamingEventKind.class);
         assertInstanceOf(TaskArtifactUpdateEvent.class, deserializedAsStreaming, "Should deserialize to TaskArtifactUpdateEvent as StreamingEventKind");
     }
 
@@ -186,11 +186,11 @@ public class EventSerializationTest {
 
         for (JSONRPCError originalError : errors) {
             // Test serialization
-            String json = Utils.OBJECT_MAPPER.writeValueAsString(originalError);
+            String json = JsonUtil.toJson(originalError);
             assertTrue(json.contains("\"message\""), "JSON should contain error message for " + originalError.getClass().getSimpleName());
 
             // Test deserialization - it's acceptable to deserialize as base JSONRPCError
-            JSONRPCError deserializedError = Utils.OBJECT_MAPPER.readValue(json, JSONRPCError.class);
+            JSONRPCError deserializedError = JsonUtil.fromJson(json, JSONRPCError.class);
             assertNotNull(deserializedError, "Should deserialize successfully for " + originalError.getClass().getSimpleName());
             assertEquals(originalError.getMessage(), deserializedError.getMessage(), "Error message should match for " + originalError.getClass().getSimpleName());
             assertEquals(originalError.getCode(), deserializedError.getCode(), "Error code should match for " + originalError.getClass().getSimpleName());
@@ -213,14 +213,14 @@ public class EventSerializationTest {
         ReplicatedEventQueueItem originalReplicatedEvent = new ReplicatedEventQueueItem("replicated-test-task", statusEvent);
 
         // Serialize the ReplicatedEventQueueItem
-        String json = Utils.OBJECT_MAPPER.writeValueAsString(originalReplicatedEvent);
+        String json = JsonUtil.toJson(originalReplicatedEvent);
         assertTrue(json.contains("\"taskId\":\"replicated-test-task\""), "JSON should contain task ID");
         assertTrue(json.contains("\"event\""), "JSON should contain event field");
         assertTrue(json.contains("\"kind\":\"status-update\""), "JSON should contain the event kind");
         assertFalse(json.contains("\"error\""), "JSON should not contain error field");
 
         // Deserialize the ReplicatedEventQueueItem
-        ReplicatedEventQueueItem deserializedReplicatedEvent = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
+        ReplicatedEventQueueItem deserializedReplicatedEvent = JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);
         assertEquals(originalReplicatedEvent.getTaskId(), deserializedReplicatedEvent.getTaskId());
 
         // Now we should get the proper type back!
@@ -250,14 +250,14 @@ public class EventSerializationTest {
         ReplicatedEventQueueItem originalReplicatedEvent = new ReplicatedEventQueueItem("error-test-task", error);
 
         // Serialize the ReplicatedEventQueueItemQueueItem
-        String json = Utils.OBJECT_MAPPER.writeValueAsString(originalReplicatedEvent);
+        String json = JsonUtil.toJson(originalReplicatedEvent);
         assertTrue(json.contains("\"taskId\":\"error-test-task\""), "JSON should contain task ID");
         assertTrue(json.contains("\"error\""), "JSON should contain error field");
         assertTrue(json.contains("\"message\""), "JSON should contain error message");
         assertFalse(json.contains("\"event\""), "JSON should not contain event field");
 
         // Deserialize the ReplicatedEventQueueItem
-        ReplicatedEventQueueItem deserializedReplicatedEvent = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
+        ReplicatedEventQueueItem deserializedReplicatedEvent = JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);
         assertEquals(originalReplicatedEvent.getTaskId(), deserializedReplicatedEvent.getTaskId());
 
         // Should get the error back
@@ -308,14 +308,14 @@ public class EventSerializationTest {
         assertFalse(originalReplicatedEvent.hasError(), "Should not have error");
 
         // Serialize the ReplicatedEventQueueItem
-        String json = Utils.OBJECT_MAPPER.writeValueAsString(originalReplicatedEvent);
+        String json = JsonUtil.toJson(originalReplicatedEvent);
         assertTrue(json.contains("\"taskId\":\"" + taskId + "\""), "JSON should contain task ID");
         assertTrue(json.contains("\"closedEvent\":true"), "JSON should contain closedEvent flag set to true");
         assertFalse(json.contains("\"event\""), "JSON should not contain event field");
         assertFalse(json.contains("\"error\""), "JSON should not contain error field");
 
         // Deserialize the ReplicatedEventQueueItem
-        ReplicatedEventQueueItem deserializedReplicatedEvent = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
+        ReplicatedEventQueueItem deserializedReplicatedEvent = JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);
         assertEquals(taskId, deserializedReplicatedEvent.getTaskId());
 
         // Verify the deserialized item is marked as a closed event

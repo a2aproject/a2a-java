@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
@@ -13,8 +11,6 @@ import io.a2a.util.Assert;
  * metadata including the agent's identity, capabilities, skills, supported
  * communication methods, and security requirements.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record AgentCard(String name, String description, String url, AgentProvider provider,
                         String version, String documentationUrl, AgentCapabilities capabilities,
                         List<String> defaultInputModes, List<String> defaultOutputModes, List<AgentSkill> skills,
