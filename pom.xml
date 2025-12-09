@@ -66,8 +66,8 @@
         <rest-assured.version>5.5.1</rest-assured.version>
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.18</logback.version>
-        <error-prone.version>2.43.0</error-prone.version>
-        <nullaway.version>0.12.12</nullaway.version>
+        <error-prone.version>2.45.0</error-prone.version>
+        <nullaway.version>0.12.14</nullaway.version>
         <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true </error-prone.flag>
 
         <!-- Redirect test output to file -->
@@ -341,7 +341,8 @@
                             <arg>-XDcompilePolicy=simple</arg>
                             <arg>--should-stop=ifError=FLOW</arg>
                             <arg>-parameters</arg>
-                            <arg>${error-prone.flag}-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode </arg>
+                            <arg>${error-prone.flag}</arg>
+                            <arg>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode</arg>
                         </compilerArgs>
                         <annotationProcessorPaths>
                             <path>
