@@ -16,6 +16,8 @@ import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.EventQueueUtil;
+import io.a2a.server.events.MainEventBus;
+import io.a2a.server.events.MainEventBusProcessor;
 import io.a2a.spec.Event;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
@@ -23,6 +25,7 @@ import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,19 +42,39 @@ public class TaskUpdaterTest {
 
     private static final List<Part<?>> SAMPLE_PARTS = List.of(new TextPart("Test message"));
 
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
+
     EventQueue eventQueue;
+    private MainEventBus mainEventBus;
+    private MainEventBusProcessor mainEventBusProcessor;
     private TaskUpdater taskUpdater;
 
 
 
     @BeforeEach
     public void init() {
-        eventQueue = EventQueueUtil.getEventQueueBuilder().build().tap();
+        // Set up MainEventBus and processor for production-like test environment
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        mainEventBus = new MainEventBus();
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER);
+        EventQueueUtil.start(mainEventBusProcessor);
+
+        eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(TEST_TASK_ID)
+                .mainEventBus(mainEventBus)
+                .build().tap();
         RequestContext context = new RequestContext.Builder()
                 .setTaskId(TEST_TASK_ID)
                 .setContextId(TEST_TASK_CONTEXT_ID)
                 .build();
         taskUpdater = new TaskUpdater(context, eventQueue);
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (mainEventBusProcessor != null) {
+            EventQueueUtil.stop(mainEventBusProcessor);
+        }
     }
 
     @Test

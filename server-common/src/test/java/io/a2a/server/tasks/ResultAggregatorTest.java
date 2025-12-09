@@ -11,8 +11,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueue;
@@ -20,12 +22,14 @@ import io.a2a.server.events.EventQueueUtil;
 import io.a2a.server.events.InMemoryQueueManager;
 import io.a2a.server.events.MainEventBus;
 import io.a2a.server.events.MainEventBusProcessor;
+import io.a2a.spec.Event;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TextPart;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -70,6 +74,38 @@ public class ResultAggregatorTest {
                 .contextId(contextId)
                 .status(new TaskStatus(statusState))
                 .build();
+    }
+
+    /**
+     * Helper to wait for MainEventBusProcessor to process an event.
+     * Replaces polling patterns with deterministic callback-based waiting.
+     *
+     * @param processor the processor to set callback on
+     * @param action the action that triggers event processing
+     * @throws InterruptedException if waiting is interrupted
+     * @throws AssertionError if processing doesn't complete within timeout
+     */
+    private void waitForEventProcessing(MainEventBusProcessor processor, Runnable action) throws InterruptedException {
+        CountDownLatch processingLatch = new CountDownLatch(1);
+        processor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                processingLatch.countDown();
+            }
+
+            @Override
+            public void onTaskFinalized(String taskId) {
+                // Not needed for basic event processing wait
+            }
+        });
+
+        try {
+            action.run();
+            assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+                    "MainEventBusProcessor should have processed the event within timeout");
+        } finally {
+            processor.setCallback(null);
+        }
     }
 
 
@@ -200,7 +236,8 @@ public class ResultAggregatorTest {
     @Test
     void testConsumeAndBreakNonBlocking() throws Exception {
         // Test that with blocking=false, the method returns after the first event
-        Task firstEvent = createSampleTask("non_blocking_task", TaskState.WORKING, "ctx1");
+        String taskId = "test-task";
+        Task firstEvent = createSampleTask(taskId, TaskState.WORKING, "ctx1");
 
         // After processing firstEvent, the current result will be that task
         when(mockTaskManager.getTask()).thenReturn(firstEvent);
@@ -214,16 +251,10 @@ public class ResultAggregatorTest {
         InMemoryQueueManager queueManager =
             new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
 
-        EventQueue queue = queueManager.getEventQueueBuilder("test-task").build().tap();
-        queue.enqueueEvent(firstEvent);
+        EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
 
-        // Poll for event to arrive in ChildQueue (async MainEventBusProcessor distribution)
-        long startTime = System.currentTimeMillis();
-        long timeout = 2000;
-        while (queue.size() == 0 && (System.currentTimeMillis() - startTime) < timeout) {
-            Thread.sleep(50);
-        }
-        assertTrue(queue.size() > 0, "Event should arrive in ChildQueue within timeout");
+        // Use callback to wait for event processing (replaces polling)
+        waitForEventProcessing(processor, () -> queue.enqueueEvent(firstEvent));
 
         // Create real EventConsumer with the queue
         EventConsumer eventConsumer =

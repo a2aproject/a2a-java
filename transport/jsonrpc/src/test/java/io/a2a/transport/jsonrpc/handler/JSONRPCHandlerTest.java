@@ -285,7 +285,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageStreamNewMessageMultipleEventsSuccess() throws InterruptedException {
         // Setup callback to wait for all 3 events to be processed by MainEventBusProcessor
         CountDownLatch processingLatch = new CountDownLatch(3);
-        io.a2a.server.events.MainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
+        mainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
             @Override
             public void onEventProcessed(String taskId, io.a2a.spec.Event event) {
                 processingLatch.countDown();
@@ -407,7 +407,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             assertEquals(MINIMAL_TASK.getId(), receivedStatus.getTaskId());
             assertEquals(TaskState.COMPLETED, receivedStatus.getStatus().state());
         } finally {
-            io.a2a.server.events.MainEventBusProcessor.setCallback(null);
+            mainEventBusProcessor.setCallback(null);
         }
     }
 
@@ -679,7 +679,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageStreamNewMessageSendPushNotificationSuccess() throws Exception {
         // Setup callback to wait for all 3 events to be processed by MainEventBusProcessor
         CountDownLatch processingLatch = new CountDownLatch(3);
-        io.a2a.server.events.MainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
+        mainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
             @Override
             public void onEventProcessed(String taskId, io.a2a.spec.Event event) {
                 processingLatch.countDown();
@@ -799,7 +799,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(1, curr.getArtifacts().get(0).parts().size());
         assertEquals("text", ((TextPart)curr.getArtifacts().get(0).parts().get(0)).getText());
         } finally {
-            io.a2a.server.events.MainEventBusProcessor.setCallback(null);
+            mainEventBusProcessor.setCallback(null);
         }
     }
 
@@ -1267,7 +1267,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageStreamTaskIdMismatch() throws InterruptedException {
         // Setup callback to wait for the 1 event to be processed by MainEventBusProcessor
         CountDownLatch processingLatch = new CountDownLatch(1);
-        io.a2a.server.events.MainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
+        mainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
             @Override
             public void onEventProcessed(String taskId, io.a2a.spec.Event event) {
                 processingLatch.countDown();
@@ -1332,7 +1332,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             Assertions.assertEquals(1, results.size());
             Assertions.assertInstanceOf(InternalError.class, results.get(0).getError());
         } finally {
-            io.a2a.server.events.MainEventBusProcessor.setCallback(null);
+            mainEventBusProcessor.setCallback(null);
         }
     }
 
