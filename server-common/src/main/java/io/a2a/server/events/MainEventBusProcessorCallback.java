@@ -12,10 +12,13 @@ import io.a2a.spec.Event;
  * Usage in tests:
  * <pre>
  * {@code
+ * @Inject
+ * MainEventBusProcessor processor;
+ *
  * @BeforeEach
  * void setUp() {
  *     CountDownLatch latch = new CountDownLatch(3);
- *     MainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+ *     processor.setCallback(new MainEventBusProcessorCallback() {
  *         public void onEventProcessed(String taskId, Event event) {
  *             latch.countDown();
  *         }
@@ -24,7 +27,7 @@ import io.a2a.spec.Event;
  *
  * @AfterEach
  * void tearDown() {
- *     MainEventBusProcessor.setCallback(null); // Reset to NOOP
+ *     processor.setCallback(null); // Reset to NOOP
  * }
  * }
  * </pre>

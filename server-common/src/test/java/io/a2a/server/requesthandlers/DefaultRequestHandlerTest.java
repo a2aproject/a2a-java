@@ -89,7 +89,39 @@ public class DefaultRequestHandlerTest {
     void tearDown() {
         // Stop MainEventBusProcessor background thread
         if (mainEventBusProcessor != null) {
+            mainEventBusProcessor.setCallback(null);  // Clear any test callbacks
             EventQueueUtil.stop(mainEventBusProcessor);
+        }
+    }
+
+    /**
+     * Helper to wait for MainEventBusProcessor to finalize a task.
+     * Replaces polling patterns with deterministic callback-based waiting.
+     *
+     * @param action the action that triggers task finalization (e.g., enqueuing a final event)
+     * @throws InterruptedException if waiting is interrupted
+     * @throws AssertionError if finalization doesn't complete within timeout
+     */
+    private void waitForTaskFinalization(Runnable action) throws InterruptedException {
+        CountDownLatch finalizationLatch = new CountDownLatch(1);
+        mainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, io.a2a.spec.Event event) {
+                // Not used for task finalization wait
+            }
+
+            @Override
+            public void onTaskFinalized(String taskId) {
+                finalizationLatch.countDown();
+            }
+        });
+
+        try {
+            action.run();
+            assertTrue(finalizationLatch.await(5, TimeUnit.SECONDS),
+                    "MainEventBusProcessor should have finalized the task within timeout");
+        } finally {
+            mainEventBusProcessor.setCallback(null);
         }
     }
 
@@ -599,32 +631,15 @@ public class DefaultRequestHandlerTest {
 
         // At this point, the non-blocking call has returned, but the agent is still running
 
-        // Allow the agent to emit the final COMPLETED event
-        allowCompletion.countDown();
+        // Assertion 2: Wait for the final task to be processed and finalized in background
+        // Use callback to wait for task finalization instead of polling
+        waitForTaskFinalization(() -> allowCompletion.countDown());
 
-        // Assertion 2: Poll for the final task state to be persisted in background
-        // Use polling loop instead of fixed sleep for faster and more reliable test
-        long timeoutMs = 5000;
-        long startTime = System.currentTimeMillis();
-        Task persistedTask = null;
-        boolean completedStateFound = false;
-
-        while (System.currentTimeMillis() - startTime < timeoutMs) {
-            persistedTask = taskStore.get(taskId);
-            if (persistedTask != null && persistedTask.status().state() == TaskState.COMPLETED) {
-                completedStateFound = true;
-                break;
-            }
-            Thread.sleep(100);  // Poll every 100ms
-        }
-
-        assertTrue(persistedTask != null, "Task should be persisted to store");
-        assertTrue(
-            completedStateFound,
-            "Final task state should be COMPLETED (background consumption should have processed it), got: " +
-            (persistedTask != null ? persistedTask.status().state() : "null") +
-            " after " + (System.currentTimeMillis() - startTime) + "ms"
-        );
+        // Verify the task was persisted with COMPLETED state
+        Task persistedTask = taskStore.get(taskId);
+        assertNotNull(persistedTask, "Task should be persisted to store");
+        assertEquals(TaskState.COMPLETED, persistedTask.status().state(),
+            "Final task state should be COMPLETED (background consumption should have processed it)");
     }
 
     /**
@@ -801,16 +816,42 @@ public class DefaultRequestHandlerTest {
             updater.complete();
         });
 
-        // Call blocking onMessageSend - should wait for ALL events
-        Object result = requestHandler.onMessageSend(params, serverCallContext);
+        // Use callback to ensure task finalization is complete before checking TaskStore
+        // This ensures MainEventBusProcessor has finished persisting the final state
+        CountDownLatch finalizationLatch = new CountDownLatch(1);
+        mainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, io.a2a.spec.Event event) {
+                // Not used
+            }
 
-        // The returned result should be a Task with ALL artifacts
-        assertTrue(result instanceof Task, "Result should be a Task");
-        Task returnedTask = (Task) result;
+            @Override
+            public void onTaskFinalized(String taskId) {
+                finalizationLatch.countDown();
+            }
+        });
 
-        // Verify task is completed
-        assertEquals(TaskState.COMPLETED, returnedTask.status().state(),
-            "Returned task should be COMPLETED");
+        Task returnedTask;
+        try {
+            // Call blocking onMessageSend - should wait for ALL events
+            Object result = requestHandler.onMessageSend(params, serverCallContext);
+
+            // Wait for finalization callback to ensure TaskStore is fully updated
+            assertTrue(finalizationLatch.await(5, TimeUnit.SECONDS),
+                    "Task should be finalized within timeout");
+
+            // The returned result should be a Task with ALL artifacts
+            assertTrue(result instanceof Task, "Result should be a Task");
+            returnedTask = (Task) result;
+
+            // Fetch final state from TaskStore (guaranteed to be persisted after callback)
+            returnedTask = taskStore.get(taskId);
+
+            assertEquals(TaskState.COMPLETED, returnedTask.status().state(),
+                "Returned task should be COMPLETED");
+        } finally {
+            mainEventBusProcessor.setCallback(null);
+        }
 
         // Verify artifacts are included in the returned task
         assertNotNull(returnedTask.artifacts(),

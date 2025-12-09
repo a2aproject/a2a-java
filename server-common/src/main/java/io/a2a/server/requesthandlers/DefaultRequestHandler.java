@@ -507,7 +507,12 @@ public class DefaultRequestHandler implements RequestHandler {
 
             // Cleanup as background task to avoid blocking Vert.x threads
             // Pass the consumption future to ensure cleanup waits for background consumption to complete
-            cleanupProducer(agentFuture, etai != null ? etai.consumptionFuture() : null, taskId, queue, false);
+            cleanupProducer(agentFuture, etai != null ? etai.consumptionFuture() : null, taskId, queue, false)
+                    .whenComplete((res, err) -> {
+                        if (err != null) {
+                            LOGGER.error("Error during async cleanup for task {}", taskId, err);
+                        }
+                    });
         }
 
         LOGGER.debug("Returning: {}", kind);
@@ -648,7 +653,12 @@ public class DefaultRequestHandler implements RequestHandler {
                 CompletableFuture<Void> agentFuture = runningAgents.remove(idOfTask);
                 LOGGER.debug("Removed agent for task {} from runningAgents in finally block, size after: {}", taskId.get(), runningAgents.size());
 
-                cleanupProducer(agentFuture, null, idOfTask, queue, true);
+                cleanupProducer(agentFuture, null, idOfTask, queue, true)
+                        .whenComplete((res, err) -> {
+                            if (err != null) {
+                                LOGGER.error("Error during async cleanup for streaming task {}", taskId.get(), err);
+                            }
+                        });
             }
         }
     }

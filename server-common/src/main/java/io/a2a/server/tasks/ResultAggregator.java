@@ -133,7 +133,6 @@ public class ResultAggregator {
 
                     // Determine interrupt behavior
                     boolean shouldInterrupt = false;
-                    boolean continueInBackground = false;
                     boolean isFinalEvent = (event instanceof Task task && task.status().state().isFinal())
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.isFinal());
                     boolean isAuthRequired = (event instanceof Task task && task.status().state() == TaskState.AUTH_REQUIRED)
@@ -148,19 +147,16 @@ public class ResultAggregator {
                         // new request is expected in order for the agent to make progress,
                         // so the agent should exit.
                         shouldInterrupt = true;
-                        continueInBackground = true;
                     }
                     else if (!blocking) {
                         // For non-blocking calls, interrupt as soon as a task is available.
                         shouldInterrupt = true;
-                        continueInBackground = true;
                     }
                     else if (blocking) {
                         // For blocking calls: Interrupt to free Vert.x thread, but continue in background
                         // Python's async consumption doesn't block threads, but Java's does
                         // So we interrupt to return quickly, then rely on background consumption
                         shouldInterrupt = true;
-                        continueInBackground = true;
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug("Blocking call for task {}: {} event, returning with background consumption",
                                 taskIdForLogging(), isFinalEvent ? "final" : "non-final");

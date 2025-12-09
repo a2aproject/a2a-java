@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
+import io.a2a.server.tasks.InMemoryTaskStore;
+import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Artifact;
@@ -27,14 +29,19 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class EventConsumerTest {
 
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
+    private static final String TASK_ID = "123";  // Must match MINIMAL_TASK id
+
     private EventQueue eventQueue;
     private EventConsumer eventConsumer;
-
+    private MainEventBus mainEventBus;
+    private MainEventBusProcessor mainEventBusProcessor;
 
     private static final String MINIMAL_TASK = """
             {
@@ -54,8 +61,56 @@ public class EventConsumerTest {
 
     @BeforeEach
     public void init() {
-        eventQueue = EventQueueUtil.getEventQueueBuilder().build().tap();
+        // Set up MainEventBus and processor for production-like test environment
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        mainEventBus = new MainEventBus();
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER);
+        EventQueueUtil.start(mainEventBusProcessor);
+
+        eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(TASK_ID)
+                .mainEventBus(mainEventBus)
+                .build().tap();
         eventConsumer = new EventConsumer(eventQueue);
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (mainEventBusProcessor != null) {
+            mainEventBusProcessor.setCallback(null);  // Clear any test callbacks
+            EventQueueUtil.stop(mainEventBusProcessor);
+        }
+    }
+
+    /**
+     * Helper to wait for MainEventBusProcessor to process an event.
+     * Replaces polling patterns with deterministic callback-based waiting.
+     *
+     * @param action the action that triggers event processing
+     * @throws InterruptedException if waiting is interrupted
+     * @throws AssertionError if processing doesn't complete within timeout
+     */
+    private void waitForEventProcessing(Runnable action) throws InterruptedException {
+        CountDownLatch processingLatch = new CountDownLatch(1);
+        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                processingLatch.countDown();
+            }
+
+            @Override
+            public void onTaskFinalized(String taskId) {
+                // Not needed for basic event processing wait
+            }
+        });
+
+        try {
+            action.run();
+            assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+                    "MainEventBusProcessor should have processed the event within timeout");
+        } finally {
+            mainEventBusProcessor.setCallback(null);
+        }
     }
 
     @Test
@@ -92,7 +147,7 @@ public class EventConsumerTest {
         List<Event> events = List.of(
                 fromJson(MINIMAL_TASK, Task.class),
                 TaskArtifactUpdateEvent.builder()
-                        .taskId("task-123")
+                        .taskId(TASK_ID)
                         .contextId("session-xyz")
                         .artifact(Artifact.builder()
                                 .artifactId("11")
@@ -100,7 +155,7 @@ public class EventConsumerTest {
                                 .build())
                         .build(),
                 TaskStatusUpdateEvent.builder()
-                        .taskId("task-123")
+                        .taskId(TASK_ID)
                         .contextId("session-xyz")
                         .status(new TaskStatus(TaskState.WORKING))
                         .isFinal(true)
@@ -128,7 +183,7 @@ public class EventConsumerTest {
         List<Event> events = List.of(
                 fromJson(MINIMAL_TASK, Task.class),
                 TaskArtifactUpdateEvent.builder()
-                        .taskId("task-123")
+                        .taskId(TASK_ID)
                         .contextId("session-xyz")
                         .artifact(Artifact.builder()
                                 .artifactId("11")
@@ -136,7 +191,7 @@ public class EventConsumerTest {
                                 .build())
                         .build(),
                 TaskStatusUpdateEvent.builder()
-                        .taskId("task-123")
+                        .taskId(TASK_ID)
                         .contextId("session-xyz")
                         .status(new TaskStatus(TaskState.WORKING))
                         .isFinal(true)
@@ -332,7 +387,9 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeAllStopsOnQueueClosed() throws Exception {
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build().tap();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .mainEventBus(mainEventBus)
+                .build().tap();
         EventConsumer consumer = new EventConsumer(queue);
 
         // Close the queue immediately
@@ -378,20 +435,16 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeAllHandlesQueueClosedException() throws Exception {
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build().tap();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .mainEventBus(mainEventBus)
+                .build().tap();
         EventConsumer consumer = new EventConsumer(queue);
 
         // Add a message event (which will complete the stream)
         Event message = fromJson(MESSAGE_PAYLOAD, Message.class);
-        queue.enqueueEvent(message);
 
-        // Poll for event to arrive in ChildQueue (async MainEventBusProcessor distribution)
-        long startTime = System.currentTimeMillis();
-        long timeout = 2000;
-        while (queue.size() == 0 && (System.currentTimeMillis() - startTime) < timeout) {
-            Thread.sleep(50);
-        }
-        assertTrue(queue.size() > 0, "Event should arrive in ChildQueue within timeout");
+        // Use callback to wait for event processing
+        waitForEventProcessing(() -> queue.enqueueEvent(message));
 
         // Close the queue before consuming
         queue.close();
@@ -436,11 +489,13 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeAllTerminatesOnQueueClosedEvent() throws Exception {
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build().tap();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .mainEventBus(mainEventBus)
+                .build().tap();
         EventConsumer consumer = new EventConsumer(queue);
 
         // Enqueue a QueueClosedEvent (poison pill)
-        QueueClosedEvent queueClosedEvent = new QueueClosedEvent("task-123");
+        QueueClosedEvent queueClosedEvent = new QueueClosedEvent(TASK_ID);
         queue.enqueueEvent(queueClosedEvent);
 
         Flow.Publisher<EventQueueItem> publisher = consumer.consumeAll();
@@ -485,20 +540,12 @@ public class EventConsumerTest {
     }
 
     private void enqueueAndConsumeOneEvent(Event event) throws Exception {
-        eventQueue.enqueueEvent(event);
-        // Poll for event with 2-second timeout
-        long startTime = System.currentTimeMillis();
-        long timeout = 2000;
-        Event result = null;
-        while (result == null && (System.currentTimeMillis() - startTime) < timeout) {
-            try {
-                result = eventConsumer.consumeOne();
-            } catch (A2AServerException e) {
-                // Event not available yet, wait a bit and try again
-                Thread.sleep(50);
-            }
-        }
-        assertNotNull(result, "Event should arrive within timeout");
+        // Use callback to wait for event processing
+        waitForEventProcessing(() -> eventQueue.enqueueEvent(event));
+
+        // Event is now available, consume it directly
+        Event result = eventConsumer.consumeOne();
+        assertNotNull(result, "Event should be available");
         assertSame(event, result);
     }
 

@@ -11,6 +11,7 @@ import io.a2a.server.tasks.TaskManager;
 import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
+import io.a2a.spec.InternalError;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
@@ -45,7 +46,7 @@ public class MainEventBusProcessor implements Runnable {
      * Default is NOOP to avoid null checks in production code.
      * Tests can inject their own callback via setCallback().
      */
-    private static volatile MainEventBusProcessorCallback callback = MainEventBusProcessorCallback.NOOP;
+    private volatile MainEventBusProcessorCallback callback = MainEventBusProcessorCallback.NOOP;
 
     private final MainEventBus eventBus;
 
@@ -72,14 +73,14 @@ public class MainEventBusProcessor implements Runnable {
      *
      * @param callback the callback to invoke during event processing, or null for NOOP
      */
-    public static void setCallback(MainEventBusProcessorCallback callback) {
-        MainEventBusProcessor.callback = callback != null ? callback : MainEventBusProcessorCallback.NOOP;
+    public void setCallback(MainEventBusProcessorCallback callback) {
+        this.callback = callback != null ? callback : MainEventBusProcessorCallback.NOOP;
     }
 
     @PostConstruct
     void start() {
         processorThread = new Thread(this, "MainEventBusProcessor");
-        processorThread.setDaemon(false); // Keep JVM alive
+        processorThread.setDaemon(true); // Allow JVM to exit even if this thread is running
         processorThread.start();
         LOGGER.info("MainEventBusProcessor started");
     }
@@ -99,9 +100,13 @@ public class MainEventBusProcessor implements Runnable {
         if (processorThread != null) {
             processorThread.interrupt();
             try {
+                long start = System.currentTimeMillis();
                 processorThread.join(5000); // Wait up to 5 seconds
+                long elapsed = System.currentTimeMillis() - start;
+                LOGGER.info("MainEventBusProcessor thread stopped in {}ms", elapsed);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                LOGGER.warn("Interrupted while waiting for MainEventBusProcessor thread to stop");
             }
         }
         LOGGER.info("MainEventBusProcessor stopped");
@@ -137,32 +142,67 @@ public class MainEventBusProcessor implements Runnable {
         LOGGER.debug("MainEventBusProcessor: Processing event for task {}: {} (queue type: {})",
                     taskId, event.getClass().getSimpleName(), eventQueue.getClass().getSimpleName());
 
-        // Step 1: Update TaskStore FIRST (persistence before clients see it)
-        updateTaskStore(taskId, event);
+        Event eventToDistribute = null;
+        try {
+            // Step 1: Update TaskStore FIRST (persistence before clients see it)
+            // If this throws, we distribute an error to ensure "persist before client visibility"
 
-        // Step 2: Send push notification AFTER persistence (ensures notification sees latest state)
-        sendPushNotification(taskId);
+            try {
+                updateTaskStore(taskId, event);
+                eventToDistribute = event; // Success - distribute original event
+            } catch (InternalError e) {
+                // Persistence failed - create error event to distribute instead
+                LOGGER.error("Failed to persist event for task {}, distributing error to clients", taskId, e);
+                String errorMessage = "Failed to persist event: " + e.getMessage();
+                eventToDistribute = e;
+            } catch (Exception e) {
+                LOGGER.error("Failed to persist event for task {}, distributing error to clients", taskId, e);
+                String errorMessage = "Failed to persist event: " + e.getMessage();
+                eventToDistribute = new InternalError(errorMessage);
+            }
 
-        // Step 3: Then distribute to ChildQueues (clients see it AFTER persistence + notification)
-        if (eventQueue instanceof EventQueue.MainQueue mainQueue) {
-            int childCount = mainQueue.getChildCount();
-            LOGGER.debug("MainEventBusProcessor: Distributing event to {} children for task {}", childCount, taskId);
-            mainQueue.distributeToChildren(context.eventQueueItem());
-            LOGGER.debug("MainEventBusProcessor: Distributed event {} to {} children for task {}",
-                        event.getClass().getSimpleName(), childCount, taskId);
-        } else {
-            LOGGER.warn("MainEventBusProcessor: Expected MainQueue but got {} for task {}",
-                    eventQueue.getClass().getSimpleName(), taskId);
-        }
+            // Step 2: Send push notification AFTER successful persistence
+            if (eventToDistribute == event) {
+                sendPushNotification(taskId);
+            }
 
-        LOGGER.debug("MainEventBusProcessor: Completed processing event for task {}", taskId);
+            // Step 3: Then distribute to ChildQueues (clients see either event or error AFTER persistence attempt)
+            if (eventQueue instanceof EventQueue.MainQueue mainQueue) {
+                int childCount = mainQueue.getChildCount();
+                LOGGER.debug("MainEventBusProcessor: Distributing {} to {} children for task {}",
+                            eventToDistribute.getClass().getSimpleName(), childCount, taskId);
+                // Create new EventQueueItem with the event to distribute (original or error)
+                EventQueueItem itemToDistribute = new LocalEventQueueItem(eventToDistribute);
+                mainQueue.distributeToChildren(itemToDistribute);
+                LOGGER.debug("MainEventBusProcessor: Distributed {} to {} children for task {}",
+                            eventToDistribute.getClass().getSimpleName(), childCount, taskId);
+            } else {
+                LOGGER.warn("MainEventBusProcessor: Expected MainQueue but got {} for task {}",
+                        eventQueue.getClass().getSimpleName(), taskId);
+            }
 
-        // Step 4: Notify callback after all processing is complete
-        callback.onEventProcessed(taskId, event);
+            LOGGER.debug("MainEventBusProcessor: Completed processing event for task {}", taskId);
 
-        // Step 5: If this is a final event, notify task finalization
-        if (isFinalEvent(event)) {
-            callback.onTaskFinalized(taskId);
+        } finally {
+            try {
+                // Step 4: Notify callback after all processing is complete
+                // Call callback with the distributed event (original or error)
+                if (eventToDistribute != null) {
+                    callback.onEventProcessed(taskId, eventToDistribute);
+
+                    // Step 5: If this is a final event, notify task finalization
+                    // Only for successful persistence (not for errors)
+                    if (eventToDistribute == event && isFinalEvent(event)) {
+                        callback.onTaskFinalized(taskId);
+                    }
+                }
+            } finally {
+                 // ALWAYS release semaphore, even if processing fails
+                // Balances the acquire() in MainQueue.enqueueEvent()
+                if (eventQueue instanceof EventQueue.MainQueue mainQueue) {
+                    mainQueue.releaseSemaphore();
+                }
+            }
         }
     }
 
@@ -173,8 +213,15 @@ public class MainEventBusProcessor implements Runnable {
      * which handles all event types (Task, TaskStatusUpdateEvent, TaskArtifactUpdateEvent).
      * This leverages existing TaskManager logic for status updates, artifact appending, message history, etc.
      * </p>
+     * <p>
+     * If persistence fails, the exception is propagated to processEvent() which distributes an
+     * InternalError to clients instead of the original event, ensuring "persist before visibility".
+     * See Gemini's comment: https://github.com/a2aproject/a2a-java/pull/515#discussion_r2604621833
+     * </p>
+     *
+     * @throws InternalError if persistence fails
      */
-    private void updateTaskStore(String taskId, Event event) {
+    private void updateTaskStore(String taskId, Event event) throws InternalError {
         try {
             // Extract contextId from event (all relevant events have it)
             String contextId = extractContextId(event);
@@ -186,12 +233,14 @@ public class MainEventBusProcessor implements Runnable {
             taskManager.process(event);
             LOGGER.debug("TaskStore updated via TaskManager.process() for task {}: {}",
                         taskId, event.getClass().getSimpleName());
-        } catch (A2AServerException e) {
+        } catch (InternalError e) {
             LOGGER.error("Error updating TaskStore via TaskManager for task {}", taskId, e);
-            // Don't rethrow - we still want to distribute to ChildQueues
+            // Rethrow to prevent distributing unpersisted event to clients
+            throw e;
         } catch (Exception e) {
             LOGGER.error("Unexpected error updating TaskStore for task {}", taskId, e);
-            // Don't rethrow - we still want to distribute to ChildQueues
+            // Rethrow to prevent distributing unpersisted event to clients
+            throw new InternalError("TaskStore persistence failed: " + e.getMessage());
         }
     }
 

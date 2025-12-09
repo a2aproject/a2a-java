@@ -470,22 +470,29 @@ public abstract class EventQueue implements AutoCloseable {
          * Called by MainEventBusProcessor after TaskStore persistence.
          */
         void distributeToChildren(EventQueueItem item) {
-            synchronized (children) {
-                int childCount = children.size();
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("MainQueue[{}]: Distributing event {} to {} children",
-                                taskId, item.getEvent().getClass().getSimpleName(), childCount);
-                }
-                children.forEach(child -> {
-                    LOGGER.debug("MainQueue[{}]: Enqueueing event {} to child queue",
-                                taskId, item.getEvent().getClass().getSimpleName());
-                    child.internalEnqueueItem(item);
-                });
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("MainQueue[{}]: Completed distribution of {} to {} children",
-                                taskId, item.getEvent().getClass().getSimpleName(), childCount);
-                }
+            int childCount = children.size();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("MainQueue[{}]: Distributing event {} to {} children",
+                        taskId, item.getEvent().getClass().getSimpleName(), childCount);
             }
+            children.forEach(child -> {
+                LOGGER.debug("MainQueue[{}]: Enqueueing event {} to child queue",
+                        taskId, item.getEvent().getClass().getSimpleName());
+                child.internalEnqueueItem(item);
+            });
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("MainQueue[{}]: Completed distribution of {} to {} children",
+                        taskId, item.getEvent().getClass().getSimpleName(), childCount);
+            }
+        }
+
+        /**
+         * Release the semaphore after event processing is complete.
+         * Called by MainEventBusProcessor in finally block to ensure release even on exceptions.
+         * Balances the acquire() in enqueueEvent() - protects MainEventBus throughput.
+         */
+        void releaseSemaphore() {
+            semaphore.release();
         }
 
         /**
@@ -557,16 +564,11 @@ public abstract class EventQueue implements AutoCloseable {
 
         private void internalEnqueueItem(EventQueueItem item) {
             // Internal method called by MainEventBusProcessor to add to local queue
+            // Note: Semaphore is managed by parent MainQueue (acquire/release), not ChildQueue
             Event event = item.getEvent();
             if (isClosed()) {
                 LOGGER.warn("ChildQueue is closed. Event will not be enqueued. {} {}", this, event);
                 return;
-            }
-            try {
-                semaphore.acquire();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Unable to acquire the semaphore to enqueue the event", e);
             }
             queue.add(item);
             LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
@@ -585,7 +587,7 @@ public abstract class EventQueue implements AutoCloseable {
                     if (item != null) {
                         Event event = item.getEvent();
                         LOGGER.debug("Dequeued event item (no wait) {} {}", this, event instanceof Throwable ? event.toString() : event);
-                        semaphore.release();
+                        // Note: Semaphore is managed by parent MainQueue, not released here
                     }
                     return item;
                 }
@@ -595,7 +597,7 @@ public abstract class EventQueue implements AutoCloseable {
                     if (item != null) {
                         Event event = item.getEvent();
                         LOGGER.debug("Dequeued event item (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
-                        semaphore.release();
+                        // Note: Semaphore is managed by parent MainQueue, not released here
                     } else {
                         LOGGER.trace("Dequeue timeout (null) from ChildQueue {}", System.identityHashCode(this));
                     }
@@ -636,8 +638,11 @@ public abstract class EventQueue implements AutoCloseable {
             super.doClose(immediate);  // Sets closed flag
             if (immediate) {
                 // Immediate close: clear pending events from local queue
+                int clearedCount = queue.size();
                 queue.clear();
-                LOGGER.debug("Cleared ChildQueue for immediate close: {}", this);
+                // Release semaphore permits for cleared events to prevent deadlock
+                semaphore.release(clearedCount);
+                LOGGER.debug("Cleared {} events from ChildQueue for immediate close: {}", clearedCount, this);
             }
             // For graceful close, let the queue drain naturally through normal consumption
         }

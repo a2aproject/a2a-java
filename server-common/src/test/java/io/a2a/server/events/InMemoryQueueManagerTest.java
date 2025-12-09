@@ -49,7 +49,7 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testAddNewQueue() {
         String taskId = "test_task_id";
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue);
 
@@ -60,8 +60,8 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testAddExistingQueueThrowsException() {
         String taskId = "test_task_id";
-        EventQueue queue1 = EventQueueUtil.getEventQueueBuilder().build();
-        EventQueue queue2 = EventQueueUtil.getEventQueueBuilder().build();
+        EventQueue queue1 = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
+        EventQueue queue2 = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue1);
 
@@ -73,7 +73,7 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testGetExistingQueue() {
         String taskId = "test_task_id";
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue);
         EventQueue result = queueManager.get(taskId);
@@ -90,7 +90,7 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testTapExistingQueue() {
         String taskId = "test_task_id";
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue);
         EventQueue tappedQueue = queueManager.tap(taskId);
@@ -111,7 +111,7 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testCloseExistingQueue() {
         String taskId = "test_task_id";
-        EventQueue queue = EventQueueUtil.getEventQueueBuilder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue);
         queueManager.close(taskId);
@@ -146,7 +146,7 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testCreateOrTapExistingQueue() {
         String taskId = "test_task_id";
-        EventQueue originalQueue = EventQueueUtil.getEventQueueBuilder().build();
+        EventQueue originalQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, originalQueue);
         EventQueue result = queueManager.createOrTap(taskId);
@@ -168,7 +168,7 @@ public class InMemoryQueueManagerTest {
         // Add tasks concurrently
         List<CompletableFuture<String>> addFutures = taskIds.stream()
                 .map(taskId -> CompletableFuture.supplyAsync(() -> {
-                    EventQueue queue = EventQueueUtil.getEventQueueBuilder().build();
+                    EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
                     queueManager.add(taskId, queue);
                     return taskId;
                 }))
