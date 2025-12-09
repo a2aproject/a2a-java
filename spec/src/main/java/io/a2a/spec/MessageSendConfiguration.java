@@ -2,8 +2,6 @@ package io.a2a.spec;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -23,8 +21,6 @@ import org.jspecify.annotations.Nullable;
  * @see PushNotificationConfig for push notification options
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer historyLength,
         PushNotificationConfig pushNotificationConfig, Boolean blocking) {
 

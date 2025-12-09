@@ -1,8 +1,5 @@
 package io.a2a.spec;
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -21,10 +18,13 @@ import static io.a2a.spec.A2AErrorCodes.TASK_NOT_CANCELABLE_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
 
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
+
+
 public class JSONRPCErrorSerializationTest {
     @Test
-    public void shouldDeserializeToCorrectJSONRPCErrorSubclass() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public void shouldDeserializeToCorrectJSONRPCErrorSubclass() throws JsonProcessingException {
         String jsonTemplate = """
                 {"code": %s, "message": "error", "data": "anything"}
                 """;
@@ -47,12 +47,7 @@ public class JSONRPCErrorSerializationTest {
 
         for (ErrorCase errorCase : cases) {
             String json = jsonTemplate.formatted(errorCase.code());
-            JSONRPCError error;
-            try {
-                error = objectMapper.readValue(json, JSONRPCError.class);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            JSONRPCError error = JsonUtil.fromJson(json, JSONRPCError.class);
             assertInstanceOf(errorCase.clazz(), error);
             assertEquals("error", error.getMessage());
             assertEquals("anything", error.getData().toString());

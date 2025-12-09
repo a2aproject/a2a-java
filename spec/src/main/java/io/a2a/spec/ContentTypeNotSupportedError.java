@@ -2,10 +2,6 @@ package io.a2a.spec;
 
 import static io.a2a.util.Utils.defaultIfNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
 
@@ -42,15 +38,9 @@ import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
  * @see MessageSendConfiguration for client content type preferences
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class ContentTypeNotSupportedError extends JSONRPCError {
 
-    @JsonCreator
-    public ContentTypeNotSupportedError(
-            @JsonProperty("code") Integer code,
-            @JsonProperty("message") String message,
-            @JsonProperty("data") Object data) {
+    public ContentTypeNotSupportedError(Integer code, String message, Object data) {
         super(defaultIfNull(code, CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE),
                 defaultIfNull(message, "Incompatible content types"),
                 data);

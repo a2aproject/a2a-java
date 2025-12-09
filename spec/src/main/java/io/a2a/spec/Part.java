@@ -2,10 +2,6 @@ package io.a2a.spec;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonValue;
-
 /**
  * Base class for content parts within {@link Message}s and {@link Artifact}s.
  * <p>
@@ -27,17 +23,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * @see Artifact
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "kind",
-        visible = true
-)
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = TextPart.class, name = TextPart.TEXT),
-        @JsonSubTypes.Type(value = FilePart.class, name = FilePart.FILE),
-        @JsonSubTypes.Type(value = DataPart.class, name = DataPart.DATA)
-})
 public abstract class Part<T> {
     /**
      * Enum defining the different types of content parts.
@@ -69,7 +54,6 @@ public abstract class Part<T> {
          *
          * @return the kind as a string
          */
-        @JsonValue
         public String asString() {
             return this.kind;
         }

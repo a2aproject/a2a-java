@@ -1,7 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -15,8 +13,6 @@ import java.util.List;
  * @param pageSize Number of tasks returned in this response
  * @param nextPageToken Token for retrieving the next page of results (null if no more results)
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record ListTasksResult(
         List<Task> tasks,
         int totalSize,

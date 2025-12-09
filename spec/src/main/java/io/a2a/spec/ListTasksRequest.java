@@ -4,25 +4,16 @@ import static io.a2a.util.Utils.defaultIfNull;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.a2a.util.Assert;
 
 /**
  * A list tasks request.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasksParams> {
 
     public static final String METHOD = "ListTask";
 
-    @JsonCreator
-    public ListTasksRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                            @JsonProperty("method") String method, @JsonProperty("params") ListTasksParams params) {
+    public ListTasksRequest(String jsonrpc, Object id, String method, ListTasksParams params) {
         if (jsonrpc == null || jsonrpc.isEmpty()) {
             throw new IllegalArgumentException("JSON-RPC protocol version cannot be null or empty");
         }

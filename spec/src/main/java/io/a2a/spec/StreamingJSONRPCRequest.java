@@ -1,9 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 /**
  * Base class for JSON-RPC requests that support streaming responses in the A2A Protocol.
  * <p>
@@ -31,9 +27,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * @see StreamingEventKind
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(using = StreamingJSONRPCRequestDeserializer.class)
 public abstract sealed class StreamingJSONRPCRequest<T> extends JSONRPCRequest<T> permits SubscribeToTaskRequest,
         SendStreamingMessageRequest {
 

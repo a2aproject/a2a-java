@@ -1,11 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.a2a.util.Assert;
 
@@ -39,10 +33,6 @@ import io.a2a.util.Assert;
  * @see JSONRPCErrorResponse
  * @see <a href="https://www.jsonrpc.org/specification#error_object">JSON-RPC 2.0 Error Object</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonDeserialize(using = JSONRPCErrorDeserializer.class)
-@JsonSerialize(using = JSONRPCErrorSerializer.class)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class JSONRPCError extends Error implements Event, A2AError {
 
     private final Integer code;
@@ -58,11 +48,7 @@ public class JSONRPCError extends Error implements Event, A2AError {
      * @param data additional error information, structure defined by the error code (optional)
      * @throws IllegalArgumentException if code or message is null
      */
-    @JsonCreator
-    public JSONRPCError(
-            @JsonProperty("code") Integer code,
-            @JsonProperty("message") String message,
-            @JsonProperty("data") Object data) {
+    public JSONRPCError(Integer code, String message, Object data) {
         super(message);
         Assert.checkNotNullParam("code", code);
         Assert.checkNotNullParam("message", message);

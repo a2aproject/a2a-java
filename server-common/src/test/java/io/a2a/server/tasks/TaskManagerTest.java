@@ -41,7 +41,7 @@ public class TaskManagerTest {
 
     @BeforeEach
     public void init() throws Exception {
-        minimalTask = Utils.unmarshalFrom(TASK_JSON, Task.TYPE_REFERENCE);
+        minimalTask = Utils.unmarshalFrom(TASK_JSON, Task.class);
         taskStore = new InMemoryTaskStore();
         taskManager = new TaskManager(minimalTask.getId(), minimalTask.getContextId(), taskStore, null);
     }

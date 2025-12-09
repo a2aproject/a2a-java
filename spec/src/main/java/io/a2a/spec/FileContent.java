@@ -1,7 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 /**
  * Sealed interface representing file content in the A2A Protocol.
  * <p>
@@ -26,7 +24,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * @see FileWithBytes
  * @see FileWithUri
  */
-@JsonDeserialize(using = FileContentDeserializer.class)
 public sealed interface FileContent permits FileWithBytes, FileWithUri {
 
     /**

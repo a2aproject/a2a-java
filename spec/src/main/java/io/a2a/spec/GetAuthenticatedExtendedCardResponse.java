@@ -1,10 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * JSON-RPC response containing an agent's extended card with authenticated details.
  * <p>
@@ -21,14 +16,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see AuthenticatedExtendedCardNotConfiguredError for the error when unsupported
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class GetAuthenticatedExtendedCardResponse extends JSONRPCResponse<AgentCard> {
 
-    @JsonCreator
-    public GetAuthenticatedExtendedCardResponse(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                                                @JsonProperty("result") AgentCard result,
-                                                @JsonProperty("error") JSONRPCError error) {
+    public GetAuthenticatedExtendedCardResponse(String jsonrpc, Object id, AgentCard result, JSONRPCError error) {
         super(jsonrpc, id, result, error, AgentCard.class);
     }
 

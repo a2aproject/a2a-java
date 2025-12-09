@@ -1,12 +1,6 @@
 package io.a2a.spec;
 
 import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import static io.a2a.util.Utils.defaultIfNull;
 
 /**
@@ -22,7 +16,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  * <pre>{@code
  * try {
  *     objectMapper.readValue(payload, JSONRPCRequest.class);
- * } catch (JsonProcessingException e) {
+ * } catch (io.a2a.json.JsonProcessingException e) {
  *     throw new JSONParseError("Malformed JSON: " + e.getMessage());
  * }
  * }</pre>
@@ -32,8 +26,6 @@ import static io.a2a.util.Utils.defaultIfNull;
  * @see InvalidRequestError for structurally valid but invalid requests
  * @see <a href="https://www.jsonrpc.org/specification#error_object">JSON-RPC 2.0 Error Codes</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class JSONParseError extends JSONRPCError implements A2AError {
 
     public JSONParseError() {
@@ -44,11 +36,10 @@ public class JSONParseError extends JSONRPCError implements A2AError {
         this(null, message, null);
     }
 
-    @JsonCreator
     public JSONParseError(
-            @JsonProperty("code") Integer code,
-            @JsonProperty("message") String message,
-            @JsonProperty("data") Object data) {
+            Integer code,
+            String message,
+            Object data) {
         super(
                 defaultIfNull(code, JSON_PARSE_ERROR_CODE),
                 defaultIfNull(message, "Invalid JSON payload"),

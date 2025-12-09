@@ -16,7 +16,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.a2a.json.JsonProcessingException;
 import io.a2a.extras.common.events.TaskFinalizedEvent;
 import io.a2a.server.config.A2AConfigProvider;
 import io.a2a.server.tasks.TaskStateProvider;

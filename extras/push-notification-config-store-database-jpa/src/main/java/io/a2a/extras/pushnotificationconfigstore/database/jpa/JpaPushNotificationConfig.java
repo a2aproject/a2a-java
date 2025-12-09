@@ -6,9 +6,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.a2a.spec.PushNotificationConfig;
-import io.a2a.util.Utils;
 
 @Entity
 @Table(name = "a2a_push_notification_configs")
@@ -46,7 +46,7 @@ public class JpaPushNotificationConfig {
 
     public PushNotificationConfig getConfig() throws JsonProcessingException {
         if (config == null) {
-            this.config = Utils.unmarshalFrom(configJson, PushNotificationConfig.TYPE_REFERENCE);
+            this.config = JsonUtil.fromJson(configJson, PushNotificationConfig.class);
         }
         return config;
     }
@@ -56,12 +56,12 @@ public class JpaPushNotificationConfig {
             throw new IllegalArgumentException("Mismatched config id. " +
                     "Expected '" + id.getConfigId() + "'. Got: '" + config.id() + "'");
         }
-        configJson = Utils.OBJECT_MAPPER.writeValueAsString(config);
+        configJson = JsonUtil.toJson(config);
         this.config = config;
     }
 
     static JpaPushNotificationConfig createFromConfig(String taskId, PushNotificationConfig config) throws JsonProcessingException {
-        String json = Utils.OBJECT_MAPPER.writeValueAsString(config);
+        String json = JsonUtil.toJson(config);
         JpaPushNotificationConfig jpaPushNotificationConfig =
                 new JpaPushNotificationConfig(new TaskConfigId(taskId, config.id()), json);
         jpaPushNotificationConfig.config = config;

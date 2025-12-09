@@ -8,9 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.a2a.spec.Task;
-import io.a2a.util.Utils;
 
 @Entity
 @Table(name = "a2a_tasks")
@@ -109,13 +109,13 @@ public class JpaTask {
 
     public Task getTask() throws JsonProcessingException {
         if (task == null) {
-            this.task = Utils.unmarshalFrom(taskJson, Task.TYPE_REFERENCE);
+            this.task = JsonUtil.fromJson(taskJson, Task.class);
         }
         return task;
     }
 
     public void setTask(Task task) throws JsonProcessingException {
-        taskJson = Utils.OBJECT_MAPPER.writeValueAsString(task);
+        taskJson = JsonUtil.toJson(task);
         if (id == null) {
             id = task.getId();
         }
@@ -125,7 +125,7 @@ public class JpaTask {
     }
 
     static JpaTask createFromTask(Task task) throws JsonProcessingException {
-        String json = Utils.OBJECT_MAPPER.writeValueAsString(task);
+        String json = JsonUtil.toJson(task);
         JpaTask jpaTask = new JpaTask(task.getId(), json);
         jpaTask.task = task;
         jpaTask.updateDenormalizedFields(task);

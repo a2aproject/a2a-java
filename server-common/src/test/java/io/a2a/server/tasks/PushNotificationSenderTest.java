@@ -22,7 +22,8 @@ import org.junit.jupiter.api.Test;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.common.A2AHeaders;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
@@ -75,13 +76,13 @@ public class PushNotificationSenderTest {
                 if (shouldThrowException) {
                     throw new IOException("Simulated network error");
                 }
-                
+
                 try {
-                    Task task = Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE);
+                    Task task = JsonUtil.fromJson(body, Task.class);
                     tasks.add(task);
                     urls.add(url);
                     headers.add(new java.util.HashMap<>(requestHeaders));
-                    
+
                     return new A2AHttpResponse() {
                         @Override
                         public int status() {
@@ -98,6 +99,8 @@ public class PushNotificationSenderTest {
                             return "";
                         }
                     };
+                } catch (JsonProcessingException e) {
+                    throw new IOException("Failed to parse task JSON", e);
                 } finally {
                     if (latch != null) {
                         latch.countDown();

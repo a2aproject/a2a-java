@@ -13,8 +13,9 @@ import jakarta.enterprise.inject.Alternative;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.json.JsonProcessingException;
 import io.a2a.spec.Task;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 import java.util.Map;
 
 @Dependent
@@ -48,7 +49,11 @@ public class TestHttpClient implements A2AHttpClient {
 
         @Override
         public A2AHttpResponse post() throws IOException, InterruptedException {
-            tasks.add(Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE));
+            try {
+                tasks.add(JsonUtil.fromJson(body, Task.class));
+            } catch (JsonProcessingException e) {
+                throw new IOException("Failed to parse task JSON", e);
+            }
             try {
                 return new A2AHttpResponse() {
                     @Override

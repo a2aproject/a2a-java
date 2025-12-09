@@ -4,11 +4,6 @@ import static io.a2a.util.Utils.defaultIfNull;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.a2a.util.Assert;
 
 /**
@@ -35,8 +30,6 @@ import io.a2a.util.Assert;
  * @see Task
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class SendMessageRequest extends NonStreamingJSONRPCRequest<MessageSendParams> {
 
     /**
@@ -47,7 +40,7 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
     /**
      * Constructs a SendMessageRequest with the specified JSON-RPC fields.
      * <p>
-     * This constructor is used by Jackson for JSON deserialization and validates
+     * This constructor is used for JSON deserialization and validates
      * that the method name is exactly "SendMessage".
      *
      * @param jsonrpc the JSON-RPC version (must be "2.0")
@@ -56,9 +49,7 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
      * @param params the message send parameters (required)
      * @throws IllegalArgumentException if validation fails
      */
-    @JsonCreator
-    public SendMessageRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                              @JsonProperty("method") String method, @JsonProperty("params") MessageSendParams params) {
+    public SendMessageRequest(String jsonrpc, Object id, String method, MessageSendParams params) {
         if (jsonrpc == null || jsonrpc.isEmpty()) {
             throw new IllegalArgumentException("JSON-RPC protocol version cannot be null or empty");
         }

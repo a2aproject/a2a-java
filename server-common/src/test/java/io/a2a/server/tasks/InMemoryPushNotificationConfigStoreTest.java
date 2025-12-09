@@ -243,7 +243,7 @@ class InMemoryPushNotificationConfigStoreTest {
         verify(mockPostBuilder).url(config.url());
         verify(mockPostBuilder).body(bodyCaptor.capture());
         verify(mockPostBuilder).post();
-        
+
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.getId()));

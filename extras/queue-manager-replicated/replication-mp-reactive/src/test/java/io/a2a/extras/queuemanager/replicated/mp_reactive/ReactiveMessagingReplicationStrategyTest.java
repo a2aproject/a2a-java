@@ -19,7 +19,7 @@ import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatusUpdateEvent;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 
 @ExtendWith(MockitoExtension.class)
 class ReactiveMessagingReplicationStrategyTest {
@@ -54,7 +54,7 @@ class ReactiveMessagingReplicationStrategyTest {
                 .isFinal(false)
                 .build();
         ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
-        return Utils.OBJECT_MAPPER.writeValueAsString(replicatedEvent);
+        return JsonUtil.toJson(replicatedEvent);
     }
 
     @Test

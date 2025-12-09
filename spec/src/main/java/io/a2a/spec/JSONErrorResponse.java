@@ -1,8 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 /**
  * A simplified error response wrapper for non-JSON-RPC error scenarios.
  * <p>
@@ -18,7 +15,5 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * @see JSONRPCErrorResponse
  * @see JSONRPCError
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record JSONErrorResponse(String error) {
 }

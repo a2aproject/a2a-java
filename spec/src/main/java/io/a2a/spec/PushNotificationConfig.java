@@ -1,8 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.util.Assert;
 
 /**
@@ -28,10 +25,7 @@ import io.a2a.util.Assert;
  * @see MessageSendConfiguration for configuring push notifications on message send
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record PushNotificationConfig(String url, String token, AuthenticationInfo authentication, String id) {
-    public static final TypeReference<PushNotificationConfig> TYPE_REFERENCE = new TypeReference<>() {};
 
     public PushNotificationConfig {
         Assert.checkNotNullParam("url", url);

@@ -1,11 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.HTTPAuthSecurityScheme.HTTP;
@@ -40,9 +34,6 @@ import static io.a2a.spec.HTTPAuthSecurityScheme.HTTP;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc7235">RFC 7235 - HTTP Authentication</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonTypeName(HTTP)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class HTTPAuthSecurityScheme implements SecurityScheme {
 
     public static final String HTTP = "http";
@@ -55,12 +46,10 @@ public final class HTTPAuthSecurityScheme implements SecurityScheme {
         this(bearerFormat, scheme, description, HTTP);
     }
 
-    @JsonCreator
-    public HTTPAuthSecurityScheme(@JsonProperty("bearerFormat") String bearerFormat, @JsonProperty("scheme") String scheme,
-                                  @JsonProperty("description") String description, @JsonProperty("type") String type) {
+    public HTTPAuthSecurityScheme(String bearerFormat, String scheme, String description, String type) {
         Assert.checkNotNullParam("scheme", scheme);
         Assert.checkNotNullParam("type", type);
-        if (! type.equals(HTTP)) {
+        if (! HTTP.equals(type)) {
             throw new IllegalArgumentException("Invalid type for HTTPAuthSecurityScheme");
         }
         this.bearerFormat = bearerFormat;

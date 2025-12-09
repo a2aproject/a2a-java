@@ -1,7 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
@@ -19,8 +17,6 @@ import java.util.Map;
  * @param includeArtifacts Whether to include artifacts in the returned tasks (defaults to false)
  * @param metadata Additional filter properties
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record ListTasksParams(
         @Nullable String contextId,
         @Nullable TaskState status,

@@ -27,7 +27,7 @@ import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -199,14 +199,14 @@ class ReplicatedQueueManagerTest {
         ReplicatedEventQueueItem original = new ReplicatedEventQueueItem("json-test-task", originalEvent);
 
         // Serialize to JSON
-        String json = Utils.OBJECT_MAPPER.writeValueAsString(original);
+        String json = JsonUtil.toJson(original);
         assertNotNull(json);
         assertTrue(json.contains("json-test-task"));
         assertTrue(json.contains("\"event\":{"));
         assertTrue(json.contains("\"kind\":\"status-update\""));
 
         // Deserialize back
-        ReplicatedEventQueueItem deserialized = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
+        ReplicatedEventQueueItem deserialized = JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);
         assertNotNull(deserialized);
         assertEquals("json-test-task", deserialized.getTaskId());
         assertNotNull(deserialized.getEvent());
@@ -427,13 +427,13 @@ class ReplicatedQueueManagerTest {
         assertFalse(original.hasError(), "Should not have error");
 
         // Serialize to JSON
-        String json = Utils.OBJECT_MAPPER.writeValueAsString(original);
+        String json = JsonUtil.toJson(original);
         assertNotNull(json);
         assertTrue(json.contains(taskId), "JSON should contain taskId");
         assertTrue(json.contains("\"closedEvent\":true"), "JSON should contain closedEvent flag");
 
         // Deserialize back
-        ReplicatedEventQueueItem deserialized = Utils.OBJECT_MAPPER.readValue(json, ReplicatedEventQueueItem.class);
+        ReplicatedEventQueueItem deserialized = JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);
         assertNotNull(deserialized);
         assertEquals(taskId, deserialized.getTaskId());
         assertTrue(deserialized.isClosedEvent(), "Deserialized should be marked as closed event");

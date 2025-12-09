@@ -2,11 +2,6 @@ package io.a2a.spec;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
@@ -39,9 +34,6 @@ import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
  * @see Artifact
  * @see Task
  */
-@JsonTypeName(ARTIFACT_UPDATE)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventKind, UpdateEvent {
 
     public static final String ARTIFACT_UPDATE = "artifact-update";
@@ -57,13 +49,7 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
         this(taskId, artifact, contextId, append, lastChunk, metadata, ARTIFACT_UPDATE);
     }
 
-    @JsonCreator
-    public TaskArtifactUpdateEvent(@JsonProperty("taskId") String taskId, @JsonProperty("artifact") Artifact artifact,
-                                   @JsonProperty("contextId") String contextId,
-                                   @JsonProperty("append") Boolean append,
-                                   @JsonProperty("lastChunk") Boolean lastChunk,
-                                   @JsonProperty("metadata") Map<String, Object> metadata,
-                                   @JsonProperty("kind") String kind) {
+    public TaskArtifactUpdateEvent(String taskId, Artifact artifact, String contextId, Boolean append, Boolean lastChunk, Map<String, Object> metadata, String kind) {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("artifact", artifact);
         Assert.checkNotNullParam("contextId", contextId);

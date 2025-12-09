@@ -24,7 +24,7 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.transport.grpc.handler.GrpcHandler;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 
 @Path("/test")
 @ApplicationScoped
@@ -44,7 +44,7 @@ public class A2ATestResource {
     @Path("/task")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response saveTask(String body) throws Exception {
-        Task task = Utils.OBJECT_MAPPER.readValue(body, Task.class);
+        Task task = JsonUtil.fromJson(body, Task.class);
         testUtilsBean.saveTask(task);
         return Response.ok().build();
     }
@@ -57,7 +57,7 @@ public class A2ATestResource {
             return Response.status(404).build();
         }
         return Response.ok()
-                .entity(Utils.OBJECT_MAPPER.writeValueAsString(task))
+                .entity(JsonUtil.toJson(task))
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                 .build();
     }
@@ -85,7 +85,7 @@ public class A2ATestResource {
     @POST
     @Path("/queue/enqueueTaskStatusUpdateEvent/{taskId}")
     public Response enqueueTaskStatusUpdateEvent(@PathParam("taskId") String taskId, String body) throws Exception {
-        TaskStatusUpdateEvent event = Utils.OBJECT_MAPPER.readValue(body, TaskStatusUpdateEvent.class);
+        TaskStatusUpdateEvent event = JsonUtil.fromJson(body, TaskStatusUpdateEvent.class);
         testUtilsBean.enqueueEvent(taskId, event);
         return Response.ok().build();
     }
@@ -93,7 +93,7 @@ public class A2ATestResource {
     @POST
     @Path("/queue/enqueueTaskArtifactUpdateEvent/{taskId}")
     public Response enqueueTaskArtifactUpdateEvent(@PathParam("taskId") String taskId, String body) throws Exception {
-        TaskArtifactUpdateEvent event = Utils.OBJECT_MAPPER.readValue(body, TaskArtifactUpdateEvent.class);
+        TaskArtifactUpdateEvent event = JsonUtil.fromJson(body, TaskArtifactUpdateEvent.class);
         testUtilsBean.enqueueEvent(taskId, event);
         return Response.ok().build();
     }
@@ -130,7 +130,7 @@ public class A2ATestResource {
     @Path("/task/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response savePushNotificationConfigInStore(@PathParam("taskId") String taskId, String body) throws Exception {
-        PushNotificationConfig notificationConfig = Utils.OBJECT_MAPPER.readValue(body, PushNotificationConfig.class);
+        PushNotificationConfig notificationConfig = JsonUtil.fromJson(body, PushNotificationConfig.class);
         if (notificationConfig == null) {
             return Response.status(404).build();
         }

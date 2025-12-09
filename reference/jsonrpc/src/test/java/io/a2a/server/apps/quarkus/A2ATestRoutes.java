@@ -15,7 +15,7 @@ import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 import io.quarkus.vertx.web.Body;
 import io.quarkus.vertx.web.Param;
 import io.quarkus.vertx.web.Route;
@@ -43,7 +43,7 @@ public class A2ATestRoutes {
     @Route(path = "/test/task", methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     public void saveTask(@Body String body, RoutingContext rc) {
         try {
-            Task task = Utils.OBJECT_MAPPER.readValue(body, Task.class);
+            Task task = JsonUtil.fromJson(body, Task.class);
             testUtilsBean.saveTask(task);
             rc.response()
                 .setStatusCode(200)
@@ -66,7 +66,7 @@ public class A2ATestRoutes {
             rc.response()
                     .setStatusCode(200)
                     .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                    .end(Utils.OBJECT_MAPPER.writeValueAsString(task));
+                    .end(JsonUtil.toJson(task));
 
         } catch (Throwable t) {
             errorResponse(t, rc);
@@ -108,7 +108,7 @@ public class A2ATestRoutes {
     public void enqueueTaskStatusUpdateEvent(@Param String taskId, @Body String body, RoutingContext rc) {
 
         try {
-            TaskStatusUpdateEvent event = Utils.OBJECT_MAPPER.readValue(body, TaskStatusUpdateEvent.class);
+            TaskStatusUpdateEvent event = JsonUtil.fromJson(body, TaskStatusUpdateEvent.class);
             testUtilsBean.enqueueEvent(taskId, event);
             rc.response()
                     .setStatusCode(200)
@@ -122,7 +122,7 @@ public class A2ATestRoutes {
     public void enqueueTaskArtifactUpdateEvent(@Param String taskId, @Body String body, RoutingContext rc) {
 
         try {
-            TaskArtifactUpdateEvent event = Utils.OBJECT_MAPPER.readValue(body, TaskArtifactUpdateEvent.class);
+            TaskArtifactUpdateEvent event = JsonUtil.fromJson(body, TaskArtifactUpdateEvent.class);
             testUtilsBean.enqueueEvent(taskId, event);
             rc.response()
                     .setStatusCode(200)
@@ -169,7 +169,7 @@ public class A2ATestRoutes {
     @Route(path = "/test/task/:taskId", methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void saveTaskPushNotificationConfig(@Param String taskId, @Body String body, RoutingContext rc) {
         try {
-            PushNotificationConfig notificationConfig = Utils.OBJECT_MAPPER.readValue(body, PushNotificationConfig.class);
+            PushNotificationConfig notificationConfig = JsonUtil.fromJson(body, PushNotificationConfig.class);
             if (notificationConfig == null) {
                 rc.response()
                         .setStatusCode(404)

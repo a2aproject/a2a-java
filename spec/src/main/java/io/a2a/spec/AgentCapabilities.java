@@ -2,9 +2,6 @@ package io.a2a.spec;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 /**
  * Defines optional capabilities supported by an agent in the A2A Protocol.
  * <p>
@@ -34,8 +31,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * @see AgentExtension
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record AgentCapabilities(boolean streaming, boolean pushNotifications, boolean stateTransitionHistory,
                                 List<AgentExtension> extensions) {
 

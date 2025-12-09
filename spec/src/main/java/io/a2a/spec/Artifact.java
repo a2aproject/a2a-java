@@ -3,8 +3,6 @@ package io.a2a.spec;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
@@ -31,8 +29,6 @@ import io.a2a.util.Assert;
  * @param extensions protocol extensions used in this artifact (optional)
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record Artifact(String artifactId, String name, String description, List<Part<?>> parts, Map<String, Object> metadata,
                        List<String> extensions) {
 

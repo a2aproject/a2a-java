@@ -187,7 +187,7 @@ public class JpaDatabaseTaskStoreTest {
         assertEquals("test-task-5", retrieved.getId());
         assertNotNull(retrieved.getMetadata());
         assertEquals("value1", retrieved.getMetadata().get("key1"));
-        assertEquals(42, retrieved.getMetadata().get("key2"));
+        assertEquals(42, ((Number)retrieved.getMetadata().get("key2")).intValue());
         assertEquals(true, retrieved.getMetadata().get("key3"));
     }
 

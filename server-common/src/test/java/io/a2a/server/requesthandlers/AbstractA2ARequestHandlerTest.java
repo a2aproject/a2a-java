@@ -38,7 +38,8 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.Event;
 import io.a2a.spec.TextPart;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.quarkus.arc.profile.IfBuildProfile;
 import java.util.Map;
 
@@ -199,8 +200,9 @@ public class AbstractA2ARequestHandlerTest {
 
             @Override
             public A2AHttpResponse post() throws IOException, InterruptedException {
-                tasks.add(Utils.OBJECT_MAPPER.readValue(body, Task.TYPE_REFERENCE));
                 try {
+                    Task task = JsonUtil.fromJson(body, Task.class);
+                    tasks.add(task);
                     return new A2AHttpResponse() {
                         @Override
                         public int status() {
@@ -217,8 +219,12 @@ public class AbstractA2ARequestHandlerTest {
                             return "";
                         }
                     };
+                } catch (JsonProcessingException e) {
+                    throw new IOException("Failed to parse task JSON", e);
                 } finally {
-                    latch.countDown();
+                    if (latch != null) {
+                        latch.countDown();
+                    }
                 }
             }
 

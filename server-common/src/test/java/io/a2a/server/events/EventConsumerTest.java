@@ -14,7 +14,7 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.a2a.json.JsonProcessingException;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Artifact;
@@ -63,13 +63,13 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeOneTaskEvent() throws Exception {
-        Task event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Task event = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
         enqueueAndConsumeOneEvent(event);
     }
 
     @Test
     public void testConsumeOneMessageEvent() throws Exception {
-        Event event = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.class);
         enqueueAndConsumeOneEvent(event);
     }
 
@@ -93,7 +93,7 @@ public class EventConsumerTest {
     @Test
     public void testConsumeAllMultipleEvents() throws JsonProcessingException {
         List<Event> events = List.of(
-                Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE),
+                Utils.unmarshalFrom(MINIMAL_TASK, Task.class),
                 new TaskArtifactUpdateEvent.Builder()
                         .taskId("task-123")
                         .contextId("session-xyz")
@@ -154,7 +154,7 @@ public class EventConsumerTest {
     @Test
     public void testConsumeUntilMessage() throws Exception {
         List<Event> events = List.of(
-                Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE),
+                Utils.unmarshalFrom(MINIMAL_TASK, Task.class),
                 new TaskArtifactUpdateEvent.Builder()
                         .taskId("task-123")
                         .contextId("session-xyz")
@@ -214,7 +214,7 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeMessageEvents() throws Exception {
-        Message message = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.TYPE_REFERENCE);
+        Message message = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.class);
         Message message2 = new Message.Builder(message).build();
 
         List<Event> events = List.of(message, message2);
@@ -393,7 +393,7 @@ public class EventConsumerTest {
         EventConsumer consumer = new EventConsumer(queue);
 
         // Add a message event (which will complete the stream)
-        Event message = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.TYPE_REFERENCE);
+        Event message = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.class);
         queue.enqueueEvent(message);
 
         // Close the queue before consuming

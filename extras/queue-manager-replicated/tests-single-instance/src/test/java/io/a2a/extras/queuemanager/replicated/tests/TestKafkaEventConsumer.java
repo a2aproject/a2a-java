@@ -9,7 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 import io.a2a.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 import io.quarkus.arc.profile.IfBuildProfile;
 
 /**
@@ -26,7 +26,7 @@ public class TestKafkaEventConsumer {
     @Incoming("test-replicated-events-in")
     public void onTestReplicatedEvent(String jsonMessage) {
         try {
-            ReplicatedEventQueueItem event = Utils.OBJECT_MAPPER.readValue(jsonMessage, ReplicatedEventQueueItem.class);
+            ReplicatedEventQueueItem event = JsonUtil.fromJson(jsonMessage, ReplicatedEventQueueItem.class);
             receivedEvents.offer(event);
 
             // Signal any waiting threads

@@ -3,8 +3,6 @@ package io.a2a.spec;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.a2a.util.Assert;
 
@@ -28,8 +26,6 @@ import io.a2a.util.Assert;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.4">RFC 6749 - Client Credentials Grant</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record ClientCredentialsOAuthFlow(String refreshUrl, Map<String, String> scopes, String tokenUrl) {
 
     public ClientCredentialsOAuthFlow {

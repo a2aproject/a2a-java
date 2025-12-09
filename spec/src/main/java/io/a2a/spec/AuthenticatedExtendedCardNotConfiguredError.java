@@ -3,10 +3,6 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.AUTHENTICATED_EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A2A Protocol error indicating that the agent does not have an authenticated extended card configured.
@@ -33,23 +29,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see AgentCard for the base agent card structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthenticatedExtendedCardNotConfiguredError extends JSONRPCError {
 
-    @JsonCreator
     public AuthenticatedExtendedCardNotConfiguredError(
-            @JsonProperty("code") Integer code,
-            @JsonProperty("message") String message,
-            @JsonProperty("data") Object data) {
+            Integer code,
+            String message,
+            Object data) {
         super(
                 defaultIfNull(code, AUTHENTICATED_EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE),
                 defaultIfNull(message, "Authenticated Extended Card not configured"),
                 data);
     }
-
-    public AuthenticatedExtendedCardNotConfiguredError() {
-        this(null, null, null);
-    }
-
 }

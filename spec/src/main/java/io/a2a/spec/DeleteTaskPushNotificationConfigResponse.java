@@ -1,11 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 /**
  * JSON-RPC response confirming deletion of a task's push notification configuration.
  * <p>
@@ -17,15 +11,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @see DeleteTaskPushNotificationConfigRequest for the corresponding request
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonSerialize(using = JSONRPCVoidResponseSerializer.class)
 public final class DeleteTaskPushNotificationConfigResponse extends JSONRPCResponse<Void> {
 
-    @JsonCreator
-    public DeleteTaskPushNotificationConfigResponse(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                                                    @JsonProperty("result") Void result,
-                                                    @JsonProperty("error") JSONRPCError error) {
+    public DeleteTaskPushNotificationConfigResponse(String jsonrpc, Object id, Void result,JSONRPCError error) {
         super(jsonrpc, id, result, error, Void.class);
     }
 

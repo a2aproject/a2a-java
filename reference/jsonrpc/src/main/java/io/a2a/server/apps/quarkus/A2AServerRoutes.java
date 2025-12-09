@@ -19,12 +19,10 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.io.JsonEOFException;
-import com.google.gson.JsonSyntaxException;
+import io.a2a.json.JsonProcessingException;
 import io.a2a.common.A2AHeaders;
 import io.a2a.grpc.utils.JSONRPCUtils;
+import io.a2a.json.JsonMappingException;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
@@ -41,11 +39,8 @@ import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.GetTaskResponse;
-import io.a2a.spec.IdJsonMappingException;
 import io.a2a.spec.InternalError;
-import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidParamsJsonMappingException;
-import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.JSONRPCErrorResponse;
@@ -55,7 +50,6 @@ import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigResponse;
 import io.a2a.spec.ListTasksRequest;
 import io.a2a.spec.ListTasksResponse;
-import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.MethodNotFoundJsonMappingException;
 import io.a2a.spec.NonStreamingJSONRPCRequest;
 import io.a2a.spec.SendMessageRequest;
@@ -115,9 +109,18 @@ public class A2AServerRoutes {
             }
         } catch (JSONRPCError e) {
             error = new JSONRPCErrorResponse(e);
+        } catch (InvalidParamsJsonMappingException e) {
+            error = new JSONRPCErrorResponse(e.getId(), new io.a2a.spec.InvalidParamsError(null, e.getMessage(), null));
+        } catch (MethodNotFoundJsonMappingException e) {
+            error = new JSONRPCErrorResponse(e.getId(), new io.a2a.spec.MethodNotFoundError(null, e.getMessage(), null));
+        } catch (io.a2a.spec.IdJsonMappingException e) {
+            error = new JSONRPCErrorResponse(e.getId(), new io.a2a.spec.InvalidRequestError(null, e.getMessage(), null));
+        } catch (JsonMappingException e) {
+            // General JsonMappingException - treat as InvalidRequest
+            error = new JSONRPCErrorResponse(new io.a2a.spec.InvalidRequestError(null, e.getMessage(), null));
+        } catch (com.google.gson.JsonSyntaxException e) {
+            error = new JSONRPCErrorResponse(new JSONParseError(e.getMessage()));
         } catch (JsonProcessingException e) {
-            error = handleError(e);
-        } catch (JsonSyntaxException e) {
             error = new JSONRPCErrorResponse(new JSONParseError(e.getMessage()));
         } catch (Throwable t) {
             error = new JSONRPCErrorResponse(new InternalError(t.getMessage()));
@@ -141,28 +144,6 @@ public class A2AServerRoutes {
                         .end(serializeResponse(nonStreamingResponse));
             }
         }
-    }
-
-    private JSONRPCErrorResponse handleError(JsonProcessingException exception) {
-        Object id = null;
-        JSONRPCError jsonRpcError;
-        if (exception.getCause() instanceof JsonParseException) {
-            jsonRpcError = new JSONParseError();
-        } else if (exception instanceof JsonEOFException) {
-            jsonRpcError = new JSONParseError(exception.getMessage());
-        } else if (exception instanceof MethodNotFoundJsonMappingException err) {
-            id = err.getId();
-            jsonRpcError = new MethodNotFoundError();
-        } else if (exception instanceof InvalidParamsJsonMappingException err) {
-            id = err.getId();
-            jsonRpcError = new InvalidParamsError();
-        } else if (exception instanceof IdJsonMappingException err) {
-            id = err.getId();
-            jsonRpcError = new InvalidRequestError();
-        } else {
-            jsonRpcError = new InvalidRequestError();
-        }
-        return new JSONRPCErrorResponse(id, jsonRpcError);
     }
 
     /**

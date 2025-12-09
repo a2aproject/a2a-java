@@ -1,10 +1,9 @@
 package io.a2a.client.transport.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.gson.JsonObject;
 import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
@@ -26,8 +25,6 @@ import java.util.logging.Logger;
  */
 public class RestErrorMapper {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
-
     public static A2AClientException mapRestError(A2AHttpResponse response) {
         return RestErrorMapper.mapRestError(response.body(), response.status());
     }
@@ -35,9 +32,9 @@ public class RestErrorMapper {
     public static A2AClientException mapRestError(String body, int code) {
         try {
             if (body != null && !body.isBlank()) {
-                JsonNode node = OBJECT_MAPPER.readTree(body);
-                String className = node.findValue("error").asText();
-                String errorMessage = node.findValue("message").asText();
+                JsonObject node = JsonUtil.fromJson(body, JsonObject.class);
+                String className = node.has("error") ? node.get("error").getAsString() : "";
+                String errorMessage = node.has("message") ? node.get("message").getAsString() : "";
                 return mapRestError(className, errorMessage, code);
             }
             return mapRestError("", "", code);
@@ -50,7 +47,7 @@ public class RestErrorMapper {
     public static A2AClientException mapRestError(String className, String errorMessage, int code) {
         return switch (className) {
             case "io.a2a.spec.TaskNotFoundError" -> new A2AClientException(errorMessage, new TaskNotFoundError());
-            case "io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError" -> new A2AClientException(errorMessage, new AuthenticatedExtendedCardNotConfiguredError());
+            case "io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError" -> new A2AClientException(errorMessage, new AuthenticatedExtendedCardNotConfiguredError(null, errorMessage, null));
             case "io.a2a.spec.ContentTypeNotSupportedError" -> new A2AClientException(errorMessage, new ContentTypeNotSupportedError(null, null, errorMessage));
             case "io.a2a.spec.InternalError" -> new A2AClientException(errorMessage, new InternalError(errorMessage));
             case "io.a2a.spec.InvalidAgentResponseError" -> new A2AClientException(errorMessage, new InvalidAgentResponseError(null, null, errorMessage));

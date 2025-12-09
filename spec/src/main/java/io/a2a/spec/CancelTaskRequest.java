@@ -4,10 +4,6 @@ import static io.a2a.util.Utils.defaultIfNull;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.a2a.util.Assert;
 
@@ -28,15 +24,11 @@ import io.a2a.util.Assert;
  * @see TaskNotCancelableError for the error when cancellation is not possible
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdParams> {
 
     public static final String METHOD = "CancelTask";
 
-    @JsonCreator
-    public CancelTaskRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                             @JsonProperty("method") String method, @JsonProperty("params") TaskIdParams params) {
+    public CancelTaskRequest(String jsonrpc, Object id, String method, TaskIdParams params) {
         if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }

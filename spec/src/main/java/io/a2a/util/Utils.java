@@ -2,19 +2,20 @@ package io.a2a.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.gson.Gson;
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 
 import io.a2a.spec.Artifact;
-import io.a2a.spec.Part;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
+import io.a2a.spec.Part;
+import java.util.logging.Logger;
+
+
 
 /**
  * Utility class providing common helper methods for A2A Protocol operations.
@@ -25,50 +26,33 @@ import io.a2a.spec.TaskArtifactUpdateEvent;
  * <p>
  * Key capabilities:
  * <ul>
- *   <li>JSON processing with pre-configured {@link ObjectMapper}</li>
- *   <li>Null-safe value defaults via {@link #defaultIfNull(Object, Object)}</li>
- *   <li>Artifact streaming support via {@link #appendArtifactToTask(Task, TaskArtifactUpdateEvent, String)}</li>
- *   <li>Type-safe exception rethrowing via {@link #rethrow(Throwable)}</li>
+ * <li>JSON processing with pre-configured {@link Gson}</li>
+ * <li>Null-safe value defaults via {@link #defaultIfNull(Object, Object)}</li>
+ * <li>Artifact streaming support via {@link #appendArtifactToTask(Task, TaskArtifactUpdateEvent, String)}</li>
+ * <li>Type-safe exception rethrowing via {@link #rethrow(Throwable)}</li>
  * </ul>
  *
- * @see ObjectMapper for JSON processing
+ * @see Gson for JSON processing
  * @see TaskArtifactUpdateEvent for streaming artifact updates
  */
 public class Utils {
 
-    /**
-     * Pre-configured Jackson {@link ObjectMapper} for JSON operations.
-     * <p>
-     * This mapper is configured with:
-     * <ul>
-     *   <li>{@link JavaTimeModule} for Java 8 date/time type support</li>
-     * </ul>
-     * <p>
-     * Used throughout the SDK for consistent JSON serialization and deserialization.
-     */
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final Logger log = Logger.getLogger(Utils.class.getName());
 
-    static {
-        // needed for date/time types
-        OBJECT_MAPPER.registerModule(new JavaTimeModule());
-    }
-
     /**
-     * Deserializes JSON string into a typed object using Jackson.
+     * Deserializes JSON string into a typed object using Gson.
      * <p>
-     * This method uses the pre-configured {@link #OBJECT_MAPPER} to parse JSON
-     * with support for generic types via {@link TypeReference}.
+     * This method uses the pre-configured {@link #OBJECT_MAPPER} to parse JSON.
      *
      * @param <T> the target type
      * @param data JSON string to deserialize
-     * @param typeRef type reference specifying the target type (for generic types)
+     * @param typeRef class reference specifying the target type
      * @return deserialized object of type T
      * @throws JsonProcessingException if JSON parsing fails
      */
-    public static <T> T unmarshalFrom(String data, TypeReference<T> typeRef) throws JsonProcessingException {
-        return OBJECT_MAPPER.readValue(data, typeRef);
+    public static <T> T unmarshalFrom(String data, Class<T> typeRef) throws JsonProcessingException {
+        return JsonUtil.fromJson(data, typeRef);
     }
 
     /**
@@ -109,15 +93,15 @@ public class Utils {
      * <p>
      * This method handles streaming artifact updates, supporting both:
      * <ul>
-     *   <li>Adding new artifacts to the task</li>
-     *   <li>Replacing existing artifacts (when {@code append=false})</li>
-     *   <li>Appending parts to existing artifacts (when {@code append=true})</li>
+     * <li>Adding new artifacts to the task</li>
+     * <li>Replacing existing artifacts (when {@code append=false})</li>
+     * <li>Appending parts to existing artifacts (when {@code append=true})</li>
      * </ul>
      * <p>
      * The {@code append} flag in the event determines the behavior:
      * <ul>
-     *   <li>{@code false} or {@code null}: Replace/add the entire artifact</li>
-     *   <li>{@code true}: Append the new artifact's parts to an existing artifact with matching {@code artifactId}</li>
+     * <li>{@code false} or {@code null}: Replace/add the entire artifact</li>
+     * <li>{@code true}: Append the new artifact's parts to an existing artifact with matching {@code artifactId}</li>
      * </ul>
      *
      * @param task the current task to update
@@ -174,7 +158,7 @@ public class Utils {
             // We will ignore this chunk
             log.warning(
                     String.format("Received append=true for nonexistent artifact index for artifact %s in task %s. Ignoring chunk.",
-                    artifactId, taskId));
+                            artifactId, taskId));
         }
 
         return new Task.Builder(task)
@@ -184,31 +168,14 @@ public class Utils {
     }
 
     /**
-     * Serializes an object to a JSON string using Jackson.
-     * <p>
-     * This method uses the pre-configured {@link #OBJECT_MAPPER} to produce
-     * JSON representation of the provided object.
-     *
-     * @param o the object to serialize
-     * @return JSON string representation of the object
-     * @throws RuntimeException if JSON serialization fails (wraps {@link JsonProcessingException})
-     */
-    public static String toJsonString(Object o) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(o);
-        } catch (JsonProcessingException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
      * Get the first defined URL in the supported interaces of the agent card.
+     *
      * @param agentCard the agentcard where the interfaces are defined.
      * @return the first defined URL in the supported interaces of the agent card.
      * @throws A2AClientException
      */
     public static String getFavoriteInterface(AgentCard agentCard) throws A2AClientException {
-        if(agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {
+        if (agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {
             throw new A2AClientException("No server interface available in the AgentCard");
         }
         return agentCard.supportedInterfaces().get(0).url();

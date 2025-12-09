@@ -1,10 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.MutualTLSSecurityScheme.MUTUAL_TLS;
@@ -32,9 +27,6 @@ import static io.a2a.spec.MutualTLSSecurityScheme.MUTUAL_TLS;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc8446#section-4.4.2">RFC 8446 - TLS 1.3 Client Authentication</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonTypeName(MUTUAL_TLS)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class MutualTLSSecurityScheme implements SecurityScheme {
 
     public static final String MUTUAL_TLS = "mutualTLS";
@@ -49,9 +41,7 @@ public final class MutualTLSSecurityScheme implements SecurityScheme {
         this(null, MUTUAL_TLS);
     }
 
-    @JsonCreator
-    public MutualTLSSecurityScheme(@JsonProperty("description") String description,
-                                   @JsonProperty("type") String type) {
+    public MutualTLSSecurityScheme(String description, String type) {
         Assert.checkNotNullParam("type", type);
         if (!type.equals(MUTUAL_TLS)) {
             throw new IllegalArgumentException("Invalid type for MutualTLSSecurityScheme");

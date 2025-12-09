@@ -3,10 +3,6 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.INTERNAL_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON-RPC error indicating an internal error occurred on the server.
@@ -31,15 +27,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see A2AError for the error marker interface
  * @see <a href="https://www.jsonrpc.org/specification#error_object">JSON-RPC 2.0 Error Codes</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class InternalError extends JSONRPCError {
 
-    @JsonCreator
-    public InternalError(
-            @JsonProperty("code") Integer code,
-            @JsonProperty("message") String message,
-            @JsonProperty("data") Object data) {
+    public InternalError(Integer code, String message, Object data) {
         super(
                 defaultIfNull(code, INTERNAL_ERROR_CODE),
                 defaultIfNull(message, "Internal Error"),

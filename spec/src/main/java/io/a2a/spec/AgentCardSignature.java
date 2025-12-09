@@ -1,10 +1,7 @@
 package io.a2a.spec;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.a2a.util.Assert;
 
@@ -34,9 +31,7 @@ import io.a2a.util.Assert;
  * @see <a href="https://tools.ietf.org/html/rfc7515">RFC 7515 - JSON Web Signature</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record AgentCardSignature(Map<String, Object> header, @JsonProperty("protected") String protectedHeader,
+public record AgentCardSignature(Map<String, Object> header, @SerializedName("protected")String protectedHeader,
                                  String signature) {
 
     public AgentCardSignature {

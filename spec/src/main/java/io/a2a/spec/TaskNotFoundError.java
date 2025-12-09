@@ -1,12 +1,6 @@
 package io.a2a.spec;
 
 import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import static io.a2a.util.Utils.defaultIfNull;
 
 /**
@@ -39,20 +33,16 @@ import static io.a2a.util.Utils.defaultIfNull;
  * @see CancelTaskRequest for task cancellation
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class TaskNotFoundError extends JSONRPCError {
 
     public TaskNotFoundError() {
         this(null, null, null);
     }
 
-    @JsonCreator
-
     public TaskNotFoundError(
-            @JsonProperty("code") Integer code,
-            @JsonProperty("message") String message,
-            @JsonProperty("data") Object data) {
+            Integer code,
+            String message,
+            Object data) {
         super(
                 defaultIfNull(code, TASK_NOT_FOUND_ERROR_CODE),
                 defaultIfNull(message, "Task not found"),

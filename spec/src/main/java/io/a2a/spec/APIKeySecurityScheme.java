@@ -1,12 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
@@ -23,9 +16,6 @@ import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonTypeName(API_KEY)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class APIKeySecurityScheme implements SecurityScheme {
 
     public static final String API_KEY = "apiKey";
@@ -48,12 +38,10 @@ public final class APIKeySecurityScheme implements SecurityScheme {
             this.location = location;
         }
 
-        @JsonValue
         public String asString() {
             return location;
         }
 
-        @JsonCreator
         public static Location fromString(String location) {
             switch (location) {
                 case "cookie" -> {
@@ -74,9 +62,8 @@ public final class APIKeySecurityScheme implements SecurityScheme {
         this(location, name, description, API_KEY);
     }
 
-    @JsonCreator
-    public APIKeySecurityScheme(@JsonProperty("location") Location location, @JsonProperty("name") String name,
-                                @JsonProperty("description") String description, @JsonProperty("type") String type) {
+    public APIKeySecurityScheme(Location location, String name,
+                                String description, String type) {
         Assert.checkNotNullParam("location", location);
         Assert.checkNotNullParam("name", name);
         Assert.checkNotNullParam("type", type);

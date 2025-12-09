@@ -1,8 +1,7 @@
 package io.a2a.grpc.utils;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import io.a2a.json.JsonMappingException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -69,6 +68,7 @@ import static io.a2a.spec.A2AErrorCodes.PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CO
 import static io.a2a.spec.A2AErrorCodes.TASK_NOT_CANCELABLE_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
+
 
 /**
  * Utilities for converting between JSON-RPC 2.0 messages and Protocol Buffer objects.
@@ -156,9 +156,11 @@ import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
 public class JSONRPCUtils {
 
     private static final Logger log = Logger.getLogger(JSONRPCUtils.class.getName());
-    private static final Gson GSON = new GsonBuilder().setStrictness(Strictness.STRICT).create();
+    private static final Gson GSON = new GsonBuilder()
+            .setStrictness(Strictness.STRICT)
+            .create();
 
-    public static JSONRPCRequest<?> parseRequestBody(String body) throws JsonProcessingException {
+    public static JSONRPCRequest<?> parseRequestBody(String body) throws JsonMappingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         if (!jsonRpc.has("method")) {
@@ -238,7 +240,7 @@ public class JSONRPCUtils {
         }
     }
 
-    public static StreamResponse parseResponseEvent(String body) throws JsonProcessingException {
+    public static StreamResponse parseResponseEvent(String body) throws JsonMappingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
@@ -252,7 +254,7 @@ public class JSONRPCUtils {
         return builder.build();
     }
 
-    public static JSONRPCResponse<?> parseResponseBody(String body, String method) throws JsonProcessingException {
+    public static JSONRPCResponse<?> parseResponseBody(String body, String method) throws JsonMappingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
@@ -313,7 +315,7 @@ public class JSONRPCUtils {
         }
     }
 
-    public static JSONRPCResponse<?> parseError(JsonObject error, Object id, String method) throws JsonProcessingException {
+    public static JSONRPCResponse<?> parseError(JsonObject error, Object id, String method) throws JsonMappingException {
         JSONRPCError rpcError = processError(error);
         switch (method) {
             case GetTaskRequest.METHOD -> {
@@ -450,13 +452,13 @@ public class JSONRPCUtils {
     protected static Object getIdIfPossible(JsonObject jsonRpc) {
         try {
             return getAndValidateId(jsonRpc);
-        } catch (JsonProcessingException e) {
+        } catch (JsonMappingException e) {
             // id can't be determined
             return "UNDETERMINED ID";
         }
     }
 
-    protected static Object getAndValidateId(JsonObject jsonRpc) throws JsonProcessingException {
+    protected static Object getAndValidateId(JsonObject jsonRpc) throws JsonMappingException {
         Object id = null;
         if (jsonRpc.has("id")) {
             if (jsonRpc.get("id").isJsonPrimitive()) {
@@ -509,7 +511,7 @@ public class JSONRPCUtils {
                 if (requestId instanceof String string) {
                     output.name("id").value(string);
                 } else if (requestId instanceof Number number) {
-                    output.name("id").value(number);
+                    output.name("id").value(number.longValue());
                 }
             }
             String resultValue = JsonFormat.printer().omittingInsignificantWhitespace().print(builder);
@@ -531,7 +533,7 @@ public class JSONRPCUtils {
                 if (requestId instanceof String string) {
                     output.name("id").value(string);
                 } else if (requestId instanceof Number number) {
-                    output.name("id").value(number);
+                    output.name("id").value(number.longValue());
                 }
             }
             output.name("error");

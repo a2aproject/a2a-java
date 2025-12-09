@@ -1,8 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 /**
  * Represents file content embedded directly as base64-encoded bytes.
  * <p>
@@ -27,7 +24,5 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * @see FilePart
  * @see FileWithUri
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record FileWithBytes(String mimeType, String name, String bytes) implements FileContent {
 }

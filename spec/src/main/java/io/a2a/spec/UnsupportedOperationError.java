@@ -3,11 +3,6 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * A2A Protocol error indicating that the requested operation is not supported by the agent.
  * <p>
@@ -36,15 +31,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see MethodNotFoundError for unknown method errors
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class UnsupportedOperationError extends JSONRPCError {
 
-    @JsonCreator
     public UnsupportedOperationError(
-            @JsonProperty("code") Integer code,
-            @JsonProperty("message") String message,
-            @JsonProperty("data") Object data) {
+            Integer code,
+            String message,
+            Object data) {
         super(
                 defaultIfNull(code, UNSUPPORTED_OPERATION_ERROR_CODE),
                 defaultIfNull(message, "This operation is not supported"),
