@@ -44,7 +44,7 @@ public class Utils {
     /**
      * Deserializes JSON string into a typed object using Gson.
      * <p>
-     * This method uses the pre-configured {@link JsonUtil#fromJson(String, Type)} to parse JSON.
+     * This method uses the pre-configured {@link JsonUtil#fromJson(String, Class)} to parse JSON.
      *
      * @param <T> the target type
      * @param data JSON string to deserialize
