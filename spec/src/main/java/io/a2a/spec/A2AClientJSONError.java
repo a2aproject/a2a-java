@@ -27,13 +27,27 @@ package io.a2a.spec;
  */
 public class A2AClientJSONError extends A2AClientError {
 
+    /**
+     * Creates a new JSON error with no message.
+     */
     public A2AClientJSONError() {
     }
 
+    /**
+     * Creates a new JSON error with the specified message.
+     *
+     * @param message the error message
+     */
     public A2AClientJSONError(String message) {
         super(message);
     }
 
+    /**
+     * Creates a new JSON error with the specified message and cause.
+     *
+     * @param message the error message
+     * @param cause the underlying cause
+     */
     public A2AClientJSONError(String message, Throwable cause) {
         super(message, cause);
     }

@@ -27,13 +27,27 @@ package io.a2a.spec;
  */
 public class A2AClientInvalidArgsError extends A2AClientError {
 
+    /**
+     * Creates a new invalid arguments error with no message.
+     */
     public A2AClientInvalidArgsError() {
     }
 
+    /**
+     * Creates a new invalid arguments error with the specified message.
+     *
+     * @param message the error message
+     */
     public A2AClientInvalidArgsError(String message) {
         super("Invalid arguments error: " + message);
     }
 
+    /**
+     * Creates a new invalid arguments error with the specified message and cause.
+     *
+     * @param message the error message
+     * @param cause the underlying cause
+     */
     public A2AClientInvalidArgsError(String message, Throwable cause) {
         super("Invalid arguments error: " + message, cause);
     }

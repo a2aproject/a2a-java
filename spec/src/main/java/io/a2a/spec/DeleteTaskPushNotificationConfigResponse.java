@@ -13,14 +13,33 @@ package io.a2a.spec;
  */
 public final class DeleteTaskPushNotificationConfigResponse extends JSONRPCResponse<Void> {
 
+    /**
+     * Creates a new DeleteTaskPushNotificationConfigResponse with full JSON-RPC parameters.
+     *
+     * @param jsonrpc the JSON-RPC version
+     * @param id the response identifier matching the request
+     * @param result the result (always null/Void for this response type)
+     * @param error the error if the request failed, null on success
+     */
     public DeleteTaskPushNotificationConfigResponse(String jsonrpc, Object id, Void result,JSONRPCError error) {
         super(jsonrpc, id, result, error, Void.class);
     }
 
+    /**
+     * Creates a new error DeleteTaskPushNotificationConfigResponse with default JSON-RPC version.
+     *
+     * @param id the response identifier matching the request
+     * @param error the error describing why the deletion failed
+     */
     public DeleteTaskPushNotificationConfigResponse(Object id, JSONRPCError error) {
         this(null, id, null, error);
     }
 
+    /**
+     * Creates a new successful DeleteTaskPushNotificationConfigResponse with default JSON-RPC version.
+     *
+     * @param id the response identifier matching the request
+     */
     public DeleteTaskPushNotificationConfigResponse(Object id) {
         this(null, id, null, null);
     }

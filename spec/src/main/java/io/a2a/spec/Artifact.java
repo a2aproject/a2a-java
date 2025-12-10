@@ -32,6 +32,11 @@ import io.a2a.util.Assert;
 public record Artifact(String artifactId, String name, String description, List<Part<?>> parts, Map<String, Object> metadata,
                        List<String> extensions) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if artifactId or parts is null, or if parts is empty
+     */
     public Artifact {
         Assert.checkNotNullParam("artifactId", artifactId);
         Assert.checkNotNullParam("parts", parts);

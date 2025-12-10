@@ -43,6 +43,11 @@ public record AgentSkill(String id, String name, String description, List<String
                          List<String> examples, List<String> inputModes, List<String> outputModes,
                          List<Map<String, List<String>>> security) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if id, name, description, or tags is null
+     */
     public AgentSkill {
         Assert.checkNotNullParam("description", description);
         Assert.checkNotNullParam("id", id);
@@ -83,6 +88,12 @@ public record AgentSkill(String id, String name, String description, List<String
         private List<String> inputModes;
         private List<String> outputModes;
         private List<Map<String, List<String>>> security;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        public Builder() {
+        }
 
         /**
          * Sets the unique identifier for the skill.

@@ -19,35 +19,76 @@ import io.a2a.util.Assert;
  */
 public record DeleteTaskPushNotificationConfigParams(String id, String pushNotificationConfigId, Map<String, Object> metadata) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if id or pushNotificationConfigId is null
+     */
     public DeleteTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("pushNotificationConfigId", pushNotificationConfigId);
     }
 
+    /**
+     * Creates parameters without optional metadata.
+     *
+     * @param id the task identifier (required)
+     * @param pushNotificationConfigId the configuration ID to delete (required)
+     * @throws IllegalArgumentException if id or pushNotificationConfigId is null
+     */
     public DeleteTaskPushNotificationConfigParams(String id, String pushNotificationConfigId) {
         this(id, pushNotificationConfigId, null);
     }
 
+    /**
+     * Builder for constructing {@link DeleteTaskPushNotificationConfigParams} instances.
+     * <p>
+     * Provides a fluent API for setting parameters with optional metadata.
+     */
     public static class Builder {
         String id;
         String pushNotificationConfigId;
         Map<String, Object> metadata;
 
+        /**
+         * Sets the task identifier.
+         *
+         * @param id the task ID (required)
+         * @return this builder for method chaining
+         */
         public Builder id(String id) {
             this.id = id;
             return this;
         }
 
+        /**
+         * Sets the push notification configuration ID to delete.
+         *
+         * @param pushNotificationConfigId the configuration ID (required)
+         * @return this builder for method chaining
+         */
         public Builder pushNotificationConfigId(String pushNotificationConfigId) {
             this.pushNotificationConfigId = pushNotificationConfigId;
             return this;
         }
 
+        /**
+         * Sets optional metadata for the request.
+         *
+         * @param metadata arbitrary key-value metadata (optional)
+         * @return this builder for method chaining
+         */
         public Builder metadata(Map<String, Object> metadata) {
             this.metadata = metadata;
             return this;
         }
 
+        /**
+         * Builds a new {@link DeleteTaskPushNotificationConfigParams} from the current builder state.
+         *
+         * @return a new DeleteTaskPushNotificationConfigParams instance
+         * @throws IllegalArgumentException if id or pushNotificationConfigId is null
+         */
         public DeleteTaskPushNotificationConfigParams build() {
             return new DeleteTaskPushNotificationConfigParams(id, pushNotificationConfigId, metadata);
         }

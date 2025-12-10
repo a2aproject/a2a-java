@@ -25,6 +25,11 @@ import io.a2a.util.Assert;
  */
 public record AgentExtension (String description, Map<String, Object> params, boolean required, String uri) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if uri is null
+     */
     public AgentExtension {
         Assert.checkNotNullParam("uri", uri);
     }
@@ -47,6 +52,12 @@ public record AgentExtension (String description, Map<String, Object> params, bo
         Map<String, Object> params;
         boolean required;
         String uri;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        public Builder() {
+        }
 
         /**
          * Sets a human-readable description of the extension's purpose.

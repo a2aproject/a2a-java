@@ -37,6 +37,7 @@ import io.a2a.util.Assert;
  */
 public class DataPart extends Part<Map<String, Object>> {
 
+    /** The type identifier for data parts in messages and artifacts. */
     public static final String DATA = "data";
     private final Map<String, Object> data;
     private final Map<String, Object> metadata;
@@ -58,6 +59,11 @@ public class DataPart extends Part<Map<String, Object>> {
         return kind;
     }
 
+    /**
+     * Gets the structured data contained in this part.
+     *
+     * @return a map of key-value pairs representing the data
+     */
     public Map<String, Object> getData() {
         return data;
     }

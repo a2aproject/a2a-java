@@ -19,18 +19,37 @@ package io.a2a.spec;
  */
 public class A2AServerException extends A2AException {
 
+    /**
+     * Creates a new A2AServerException with no message.
+     */
     public A2AServerException() {
         super();
     }
 
+    /**
+     * Creates a new A2AServerException with the specified message.
+     *
+     * @param msg the exception message
+     */
     public A2AServerException(final String msg) {
         super(msg);
     }
 
+    /**
+     * Creates a new A2AServerException with the specified cause.
+     *
+     * @param cause the underlying cause
+     */
     public A2AServerException(final Throwable cause) {
         super(cause);
     }
 
+    /**
+     * Creates a new A2AServerException with the specified message and cause.
+     *
+     * @param msg the exception message
+     * @param cause the underlying cause
+     */
     public A2AServerException(final String msg, final Throwable cause) {
         super(msg, cause);
     }

@@ -24,6 +24,11 @@ import io.a2a.util.Assert;
  */
 public record AuthenticationInfo(List<String> schemes, String credentials) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if schemes is null
+     */
     public AuthenticationInfo {
         Assert.checkNotNullParam("schemes", schemes);
     }

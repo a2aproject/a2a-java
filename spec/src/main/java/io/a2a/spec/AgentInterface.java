@@ -24,6 +24,11 @@ import io.a2a.util.Assert;
  */
 public record AgentInterface(String protocolBinding, String url) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if protocolBinding or url is null
+     */
     public AgentInterface {
         Assert.checkNotNullParam("protocolBinding", protocolBinding);
         Assert.checkNotNullParam("url", url);

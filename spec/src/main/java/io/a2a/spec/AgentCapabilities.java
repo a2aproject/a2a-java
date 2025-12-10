@@ -57,6 +57,12 @@ public record AgentCapabilities(boolean streaming, boolean pushNotifications, bo
         private List<AgentExtension> extensions;
 
         /**
+         * Creates a new Builder with all capabilities set to false by default.
+         */
+        public Builder() {
+        }
+
+        /**
          * Sets whether the agent supports streaming responses.
          * <p>
          * When enabled, clients can subscribe to task updates and receive

@@ -39,6 +39,7 @@ import static io.a2a.spec.FilePart.FILE;
  */
 public class FilePart extends Part<FileContent> {
 
+    /** The type identifier for file parts in messages and artifacts. */
     public static final String FILE = "file";
     private final FileContent file;
     private final Map<String, Object> metadata;

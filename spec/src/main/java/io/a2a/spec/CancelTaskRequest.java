@@ -26,10 +26,20 @@ import io.a2a.util.Assert;
  */
 public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdParams> {
 
+    /** The JSON-RPC method name for canceling tasks. */
     public static final String METHOD = "CancelTask";
 
+    /**
+     * Creates a new CancelTaskRequest with the specified JSON-RPC parameters.
+     *
+     * @param jsonrpc the JSON-RPC version (defaults to "2.0" if null)
+     * @param id the request identifier (string, integer, or null)
+     * @param method the method name (must be "CancelTask")
+     * @param params the request parameters containing the task ID
+     * @throws IllegalArgumentException if jsonrpc version is invalid, method is not "CancelTask", params is null, or id is not a String/Integer/null
+     */
     public CancelTaskRequest(String jsonrpc, Object id, String method, TaskIdParams params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+        if (jsonrpc != null && ! JSONRPC_VERSION.equals(jsonrpc)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
         Assert.checkNotNullParam("method", method);
@@ -44,36 +54,81 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
         this.params = params;
     }
 
+    /**
+     * Creates a new CancelTaskRequest with default JSON-RPC version and method.
+     *
+     * @param id the request identifier (string, integer, or null)
+     * @param params the request parameters containing the task ID
+     * @throws IllegalArgumentException if params is null or id is not a string/integer/null
+     */
     public CancelTaskRequest(Object id, TaskIdParams params) {
         this(null, id, METHOD, params);
     }
 
+    /**
+     * Builder for constructing {@link CancelTaskRequest} instances.
+     * <p>
+     * Provides a fluent API for setting request parameters. If no id is provided,
+     * a random UUID will be generated when {@link #build()} is called.
+     */
     public static class Builder {
         private String jsonrpc;
         private Object id;
         private String method = METHOD;
         private TaskIdParams params;
 
+        /**
+         * Sets the JSON-RPC protocol version.
+         *
+         * @param jsonrpc the JSON-RPC version (optional, defaults to "2.0")
+         * @return this builder for method chaining
+         */
         public CancelTaskRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
 
+        /**
+         * Sets the request identifier.
+         *
+         * @param id the request identifier (string, integer, or null; if null, a UUID will be generated)
+         * @return this builder for method chaining
+         */
         public CancelTaskRequest.Builder id(Object id) {
             this.id = id;
             return this;
         }
 
+        /**
+         * Sets the JSON-RPC method name.
+         *
+         * @param method the method name (should be "CancelTask")
+         * @return this builder for method chaining
+         */
         public CancelTaskRequest.Builder method(String method) {
             this.method = method;
             return this;
         }
 
+        /**
+         * Sets the request parameters containing the task ID to cancel.
+         *
+         * @param params the request parameters (required)
+         * @return this builder for method chaining
+         */
         public CancelTaskRequest.Builder params(TaskIdParams params) {
             this.params = params;
             return this;
         }
 
+        /**
+         * Builds a new {@link CancelTaskRequest} from the current builder state.
+         * <p>
+         * If no id was provided, a random UUID will be generated.
+         *
+         * @return a new CancelTaskRequest instance
+         * @throws IllegalArgumentException if validation fails (invalid method, null params, invalid id type)
+         */
         public CancelTaskRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

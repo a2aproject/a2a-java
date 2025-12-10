@@ -33,6 +33,14 @@ public class A2AClientHTTPError extends A2AClientError {
     private final int code;
     private final String message;
 
+    /**
+     * Creates a new HTTP client error with the specified status code and message.
+     *
+     * @param code the HTTP status code
+     * @param message the error message
+     * @param data additional error data (may be the response body)
+     * @throws IllegalArgumentException if code or message is null
+     */
     public A2AClientHTTPError(int code, String message, Object data) {
         Assert.checkNotNullParam("code", code);
         Assert.checkNotNullParam("message", message);

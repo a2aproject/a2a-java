@@ -25,5 +25,10 @@ import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
 public sealed interface SecurityScheme permits APIKeySecurityScheme, HTTPAuthSecurityScheme, OAuth2SecurityScheme,
         OpenIdConnectSecurityScheme, MutualTLSSecurityScheme {
 
+    /**
+     * Gets the human-readable description of this security scheme.
+     *
+     * @return the description, or null if not provided
+     */
     String getDescription();
 }

@@ -34,6 +34,11 @@ import io.a2a.util.Assert;
 public record AgentCardSignature(Map<String, Object> header, @SerializedName("protected")String protectedHeader,
                                  String signature) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if protectedHeader or signature is null
+     */
     public AgentCardSignature {
         Assert.checkNotNullParam("protectedHeader", protectedHeader);
         Assert.checkNotNullParam("signature", signature);
@@ -55,6 +60,12 @@ public record AgentCardSignature(Map<String, Object> header, @SerializedName("pr
         private Map<String, Object> header;
         String protectedHeader;
         String signature;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        public Builder() {
+        }
 
         /**
          * Sets the optional unprotected header with additional metadata.

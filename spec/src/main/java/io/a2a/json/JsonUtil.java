@@ -79,7 +79,7 @@ public class JsonUtil {
      * <p>
      * Used throughout the SDK for consistent JSON serialization and deserialization.
      *
-     * @see GsonBuilder
+     * @see JsonUtil#createBaseGsonBuilder()
      */
     public static final Gson OBJECT_MAPPER = createBaseGsonBuilder()
             .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())

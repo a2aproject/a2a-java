@@ -20,8 +20,18 @@ import io.a2a.util.Utils;
  */
 public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<DeleteTaskPushNotificationConfigParams> {
 
+    /** The JSON-RPC method name for deleting push notification configurations. */
     public static final String METHOD = "DeleteTaskPushNotificationConfig";
 
+    /**
+     * Creates a new DeleteTaskPushNotificationConfigRequest with the specified JSON-RPC parameters.
+     *
+     * @param jsonrpc the JSON-RPC version (defaults to "2.0" if null)
+     * @param id the request identifier (string, integer, or null)
+     * @param method the method name (must be "DeleteTaskPushNotificationConfig")
+     * @param params the request parameters containing task and config IDs
+     * @throws IllegalArgumentException if jsonrpc version is invalid, method is not "DeleteTaskPushNotificationConfig", or id is not a string/integer/null
+     */
     public DeleteTaskPushNotificationConfigRequest(String jsonrpc, Object id, String method, DeleteTaskPushNotificationConfigParams params) {
         if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
@@ -37,36 +47,81 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
         this.params = params;
     }
 
+    /**
+     * Creates a new DeleteTaskPushNotificationConfigRequest with default JSON-RPC version and method.
+     *
+     * @param id the request identifier (string, integer, or null)
+     * @param params the request parameters containing task and config IDs
+     * @throws IllegalArgumentException if id is not a string/integer/null
+     */
     public DeleteTaskPushNotificationConfigRequest(String id, DeleteTaskPushNotificationConfigParams params) {
         this(null, id, METHOD, params);
     }
 
+    /**
+     * Builder for constructing {@link DeleteTaskPushNotificationConfigRequest} instances.
+     * <p>
+     * Provides a fluent API for setting request parameters. If no id is provided,
+     * a random UUID will be generated when {@link #build()} is called.
+     */
     public static class Builder {
         private String jsonrpc;
         private Object id;
         private String method;
         private DeleteTaskPushNotificationConfigParams params;
 
+        /**
+         * Sets the JSON-RPC protocol version.
+         *
+         * @param jsonrpc the JSON-RPC version (optional, defaults to "2.0")
+         * @return this builder for method chaining
+         */
         public Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
 
+        /**
+         * Sets the request identifier.
+         *
+         * @param id the request identifier (string, integer, or null; if null, a UUID will be generated)
+         * @return this builder for method chaining
+         */
         public Builder id(Object id) {
             this.id = id;
             return this;
         }
 
+        /**
+         * Sets the JSON-RPC method name.
+         *
+         * @param method the method name (should be "DeleteTaskPushNotificationConfig")
+         * @return this builder for method chaining
+         */
         public Builder method(String method) {
             this.method = method;
             return this;
         }
 
+        /**
+         * Sets the request parameters.
+         *
+         * @param params the request parameters containing task and config IDs (required)
+         * @return this builder for method chaining
+         */
         public Builder params(DeleteTaskPushNotificationConfigParams params) {
             this.params = params;
             return this;
         }
 
+        /**
+         * Builds a new {@link DeleteTaskPushNotificationConfigRequest} from the current builder state.
+         * <p>
+         * If no id was provided, a random UUID will be generated.
+         *
+         * @return a new DeleteTaskPushNotificationConfigRequest instance
+         * @throws IllegalArgumentException if validation fails (invalid method, invalid id type)
+         */
         public DeleteTaskPushNotificationConfigRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

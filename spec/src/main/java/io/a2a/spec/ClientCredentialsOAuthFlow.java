@@ -28,6 +28,11 @@ import io.a2a.util.Assert;
  */
 public record ClientCredentialsOAuthFlow(String refreshUrl, Map<String, String> scopes, String tokenUrl) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if scopes or tokenUrl is null
+     */
     public ClientCredentialsOAuthFlow {
         Assert.checkNotNullParam("scopes", scopes);
         Assert.checkNotNullParam("tokenUrl", tokenUrl);

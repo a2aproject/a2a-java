@@ -26,13 +26,27 @@ package io.a2a.spec;
  */
 public class A2AClientInvalidStateError extends A2AClientError {
 
+    /**
+     * Creates a new invalid state error with no message.
+     */
     public A2AClientInvalidStateError() {
     }
 
+    /**
+     * Creates a new invalid state error with the specified message.
+     *
+     * @param message the error message
+     */
     public A2AClientInvalidStateError(String message) {
         super("Invalid state error: " + message);
     }
 
+    /**
+     * Creates a new invalid state error with the specified message and cause.
+     *
+     * @param message the error message
+     * @param cause the underlying cause
+     */
     public A2AClientInvalidStateError(String message, Throwable cause) {
         super("Invalid state error: " + message, cause);
     }

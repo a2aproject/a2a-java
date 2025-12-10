@@ -21,6 +21,11 @@ import io.a2a.util.Assert;
  */
 public record AgentProvider(String organization, String url) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if organization or url is null
+     */
     public AgentProvider {
         Assert.checkNotNullParam("organization", organization);
         Assert.checkNotNullParam("url", url);

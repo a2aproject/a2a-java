@@ -28,6 +28,11 @@ import io.a2a.util.Assert;
 public record AuthorizationCodeOAuthFlow(String authorizationUrl, String refreshUrl, Map<String, String> scopes,
                                          String tokenUrl) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @throws IllegalArgumentException if authorizationUrl, scopes, or tokenUrl is null
+     */
     public AuthorizationCodeOAuthFlow {
         Assert.checkNotNullParam("authorizationUrl", authorizationUrl);
         Assert.checkNotNullParam("scopes", scopes);
