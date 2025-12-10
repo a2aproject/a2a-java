@@ -27,7 +27,7 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
     public static final String METHOD = "SubscribeToTask";
 
     public SubscribeToTaskRequest(String jsonrpc, Object id, TaskIdParams params) {
-        super(jsonrpc, METHOD, id, params);
+        super(jsonrpc, METHOD, id == null ? UUID.randomUUID().toString() : id, params);
     }
 
     public SubscribeToTaskRequest(Object id, TaskIdParams params) {
