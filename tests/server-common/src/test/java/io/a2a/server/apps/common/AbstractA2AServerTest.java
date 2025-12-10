@@ -723,6 +723,112 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
+    @Timeout(value = 3, unit = TimeUnit.MINUTES)
+    public void testResubscribeExistingTaskSuccessWithClientConsumers() throws Exception {
+        saveTaskInTaskStore(MINIMAL_TASK);
+        try {
+            // attempting to send a streaming message instead of explicitly calling queueManager#createOrTap
+            // does not work because after the message is sent, the queue becomes null but task resubscription
+            // requires the queue to still be active
+            ensureQueueForTask(MINIMAL_TASK.getId());
+
+            CountDownLatch eventLatch = new CountDownLatch(2);
+            AtomicReference<TaskArtifactUpdateEvent> artifactUpdateEvent = new AtomicReference<>();
+            AtomicReference<TaskStatusUpdateEvent> statusUpdateEvent = new AtomicReference<>();
+            AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
+            AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+            // Create consumer to handle resubscribed events
+
+            AgentCard agentCard = createTestAgentCard();
+            ClientConfig clientConfig = createClientConfig(true);
+            ClientBuilder clientBuilder = Client
+                    .builder(agentCard)
+                    .addConsumer((evt, agentCard1) -> {
+                        if (evt instanceof TaskUpdateEvent taskUpdateEvent) {
+                            if (taskUpdateEvent.getUpdateEvent() instanceof TaskArtifactUpdateEvent artifactEvent) {
+                                artifactUpdateEvent.set(artifactEvent);
+                                eventLatch.countDown();
+                            } else if (taskUpdateEvent.getUpdateEvent() instanceof TaskStatusUpdateEvent statusEvent) {
+                                statusUpdateEvent.set(statusEvent);
+                                eventLatch.countDown();
+                            } else {
+                                wasUnexpectedEvent.set(true);
+                            }
+                        } else {
+                            wasUnexpectedEvent.set(true);
+                        }
+                    })
+                    .streamingErrorHandler(error -> {
+                                if (!isStreamClosedError(error)) {
+                                    errorRef.set(error);
+                                }
+                                eventLatch.countDown();
+                            })
+                    .clientConfig(clientConfig);
+            configureTransport(clientBuilder);
+
+            Client clientWithConsumer = clientBuilder.build();
+
+            // Count down when the streaming subscription is established
+            CountDownLatch subscriptionLatch = new CountDownLatch(1);
+            awaitStreamingSubscription()
+                    .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
+
+            // Resubscribe to the task with the client consumer and error handler
+            clientWithConsumer.resubscribe(new TaskIdParams(MINIMAL_TASK.getId()));
+
+            // Wait for subscription to be established
+            assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
+
+            // Enqueue events on the server
+            List<Event> events = List.of(
+                    new TaskArtifactUpdateEvent.Builder()
+                            .taskId(MINIMAL_TASK.getId())
+                            .contextId(MINIMAL_TASK.getContextId())
+                            .artifact(new Artifact.Builder()
+                                    .artifactId("11")
+                                    .parts(new TextPart("text"))
+                                    .build())
+                            .build(),
+                    new TaskStatusUpdateEvent.Builder()
+                            .taskId(MINIMAL_TASK.getId())
+                            .contextId(MINIMAL_TASK.getContextId())
+                            .status(new TaskStatus(TaskState.COMPLETED))
+                            .isFinal(true)
+                            .build());
+
+            for (Event event : events) {
+                enqueueEventOnServer(event);
+            }
+
+            // Wait for events to be received
+            assertTrue(eventLatch.await(30, TimeUnit.SECONDS));
+            assertFalse(wasUnexpectedEvent.get());
+            assertNull(errorRef.get());
+
+            // Verify artifact update event
+            TaskArtifactUpdateEvent receivedArtifactEvent = artifactUpdateEvent.get();
+            assertNotNull(receivedArtifactEvent);
+            assertEquals(MINIMAL_TASK.getId(), receivedArtifactEvent.getTaskId());
+            assertEquals(MINIMAL_TASK.getContextId(), receivedArtifactEvent.getContextId());
+            Part<?> part = receivedArtifactEvent.getArtifact().parts().get(0);
+            assertEquals(Part.Kind.TEXT, part.getKind());
+            assertEquals("text", ((TextPart) part).getText());
+
+            // Verify status update event
+            TaskStatusUpdateEvent receivedStatusEvent = statusUpdateEvent.get();
+            assertNotNull(receivedStatusEvent);
+            assertEquals(MINIMAL_TASK.getId(), receivedStatusEvent.getTaskId());
+            assertEquals(MINIMAL_TASK.getContextId(), receivedStatusEvent.getContextId());
+            assertEquals(TaskState.COMPLETED, receivedStatusEvent.getStatus().state());
+            assertNotNull(receivedStatusEvent.getStatus().timestamp());
+        } finally {
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
+        }
+    }
+
+    @Test
     public void testResubscribeNoExistingTaskError() throws Exception {
         CountDownLatch errorLatch = new CountDownLatch(1);
         AtomicReference<Throwable> errorRef = new AtomicReference<>();

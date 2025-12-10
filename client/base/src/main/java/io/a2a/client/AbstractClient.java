@@ -32,10 +32,10 @@ import org.jspecify.annotations.Nullable;
  */
 public abstract class AbstractClient {
 
-    private final List<BiConsumer<ClientEvent, AgentCard>> consumers;
-    private final @Nullable Consumer<Throwable> streamingErrorHandler;
+    protected final @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers;
+    protected final @Nullable Consumer<Throwable> streamingErrorHandler;
 
-    public AbstractClient(List<BiConsumer<ClientEvent, AgentCard>> consumers) {
+    public AbstractClient(@NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers) {
         this(consumers, null);
     }
 
@@ -57,7 +57,7 @@ public abstract class AbstractClient {
      * @param request the message
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public void sendMessage(Message request) throws A2AClientException {
+    public void sendMessage(@NonNull Message request) throws A2AClientException {
         sendMessage(request, null);
     }
 
@@ -71,10 +71,13 @@ public abstract class AbstractClient {
      * configuration will get used for streaming.
      *
      * @param request the message
-     * @param context optional client call context for the request (may be {@code null})
+     * @param context optional client call context for the request
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public abstract void sendMessage(Message request, @Nullable ClientCallContext context) throws A2AClientException;
+    public void sendMessage(@NonNull Message request,
+                            @Nullable ClientCallContext context) throws A2AClientException {
+        sendMessage(request, consumers, streamingErrorHandler, context);
+    }
 
     /**
      * Send a message to the remote agent. This method will automatically use
@@ -90,9 +93,9 @@ public abstract class AbstractClient {
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public void sendMessage(Message request,
-                            List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                            Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
+    public void sendMessage(@NonNull Message request,
+                            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                            @Nullable Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
         sendMessage(request, consumers, streamingErrorHandler, null);
     }
 
@@ -108,12 +111,12 @@ public abstract class AbstractClient {
      * @param request the message
      * @param consumers a list of consumers to pass responses from the remote agent to
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
-     * @param context optional client call context for the request (may be {@code null})
+     * @param context optional client call context for the request
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public abstract void sendMessage(Message request,
-                                     List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                     Consumer<Throwable> streamingErrorHandler,
+    public abstract void sendMessage(@NonNull Message request,
+                                     @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                                     @Nullable Consumer<Throwable> streamingErrorHandler,
                                      @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
@@ -130,8 +133,9 @@ public abstract class AbstractClient {
      * @param metadata the optional metadata to include when sending the message
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public void sendMessage(Message request, PushNotificationConfig pushNotificationConfiguration,
-                            Map<String, Object> metadata) throws A2AClientException {
+    public void sendMessage(@NonNull Message request,
+                            @Nullable PushNotificationConfig pushNotificationConfiguration,
+                            @Nullable Map<String, Object> metadata) throws A2AClientException {
         sendMessage(request, pushNotificationConfiguration, metadata, null);
     }
 
@@ -147,11 +151,13 @@ public abstract class AbstractClient {
      * @param pushNotificationConfiguration the push notification configuration that should be
      *                                      used if the streaming approach is used
      * @param metadata the optional metadata to include when sending the message
-     * @param context optional client call context for the request (may be {@code null})
+     * @param context optional client call context for the request
      * @throws A2AClientException if sending the message fails for any reason
      */
-    public abstract void sendMessage(Message request, PushNotificationConfig pushNotificationConfiguration,
-                                     Map<String, Object> metadata, @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract void sendMessage(@NonNull Message request,
+                                     @Nullable PushNotificationConfig pushNotificationConfiguration,
+                                     @Nullable Map<String, Object> metadata,
+                                     @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the current state and history of a specific task.
@@ -320,8 +326,8 @@ public abstract class AbstractClient {
      * @param request the parameters specifying which task's notification configs to delete
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public void resubscribe(TaskIdParams request) throws A2AClientException {
-        resubscribe(request, null);
+    public void resubscribe(@NonNull TaskIdParams request) throws A2AClientException {
+        resubscribe(request, consumers, streamingErrorHandler, null);
     }
 
     /**
@@ -332,10 +338,13 @@ public abstract class AbstractClient {
      * error handler will be used if an error occurs during streaming.
      *
      * @param request the parameters specifying which task's notification configs to delete
-     * @param context optional client call context for the request (may be {@code null})
+     * @param context optional client call context for the request
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public abstract void resubscribe(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    public void resubscribe(@NonNull TaskIdParams request,
+                            @Nullable ClientCallContext context) throws A2AClientException {
+        resubscribe(request, consumers, streamingErrorHandler, context);
+    }
 
     /**
      * Resubscribe to a task's event stream.
@@ -349,8 +358,9 @@ public abstract class AbstractClient {
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public void resubscribe(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                            Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
+    public void resubscribe(@NonNull TaskIdParams request,
+                            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                            @Nullable Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
         resubscribe(request, consumers, streamingErrorHandler, null);
     }
 
@@ -364,11 +374,13 @@ public abstract class AbstractClient {
      * @param request the parameters specifying which task's notification configs to delete
      * @param consumers a list of consumers to pass responses from the remote agent to
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
-     * @param context optional client call context for the request (may be {@code null})
+     * @param context optional client call context for the request
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public abstract void resubscribe(TaskIdParams request, List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                                     Consumer<Throwable> streamingErrorHandler, @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract void resubscribe(@NonNull TaskIdParams request,
+                                     @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                                     @Nullable Consumer<Throwable> streamingErrorHandler,
+                                     @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the AgentCard.
@@ -393,15 +405,6 @@ public abstract class AbstractClient {
      * Close the transport and release any associated resources.
      */
     public abstract void close();
-
-    /**
-     * Process the event using all configured consumers.
-     */
-    void consume(ClientEvent clientEventOrMessage, AgentCard agentCard) {
-        for (BiConsumer<ClientEvent, AgentCard> consumer : consumers) {
-            consumer.accept(clientEventOrMessage, agentCard);
-        }
-    }
 
     /**
      * Get the error handler that should be used during streaming.
