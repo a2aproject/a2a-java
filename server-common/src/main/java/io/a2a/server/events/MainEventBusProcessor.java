@@ -167,6 +167,11 @@ public class MainEventBusProcessor implements Runnable {
             }
 
             // Step 3: Then distribute to ChildQueues (clients see either event or error AFTER persistence attempt)
+            if (eventToDistribute == null) {
+                LOGGER.error("MainEventBusProcessor: eventToDistribute is NULL for task {} - this should never happen!", taskId);
+                eventToDistribute = new InternalError("Internal error: event processing failed");
+            }
+
             if (eventQueue instanceof EventQueue.MainQueue mainQueue) {
                 int childCount = mainQueue.getChildCount();
                 LOGGER.debug("MainEventBusProcessor: Distributing {} to {} children for task {}",

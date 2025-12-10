@@ -66,7 +66,10 @@ public class EventConsumer {
                         }
                         event = item.getEvent();
 
+                        // Defensive logging for error handling
                         if (event instanceof Throwable thr) {
+                            LOGGER.info("EventConsumer detected Throwable event: {} - triggering tube.fail()",
+                                    thr.getClass().getSimpleName());
                             tube.fail(thr);
                             return;
                         }

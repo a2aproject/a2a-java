@@ -16,6 +16,7 @@ import io.a2a.server.events.EventQueueItem;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.Event;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.InternalError;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
@@ -96,6 +97,7 @@ public class ResultAggregator {
     public EventTypeAndInterrupt consumeAndBreakOnInterrupt(EventConsumer consumer, boolean blocking) throws A2AError {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
         AtomicReference<Message> message = new AtomicReference<>();
+        AtomicReference<Task> capturedTask = new AtomicReference<>();  // Capture Task events
         AtomicBoolean interrupted = new AtomicBoolean(false);
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
         CompletableFuture<Void> completionFuture = new CompletableFuture<>();
@@ -127,6 +129,11 @@ public class ResultAggregator {
                         message.set(msg);
                         completionFuture.complete(null);
                         return false;
+                    }
+
+                    // Capture Task events (especially for new tasks where taskManager.getTask() would return null)
+                    if (event instanceof Task t) {
+                        capturedTask.set(t);
                     }
 
                     // TaskStore update moved to MainEventBusProcessor
@@ -229,20 +236,20 @@ public class ResultAggregator {
             Utils.rethrow(error);
         }
 
-        EventKind eventType;
-        Message msg = message.get();
-        if (msg != null) {
-            eventType = msg;
-        } else {
-            Task task = taskManager.getTask();
-            if (task == null) {
-                throw new io.a2a.spec.InternalError("No task or message available after consuming events");
-            }
-            eventType = task;
+        // Return Message if captured, otherwise Task if captured, otherwise fetch from TaskStore
+        EventKind eventKind = message.get();
+        if (eventKind == null) {
+            eventKind = capturedTask.get();
+        }
+        if (eventKind == null) {
+            eventKind = taskManager.getTask();
+        }
+        if (eventKind == null) {
+            throw new InternalError("Could not find a Task/Message for " + taskManager.getTaskId());
         }
 
         return new EventTypeAndInterrupt(
-                eventType,
+                eventKind,
                 interrupted.get(),
                 consumptionCompletionFuture);
     }
