@@ -8,7 +8,6 @@ import io.a2a.spec.Event;
  * This interface is primarily intended for testing, allowing tests to synchronize
  * with the asynchronous MainEventBusProcessor. Production code should not rely on this.
  * </p>
- * <p>
  * Usage in tests:
  * <pre>
  * {@code
@@ -31,7 +30,6 @@ import io.a2a.spec.Event;
  * }
  * }
  * </pre>
- * </p>
  */
 public interface MainEventBusProcessorCallback {
 

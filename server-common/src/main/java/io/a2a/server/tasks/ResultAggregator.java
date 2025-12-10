@@ -90,6 +90,7 @@ public class ResultAggregator {
     public EventTypeAndInterrupt consumeAndBreakOnInterrupt(EventConsumer consumer, boolean blocking) throws JSONRPCError {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
         AtomicReference<Message> message = new AtomicReference<>();
+        AtomicReference<Task> capturedTask = new AtomicReference<>();  // Capture Task events
         AtomicBoolean interrupted = new AtomicBoolean(false);
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
         CompletableFuture<Void> completionFuture = new CompletableFuture<>();
@@ -121,6 +122,11 @@ public class ResultAggregator {
                         message.set(msg);
                         completionFuture.complete(null);
                         return false;
+                    }
+
+                    // Capture Task events (especially for new tasks where taskManager.getTask() would return null)
+                    if (event instanceof Task t) {
+                        capturedTask.set(t);
                     }
 
                     // TaskStore update moved to MainEventBusProcessor
@@ -223,8 +229,17 @@ public class ResultAggregator {
             Utils.rethrow(error);
         }
 
+        // Return Message if captured, otherwise Task if captured, otherwise fetch from TaskStore
+        EventKind eventKind = message.get();
+        if (eventKind == null) {
+            eventKind = capturedTask.get();
+        }
+        if (eventKind == null) {
+            eventKind = taskManager.getTask();
+        }
+
         return new EventTypeAndInterrupt(
-                message.get() != null ? message.get() : taskManager.getTask(),
+                eventKind,
                 interrupted.get(),
                 consumptionCompletionFuture);
     }
