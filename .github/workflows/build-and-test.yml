@@ -26,7 +26,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven and run tests
-      run: mvn -B package --file pom.xml -fae
+      run: mvn -Pjavadoc -B package --file pom.xml -fae
     - name: Upload Test Reports
       if: failure()
       uses: actions/upload-artifact@v4
