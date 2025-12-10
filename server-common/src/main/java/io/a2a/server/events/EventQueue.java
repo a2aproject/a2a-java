@@ -37,17 +37,6 @@ public abstract class EventQueue implements AutoCloseable {
     public static final int DEFAULT_QUEUE_SIZE = 1000;
 
     private final int queueSize;
-
-    /**
-     * Internal blocking queue for storing event queue items.
-     */
-    protected final BlockingQueue<EventQueueItem> queue = new LinkedBlockingDeque<>();
-
-    /**
-     * Semaphore for backpressure control, limiting the number of pending events.
-     */
-    protected final Semaphore semaphore;
-
     private volatile boolean closed = false;
 
     /**
@@ -68,7 +57,6 @@ public abstract class EventQueue implements AutoCloseable {
             throw new IllegalArgumentException("Queue size must be greater than 0");
         }
         this.queueSize = queueSize;
-        this.semaphore = new Semaphore(queueSize, true);
         LOGGER.trace("Creating {} with queue size: {}", this, queueSize);
     }
 
@@ -337,6 +325,7 @@ public abstract class EventQueue implements AutoCloseable {
 
     static class MainQueue extends EventQueue {
         private final List<ChildQueue> children = new CopyOnWriteArrayList<>();
+        protected final Semaphore semaphore;
         private final CountDownLatch pollingStartedLatch = new CountDownLatch(1);
         private final AtomicBoolean pollingStarted = new AtomicBoolean(false);
         private final @Nullable EventEnqueueHook enqueueHook;
@@ -352,6 +341,7 @@ public abstract class EventQueue implements AutoCloseable {
                   @Nullable TaskStateProvider taskStateProvider,
                   @Nullable MainEventBus mainEventBus) {
             super(queueSize);
+            this.semaphore = new Semaphore(queueSize, true);
             this.enqueueHook = hook;
             this.taskId = taskId;
             this.onCloseCallbacks = List.copyOf(onCloseCallbacks);  // Defensive copy
@@ -570,8 +560,12 @@ public abstract class EventQueue implements AutoCloseable {
                 LOGGER.warn("ChildQueue is closed. Event will not be enqueued. {} {}", this, event);
                 return;
             }
-            queue.add(item);
-            LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
+            if (!queue.offer(item)) {
+                  LOGGER.warn("ChildQueue {} is full. Closing immediately.", this);
+                  close(true); // immediate close
+            } else {
+                LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
+            }
         }
 
         @Override
@@ -587,7 +581,6 @@ public abstract class EventQueue implements AutoCloseable {
                     if (item != null) {
                         Event event = item.getEvent();
                         LOGGER.debug("Dequeued event item (no wait) {} {}", this, event instanceof Throwable ? event.toString() : event);
-                        // Note: Semaphore is managed by parent MainQueue, not released here
                     }
                     return item;
                 }
@@ -597,7 +590,6 @@ public abstract class EventQueue implements AutoCloseable {
                     if (item != null) {
                         Event event = item.getEvent();
                         LOGGER.debug("Dequeued event item (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
-                        // Note: Semaphore is managed by parent MainQueue, not released here
                     } else {
                         LOGGER.trace("Dequeue timeout (null) from ChildQueue {}", System.identityHashCode(this));
                     }
@@ -640,8 +632,6 @@ public abstract class EventQueue implements AutoCloseable {
                 // Immediate close: clear pending events from local queue
                 int clearedCount = queue.size();
                 queue.clear();
-                // Release semaphore permits for cleared events to prevent deadlock
-                semaphore.release(clearedCount);
                 LOGGER.debug("Cleared {} events from ChildQueue for immediate close: {}", clearedCount, this);
             }
             // For graceful close, let the queue drain naturally through normal consumption
