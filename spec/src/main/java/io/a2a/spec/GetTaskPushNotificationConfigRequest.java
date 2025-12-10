@@ -1,8 +1,5 @@
 package io.a2a.spec;
 
-import io.a2a.util.Assert;
-import io.a2a.util.Utils;
-
 import java.util.UUID;
 
 /**
@@ -22,29 +19,17 @@ public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSON
 
     public static final String METHOD = "GetTaskPushNotificationConfig";
 
-    public GetTaskPushNotificationConfigRequest( String jsonrpc, Object id, String method, GetTaskPushNotificationConfigParams params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
-            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
-        }
-        Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid GetTaskPushNotificationRequest method");
-        }
-        Assert.isNullOrStringOrInteger(id);
-        this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id;
-        this.method = method;
-        this.params = params;
+    public GetTaskPushNotificationConfigRequest(String jsonrpc, Object id, GetTaskPushNotificationConfigParams params) {
+        super(jsonrpc, METHOD, id, params);
     }
 
     public GetTaskPushNotificationConfigRequest(String id, GetTaskPushNotificationConfigParams params) {
-        this(null, id, METHOD, params);
+        this(null, id, params);
     }
 
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method;
         private GetTaskPushNotificationConfigParams params;
 
         public GetTaskPushNotificationConfigRequest.Builder jsonrpc(String jsonrpc) {
@@ -57,8 +42,10 @@ public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSON
             return this;
         }
 
+        /**
+         * @deprecated
+         */
         public GetTaskPushNotificationConfigRequest.Builder method(String method) {
-            this.method = method;
             return this;
         }
 
@@ -71,7 +58,7 @@ public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSON
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new GetTaskPushNotificationConfigRequest(jsonrpc, id, method, params);
+            return new GetTaskPushNotificationConfigRequest(jsonrpc, id, params);
         }
     }
 }

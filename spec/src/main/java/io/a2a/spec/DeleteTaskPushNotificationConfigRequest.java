@@ -2,9 +2,6 @@ package io.a2a.spec;
 
 import java.util.UUID;
 
-import io.a2a.util.Assert;
-import io.a2a.util.Utils;
-
 /**
  * JSON-RPC request to delete a push notification configuration from a task.
  * <p>
@@ -28,23 +25,11 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
      *
      * @param jsonrpc the JSON-RPC version (defaults to "2.0" if null)
      * @param id the request identifier (string, integer, or null)
-     * @param method the method name (must be "DeleteTaskPushNotificationConfig")
      * @param params the request parameters containing task and config IDs
      * @throws IllegalArgumentException if jsonrpc version is invalid, method is not "DeleteTaskPushNotificationConfig", or id is not a string/integer/null
      */
-    public DeleteTaskPushNotificationConfigRequest(String jsonrpc, Object id, String method, DeleteTaskPushNotificationConfigParams params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
-            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
-        }
-        Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid DeleteTaskPushNotificationConfigRequest method");
-        }
-        Assert.isNullOrStringOrInteger(id);
-        this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id;
-        this.method = method;
-        this.params = params;
+    public DeleteTaskPushNotificationConfigRequest(String jsonrpc, Object id, DeleteTaskPushNotificationConfigParams params) {
+        super(jsonrpc, METHOD, id, params);
     }
 
     /**
@@ -55,7 +40,7 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
      * @throws IllegalArgumentException if id is not a string/integer/null
      */
     public DeleteTaskPushNotificationConfigRequest(String id, DeleteTaskPushNotificationConfigParams params) {
-        this(null, id, METHOD, params);
+        this(null, id, params);
     }
 
     /**
@@ -67,7 +52,6 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method;
         private DeleteTaskPushNotificationConfigParams params;
 
         /**
@@ -97,9 +81,10 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
          *
          * @param method the method name (should be "DeleteTaskPushNotificationConfig")
          * @return this builder for method chaining
+
+         * @deprecated
          */
         public Builder method(String method) {
-            this.method = method;
             return this;
         }
 
@@ -126,7 +111,7 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new DeleteTaskPushNotificationConfigRequest(jsonrpc, id, method, params);
+            return new DeleteTaskPushNotificationConfigRequest(jsonrpc, id, params);
         }
     }
 }

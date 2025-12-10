@@ -1,8 +1,7 @@
 package io.a2a.spec;
 
-import static io.a2a.util.Utils.defaultIfNull;
-
 import io.a2a.util.Assert;
+import io.a2a.util.Utils;
 
 /**
  * Base class for JSON-RPC 2.0 requests in the A2A Protocol.
@@ -43,25 +42,6 @@ public abstract sealed class JSONRPCRequest<T> implements JSONRPCMessage permits
     }
 
     /**
-     * Constructs a JSON-RPC request with the specified parameters.
-     *
-     * @param jsonrpc the JSON-RPC version (defaults to {@value JSONRPCMessage#JSONRPC_VERSION} if null)
-     * @param id the correlation identifier (must be String, Integer, or null)
-     * @param method the method name to invoke (required)
-     * @param params the method parameters (optional)
-     * @throws IllegalArgumentException if jsonrpc or method is null, or if id is not String/Integer/null
-     */
-    public JSONRPCRequest(String jsonrpc, Object id, String method, T params) {
-        Assert.checkNotNullParam("jsonrpc", jsonrpc);
-        Assert.checkNotNullParam("method", method);
-        Assert.isNullOrStringOrInteger(id);
-        this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id;
-        this.method = method;
-        this.params = params;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -94,4 +74,20 @@ public abstract sealed class JSONRPCRequest<T> implements JSONRPCMessage permits
     public T getParams() {
         return this.params;
     }
+
+    protected void validateAndSetJsonParameters(String jsonrpc, String method, Object id, T params, boolean paramsIsRequired) {
+        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
+        }
+        this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
+        Assert.checkNotNullParam("method", method);
+        this.method = method;
+        Assert.isNullOrStringOrInteger(id);
+        this.id = id;
+        if (paramsIsRequired) {
+            Assert.checkNotNullParam("params", params);
+        }
+        this.params = params;
+    }
+
 }

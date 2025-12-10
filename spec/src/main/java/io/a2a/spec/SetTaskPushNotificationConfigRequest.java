@@ -1,10 +1,6 @@
 package io.a2a.spec;
 
-import static io.a2a.util.Utils.defaultIfNull;
-
 import java.util.UUID;
-
-import io.a2a.util.Assert;
 
 /**
  * JSON-RPC request to configure push notifications for a specific task.
@@ -24,30 +20,17 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
 
     public static final String METHOD = "SetTaskPushNotificationConfig";
 
-    public SetTaskPushNotificationConfigRequest(String jsonrpc, Object id, String method, TaskPushNotificationConfig params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
-            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
-        }
-        Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid SetTaskPushNotificationRequest method");
-        }
-        Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
-        this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id;
-        this.method = method;
-        this.params = params;
+    public SetTaskPushNotificationConfigRequest(String jsonrpc, Object id, TaskPushNotificationConfig params) {
+        super(jsonrpc, METHOD, id, params);
     }
 
     public SetTaskPushNotificationConfigRequest(String id, TaskPushNotificationConfig taskPushConfig) {
-        this(null, id, METHOD, taskPushConfig);
+        this(null, id, taskPushConfig);
     }
 
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method = METHOD;
         private TaskPushNotificationConfig params;
 
         public SetTaskPushNotificationConfigRequest.Builder jsonrpc(String jsonrpc) {
@@ -60,8 +43,10 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
             return this;
         }
 
+        /**
+         * @deprecated
+         */
         public SetTaskPushNotificationConfigRequest.Builder method(String method) {
-            this.method = method;
             return this;
         }
 
@@ -74,7 +59,7 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new SetTaskPushNotificationConfigRequest(jsonrpc, id, method, params);
+            return new SetTaskPushNotificationConfigRequest(jsonrpc, id, params);
         }
     }
 }

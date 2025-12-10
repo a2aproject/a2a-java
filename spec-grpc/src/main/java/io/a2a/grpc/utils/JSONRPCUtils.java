@@ -185,55 +185,55 @@ public class JSONRPCUtils {
             case GetTaskRequest.METHOD -> {
                 io.a2a.grpc.GetTaskRequest.Builder builder = io.a2a.grpc.GetTaskRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new GetTaskRequest(version, id, method, ProtoUtils.FromProto.taskQueryParams(builder));
+                return new GetTaskRequest(version, id, ProtoUtils.FromProto.taskQueryParams(builder));
             }
             case CancelTaskRequest.METHOD -> {
                 io.a2a.grpc.CancelTaskRequest.Builder builder = io.a2a.grpc.CancelTaskRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new CancelTaskRequest(version, id, method, ProtoUtils.FromProto.taskIdParams(builder));
+                return new CancelTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
             }
             case ListTasksRequest.METHOD -> {
                 io.a2a.grpc.ListTasksRequest.Builder builder = io.a2a.grpc.ListTasksRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new ListTasksRequest(version, id, method, ProtoUtils.FromProto.listTasksParams(builder));
+                return new ListTasksRequest(version, id, ProtoUtils.FromProto.listTasksParams(builder));
             }
             case SetTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new SetTaskPushNotificationConfigRequest(version, id, method, ProtoUtils.FromProto.setTaskPushNotificationConfig(builder));
+                return new SetTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.setTaskPushNotificationConfig(builder));
             }
             case GetTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new GetTaskPushNotificationConfigRequest(version, id, method, ProtoUtils.FromProto.getTaskPushNotificationConfigParams(builder));
+                return new GetTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.getTaskPushNotificationConfigParams(builder));
             }
             case SendMessageRequest.METHOD -> {
                 io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new SendMessageRequest(version, id, method, ProtoUtils.FromProto.messageSendParams(builder));
+                return new SendMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case ListTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new ListTaskPushNotificationConfigRequest(version, id, method, ProtoUtils.FromProto.listTaskPushNotificationConfigParams(builder));
+                return new ListTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigParams(builder));
             }
             case DeleteTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new DeleteTaskPushNotificationConfigRequest(version, id, method, ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(builder));
+                return new DeleteTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(builder));
             }
             case GetAuthenticatedExtendedCardRequest.METHOD -> {
-                return new GetAuthenticatedExtendedCardRequest(version, id, method, null);
+                return new GetAuthenticatedExtendedCardRequest(version, id);
             }
             case SendStreamingMessageRequest.METHOD -> {
                 io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new SendStreamingMessageRequest(version, id, method, ProtoUtils.FromProto.messageSendParams(builder));
+                return new SendStreamingMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case SubscribeToTaskRequest.METHOD -> {
                 io.a2a.grpc.SubscribeToTaskRequest.Builder builder = io.a2a.grpc.SubscribeToTaskRequest.newBuilder();
                 parseRequestBody(paramsNode, builder);
-                return new SubscribeToTaskRequest(version, id, method, ProtoUtils.FromProto.taskIdParams(builder));
+                return new SubscribeToTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
             }
             default ->
                 throw new MethodNotFoundJsonMappingException("Unsupported JSON-RPC method: '" + method + "'", id);

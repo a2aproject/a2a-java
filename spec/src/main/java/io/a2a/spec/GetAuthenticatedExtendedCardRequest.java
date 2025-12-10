@@ -2,10 +2,6 @@ package io.a2a.spec;
 
 import java.util.UUID;
 
-
-import io.a2a.util.Assert;
-import io.a2a.util.Utils;
-
 /**
  * JSON-RPC request to retrieve an agent's extended card with authenticated details.
  * <p>
@@ -34,29 +30,17 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
 
     public static final String METHOD = "GetExtendedAgentCard";
 
-    public GetAuthenticatedExtendedCardRequest(String jsonrpc, Object id, String method, Void params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
-            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
-        }
-        Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid GetAuthenticatedExtendedCardRequest method");
-        }
-        Assert.isNullOrStringOrInteger(id);
-        this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id;
-        this.method = method;
-        this.params = params;
+    public GetAuthenticatedExtendedCardRequest(String jsonrpc, Object id) {
+        super(jsonrpc, METHOD, id);
     }
 
     public GetAuthenticatedExtendedCardRequest(String id) {
-        this(null, id, METHOD, null);
+        this(null, id);
     }
 
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method;
 
         public GetAuthenticatedExtendedCardRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
@@ -68,8 +52,10 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
             return this;
         }
 
+        /**
+         * @deprecated
+         */
         public GetAuthenticatedExtendedCardRequest.Builder method(String method) {
-            this.method = method;
             return this;
         }
 
@@ -77,7 +63,7 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new GetAuthenticatedExtendedCardRequest(jsonrpc, id, method, null);
+            return new GetAuthenticatedExtendedCardRequest(jsonrpc, id);
         }
     }
 }

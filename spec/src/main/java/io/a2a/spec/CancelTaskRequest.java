@@ -1,11 +1,6 @@
 package io.a2a.spec;
 
-import static io.a2a.util.Utils.defaultIfNull;
-
 import java.util.UUID;
-
-
-import io.a2a.util.Assert;
 
 /**
  * JSON-RPC request to cancel an in-progress task.
@@ -34,24 +29,11 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
      *
      * @param jsonrpc the JSON-RPC version (defaults to "2.0" if null)
      * @param id the request identifier (string, integer, or null)
-     * @param method the method name (must be "CancelTask")
      * @param params the request parameters containing the task ID
      * @throws IllegalArgumentException if jsonrpc version is invalid, method is not "CancelTask", params is null, or id is not a String/Integer/null
      */
-    public CancelTaskRequest(String jsonrpc, Object id, String method, TaskIdParams params) {
-        if (jsonrpc != null && ! JSONRPC_VERSION.equals(jsonrpc)) {
-            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
-        }
-        Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid CancelTaskRequest method");
-        }
-        Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
-        this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id;
-        this.method = method;
-        this.params = params;
+    public CancelTaskRequest(String jsonrpc, Object id, TaskIdParams params) {
+        super(jsonrpc, METHOD, id, params);
     }
 
     /**
@@ -62,7 +44,7 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
      * @throws IllegalArgumentException if params is null or id is not a string/integer/null
      */
     public CancelTaskRequest(Object id, TaskIdParams params) {
-        this(null, id, METHOD, params);
+        this(null, id, params);
     }
 
     /**
@@ -74,7 +56,6 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method = METHOD;
         private TaskIdParams params;
 
         /**
@@ -104,9 +85,9 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
          *
          * @param method the method name (should be "CancelTask")
          * @return this builder for method chaining
+         * @deprecated
          */
         public CancelTaskRequest.Builder method(String method) {
-            this.method = method;
             return this;
         }
 
@@ -133,7 +114,7 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new CancelTaskRequest(jsonrpc, id, method, params);
+            return new CancelTaskRequest(jsonrpc, id, params);
         }
     }
 }

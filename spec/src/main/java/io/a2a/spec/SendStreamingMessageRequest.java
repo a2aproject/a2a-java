@@ -1,9 +1,5 @@
 package io.a2a.spec;
 
-import static io.a2a.util.Utils.defaultIfNull;
-
-import io.a2a.util.Assert;
-
 import java.util.UUID;
 
 /**
@@ -27,24 +23,12 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
 
     public static final String METHOD = "SendStreamingMessage";
 
-    public SendStreamingMessageRequest(String jsonrpc, Object id, String method, MessageSendParams params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
-            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
-        }
-        Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid SendStreamingMessageRequest method");
-        }
-        Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
-        this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id;
-        this.method = method;
-        this.params = params;
+    public SendStreamingMessageRequest(String jsonrpc, Object id, MessageSendParams params) {
+        super(jsonrpc, METHOD, id, params);
     }
 
     public SendStreamingMessageRequest(Object id,  MessageSendParams params) {
-        this(null, id, METHOD, params);
+        this(null, id, params);
     }
 
     /**
@@ -56,7 +40,6 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
     public static class Builder {
             private String jsonrpc;
             private Object id;
-            private String method = METHOD;
             private MessageSendParams params;
 
             /**
@@ -86,9 +69,9 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
              *
              * @param method the method name (defaults to "SendStreamingMessage")
              * @return this builder
+             * @deprecated
              */
             public Builder method(String method) {
-                this.method = method;
                 return this;
             }
 
@@ -112,7 +95,7 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
                 if (id == null) {
                     id = UUID.randomUUID().toString();
                 }
-                return new SendStreamingMessageRequest(jsonrpc, id, method, params);
+                return new SendStreamingMessageRequest(jsonrpc, id, params);
             }
         }
     }

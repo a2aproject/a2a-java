@@ -1,11 +1,6 @@
 package io.a2a.spec;
 
-import static io.a2a.util.Utils.defaultIfNull;
-
 import java.util.UUID;
-
-
-import io.a2a.util.Assert;
 
 /**
  * JSON-RPC request to retrieve task information by ID.
@@ -25,31 +20,17 @@ public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryPa
 
     public static final String METHOD = "GetTask";
 
-    public GetTaskRequest(String jsonrpc, Object id, String method, TaskQueryParams params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
-            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
-        }
-        Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid GetTaskRequest method");
-        }
-        Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
-        this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id;
-        this.method = method;
-        this.params = params;
+    public GetTaskRequest(String jsonrpc, Object id, TaskQueryParams params) {
+        super(jsonrpc, METHOD, id, params);
     }
 
     public GetTaskRequest(Object id, TaskQueryParams params) {
-        this(null, id, METHOD, params);
+        this(null, id, params);
     }
-
 
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method = METHOD;
         private TaskQueryParams params;
 
         public GetTaskRequest.Builder jsonrpc(String jsonrpc) {
@@ -62,8 +43,10 @@ public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryPa
             return this;
         }
 
+        /**
+         * @deprecated
+         */
         public GetTaskRequest.Builder method(String method) {
-            this.method = method;
             return this;
         }
 
@@ -76,7 +59,7 @@ public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryPa
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new GetTaskRequest(jsonrpc, id, method, params);
+            return new GetTaskRequest(jsonrpc, id, params);
         }
     }
 }

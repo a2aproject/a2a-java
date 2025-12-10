@@ -2,9 +2,6 @@ package io.a2a.spec;
 
 import java.util.UUID;
 
-import io.a2a.util.Assert;
-import io.a2a.util.Utils;
-
 /**
  * JSON-RPC request to list all push notification configurations for a task.
  * <p>
@@ -22,29 +19,17 @@ public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSO
 
     public static final String METHOD = "ListTaskPushNotificationConfig";
 
-    public ListTaskPushNotificationConfigRequest(String jsonrpc, Object id, String method, ListTaskPushNotificationConfigParams params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
-            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
-        }
-        Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid ListTaskPushNotificationConfigRequest method");
-        }
-        Assert.isNullOrStringOrInteger(id);
-        this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id;
-        this.method = method;
-        this.params = params;
+    public ListTaskPushNotificationConfigRequest(String jsonrpc, Object id, ListTaskPushNotificationConfigParams params) {
+        super(jsonrpc, METHOD, id, params);
     }
 
     public ListTaskPushNotificationConfigRequest(String id, ListTaskPushNotificationConfigParams params) {
-        this(null, id, METHOD, params);
+        this(null, id, params);
     }
 
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method;
         private ListTaskPushNotificationConfigParams params;
 
         public Builder jsonrpc(String jsonrpc) {
@@ -57,8 +42,10 @@ public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSO
             return this;
         }
 
+        /**
+         * @deprecated
+         */
         public Builder method(String method) {
-            this.method = method;
             return this;
         }
 
@@ -71,7 +58,7 @@ public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSO
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new ListTaskPushNotificationConfigRequest(jsonrpc, id, method, params);
+            return new ListTaskPushNotificationConfigRequest(jsonrpc, id, params);
         }
     }
 }

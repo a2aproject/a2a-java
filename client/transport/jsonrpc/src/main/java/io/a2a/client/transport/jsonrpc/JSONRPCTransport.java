@@ -303,7 +303,6 @@ public class JSONRPCTransport implements ClientTransport {
 
             GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = new GetAuthenticatedExtendedCardRequest.Builder()
                     .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                    .method(GetAuthenticatedExtendedCardRequest.METHOD)
                     .build(); // id will be randomly generated
 
             PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest.METHOD,

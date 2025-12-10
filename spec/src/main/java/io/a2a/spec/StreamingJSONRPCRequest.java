@@ -30,4 +30,8 @@ package io.a2a.spec;
 public abstract sealed class StreamingJSONRPCRequest<T> extends JSONRPCRequest<T> permits SubscribeToTaskRequest,
         SendStreamingMessageRequest {
 
+    StreamingJSONRPCRequest(String jsonrpc, String method, Object id, T params) {
+        validateAndSetJsonParameters(jsonrpc, method, id, params, true);
+    }
+
 }

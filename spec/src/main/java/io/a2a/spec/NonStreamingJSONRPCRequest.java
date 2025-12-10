@@ -9,4 +9,12 @@ public abstract sealed class NonStreamingJSONRPCRequest<T> extends JSONRPCReques
         CancelTaskRequest, SetTaskPushNotificationConfigRequest, GetTaskPushNotificationConfigRequest,
         SendMessageRequest, DeleteTaskPushNotificationConfigRequest, ListTaskPushNotificationConfigRequest,
         GetAuthenticatedExtendedCardRequest, ListTasksRequest {
+
+    NonStreamingJSONRPCRequest(String jsonrpc, String method, Object id, T params) {
+        validateAndSetJsonParameters(jsonrpc, method, id, params, true);
+    }
+
+    NonStreamingJSONRPCRequest(String jsonrpc, String method, Object id) {
+        validateAndSetJsonParameters(jsonrpc, method, id, null, false);
+    }
 }

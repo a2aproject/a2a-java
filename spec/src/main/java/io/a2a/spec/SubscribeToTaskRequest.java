@@ -1,9 +1,5 @@
 package io.a2a.spec;
 
-import static io.a2a.util.Utils.defaultIfNull;
-
-import io.a2a.util.Assert;
-
 import java.util.UUID;
 
 /**
@@ -30,29 +26,17 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
 
     public static final String METHOD = "SubscribeToTask";
 
-    public SubscribeToTaskRequest(String jsonrpc, Object id, String method, TaskIdParams params) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
-            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
-        }
-        Assert.checkNotNullParam("method", method);
-        if (! method.equals(METHOD)) {
-            throw new IllegalArgumentException("Invalid TaskResubscriptionRequest method");
-        }
-        Assert.checkNotNullParam("params", params);
-        this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
-        this.id = id == null ? UUID.randomUUID().toString() : id;
-        this.method = method;
-        this.params = params;
+    public SubscribeToTaskRequest(String jsonrpc, Object id, TaskIdParams params) {
+        super(jsonrpc, METHOD, id, params);
     }
 
     public SubscribeToTaskRequest(Object id, TaskIdParams params) {
-        this(null, id, METHOD, params);
+        this(null, id, params);
     }
 
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private String method = METHOD;
         private TaskIdParams params;
 
         public SubscribeToTaskRequest.Builder jsonrpc(String jsonrpc) {
@@ -65,8 +49,10 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
             return this;
         }
 
+        /**
+         * @deprecated
+         */
         public SubscribeToTaskRequest.Builder method(String method) {
-            this.method = method;
             return this;
         }
 
@@ -79,7 +65,7 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new SubscribeToTaskRequest(jsonrpc, id, method, params);
+            return new SubscribeToTaskRequest(jsonrpc, id, params);
         }
     }
 }
