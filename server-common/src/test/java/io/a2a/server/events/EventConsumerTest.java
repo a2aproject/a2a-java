@@ -215,7 +215,7 @@ public class EventConsumerTest {
     @Test
     public void testConsumeMessageEvents() throws Exception {
         Message message = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.TYPE_REFERENCE);
-        Message message2 = new Message.Builder(message).build();
+        Message message2 = Message.builder(message).build();
 
         List<Event> events = List.of(message, message2);
 

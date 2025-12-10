@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.DataPart.DATA;
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
 
 /**
  * Represents a structured data content part within a {@link Message} or {@link Artifact}.
@@ -44,38 +45,33 @@ import static io.a2a.spec.DataPart.DATA;
 @JsonTypeName(DATA)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DataPart extends Part<Map<String, Object>> {
+public record DataPart(@JsonProperty("data") Map<String, Object> data,
+                       @JsonProperty("metadata") Map<String, Object> metadata) implements Part<Map<String, Object>> {
 
     public static final String DATA = "data";
-    private final Map<String, Object> data;
-    private final Map<String, Object> metadata;
-    private final Kind kind;
+
+    @JsonCreator
+    public DataPart {
+        Assert.checkNotNullParam("data", data);
+        data = Map.copyOf(data);
+        metadata = (metadata != null) ? Map.copyOf(metadata) : null;
+    }
 
     public DataPart(Map<String, Object> data) {
         this(data, null);
     }
 
-    @JsonCreator
-    public DataPart(@JsonProperty("data") Map<String, Object> data,
-                    @JsonProperty("metadata") Map<String, Object> metadata) {
-        Assert.checkNotNullParam("data", data);
-        this.data = data;
-        this.metadata = metadata;
-        this.kind = Kind.DATA;
-    }
-
     @Override
-    public Kind getKind() {
-        return kind;
+    public Kind kind() {
+        return Kind.DATA;
     }
 
+    /**
+     * @deprecated Use {@link #data()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public Map<String, Object> getData() {
         return data;
-    }
-
-    @Override
-    public Map<String, Object> getMetadata() {
-        return metadata;
     }
 
 }

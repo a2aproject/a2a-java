@@ -156,9 +156,9 @@ public class A2ACloudExampleClient {
         try {
             nonStreamingClient.sendMessage(startMessage, List.of((ClientEvent event, AgentCard card) -> {
                 if (event instanceof TaskEvent te) {
-                    serverTaskId = te.getTask().getId();
+                    serverTaskId = te.getTask().id();
                     System.out.println("✓ Task created: " + serverTaskId);
-                    System.out.println("  State: " + te.getTask().getStatus().state());
+                    System.out.println("  State: " + te.getTask().status().state());
                     taskCreationLatch.countDown();
                 }
             }), error -> {
@@ -239,8 +239,8 @@ public class A2ACloudExampleClient {
             }
         } else if (event instanceof TaskEvent te) {
             // Check for task completion
-            if (te.getTask().getStatus().state().isFinal()) {
-                System.out.println("  Task reached final state: " + te.getTask().getStatus().state());
+            if (te.getTask().status().state().isFinal()) {
+                System.out.println("  Task reached final state: " + te.getTask().status().state());
                 completionLatch.countDown();
             }
         }
@@ -278,7 +278,7 @@ public class A2ACloudExampleClient {
                     .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
                     .build();
 
-            Message message = new Message.Builder()
+            Message message = Message.builder()
                     .role(Message.Role.USER)
                     .parts(new TextPart("process"))
                     .taskId(serverTaskId)
@@ -323,7 +323,7 @@ public class A2ACloudExampleClient {
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
                 .build();
 
-        Message completeMessage = new Message.Builder()
+        Message completeMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(new TextPart("complete"))
                 .taskId(serverTaskId)
@@ -332,7 +332,7 @@ public class A2ACloudExampleClient {
         try {
             completeClient.sendMessage(completeMessage, List.of((ClientEvent event, AgentCard card) -> {
                 if (event instanceof TaskEvent te) {
-                    System.out.println("✓ Complete message sent, task state: " + te.getTask().getStatus().state());
+                    System.out.println("✓ Complete message sent, task state: " + te.getTask().status().state());
                 }
             }), error -> {
                 System.err.println("✗ Failed to send complete message: " + error.getMessage());
@@ -385,7 +385,7 @@ public class A2ACloudExampleClient {
         if (event.getArtifact() != null) {
             for (Part<?> part : event.getArtifact().parts()) {
                 if (part instanceof TextPart textPart) {
-                    text.append(textPart.getText());
+                    text.append(textPart.text());
                 }
             }
         }

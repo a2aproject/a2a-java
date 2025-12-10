@@ -40,12 +40,12 @@ public class RequestContext {
 
         // If the taskId and contextId were specified, they must match the params
         if (params != null) {
-            if (taskId != null && !taskId.equals(params.message().getTaskId())) {
+            if (taskId != null && !taskId.equals(params.message().taskId())) {
                 throw new InvalidParamsError("bad task id");
             } else {
                 checkOrGenerateTaskId();
             }
-            if (contextId != null && !contextId.equals(params.message().getContextId())) {
+            if (contextId != null && !contextId.equals(params.message().contextId())) {
                 throw new InvalidParamsError("bad context id");
             } else {
                 checkOrGenerateContextId();
@@ -103,36 +103,44 @@ public class RequestContext {
         if (params == null) {
             return;
         }
-        if (taskId == null && params.message().getTaskId() == null) {
-            params.message().setTaskId(UUID.randomUUID().toString());
+        if (taskId == null && params.message().taskId() == null) {
+            params = new MessageSendParams.Builder()
+                    .configuration(params.configuration())
+                    .metadata(params.metadata())
+                    .message(Message.builder(params.message())
+                            .taskId(UUID.randomUUID().toString())
+                            .build())
+                    .build();
         }
-        if (params.message().getTaskId() != null) {
-            this.taskId = params.message().getTaskId();
-        }
+        this.taskId = params.message().taskId();
     }
 
     private void checkOrGenerateContextId() {
         if (params == null) {
             return;
         }
-        if (contextId == null && params.message().getContextId() == null) {
-            params.message().setContextId(UUID.randomUUID().toString());
+        if (contextId == null && params.message().contextId() == null) {
+            params = new MessageSendParams.Builder()
+                    .configuration(params.configuration())
+                    .metadata(params.metadata())
+                    .message(Message.builder(params.message())
+                            .contextId(UUID.randomUUID().toString())
+                            .build())
+                    .build();
         }
-        if (params.message().getContextId() != null) {
-            this.contextId = params.message().getContextId();
-        }
+        this.contextId = params.message().contextId();
     }
 
     private String getMessageText(Message message, String delimiter) {
-        List<String> textParts = getTextParts(message.getParts());
+        List<String> textParts = getTextParts(message.parts());
         return String.join(delimiter, textParts);
     }
 
     private List<String> getTextParts(List<Part<?>> parts) {
         return parts.stream()
-                .filter(part -> part.getKind() == Part.Kind.TEXT)
+                .filter(part -> part.kind() == Part.Kind.TEXT)
                 .map(part -> (TextPart) part)
-                .map(TextPart::getText)
+                .map(TextPart::text)
                 .collect(Collectors.toList());
     }
 

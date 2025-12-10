@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.FilePart.FILE;
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
 
 /**
  * Represents a file content part within a {@link Message} or {@link Artifact}.
@@ -45,37 +46,32 @@ import static io.a2a.spec.FilePart.FILE;
 @JsonTypeName(FILE)
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FilePart extends Part<FileContent> {
+public record FilePart(@JsonProperty("file") FileContent file,
+                       @JsonProperty("metadata") Map<String, Object> metadata) implements Part<FileContent> {
 
     public static final String FILE = "file";
-    private final FileContent file;
-    private final Map<String, Object> metadata;
-    private final Kind kind;
+
+
+    @JsonCreator
+    public FilePart {
+        Assert.checkNotNullParam("file", file);
+        metadata = (metadata != null) ? Map.copyOf(metadata) : null;
+    }
 
     public FilePart(FileContent file) {
         this(file, null);
     }
 
-    @JsonCreator
-    public FilePart(@JsonProperty("file") FileContent file, @JsonProperty("metadata") Map<String, Object> metadata) {
-        Assert.checkNotNullParam("file", file);
-        this.file = file;
-        this.metadata = metadata;
-        this.kind = Kind.FILE;
-    }
-
     @Override
-    public Kind getKind() {
-        return kind;
+    public Kind kind() {
+        return Kind.FILE;
     }
 
+    /**
+     * @deprecated Use {@link #file()} instead
+     */
+    @Deprecated(since = SPEC_VERSION_1_0)
     public FileContent getFile() {
         return file;
     }
-
-    @Override
-    public Map<String, Object> getMetadata() {
-        return metadata;
-    }
-
 }

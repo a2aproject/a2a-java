@@ -45,7 +45,7 @@ public class EventSerializationTest {
     public void testTaskSerialization() throws JsonProcessingException {
         // Create a Task
         TaskStatus status = new TaskStatus(TaskState.SUBMITTED);
-        Task originalTask = new Task.Builder()
+        Task originalTask = Task.builder()
                 .id("test-task-123")
                 .contextId("test-context-456")
                 .status(status)
@@ -61,10 +61,10 @@ public class EventSerializationTest {
         assertInstanceOf(Task.class, deserializedEvent, "Should deserialize to Task");
 
         Task deserializedTask = (Task) deserializedEvent;
-        assertEquals(originalTask.getId(), deserializedTask.getId());
+        assertEquals(originalTask.id(), deserializedTask.id());
         assertEquals(originalTask.getKind(), deserializedTask.getKind());
-        assertEquals(originalTask.getContextId(), deserializedTask.getContextId());
-        assertEquals(originalTask.getStatus().state(), deserializedTask.getStatus().state());
+        assertEquals(originalTask.contextId(), deserializedTask.contextId());
+        assertEquals(originalTask.status().state(), deserializedTask.status().state());
 
         // Test as StreamingEventKind
         StreamingEventKind deserializedAsStreaming = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);
@@ -74,7 +74,7 @@ public class EventSerializationTest {
     @Test
     public void testMessageSerialization() throws JsonProcessingException {
         // Create a Message
-        Message originalMessage = new Message.Builder()
+        Message originalMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(new TextPart("Hello, world!")))
                 .taskId("test-task-789")
@@ -92,10 +92,10 @@ public class EventSerializationTest {
         assertInstanceOf(Message.class, deserializedEvent, "Should deserialize to Message");
 
         Message deserializedMessage = (Message) deserializedEvent;
-        assertEquals(originalMessage.getTaskId(), deserializedMessage.getTaskId());
+        assertEquals(originalMessage.taskId(), deserializedMessage.taskId());
         assertEquals(originalMessage.getKind(), deserializedMessage.getKind());
-        assertEquals(originalMessage.getRole(), deserializedMessage.getRole());
-        assertEquals(originalMessage.getParts().size(), deserializedMessage.getParts().size());
+        assertEquals(originalMessage.role(), deserializedMessage.role());
+        assertEquals(originalMessage.parts().size(), deserializedMessage.parts().size());
 
         // Test as StreamingEventKind
         StreamingEventKind deserializedAsStreaming = Utils.OBJECT_MAPPER.readValue(json, StreamingEventKind.class);

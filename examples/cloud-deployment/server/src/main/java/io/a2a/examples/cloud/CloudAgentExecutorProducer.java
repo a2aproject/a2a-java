@@ -119,10 +119,10 @@ public class CloudAgentExecutorProducer {
          */
         private String extractTextFromMessage(Message message) {
             StringBuilder textBuilder = new StringBuilder();
-            if (message.getParts() != null) {
-                for (Part<?> part : message.getParts()) {
+            if (message.parts() != null) {
+                for (Part<?> part : message.parts()) {
                     if (part instanceof TextPart textPart) {
-                        textBuilder.append(textPart.getText());
+                        textBuilder.append(textPart.text());
                     }
                 }
             }
