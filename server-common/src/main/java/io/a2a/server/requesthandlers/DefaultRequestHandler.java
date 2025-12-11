@@ -434,7 +434,8 @@ public class DefaultRequestHandler implements RequestHandler {
             // Store push notification config for newly created tasks (mirrors streaming logic)
             // Only for NEW tasks - existing tasks are handled by initMessageSend()
             if (mss.task() == null && kind instanceof Task createdTask && shouldAddPushInfo(params)) {
-                LOGGER.debug("Storing push notification config for new task {}", createdTask.id());
+                LOGGER.debug("Storing push notification config for new task {} (original taskId from params: {})",
+                        createdTask.id(), params.message().taskId());
                 pushConfigStore.setInfo(createdTask.id(), params.configuration().pushNotificationConfig());
             }
 
@@ -535,6 +536,18 @@ public class DefaultRequestHandler implements RequestHandler {
         @SuppressWarnings("NullAway")
         EventQueue queue = queueManager.createOrTap(taskId.get());
         LOGGER.debug("Created/tapped queue for task {}: {}", taskId.get(), queue);
+
+        // Store push notification config SYNCHRONOUSLY for new tasks before agent starts
+        // This ensures config is available when MainEventBusProcessor sends push notifications
+        // For existing tasks, config was already stored in initMessageSend()
+        if (mss.task() == null && shouldAddPushInfo(params)) {
+            // Satisfy Nullaway
+            Objects.requireNonNull(taskId.get(), "taskId was null");
+            LOGGER.debug("Storing push notification config for new streaming task {} EARLY (original taskId from params: {})",
+                    taskId.get(), params.message().taskId());
+            pushConfigStore.setInfo(taskId.get(), params.configuration().pushNotificationConfig());
+        }
+
         ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor);
 
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(queueTaskId, mss.requestContext, queue);
@@ -563,15 +576,6 @@ public class DefaultRequestHandler implements RequestHandler {
                     } catch (TaskQueueExistsException e) {
                         // TODO Log
                     }
-                    if (pushConfigStore != null &&
-                            params.configuration() != null &&
-                            params.configuration().pushNotificationConfig() != null) {
-
-                        pushConfigStore.setInfo(
-                                createdTask.id(),
-                                params.configuration().pushNotificationConfig());
-                    }
-
                 }
                 return true;
             }));
@@ -842,13 +846,10 @@ public class DefaultRequestHandler implements RequestHandler {
             }
 
             if (isStreaming) {
-                // For streaming: DON'T close the ChildQueue here
-                // The ChildQueue must stay open so MainEventBusProcessor can distribute events to it
-                // and the subscriber can consume them. EventConsumer will close the queue when:
-                // 1. A final event is detected, or
-                // 2. The subscriber cancels, or
-                // 3. EventConsumer completes naturally
-                LOGGER.debug("Streaming call, NOT closing ChildQueue in cleanup for task {} (EventConsumer will close it)", taskId);
+                // For streaming: Queue lifecycle managed by EventConsumer
+                // EventConsumer closes queue when it detects final event (or QueueClosedEvent from replication)
+                // For fire-and-forget tasks, MainQueue stays open per architectural principle
+                LOGGER.debug("Streaming call for task {} - queue lifecycle managed by EventConsumer", taskId);
             } else {
                 // For non-streaming: close the ChildQueue and notify the parent MainQueue
                 // The parent will close itself when all children are closed (childClosing logic)
