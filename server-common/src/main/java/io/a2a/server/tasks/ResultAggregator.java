@@ -125,8 +125,15 @@ public class ResultAggregator {
                     }
 
                     // Capture Task events (especially for new tasks where taskManager.getTask() would return null)
+                    // We capture the LATEST task to ensure we get the most up-to-date state
                     if (event instanceof Task t) {
+                        Task previousTask = capturedTask.get();
                         capturedTask.set(t);
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Captured Task event: id={}, state={} (previous: {})",
+                                    t.getId(), t.getStatus().state(),
+                                    previousTask != null ? previousTask.getId() + "/" + previousTask.getStatus().state() : "none");
+                        }
                     }
 
                     // TaskStore update moved to MainEventBusProcessor
@@ -233,9 +240,15 @@ public class ResultAggregator {
         EventKind eventKind = message.get();
         if (eventKind == null) {
             eventKind = capturedTask.get();
+            if (LOGGER.isDebugEnabled() && eventKind instanceof Task t) {
+                LOGGER.debug("Returning capturedTask: id={}, state={}", t.getId(), t.getStatus().state());
+            }
         }
         if (eventKind == null) {
             eventKind = taskManager.getTask();
+            if (LOGGER.isDebugEnabled() && eventKind instanceof Task t) {
+                LOGGER.debug("Returning task from TaskStore: id={}, state={}", t.getId(), t.getStatus().state());
+            }
         }
 
         return new EventTypeAndInterrupt(
