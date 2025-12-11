@@ -76,10 +76,10 @@ public abstract sealed class JSONRPCRequest<T> implements JSONRPCMessage permits
     }
 
     protected void validateAndSetJsonParameters(String jsonrpc, String method, Object id, T params, boolean paramsIsRequired) {
-        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+        this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
+        if (!JSONRPC_VERSION.equals(this.jsonrpc)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
-        this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
         Assert.checkNotNullParam("method", method);
         this.method = method;
         Assert.isNullOrStringOrInteger(id);
