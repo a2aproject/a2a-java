@@ -152,6 +152,9 @@ public class ResultAggregator {
                     boolean isAuthRequired = (event instanceof Task task && task.status().state() == TaskState.AUTH_REQUIRED)
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.status().state() == TaskState.AUTH_REQUIRED);
 
+                    LOGGER.info("ResultAggregator: Evaluating interrupt (blocking={}, isFinal={}, isAuth={}, eventType={})",
+                        blocking, isFinalEvent, isAuthRequired, event.getClass().getSimpleName());
+
                     // Always interrupt on auth_required, as it needs external action.
                     if (isAuthRequired) {
                         // auth-required is a special state: the message should be
@@ -161,16 +164,19 @@ public class ResultAggregator {
                         // new request is expected in order for the agent to make progress,
                         // so the agent should exit.
                         shouldInterrupt = true;
+                        LOGGER.info("ResultAggregator: Setting shouldInterrupt=true (AUTH_REQUIRED)");
                     }
                     else if (!blocking) {
                         // For non-blocking calls, interrupt as soon as a task is available.
                         shouldInterrupt = true;
+                        LOGGER.info("ResultAggregator: Setting shouldInterrupt=true (non-blocking)");
                     }
                     else if (blocking) {
                         // For blocking calls: Interrupt to free Vert.x thread, but continue in background
                         // Python's async consumption doesn't block threads, but Java's does
                         // So we interrupt to return quickly, then rely on background consumption
                         shouldInterrupt = true;
+                        LOGGER.info("ResultAggregator: Setting shouldInterrupt=true (blocking, isFinal={})", isFinalEvent);
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug("Blocking call for task {}: {} event, returning with background consumption",
                                 taskIdForLogging(), isFinalEvent ? "final" : "non-final");
@@ -178,6 +184,7 @@ public class ResultAggregator {
                     }
 
                     if (shouldInterrupt) {
+                        LOGGER.info("ResultAggregator: Interrupting consumption (setting interrupted=true)");
                         // Complete the future to unblock the main thread
                         interrupted.set(true);
                         completionFuture.complete(null);

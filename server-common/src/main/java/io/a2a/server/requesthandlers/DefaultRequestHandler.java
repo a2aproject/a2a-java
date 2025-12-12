@@ -401,6 +401,17 @@ public class DefaultRequestHandler implements RequestHandler {
 
         boolean blocking = params.configuration() != null && Boolean.TRUE.equals(params.configuration().blocking());
 
+        // Log blocking behavior from client request
+        if (params.configuration() != null && params.configuration().blocking() != null) {
+            LOGGER.info("DefaultRequestHandler: Client requested blocking={} for task {}",
+                params.configuration().blocking(), taskId);
+        } else if (params.configuration() != null) {
+            LOGGER.info("DefaultRequestHandler: Client sent configuration but blocking=null, using default blocking=true for task {}", taskId);
+        } else {
+            LOGGER.info("DefaultRequestHandler: Client sent no configuration, using default blocking=true for task {}", taskId);
+        }
+        LOGGER.info("DefaultRequestHandler: Final blocking decision: {} for task {}", blocking, taskId);
+
         boolean interruptedOrNonBlocking = false;
 
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(taskId, mss.requestContext, queue);
@@ -422,7 +433,8 @@ public class DefaultRequestHandler implements RequestHandler {
                 throw new InternalError("No result");
             }
             interruptedOrNonBlocking = etai.interrupted();
-            LOGGER.debug("Was interrupted or non-blocking: {}", interruptedOrNonBlocking);
+            LOGGER.info("DefaultRequestHandler: interruptedOrNonBlocking={} (blocking={}, eventType={})",
+                interruptedOrNonBlocking, blocking, kind != null ? kind.getClass().getSimpleName() : null);
 
             // For blocking calls that were interrupted (returned on first event),
             // wait for agent execution and event processing BEFORE returning to client.
@@ -446,16 +458,18 @@ public class DefaultRequestHandler implements RequestHandler {
                 // 2. Close the queue to signal consumption can complete
                 // 3. Wait for consumption to finish processing events
                 // 4. Fetch final task state from TaskStore
+                LOGGER.debug("DefaultRequestHandler: Entering blocking fire-and-forget handling for task {}", taskId);
 
                 try {
                     // Step 1: Wait for agent to finish (with configurable timeout)
                     if (agentFuture != null) {
                         try {
                             agentFuture.get(agentCompletionTimeoutSeconds, SECONDS);
-                            LOGGER.debug("Agent completed for task {}", taskId);
+                            LOGGER.debug("DefaultRequestHandler: Step 1 - Agent completed for task {}", taskId);
                         } catch (java.util.concurrent.TimeoutException e) {
                             // Agent still running after timeout - that's fine, events already being processed
-                            LOGGER.debug("Agent still running for task {} after {}s", taskId, agentCompletionTimeoutSeconds);
+                            LOGGER.debug("DefaultRequestHandler: Step 1 - Agent still running for task {} after {}s timeout",
+                                taskId, agentCompletionTimeoutSeconds);
                         }
                     }
 
@@ -463,12 +477,12 @@ public class DefaultRequestHandler implements RequestHandler {
                     // For fire-and-forget tasks, there's no final event, so we need to close the queue
                     // This allows EventConsumer.consumeAll() to exit
                     queue.close(false, false);  // graceful close, don't notify parent yet
-                    LOGGER.debug("Closed queue for task {} to allow consumption completion", taskId);
+                    LOGGER.debug("DefaultRequestHandler: Step 2 - Closed queue for task {} to allow consumption completion", taskId);
 
                     // Step 3: Wait for consumption to complete (now that queue is closed)
                     if (etai.consumptionFuture() != null) {
                         etai.consumptionFuture().get(consumptionCompletionTimeoutSeconds, SECONDS);
-                        LOGGER.debug("Consumption completed for task {}", taskId);
+                        LOGGER.debug("DefaultRequestHandler: Step 3 - Consumption completed for task {}", taskId);
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -491,11 +505,11 @@ public class DefaultRequestHandler implements RequestHandler {
                 Task updatedTask = taskStore.get(nonNullTaskId);
                 if (updatedTask != null) {
                     kind = updatedTask;
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Fetched final task for {} with state {} and {} artifacts",
-                            nonNullTaskId, updatedTask.status().state(),
-                            updatedTask.artifacts().size());
-                    }
+                    LOGGER.debug("DefaultRequestHandler: Step 4 - Fetched final task for {} with state {} and {} artifacts",
+                        taskId, updatedTask.status().state(),
+                        updatedTask.artifacts().size());
+                } else {
+                    LOGGER.warn("DefaultRequestHandler: Step 4 - Task {} not found in TaskStore!", taskId);
                 }
             }
             if (kind instanceof Task taskResult && !taskId.equals(taskResult.id())) {

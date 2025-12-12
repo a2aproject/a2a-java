@@ -60,11 +60,15 @@ public class EventConsumer {
                     EventQueueItem item;
                     Event event;
                     try {
+                        LOGGER.debug("EventConsumer polling queue {} (error={})", System.identityHashCode(queue), error);
                         item = queue.dequeueEventItem(QUEUE_WAIT_MILLISECONDS);
                         if (item == null) {
+                            LOGGER.debug("EventConsumer poll timeout (null item), continuing");
                             continue;
                         }
                         event = item.getEvent();
+                        LOGGER.debug("EventConsumer received event: {} (queue={})",
+                            event.getClass().getSimpleName(), System.identityHashCode(queue));
 
                         // Defensive logging for error handling
                         if (event instanceof Throwable thr) {
@@ -141,8 +145,13 @@ public class EventConsumer {
 
     public EnhancedRunnable.DoneCallback createAgentRunnableDoneCallback() {
         return agentRunnable -> {
+            LOGGER.info("EventConsumer: Agent done callback invoked (hasError={}, queue={})",
+                agentRunnable.getError() != null, System.identityHashCode(queue));
             if (agentRunnable.getError() != null) {
                 error = agentRunnable.getError();
+                LOGGER.info("EventConsumer: Set error field from agent callback");
+            } else {
+                LOGGER.info("EventConsumer: Agent completed successfully (no error), continuing consumption");
             }
         };
     }
