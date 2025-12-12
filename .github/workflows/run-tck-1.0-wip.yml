@@ -42,7 +42,7 @@ jobs:
       - name: Checkout a2a-tck
         uses: actions/checkout@v4
         with:
-          repository: jmesnil/a2a-tck
+          repository: a2aproject/a2a-tck
           path: tck/a2a-tck
           ref: ${{ env.TCK_VERSION }}
       - name: Set up JDK ${{ matrix.java-version }}
