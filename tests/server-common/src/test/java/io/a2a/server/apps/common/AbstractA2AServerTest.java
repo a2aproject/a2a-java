@@ -1490,7 +1490,6 @@ public abstract class AbstractA2AServerTest {
                     SendStreamingMessageResponse jsonResponse = extractJsonResponseFromSseLine(line);
                     if (jsonResponse != null) {
                         assertNull(jsonResponse.getError());
-                        System.out.println("#################################### Response " + jsonResponse);
                         Message messageResponse = (Message) jsonResponse.getResult();
                         assertEquals(MESSAGE.getMessageId(), messageResponse.getMessageId());
                         assertEquals(MESSAGE.getRole(), messageResponse.getRole());

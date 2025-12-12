@@ -1,6 +1,5 @@
 package io.a2a.grpc.utils;
 
-
 import io.a2a.json.JsonMappingException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -51,7 +50,6 @@ import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.UnsupportedOperationError;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +67,9 @@ import static io.a2a.spec.A2AErrorCodes.TASK_NOT_CANCELABLE_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
 
+import io.a2a.json.JsonProcessingException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utilities for converting between JSON-RPC 2.0 messages and Protocol Buffer objects.
@@ -79,12 +80,12 @@ import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
  * <h2>Conversion Strategy</h2>
  * The conversion process follows a two-step approach:
  * <ol>
- *   <li><b>JSON → Proto:</b> JSON-RPC messages are parsed using Gson, then converted to Protocol Buffer
- *       objects using Google's {@link JsonFormat} parser. This ensures consistent handling of field names,
- *       types, and nested structures according to the proto3 specification.</li>
- *   <li><b>Proto → Spec:</b> Protocol Buffer objects are converted to A2A spec objects using
- *       {@link ProtoUtils.FromProto} converters, which handle type mappings and create immutable
- *       spec-compliant Java objects.</li>
+ * <li><b>JSON → Proto:</b> JSON-RPC messages are parsed using Gson, then converted to Protocol Buffer
+ * objects using Google's {@link JsonFormat} parser. This ensures consistent handling of field names,
+ * types, and nested structures according to the proto3 specification.</li>
+ * <li><b>Proto → Spec:</b> Protocol Buffer objects are converted to A2A spec objects using
+ * {@link ProtoUtils.FromProto} converters, which handle type mappings and create immutable
+ * spec-compliant Java objects.</li>
  * </ol>
  *
  * <h2>Request Processing Flow</h2>
@@ -121,10 +122,10 @@ import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
  * <h2>Error Handling</h2>
  * The class provides detailed error messages for common failure scenarios:
  * <ul>
- *   <li><b>Missing/invalid method:</b> Returns {@link MethodNotFoundError} with the invalid method name</li>
- *   <li><b>Invalid parameters:</b> Returns {@link InvalidParamsError} with proto parsing details</li>
- *   <li><b>Protocol version mismatch:</b> Returns {@link InvalidRequestError} with version info</li>
- *   <li><b>Missing/invalid id:</b> Returns {@link InvalidRequestError} with id validation details</li>
+ * <li><b>Missing/invalid method:</b> Returns {@link MethodNotFoundError} with the invalid method name</li>
+ * <li><b>Invalid parameters:</b> Returns {@link InvalidParamsError} with proto parsing details</li>
+ * <li><b>Protocol version mismatch:</b> Returns {@link InvalidRequestError} with version info</li>
+ * <li><b>Missing/invalid id:</b> Returns {@link InvalidRequestError} with id validation details</li>
  * </ul>
  *
  * <h2>Thread Safety</h2>
@@ -159,8 +160,11 @@ public class JSONRPCUtils {
     private static final Gson GSON = new GsonBuilder()
             .setStrictness(Strictness.STRICT)
             .create();
+    private static final Pattern EXTRACT_WRONG_VALUE = Pattern.compile("Expect (.*) but got: \".*\"");
+    private static final Pattern EXTRACT_WRONG_TYPE = Pattern.compile("Expected (.*) but found \".*\"");
+    static final String ERROR_MESSAGE = "Invalid request content: %s. Please verify the request matches the expected schema for this method.";
 
-    public static JSONRPCRequest<?> parseRequestBody(String body) throws JsonMappingException {
+    public static JSONRPCRequest<?> parseRequestBody(String body) throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         if (!jsonRpc.has("method")) {
@@ -180,46 +184,46 @@ public class JSONRPCUtils {
         }
     }
 
-    private static JSONRPCRequest<?> parseMethodRequest(String version, Object id, String method, JsonElement paramsNode) throws InvalidParamsError, MethodNotFoundJsonMappingException {
+    private static JSONRPCRequest<?> parseMethodRequest(String version, Object id, String method, JsonElement paramsNode) throws InvalidParamsError, MethodNotFoundJsonMappingException, JsonProcessingException {
         switch (method) {
             case GetTaskRequest.METHOD -> {
                 io.a2a.grpc.GetTaskRequest.Builder builder = io.a2a.grpc.GetTaskRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new GetTaskRequest(version, id, ProtoUtils.FromProto.taskQueryParams(builder));
             }
             case CancelTaskRequest.METHOD -> {
                 io.a2a.grpc.CancelTaskRequest.Builder builder = io.a2a.grpc.CancelTaskRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new CancelTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
             }
             case ListTasksRequest.METHOD -> {
                 io.a2a.grpc.ListTasksRequest.Builder builder = io.a2a.grpc.ListTasksRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new ListTasksRequest(version, id, ProtoUtils.FromProto.listTasksParams(builder));
             }
             case SetTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new SetTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.setTaskPushNotificationConfig(builder));
             }
             case GetTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new GetTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.getTaskPushNotificationConfigParams(builder));
             }
             case SendMessageRequest.METHOD -> {
                 io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new SendMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case ListTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new ListTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigParams(builder));
             }
             case DeleteTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new DeleteTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(builder));
             }
             case GetAuthenticatedExtendedCardRequest.METHOD -> {
@@ -227,12 +231,12 @@ public class JSONRPCUtils {
             }
             case SendStreamingMessageRequest.METHOD -> {
                 io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new SendStreamingMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case SubscribeToTaskRequest.METHOD -> {
                 io.a2a.grpc.SubscribeToTaskRequest.Builder builder = io.a2a.grpc.SubscribeToTaskRequest.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new SubscribeToTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
             }
             default ->
@@ -240,7 +244,7 @@ public class JSONRPCUtils {
         }
     }
 
-    public static StreamResponse parseResponseEvent(String body) throws JsonMappingException {
+    public static StreamResponse parseResponseEvent(String body) throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
@@ -250,11 +254,11 @@ public class JSONRPCUtils {
             throw processError(jsonRpc.getAsJsonObject("error"));
         }
         StreamResponse.Builder builder = StreamResponse.newBuilder();
-        parseRequestBody(paramsNode, builder);
+        parseRequestBody(paramsNode, builder, id);
         return builder.build();
     }
 
-    public static JSONRPCResponse<?> parseResponseBody(String body, String method) throws JsonMappingException {
+    public static JSONRPCResponse<?> parseResponseBody(String body, String method) throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
@@ -266,32 +270,32 @@ public class JSONRPCUtils {
         switch (method) {
             case GetTaskRequest.METHOD -> {
                 io.a2a.grpc.Task.Builder builder = io.a2a.grpc.Task.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new GetTaskResponse(id, ProtoUtils.FromProto.task(builder));
             }
             case CancelTaskRequest.METHOD -> {
                 io.a2a.grpc.Task.Builder builder = io.a2a.grpc.Task.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new CancelTaskResponse(id, ProtoUtils.FromProto.task(builder));
             }
             case ListTasksRequest.METHOD -> {
                 io.a2a.grpc.ListTasksResponse.Builder builder = io.a2a.grpc.ListTasksResponse.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new ListTasksResponse(id, ProtoUtils.FromProto.listTasksResult(builder));
             }
             case SetTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.TaskPushNotificationConfig.Builder builder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new SetTaskPushNotificationConfigResponse(id, ProtoUtils.FromProto.taskPushNotificationConfig(builder));
             }
             case GetTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.TaskPushNotificationConfig.Builder builder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new GetTaskPushNotificationConfigResponse(id, ProtoUtils.FromProto.taskPushNotificationConfig(builder));
             }
             case SendMessageRequest.METHOD -> {
                 io.a2a.grpc.SendMessageResponse.Builder builder = io.a2a.grpc.SendMessageResponse.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 if (builder.hasMsg()) {
                     return new SendMessageResponse(id, ProtoUtils.FromProto.message(builder.getMsg()));
                 }
@@ -299,7 +303,7 @@ public class JSONRPCUtils {
             }
             case ListTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new ListTaskPushNotificationConfigResponse(id, ProtoUtils.FromProto.listTaskPushNotificationConfigParams(builder));
             }
             case DeleteTaskPushNotificationConfigRequest.METHOD -> {
@@ -307,7 +311,7 @@ public class JSONRPCUtils {
             }
             case GetAuthenticatedExtendedCardRequest.METHOD -> {
                 io.a2a.grpc.AgentCard.Builder builder = io.a2a.grpc.AgentCard.newBuilder();
-                parseRequestBody(paramsNode, builder);
+                parseRequestBody(paramsNode, builder, id);
                 return new GetAuthenticatedExtendedCardResponse(id, ProtoUtils.FromProto.agentCard(builder));
             }
             default ->
@@ -382,50 +386,78 @@ public class JSONRPCUtils {
         return new JSONRPCError(code, message, data);
     }
 
-    protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder) throws JSONRPCError {
-        try (Writer writer = new StringWriter()) {
-            GSON.toJson(jsonRpc, writer);
-            parseJsonString(writer.toString(), builder);
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Failed to serialize JSON element to string during proto conversion. JSON: {0}", jsonRpc);
-            log.log(Level.SEVERE, "Serialization error details", e);
-            throw new InvalidParamsError(
-                    "Failed to parse request content. " +
-                    "This may indicate invalid JSON structure or unsupported field types. Error: " + e.getMessage());
-        }
+    protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
+        parseJsonString(jsonRpc.toString(), builder, id);
     }
 
-    public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder) throws JSONRPCError {
+    public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder, @Nullable Object id) throws JsonProcessingException {
         try {
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
             log.log(Level.SEVERE, "Protocol buffer parsing failed for JSON: {0}", body);
             log.log(Level.SEVERE, "Proto parsing error details", e);
-            throw new InvalidParamsError(
-                    "Invalid request content: " + extractProtoErrorMessage(e) +
-                    ". Please verify the request matches the expected schema for this method.");
+            throw convertProtoBufExceptionToJsonProcessingException(e, id);
         }
     }
 
     /**
      * Extracts a user-friendly error message from Protocol Buffer parsing exceptions.
+     * <p>
+     * This method converts low-level protobuf exceptions into appropriate JsonProcessingException:
+     * <ul>
+     *   <li>{@link InvalidParamsJsonMappingException} - When the request ID is known and the error
+     *       is related to invalid parameter structure (wrong type, missing field, invalid value).
+     *       This maps to JSON-RPC error code -32602 (Invalid params).</li>
+     *   <li>{@link JsonProcessingException} - When the request ID is unknown and the error is
+     *       related to malformed JSON structure. This maps to JSON-RPC error code -32700 (Parse error).</li>
+     *   <li>{@link JsonMappingException} - When the error doesn't fit specific patterns and we
+     *       cannot determine the exact error type. This is a generic JSON-RPC error.</li>
+     * </ul>
+     * <p>
+     * <b>ID Handling:</b> When the request ID is null, we use an empty string ("") as a sentinel value
+     * for InvalidParamsJsonMappingException. This is required because the JSON-RPC spec mandates that
+     * error responses must include the request ID if it could be determined. An empty string indicates
+     * "we tried to get the ID but it was invalid/missing", while a null JsonMappingException indicates
+     * "we couldn't even parse enough to attempt ID extraction".
      *
-     * @param e the InvalidProtocolBufferException
-     * @return a cleaned error message with field information
+     * @param e the InvalidProtocolBufferException from proto parsing
+     * @param id the request ID if it could be extracted, null otherwise
+     * @return an appropriate JsonProcessingException subtype based on the error and ID availability
      */
-    private static String extractProtoErrorMessage(InvalidProtocolBufferException e) {
+    private static JsonProcessingException convertProtoBufExceptionToJsonProcessingException(InvalidProtocolBufferException e, @Nullable Object id) {
+        // Log the original exception for debugging purposes
+        log.log(Level.FINE, "Converting protobuf parsing exception to JSON-RPC error. Request ID: {0}", id);
+        log.log(Level.FINE, "Original proto exception details", e);
+
         String message = e.getMessage();
         if (message == null) {
-            return "unknown parsing error";
+            return new JsonProcessingException(ERROR_MESSAGE.formatted("unknown parsing error"));
         }
+
         // Extract field name if present in error message
-        if (message.contains("Cannot find field:")) {
-            return message.substring(message.indexOf("Cannot find field:"));
+        String prefix = "Cannot find field: ";
+        if (message.contains(prefix)) {
+            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(message.substring(message.indexOf(prefix) + prefix.length())), id);
         }
-        if (message.contains("Invalid value for")) {
-            return message.substring(message.indexOf("Invalid value for"));
+        prefix = "Invalid value for";
+        if (message.contains(prefix)) {
+            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(message.substring(message.indexOf(prefix) + prefix.length())), id);
         }
-        return message;
+
+        // Try to extract specific error details using regex patterns
+        Matcher matcher = EXTRACT_WRONG_TYPE.matcher(message);
+        if (matcher.matches() && matcher.group(1) != null) {
+            // ID is null -> use empty string sentinel value (see javadoc above)
+            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(matcher.group(1)), id == null ? "" : id);
+        }
+        matcher = EXTRACT_WRONG_VALUE.matcher(message);
+        if (matcher.matches() && matcher.group(1) != null) {
+            // ID is null -> use empty string sentinel value (see javadoc above)
+            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(matcher.group(1)), id == null ? "" : id);
+        }
+
+        // Generic error - couldn't match specific patterns
+        return new JsonMappingException(ERROR_MESSAGE.formatted(message));
     }
 
     protected static String getAndValidateJsonrpc(JsonObject jsonRpc) throws JsonMappingException {
@@ -446,6 +478,7 @@ public class JSONRPCUtils {
     /**
      * Try to get the request id if possible , returns "UNDETERMINED ID" otherwise.
      * This should be only used for errors.
+     *
      * @param jsonRpc the json rpc JSON.
      * @return the request id if possible , "UNDETERMINED ID" otherwise.
      */
@@ -468,8 +501,8 @@ public class JSONRPCUtils {
                     id = jsonRpc.get("id").getAsString();
                 }
             } else {
-                throw new JsonMappingException(null,  "Invalid 'id' type: " + jsonRpc.get("id").getClass().getSimpleName() +
-                    ". ID must be a JSON string or number, not an object or array.");
+                throw new JsonMappingException(null, "Invalid 'id' type: " + jsonRpc.get("id").getClass().getSimpleName()
+                        + ". ID must be a JSON string or number, not an object or array.");
             }
         }
         if (id == null) {
@@ -498,8 +531,8 @@ public class JSONRPCUtils {
             return result.toString();
         } catch (IOException ex) {
             throw new RuntimeException(
-                    "Failed to serialize JSON-RPC request for method '" + method + "'. " +
-                    "This indicates an internal error in JSON generation. Request ID: " + requestId, ex);
+                    "Failed to serialize JSON-RPC request for method '" + method + "'. "
+                    + "This indicates an internal error in JSON generation. Request ID: " + requestId, ex);
         }
     }
 
@@ -520,8 +553,8 @@ public class JSONRPCUtils {
             return result.toString();
         } catch (IOException ex) {
             throw new RuntimeException(
-                    "Failed to serialize JSON-RPC success response. " +
-                    "Proto type: " + builder.getClass().getSimpleName() + ", Request ID: " + requestId, ex);
+                    "Failed to serialize JSON-RPC success response. "
+                    + "Proto type: " + builder.getClass().getSimpleName() + ", Request ID: " + requestId, ex);
         }
     }
 
@@ -548,8 +581,8 @@ public class JSONRPCUtils {
             return result.toString();
         } catch (IOException ex) {
             throw new RuntimeException(
-                    "Failed to serialize JSON-RPC error response. " +
-                    "Error code: " + error.getCode() + ", Request ID: " + requestId, ex);
+                    "Failed to serialize JSON-RPC error response. "
+                    + "Error code: " + error.getCode() + ", Request ID: " + requestId, ex);
         }
     }
 }

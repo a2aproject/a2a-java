@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.SERVER_SENT_EVENTS;
 
+import com.google.gson.JsonSyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
 import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.GetTaskResponse;
+import io.a2a.spec.IdJsonMappingException;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidParamsJsonMappingException;
 import io.a2a.spec.JSONParseError;
@@ -113,12 +115,12 @@ public class A2AServerRoutes {
             error = new JSONRPCErrorResponse(e.getId(), new io.a2a.spec.InvalidParamsError(null, e.getMessage(), null));
         } catch (MethodNotFoundJsonMappingException e) {
             error = new JSONRPCErrorResponse(e.getId(), new io.a2a.spec.MethodNotFoundError(null, e.getMessage(), null));
-        } catch (io.a2a.spec.IdJsonMappingException e) {
+        } catch (IdJsonMappingException e) {
             error = new JSONRPCErrorResponse(e.getId(), new io.a2a.spec.InvalidRequestError(null, e.getMessage(), null));
         } catch (JsonMappingException e) {
             // General JsonMappingException - treat as InvalidRequest
             error = new JSONRPCErrorResponse(new io.a2a.spec.InvalidRequestError(null, e.getMessage(), null));
-        } catch (com.google.gson.JsonSyntaxException e) {
+        } catch (JsonSyntaxException e) {
             error = new JSONRPCErrorResponse(new JSONParseError(e.getMessage()));
         } catch (JsonProcessingException e) {
             error = new JSONRPCErrorResponse(new JSONParseError(e.getMessage()));

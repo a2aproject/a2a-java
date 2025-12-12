@@ -1,5 +1,6 @@
 package io.a2a.grpc.utils;
 
+import static io.a2a.grpc.utils.JSONRPCUtils.ERROR_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -7,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.a2a.json.JsonProcessingException;
 import com.google.gson.JsonSyntaxException;
+import io.a2a.json.JsonMappingException;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigResponse;
 import io.a2a.spec.InvalidParamsError;
@@ -94,13 +96,14 @@ public class JSONRPCUtilsTest {
                 "parent": "tasks/task-123"
             """; // Missing closing braces
 
-        assertThrows(JsonSyntaxException.class, () -> {
+        JsonSyntaxException exception = assertThrows(JsonSyntaxException.class, () -> {
             JSONRPCUtils.parseRequestBody(malformedRequest);
         });
+        assertEquals("java.io.EOFException: End of input at line 6 column 1 path $.params.parent", exception.getMessage());
     }
 
     @Test
-    public void testParseInvalidParams_ThrowsInvalidParamsError() {
+    public void testParseInvalidParams_ThrowsInvalidParamsJsonMappingException() {
         String invalidParamsRequest = """
             {
               "jsonrpc": "2.0",
@@ -118,7 +121,7 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
-    public void testParseInvalidProtoStructure_ThrowsInvalidParamsError() {
+    public void testParseInvalidProtoStructure_ThrowsInvalidParamsJsonMappingException() {
         String invalidStructure = """
             {
               "jsonrpc": "2.0",
@@ -135,6 +138,123 @@ public class JSONRPCUtilsTest {
             () -> JSONRPCUtils.parseRequestBody(invalidStructure)
         );
         assertEquals(4, exception.getId());
+        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message a2a.v1.SetTaskPushNotificationConfigRequest"), exception.getMessage());
+    }
+
+    @Test
+    public void testParseMissingField_ThrowsInvalidParamsError() throws JsonMappingException {
+        String missingRoleMessage=  """
+           {
+              "jsonrpc":"2.0",
+              "method":"SendMessage",
+              "id": "18",
+              "params":{
+                "message":{
+                  "messageId":"message-1234",
+                  "contextId":"context-1234",
+                  "parts":[
+                    {
+                      "text":"tell me a joke"
+                    }
+                  ],
+                  "metadata":{
+                    
+                  }
+                }
+              }
+            }""";
+        InvalidParamsJsonMappingException exception = assertThrows(
+            InvalidParamsJsonMappingException.class,
+            () -> JSONRPCUtils.parseRequestBody(missingRoleMessage)
+        );
+        assertEquals(18, exception.getId());
+    }
+    @Test
+    public void testParseUnknownField_ThrowsJsonMappingException() throws JsonMappingException {
+        String unkownFieldMessage=  """
+           {
+              "jsonrpc":"2.0",
+              "method":"SendMessage",
+              "id": "18",
+              "params":{
+                "message":{
+                  "role": "ROLE_AGENT",
+                  "unknown":"field",
+                  "messageId":"message-1234",
+                  "contextId":"context-1234",
+                  "parts":[
+                    {
+                      "text":"tell me a joke"
+                    }
+                  ],
+                  "metadata":{
+                    
+                  }
+                }
+              }
+            }""";
+        JsonMappingException exception = assertThrows(
+            JsonMappingException.class,
+            () -> JSONRPCUtils.parseRequestBody(unkownFieldMessage)
+        );
+        assertEquals(ERROR_MESSAGE.formatted("unknown in message a2a.v1.Message"), exception.getMessage());
+    }
+
+    @Test
+    public void testParseInvalidTypeWithNullId_UsesEmptyStringSentinel() throws Exception {
+        // Test the low-level convertProtoBufExceptionToJsonProcessingException with null ID
+        // This tests the sentinel value logic directly
+        com.google.protobuf.InvalidProtocolBufferException protoException =
+            new com.google.protobuf.InvalidProtocolBufferException("Expected ENUM but found \"INVALID_VALUE\"");
+
+        // Use reflection to call the private method for testing
+        java.lang.reflect.Method method = JSONRPCUtils.class.getDeclaredMethod(
+            "convertProtoBufExceptionToJsonProcessingException",
+            com.google.protobuf.InvalidProtocolBufferException.class,
+            Object.class
+        );
+        method.setAccessible(true);
+
+        JsonProcessingException exception = (JsonProcessingException) method.invoke(
+            null,
+            protoException,
+            null  // null ID
+        );
+
+        // Should be InvalidParamsJsonMappingException with empty string sentinel
+        assertInstanceOf(InvalidParamsJsonMappingException.class, exception,
+            "Expected InvalidParamsJsonMappingException for proto error");
+        InvalidParamsJsonMappingException invalidParamsException = (InvalidParamsJsonMappingException) exception;
+        assertEquals("", invalidParamsException.getId(),
+            "Expected empty string sentinel when ID is null");
+    }
+
+    @Test
+    public void testParseInvalidTypeWithValidId_PreservesId() throws Exception {
+        // Test the low-level convertProtoBufExceptionToJsonProcessingException with valid ID
+        com.google.protobuf.InvalidProtocolBufferException protoException =
+            new com.google.protobuf.InvalidProtocolBufferException("Expected ENUM but found \"INVALID_VALUE\"");
+
+        // Use reflection to call the private method for testing
+        java.lang.reflect.Method method = JSONRPCUtils.class.getDeclaredMethod(
+            "convertProtoBufExceptionToJsonProcessingException",
+            com.google.protobuf.InvalidProtocolBufferException.class,
+            Object.class
+        );
+        method.setAccessible(true);
+
+        JsonProcessingException exception = (JsonProcessingException) method.invoke(
+            null,
+            protoException,
+            42  // Valid ID
+        );
+
+        // Should be InvalidParamsJsonMappingException with preserved ID
+        assertInstanceOf(InvalidParamsJsonMappingException.class, exception,
+            "Expected InvalidParamsJsonMappingException for proto error");
+        InvalidParamsJsonMappingException invalidParamsException = (InvalidParamsJsonMappingException) exception;
+        assertEquals(42, invalidParamsException.getId(),
+            "Expected actual ID to be preserved when present");
     }
 
     @Test
