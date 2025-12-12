@@ -8,7 +8,8 @@ on:
       - 0.3.x
   pull_request:
     branches:
-      - main
+# Disable TCK runs on main PRs for now, since we are making spec and TCK updates for 1.0.0
+#      - main
       - 0.3.x
   workflow_dispatch:
 
