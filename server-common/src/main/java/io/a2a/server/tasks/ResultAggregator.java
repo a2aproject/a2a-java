@@ -11,6 +11,8 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.spec.A2AServerException;
@@ -30,15 +32,15 @@ public class ResultAggregator {
 
     private final TaskManager taskManager;
     private final Executor executor;
-    private volatile Message message;
+    private volatile @Nullable Message message;
 
-    public ResultAggregator(TaskManager taskManager, Message message, Executor executor) {
+    public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor) {
         this.taskManager = taskManager;
         this.message = message;
         this.executor = executor;
     }
 
-    public EventKind getCurrentResult() {
+    public @Nullable EventKind getCurrentResult() {
         if (message != null) {
             return message;
         }
@@ -98,10 +100,15 @@ public class ResultAggregator {
             Utils.rethrow(err);
         }
 
-        if (returnedEvent.get() != null) {
-            return returnedEvent.get();
+        EventKind result = returnedEvent.get();
+        if (result != null) {
+            return result;
         }
-        return taskManager.getTask();
+        Task task = taskManager.getTask();
+        if (task == null) {
+            throw new io.a2a.spec.InternalError("No task or message available after consuming all events");
+        }
+        return task;
     }
 
     public EventTypeAndInterrupt consumeAndBreakOnInterrupt(EventConsumer consumer, boolean blocking) throws JSONRPCError {
@@ -255,8 +262,20 @@ public class ResultAggregator {
             Utils.rethrow(error);
         }
 
+        EventKind eventType;
+        Message msg = message.get();
+        if (msg != null) {
+            eventType = msg;
+        } else {
+            Task task = taskManager.getTask();
+            if (task == null) {
+                throw new io.a2a.spec.InternalError("No task or message available after consuming events");
+            }
+            eventType = task;
+        }
+
         return new EventTypeAndInterrupt(
-                message.get() != null ? message.get() : taskManager.getTask(),
+                eventType,
                 interrupted.get(),
                 consumptionCompletionFuture);
     }

@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentMap;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.server.tasks.TaskStateProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +41,12 @@ public class InMemoryQueueManager implements QueueManager {
     }
 
     @Override
-    public EventQueue get(String taskId) {
+    public @Nullable EventQueue get(String taskId) {
         return queues.get(taskId);
     }
 
     @Override
-    public EventQueue tap(String taskId) {
+    public @Nullable EventQueue tap(String taskId) {
         EventQueue queue = queues.get(taskId);
         return queue == null ? null : queue.tap();
     }
@@ -92,6 +94,9 @@ public class InMemoryQueueManager implements QueueManager {
         }
 
         EventQueue main = existing == null ? newQueue : existing;
+        if (main == null) {
+            throw new IllegalStateException("Failed to create or retrieve queue for task " + taskId);
+        }
         EventQueue result = main.tap();  // Always return ChildQueue
 
         if (existing == null) {

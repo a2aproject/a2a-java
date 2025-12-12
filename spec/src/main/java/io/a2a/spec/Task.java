@@ -7,6 +7,9 @@ import io.a2a.util.Assert;
 
 import static io.a2a.spec.Task.TASK;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Represents a single, stateful operation or conversation between a client and an agent in the A2A Protocol.
  * <p>
@@ -37,6 +40,7 @@ import static io.a2a.spec.Task.TASK;
  * @see Message
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
+@NullMarked
 public final class Task implements EventKind, StreamingEventKind {
 
     public static final String TASK = "task";
@@ -54,13 +58,13 @@ public final class Task implements EventKind, StreamingEventKind {
     }
 
     public Task(String id, String contextId, TaskStatus status,
-                List<Artifact> artifacts, List<Message> history,
+                @Nullable List<Artifact> artifacts, @Nullable List<Message> history,
                 Map<String, Object> metadata, String kind) {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("contextId", contextId);
         Assert.checkNotNullParam("status", status);
         Assert.checkNotNullParam("kind", kind);
-        if (! kind.equals(TASK)) {
+        if (! TASK.equals(kind)) {
             throw new IllegalArgumentException("Invalid Task");
         }
         this.id = id;
@@ -130,6 +134,7 @@ public final class Task implements EventKind, StreamingEventKind {
      *     .build();
      * }</pre>
      */
+    @SuppressWarnings("NullAway")
     public static class Builder {
         private String id;
         private String contextId;

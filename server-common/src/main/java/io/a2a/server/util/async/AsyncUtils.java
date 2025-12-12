@@ -7,6 +7,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.util.Assert;
 import mutiny.zero.BackpressureStrategy;
 import mutiny.zero.Tube;
@@ -45,7 +47,7 @@ public class AsyncUtils {
             source.subscribe(new ConsumingSubscriber<>(nextBiFunction, errorConsumer));
         })
                 .subscribe(new Flow.Subscriber<Object>() {
-                    private Flow.Subscription subscription;
+                    private Flow.@Nullable Subscription subscription;
 
                     @Override
                     public void onSubscribe(Flow.Subscription subscription) {
@@ -55,17 +57,23 @@ public class AsyncUtils {
 
                     @Override
                     public void onNext(Object item) {
-                        subscription.request(1);
+                        if (subscription != null) {
+                            subscription.request(1);
+                        }
                     }
 
                     @Override
                     public void onError(Throwable throwable) {
-                        subscription.cancel();
+                        if (subscription != null) {
+                            subscription.cancel();
+                        }
                     }
 
                     @Override
                     public void onComplete() {
-                        subscription.cancel();
+                        if (subscription != null) {
+                            subscription.cancel();
+                        }
                     }
                 });
     }
@@ -86,25 +94,25 @@ public class AsyncUtils {
 
 
     private static abstract class AbstractSubscriber<T> implements Flow.Subscriber<T> {
-        private Flow.Subscription subscription;
+        private Flow.@Nullable Subscription subscription;
         private final BiFunction<Consumer<Throwable>, T, Boolean> nextFunction;
-        private final Consumer<T> publishNextConsumer;
-        private final Consumer<Throwable> failureOrCompleteConsumer;
+        private final @Nullable Consumer<T> publishNextConsumer;
+        private final @Nullable Consumer<Throwable> failureOrCompleteConsumer;
 
         protected AbstractSubscriber(
                 BiFunction<Consumer<Throwable>, T, Boolean> nextFunction,
-                Consumer<T> publishNextConsumer,
-                Consumer<Throwable> failureOrCompleteConsumer) {
+                @Nullable Consumer<T> publishNextConsumer,
+                @Nullable Consumer<Throwable> failureOrCompleteConsumer) {
             Assert.checkNotNullParam("nextFunction", nextFunction);
             this.nextFunction = nextFunction;
-            this.publishNextConsumer = publishNextConsumer != null ? publishNextConsumer : t -> {};
-            this.failureOrCompleteConsumer = failureOrCompleteConsumer != null ? failureOrCompleteConsumer : t -> {};
+            this.publishNextConsumer = publishNextConsumer;
+            this.failureOrCompleteConsumer = failureOrCompleteConsumer;
         }
 
         @Override
         public void onSubscribe(Flow.Subscription subscription) {
             this.subscription = subscription;
-            this.subscription.request(1);
+            subscription.request(1);
         }
 
         @Override
@@ -124,19 +132,25 @@ public class AsyncUtils {
                 }
             }
             if (!continueProcessing || errorRaised.get() != null) {
-                subscription.cancel();
+                if (subscription != null) {
+                    subscription.cancel();
+                }
             } else {
                 if (publishNextConsumer != null) {
                     publishNextConsumer.accept(item);
                 }
-                subscription.request(1);
+                if (subscription != null) {
+                    subscription.request(1);
+                }
             }
         }
 
 
         @Override
         public void onError(Throwable throwable) {
-            subscription.cancel();
+            if (subscription != null) {
+                subscription.cancel();
+            }
             if (failureOrCompleteConsumer != null) {
                 failureOrCompleteConsumer.accept(throwable);
             }
@@ -144,7 +158,9 @@ public class AsyncUtils {
 
         @Override
         public void onComplete() {
-            subscription.cancel();
+            if (subscription != null) {
+                subscription.cancel();
+            }
             if (failureOrCompleteConsumer != null) {
                 failureOrCompleteConsumer.accept(null);
             }
@@ -153,15 +169,12 @@ public class AsyncUtils {
 
     private static class ConsumingSubscriber<T> extends AbstractSubscriber<T> {
         public ConsumingSubscriber(BiFunction<Consumer<Throwable>, T, Boolean> nextFunction,
-                                   Consumer<Throwable> failureOrCompleteConsumer) {
+                                   @Nullable Consumer<Throwable> failureOrCompleteConsumer) {
             super(nextFunction, null, failureOrCompleteConsumer);
         }
     }
 
     private static class ProcessingSubscriber<T> extends AbstractSubscriber<T> {
-        private Flow.Subscription subscription;
-        private final Tube<T> tube;
-
         public ProcessingSubscriber(Tube<T> tube, BiFunction<Consumer<Throwable>, T, Boolean> nextFunction) {
             super(
                     nextFunction,
@@ -175,13 +188,12 @@ public class AsyncUtils {
                     }
             );
             Assert.checkNotNullParam("tube", tube);
-            this.tube = tube;
         }
     }
 
     private static class ConvertingProcessingSubscriber<T, N> implements Flow.Subscriber<T> {
-        private Flow.Subscription subscription;
-        private Tube<N> tube;
+        private Flow.@Nullable Subscription subscription;
+        private final Tube<N> tube;
         private final BiFunction<Consumer<Throwable>, T, N> converterBiFunction;
 
         public ConvertingProcessingSubscriber(Tube<N> tube, Function<T, N> converterFunction) {
@@ -201,7 +213,7 @@ public class AsyncUtils {
         @Override
         public void onSubscribe(Flow.Subscription subscription) {
             this.subscription = subscription;
-            this.subscription.request(1);
+            subscription.request(1);
         }
 
         @Override
@@ -221,19 +233,25 @@ public class AsyncUtils {
             }
             if (!errorRaised.get()) {
                 tube.send(converted);
-                subscription.request(1);
+                if (subscription != null) {
+                    subscription.request(1);
+                }
             }
         }
 
         @Override
         public void onError(Throwable throwable) {
-            subscription.cancel();
+            if (subscription != null) {
+                subscription.cancel();
+            }
             tube.fail(throwable);
         }
 
         @Override
         public void onComplete() {
-            subscription.cancel();
+            if (subscription != null) {
+                subscription.cancel();
+            }
             tube.complete();
         }
     }

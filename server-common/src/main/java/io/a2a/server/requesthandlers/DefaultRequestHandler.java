@@ -25,6 +25,9 @@ import java.util.function.Supplier;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
@@ -266,6 +269,9 @@ public class DefaultRequestHandler implements RequestHandler {
         String taskId = mss.requestContext.getTaskId();
         LOGGER.debug("Request context taskId: {}", taskId);
 
+        if (taskId == null) {
+            throw new io.a2a.spec.InternalError("Task ID is null in onMessageSend");
+        }
         EventQueue queue = queueManager.createOrTap(taskId);
         ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor);
 
@@ -361,12 +367,14 @@ public class DefaultRequestHandler implements RequestHandler {
                 }
 
                 // Step 4: Fetch the final task state from TaskStore (all events have been processed)
-                Task updatedTask = taskStore.get(taskId);
+                // taskId is guaranteed non-null here (checked earlier)
+                String nonNullTaskId = taskId;
+                Task updatedTask = taskStore.get(nonNullTaskId);
                 if (updatedTask != null) {
                     kind = updatedTask;
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Fetched final task for {} with state {} and {} artifacts",
-                            taskId, updatedTask.getStatus().state(),
+                            nonNullTaskId, updatedTask.getStatus().state(),
                             updatedTask.getArtifacts().size());
                     }
                 }
@@ -398,12 +406,18 @@ public class DefaultRequestHandler implements RequestHandler {
                 params.message().getTaskId(), params.message().getContextId(), runningAgents.size(), backgroundTasks.size());
         MessageSendSetup mss = initMessageSend(params, context);
 
-        AtomicReference<String> taskId = new AtomicReference<>(mss.requestContext.getTaskId());
+        @Nullable String initialTaskId = mss.requestContext.getTaskId();
+        // For streaming, taskId can be null initially (will be set when Task event arrives)
+        // Use a temporary ID for queue creation if needed
+        String queueTaskId = initialTaskId != null ? initialTaskId : "temp-" + java.util.UUID.randomUUID();
+
+        AtomicReference<@NonNull String> taskId = new AtomicReference<>(queueTaskId);
+        @SuppressWarnings("NullAway")
         EventQueue queue = queueManager.createOrTap(taskId.get());
         LOGGER.debug("Created/tapped queue for task {}: {}", taskId.get(), queue);
         ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor);
 
-        EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(taskId.get(), mss.requestContext, queue);
+        EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(queueTaskId, mss.requestContext, queue);
 
         // Move consumer creation and callback registration outside try block
         // so consumer is available for background consumption on client disconnect
@@ -442,7 +456,8 @@ public class DefaultRequestHandler implements RequestHandler {
                     }
 
                 }
-                if (pushSender != null && taskId.get() != null) {
+                String currentTaskId = taskId.get();
+                if (pushSender != null && currentTaskId != null) {
                     EventKind latest = resultAggregator.getCurrentResult();
                     if (latest instanceof Task latestTask) {
                         pushSender.sendNotification(latestTask);
@@ -459,9 +474,10 @@ public class DefaultRequestHandler implements RequestHandler {
 
             // Wrap publisher to detect client disconnect and continue background consumption
             return subscriber -> {
-                LOGGER.debug("Creating subscription wrapper for task {}", taskId.get());
+                String currentTaskId = taskId.get();
+                LOGGER.debug("Creating subscription wrapper for task {}", currentTaskId);
                 finalPublisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
-                    private Flow.Subscription subscription;
+                    private Flow.@Nullable Subscription subscription;
 
                     @Override
                     public void onSubscribe(Flow.Subscription subscription) {
@@ -541,7 +557,7 @@ public class DefaultRequestHandler implements RequestHandler {
             CompletableFuture<Void> agentFuture = runningAgents.remove(taskId.get());
             LOGGER.debug("Removed agent for task {} from runningAgents in finally block, size after: {}", taskId.get(), runningAgents.size());
 
-            trackBackgroundTask(cleanupProducer(agentFuture, null, taskId.get(), queue, true));
+            trackBackgroundTask(cleanupProducer(agentFuture, null, Objects.requireNonNull(taskId.get()), queue, true));
         }
     }
 
@@ -576,11 +592,12 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new InternalError("No push notification config found");
         }
 
-        return new TaskPushNotificationConfig(params.id(), getPushNotificationConfig(pushNotificationConfigList, params.pushNotificationConfigId()));
+        @Nullable String configId = params.pushNotificationConfigId();
+        return new TaskPushNotificationConfig(params.id(), getPushNotificationConfig(pushNotificationConfigList, configId));
     }
 
     private PushNotificationConfig getPushNotificationConfig(List<PushNotificationConfig> notificationConfigList,
-                                                             String configId) {
+                                                             @Nullable String configId) {
         if (configId != null) {
             for (PushNotificationConfig notificationConfig : notificationConfigList) {
                 if (configId.equals(notificationConfig.id())) {
@@ -749,7 +766,7 @@ public class DefaultRequestHandler implements RequestHandler {
         return CompletableFuture.allOf(tasks);
     }
 
-    private CompletableFuture<Void> cleanupProducer(CompletableFuture<Void> agentFuture, CompletableFuture<Void> consumptionFuture, String taskId, EventQueue queue, boolean isStreaming) {
+    private CompletableFuture<Void> cleanupProducer(@Nullable CompletableFuture<Void> agentFuture, @Nullable CompletableFuture<Void> consumptionFuture, String taskId, EventQueue queue, boolean isStreaming) {
         LOGGER.debug("Starting cleanup for task {} (streaming={})", taskId, isStreaming);
         logThreadStats("CLEANUP START");
 
@@ -821,7 +838,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     private void sendPushNotification(String taskId, ResultAggregator resultAggregator) {
-        if (pushSender != null && taskId != null) {
+        if (pushSender != null) {
             EventKind latest = resultAggregator.getCurrentResult();
             if (latest instanceof Task latestTask) {
                 pushSender.sendNotification(latestTask);
@@ -871,5 +888,5 @@ public class DefaultRequestHandler implements RequestHandler {
         LOGGER.debug("=== END THREAD STATS ===");
     }
 
-    private record MessageSendSetup(TaskManager taskManager, Task task, RequestContext requestContext) {}
+    private record MessageSendSetup(TaskManager taskManager, @Nullable Task task, RequestContext requestContext) {}
 }

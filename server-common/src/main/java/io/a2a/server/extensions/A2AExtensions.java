@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentExtension;
 
@@ -31,7 +33,7 @@ public class A2AExtensions {
         return extensions;
     }
 
-    public static AgentExtension findExtensionByUri(AgentCard card, String uri) {
+    public static @Nullable AgentExtension findExtensionByUri(AgentCard card, String uri) {
         if (card.capabilities() == null || card.capabilities().extensions() == null) {
             return null;
         }

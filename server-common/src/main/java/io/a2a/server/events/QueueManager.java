@@ -1,12 +1,14 @@
 package io.a2a.server.events;
 
+import org.jspecify.annotations.Nullable;
+
 public interface QueueManager {
 
     void add(String taskId, EventQueue queue);
 
-    EventQueue get(String taskId);
+    @Nullable EventQueue get(String taskId);
 
-    EventQueue tap(String taskId);
+    @Nullable EventQueue tap(String taskId);
 
     void close(String taskId);
 

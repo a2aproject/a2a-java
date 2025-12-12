@@ -369,12 +369,11 @@ public class A2AServerRoutes {
                     }
 
                     @Override
-                    public @Nullable
-                    String getUsername() {
-                        if (rc.user() != null) {
+                    public String getUsername() {
+                        if (rc.user() != null && rc.user().subject() != null) {
                             return rc.user().subject();
                         }
-                        return null;
+                        return "";
                     }
                 };
             }

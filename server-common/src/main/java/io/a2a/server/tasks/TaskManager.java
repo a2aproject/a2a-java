@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
 import io.a2a.spec.InvalidParamsError;
@@ -17,6 +19,7 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
+import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,13 +27,13 @@ public class TaskManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskManager.class);
 
-    private volatile String taskId;
-    private volatile String contextId;
+    private volatile @Nullable String taskId;
+    private volatile @Nullable String contextId;
     private final TaskStore taskStore;
-    private final Message initialMessage;
-    private volatile Task currentTask;
+    private final @Nullable Message initialMessage;
+    private volatile @Nullable Task currentTask;
 
-    public TaskManager(String taskId, String contextId, TaskStore taskStore, Message initialMessage) {
+    public TaskManager(@Nullable String taskId, @Nullable String contextId, TaskStore taskStore, @Nullable Message initialMessage) {
         checkNotNullParam("taskStore", taskStore);
         this.taskId = taskId;
         this.contextId = contextId;
@@ -38,15 +41,15 @@ public class TaskManager {
         this.initialMessage = initialMessage;
     }
 
-    String getTaskId() {
+    @Nullable String getTaskId() {
         return taskId;
     }
 
-    String getContextId() {
+    @Nullable String getContextId() {
         return contextId;
     }
 
-    public Task getTask() {
+    public @Nullable Task getTask() {
         if (taskId == null) {
             return null;
         }
@@ -90,7 +93,12 @@ public class TaskManager {
     Task saveTaskEvent(TaskArtifactUpdateEvent event) throws A2AServerException {
         checkIdsAndUpdateIfNecessary(event.getTaskId(), event.getContextId());
         Task task = ensureTask(event.getTaskId(), event.getContextId());
-        task = appendArtifactToTask(task, event, taskId);
+        // taskId is guaranteed to be non-null after checkIdsAndUpdateIfNecessary
+        String nonNullTaskId = taskId;
+        if (nonNullTaskId == null) {
+            throw new IllegalStateException("taskId should not be null after checkIdsAndUpdateIfNecessary");
+        }
+        task = appendArtifactToTask(task, event, nonNullTaskId);
         return saveTask(task);
     }
 
@@ -141,7 +149,11 @@ public class TaskManager {
         if (task != null) {
             return task;
         }
-        task = taskStore.get(taskId);
+        // taskId may be null here, but get() accepts @Nullable
+        String currentTaskId = taskId;
+        if (currentTaskId != null) {
+            task = taskStore.get(currentTaskId);
+        }
         if (task == null) {
             task = createTask(eventTaskId, eventContextId);
             saveTask(task);
@@ -150,7 +162,7 @@ public class TaskManager {
     }
 
     private Task createTask(String taskId, String contextId) {
-        List<Message> history = initialMessage != null ? List.of(initialMessage) : null;
+        List<Message> history = initialMessage != null ? List.of(initialMessage) : Collections.emptyList();
         return new Task.Builder()
                 .id(taskId)
                 .contextId(contextId)

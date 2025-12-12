@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.spec.PushNotificationConfig;
 
 /**
@@ -49,7 +51,7 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     }
 
     @Override
-    public List<PushNotificationConfig> getInfo(String taskId) {
+    public @Nullable List<PushNotificationConfig> getInfo(String taskId) {
         return pushNotificationInfos.get(taskId);
     }
 

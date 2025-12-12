@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.spec.Artifact;
 import io.a2a.spec.DataPart;
 import io.a2a.spec.Part;
@@ -26,7 +28,7 @@ public final class ArtifactUtils {
      * @param description An optional description of the artifact.
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
-    public static Artifact newArtifact(String name, List<Part<?>> parts, String description) {
+    public static Artifact newArtifact(String name, List<Part<?>> parts, @Nullable String description) {
         return new Artifact(
             UUID.randomUUID().toString(),
             name,
@@ -56,7 +58,7 @@ public final class ArtifactUtils {
      * @param description An optional description of the artifact.
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
-    public static Artifact newTextArtifact(String name, String text, String description) {
+    public static Artifact newTextArtifact(String name, String text, @Nullable String description) {
         return newArtifact(
             name,
             List.of(new TextPart(text)),
@@ -83,7 +85,7 @@ public final class ArtifactUtils {
      * @param description An optional description of the artifact.
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
-    public static Artifact newDataArtifact(String name, Map<String, Object> data, String description) {
+    public static Artifact newDataArtifact(String name, Map<String, Object> data, @Nullable String description) {
         return newArtifact(
             name,
             List.of(new DataPart(data)),

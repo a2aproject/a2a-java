@@ -3,11 +3,13 @@ package io.a2a.server.events;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class EnhancedRunnable implements Runnable {
-    private volatile Throwable error;
+    private volatile @Nullable Throwable error;
     private final List<DoneCallback> doneCallbacks = new CopyOnWriteArrayList<>();
 
-    public Throwable getError() {
+    public @Nullable Throwable getError() {
         return error;
     }
 

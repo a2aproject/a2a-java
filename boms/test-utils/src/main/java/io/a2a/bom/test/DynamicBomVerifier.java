@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Base class for dynamically discovering and verifying all classes in a BOM can be loaded.
@@ -180,7 +181,7 @@ public abstract class DynamicBomVerifier {
         return forbiddenPaths.stream().anyMatch(relativePath::startsWith);
     }
 
-    private static String extractClassName(Path javaFile) throws IOException {
+    private static @Nullable String extractClassName(Path javaFile) throws IOException {
         // Extract simple class name from filename
         String fileName = javaFile.getFileName().toString();
         if (!fileName.endsWith(".java")) {
@@ -198,11 +199,9 @@ public abstract class DynamicBomVerifier {
                     .findFirst()
                     .orElse(null);
         }
-
         if (packageName != null) {
             return packageName + "." + simpleClassName;
         }
-
         return null;
     }
 }

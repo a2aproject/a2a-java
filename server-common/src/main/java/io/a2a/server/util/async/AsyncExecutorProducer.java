@@ -14,6 +14,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.server.config.A2AConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +58,7 @@ public class AsyncExecutorProducer {
      */
     long keepAliveSeconds;
 
-    private ExecutorService executor;
+    private @Nullable ExecutorService executor;
 
     @PostConstruct
     public void init() {
@@ -79,6 +81,9 @@ public class AsyncExecutorProducer {
 
     @PreDestroy
     public void close() {
+        if (executor == null) {
+            return;
+        }
         LOGGER.info("Shutting down async executor");
         executor.shutdown();
         try {
@@ -96,6 +101,9 @@ public class AsyncExecutorProducer {
     @Produces
     @Internal
     public Executor produce() {
+        if (executor == null) {
+            throw new IllegalStateException("Executor not initialized - @PostConstruct not called");
+        }
         return executor;
     }
 

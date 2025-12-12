@@ -69,6 +69,7 @@
         <error-prone.version>2.45.0</error-prone.version>
         <nullaway.version>0.12.14</nullaway.version>
         <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true</error-prone.flag>
+        <nullaway.args>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -Xep:RequireExplicitNullMarking:WARN -XepOpt:NullAway:ExhaustiveOverride=true -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode</nullaway.args>
 
         <!-- Redirect test output to file -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
@@ -342,7 +343,7 @@
                             <arg>--should-stop=ifError=FLOW</arg>
                             <arg>-parameters</arg>
                             <arg>${error-prone.flag}</arg>
-                            <arg>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode</arg>
+                            <arg>${nullaway.args}</arg>
                         </compilerArgs>
                         <annotationProcessorPaths>
                             <path>
@@ -554,6 +555,7 @@
                 <error-prone.version>2.42.0</error-prone.version>
                 <nullaway.version>0.12.10</nullaway.version>
                 <error-prone.flag></error-prone.flag>
+                <nullaway.args>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode</nullaway.args>
                 <quarkus.jvm.args></quarkus.jvm.args>
             </properties>
         </profile>

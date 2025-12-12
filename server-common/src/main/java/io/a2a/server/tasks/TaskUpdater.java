@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
 import io.a2a.spec.Artifact;
@@ -17,8 +19,8 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 
 public class TaskUpdater {
     private final EventQueue eventQueue;
-    private final String taskId;
-    private final String contextId;
+    private final @Nullable String taskId;
+    private final @Nullable String contextId;
     private final AtomicBoolean terminalStateReached = new AtomicBoolean(false);
     private final Object stateLock = new Object();
 
@@ -32,11 +34,11 @@ public class TaskUpdater {
         updateStatus(taskState, null, taskState.isFinal());
     }
 
-    public void updateStatus(TaskState taskState, Message message) {
+    public void updateStatus(TaskState taskState, @Nullable Message message) {
         updateStatus(taskState, message, taskState.isFinal());
     }
 
-    public void updateStatus(TaskState state, Message message, boolean isFinal) {
+    public void updateStatus(TaskState state, @Nullable Message message, boolean isFinal) {
         synchronized (stateLock) {
             // Check if we're already in a terminal state
             if (terminalStateReached.get()) {
@@ -58,11 +60,11 @@ public class TaskUpdater {
         }
     }
 
-    public String getContextId() {
+    public @Nullable String getContextId() {
         return this.contextId;
     }
 
-    public String getTaskId() {
+    public @Nullable String getTaskId() {
         return this.taskId;
     }
 
@@ -70,12 +72,12 @@ public class TaskUpdater {
         addArtifact(parts, null, null, null);
     }
 
-    public void addArtifact(List<Part<?>> parts, String artifactId, String name, Map<String, Object> metadata) {
+    public void addArtifact(List<Part<?>> parts, @Nullable String artifactId, @Nullable String name, @Nullable Map<String, Object> metadata) {
         addArtifact(parts, artifactId, name, metadata, null, null);
     }
 
-    public void addArtifact(List<Part<?>> parts, String artifactId, String name, Map<String, Object> metadata, 
-                            Boolean append, Boolean lastChunk) {
+    public void addArtifact(List<Part<?>> parts, @Nullable String artifactId, @Nullable String name, @Nullable Map<String, Object> metadata,
+                            @Nullable Boolean append, @Nullable Boolean lastChunk) {
         if (artifactId == null) {
             artifactId = UUID.randomUUID().toString();
         }
@@ -100,7 +102,7 @@ public class TaskUpdater {
         complete(null);
     }
 
-    public void complete(Message message) {
+    public void complete(@Nullable Message message) {
         updateStatus(TaskState.COMPLETED, message);
     }
 
@@ -108,7 +110,7 @@ public class TaskUpdater {
         fail(null);
     }
 
-    public void fail(Message message) {
+    public void fail(@Nullable Message message) {
         updateStatus(TaskState.FAILED, message);
     }
 
@@ -116,7 +118,7 @@ public class TaskUpdater {
         submit(null);
     }
 
-    public void submit(Message message) {
+    public void submit(@Nullable Message message) {
         updateStatus(TaskState.SUBMITTED, message);
     }
 
@@ -124,7 +126,7 @@ public class TaskUpdater {
         startWork(null);
     }
 
-    public void startWork(Message message) {
+    public void startWork(@Nullable Message message) {
         updateStatus(TaskState.WORKING, message);
     }
 
@@ -132,7 +134,7 @@ public class TaskUpdater {
         cancel(null);
     }
 
-    public void cancel(Message message) {
+    public void cancel(@Nullable Message message) {
         updateStatus(TaskState.CANCELED, message);
     }
 
@@ -140,7 +142,7 @@ public class TaskUpdater {
         reject(null);
     }
 
-    public void reject(Message message) {
+    public void reject(@Nullable Message message) {
         updateStatus(TaskState.REJECTED, message);
     }
 
@@ -148,7 +150,7 @@ public class TaskUpdater {
         requiresInput(null, false);
     }
 
-    public void requiresInput(Message message) {
+    public void requiresInput(@Nullable Message message) {
         requiresInput(message, false);
     }
 
@@ -156,7 +158,7 @@ public class TaskUpdater {
         requiresInput(null, isFinal);
     }
 
-    public void requiresInput(Message message, boolean isFinal) {
+    public void requiresInput(@Nullable Message message, boolean isFinal) {
         updateStatus(TaskState.INPUT_REQUIRED, message, isFinal);
     }
 
@@ -164,7 +166,7 @@ public class TaskUpdater {
         requiresAuth(null, false);
     }
 
-    public void requiresAuth(Message message) {
+    public void requiresAuth(@Nullable Message message) {
         requiresAuth(message, false);
     }
 
@@ -172,11 +174,11 @@ public class TaskUpdater {
         requiresAuth(null, isFinal);
     }
 
-    public void requiresAuth(Message message, boolean isFinal) {
+    public void requiresAuth(@Nullable Message message, boolean isFinal) {
         updateStatus(TaskState.AUTH_REQUIRED, message, isFinal);
     }
 
-    public Message newAgentMessage(List<Part<?>> parts, Map<String, Object> metadata) {
+    public Message newAgentMessage(List<Part<?>> parts, @Nullable Map<String, Object> metadata) {
         return new Message.Builder()
                 .role(Message.Role.AGENT)
                 .taskId(taskId)

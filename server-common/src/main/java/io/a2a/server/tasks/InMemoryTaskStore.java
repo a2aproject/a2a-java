@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.spec.Artifact;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTasksResult;
@@ -24,7 +26,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
     }
 
     @Override
-    public Task get(String taskId) {
+    public @Nullable Task get(String taskId) {
         return tasks.get(taskId);
     }
 

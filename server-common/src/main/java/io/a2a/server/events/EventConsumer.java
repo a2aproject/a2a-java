@@ -2,6 +2,8 @@ package io.a2a.server.events;
 
 import java.util.concurrent.Flow;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
 import io.a2a.spec.Message;
@@ -16,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class EventConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventConsumer.class);
     private final EventQueue queue;
-    private Throwable error;
+    private volatile @Nullable Throwable error;
 
     private static final String ERROR_MSG = "Agent did not return any response";
     private static final int NO_WAIT = -1;

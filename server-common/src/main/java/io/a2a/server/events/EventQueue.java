@@ -9,6 +9,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jspecify.annotations.Nullable;
+
 import io.a2a.server.tasks.TaskStateProvider;
 import io.a2a.spec.Event;
 import org.slf4j.Logger;
@@ -49,10 +51,10 @@ public abstract class EventQueue implements AutoCloseable {
 
     public static class EventQueueBuilder {
         private int queueSize = DEFAULT_QUEUE_SIZE;
-        private EventEnqueueHook hook;
-        private String taskId;
+        private @Nullable EventEnqueueHook hook;
+        private @Nullable String taskId;
         private List<Runnable> onCloseCallbacks = new java.util.ArrayList<>();
-        private TaskStateProvider taskStateProvider;
+        private @Nullable TaskStateProvider taskStateProvider;
 
         public EventQueueBuilder queueSize(int queueSize) {
             this.queueSize = queueSize;
@@ -132,7 +134,7 @@ public abstract class EventQueue implements AutoCloseable {
      * @return the EventQueueItem, or null if timeout occurs
      * @throws EventQueueClosedException if the queue is closed and empty
      */
-    public EventQueueItem dequeueEventItem(int waitMilliSeconds) throws EventQueueClosedException {
+    public @Nullable EventQueueItem dequeueEventItem(int waitMilliSeconds) throws EventQueueClosedException {
         if (closed && queue.isEmpty()) {
             LOGGER.debug("Queue is closed, and empty. Sending termination message. {}", this);
             throw new EventQueueClosedException();
@@ -218,10 +220,10 @@ public abstract class EventQueue implements AutoCloseable {
         private final List<ChildQueue> children = new CopyOnWriteArrayList<>();
         private final CountDownLatch pollingStartedLatch = new CountDownLatch(1);
         private final AtomicBoolean pollingStarted = new AtomicBoolean(false);
-        private final EventEnqueueHook enqueueHook;
-        private final String taskId;
+        private final @Nullable EventEnqueueHook enqueueHook;
+        private final @Nullable String taskId;
         private final List<Runnable> onCloseCallbacks;
-        private final TaskStateProvider taskStateProvider;
+        private final @Nullable TaskStateProvider taskStateProvider;
 
         MainQueue() {
             super();
@@ -255,7 +257,7 @@ public abstract class EventQueue implements AutoCloseable {
             this.taskStateProvider = null;
         }
 
-        MainQueue(int queueSize, EventEnqueueHook hook, String taskId, List<Runnable> onCloseCallbacks, TaskStateProvider taskStateProvider) {
+        MainQueue(int queueSize, @Nullable EventEnqueueHook hook, @Nullable String taskId, List<Runnable> onCloseCallbacks, @Nullable TaskStateProvider taskStateProvider) {
             super(queueSize);
             this.enqueueHook = hook;
             this.taskId = taskId;
