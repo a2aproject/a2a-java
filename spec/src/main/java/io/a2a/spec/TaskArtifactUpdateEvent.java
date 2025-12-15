@@ -96,12 +96,22 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
     }
 
     /**
-     * Creates a new Builder for constructing TaskArtifactUpdateEvent instances.
+     * Creates a new Builder
      *
-     * @return a new TaskArtifactUpdateEvent.Builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    /**
+     * Creates a new Builder initialized with values from an existing TaskArtifactUpdateEvent.
+     *
+     * @param event the TaskArtifactUpdateEvent to copy values from
+     * @return the builder
+     */
+    public static Builder builder(TaskArtifactUpdateEvent event) {
+        return new Builder(event);
     }
 
     /**
@@ -109,7 +119,7 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
      * <p>
      * Example for complete artifact:
      * <pre>{@code
-     * TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+     * TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
      *     .taskId("task-123")
      *     .contextId("ctx-456")
      *     .artifact(new Artifact.Builder()
@@ -121,7 +131,7 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
      * <p>
      * Example for incremental chunk:
      * <pre>{@code
-     * TaskArtifactUpdateEvent chunk = new TaskArtifactUpdateEvent.Builder()
+     * TaskArtifactUpdateEvent chunk = TaskArtifactUpdateEvent.builder()
      *     .taskId("task-123")
      *     .contextId("ctx-456")
      *     .artifact(new Artifact.Builder()
@@ -142,10 +152,10 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
         private Boolean lastChunk;
         private Map<String, Object> metadata;
 
-        public Builder() {
+        private Builder() {
         }
 
-        public Builder(TaskArtifactUpdateEvent existingTaskArtifactUpdateEvent) {
+        private Builder(TaskArtifactUpdateEvent existingTaskArtifactUpdateEvent) {
             this.taskId = existingTaskArtifactUpdateEvent.taskId;
             this.artifact = existingTaskArtifactUpdateEvent.artifact;
             this.contextId = existingTaskArtifactUpdateEvent.contextId;

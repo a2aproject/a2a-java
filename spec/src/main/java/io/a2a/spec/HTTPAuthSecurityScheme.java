@@ -76,6 +76,15 @@ public final class HTTPAuthSecurityScheme implements SecurityScheme {
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link HTTPAuthSecurityScheme} instances.
      * <p>
      * Provides a fluent API for creating HTTP authentication security schemes.
@@ -85,6 +94,12 @@ public final class HTTPAuthSecurityScheme implements SecurityScheme {
         private String bearerFormat;
         private String scheme;
         private String description;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         /**
          * Sets the bearer token format hint.

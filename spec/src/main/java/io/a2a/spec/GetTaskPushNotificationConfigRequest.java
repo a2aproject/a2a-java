@@ -27,10 +27,25 @@ public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSON
         this(null, id, params);
     }
 
+    /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private String jsonrpc;
         private Object id;
         private GetTaskPushNotificationConfigParams params;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         public GetTaskPushNotificationConfigRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;

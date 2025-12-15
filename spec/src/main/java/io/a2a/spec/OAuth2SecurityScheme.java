@@ -59,10 +59,25 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
         return oauth2MetadataUrl;
     }
 
+    /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private OAuthFlows flows;
         private String description;
         private String oauth2MetadataUrl;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         public Builder flows(OAuthFlows flows) {
             this.flows = flows;

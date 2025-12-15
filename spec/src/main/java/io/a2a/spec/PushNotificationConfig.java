@@ -32,6 +32,25 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Create a new Builder initialized with values from an existing PushNotificationConfig.
+     *
+     * @param config the PushNotificationConfig to copy values from
+     * @return the builder
+     */
+    public static Builder builder(PushNotificationConfig config) {
+        return new Builder(config);
+    }
+
+    /**
      * Builder for constructing {@link PushNotificationConfig} instances.
      * <p>
      * Provides a fluent API for building push notification configurations with optional
@@ -44,7 +63,7 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
         private String id;
 
         /** Creates an empty builder. */
-        public Builder() {
+        private Builder() {
         }
 
         /**
@@ -52,7 +71,7 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
          *
          * @param notificationConfig the configuration to copy
          */
-        public Builder(PushNotificationConfig notificationConfig) {
+        private Builder(PushNotificationConfig notificationConfig) {
             this.url = notificationConfig.url;
             this.token = notificationConfig.token;
             this.authentication = notificationConfig.authentication;
@@ -87,7 +106,7 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
          * @param authenticationInfo the authentication configuration
          * @return this builder
          */
-        public Builder authenticationInfo(AuthenticationInfo authenticationInfo) {
+        public Builder authentication(AuthenticationInfo authenticationInfo) {
             this.authentication = authenticationInfo;
             return this;
         }

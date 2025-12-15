@@ -31,6 +31,15 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link MessageSendConfiguration} instances.
      * <p>
      * Provides a fluent API for configuring message send behavior with sensible defaults.
@@ -41,6 +50,12 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
         Integer historyLength;
         PushNotificationConfig pushNotificationConfig;
         Boolean blocking = false;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         /**
          * Sets the accepted output modes.

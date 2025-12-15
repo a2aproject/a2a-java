@@ -33,10 +33,25 @@ public record GetTaskPushNotificationConfigParams(String id, @Nullable String pu
         this(id, pushNotificationConfigId, null);
     }
 
+    /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         String id;
         String pushNotificationConfigId;
         Map<String, Object> metadata;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         public Builder id(String id) {
             this.id = id;

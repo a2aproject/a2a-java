@@ -45,11 +45,20 @@ public record AgentCardSignature(Map<String, Object> header, @SerializedName("pr
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing immutable {@link AgentCardSignature} instances.
      * <p>
      * Example usage:
      * <pre>{@code
-     * AgentCardSignature sig = new AgentCardSignature.Builder()
+     * AgentCardSignature sig = AgentCardSignature.builder()
      *     .protectedHeader("eyJhbGciOiJFUzI1NiJ9")
      *     .signature("DtEhU3ljbEg8L38VWAfUAqOyKAM6...")
      *     .header(Map.of("kid", "2024-01"))
@@ -64,7 +73,7 @@ public record AgentCardSignature(Map<String, Object> header, @SerializedName("pr
         /**
          * Creates a new Builder with all fields unset.
          */
-        public Builder() {
+        private Builder() {
         }
 
         /**

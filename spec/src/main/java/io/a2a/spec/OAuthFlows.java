@@ -19,11 +19,26 @@ package io.a2a.spec;
 public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCredentialsOAuthFlow clientCredentials,
                          ImplicitOAuthFlow implicit, PasswordOAuthFlow password) {
 
+    /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private AuthorizationCodeOAuthFlow authorizationCode;
         private ClientCredentialsOAuthFlow clientCredentials;
         private ImplicitOAuthFlow implicit;
         private PasswordOAuthFlow password;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         public Builder authorizationCode(AuthorizationCodeOAuthFlow authorizationCode) {
             this.authorizationCode = authorizationCode;

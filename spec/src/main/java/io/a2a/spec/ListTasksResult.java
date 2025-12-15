@@ -52,11 +52,26 @@ public record ListTasksResult(
         return nextPageToken != null && !nextPageToken.isEmpty();
     }
 
+    /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private List<Task> tasks;
         private int totalSize;
         private int pageSize;
         private String nextPageToken;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         public Builder tasks(List<Task> tasks) {
             this.tasks = tasks;

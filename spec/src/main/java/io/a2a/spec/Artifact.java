@@ -46,6 +46,28 @@ public record Artifact(String artifactId, String name, String description, List<
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Create a new Builder initialized with values from an existing Artifact.
+     * <p>
+     * This builder creates defensive copies of mutable collections to ensure
+     * that modifications to the builder do not affect the original Artifact.
+     *
+     * @param artifact the Artifact to copy values from
+     * @return the builder
+     */
+    public static Builder builder(Artifact artifact) {
+        return new Builder(artifact);
+    }
+
+    /**
      * Builder for constructing immutable {@link Artifact} instances.
      * <p>
      * The Builder provides a fluent API for creating artifacts with required and optional fields.
@@ -53,7 +75,7 @@ public record Artifact(String artifactId, String name, String description, List<
      * <p>
      * Example usage:
      * <pre>{@code
-     * Artifact result = new Artifact.Builder()
+     * Artifact result = Artifact.builder()
      *     .artifactId("artifact-123")
      *     .name("Analysis Report")
      *     .description("Detailed analysis of user data")
@@ -72,7 +94,7 @@ public record Artifact(String artifactId, String name, String description, List<
         /**
          * Creates a new Builder with all fields unset.
          */
-        public Builder(){
+        private Builder(){
         }
 
         /**
@@ -80,7 +102,7 @@ public record Artifact(String artifactId, String name, String description, List<
          *
          * @param existingArtifact the Artifact to copy values from
          */
-        public Builder(Artifact existingArtifact) {
+        private Builder(Artifact existingArtifact) {
             artifactId = existingArtifact.artifactId;
             name = existingArtifact.name;
             description = existingArtifact.description;

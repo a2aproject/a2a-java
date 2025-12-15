@@ -70,12 +70,22 @@ public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKin
     }
 
     /**
-     * Creates a new Builder for constructing TaskStatusUpdateEvent instances.
+     * Create a new Builder
      *
-     * @return a new TaskStatusUpdateEvent.Builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    /**
+     * Create a new Builder initialized with values from an existing TaskStatusUpdateEvent.
+     *
+     * @param event the TaskStatusUpdateEvent to copy values from
+     * @return the builder
+     */
+    public static Builder builder(TaskStatusUpdateEvent event) {
+        return new Builder(event);
     }
 
     public static class Builder {
@@ -85,10 +95,10 @@ public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKin
         private boolean isFinal;
         private Map<String, Object> metadata;
 
-        public Builder() {
+        private Builder() {
         }
 
-        public Builder(TaskStatusUpdateEvent existingTaskStatusUpdateEvent) {
+        private Builder(TaskStatusUpdateEvent existingTaskStatusUpdateEvent) {
             this.taskId = existingTaskStatusUpdateEvent.taskId;
             this.status = existingTaskStatusUpdateEvent.status;
             this.contextId = existingTaskStatusUpdateEvent.contextId;

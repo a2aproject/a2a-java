@@ -41,6 +41,15 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link DeleteTaskPushNotificationConfigParams} instances.
      * <p>
      * Provides a fluent API for setting parameters with optional metadata.
@@ -49,6 +58,12 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
         String id;
         String pushNotificationConfigId;
         Map<String, Object> metadata;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         /**
          * Sets the task identifier.

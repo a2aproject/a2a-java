@@ -32,6 +32,15 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link SendStreamingMessageRequest} instances.
      * <p>
      * Provides a fluent API for building streaming message requests with optional customization
@@ -41,6 +50,12 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
             private String jsonrpc;
             private Object id;
             private MessageSendParams params;
+
+            /**
+             * Creates a new Builder with all fields unset.
+             */
+            private Builder() {
+            }
 
             /**
              * Sets the JSON-RPC protocol version.

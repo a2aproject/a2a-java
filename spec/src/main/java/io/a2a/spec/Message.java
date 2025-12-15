@@ -126,6 +126,16 @@ public final class Message implements EventKind, StreamingEventKind {
     }
 
     /**
+     * Creates a new Builder initialized with values from an existing Message.
+     *
+     * @param message the Message to copy values from
+     * @return the builder
+     */
+    public static Builder builder(Message message) {
+        return new Builder(message);
+    }
+
+    /**
      * Defines the role of the message sender in the conversation.
      * <p>
      * The role determines who originated the message and how it should be processed
@@ -166,7 +176,7 @@ public final class Message implements EventKind, StreamingEventKind {
      * <p>
      * Example usage:
      * <pre>{@code
-     * Message userMessage = new Message.Builder()
+     * Message userMessage = Message.builder()
      *     .role(Message.Role.USER)
      *     .parts(List.of(new TextPart("Hello, agent!", null)))
      *     .contextId("conv-123")
@@ -187,7 +197,7 @@ public final class Message implements EventKind, StreamingEventKind {
         /**
          * Creates a new Builder with all fields unset.
          */
-        public Builder() {
+        private Builder() {
         }
 
         /**
@@ -195,7 +205,7 @@ public final class Message implements EventKind, StreamingEventKind {
          *
          * @param message the Message to copy values from
          */
-        public Builder(Message message) {
+        private Builder(Message message) {
             role = message.role;
             parts = message.parts;
             messageId = message.messageId;

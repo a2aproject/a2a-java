@@ -56,6 +56,15 @@ public record AgentSkill(String id, String name, String description, List<String
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing immutable {@link AgentSkill} instances.
      * <p>
      * The Builder pattern provides a fluent API for setting skill properties.
@@ -64,7 +73,7 @@ public record AgentSkill(String id, String name, String description, List<String
      * <p>
      * Example usage:
      * <pre>{@code
-     * AgentSkill skill = new AgentSkill.Builder()
+     * AgentSkill skill = AgentSkill.builder()
      *     .id("weather_query")
      *     .name("Weather Queries")
      *     .description("Get current weather conditions for any location")
@@ -92,7 +101,7 @@ public record AgentSkill(String id, String name, String description, List<String
         /**
          * Creates a new Builder with all fields unset.
          */
-        public Builder() {
+        private Builder() {
         }
 
         /**

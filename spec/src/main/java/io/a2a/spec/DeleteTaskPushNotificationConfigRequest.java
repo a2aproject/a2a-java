@@ -44,6 +44,15 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link DeleteTaskPushNotificationConfigRequest} instances.
      * <p>
      * Provides a fluent API for setting request parameters. If no id is provided,
@@ -53,6 +62,12 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
         private String jsonrpc;
         private Object id;
         private DeleteTaskPushNotificationConfigParams params;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         /**
          * Sets the JSON-RPC protocol version.

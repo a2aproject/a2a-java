@@ -59,6 +59,15 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link SendMessageRequest} instances with a fluent API.
      * <p>
      * If no ID is provided, a UUID will be auto-generated when {@link #build()} is called.
@@ -67,6 +76,12 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
         private String jsonrpc;
         private Object id;
         private MessageSendParams params;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         /** Sets the JSON-RPC version. */
         public Builder jsonrpc(String jsonrpc) {

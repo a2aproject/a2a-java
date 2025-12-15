@@ -30,6 +30,15 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link MessageSendParams} instances.
      * <p>
      * Provides a fluent API for building message send parameters with optional
@@ -39,6 +48,12 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
         Message message;
         MessageSendConfiguration configuration;
         Map<String, Object> metadata;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         /**
          * Sets the message to send to the agent.

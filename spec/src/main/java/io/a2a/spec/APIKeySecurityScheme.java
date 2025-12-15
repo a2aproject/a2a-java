@@ -149,11 +149,20 @@ public final class APIKeySecurityScheme implements SecurityScheme {
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing immutable {@link APIKeySecurityScheme} instances.
      * <p>
      * Example usage:
      * <pre>{@code
-     * APIKeySecurityScheme scheme = new APIKeySecurityScheme.Builder()
+     * APIKeySecurityScheme scheme = APIKeySecurityScheme.builder()
      *     .location(Location.HEADER)
      *     .name("X-API-Key")
      *     .description("API key authentication")
@@ -164,6 +173,12 @@ public final class APIKeySecurityScheme implements SecurityScheme {
         private Location location;
         private String name;
         private String description;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         /**
          * Sets the location where the API key should be sent.

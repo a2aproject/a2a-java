@@ -48,6 +48,15 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link CancelTaskRequest} instances.
      * <p>
      * Provides a fluent API for setting request parameters. If no id is provided,
@@ -57,6 +66,12 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
         private String jsonrpc;
         private Object id;
         private TaskIdParams params;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         /**
          * Sets the JSON-RPC protocol version.

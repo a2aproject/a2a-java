@@ -149,7 +149,7 @@ public class Utils {
             log.fine(String.format("Appending parts to artifact id %s for task %s", artifactId, taskId));
             List<Part<?>> parts = new ArrayList<>(existingArtifact.parts());
             parts.addAll(newArtifact.parts());
-            Artifact updated = new Artifact.Builder(existingArtifact)
+            Artifact updated = Artifact.builder(existingArtifact)
                     .parts(parts)
                     .build();
             artifacts.set(existingArtifactIndex, updated);
@@ -161,7 +161,7 @@ public class Utils {
                             artifactId, taskId));
         }
 
-        return new Task.Builder(task)
+        return Task.builder(task)
                 .artifacts(artifacts)
                 .build();
 

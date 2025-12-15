@@ -17,10 +17,25 @@ public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasks
         this(JSONRPC_VERSION, id, params);
     }
 
+    /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private String jsonrpc;
         private Object id;
         private ListTasksParams params;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         public Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;

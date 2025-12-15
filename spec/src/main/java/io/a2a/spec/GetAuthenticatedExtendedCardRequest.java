@@ -38,9 +38,24 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
         this(null, id);
     }
 
+    /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private String jsonrpc;
         private Object id;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         public GetAuthenticatedExtendedCardRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;

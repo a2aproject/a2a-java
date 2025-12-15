@@ -64,6 +64,15 @@ public final class OpenIdConnectSecurityScheme implements SecurityScheme {
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing {@link OpenIdConnectSecurityScheme} instances.
      * <p>
      * Provides a fluent API for creating OpenID Connect security schemes.
@@ -72,6 +81,12 @@ public final class OpenIdConnectSecurityScheme implements SecurityScheme {
     public static class Builder {
         private String openIdConnectUrl;
         private String description;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         /**
          * Sets the OpenID Connect Discovery URL.

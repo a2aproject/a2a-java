@@ -35,11 +35,20 @@ public record AgentExtension (String description, Map<String, Object> params, bo
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Builder for constructing immutable {@link AgentExtension} instances.
      * <p>
      * Example usage:
      * <pre>{@code
-     * AgentExtension ext = new AgentExtension.Builder()
+     * AgentExtension ext = AgentExtension.builder()
      *     .uri("https://example.com/extensions/custom-auth")
      *     .description("Custom authentication extension")
      *     .required(true)
@@ -56,7 +65,7 @@ public record AgentExtension (String description, Map<String, Object> params, bo
         /**
          * Creates a new Builder with all fields unset.
          */
-        public Builder() {
+        private Builder() {
         }
 
         /**

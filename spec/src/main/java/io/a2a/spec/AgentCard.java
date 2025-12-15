@@ -90,6 +90,29 @@ public record AgentCard(
     }
 
     /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Create a new Builder initialized with values from an existing AgentCard.
+     * <p>
+     * This builder  creates defensive copies of mutable collections to ensure
+     * that modifications to the builder do not affect the original AgentCard.
+     *
+     * @param card the AgentCard to copy values from
+     * @return the builder
+     */
+    public static Builder builder(AgentCard card) {
+        return new Builder(card);
+    }
+
+
+    /**
      * Builder for constructing immutable {@link AgentCard} instances.
      * <p>
      * The Builder pattern is used to enforce immutability of AgentCard objects while providing
@@ -99,7 +122,7 @@ public record AgentCard(
      * <p>
      * Example usage:
      * <pre>{@code
-     * AgentCard card = new AgentCard.Builder()
+     * AgentCard card = AgentCard.builder()
      *     .name("Weather Agent")
      *     .description("Provides weather information")
      *     .supportedInterfaces(List.of(
@@ -140,7 +163,7 @@ public record AgentCard(
         /**
          * Creates a new Builder with all fields unset.
          */
-        public Builder() {
+        private Builder() {
 
         }
 
@@ -152,7 +175,7 @@ public record AgentCard(
          *
          * @param card the AgentCard to copy values from
          */
-        public Builder(AgentCard card) {
+        private Builder(AgentCard card) {
             this.name = card.name;
             this.description = card.description;
             this.provider = card.provider;

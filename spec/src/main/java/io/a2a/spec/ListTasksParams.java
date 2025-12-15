@@ -83,6 +83,15 @@ public record ListTasksParams(
         return includeArtifacts != null && includeArtifacts;
     }
 
+    /**
+     * Create a new Builder
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private String contextId;
         private TaskState status;
@@ -92,6 +101,12 @@ public record ListTasksParams(
         private Instant lastUpdatedAfter;
         private Boolean includeArtifacts;
         private Map<String, Object> metadata;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
 
         public Builder contextId(String contextId) {
             this.contextId = contextId;

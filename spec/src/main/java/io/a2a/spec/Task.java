@@ -106,13 +106,27 @@ public final class Task implements EventKind, StreamingEventKind {
     }
 
     /**
-     * Creates a new Builder for constructing Task instances.
+     * Create a new Builder
      *
-     * @return a new Task.Builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();
     }
+
+    /**
+     * Create a new Builder initialized with values from an existing Task.
+     * <p>
+     * This Builder allows for creating a modified copy of an existing Task
+     * by copying all fields and then selectively updating specific values.
+     *
+     * @param task the Task to copy values from
+     * @return a new builder
+     */
+    public static Builder builder(Task task) {
+        return new Builder(task);
+    }
+
 
     /**
      * Builder for constructing immutable {@link Task} instances.
@@ -146,7 +160,7 @@ public final class Task implements EventKind, StreamingEventKind {
         /**
          * Creates a new Builder with all fields unset.
          */
-        public Builder() {
+        private Builder() {
 
         }
 
@@ -158,7 +172,7 @@ public final class Task implements EventKind, StreamingEventKind {
          *
          * @param task the Task to copy values from
          */
-        public Builder(Task task) {
+        private Builder(Task task) {
             id = task.id;
             contextId = task.contextId;
             status = task.status;
