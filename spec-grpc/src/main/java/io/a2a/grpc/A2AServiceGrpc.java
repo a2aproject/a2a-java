@@ -779,8 +779,8 @@ public final class A2AServiceGrpc {
      * Set a push notification config for a task.
      * </pre>
      */
-    public io.a2a.grpc.TaskPushNotificationConfig setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+    public io.a2a.grpc.TaskPushNotificationConfig setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getSetTaskPushNotificationConfigMethod(), getCallOptions(), request);
     }
 
@@ -809,8 +809,8 @@ public final class A2AServiceGrpc {
      * GetExtendedAgentCard returns the extended agent card for authenticated agents.
      * </pre>
      */
-    public io.a2a.grpc.AgentCard getExtendedAgentCard(io.a2a.grpc.GetExtendedAgentCardRequest request) {
-      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+    public io.a2a.grpc.AgentCard getExtendedAgentCard(io.a2a.grpc.GetExtendedAgentCardRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetExtendedAgentCardMethod(), getCallOptions(), request);
     }
 

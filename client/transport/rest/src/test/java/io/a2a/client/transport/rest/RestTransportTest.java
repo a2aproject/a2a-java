@@ -49,7 +49,6 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TextPart;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -126,7 +125,7 @@ public class RestTransportTest {
                                 .withStatusCode(200)
                                 .withBody(SEND_MESSAGE_TEST_RESPONSE)
                 );
-        MessageSendParams messageSendParams = new MessageSendParams(message, null, null);
+        MessageSendParams messageSendParams = new MessageSendParams(message, null, null, "");
         ClientCallContext context = null;
         
         RestTransport instance = new RestTransport(CARD);
@@ -171,8 +170,7 @@ public class RestTransportTest {
                 );
         ClientCallContext context = null;
         RestTransport instance = new RestTransport(CARD);
-        Task task = instance.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
-                new HashMap<>()), context);
+        Task task = instance.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), context);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
         assertEquals(TaskState.CANCELED, task.getStatus().state());
         assertNull(task.getStatus().message());
@@ -308,7 +306,7 @@ public class RestTransportTest {
                         .url("https://example.com/callback")
                         .authenticationInfo(
                                 new AuthenticationInfo(Collections.singletonList("jwt"), null))
-                        .build());
+                        .build(), "tenant");
         TaskPushNotificationConfig taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(pushedConfig, null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
@@ -336,8 +334,7 @@ public class RestTransportTest {
 
         RestTransport client = new RestTransport(CARD);
         TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
-                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "10",
-                        new HashMap<>()), null);
+                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "10"), null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
@@ -364,7 +361,7 @@ public class RestTransportTest {
 
         RestTransport client = new RestTransport(CARD);
         List<TaskPushNotificationConfig> taskPushNotificationConfigs = client.listTaskPushNotificationConfigurations(
-                new ListTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", new HashMap<>()), null);
+                new ListTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
         assertEquals(2, taskPushNotificationConfigs.size());
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfigs.get(0).pushNotificationConfig();
         assertNotNull(pushNotificationConfig);

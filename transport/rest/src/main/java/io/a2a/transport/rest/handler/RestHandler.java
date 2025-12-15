@@ -172,7 +172,7 @@ public class RestHandler {
 
     public HTTPRestResponse getTask(String taskId, int historyLength, ServerCallContext context) {
         try {
-            TaskQueryParams params = new TaskQueryParams(taskId, historyLength);
+            TaskQueryParams params = new TaskQueryParams(taskId, historyLength, "");
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
@@ -188,7 +188,7 @@ public class RestHandler {
     public HTTPRestResponse listTasks(@Nullable String contextId, @Nullable String status,
                                        @Nullable Integer pageSize, @Nullable String pageToken,
                                        @Nullable Integer historyLength, @Nullable String lastUpdatedAfter,
-                                       @Nullable Boolean includeArtifacts,
+                                       @Nullable Boolean includeArtifacts, String tenant,
                                        ServerCallContext context) {
         try {
             // Build params
@@ -208,6 +208,7 @@ public class RestHandler {
             if (historyLength != null) {
                 paramsBuilder.historyLength(historyLength);
             }
+            paramsBuilder.tenant(tenant);
             if (lastUpdatedAfter != null) {
                 try {
                     paramsBuilder.lastUpdatedAfter(Instant.parse(lastUpdatedAfter));
@@ -400,7 +401,7 @@ public class RestHandler {
 
     public HTTPRestResponse getAuthenticatedExtendedCard() {
         try {
-            if (!agentCard.supportsAuthenticatedExtendedCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
+            if (!agentCard.supportsExtendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
                 throw new AuthenticatedExtendedCardNotConfiguredError(null, "Authenticated Extended Card not configured", null);
             }
             return new HTTPRestResponse(200, "application/json", JsonUtil.toJson(extendedAgentCard.get()));

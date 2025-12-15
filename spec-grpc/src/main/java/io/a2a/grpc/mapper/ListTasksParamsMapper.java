@@ -28,7 +28,6 @@ public interface ListTasksParamsMapper {
     @Mapping(target = "historyLength", source = "historyLength", conditionExpression = "java(params.historyLength() != null)")
     @Mapping(target = "lastUpdatedAfter", source = "lastUpdatedAfter", qualifiedByName = "instantToMillis")
     @Mapping(target = "includeArtifacts", source = "includeArtifacts", conditionExpression = "java(params.includeArtifacts() != null)")
-    @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     ListTasksRequest toProto(io.a2a.spec.ListTasksParams params);
 
     /**
@@ -44,6 +43,5 @@ public interface ListTasksParamsMapper {
     @Mapping(target = "historyLength", source = "historyLength", qualifiedByName = "zeroToNull")
     @Mapping(target = "lastUpdatedAfter", source = "lastUpdatedAfter", qualifiedByName = "millisToInstant")
     @Mapping(target = "includeArtifacts", source = "includeArtifacts", qualifiedByName = "falseToNull")
-    @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
     io.a2a.spec.ListTasksParams fromProto(ListTasksRequest request);
 }

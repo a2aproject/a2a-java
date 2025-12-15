@@ -33,7 +33,6 @@ public interface DataPartMapper {
      * Uses factory method to construct DataPart with single-arg constructor.
      * Metadata is ignored (not part of proto definition).
      */
-    @Mapping(target = "metadata", ignore = true)
     @Mapping(target = "data", source = "data", qualifiedByName = "structToMap")
     io.a2a.spec.DataPart fromProto(io.a2a.grpc.DataPart proto);
 

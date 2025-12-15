@@ -168,7 +168,7 @@ public class JsonRestMessages {
                     ]
                   }
                 ],
-                "supportsAuthenticatedExtendedCard": false,
+                "supportsExtendedAgentCard": false,
                 "protocolVersion": "0.2.5"
               }""";
 
@@ -235,7 +235,7 @@ public class JsonRestMessages {
                     ]
                   }
                 ],
-                "supportsAuthenticatedExtendedCard": true,
+                "supportsExtendedAgentCard": true,
                 "protocolVersion": "0.2.5"
               }""";
 
@@ -308,7 +308,7 @@ public class JsonRestMessages {
                     "tags": ["extended"]
                   }
                 ],
-                "supportsAuthenticatedExtendedCard": true,
+                "supportsExtendedAgentCard": true,
                 "protocolVersion": "0.2.5"
               }""";
 

@@ -1,7 +1,5 @@
 package io.a2a.spec;
 
-import java.util.Map;
-
 /**
  * Base class for content parts within {@link Message}s and {@link Artifact}s.
  * <p>
@@ -65,12 +63,4 @@ public abstract class Part<T> {
      * @return the Part.Kind indicating the content type
      */
     public abstract Kind getKind();
-
-    /**
-     * Returns optional metadata associated with this part.
-     *
-     * @return map of metadata key-value pairs, or null if no metadata
-     */
-    public abstract Map<String, Object> getMetadata();
-
 }

@@ -36,7 +36,7 @@ public class AgentExecutorProducer {
                     } else {
                         // Second call: context.getTask() != null (existing task)
                         updater.addArtifact(
-                            List.of(new TextPart("Second message artifact", null)),
+                            List.of(new TextPart("Second message artifact")),
                             "artifact-2", "Second Artifact", null);
                         updater.complete();
                         return;

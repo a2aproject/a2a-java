@@ -4,11 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -112,7 +110,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendParams params1 = new MessageSendParams(message1, null, null);
+        MessageSendParams params1 = new MessageSendParams(message1, null, null, "");
         Object result1 = requestHandler.onMessageSend(params1, serverCallContext);
 
         assertTrue(result1 instanceof Task);
@@ -129,7 +127,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendParams params2 = new MessageSendParams(message2, null, null);
+        MessageSendParams params2 = new MessageSendParams(message2, null, null, "");
         Object result2 = requestHandler.onMessageSend(params2, serverCallContext);
 
         // Should complete successfully (not timeout)
@@ -163,7 +161,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendParams params = new MessageSendParams(message, null, null);
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
 
         // Set up agent to finish quickly so cleanup runs
         CountDownLatch agentStarted = new CountDownLatch(1);
@@ -214,7 +212,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendParams params = new MessageSendParams(message, null, null);
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
 
         // Agent should start and then wait
         CountDownLatch agentStarted = new CountDownLatch(1);
@@ -280,7 +278,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendParams params = new MessageSendParams(message, null, null);
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
 
         // Set up agent to emit events with controlled timing
         CountDownLatch agentStarted = new CountDownLatch(1);
@@ -363,7 +361,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendParams params = new MessageSendParams(message, null, null);
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
 
         // Agent that completes after some delay
         CountDownLatch agentStarted = new CountDownLatch(1);
@@ -456,7 +454,7 @@ public class DefaultRequestHandlerTest {
                 .blocking(true)
                 .build();
 
-        MessageSendParams params = new MessageSendParams(message, config, null);
+        MessageSendParams params = new MessageSendParams(message, config, null, "");
 
         // Agent that does fire-and-forget: emits WORKING with artifact but never completes
         agentExecutor.setExecuteCallback((context, queue) -> {
@@ -467,7 +465,7 @@ public class DefaultRequestHandlerTest {
 
             // Add artifact
             updater.addArtifact(
-                List.of(new TextPart("Fire and forget artifact", null)),
+                List.of(new TextPart("Fire and forget artifact")),
                 "artifact-1", "FireForget", null);
 
             // Agent returns WITHOUT calling updater.complete()
@@ -520,7 +518,7 @@ public class DefaultRequestHandlerTest {
         MessageSendConfiguration config = new MessageSendConfiguration.Builder()
                 .build();
 
-        MessageSendParams params = new MessageSendParams(message, config, null);
+        MessageSendParams params = new MessageSendParams(message, config, null, "");
 
         // Agent that produces multiple events with delays
         CountDownLatch agentStarted = new CountDownLatch(1);
@@ -630,7 +628,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendParams params = new MessageSendParams(message, null, null);
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
 
         // Agent that emits WORKING status but never completes (fire-and-forget pattern)
         CountDownLatch agentStarted = new CountDownLatch(1);
@@ -755,7 +753,7 @@ public class DefaultRequestHandlerTest {
                 .blocking(true)
                 .build();
 
-        MessageSendParams params = new MessageSendParams(message, config, null);
+        MessageSendParams params = new MessageSendParams(message, config, null, "");
 
         // Agent that uses TaskUpdater to emit multiple artifacts (like real agents do)
         agentExecutor.setExecuteCallback((context, queue) -> {
@@ -766,12 +764,12 @@ public class DefaultRequestHandlerTest {
 
             // Add first artifact
             updater.addArtifact(
-                List.of(new TextPart("First artifact", null)),
+                List.of(new TextPart("First artifact")),
                 "artifact-1", "First", null);
 
             // Add second artifact
             updater.addArtifact(
-                List.of(new TextPart("Second artifact", null)),
+                List.of(new TextPart("Second artifact")),
                 "artifact-2", "Second", null);
 
             // Complete the task
@@ -847,7 +845,7 @@ public class DefaultRequestHandlerTest {
             .pushNotificationConfig(pushConfig)
             .build();
 
-        MessageSendParams params = new MessageSendParams(message, config, null);
+        MessageSendParams params = new MessageSendParams(message, config, null, "");
 
         // Agent creates a new task
         agentExecutor.setExecuteCallback((context, queue) -> {
@@ -924,13 +922,13 @@ public class DefaultRequestHandlerTest {
             .pushNotificationConfig(pushConfig)
             .build();
 
-        MessageSendParams params = new MessageSendParams(message, config, null);
+        MessageSendParams params = new MessageSendParams(message, config, null, "");
 
         // Agent updates the existing task
         agentExecutor.setExecuteCallback((context, queue) -> {
             TaskUpdater updater = new TaskUpdater(context, queue);
             updater.addArtifact(
-                List.of(new TextPart("update artifact", null)),
+                List.of(new TextPart("update artifact")),
                 "artifact-1", "Update", null);
             updater.complete();
         });

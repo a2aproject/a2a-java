@@ -15,7 +15,7 @@ import java.util.UUID;
  * </ul>
  * <p>
  * The agent must support authenticated extended cards (indicated by
- * {@link AgentCard#supportsAuthenticatedExtendedCard()}) and the client must provide
+ * {@link AgentCard#supportsExtendedAgentCard()}) and the client must provide
  * valid authentication credentials for this request to succeed.
  * <p>
  * This class implements the JSON-RPC {@code agent/getAuthenticatedExtendedCard} method

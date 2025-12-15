@@ -32,6 +32,7 @@ public class JSONRPCUtilsTest {
               "params": {
                 "parent": "tasks/task-123",
                 "configId": "config-456",
+                "tenant": "",
                 "config": {
                   "name": "tasks/task-123/pushNotificationConfigs/config-456",
                   "pushNotificationConfig": {
@@ -264,7 +265,8 @@ public class JSONRPCUtilsTest {
             new io.a2a.spec.PushNotificationConfig.Builder()
                 .url("https://example.com/callback")
                 .id("config-456")
-                .build()
+                .build(),
+                "tenant"
         );
 
         String responseJson = """

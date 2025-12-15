@@ -88,7 +88,7 @@ public class JpaDatabaseTaskStoreTest {
 
         // Retrieve the task
         Task retrieved = taskStore.get("test-task-2");
-        
+
         assertNotNull(retrieved);
         assertEquals("test-task-2", retrieved.getId());
         assertEquals("test-context-2", retrieved.getContextId());
@@ -289,6 +289,7 @@ public class JpaDatabaseTaskStoreTest {
         // List with specific context that has no tasks
         ListTasksParams params = new ListTasksParams.Builder()
                 .contextId("non-existent-context-12345")
+                .tenant("tenant")
                 .build();
         ListTasksResult result = taskStore.list(params);
 
@@ -328,6 +329,7 @@ public class JpaDatabaseTaskStoreTest {
         // List tasks for context-A
         ListTasksParams params = new ListTasksParams.Builder()
                 .contextId("context-A")
+                .tenant("tenant")
                 .build();
         ListTasksResult result = taskStore.list(params);
 
@@ -366,6 +368,7 @@ public class JpaDatabaseTaskStoreTest {
         // List only WORKING tasks in this context
         ListTasksParams params = new ListTasksParams.Builder()
                 .contextId("context-status-filter-test")
+                .tenant("tenant")
                 .status(TaskState.WORKING)
                 .build();
         ListTasksResult result = taskStore.list(params);
@@ -405,6 +408,7 @@ public class JpaDatabaseTaskStoreTest {
         // List WORKING tasks in context-X
         ListTasksParams params = new ListTasksParams.Builder()
                 .contextId("context-X")
+                .tenant("tenant")
                 .status(TaskState.WORKING)
                 .build();
         ListTasksResult result = taskStore.list(params);
@@ -434,6 +438,7 @@ public class JpaDatabaseTaskStoreTest {
         // First page: pageSize=2
         ListTasksParams params1 = new ListTasksParams.Builder()
                 .contextId("context-pagination")
+                .tenant("tenant")
                 .pageSize(2)
                 .build();
         ListTasksResult result1 = taskStore.list(params1);
@@ -446,6 +451,7 @@ public class JpaDatabaseTaskStoreTest {
         // Second page: use pageToken from first page
         ListTasksParams params2 = new ListTasksParams.Builder()
                 .contextId("context-pagination")
+                .tenant("tenant")
                 .pageSize(2)
                 .pageToken(result1.nextPageToken())
                 .build();
@@ -458,6 +464,7 @@ public class JpaDatabaseTaskStoreTest {
         // Third page: last page
         ListTasksParams params3 = new ListTasksParams.Builder()
                 .contextId("context-pagination")
+                .tenant("tenant")
                 .pageSize(2)
                 .pageToken(result2.nextPageToken())
                 .build();
@@ -525,6 +532,7 @@ public class JpaDatabaseTaskStoreTest {
         // Page 1: Get first 2 tasks
         ListTasksParams params1 = new ListTasksParams.Builder()
                 .contextId("context-diff-timestamps")
+                .tenant("tenant")
                 .pageSize(2)
                 .build();
         ListTasksResult result1 = taskStore.list(params1);
@@ -546,6 +554,7 @@ public class JpaDatabaseTaskStoreTest {
         // Page 2: Get next 2 tasks
         ListTasksParams params2 = new ListTasksParams.Builder()
                 .contextId("context-diff-timestamps")
+                .tenant("tenant")
                 .pageSize(2)
                 .pageToken(result1.nextPageToken())
                 .build();
@@ -562,6 +571,7 @@ public class JpaDatabaseTaskStoreTest {
         // Page 3: Get last task
         ListTasksParams params3 = new ListTasksParams.Builder()
                 .contextId("context-diff-timestamps")
+                .tenant("tenant")
                 .pageSize(2)
                 .pageToken(result2.nextPageToken())
                 .build();
@@ -611,6 +621,7 @@ public class JpaDatabaseTaskStoreTest {
         // List with historyLength=3 (should keep only last 3 messages) - filter by unique context
         ListTasksParams params = new ListTasksParams.Builder()
                 .contextId("context-history-limit-unique")
+                .tenant("tenant")
                 .historyLength(3)
                 .build();
         ListTasksResult result = taskStore.list(params);
@@ -648,6 +659,7 @@ public class JpaDatabaseTaskStoreTest {
         // List without artifacts (default) - filter by unique context
         ListTasksParams paramsWithoutArtifacts = new ListTasksParams.Builder()
                 .contextId("context-artifact-unique")
+                .tenant("tenant")
                 .build();
         ListTasksResult resultWithout = taskStore.list(paramsWithoutArtifacts);
 
@@ -658,6 +670,7 @@ public class JpaDatabaseTaskStoreTest {
         // List with artifacts - filter by unique context
         ListTasksParams paramsWithArtifacts = new ListTasksParams.Builder()
                 .contextId("context-artifact-unique")
+                .tenant("tenant")
                 .includeArtifacts(true)
                 .build();
         ListTasksResult resultWith = taskStore.list(paramsWithArtifacts);
@@ -684,6 +697,7 @@ public class JpaDatabaseTaskStoreTest {
         // List without specifying pageSize (should use default of 50)
         ListTasksParams params = new ListTasksParams.Builder()
                 .contextId("context-default-pagesize")
+                .tenant("tenant")
                 .build();
         ListTasksResult result = taskStore.list(params);
 
@@ -706,6 +720,7 @@ public class JpaDatabaseTaskStoreTest {
         // Test 1: Legacy ID-only pageToken should throw InvalidParamsError
         ListTasksParams params1 = new ListTasksParams.Builder()
                 .contextId("context-invalid-token")
+                .tenant("tenant")
                 .pageToken("task-invalid-token")  // ID-only format (legacy)
                 .build();
 
@@ -721,6 +736,7 @@ public class JpaDatabaseTaskStoreTest {
         // Test 2: Malformed timestamp in pageToken should throw InvalidParamsError
         ListTasksParams params2 = new ListTasksParams.Builder()
                 .contextId("context-invalid-token")
+                .tenant("tenant")
                 .pageToken("not-a-number:task-id")  // Invalid timestamp
                 .build();
 
@@ -768,6 +784,7 @@ public class JpaDatabaseTaskStoreTest {
         // List should return sorted by timestamp DESC (all same), then by ID ASC
         ListTasksParams params = new ListTasksParams.Builder()
                 .contextId("context-order")
+                .tenant("tenant")
                 .build();
         ListTasksResult result = taskStore.list(params);
 

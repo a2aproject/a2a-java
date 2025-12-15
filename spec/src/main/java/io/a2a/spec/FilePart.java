@@ -1,10 +1,8 @@
 package io.a2a.spec;
 
-import java.util.Map;
 
 import io.a2a.util.Assert;
 
-import static io.a2a.spec.FilePart.FILE;
 
 /**
  * Represents a file content part within a {@link Message} or {@link Artifact}.
@@ -42,17 +40,12 @@ public class FilePart extends Part<FileContent> {
     /** The type identifier for file parts in messages and artifacts. */
     public static final String FILE = "file";
     private final FileContent file;
-    private final Map<String, Object> metadata;
     private final Kind kind;
 
-    public FilePart(FileContent file) {
-        this(file, null);
-    }
 
-    public FilePart(FileContent file, Map<String, Object> metadata) {
+    public FilePart(FileContent file) {
         Assert.checkNotNullParam("file", file);
         this.file = file;
-        this.metadata = metadata;
         this.kind = Kind.FILE;
     }
 
@@ -63,11 +56,6 @@ public class FilePart extends Part<FileContent> {
 
     public FileContent getFile() {
         return file;
-    }
-
-    @Override
-    public Map<String, Object> getMetadata() {
-        return metadata;
     }
 
 }

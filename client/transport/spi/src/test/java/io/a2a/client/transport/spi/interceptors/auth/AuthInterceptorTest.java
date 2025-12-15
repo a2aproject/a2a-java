@@ -230,7 +230,7 @@ public class AuthInterceptorTest {
         AgentCard agentCard = new AgentCard.Builder()
             .name("missing")
             .description("Uses missing scheme definition")
-            .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
+            .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc", "")))
             .version("1.0")
             .capabilities(new AgentCapabilities.Builder().build())
             .defaultInputModes(List.of("text"))

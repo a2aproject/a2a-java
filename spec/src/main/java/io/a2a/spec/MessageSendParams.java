@@ -17,16 +17,22 @@ import io.a2a.util.Assert;
  * @param message the message to send to the agent (required)
  * @param configuration optional configuration for message processing behavior
  * @param metadata optional arbitrary key-value metadata for the request
+ * @param tenant optional tenant, provided as a path parameter.
  * @see SendMessageRequest for non-streaming message delivery
  * @see SendStreamingMessageRequest for streaming message delivery
  * @see MessageSendConfiguration for available configuration options
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record MessageSendParams(Message message, MessageSendConfiguration configuration,
-                                Map<String, Object> metadata) {
+                                Map<String, Object> metadata, String tenant) {
 
     public MessageSendParams {
         Assert.checkNotNullParam("message", message);
+        Assert.checkNotNullParam("tenant", tenant);
+    }
+
+     public MessageSendParams(Message message, MessageSendConfiguration configuration, Map<String, Object> metadata) {
+        this(message, configuration, metadata, "");
     }
 
     /**
@@ -39,6 +45,7 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
         Message message;
         MessageSendConfiguration configuration;
         Map<String, Object> metadata;
+        String tenant;
 
         /**
          * Sets the message to send to the agent.
@@ -74,13 +81,24 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
         }
 
         /**
+         * Sets optional tenant for the request.
+         *
+         * @param tenant arbitrary key-value metadata
+         * @return this builder
+         */
+        public Builder tenant(String tenant) {
+            this.tenant = tenant;
+            return this;
+        }
+
+        /**
          * Builds the {@link MessageSendParams}.
          *
          * @return a new message send parameters instance
          * @throws IllegalArgumentException if message is null
          */
         public MessageSendParams build() {
-            return new MessageSendParams(message, configuration, metadata);
+            return new MessageSendParams(message, configuration, metadata, tenant == null ? "" : tenant);
         }
     }
 }

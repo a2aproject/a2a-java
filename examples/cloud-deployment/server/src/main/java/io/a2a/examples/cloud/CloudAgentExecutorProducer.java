@@ -73,7 +73,7 @@ public class CloudAgentExecutorProducer {
                     // Completion trigger - add final artifact and complete
                     LOGGER.info("Completion requested on pod: {}", podName);
                     String artifactText = "Completed by " + podName;
-                    List<Part<?>> parts = List.of(new TextPart(artifactText, null));
+                    List<Part<?>> parts = List.of(new TextPart(artifactText));
                     updater.addArtifact(parts);
                     updater.complete();
                     LOGGER.info("Task completed on pod: {}", podName);
@@ -84,7 +84,7 @@ public class CloudAgentExecutorProducer {
                     updater.submit();
                     updater.startWork();
                     String artifactText = "Started by " + podName;
-                    List<Part<?>> parts = List.of(new TextPart(artifactText, null));
+                    List<Part<?>> parts = List.of(new TextPart(artifactText));
                     updater.addArtifact(parts);
                     LOGGER.info("Task created and started on pod: {}", podName);
 
@@ -92,7 +92,7 @@ public class CloudAgentExecutorProducer {
                     // Subsequent messages - add artifacts (fire-and-forget, stays in WORKING)
                     LOGGER.info("Adding artifact on pod: {}", podName);
                     String artifactText = "Processed by " + podName;
-                    List<Part<?>> parts = List.of(new TextPart(artifactText, null));
+                    List<Part<?>> parts = List.of(new TextPart(artifactText));
                     updater.addArtifact(parts);
                     // No state change - task remains in WORKING
                     LOGGER.info("Artifact added on pod: {}", podName);

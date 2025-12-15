@@ -265,7 +265,7 @@ public abstract class AbstractA2AServerTest {
 
         try {
             // Test listing all tasks (no filters)
-            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder().build();
+            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder().tenant("tenant").build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
 
             assertNotNull(result);
@@ -306,6 +306,7 @@ public abstract class AbstractA2AServerTest {
             // Filter by contextId
             io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder()
                     .contextId("context-filter-1")
+                    .tenant("tenant")
                     .build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
 
@@ -346,6 +347,7 @@ public abstract class AbstractA2AServerTest {
             // Filter by status WORKING
             io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder()
                     .status(TaskState.WORKING)
+                    .tenant("tenant")
                     .build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
 
@@ -389,6 +391,7 @@ public abstract class AbstractA2AServerTest {
             // Get first page with pageSize=2
             io.a2a.spec.ListTasksParams params1 = new io.a2a.spec.ListTasksParams.Builder()
                     .contextId("page-context")
+                    .tenant("tenant")
                     .pageSize(2)
                     .build();
             io.a2a.spec.ListTasksResult result1 = getClient().listTasks(params1);
@@ -401,6 +404,7 @@ public abstract class AbstractA2AServerTest {
             // Get second page using pageToken
             io.a2a.spec.ListTasksParams params2 = new io.a2a.spec.ListTasksParams.Builder()
                     .contextId("page-context")
+                    .tenant("tenant")
                     .pageSize(2)
                     .pageToken(result1.nextPageToken())
                     .build();
@@ -437,6 +441,7 @@ public abstract class AbstractA2AServerTest {
             // List with history limited to 2 messages
             io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder()
                     .contextId("context-history")
+                    .tenant("tenant")
                     .historyLength(2)
                     .build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
@@ -541,7 +546,7 @@ public abstract class AbstractA2AServerTest {
         try {
             TaskPushNotificationConfig taskPushConfig
                     = new TaskPushNotificationConfig(
-                            MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build());
+                            MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
             TaskPushNotificationConfig config = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
             assertEquals(MINIMAL_TASK.getId(), config.taskId());
             assertEquals("http://example.com", config.pushNotificationConfig().url());
@@ -560,7 +565,7 @@ public abstract class AbstractA2AServerTest {
         try {
             TaskPushNotificationConfig taskPushConfig
                     = new TaskPushNotificationConfig(
-                            MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build());
+                            MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
 
             TaskPushNotificationConfig setResult = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
             assertNotNull(setResult);
@@ -610,7 +615,7 @@ public abstract class AbstractA2AServerTest {
         assertTrue(agentCard.capabilities().streaming());
         assertTrue(agentCard.capabilities().stateTransitionHistory());
         assertTrue(agentCard.skills().isEmpty());
-        assertFalse(agentCard.supportsAuthenticatedExtendedCard());
+        assertFalse(agentCard.supportsExtendedAgentCard());
     }
 
     @Test
@@ -1066,8 +1071,8 @@ public abstract class AbstractA2AServerTest {
             List<TaskPushNotificationConfig> result = getClient().listTaskPushNotificationConfigurations(
                     new ListTaskPushNotificationConfigParams(MINIMAL_TASK.getId()));
             assertEquals(2, result.size());
-            assertEquals(new TaskPushNotificationConfig(MINIMAL_TASK.getId(), notificationConfig1), result.get(0));
-            assertEquals(new TaskPushNotificationConfig(MINIMAL_TASK.getId(), notificationConfig2), result.get(1));
+            assertEquals(new TaskPushNotificationConfig(MINIMAL_TASK.getId(), notificationConfig1, null), result.get(0));
+            assertEquals(new TaskPushNotificationConfig(MINIMAL_TASK.getId(), notificationConfig2, null), result.get(1));
         } catch (Exception e) {
             fail();
         } finally {
@@ -1101,7 +1106,7 @@ public abstract class AbstractA2AServerTest {
                     .url("http://2.example.com")
                     .id(MINIMAL_TASK.getId())
                     .build();
-            assertEquals(new TaskPushNotificationConfig(MINIMAL_TASK.getId(), expectedNotificationConfig),
+            assertEquals(new TaskPushNotificationConfig(MINIMAL_TASK.getId(), expectedNotificationConfig, null),
                     result.get(0));
         } catch (Exception e) {
             fail();
@@ -1579,7 +1584,7 @@ public abstract class AbstractA2AServerTest {
                 .contextId(MINIMAL_TASK.getContextId())
                 .build();
         SendStreamingMessageRequest request = new SendStreamingMessageRequest(
-                "1", new MessageSendParams(message, null, null));
+                "1", new MessageSendParams(message, null, null, ""));
 
         CompletableFuture<HttpResponse<Stream<String>>> responseFuture = initialiseStreamingRequest(request, mediaType);
 

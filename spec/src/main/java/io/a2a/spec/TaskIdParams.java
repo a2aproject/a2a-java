@@ -1,7 +1,5 @@
 package io.a2a.spec;
 
-import java.util.Map;
-
 import io.a2a.util.Assert;
 
 /**
@@ -12,18 +10,19 @@ import io.a2a.util.Assert;
  * task-specific requests. It optionally includes metadata for additional context.
  *
  * @param id the unique task identifier (required)
- * @param metadata optional arbitrary key-value metadata for the request
+ * @param tenant optional tenant, provided as a path parameter.
  * @see CancelTaskRequest for task cancellation
  * @see SubscribeToTaskRequest for task resubscription
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record TaskIdParams(String id, Map<String, Object> metadata) {
+public record TaskIdParams(String id, String tenant) {
 
-    public TaskIdParams {
+    public TaskIdParams  {
         Assert.checkNotNullParam("id", id);
+        Assert.checkNotNullParam("tenant", tenant);
     }
 
     public TaskIdParams(String id) {
-        this(id, null);
+        this(id, "");
     }
 }

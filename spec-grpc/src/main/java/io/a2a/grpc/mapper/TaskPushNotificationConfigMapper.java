@@ -41,6 +41,7 @@ public interface TaskPushNotificationConfigMapper {
      * <p>
      * Parses the resource name to extract taskId and configId, then creates the domain object.
      * The configId is injected into the PushNotificationConfig if it differs from what's in the proto.
+     * The tenant field is set to null as it's not present in the protobuf definition.
      *
      * @param proto the protobuf TaskPushNotificationConfig
      * @return domain TaskPushNotificationConfig with extracted taskId and configId
@@ -48,6 +49,7 @@ public interface TaskPushNotificationConfigMapper {
      */
     @Mapping(target = "taskId", expression = "java(extractTaskId(proto))")
     @Mapping(target = "pushNotificationConfig", expression = "java(mapPushNotificationConfigWithId(proto))")
+    @Mapping(target = "tenant", expression = "java(null)")
     TaskPushNotificationConfig fromProto(io.a2a.grpc.TaskPushNotificationConfig proto);
 
     /**

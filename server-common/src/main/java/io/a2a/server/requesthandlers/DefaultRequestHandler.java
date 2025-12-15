@@ -174,8 +174,8 @@ public class DefaultRequestHandler implements RequestHandler {
      * @param historyLength the maximum number of recent messages to keep (0 or negative = unlimited)
      * @return the task with limited history, or the original task if no limiting needed
      */
-    private static Task limitTaskHistory(Task task, int historyLength) {
-        if (task.getHistory() == null || historyLength <= 0 || historyLength >= task.getHistory().size()) {
+    private static Task limitTaskHistory(Task task, @Nullable Integer historyLength) {
+        if (task.getHistory() == null || historyLength == null || historyLength >= task.getHistory().size()) {
             return task;
         }
         // Keep only the most recent historyLength messages
@@ -570,7 +570,7 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         PushNotificationConfig pushNotificationConfig = pushConfigStore.setInfo(params.taskId(), params.pushNotificationConfig());
-        return new TaskPushNotificationConfig(params.taskId(), pushNotificationConfig);
+        return new TaskPushNotificationConfig(params.taskId(), pushNotificationConfig, null);
     }
 
     @Override
@@ -590,7 +590,7 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         @Nullable String configId = params.pushNotificationConfigId();
-        return new TaskPushNotificationConfig(params.id(), getPushNotificationConfig(pushNotificationConfigList, configId));
+        return new TaskPushNotificationConfig(params.id(), getPushNotificationConfig(pushNotificationConfigList, configId), null);
     }
 
     private PushNotificationConfig getPushNotificationConfig(List<PushNotificationConfig> notificationConfigList,
@@ -652,7 +652,7 @@ public class DefaultRequestHandler implements RequestHandler {
         List<TaskPushNotificationConfig> taskPushNotificationConfigList = new ArrayList<>();
         if (pushNotificationConfigList != null) {
             for (PushNotificationConfig pushNotificationConfig : pushNotificationConfigList) {
-                TaskPushNotificationConfig taskPushNotificationConfig = new TaskPushNotificationConfig(params.id(), pushNotificationConfig);
+                TaskPushNotificationConfig taskPushNotificationConfig = new TaskPushNotificationConfig(params.id(), pushNotificationConfig, null);
                 taskPushNotificationConfigList.add(taskPushNotificationConfig);
             }
         }
