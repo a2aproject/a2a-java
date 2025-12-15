@@ -75,7 +75,7 @@ public class TaskManagerTest {
 
         TaskStatus newStatus = new TaskStatus(
                 TaskState.WORKING,
-                new Message.Builder()
+                Message.builder()
                         .role(Message.Role.AGENT)
                         .parts(Collections.singletonList(new TextPart("content")))
                         .messageId("messageId")
@@ -105,12 +105,12 @@ public class TaskManagerTest {
     @Test
     public void testSaveTaskEventArtifactUpdate() throws A2AServerException {
         Task initialTask = minimalTask;
-        Artifact newArtifact = new Artifact.Builder()
+        Artifact newArtifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("content")))
                 .build();
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .artifact(newArtifact)
@@ -138,7 +138,7 @@ public class TaskManagerTest {
     public void testEnsureTaskNonExistentForStatusUpdate() throws A2AServerException {
         // Tests that an update event instantiates a new task and that
         TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -159,7 +159,7 @@ public class TaskManagerTest {
     @Test
     public void testSaveTaskEventNewTaskNoTaskId() throws A2AServerException {
         TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -187,23 +187,23 @@ public class TaskManagerTest {
     public void testTaskArtifactUpdateEventAppendTrueWithExistingArtifact() throws A2AServerException {
         // Setup: Create a task with an existing artifact
         Task initialTask = minimalTask;
-        Artifact existingArtifact = new Artifact.Builder()
+        Artifact existingArtifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("existing content")))
                 .build();
-        Task taskWithArtifact = new Task.Builder(initialTask)
+        Task taskWithArtifact = Task.builder(initialTask)
                 .artifacts(Collections.singletonList(existingArtifact))
                 .build();
         taskStore.save(taskWithArtifact);
 
         // Test: Append new parts to existing artifact
-        Artifact newArtifact = new Artifact.Builder()
+        Artifact newArtifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("new content")))
                 .build();
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .artifact(newArtifact)
@@ -227,12 +227,12 @@ public class TaskManagerTest {
         taskStore.save(initialTask);
 
         // Test: Try to append to non-existent artifact (should be ignored)
-        Artifact newArtifact = new Artifact.Builder()
+        Artifact newArtifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("new content")))
                 .build();
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .artifact(newArtifact)
@@ -250,23 +250,23 @@ public class TaskManagerTest {
     public void testTaskArtifactUpdateEventAppendFalseWithExistingArtifact() throws A2AServerException {
         // Setup: Create a task with an existing artifact
         Task initialTask = minimalTask;
-        Artifact existingArtifact = new Artifact.Builder()
+        Artifact existingArtifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("existing content")))
                 .build();
-        Task taskWithArtifact = new Task.Builder(initialTask)
+        Task taskWithArtifact = Task.builder(initialTask)
                 .artifacts(Collections.singletonList(existingArtifact))
                 .build();
         taskStore.save(taskWithArtifact);
 
         // Test: Replace existing artifact (append=false)
-        Artifact newArtifact = new Artifact.Builder()
+        Artifact newArtifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("replacement content")))
                 .build();
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .artifact(newArtifact)
@@ -287,23 +287,23 @@ public class TaskManagerTest {
     public void testTaskArtifactUpdateEventAppendNullWithExistingArtifact() throws A2AServerException {
         // Setup: Create a task with an existing artifact
         Task initialTask = minimalTask;
-        Artifact existingArtifact = new Artifact.Builder()
+        Artifact existingArtifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("existing content")))
                 .build();
-        Task taskWithArtifact = new Task.Builder(initialTask)
+        Task taskWithArtifact = Task.builder(initialTask)
                 .artifacts(Collections.singletonList(existingArtifact))
                 .build();
         taskStore.save(taskWithArtifact);
 
         // Test: Replace existing artifact (append=null, defaults to false)
-        Artifact newArtifact = new Artifact.Builder()
+        Artifact newArtifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("replacement content")))
                 .build();
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .artifact(newArtifact)
@@ -324,7 +324,7 @@ public class TaskManagerTest {
         // Test that adding a task with a different id from the taskmanager's taskId fails
         TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
         
-        Task differentTask = new Task.Builder()
+        Task differentTask = Task.builder()
                 .id("different-task-id")
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -340,7 +340,7 @@ public class TaskManagerTest {
         // Test that adding a status update with different taskId fails
         TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
         
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("different-task-id")
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -357,12 +357,12 @@ public class TaskManagerTest {
         // Test that adding an artifact update with different taskId fails
         TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
         
-        Artifact artifact = new Artifact.Builder()
+        Artifact artifact = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("content")))
                 .build();
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
                 .taskId("different-task-id")
                 .contextId("session-xyz")
                 .artifact(artifact)
@@ -377,7 +377,7 @@ public class TaskManagerTest {
     public void testTaskWithNoMessageUsesInitialMessage() throws A2AServerException {
         // Test that adding a task with no message, and there is a TaskManager.initialMessage, 
         // the initialMessage gets used
-        Message initialMessage = new Message.Builder()
+        Message initialMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
@@ -386,7 +386,7 @@ public class TaskManagerTest {
         TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
         
         // Use a status update event instead of a Task to trigger createTask
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -408,7 +408,7 @@ public class TaskManagerTest {
     @Test
     public void testTaskWithMessageDoesNotUseInitialMessage() throws A2AServerException {
         // Test that adding a task with a message does not use the initial message
-        Message initialMessage = new Message.Builder()
+        Message initialMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
@@ -416,14 +416,14 @@ public class TaskManagerTest {
         
         TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
         
-        Message taskMessage = new Message.Builder()
+        Message taskMessage = Message.builder()
                 .role(Message.Role.AGENT)
                 .parts(Collections.singletonList(new TextPart("task message")))
                 .messageId("task-msg-id")
                 .build();
         
         // Use TaskStatusUpdateEvent to trigger the creation of a task, which will check if the initialMessage is used.
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED, taskMessage, null))
@@ -451,12 +451,12 @@ public class TaskManagerTest {
         taskStore.save(initialTask);
 
         // Add first artifact
-        Artifact artifact1 = new Artifact.Builder()
+        Artifact artifact1 = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("content 1")))
                 .build();
-        TaskArtifactUpdateEvent event1 = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event1 = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .artifact(artifact1)
@@ -464,12 +464,12 @@ public class TaskManagerTest {
         taskManager.saveTaskEvent(event1);
 
         // Add second artifact with same artifactId (should replace the first)
-        Artifact artifact2 = new Artifact.Builder()
+        Artifact artifact2 = Artifact.builder()
                 .artifactId("artifact-id")
                 .name("artifact-2")
                 .parts(Collections.singletonList(new TextPart("content 2")))
                 .build();
-        TaskArtifactUpdateEvent event2 = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event2 = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .artifact(artifact2)
@@ -491,12 +491,12 @@ public class TaskManagerTest {
         taskStore.save(initialTask);
 
         // Add first artifact
-        Artifact artifact1 = new Artifact.Builder()
+        Artifact artifact1 = Artifact.builder()
                 .artifactId("artifact-id-1")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("content 1")))
                 .build();
-        TaskArtifactUpdateEvent event1 = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event1 = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .artifact(artifact1)
@@ -504,12 +504,12 @@ public class TaskManagerTest {
         taskManager.saveTaskEvent(event1);
 
         // Add second artifact with different artifactId (should be added)
-        Artifact artifact2 = new Artifact.Builder()
+        Artifact artifact2 = Artifact.builder()
                 .artifactId("artifact-id-2")
                 .name("artifact-2")
                 .parts(Collections.singletonList(new TextPart("content 2")))
                 .build();
-        TaskArtifactUpdateEvent event2 = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event2 = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .artifact(artifact2)
@@ -551,7 +551,7 @@ public class TaskManagerTest {
         Map<String, Object> newMetadata = new HashMap<>();
         newMetadata.put("meta_key_test", "meta_value_test");
 
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .status(new TaskStatus(TaskState.WORKING))
@@ -571,7 +571,7 @@ public class TaskManagerTest {
         Task initialTask = minimalTask;
         taskStore.save(initialTask);
 
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .status(new TaskStatus(TaskState.WORKING))
@@ -592,7 +592,7 @@ public class TaskManagerTest {
         Map<String, Object> originalMetadata = new HashMap<>();
         originalMetadata.put("original_key", "original_value");
         
-        Task taskWithMetadata = new Task.Builder(minimalTask)
+        Task taskWithMetadata = Task.builder(minimalTask)
                 .metadata(originalMetadata)
                 .build();
         taskStore.save(taskWithMetadata);
@@ -600,7 +600,7 @@ public class TaskManagerTest {
         Map<String, Object> newMetadata = new HashMap<>();
         newMetadata.put("new_key", "new_value");
 
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId(minimalTask.getId())
                 .contextId(minimalTask.getContextId())
                 .status(new TaskStatus(TaskState.WORKING))
@@ -620,7 +620,7 @@ public class TaskManagerTest {
     @Test
     public void testCreateTaskWithInitialMessage() throws A2AServerException {
         // Test equivalent of _init_task_obj functionality
-        Message initialMessage = new Message.Builder()
+        Message initialMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
@@ -628,7 +628,7 @@ public class TaskManagerTest {
 
         TaskManager taskManagerWithMessage = new TaskManager(null, null, taskStore, initialMessage);
 
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -656,7 +656,7 @@ public class TaskManagerTest {
         // Test task creation without initial message
         TaskManager taskManagerWithoutMessage = new TaskManager(null, null, taskStore, null);
 
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -680,7 +680,7 @@ public class TaskManagerTest {
         // Test equivalent of _save_task functionality through saveTaskEvent
         TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
         
-        Task newTask = new Task.Builder()
+        Task newTask = Task.builder()
                 .id("test-task-id")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -696,7 +696,7 @@ public class TaskManagerTest {
 
     @Test
     public void testUpdateWithMessage() throws A2AServerException {
-        Message initialMessage = new Message.Builder()
+        Message initialMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
@@ -704,13 +704,13 @@ public class TaskManagerTest {
 
         TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
 
-        Message taskMessage = new Message.Builder()
+        Message taskMessage = Message.builder()
                 .role(Message.Role.AGENT)
                 .parts(Collections.singletonList(new TextPart("task message")))
                 .messageId("task-msg-id")
                 .build();
 
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED, taskMessage, null))
@@ -719,7 +719,7 @@ public class TaskManagerTest {
 
         Task saved = taskManagerWithInitialMessage.saveTaskEvent(event);
 
-        Message updateMessage = new Message.Builder()
+        Message updateMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("update message")))
                 .messageId("update-msg-id")

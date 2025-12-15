@@ -71,7 +71,7 @@ public class Client extends AbstractClient {
                             @Nullable ClientCallContext context) throws A2AClientException {
         MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(pushNotificationConfiguration);
 
-        MessageSendParams messageSendParams = new MessageSendParams.Builder()
+        MessageSendParams messageSendParams = MessageSendParams.builder()
                 .message(request)
                 .configuration(messageSendConfiguration)
                 .metadata(metadata)
@@ -169,7 +169,7 @@ public class Client extends AbstractClient {
     }
 
     private MessageSendConfiguration createMessageSendConfiguration(@Nullable PushNotificationConfig pushNotificationConfig) {
-        return new MessageSendConfiguration.Builder()
+        return MessageSendConfiguration.builder()
                 .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
                 .blocking(!clientConfig.isPolling())
                 .historyLength(clientConfig.getHistoryLength())
@@ -225,7 +225,7 @@ public class Client extends AbstractClient {
     private MessageSendParams getMessageSendParams(Message request, ClientConfig clientConfig) {
         MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(clientConfig.getPushNotificationConfig());
 
-        return new MessageSendParams.Builder()
+        return MessageSendParams.builder()
                 .message(request)
                 .configuration(messageSendConfiguration)
                 .metadata(clientConfig.getMetadata())

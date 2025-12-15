@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 
 public class ToProtoTest {
 
-    private static final Message SIMPLE_MESSAGE = new Message.Builder()
+    private static final Message SIMPLE_MESSAGE = Message.builder()
             .role(Message.Role.USER)
             .parts(Collections.singletonList(new TextPart("tell me a joke")))
             .contextId("context-1234")
@@ -44,20 +44,20 @@ public class ToProtoTest {
 
     @Test
     public void convertAgentCard() {
-        AgentCard agentCard = new AgentCard.Builder()
+        AgentCard agentCard = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
                 .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
                         .stateTransitionHistory(true)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(new AgentSkill.Builder()
+                .skills(Collections.singletonList(AgentSkill.builder()
                         .id("hello_world")
                         .name("Returns hello world")
                         .description("just returns hello world")
@@ -79,20 +79,20 @@ public class ToProtoTest {
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
         assertEquals("1.0.0", result.getProtocolVersion());
-        agentCard = new AgentCard.Builder()
+        agentCard = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
                 .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
                         .stateTransitionHistory(true)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(new AgentSkill.Builder()
+                .skills(Collections.singletonList(AgentSkill.builder()
                         .id("hello_world")
                         .name("Returns hello world")
                         .description("just returns hello world")
@@ -100,7 +100,7 @@ public class ToProtoTest {
                         .examples(List.of("hi", "hello world"))
                         .build()))
                 //                .iconUrl("http://example.com/icon.svg")
-                .securitySchemes(Map.of("basic", new HTTPAuthSecurityScheme.Builder().scheme("basic").description("Basic Auth").build()))
+                .securitySchemes(Map.of("basic", HTTPAuthSecurityScheme.builder().scheme("basic").description("Basic Auth").build()))
                 .security(List.of(Map.of("oauth", List.of("read"))))
                 .protocolVersion("1.0.0")
                 .build();
@@ -132,7 +132,7 @@ public class ToProtoTest {
 
     @Test
     public void convertTask() {
-        Task task = new Task.Builder().id("cancel-task-123")
+        Task task = Task.builder().id("cancel-task-123")
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build();
@@ -142,10 +142,10 @@ public class ToProtoTest {
         assertEquals(io.a2a.grpc.TaskState.TASK_STATE_SUBMITTED, result.getStatus().getState());
         assertEquals(0, result.getArtifactsCount());
         assertEquals(0, result.getHistoryCount());
-        task = new Task.Builder().id("cancel-task-123")
+        task = Task.builder().id("cancel-task-123")
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.SUBMITTED))
-                .artifacts(List.of(new Artifact.Builder()
+                .artifacts(List.of(Artifact.builder()
                         .artifactId("11")
                         .name("artefact")
                         .parts(new TextPart("text"))
@@ -185,7 +185,7 @@ public class ToProtoTest {
         assertEquals("tell me a joke", result.getParts(0).getText());
         assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getParts(0).getFile());
         assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getParts(0).getData());
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.AGENT)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .messageId("message-1234")
@@ -203,7 +203,7 @@ public class ToProtoTest {
     @Test
     public void convertTaskPushNotificationConfig() {
         TaskPushNotificationConfig taskPushConfig = new TaskPushNotificationConfig("push-task-123",
-                new PushNotificationConfig.Builder()
+                PushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("xyz")
                         .build());
@@ -215,9 +215,9 @@ public class ToProtoTest {
         assertEquals(false, result.getPushNotificationConfig().hasAuthentication());
         taskPushConfig
                 = new TaskPushNotificationConfig("push-task-123",
-                        new PushNotificationConfig.Builder()
+                        PushNotificationConfig.builder()
                                 .token("AAAAAA")
-                                .authenticationInfo(new AuthenticationInfo(Collections.singletonList("jwt"), "credentials"))
+                                .authentication(new AuthenticationInfo(Collections.singletonList("jwt"), "credentials"))
                                 .url("http://example.com")
                                 .id("xyz")
                                 .build());
@@ -235,10 +235,10 @@ public class ToProtoTest {
 
     @Test
     public void convertTaskArtifactUpdateEvent() {
-        TaskArtifactUpdateEvent task = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent task = TaskArtifactUpdateEvent.builder()
                 .taskId("task-123")
                 .contextId("session-123")
-                .artifact(new Artifact.Builder()
+                .artifact(Artifact.builder()
                         .artifactId("11")
                         .parts(new TextPart("text"))
                         .build()).build();
@@ -253,7 +253,7 @@ public class ToProtoTest {
 
     @Test
     public void convertTaskStatusUpdateEvent() {
-        TaskStatusUpdateEvent tsue = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent tsue = TaskStatusUpdateEvent.builder()
                 .taskId("1234")
                 .contextId("xyz")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -268,7 +268,7 @@ public class ToProtoTest {
 
     @Test
     public void convertSendMessageConfiguration() {
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .build();
         SendMessageConfiguration result = ProtoUtils.ToProto.messageSendConfiguration(configuration);
@@ -281,7 +281,7 @@ public class ToProtoTest {
     public void convertTaskTimestampStatus() {
         OffsetDateTime expectedTimestamp = OffsetDateTime.parse("2024-10-05T12:34:56Z");
         TaskStatus testStatus = new TaskStatus(TaskState.COMPLETED, null, expectedTimestamp);
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
                 .status(testStatus)

@@ -25,7 +25,7 @@ public class AgentCardProducer {
         String sutJsonRpcUrl = getEnvOrDefault("SUT_JSONRPC_URL", DEFAULT_SUT_URL);
         String sutGrpcUrl = getEnvOrDefault("SUT_GRPC_URL", DEFAULT_SUT_URL);
         String sutRestcUrl = getEnvOrDefault("SUT_REST_URL", DEFAULT_SUT_URL);
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
                 .supportedInterfaces(List.of(
@@ -34,14 +34,14 @@ public class AgentCardProducer {
                         new AgentInterface(TransportProtocol.HTTP_JSON.asString(), sutRestcUrl)))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
                         .stateTransitionHistory(true)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(new AgentSkill.Builder()
+                .skills(Collections.singletonList(AgentSkill.builder()
                                 .id("hello_world")
                                 .name("Returns hello world")
                                 .description("just returns hello world")

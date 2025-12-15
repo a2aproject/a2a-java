@@ -59,14 +59,14 @@ public class ClientTaskManager {
         }
         Task task = currentTask;
         if (task == null) {
-            task = new Task.Builder()
+            task = Task.builder()
                     .status(new TaskStatus(TaskState.UNKNOWN))
                     .id(taskId)
                     .contextId(contextId == null ? "" : contextId)
                     .build();
         }
 
-        Task.Builder taskBuilder = new Task.Builder(task);
+        Task.Builder taskBuilder = Task.builder(task);
         if (taskStatusUpdateEvent.getStatus().message() != null) {
             if (task.getHistory() == null) {
                 taskBuilder.history(taskStatusUpdateEvent.getStatus().message());
@@ -95,7 +95,7 @@ public class ClientTaskManager {
         }
         Task task = currentTask;
         if (task == null) {
-            task = new Task.Builder()
+            task = Task.builder()
                     .status(new TaskStatus(TaskState.UNKNOWN))
                     .id(taskId)
                     .contextId(contextId == null ? "" : contextId)
@@ -114,7 +114,7 @@ public class ClientTaskManager {
      * @return the updated task
      */
     public Task updateWithMessage(Message message, Task task) {
-        Task.Builder taskBuilder = new Task.Builder(task);
+        Task.Builder taskBuilder = Task.builder(task);
         List<Message> history = task.getHistory();
         if (history == null) {
             history = new ArrayList<>();

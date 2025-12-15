@@ -67,20 +67,20 @@ public class RestTransportTest {
 
     private static final Logger log = Logger.getLogger(RestTransportTest.class.getName());
     private ClientAndServer server;
-    private static final AgentCard CARD = new AgentCard.Builder()
+    private static final AgentCard CARD = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
                 .supportedInterfaces(Collections.singletonList(new io.a2a.spec.AgentInterface("HTTP+JSON", "http://localhost:4001")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
                         .stateTransitionHistory(true)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(new AgentSkill.Builder()
+                .skills(Collections.singletonList(AgentSkill.builder()
                                 .id("hello_world")
                                 .name("Returns hello world")
                                 .description("just returns hello world")
@@ -108,7 +108,7 @@ public class RestTransportTest {
      */
     @Test
     public void testSendMessage() throws Exception {
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
@@ -251,17 +251,17 @@ public class RestTransportTest {
                 );
 
         RestTransport client = new RestTransport(CARD);
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me some jokes")))
                 .contextId("context-1234")
                 .messageId("message-1234")
                 .build();
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(false)
                 .build();
-        MessageSendParams params = new MessageSendParams.Builder()
+        MessageSendParams params = MessageSendParams.builder()
                 .message(message)
                 .configuration(configuration)
                 .build();
@@ -303,10 +303,10 @@ public class RestTransportTest {
         RestTransport client = new RestTransport(CARD);
         TaskPushNotificationConfig pushedConfig = new TaskPushNotificationConfig(
                 "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                new PushNotificationConfig.Builder()
+                PushNotificationConfig.builder()
                         .id("default-config-id")
                         .url("https://example.com/callback")
-                        .authenticationInfo(
+                        .authentication(
                                 new AuthenticationInfo(Collections.singletonList("jwt"), null))
                         .build());
         TaskPushNotificationConfig taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(pushedConfig, null);

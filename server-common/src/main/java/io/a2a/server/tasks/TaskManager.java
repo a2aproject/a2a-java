@@ -70,7 +70,7 @@ public class TaskManager {
         Task task = ensureTask(event.getTaskId(), event.getContextId());
 
 
-        Task.Builder builder = new Task.Builder(task)
+        Task.Builder builder = Task.builder(task)
                 .status(event.getStatus());
 
         if (task.getStatus().message() != null) {
@@ -122,7 +122,7 @@ public class TaskManager {
             status = new TaskStatus(status.state(), null, status.timestamp());
         }
         history.add(message);
-        task = new Task.Builder(task)
+        task = Task.builder(task)
                 .status(status)
                 .history(history)
                 .build();
@@ -163,7 +163,7 @@ public class TaskManager {
 
     private Task createTask(String taskId, String contextId) {
         List<Message> history = initialMessage != null ? List.of(initialMessage) : Collections.emptyList();
-        return new Task.Builder()
+        return Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(SUBMITTED))

@@ -147,13 +147,13 @@ public class MultiInstanceReplicationTest {
             AgentCard originalApp2Card = A2A.getAgentCard(app2Url);
 
             // Rebuild AgentCards with correct URLs (mapped ports, not container ports)
-            app1Card = new AgentCard.Builder(originalApp1Card)
+            app1Card = AgentCard.builder(originalApp1Card)
                     .supportedInterfaces(Collections.singletonList(
                             new AgentInterface(TransportProtocol.JSONRPC.asString(), app1Url)
                     ))
                     .build();
 
-            app2Card = new AgentCard.Builder(originalApp2Card)
+            app2Card = AgentCard.builder(originalApp2Card)
                     .supportedInterfaces(Collections.singletonList(
                             new AgentInterface(TransportProtocol.JSONRPC.asString(), app2Url)
                     ))
@@ -255,7 +255,7 @@ public class MultiInstanceReplicationTest {
         final String contextId = "replication-test-context";
 
         // Step 1: Send initial message NON-streaming to create task
-        Message initialMessage = new Message.Builder(A2A.toUserMessage("Initial test message"))
+        Message initialMessage = Message.builder(A2A.toUserMessage("Initial test message"))
                 .taskId(taskId)
                 .contextId(contextId)
                 .build();
@@ -347,7 +347,7 @@ public class MultiInstanceReplicationTest {
         int app1BeforeMsg1 = app1EventCount.get();
         int app2BeforeMsg1 = app2EventCount.get();
 
-        Message messageFromApp1 = new Message.Builder(A2A.toUserMessage("Message from app1"))
+        Message messageFromApp1 = Message.builder(A2A.toUserMessage("Message from app1"))
                 .taskId(taskId)
                 .contextId(contextId)
                 .build();
@@ -364,7 +364,7 @@ public class MultiInstanceReplicationTest {
         int app1BeforeMsg2 = app1EventCount.get();
         int app2BeforeMsg2 = app2EventCount.get();
 
-        Message messageFromApp2 = new Message.Builder(A2A.toUserMessage("Message from app2"))
+        Message messageFromApp2 = Message.builder(A2A.toUserMessage("Message from app2"))
                 .taskId(taskId)
                 .contextId(contextId)
                 .build();
@@ -381,7 +381,7 @@ public class MultiInstanceReplicationTest {
         int app1BeforeClose = app1EventCount.get();
         int app2BeforeClose = app2EventCount.get();
 
-        Message closeMessage = new Message.Builder(A2A.toUserMessage("close"))
+        Message closeMessage = Message.builder(A2A.toUserMessage("close"))
                 .taskId(taskId)
                 .contextId(contextId)
                 .build();

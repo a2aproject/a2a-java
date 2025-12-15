@@ -375,7 +375,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         }
 
         // Build new task with transformed data
-        return new Task.Builder(task)
+        return Task.builder(task)
                 .artifacts(artifacts)
                 .history(history)
                 .build();

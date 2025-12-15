@@ -22,7 +22,7 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertTask_ToProto() {
         // Arrange
-        Task task = new Task.Builder()
+        Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -67,7 +67,7 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertMessage_ToProto() {
         // Arrange
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .messageId("msg-123")
                 .contextId("context-456")
                 .role(Message.Role.USER)
@@ -114,7 +114,7 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertTaskStatusUpdateEvent_ToProto() {
         // Arrange
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("task-123")
                 .contextId("context-456")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -163,10 +163,10 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertTaskArtifactUpdateEvent_ToProto() {
         // Arrange
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
                 .taskId("task-123")
                 .contextId("context-456")
-                .artifact(new Artifact.Builder()
+                .artifact(Artifact.builder()
                         .artifactId("artifact-1")
                         .name("result")
                         .parts(new TextPart("Result text"))
@@ -230,7 +230,7 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertStreamResponse_Roundtrip_Task() {
         // Arrange
-        Task originalTask = new Task.Builder()
+        Task originalTask = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -252,7 +252,7 @@ public class StreamResponseMapperTest {
     @Test
     void testConvertStreamResponse_Roundtrip_Message() {
         // Arrange
-        Message originalMessage = new Message.Builder()
+        Message originalMessage = Message.builder()
                 .messageId("msg-123")
                 .contextId("context-456")
                 .role(Message.Role.AGENT)

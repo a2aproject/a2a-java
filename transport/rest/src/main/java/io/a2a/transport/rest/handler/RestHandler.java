@@ -192,7 +192,7 @@ public class RestHandler {
                                        ServerCallContext context) {
         try {
             // Build params
-            ListTasksParams.Builder paramsBuilder = new ListTasksParams.Builder();
+            ListTasksParams.Builder paramsBuilder = ListTasksParams.builder();
             if (contextId != null) {
                 paramsBuilder.contextId(contextId);
             }

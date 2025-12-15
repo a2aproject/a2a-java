@@ -173,7 +173,7 @@ public class PushNotificationSenderTest {
     }
 
     private Task createSampleTask(String taskId, TaskState state) {
-        return new Task.Builder()
+        return Task.builder()
                 .id(taskId)
                 .contextId("ctx456")
                 .status(new TaskStatus(state))
@@ -181,7 +181,7 @@ public class PushNotificationSenderTest {
     }
 
     private PushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
-        return new PushNotificationConfig.Builder()
+        return PushNotificationConfig.builder()
                 .url(url)
                 .id(configId)
                 .token(token)

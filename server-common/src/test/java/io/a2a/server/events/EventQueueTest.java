@@ -258,7 +258,7 @@ public class EventQueueTest {
 
     @Test
     public void testDequeueEventWait() throws Exception {
-        Event event = new TaskStatusUpdateEvent.Builder()
+        Event event = TaskStatusUpdateEvent.builder()
                 .taskId("task-123")
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -272,10 +272,10 @@ public class EventQueueTest {
 
     @Test
     public void testTaskDone() throws Exception {
-        Event event = new TaskArtifactUpdateEvent.Builder()
+        Event event = TaskArtifactUpdateEvent.builder()
                 .taskId("task-123")
                 .contextId("session-xyz")
-                .artifact(new Artifact.Builder()
+                .artifact(Artifact.builder()
                         .artifactId("11")
                         .parts(new TextPart("text"))
                         .build())

@@ -40,7 +40,7 @@ public class AgentExecutorProducer {
                 if (context.getContextId() == null) {
                     throw new IllegalArgumentException("Parameter 'contextId' may not be null");
                 }
-                task = new Task.Builder()
+                task = Task.builder()
                         .id(context.getTaskId())
                         .contextId(context.getContextId())
                         .status(new TaskStatus(TaskState.SUBMITTED))
@@ -89,7 +89,7 @@ public class AgentExecutorProducer {
 
             TaskUpdater updater = new TaskUpdater(context, eventQueue);
             updater.cancel();
-            eventQueue.enqueueEvent(new TaskStatusUpdateEvent.Builder()
+            eventQueue.enqueueEvent(TaskStatusUpdateEvent.builder()
                     .taskId(task.getId())
                     .contextId(task.getContextId())
                     .status(new TaskStatus(TaskState.CANCELED))

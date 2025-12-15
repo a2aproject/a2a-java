@@ -86,14 +86,14 @@ public class DefaultRequestHandlerTest {
             Task task = context.getTask();
             if (task == null) {
                 // First message: create SUBMITTED task
-                task = new Task.Builder()
+                task = Task.builder()
                     .id(context.getTaskId())
                     .contextId(context.getContextId())
                     .status(new TaskStatus(TaskState.SUBMITTED))
                     .build();
             } else {
                 // Subsequent messages: emit WORKING task (non-final)
-                task = new Task.Builder()
+                task = Task.builder()
                     .id(context.getTaskId())
                     .contextId(context.getContextId())
                     .status(new TaskStatus(TaskState.WORKING))
@@ -104,7 +104,7 @@ public class DefaultRequestHandlerTest {
         });
 
         // First blocking message - should return SUBMITTED task
-        Message message1 = new Message.Builder()
+        Message message1 = Message.builder()
             .messageId("msg-1")
             .role(Message.Role.USER)
             .parts(new TextPart("first message"))
@@ -121,7 +121,7 @@ public class DefaultRequestHandlerTest {
         assertTrue(task1.getStatus().state() == TaskState.SUBMITTED);
 
         // Second blocking message to SAME taskId - should not hang
-        Message message2 = new Message.Builder()
+        Message message2 = Message.builder()
             .messageId("msg-2")
             .role(Message.Role.USER)
             .parts(new TextPart("second message"))
@@ -147,7 +147,7 @@ public class DefaultRequestHandlerTest {
         String contextId = "track-ctx-1";
 
         // Create a task that will trigger background cleanup
-        Task task = new Task.Builder()
+        Task task = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.SUBMITTED))
@@ -155,7 +155,7 @@ public class DefaultRequestHandlerTest {
 
         taskStore.save(task);
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-track")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -206,7 +206,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "disc-task-1";
         String contextId = "disc-ctx-1";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("mid")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -264,7 +264,7 @@ public class DefaultRequestHandlerTest {
         String contextId = "reconn-ctx-1";
 
         // Create initial task
-        Task initialTask = new Task.Builder()
+        Task initialTask = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.WORKING))
@@ -272,7 +272,7 @@ public class DefaultRequestHandlerTest {
 
         taskStore.save(initialTask);
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-reconn")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -291,7 +291,7 @@ public class DefaultRequestHandlerTest {
             agentStarted.countDown();
 
             // Emit first event
-            Task firstEvent = new Task.Builder()
+            Task firstEvent = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
@@ -307,7 +307,7 @@ public class DefaultRequestHandlerTest {
             }
 
             // Emit second event
-            Task secondEvent = new Task.Builder()
+            Task secondEvent = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -355,7 +355,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "persist-task-1";
         String contextId = "persist-ctx-1";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-persist")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -373,7 +373,7 @@ public class DefaultRequestHandlerTest {
             agentStarted.countDown();
 
             // Emit working status
-            Task workingTask = new Task.Builder()
+            Task workingTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
@@ -388,7 +388,7 @@ public class DefaultRequestHandlerTest {
             }
 
             // Emit final completed status
-            Task completedTask = new Task.Builder()
+            Task completedTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -444,7 +444,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "blocking-fire-forget-task";
         String contextId = "blocking-fire-forget-ctx";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-blocking-fire-forget")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -452,7 +452,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendConfiguration config = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
                 .blocking(true)
                 .build();
 
@@ -508,7 +508,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "blocking-persist-task";
         String contextId = "blocking-persist-ctx";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-nonblocking-persist")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -517,7 +517,7 @@ public class DefaultRequestHandlerTest {
             .build();
 
         // Use default non-blocking behavior
-        MessageSendConfiguration config = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
                 .build();
 
         MessageSendParams params = new MessageSendParams(message, config, null);
@@ -531,7 +531,7 @@ public class DefaultRequestHandlerTest {
             agentStarted.countDown();
 
             // Emit first event (WORKING state)
-            Task workingTask = new Task.Builder()
+            Task workingTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
@@ -557,7 +557,7 @@ public class DefaultRequestHandlerTest {
 
             // Emit final event (COMPLETED state)
             // This event should be persisted to TaskStore in background
-            Task completedTask = new Task.Builder()
+            Task completedTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -615,14 +615,14 @@ public class DefaultRequestHandlerTest {
         String contextId = "fire-ctx";
 
         // Create initial task in WORKING state (non-final)
-        Task initialTask = new Task.Builder()
+        Task initialTask = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.WORKING))
             .build();
         taskStore.save(initialTask);
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-fire")
             .role(Message.Role.USER)
             .parts(new TextPart("fire and forget"))
@@ -640,7 +640,7 @@ public class DefaultRequestHandlerTest {
             agentStarted.countDown();
 
             // Emit WORKING status (non-final)
-            Task workingTask = new Task.Builder()
+            Task workingTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
@@ -699,7 +699,7 @@ public class DefaultRequestHandlerTest {
         String contextId = "completed-ctx";
 
         // Create initial task in COMPLETED state (already finalized)
-        Task completedTask = new Task.Builder()
+        Task completedTask = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.COMPLETED))
@@ -743,7 +743,7 @@ public class DefaultRequestHandlerTest {
         String taskId = "blocking-artifacts-task";
         String contextId = "blocking-artifacts-ctx";
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-blocking-artifacts")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -751,7 +751,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendConfiguration config = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
                 .blocking(true)
                 .build();
 
@@ -827,14 +827,14 @@ public class DefaultRequestHandlerTest {
         );
 
         // Create push notification config
-        PushNotificationConfig pushConfig = new PushNotificationConfig.Builder()
+        PushNotificationConfig pushConfig = PushNotificationConfig.builder()
             .id("config-1")
             .url("https://example.com/webhook")
             .token("test-token-123")
             .build();
 
         // Create message with pushNotificationConfig
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-push-config")
             .role(Message.Role.USER)
             .parts(new TextPart("test message"))
@@ -842,7 +842,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendConfiguration config = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
             .blocking(true)
             .pushNotificationConfig(pushConfig)
             .build();
@@ -897,7 +897,7 @@ public class DefaultRequestHandlerTest {
         );
 
         // Create EXISTING task in store
-        Task existingTask = new Task.Builder()
+        Task existingTask = Task.builder()
             .id(taskId)
             .contextId(contextId)
             .status(new TaskStatus(TaskState.WORKING))
@@ -905,13 +905,13 @@ public class DefaultRequestHandlerTest {
         taskStore.save(existingTask);
 
         // Create push notification config
-        PushNotificationConfig pushConfig = new PushNotificationConfig.Builder()
+        PushNotificationConfig pushConfig = PushNotificationConfig.builder()
             .id("config-existing-1")
             .url("https://example.com/existing-webhook")
             .token("existing-token-789")
             .build();
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
             .messageId("msg-push-existing")
             .role(Message.Role.USER)
             .parts(new TextPart("update existing task"))
@@ -919,7 +919,7 @@ public class DefaultRequestHandlerTest {
             .contextId(contextId)
             .build();
 
-        MessageSendConfiguration config = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
             .blocking(true)
             .pushNotificationConfig(pushConfig)
             .build();
@@ -979,7 +979,7 @@ public class DefaultRequestHandlerTest {
                     executeCallback.call(context, eventQueue);
                 } else {
                     // No custom callback - emit default completion event
-                    Task completedTask = new Task.Builder()
+                    Task completedTask = Task.builder()
                         .id(context.getTaskId())
                         .contextId(context.getContextId())
                         .status(new TaskStatus(TaskState.COMPLETED))

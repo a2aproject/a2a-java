@@ -7,13 +7,12 @@ import java.util.concurrent.ConcurrentMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import org.jspecify.annotations.Nullable;
-
 import io.a2a.spec.Artifact;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
+import org.jspecify.annotations.Nullable;
 
 @ApplicationScoped
 public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
@@ -147,7 +146,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
         }
 
         // Build new task with transformed data
-        return new Task.Builder(task)
+        return Task.builder(task)
                 .artifacts(artifacts)
                 .history(history)
                 .build();

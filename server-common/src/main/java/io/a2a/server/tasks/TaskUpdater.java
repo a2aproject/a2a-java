@@ -50,7 +50,7 @@ public class TaskUpdater {
                 terminalStateReached.set(true);
             }
             
-            TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+            TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                     .taskId(taskId)
                     .contextId(contextId)
                     .isFinal(isFinal)
@@ -81,11 +81,11 @@ public class TaskUpdater {
         if (artifactId == null) {
             artifactId = UUID.randomUUID().toString();
         }
-        TaskArtifactUpdateEvent event = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
                 .taskId(taskId)
                 .contextId(contextId)
                 .artifact(
-                        new Artifact.Builder()
+                        Artifact.builder()
                                 .artifactId(artifactId)
                                 .name(name)
                                 .parts(parts)
@@ -179,7 +179,7 @@ public class TaskUpdater {
     }
 
     public Message newAgentMessage(List<Part<?>> parts, @Nullable Map<String, Object> metadata) {
-        return new Message.Builder()
+        return Message.builder()
                 .role(Message.Role.AGENT)
                 .taskId(taskId)
                 .contextId(contextId)

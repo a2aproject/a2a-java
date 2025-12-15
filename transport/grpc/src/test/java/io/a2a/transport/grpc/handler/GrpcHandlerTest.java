@@ -314,7 +314,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             eventQueue.enqueueEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        io.a2a.spec.Task task = new io.a2a.spec.Task.Builder(AbstractA2ARequestHandlerTest.MINIMAL_TASK)
+        io.a2a.spec.Task task = io.a2a.spec.Task.builder(AbstractA2ARequestHandlerTest.MINIMAL_TASK)
                 .history(new ArrayList<>())
                 .build();
         taskStore.save(task);
@@ -363,22 +363,22 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageStreamNewMessageExistingTaskSuccessMocks() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
 
-        io.a2a.spec.Task task = new io.a2a.spec.Task.Builder(AbstractA2ARequestHandlerTest.MINIMAL_TASK)
+        io.a2a.spec.Task task = io.a2a.spec.Task.builder(AbstractA2ARequestHandlerTest.MINIMAL_TASK)
                 .history(new ArrayList<>())
                 .build();
         taskStore.save(task);
 
         // This is used to send events from a mock
         List<Event> events = List.of(
-                new TaskArtifactUpdateEvent.Builder()
+                TaskArtifactUpdateEvent.builder()
                         .taskId(task.getId())
                         .contextId(task.getContextId())
-                        .artifact(new Artifact.Builder()
+                        .artifact(Artifact.builder()
                                 .artifactId("11")
                                 .parts(new TextPart("text"))
                                 .build())
                         .build(),
-                new TaskStatusUpdateEvent.Builder()
+                TaskStatusUpdateEvent.builder()
                         .taskId(task.getId())
                         .contextId(task.getContextId())
                         .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.WORKING))
@@ -414,15 +414,15 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         List<Event> events = List.of(
                 AbstractA2ARequestHandlerTest.MINIMAL_TASK,
-                new TaskArtifactUpdateEvent.Builder()
+                TaskArtifactUpdateEvent.builder()
                         .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId())
                         .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getContextId())
-                        .artifact(new Artifact.Builder()
+                        .artifact(Artifact.builder()
                                 .artifactId("11")
                                 .parts(new TextPart("text"))
                                 .build())
                         .build(),
-                new TaskStatusUpdateEvent.Builder()
+                TaskStatusUpdateEvent.builder()
                         .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId())
                         .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getContextId())
                         .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.COMPLETED))
@@ -543,15 +543,15 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         queueManager.createOrTap(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId());
 
         List<Event> events = List.of(
-                new TaskArtifactUpdateEvent.Builder()
+                TaskArtifactUpdateEvent.builder()
                         .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId())
                         .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getContextId())
-                        .artifact(new Artifact.Builder()
+                        .artifact(Artifact.builder()
                                 .artifactId("11")
                                 .parts(new TextPart("text"))
                                 .build())
                         .build(),
-                new TaskStatusUpdateEvent.Builder()
+                TaskStatusUpdateEvent.builder()
                         .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getId())
                         .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.getContextId())
                         .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.WORKING))

@@ -104,17 +104,17 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
                 .messageId("message-1234")
                 .build();
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(true)
                 .build();
-        MessageSendParams params = new MessageSendParams.Builder()
+        MessageSendParams params = MessageSendParams.builder()
                 .message(message)
                 .configuration(configuration)
                 .build();
@@ -152,17 +152,17 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
                 .messageId("message-1234")
                 .build();
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(true)
                 .build();
-        MessageSendParams params = new MessageSendParams.Builder()
+        MessageSendParams params = MessageSendParams.builder()
                 .message(message)
                 .configuration(configuration)
                 .build();
@@ -194,17 +194,17 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
                 .messageId("message-1234")
                 .build();
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(true)
                 .build();
-        MessageSendParams params = new MessageSendParams.Builder()
+        MessageSendParams params = MessageSendParams.builder()
                 .message(message)
                 .configuration(configuration)
                 .build();
@@ -339,10 +339,10 @@ public class JSONRPCTransportTest {
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         TaskPushNotificationConfig taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(
                 new TaskPushNotificationConfig("de38c76d-d54c-436c-8b9f-4c2703648d64",
-                        new PushNotificationConfig.Builder()
+                        PushNotificationConfig.builder()
                                 .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
                                 .url("https://example.com/callback")
-                                .authenticationInfo(new AuthenticationInfo(Collections.singletonList("jwt"),
+                                .authentication(new AuthenticationInfo(Collections.singletonList("jwt"),
                                         null))
                                 .build()), null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
@@ -532,7 +532,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
                         new TextPart("analyze this image"),
@@ -541,11 +541,11 @@ public class JSONRPCTransportTest {
                 .contextId("context-1234")
                 .messageId("message-1234-with-file")
                 .build();
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(true)
                 .build();
-        MessageSendParams params = new MessageSendParams.Builder()
+        MessageSendParams params = MessageSendParams.builder()
                 .message(message)
                 .configuration(configuration)
                 .build();
@@ -592,7 +592,7 @@ public class JSONRPCTransportTest {
         data.put("location", "San Francisco");
         data.put("timestamp", "2024-01-15T10:30:00Z");
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
                         new TextPart("process this data"),
@@ -601,11 +601,11 @@ public class JSONRPCTransportTest {
                 .contextId("context-1234")
                 .messageId("message-1234-with-data")
                 .build();
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(true)
                 .build();
-        MessageSendParams params = new MessageSendParams.Builder()
+        MessageSendParams params = MessageSendParams.builder()
                 .message(message)
                 .configuration(configuration)
                 .build();
@@ -649,7 +649,7 @@ public class JSONRPCTransportTest {
         data.put("dataPoints", List.of(10, 20, 30, 40));
         data.put("labels", List.of("Q1", "Q2", "Q3", "Q4"));
 
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(
                         new TextPart("analyze this data and image"),
@@ -659,11 +659,11 @@ public class JSONRPCTransportTest {
                 .contextId("context-1234")
                 .messageId("message-1234-with-mixed")
                 .build();
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(true)
                 .build();
-        MessageSendParams params = new MessageSendParams.Builder()
+        MessageSendParams params = MessageSendParams.builder()
                 .message(message)
                 .configuration(configuration)
                 .build();

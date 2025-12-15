@@ -301,7 +301,7 @@ public class JSONRPCTransport implements ClientTransport {
                 return agentCard;
             }
 
-            GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = new GetAuthenticatedExtendedCardRequest.Builder()
+            GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = GetAuthenticatedExtendedCardRequest.builder()
                     .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
                     .build(); // id will be randomly generated
 

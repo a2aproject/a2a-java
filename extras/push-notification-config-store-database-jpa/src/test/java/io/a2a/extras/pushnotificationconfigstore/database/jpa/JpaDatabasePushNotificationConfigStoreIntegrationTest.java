@@ -78,7 +78,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         // Simple test to verify the mock notification mechanism works
         mockPushNotificationSender.clear();
 
-        Task testTask = new io.a2a.spec.Task.Builder()
+        Task testTask = Task.builder()
             .id("direct-test-task")
             .contextId("test-context")
             .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.SUBMITTED))
@@ -99,7 +99,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         final String contextId = "test-context";
 
         // Step 1: Create the task
-        Message createMessage = new Message.Builder()
+        Message createMessage = Message.builder()
             .role(Message.Role.USER)
             .parts(List.of(new TextPart("create"))) // Send the "create" command
             .taskId(taskId)
@@ -113,7 +113,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         assertTrue(createLatch.await(10, TimeUnit.SECONDS), "Timeout waiting for task creation");
 
         // Step 2: Set the push notification configuration
-        PushNotificationConfig pushConfig = new PushNotificationConfig.Builder()
+        PushNotificationConfig pushConfig = PushNotificationConfig.builder()
             .url("http://localhost:9999/mock-endpoint")
             .token("test-token-123")
             .id("test-config-1")
@@ -134,7 +134,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         assertEquals("test-token-123", storedConfig.pushNotificationConfig().token());
 
         // Step 4: Update the task to trigger the notification
-        Message updateMessage = new Message.Builder()
+        Message updateMessage = Message.builder()
             .role(Message.Role.USER)
             .parts(List.of(new TextPart("update"))) // Send the "update" command
             .taskId(taskId)

@@ -31,12 +31,12 @@ public class AgentCardProducer {
         String port = System.getProperty("test.agent.card.port", "8081");
         String preferredTransport = loadPreferredTransportFromProperties();
 
-        AgentCard.Builder builder = new AgentCard.Builder()
+        AgentCard.Builder builder = AgentCard.builder()
                 .name("test-card")
                 .description("A test agent card")
                 .version("1.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
                         .stateTransitionHistory(true)

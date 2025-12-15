@@ -1,5 +1,6 @@
 package io.a2a.grpc.mapper;
 
+import io.a2a.spec.SubscribeToTaskRequest;
 import org.mapstruct.Mapper;
 
 /**
@@ -27,7 +28,7 @@ public interface SubscribeToTaskRequestMapper {
      * @param domain the domain SubscribeToTaskRequest
      * @return the proto SubscribeToTaskRequest
      */
-    default io.a2a.grpc.SubscribeToTaskRequest toProto(io.a2a.spec.SubscribeToTaskRequest domain) {
+    default io.a2a.grpc.SubscribeToTaskRequest toProto(SubscribeToTaskRequest domain) {
         if (domain == null || domain.getParams() == null || domain.getParams().id() == null) {
             return null;
         }
@@ -43,11 +44,11 @@ public interface SubscribeToTaskRequestMapper {
      * @param proto the proto SubscribeToTaskRequest
      * @return the domain SubscribeToTaskRequest
      */
-    default io.a2a.spec.SubscribeToTaskRequest fromProto(io.a2a.grpc.SubscribeToTaskRequest proto) {
+    default SubscribeToTaskRequest fromProto(io.a2a.grpc.SubscribeToTaskRequest proto) {
         if (proto == null || proto.getName() == null) {
             return null;
         }
-        return new io.a2a.spec.SubscribeToTaskRequest.Builder()
+        return SubscribeToTaskRequest.builder()
                 .params(new io.a2a.spec.TaskIdParams(ResourceNameParser.extractTaskId(proto.getName())))
                 .build();
     }

@@ -9,10 +9,9 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Test;
-
 import io.a2a.json.JsonProcessingException;
 import io.a2a.json.JsonUtil;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for Task serialization and deserialization using Gson.
@@ -67,7 +66,7 @@ class TaskSerializationTest {
 
     @Test
     void testTaskWithArtifacts() throws JsonProcessingException {
-        Artifact artifact = new Artifact.Builder()
+        Artifact artifact = Artifact.builder()
                 .artifactId("artifact-1")
                 .name("Test Artifact")
                 .description("Description of artifact")
@@ -152,7 +151,7 @@ class TaskSerializationTest {
                                 .build()
                 ))
                 .artifacts(List.of(
-                        new Artifact.Builder()
+                        Artifact.builder()
                                 .artifactId("artifact-1")
                                 .parts(List.of(new TextPart("Artifact content")))
                                 .build()
@@ -231,7 +230,7 @@ class TaskSerializationTest {
     void testTaskWithFilePartBytes() throws JsonProcessingException {
         FilePart filePart = new FilePart(new FileWithBytes("application/pdf", "document.pdf", "base64data"));
 
-        Artifact artifact = new Artifact.Builder()
+        Artifact artifact = Artifact.builder()
                 .artifactId("file-artifact")
                 .parts(List.of(filePart))
                 .build();
@@ -268,7 +267,7 @@ class TaskSerializationTest {
     void testTaskWithFilePartUri() throws JsonProcessingException {
         FilePart filePart = new FilePart(new FileWithUri("image/png", "photo.png", "https://example.com/photo.png"));
 
-        Artifact artifact = new Artifact.Builder()
+        Artifact artifact = Artifact.builder()
                 .artifactId("uri-artifact")
                 .parts(List.of(filePart))
                 .build();
@@ -302,7 +301,7 @@ class TaskSerializationTest {
     void testTaskWithDataPart() throws JsonProcessingException {
         DataPart dataPart = new DataPart(Map.of("temperature", 22.5, "humidity", 65));
 
-        Artifact artifact = new Artifact.Builder()
+        Artifact artifact = Artifact.builder()
                 .artifactId("data-artifact")
                 .parts(List.of(dataPart))
                 .build();
@@ -351,7 +350,7 @@ class TaskSerializationTest {
                                 .build()
                 ))
                 .artifacts(List.of(
-                        new Artifact.Builder()
+                        Artifact.builder()
                                 .artifactId("artifact-1")
                                 .parts(List.of(new TextPart("Content")))
                                 .build()
@@ -679,7 +678,7 @@ class TaskSerializationTest {
 
     @Test
     void testTaskWithMixedPartTypes() throws JsonProcessingException {
-        Artifact artifact = new Artifact.Builder()
+        Artifact artifact = Artifact.builder()
                 .artifactId("mixed-artifact")
                 .parts(List.of(
                         new TextPart("Text content"),

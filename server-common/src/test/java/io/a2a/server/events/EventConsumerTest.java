@@ -94,15 +94,15 @@ public class EventConsumerTest {
     public void testConsumeAllMultipleEvents() throws JsonProcessingException {
         List<Event> events = List.of(
                 Utils.unmarshalFrom(MINIMAL_TASK, Task.class),
-                new TaskArtifactUpdateEvent.Builder()
+                TaskArtifactUpdateEvent.builder()
                         .taskId("task-123")
                         .contextId("session-xyz")
-                        .artifact(new Artifact.Builder()
+                        .artifact(Artifact.builder()
                                 .artifactId("11")
                                 .parts(new TextPart("text"))
                                 .build())
                         .build(),
-                new TaskStatusUpdateEvent.Builder()
+                TaskStatusUpdateEvent.builder()
                         .taskId("task-123")
                         .contextId("session-xyz")
                         .status(new TaskStatus(TaskState.WORKING))
@@ -155,15 +155,15 @@ public class EventConsumerTest {
     public void testConsumeUntilMessage() throws Exception {
         List<Event> events = List.of(
                 Utils.unmarshalFrom(MINIMAL_TASK, Task.class),
-                new TaskArtifactUpdateEvent.Builder()
+                TaskArtifactUpdateEvent.builder()
                         .taskId("task-123")
                         .contextId("session-xyz")
-                        .artifact(new Artifact.Builder()
+                        .artifact(Artifact.builder()
                                 .artifactId("11")
                                 .parts(new TextPart("text"))
                                 .build())
                         .build(),
-                new TaskStatusUpdateEvent.Builder()
+                TaskStatusUpdateEvent.builder()
                         .taskId("task-123")
                         .contextId("session-xyz")
                         .status(new TaskStatus(TaskState.WORKING))
@@ -215,7 +215,7 @@ public class EventConsumerTest {
     @Test
     public void testConsumeMessageEvents() throws Exception {
         Message message = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.class);
-        Message message2 = new Message.Builder(message).build();
+        Message message2 = Message.builder(message).build();
 
         List<Event> events = List.of(message, message2);
 

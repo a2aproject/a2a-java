@@ -63,7 +63,7 @@ public class JpaPushNotificationConfigStoreTest {
     }
 
     private Task createSampleTask(String taskId, TaskState state) {
-        return new Task.Builder()
+        return Task.builder()
                 .id(taskId)
                 .contextId("ctx456")
                 .status(new TaskStatus(state))
@@ -71,7 +71,7 @@ public class JpaPushNotificationConfigStoreTest {
     }
 
     private PushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
-        return new PushNotificationConfig.Builder()
+        return PushNotificationConfig.builder()
                 .url(url)
                 .id(configId)
                 .token(token)
@@ -133,7 +133,7 @@ public class JpaPushNotificationConfigStoreTest {
     @Transactional
     public void testSetInfoWithoutConfigId() {
         String taskId = "task1";
-        PushNotificationConfig initialConfig = new PushNotificationConfig.Builder()
+        PushNotificationConfig initialConfig = PushNotificationConfig.builder()
                 .url("http://initial.url/callback")
                 .build(); // No ID set
 
@@ -144,7 +144,7 @@ public class JpaPushNotificationConfigStoreTest {
         assertEquals(1, configs.size());
         assertEquals(taskId, configs.get(0).id());
 
-        PushNotificationConfig updatedConfig = new PushNotificationConfig.Builder()
+        PushNotificationConfig updatedConfig = PushNotificationConfig.builder()
                 .url("http://initial.url/callback_new")
                 .build(); // No ID set
 
@@ -213,7 +213,7 @@ public class JpaPushNotificationConfigStoreTest {
     @Transactional
     public void testDeleteInfoWithNullConfigId() {
         String taskId = "task_delete_null_config";
-        PushNotificationConfig config = new PushNotificationConfig.Builder()
+        PushNotificationConfig config = PushNotificationConfig.builder()
                 .url("http://delete.this/callback")
                 .build(); // No ID set, will use taskId
         configStore.setInfo(taskId, config);

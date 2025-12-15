@@ -21,13 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class AgentCardValidatorTest {
 
     private AgentCard.Builder createTestAgentCardBuilder() {
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("Test Agent")
                 .description("Test Description")
                 .supportedInterfaces(Collections.singletonList(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
                 .version("1.0.0")
-                .capabilities(new AgentCapabilities.Builder().build())
+                .capabilities(AgentCapabilities.builder().build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(Collections.emptyList());

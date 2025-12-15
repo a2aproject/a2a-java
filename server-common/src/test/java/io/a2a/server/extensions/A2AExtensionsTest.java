@@ -64,16 +64,16 @@ class A2AExtensionsTest {
 
     @Test
     void testFindExtensionByUri() {
-        AgentExtension ext1 = new AgentExtension.Builder()
+        AgentExtension ext1 = AgentExtension.builder()
                 .uri("foo")
                 .description("The Foo extension")
                 .build();
-        AgentExtension ext2 = new AgentExtension.Builder()
+        AgentExtension ext2 = AgentExtension.builder()
                 .uri("bar")
                 .description("The Bar extension")
                 .build();
 
-        AgentCard card = new AgentCard.Builder()
+        AgentCard card = AgentCard.builder()
                 .name("Test Agent")
                 .description("Test Agent Description")
                 .version("1.0")
@@ -81,7 +81,7 @@ class A2AExtensionsTest {
                 .skills(Collections.emptyList())
                 .defaultInputModes(Arrays.asList("text/plain"))
                 .defaultOutputModes(Arrays.asList("text/plain"))
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .extensions(Arrays.asList(ext1, ext2))
                         .build())
                 .build();
@@ -93,7 +93,7 @@ class A2AExtensionsTest {
 
     @Test
     void testFindExtensionByUriNoExtensions() {
-        AgentCard card = new AgentCard.Builder()
+        AgentCard card = AgentCard.builder()
                 .name("Test Agent")
                 .description("Test Agent Description")
                 .version("1.0")
@@ -101,7 +101,7 @@ class A2AExtensionsTest {
                 .skills(Collections.emptyList())
                 .defaultInputModes(Arrays.asList("text/plain"))
                 .defaultOutputModes(Arrays.asList("text/plain"))
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .extensions(null)
                         .build())
                 .build();
@@ -112,7 +112,7 @@ class A2AExtensionsTest {
     @Test
     void testFindExtensionByUriNoCapabilities() {
         // Test with empty capabilities (no extensions list)
-        AgentCard card = new AgentCard.Builder()
+        AgentCard card = AgentCard.builder()
                 .name("Test Agent")
                 .description("Test Agent Description")
                 .version("1.0")
@@ -120,7 +120,7 @@ class A2AExtensionsTest {
                 .skills(Collections.emptyList())
                 .defaultInputModes(Arrays.asList("text/plain"))
                 .defaultOutputModes(Arrays.asList("text/plain"))
-                .capabilities(new AgentCapabilities.Builder().build())
+                .capabilities(AgentCapabilities.builder().build())
                 .build();
 
         assertNull(A2AExtensions.findExtensionByUri(card, "foo"));

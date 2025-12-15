@@ -15,6 +15,7 @@ import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidParamsJsonMappingException;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.JSONRPCRequest;
+import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigResponse;
 import io.a2a.spec.TaskPushNotificationConfig;
@@ -261,7 +262,7 @@ public class JSONRPCUtilsTest {
     public void testGenerateSetTaskPushNotificationConfigResponse_Success() throws Exception {
         TaskPushNotificationConfig config = new TaskPushNotificationConfig(
             "task-123",
-            new io.a2a.spec.PushNotificationConfig.Builder()
+            PushNotificationConfig.builder()
                 .url("https://example.com/callback")
                 .id("config-456")
                 .build()

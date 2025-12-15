@@ -113,19 +113,19 @@ public class WeatherAgentCardProducer {
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("Weather Agent")
                 .description("Helps with weather")
                 .url("http://localhost:10001")
                 .version("1.0.0")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(false)
                         .stateTransitionHistory(false)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(new AgentSkill.Builder()
+                .skills(Collections.singletonList(AgentSkill.builder()
                         .id("weather_search")
                         .name("Search weather")
                         .description("Helps with weather in cities or states")
@@ -565,12 +565,12 @@ TaskPushNotificationConfig config = client.getTaskPushNotificationConfiguration(
 
 ```java
 // Set task push notification configuration
-PushNotificationConfig pushNotificationConfig = new PushNotificationConfig.Builder()
+PushNotificationConfig pushNotificationConfig = PushNotificationConfig.builder()
         .url("https://example.com/callback")
         .authenticationInfo(new AuthenticationInfo(Collections.singletonList("jwt"), null))
         .build();
 
-TaskPushNotificationConfig taskConfig = new TaskPushNotificationConfig.Builder()
+TaskPushNotificationConfig taskConfig = TaskPushNotificationConfig.builder()
         .taskId("task-1234")
         .pushNotificationConfig(pushNotificationConfig)
         .build();

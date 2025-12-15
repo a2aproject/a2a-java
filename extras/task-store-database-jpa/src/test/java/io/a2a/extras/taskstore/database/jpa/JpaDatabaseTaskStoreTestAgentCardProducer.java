@@ -23,13 +23,13 @@ public class JpaDatabaseTaskStoreTestAgentCardProducer {
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("JPA TaskStore Integration Test Agent")
                 .description("Test agent for verifying JPA TaskStore integration")
                 .version("1.0.0")
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
-                .capabilities(new AgentCapabilities.Builder().build())
+                .capabilities(AgentCapabilities.builder().build())
                 .skills(List.of())
                 .supportedInterfaces(Collections.singletonList(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:8081")

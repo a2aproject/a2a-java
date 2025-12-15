@@ -185,7 +185,7 @@ public class SSEEventListenerTest {
 
     @Test
     public void testFinalTaskStatusUpdateEventCancels() {
-        TaskStatusUpdateEvent tsue = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent tsue = TaskStatusUpdateEvent.builder()
                 .taskId("1234")
                 .contextId("xyz")
                 .status(new TaskStatus(TaskState.COMPLETED))

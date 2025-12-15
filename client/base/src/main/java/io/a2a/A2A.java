@@ -106,7 +106,7 @@ public class A2A {
     }
 
     private static Message toMessage(String text, Message.Role role, String messageId, String contextId, String taskId) {
-        Message.Builder messageBuilder = new Message.Builder()
+        Message.Builder messageBuilder = Message.builder()
                 .role(role)
                 .parts(Collections.singletonList(new TextPart(text)))
                 .contextId(contextId)
@@ -118,7 +118,7 @@ public class A2A {
     }
 
     private static Message toMessage(List<Part<?>> parts, Message.Role role, String messageId, String contextId, String taskId) {
-        Message.Builder messageBuilder = new Message.Builder()
+        Message.Builder messageBuilder = Message.builder()
                 .role(role)
                 .parts(parts)
                 .contextId(contextId)

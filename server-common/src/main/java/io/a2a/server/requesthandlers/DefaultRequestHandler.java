@@ -182,7 +182,7 @@ public class DefaultRequestHandler implements RequestHandler {
         List<Message> limitedHistory = task.getHistory().subList(
                 task.getHistory().size() - historyLength,
                 task.getHistory().size());
-        return new Task.Builder(task)
+        return Task.builder(task)
                 .history(limitedHistory)
                 .build();
     }

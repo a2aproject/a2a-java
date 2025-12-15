@@ -37,7 +37,7 @@ class ReactiveMessagingReplicationStrategyTest {
 
     @BeforeEach
     public void setUp() {
-        testEvent = new TaskStatusUpdateEvent.Builder()
+        testEvent = TaskStatusUpdateEvent.builder()
                 .taskId("test-task")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -47,7 +47,7 @@ class ReactiveMessagingReplicationStrategyTest {
 
     private String createValidJsonMessage(String taskId, String contextId) throws Exception {
         // Create a proper ReplicatedEventQueueItem JSON with StreamingEventKind
-        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))

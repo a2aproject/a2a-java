@@ -27,20 +27,20 @@ public final class MultiInstanceReplicationAgentCards {
     public static AgentCard createAgentCard(int instanceNumber, int port) {
         String url = "http://localhost:" + port;
 
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("Multi-Instance Test Agent " + instanceNumber)
                 .description("Test agent for multi-instance replication testing - Instance " + instanceNumber)
                 .supportedInterfaces(List.of(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), url)))
                 .version("1.0.0")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(false)
                         .stateTransitionHistory(false)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(new AgentSkill.Builder()
+                .skills(Collections.singletonList(AgentSkill.builder()
                                 .id("replication_test")
                                 .name("Replication Test")
                                 .description("Fire-and-forget agent for testing replication")

@@ -133,7 +133,7 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with a Task
-        Task responseTask = new Task.Builder()
+        Task responseTask = Task.builder()
                 .id("task-123")
                 .contextId("context-1234")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -217,7 +217,7 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with a Task
-        Task responseTask = new Task.Builder()
+        Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -253,7 +253,7 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with a Task
-        Task responseTask = new Task.Builder()
+        Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
                 .status(new TaskStatus(TaskState.CANCELED))
@@ -333,10 +333,10 @@ public class A2AServerRoutesTest {
         // Create a real response with a TaskPushNotificationConfig
         TaskPushNotificationConfig responseConfig = new TaskPushNotificationConfig(
                 "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                new PushNotificationConfig.Builder()
+                PushNotificationConfig.builder()
                         .id("config-123")
                         .url("https://example.com/callback")
-                        .authenticationInfo(new AuthenticationInfo(Collections.singletonList("jwt"), null))
+                        .authentication(new AuthenticationInfo(Collections.singletonList("jwt"), null))
                         .build()
         );
         SetTaskPushNotificationConfigResponse realResponse = new SetTaskPushNotificationConfigResponse("1", responseConfig);
@@ -373,7 +373,7 @@ public class A2AServerRoutesTest {
         // Create a real response with a TaskPushNotificationConfig
         TaskPushNotificationConfig responseConfig = new TaskPushNotificationConfig(
                 "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                new PushNotificationConfig.Builder()
+                PushNotificationConfig.builder()
                         .id("config-456")
                         .url("https://example.com/callback")
                         .build()
@@ -412,7 +412,7 @@ public class A2AServerRoutesTest {
         // Create a real response with a list of TaskPushNotificationConfig
         TaskPushNotificationConfig config = new TaskPushNotificationConfig(
                 "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                new PushNotificationConfig.Builder()
+                PushNotificationConfig.builder()
                         .id("config-123")
                         .url("https://example.com/callback")
                         .build()
@@ -474,12 +474,12 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with an AgentCard
-        AgentCard agentCard = new AgentCard.Builder()
+        AgentCard agentCard = AgentCard.builder()
                 .name("Test Agent")
                 .description("Test agent description")
                 .version("1.0.0")
                 .protocolVersion("1.0.0")
-                .capabilities(new AgentCapabilities.Builder().build())
+                .capabilities(AgentCapabilities.builder().build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(Collections.emptyList())

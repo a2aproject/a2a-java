@@ -11,14 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.mockito.ArgumentCaptor;
-
 import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
@@ -27,6 +20,11 @@ import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 class InMemoryPushNotificationConfigStoreTest {
 
@@ -74,7 +72,7 @@ class InMemoryPushNotificationConfigStoreTest {
     }
 
     private Task createSampleTask(String taskId, TaskState state) {
-        return new Task.Builder()
+        return Task.builder()
                 .id(taskId)
                 .contextId("ctx456")
                 .status(new TaskStatus(state))
@@ -82,7 +80,7 @@ class InMemoryPushNotificationConfigStoreTest {
     }
 
     private PushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
-        return new PushNotificationConfig.Builder()
+        return PushNotificationConfig.builder()
                 .url(url)
                 .id(configId)
                 .token(token)
@@ -141,7 +139,7 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testSetInfoWithoutConfigId() {
         String taskId = "task1";
-        PushNotificationConfig initialConfig = new PushNotificationConfig.Builder()
+        PushNotificationConfig initialConfig = PushNotificationConfig.builder()
                 .url("http://initial.url/callback")
                 .build(); // No ID set
 
@@ -152,7 +150,7 @@ class InMemoryPushNotificationConfigStoreTest {
         assertEquals(1, configs.size());
         assertEquals(taskId, configs.get(0).id());
 
-        PushNotificationConfig updatedConfig = new PushNotificationConfig.Builder()
+        PushNotificationConfig updatedConfig = PushNotificationConfig.builder()
                 .url("http://initial.url/callback_new")
                 .build(); // No ID set
 
@@ -213,7 +211,7 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testDeleteInfoWithNullConfigId() {
         String taskId = "task_delete_null_config";
-        PushNotificationConfig config = new PushNotificationConfig.Builder()
+        PushNotificationConfig config = PushNotificationConfig.builder()
                 .url("http://delete.this/callback")
                 .build(); // No ID set, will use taskId
         configStore.setInfo(taskId, config);

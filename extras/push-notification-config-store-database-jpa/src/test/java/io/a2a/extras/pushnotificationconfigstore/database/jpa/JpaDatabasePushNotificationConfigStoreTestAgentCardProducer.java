@@ -24,7 +24,7 @@ public class JpaDatabasePushNotificationConfigStoreTestAgentCardProducer {
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("JPA PushNotificationConfigStore Integration Test Agent")
                 .description("Test agent for verifying JPA PushNotificationConfigStore integration")
                 .version("1.0.0")
@@ -33,7 +33,7 @@ public class JpaDatabasePushNotificationConfigStoreTestAgentCardProducer {
                                 new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:8081"))) // Port is managed by QuarkusTest
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .pushNotifications(true) // Enable push notifications
                         .streaming(true) // Enable streaming for automatic push notifications
                         .build())

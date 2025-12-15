@@ -53,6 +53,7 @@ import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.JSONRPCErrorResponse;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.MethodNotFoundError;
@@ -89,31 +90,31 @@ import org.junit.jupiter.api.Timeout;
  */
 public abstract class AbstractA2AServerTest {
 
-    protected static final Task MINIMAL_TASK = new Task.Builder()
+    protected static final Task MINIMAL_TASK = Task.builder()
             .id("task-123")
             .contextId("session-xyz")
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    private static final Task CANCEL_TASK = new Task.Builder()
+    private static final Task CANCEL_TASK = Task.builder()
             .id("cancel-task-123")
             .contextId("session-xyz")
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    private static final Task CANCEL_TASK_NOT_SUPPORTED = new Task.Builder()
+    private static final Task CANCEL_TASK_NOT_SUPPORTED = Task.builder()
             .id("cancel-task-not-supported-123")
             .contextId("session-xyz")
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    private static final Task SEND_MESSAGE_NOT_SUPPORTED = new Task.Builder()
+    private static final Task SEND_MESSAGE_NOT_SUPPORTED = Task.builder()
             .id("task-not-supported-123")
             .contextId("session-xyz")
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    protected static final Message MESSAGE = new Message.Builder()
+    protected static final Message MESSAGE = Message.builder()
             .messageId("111")
             .role(Message.Role.AGENT)
             .parts(new TextPart("test message"))
@@ -153,7 +154,7 @@ public abstract class AbstractA2AServerTest {
 
     @Test
     public void testTaskStoreMethodsSanityTest() throws Exception {
-        Task task = new Task.Builder(MINIMAL_TASK).id("abcde").build();
+        Task task = Task.builder(MINIMAL_TASK).id("abcde").build();
         saveTaskInTaskStore(task);
         Task saved = getTaskFromTaskStore(task.getId());
         assertEquals(task.getId(), saved.getId());
@@ -243,17 +244,17 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testListTasksSuccess() throws Exception {
         // Create multiple tasks with different contexts and states
-        Task task1 = new Task.Builder()
+        Task task1 = Task.builder()
                 .id("list-task-1")
                 .contextId("context-1")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build();
-        Task task2 = new Task.Builder()
+        Task task2 = Task.builder()
                 .id("list-task-2")
                 .contextId("context-1")
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
-        Task task3 = new Task.Builder()
+        Task task3 = Task.builder()
                 .id("list-task-3")
                 .contextId("context-2")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -265,7 +266,7 @@ public abstract class AbstractA2AServerTest {
 
         try {
             // Test listing all tasks (no filters)
-            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder().build();
+            io.a2a.spec.ListTasksParams params = ListTasksParams.builder().build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
 
             assertNotNull(result);
@@ -282,17 +283,17 @@ public abstract class AbstractA2AServerTest {
 
     @Test
     public void testListTasksFilterByContextId() throws Exception {
-        Task task1 = new Task.Builder()
+        Task task1 = Task.builder()
                 .id("list-task-ctx-1")
                 .contextId("context-filter-1")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build();
-        Task task2 = new Task.Builder()
+        Task task2 = Task.builder()
                 .id("list-task-ctx-2")
                 .contextId("context-filter-1")
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
-        Task task3 = new Task.Builder()
+        Task task3 = Task.builder()
                 .id("list-task-ctx-3")
                 .contextId("context-filter-2")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -304,7 +305,7 @@ public abstract class AbstractA2AServerTest {
 
         try {
             // Filter by contextId
-            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder()
+            io.a2a.spec.ListTasksParams params = ListTasksParams.builder()
                     .contextId("context-filter-1")
                     .build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
@@ -322,17 +323,17 @@ public abstract class AbstractA2AServerTest {
 
     @Test
     public void testListTasksFilterByStatus() throws Exception {
-        Task task1 = new Task.Builder()
+        Task task1 = Task.builder()
                 .id("list-task-status-1")
                 .contextId("context-status")
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
-        Task task2 = new Task.Builder()
+        Task task2 = Task.builder()
                 .id("list-task-status-2")
                 .contextId("context-status")
                 .status(new TaskStatus(TaskState.WORKING))
                 .build();
-        Task task3 = new Task.Builder()
+        Task task3 = Task.builder()
                 .id("list-task-status-3")
                 .contextId("context-status")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -344,7 +345,7 @@ public abstract class AbstractA2AServerTest {
 
         try {
             // Filter by status WORKING
-            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder()
+            io.a2a.spec.ListTasksParams params = ListTasksParams.builder()
                     .status(TaskState.WORKING)
                     .build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
@@ -365,17 +366,17 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testListTasksWithPagination() throws Exception {
         // Create several tasks
-        Task task1 = new Task.Builder()
+        Task task1 = Task.builder()
                 .id("page-task-1")
                 .contextId("page-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build();
-        Task task2 = new Task.Builder()
+        Task task2 = Task.builder()
                 .id("page-task-2")
                 .contextId("page-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build();
-        Task task3 = new Task.Builder()
+        Task task3 = Task.builder()
                 .id("page-task-3")
                 .contextId("page-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -387,7 +388,7 @@ public abstract class AbstractA2AServerTest {
 
         try {
             // Get first page with pageSize=2
-            io.a2a.spec.ListTasksParams params1 = new io.a2a.spec.ListTasksParams.Builder()
+            io.a2a.spec.ListTasksParams params1 = ListTasksParams.builder()
                     .contextId("page-context")
                     .pageSize(2)
                     .build();
@@ -399,7 +400,7 @@ public abstract class AbstractA2AServerTest {
             assertTrue(result1.hasMoreResults());
 
             // Get second page using pageToken
-            io.a2a.spec.ListTasksParams params2 = new io.a2a.spec.ListTasksParams.Builder()
+            io.a2a.spec.ListTasksParams params2 = ListTasksParams.builder()
                     .contextId("page-context")
                     .pageSize(2)
                     .pageToken(result1.nextPageToken())
@@ -419,12 +420,12 @@ public abstract class AbstractA2AServerTest {
     public void testListTasksWithHistoryLimit() throws Exception {
         // Create task with multiple history messages
         List<Message> history = List.of(
-                new Message.Builder(MESSAGE).messageId("msg-1").build(),
-                new Message.Builder(MESSAGE).messageId("msg-2").build(),
-                new Message.Builder(MESSAGE).messageId("msg-3").build(),
-                new Message.Builder(MESSAGE).messageId("msg-4").build()
+                Message.builder(MESSAGE).messageId("msg-1").build(),
+                Message.builder(MESSAGE).messageId("msg-2").build(),
+                Message.builder(MESSAGE).messageId("msg-3").build(),
+                Message.builder(MESSAGE).messageId("msg-4").build()
         );
-        Task taskWithHistory = new Task.Builder()
+        Task taskWithHistory = Task.builder()
                 .id("list-task-history")
                 .contextId("context-history")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -435,7 +436,7 @@ public abstract class AbstractA2AServerTest {
 
         try {
             // List with history limited to 2 messages
-            io.a2a.spec.ListTasksParams params = new io.a2a.spec.ListTasksParams.Builder()
+            io.a2a.spec.ListTasksParams params = ListTasksParams.builder()
                     .contextId("context-history")
                     .historyLength(2)
                     .build();
@@ -457,7 +458,7 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testSendMessageNewMessageSuccess() throws Exception {
         assertTrue(getTaskFromTaskStore(MINIMAL_TASK.getId()) == null);
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.getId())
                 .contextId(MINIMAL_TASK.getContextId())
                 .build();
@@ -496,7 +497,7 @@ public abstract class AbstractA2AServerTest {
     public void testSendMessageExistingTaskSuccess() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
-            Message message = new Message.Builder(MESSAGE)
+            Message message = Message.builder(MESSAGE)
                     .taskId(MINIMAL_TASK.getId())
                     .contextId(MINIMAL_TASK.getContextId())
                     .build();
@@ -541,7 +542,7 @@ public abstract class AbstractA2AServerTest {
         try {
             TaskPushNotificationConfig taskPushConfig
                     = new TaskPushNotificationConfig(
-                            MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build());
+                            MINIMAL_TASK.getId(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build());
             TaskPushNotificationConfig config = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
             assertEquals(MINIMAL_TASK.getId(), config.taskId());
             assertEquals("http://example.com", config.pushNotificationConfig().url());
@@ -560,7 +561,7 @@ public abstract class AbstractA2AServerTest {
         try {
             TaskPushNotificationConfig taskPushConfig
                     = new TaskPushNotificationConfig(
-                            MINIMAL_TASK.getId(), new PushNotificationConfig.Builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build());
+                            MINIMAL_TASK.getId(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build());
 
             TaskPushNotificationConfig setResult = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
             assertNotNull(setResult);
@@ -579,7 +580,7 @@ public abstract class AbstractA2AServerTest {
 
     @Test
     public void testError() throws A2AClientException {
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(SEND_MESSAGE_NOT_SUPPORTED.getId())
                 .contextId(SEND_MESSAGE_NOT_SUPPORTED.getContextId())
                 .build();
@@ -677,15 +678,15 @@ public abstract class AbstractA2AServerTest {
 
             // Enqueue events on the server
             List<Event> events = List.of(
-                    new TaskArtifactUpdateEvent.Builder()
+                    TaskArtifactUpdateEvent.builder()
                             .taskId(MINIMAL_TASK.getId())
                             .contextId(MINIMAL_TASK.getContextId())
-                            .artifact(new Artifact.Builder()
+                            .artifact(Artifact.builder()
                                     .artifactId("11")
                                     .parts(new TextPart("text"))
                                     .build())
                             .build(),
-                    new TaskStatusUpdateEvent.Builder()
+                    TaskStatusUpdateEvent.builder()
                             .taskId(MINIMAL_TASK.getId())
                             .contextId(MINIMAL_TASK.getContextId())
                             .status(new TaskStatus(TaskState.COMPLETED))
@@ -783,15 +784,15 @@ public abstract class AbstractA2AServerTest {
 
             // Enqueue events on the server
             List<Event> events = List.of(
-                    new TaskArtifactUpdateEvent.Builder()
+                    TaskArtifactUpdateEvent.builder()
                             .taskId(MINIMAL_TASK.getId())
                             .contextId(MINIMAL_TASK.getContextId())
-                            .artifact(new Artifact.Builder()
+                            .artifact(Artifact.builder()
                                     .artifactId("11")
                                     .parts(new TextPart("text"))
                                     .build())
                             .build(),
-                    new TaskStatusUpdateEvent.Builder()
+                    TaskStatusUpdateEvent.builder()
                             .taskId(MINIMAL_TASK.getId())
                             .contextId(MINIMAL_TASK.getContextId())
                             .status(new TaskStatus(TaskState.COMPLETED))
@@ -931,10 +932,10 @@ public abstract class AbstractA2AServerTest {
             assertTrue(firstSubscriptionLatch.await(15, TimeUnit.SECONDS), "First subscription should be established");
 
             // Enqueue first event
-            TaskArtifactUpdateEvent event1 = new TaskArtifactUpdateEvent.Builder()
+            TaskArtifactUpdateEvent event1 = TaskArtifactUpdateEvent.builder()
                     .taskId(MINIMAL_TASK.getId())
                     .contextId(MINIMAL_TASK.getContextId())
-                    .artifact(new Artifact.Builder()
+                    .artifact(Artifact.builder()
                             .artifactId("artifact-1")
                             .parts(new TextPart("First artifact"))
                             .build())
@@ -995,10 +996,10 @@ public abstract class AbstractA2AServerTest {
                     "Child queue count should increase after second resubscription");
 
             // 4. Enqueue second event - both consumers should receive it
-            TaskArtifactUpdateEvent event2 = new TaskArtifactUpdateEvent.Builder()
+            TaskArtifactUpdateEvent event2 = TaskArtifactUpdateEvent.builder()
                     .taskId(MINIMAL_TASK.getId())
                     .contextId(MINIMAL_TASK.getContextId())
-                    .artifact(new Artifact.Builder()
+                    .artifact(Artifact.builder()
                             .artifactId("artifact-2")
                             .parts(new TextPart("Second artifact"))
                             .build())
@@ -1050,12 +1051,12 @@ public abstract class AbstractA2AServerTest {
     public void testListPushNotificationConfigWithConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig notificationConfig1
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config1")
                         .build();
         PushNotificationConfig notificationConfig2
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config2")
                         .build();
@@ -1081,11 +1082,11 @@ public abstract class AbstractA2AServerTest {
     public void testListPushNotificationConfigWithoutConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig notificationConfig1
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://1.example.com")
                         .build();
         PushNotificationConfig notificationConfig2
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://2.example.com")
                         .build();
         savePushNotificationConfigInStore(MINIMAL_TASK.getId(), notificationConfig1);
@@ -1097,7 +1098,7 @@ public abstract class AbstractA2AServerTest {
                     new ListTaskPushNotificationConfigParams(MINIMAL_TASK.getId()));
             assertEquals(1, result.size());
 
-            PushNotificationConfig expectedNotificationConfig = new PushNotificationConfig.Builder()
+            PushNotificationConfig expectedNotificationConfig = PushNotificationConfig.builder()
                     .url("http://2.example.com")
                     .id(MINIMAL_TASK.getId())
                     .build();
@@ -1139,19 +1140,19 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testDeletePushNotificationConfigWithValidConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
-        saveTaskInTaskStore(new Task.Builder()
+        saveTaskInTaskStore(Task.builder()
                 .id("task-456")
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.SUBMITTED))
                 .build());
 
         PushNotificationConfig notificationConfig1
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config1")
                         .build();
         PushNotificationConfig notificationConfig2
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config2")
                         .build();
@@ -1188,12 +1189,12 @@ public abstract class AbstractA2AServerTest {
     public void testDeletePushNotificationConfigWithNonExistingConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig notificationConfig1
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config1")
                         .build();
         PushNotificationConfig notificationConfig2
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config2")
                         .build();
@@ -1233,11 +1234,11 @@ public abstract class AbstractA2AServerTest {
     public void testDeletePushNotificationConfigSetWithoutConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig notificationConfig1
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://1.example.com")
                         .build();
         PushNotificationConfig notificationConfig2
-                = new PushNotificationConfig.Builder()
+                = PushNotificationConfig.builder()
                         .url("http://2.example.com")
                         .build();
         savePushNotificationConfigInStore(MINIMAL_TASK.getId(), notificationConfig1);
@@ -1265,7 +1266,7 @@ public abstract class AbstractA2AServerTest {
     @Timeout(value = 1, unit = TimeUnit.MINUTES)
     public void testNonBlockingWithMultipleMessages() throws Exception {
         // 1. Send first non-blocking message to create task in WORKING state
-        Message message1 = new Message.Builder(MESSAGE)
+        Message message1 = Message.builder(MESSAGE)
                 .taskId("multi-event-test")
                 .contextId("test-context")
                 .parts(new TextPart("First request"))
@@ -1326,7 +1327,7 @@ public abstract class AbstractA2AServerTest {
         assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS));
 
         // 3. Send second streaming message to same taskId
-        Message message2 = new Message.Builder(MESSAGE)
+        Message message2 = Message.builder(MESSAGE)
                 .taskId("multi-event-test") // Same taskId
                 .contextId("test-context")
                 .parts(new TextPart("Second request"))
@@ -1574,7 +1575,7 @@ public abstract class AbstractA2AServerTest {
     }
 
     private void testSendStreamingMessageWithHttpClient(String mediaType) throws Exception {
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.getId())
                 .contextId(MINIMAL_TASK.getContextId())
                 .build();
@@ -1627,7 +1628,7 @@ public abstract class AbstractA2AServerTest {
             saveTaskInTaskStore(MINIMAL_TASK);
         }
         try {
-            Message message = new Message.Builder(MESSAGE)
+            Message message = Message.builder(MESSAGE)
                     .taskId(MINIMAL_TASK.getId())
                     .contextId(MINIMAL_TASK.getContextId())
                     .build();
@@ -1965,12 +1966,12 @@ public abstract class AbstractA2AServerTest {
      * Create a test agent card with the appropriate transport configuration.
      */
     private AgentCard createTestAgentCard() {
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("test-card")
                 .description("A test agent card")
                 .version("1.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
                         .stateTransitionHistory(true)
@@ -2028,7 +2029,7 @@ public abstract class AbstractA2AServerTest {
         String contextId = "fire-ctx";
 
         // Create task in WORKING state (non-final)
-        Task workingTask = new Task.Builder()
+        Task workingTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
@@ -2040,7 +2041,7 @@ public abstract class AbstractA2AServerTest {
             ensureQueueForTask(taskId);
 
             // Send a message that will leave task in WORKING state (fire-and-forget pattern)
-            Message message = new Message.Builder(MESSAGE)
+            Message message = Message.builder(MESSAGE)
                     .taskId(taskId)
                     .contextId(contextId)
                     .parts(new TextPart("fire and forget"))
@@ -2140,7 +2141,7 @@ public abstract class AbstractA2AServerTest {
         String contextId = "completed-ctx";
 
         // Send a message that will create and complete the task
-        Message message = new Message.Builder(MESSAGE)
+        Message message = Message.builder(MESSAGE)
                 .taskId(taskId)
                 .contextId(contextId)
                 .parts(new TextPart("complete task"))

@@ -45,7 +45,7 @@ public class EventSerializationTest {
     public void testTaskSerialization() throws JsonProcessingException {
         // Create a Task
         TaskStatus status = new TaskStatus(TaskState.SUBMITTED);
-        Task originalTask = new Task.Builder()
+        Task originalTask = Task.builder()
                 .id("test-task-123")
                 .contextId("test-context-456")
                 .status(status)
@@ -74,7 +74,7 @@ public class EventSerializationTest {
     @Test
     public void testMessageSerialization() throws JsonProcessingException {
         // Create a Message
-        Message originalMessage = new Message.Builder()
+        Message originalMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(new TextPart("Hello, world!")))
                 .taskId("test-task-789")
@@ -106,7 +106,7 @@ public class EventSerializationTest {
     public void testTaskStatusUpdateEventSerialization() throws JsonProcessingException {
         // Create a TaskStatusUpdateEvent
         TaskStatus status = new TaskStatus(TaskState.COMPLETED);
-        TaskStatusUpdateEvent originalEvent = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent originalEvent = TaskStatusUpdateEvent.builder()
                 .taskId("test-task-abc")
                 .contextId("test-context-def")
                 .status(status)
@@ -140,7 +140,7 @@ public class EventSerializationTest {
         // Create a TaskArtifactUpdateEvent
         List<Part<?>> parts = List.of(new TextPart("Test artifact content"));
         Artifact artifact = new Artifact("test-artifact-123", "Test Artifact", "Test description", parts, null, null);
-        TaskArtifactUpdateEvent originalEvent = new TaskArtifactUpdateEvent.Builder()
+        TaskArtifactUpdateEvent originalEvent = TaskArtifactUpdateEvent.builder()
                 .taskId("test-task-xyz")
                 .contextId("test-context-uvw")
                 .artifact(artifact)
@@ -202,7 +202,7 @@ public class EventSerializationTest {
     @Test
     public void testReplicatedEventWithStreamingEventSerialization() throws JsonProcessingException {
         // Test that ReplicatedEventQueueItem can properly handle StreamingEventKind
-        TaskStatusUpdateEvent statusEvent = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
                 .taskId("replicated-test-task")
                 .contextId("replicated-test-context")
                 .status(new TaskStatus(TaskState.WORKING))
@@ -276,7 +276,7 @@ public class EventSerializationTest {
     @Test
     public void testReplicatedEventBackwardCompatibility() throws JsonProcessingException {
         // Test backward compatibility with generic Event constructor
-        TaskStatusUpdateEvent statusEvent = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
                 .taskId("backward-compat-task")
                 .contextId("backward-compat-context")
                 .status(new TaskStatus(TaskState.COMPLETED))

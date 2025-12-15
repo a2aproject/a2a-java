@@ -107,7 +107,7 @@ public class A2ACloudExampleClient {
         System.out.println("✓ Description: " + fetchedCard.description());
 
         // Override agent card URL to use the port-forwarded URL instead of internal K8s service URL
-        AgentCard agentCard = new AgentCard.Builder(fetchedCard)
+        AgentCard agentCard = AgentCard.builder(fetchedCard)
                 .supportedInterfaces(
                         Collections.singletonList(
                                 // Use localhost URL for port-forwarded connection
@@ -278,7 +278,7 @@ public class A2ACloudExampleClient {
                     .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
                     .build();
 
-            Message message = new Message.Builder()
+            Message message = Message.builder()
                     .role(Message.Role.USER)
                     .parts(new TextPart("process"))
                     .taskId(serverTaskId)
@@ -323,7 +323,7 @@ public class A2ACloudExampleClient {
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
                 .build();
 
-        Message completeMessage = new Message.Builder()
+        Message completeMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(new TextPart("complete"))
                 .taskId(serverTaskId)

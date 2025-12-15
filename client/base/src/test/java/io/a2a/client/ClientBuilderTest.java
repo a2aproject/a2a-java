@@ -21,20 +21,19 @@ import java.util.List;
 
 public class ClientBuilderTest {
 
-    private AgentCard card = new AgentCard.Builder()
+    private AgentCard card = AgentCard.builder()
             .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
                         .stateTransitionHistory(true)
                         .build())
             .defaultInputModes(Collections.singletonList("text"))
             .defaultOutputModes(Collections.singletonList("text"))
-            .skills(Collections.singletonList(new AgentSkill.Builder()
+            .skills(Collections.singletonList(AgentSkill.builder()
                                 .id("hello_world")
                                 .name("Returns hello world")
                                 .description("just returns hello world")
@@ -42,8 +41,8 @@ public class ClientBuilderTest {
             .examples(List.of("hi", "hello world"))
             .build()))
             .protocolVersion("0.3.0")
-                .additionalInterfaces(List.of(
-            new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
+            .supportedInterfaces(List.of(
+                    new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
             .build();
 
     @Test

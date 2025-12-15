@@ -27,14 +27,14 @@ public class CloudAgentCardProducer {
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("Cloud Deployment Demo Agent")
                 .description("Demonstrates A2A multi-pod deployment with Kafka event replication, " +
                         "PostgreSQL persistence, and round-robin load balancing across Kubernetes pods")
                 .supportedInterfaces(Collections.singletonList(
                         new AgentInterface("JSONRPC", agentUrl)))
                 .version("1.0.0")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(false)
                         .stateTransitionHistory(false)
@@ -42,7 +42,7 @@ public class CloudAgentCardProducer {
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(Collections.singletonList(
-                        new AgentSkill.Builder()
+                        AgentSkill.builder()
                                 .id("multi_pod_demo")
                                 .name("Multi-Pod Replication Demo")
                                 .description("Demonstrates cross-pod event replication. " +

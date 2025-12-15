@@ -94,7 +94,7 @@ public class AuthInterceptorTest {
                 "session-id",
                 OAuth2SecurityScheme.OAUTH2,
                 "secret-oauth-access-token",
-                new OAuth2SecurityScheme(new OAuthFlows.Builder().build(), "OAuth2 authentication", null),
+                new OAuth2SecurityScheme(OAuthFlows.builder().build(), "OAuth2 authentication", null),
                 "Authorization",
                 "Bearer secret-oauth-access-token"
         );
@@ -227,12 +227,12 @@ public class AuthInterceptorTest {
         credentialStore.setCredential(sessionId, schemeName, credential);
         
         // Create agent card with security requirement but no scheme definition
-        AgentCard agentCard = new AgentCard.Builder()
+        AgentCard agentCard = AgentCard.builder()
             .name("missing")
             .description("Uses missing scheme definition")
             .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
             .version("1.0")
-            .capabilities(new AgentCapabilities.Builder().build())
+            .capabilities(AgentCapabilities.builder().build())
             .defaultInputModes(List.of("text"))
             .defaultOutputModes(List.of("text"))
             .skills(List.of())
@@ -281,12 +281,12 @@ public class AuthInterceptorTest {
     @Test
     void testNoAgentCardSecuritySpecified() {
         // Arrange
-        AgentCard agentCard = new AgentCard.Builder()
+        AgentCard agentCard = AgentCard.builder()
             .name("nosecuritybot")
             .description("A bot with no security requirements")
             .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
             .version("1.0")
-            .capabilities(new AgentCapabilities.Builder().build())
+            .capabilities(AgentCapabilities.builder().build())
             .defaultInputModes(List.of("text"))
             .defaultOutputModes(List.of("text"))
             .skills(List.of())
@@ -313,12 +313,12 @@ public class AuthInterceptorTest {
      * Helper method to create an AgentCard with specified security scheme.
      */
     private AgentCard createAgentCard(String schemeName, SecurityScheme securityScheme) {
-        return new AgentCard.Builder()
+        return AgentCard.builder()
             .name(schemeName + "bot")
             .description("A bot that uses " + schemeName)
             .supportedInterfaces(List.of(new AgentInterface("jsonrpc", "http://agent.com/rpc")))
             .version("1.0")
-            .capabilities(new AgentCapabilities.Builder().build())
+            .capabilities(AgentCapabilities.builder().build())
             .defaultInputModes(List.of("text"))
             .defaultOutputModes(List.of("text"))
             .skills(List.of())

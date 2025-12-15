@@ -74,7 +74,7 @@ public class JpaDatabaseTaskStoreIntegrationTest {
 
         // Send a message creating the Task
         assertNull(taskStore.get(taskId));
-        Message userMessage = new Message.Builder()
+        Message userMessage = Message.builder()
             .role(Message.Role.USER)
             .parts(Collections.singletonList(new TextPart("create")))
             .taskId(taskId)
@@ -103,7 +103,7 @@ public class JpaDatabaseTaskStoreIntegrationTest {
         assertEquals(TaskState.SUBMITTED, createdTask.getStatus().state());
 
         // Send a message updating the Task
-        userMessage = new Message.Builder()
+        userMessage = Message.builder()
             .role(Message.Role.USER)
             .parts(Collections.singletonList(new TextPart("add-artifact")))
             .taskId(taskId)

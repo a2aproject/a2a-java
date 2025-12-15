@@ -39,7 +39,7 @@ class ReplicatedQueueManagerTest {
     @BeforeEach
     void setUp() {
         queueManager = new ReplicatedQueueManager(new NoOpReplicationStrategy(), new MockTaskStateProvider(true));
-        testEvent = new TaskStatusUpdateEvent.Builder()
+        testEvent = TaskStatusUpdateEvent.builder()
                 .taskId("test-task")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
@@ -190,7 +190,7 @@ class ReplicatedQueueManagerTest {
     @Test
     void testReplicatedEventJsonSerialization() throws Exception {
         // Test that ReplicatedEventQueueItem can be properly serialized and deserialized with StreamingEventKind
-        TaskStatusUpdateEvent originalEvent = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent originalEvent = TaskStatusUpdateEvent.builder()
                 .taskId("json-test-task")
                 .contextId("json-test-context")
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -235,7 +235,7 @@ class ReplicatedQueueManagerTest {
                 try {
                     startLatch.await();
                     for (int j = 0; j < eventsPerThread; j++) {
-                        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                                 .taskId("normal-" + threadId + "-" + j)
                                 .contextId("test-context")
                                 .status(new TaskStatus(TaskState.WORKING))
@@ -259,7 +259,7 @@ class ReplicatedQueueManagerTest {
                 try {
                     startLatch.await();
                     for (int j = 0; j < eventsPerThread; j++) {
-                        TaskStatusUpdateEvent event = new TaskStatusUpdateEvent.Builder()
+                        TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                                 .taskId("replicated-" + threadId + "-" + j)
                                 .contextId("test-context")
                                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -366,7 +366,7 @@ class ReplicatedQueueManagerTest {
         stateProvider.setActive(false);
 
         // Process a replicated event - should be skipped
-        TaskStatusUpdateEvent newEvent = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent newEvent = TaskStatusUpdateEvent.builder()
                 .taskId(taskId)
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.COMPLETED))

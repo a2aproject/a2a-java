@@ -54,19 +54,19 @@ public class JSONRPCTransportStreamingTest {
     public void testSendStreamingMessageParams() {
         // The goal here is just to verify the correct parameters are being used
         // This is a unit test of the parameter construction, not the streaming itself
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-test")
                 .messageId("message-test")
                 .build();
 
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(false)
                 .build();
 
-        MessageSendParams params = new MessageSendParams.Builder()
+        MessageSendParams params = MessageSendParams.builder()
                 .message(message)
                 .configuration(configuration)
                 .build();
@@ -95,17 +95,17 @@ public class JSONRPCTransportStreamingTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("tell me some jokes")))
                 .contextId("context-1234")
                 .messageId("message-1234")
                 .build();
-        MessageSendConfiguration configuration = new MessageSendConfiguration.Builder()
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
                 .blocking(false)
                 .build();
-        MessageSendParams params = new MessageSendParams.Builder()
+        MessageSendParams params = MessageSendParams.builder()
                 .message(message)
                 .configuration(configuration)
                 .build();

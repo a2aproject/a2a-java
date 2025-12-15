@@ -65,7 +65,7 @@ public class AuthenticationAuthorizationTest {
     @BeforeEach
     public void setUp() {
         server = new ClientAndServer(4001);
-        MESSAGE = new Message.Builder()
+        MESSAGE = Message.builder()
                 .role(Message.Role.USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-1234")
@@ -74,16 +74,16 @@ public class AuthenticationAuthorizationTest {
         
         grpcServerName = InProcessServerBuilder.generateName();
 
-        agentCard = new AgentCard.Builder()
+        agentCard = AgentCard.builder()
                 .name("Test Agent")
                 .description("Test agent for auth tests")
                 .version("1.0.0")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)  // Support streaming for all tests
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(new AgentSkill.Builder()
+                .skills(Collections.singletonList(AgentSkill.builder()
                         .id("test_skill")
                         .name("Test skill")
                         .description("Test skill")

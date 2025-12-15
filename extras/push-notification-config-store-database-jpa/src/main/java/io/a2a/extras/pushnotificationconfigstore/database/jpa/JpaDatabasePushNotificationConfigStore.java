@@ -29,7 +29,7 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
     @Override
     public PushNotificationConfig setInfo(String taskId, PushNotificationConfig notificationConfig) {
         // Ensure config has an ID - default to taskId if not provided (mirroring InMemoryPushNotificationConfigStore behavior)
-        PushNotificationConfig.Builder builder = new PushNotificationConfig.Builder(notificationConfig);
+        PushNotificationConfig.Builder builder = PushNotificationConfig.builder(notificationConfig);
         if (notificationConfig.id() == null || notificationConfig.id().isEmpty()) {
             builder.id(taskId);
         }

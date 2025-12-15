@@ -22,12 +22,12 @@ public class ReplicationTestAgentCardProducer {
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("replication-test-agent")
                 .description("Test agent for replicated queue manager integration testing")
                 .version("1.0.0")
                 .documentationUrl("http://localhost:8081/docs")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
                         .stateTransitionHistory(true)

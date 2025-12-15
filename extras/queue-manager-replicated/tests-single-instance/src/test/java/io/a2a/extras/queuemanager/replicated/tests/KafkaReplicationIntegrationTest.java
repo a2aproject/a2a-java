@@ -126,7 +126,7 @@ public class KafkaReplicationIntegrationTest {
         testConsumer.clear();
 
         // Send A2A message that should trigger events and replication
-        Message message = new Message.Builder()
+        Message message = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(new TextPart("create")))
                 .taskId(taskId)
@@ -189,7 +189,7 @@ public class KafkaReplicationIntegrationTest {
         testConsumer.clear();
 
         // First create a task in the A2A system using non-streaming client
-        Message createMessage = new Message.Builder()
+        Message createMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(new TextPart("create")))
                 .taskId(taskId)
@@ -253,7 +253,7 @@ public class KafkaReplicationIntegrationTest {
         streamingClient.resubscribe(new TaskIdParams(taskId), List.of(consumer), errorHandler);
 
         // Now manually send a TaskStatusUpdateEvent to Kafka using reactive messaging
-        TaskStatusUpdateEvent statusEvent = new TaskStatusUpdateEvent.Builder()
+        TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
                 .taskId(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.COMPLETED))
@@ -298,7 +298,7 @@ public class KafkaReplicationIntegrationTest {
 
         // Use polling (non-blocking) client with "working" command
         // This creates task in WORKING state (non-final) and keeps queue alive
-        Message workingMessage = new Message.Builder()
+        Message workingMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(new TextPart("working")))
                 .taskId(taskId)
@@ -386,7 +386,7 @@ public class KafkaReplicationIntegrationTest {
         testConsumer.clear();
 
         // Create a task that will be completed (finalized)
-        Message completeMessage = new Message.Builder()
+        Message completeMessage = Message.builder()
                 .role(Message.Role.USER)
                 .parts(List.of(new TextPart("complete")))
                 .taskId(taskId)

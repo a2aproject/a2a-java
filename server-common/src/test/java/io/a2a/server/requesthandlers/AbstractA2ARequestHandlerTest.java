@@ -51,13 +51,13 @@ public class AbstractA2ARequestHandlerTest {
 
     protected static final AgentCard CARD = createAgentCard(true, true, true);
 
-    protected static final Task MINIMAL_TASK = new Task.Builder()
+    protected static final Task MINIMAL_TASK = Task.builder()
             .id("task-123")
             .contextId("session-xyz")
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    protected static final Message MESSAGE = new Message.Builder()
+    protected static final Message MESSAGE = Message.builder()
             .messageId("111")
             .role(Message.Role.AGENT)
             .parts(new TextPart("test message"))
@@ -112,13 +112,13 @@ public class AbstractA2ARequestHandlerTest {
 
     protected static AgentCard createAgentCard(boolean streaming, boolean pushNotifications, boolean stateTransitionHistory) {
         String preferredTransport = loadPreferredTransportFromProperties();
-        AgentCard.Builder builder = new AgentCard.Builder()
+        AgentCard.Builder builder = AgentCard.builder()
                 .name("test-card")
                 .description("A test agent card")
                 .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, "http://example.com")))
                 .version("1.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(new AgentCapabilities.Builder()
+                .capabilities(AgentCapabilities.builder()
                         .streaming(streaming)
                         .pushNotifications(pushNotifications)
                         .stateTransitionHistory(stateTransitionHistory)

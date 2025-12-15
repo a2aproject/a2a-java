@@ -376,24 +376,6 @@ public record AgentCard(
         }
 
         /**
-         * Sets the list of additional transport interfaces.
-         * <p>
-         * Additional interfaces allow the agent to be accessed through multiple
-         * transport protocols beyond the primary url/preferredTransport combination.
-         *
-         * @param additionalInterfaces the list of additional interfaces (optional)
-         * @return this builder for method chaining
-         * @see AgentInterface
-         * @deprecated Use {@link #supportedInterfaces(List)} instead. This field has been renamed to 'supportedInterfaces'.
-         */
-        @Deprecated(since = "0.4.0", forRemoval = true)
-        public Builder additionalInterfaces(List<AgentInterface> additionalInterfaces) {
-            this.supportedInterfaces = additionalInterfaces;
-            return this;
-        }
-
-
-        /**
          * Sets the version of the A2A Protocol this agent implements.
          * <p>
          * If not set, defaults to {@link AgentCard#DEFAULT_PROTOCOL_VERSION}.
