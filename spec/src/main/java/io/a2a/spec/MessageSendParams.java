@@ -66,12 +66,6 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
      * Provides a fluent API for building message send parameters with optional
      * configuration and metadata.
      */
-    /**
-
-     * Builder for constructing instances.
-
-     */
-
     public static class Builder {
         Message message;
         MessageSendConfiguration configuration;
@@ -90,12 +84,6 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
          * @param message the message (required)
          * @return this builder
          */
-        /**
-         * Sets the message.
-         *
-         * @param message the message
-         * @return this builder for method chaining
-         */
         public Builder message(Message message) {
             this.message = message;
             return this;
@@ -106,12 +94,6 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
          *
          * @param configuration the message send configuration
          * @return this builder
-         */
-        /**
-         * Sets the configuration.
-         *
-         * @param configuration the configuration
-         * @return this builder for method chaining
          */
         public Builder configuration(MessageSendConfiguration configuration) {
             this.configuration = configuration;
@@ -134,12 +116,6 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
          *
          * @param tenant arbitrary key-value metadata
          * @return this builder
-         */
-        /**
-         * Sets the tenant.
-         *
-         * @param tenant the tenant
-         * @return this builder for method chaining
          */
         public Builder tenant(String tenant) {
             this.tenant = tenant;

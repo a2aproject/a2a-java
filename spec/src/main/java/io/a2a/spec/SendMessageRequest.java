@@ -32,8 +32,6 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
     /**
      * The JSON-RPC method name for sending a message: "SendMessage".
      */
-    /** The JSON-RPC method name. */
-
     public static final String METHOD = "SendMessage";
 
     /**
@@ -47,20 +45,6 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
      * @param params  the message send parameters (required)
      * @throws IllegalArgumentException if validation fails
      */
-    /**
-
-     * Constructs request with all parameters.
-
-     *
-
-     * @param jsonrpc the JSON-RPC version
-
-     * @param id the request ID
-
-     * @param params the request parameters
-
-     */
-
     public SendMessageRequest(String jsonrpc, Object id, MessageSendParams params) {
         super(jsonrpc, METHOD, id, params);
     }
@@ -71,18 +55,6 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
      * @param id the request correlation identifier
      * @param params the message send parameters (required)
      */
-    /**
-
-     * Constructs request with ID and parameters.
-
-     *
-
-     * @param id the request ID
-
-     * @param params the request parameters
-
-     */
-
     public SendMessageRequest(Object id, MessageSendParams params) {
         this(JSONRPC_VERSION, id, params);
     }
@@ -109,12 +81,6 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
      *     .build();
      * }</pre>
      */
-    /**
-
-     * Builder for constructing instances.
-
-     */
-
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -165,16 +131,6 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
          *
          * @return the constructed request
          */
-        /**
-
-         * Builds the instance.
-
-         *
-
-         * @return a new instance
-
-         */
-
         public SendMessageRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

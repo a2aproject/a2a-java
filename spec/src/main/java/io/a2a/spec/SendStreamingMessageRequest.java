@@ -76,12 +76,6 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
      * Provides a fluent API for building streaming message requests with optional customization
      * of JSON-RPC protocol fields.
      */
-    /**
-
-     * Builder for constructing instances.
-
-     */
-
     public static class Builder {
             private String jsonrpc;
             private Object id;
@@ -99,12 +93,6 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
              * @param jsonrpc the JSON-RPC version (defaults to "2.0")
              * @return this builder
              */
-            /**
-             * Sets the jsonrpc.
-             *
-             * @param jsonrpc the jsonrpc
-             * @return this builder for method chaining
-             */
             public Builder jsonrpc(String jsonrpc) {
                 this.jsonrpc = jsonrpc;
                 return this;
@@ -115,12 +103,6 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
              *
              * @param id the request identifier (auto-generated UUID if null)
              * @return this builder
-             */
-            /**
-             * Sets the id.
-             *
-             * @param id the id
-             * @return this builder for method chaining
              */
             public Builder id(Object id) {
                 this.id = id;
@@ -133,12 +115,6 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
              * @param params the parameters containing the message and configuration
              * @return this builder
              */
-            /**
-             * Sets the params.
-             *
-             * @param params the params
-             * @return this builder for method chaining
-             */
             public Builder params(MessageSendParams params) {
                 this.params = params;
                 return this;
@@ -149,16 +125,6 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
              *
              * @return a new streaming message request instance
              */
-            /**
-
-             * Builds the instance.
-
-             *
-
-             * @return a new instance
-
-             */
-
             public SendStreamingMessageRequest build() {
                 if (id == null) {
                     id = UUID.randomUUID().toString();

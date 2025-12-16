@@ -69,11 +69,7 @@ public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasks
     }
 
     /**
-
-
      * Builder for constructing instances.
-
-
      */
 
 

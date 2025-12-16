@@ -60,14 +60,8 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
     }
 
     /**
-
-
      * Builder for constructing instances.
-
-
      */
-
-
     public static class Builder {
         private String jsonrpc;
         private Object id;

@@ -132,11 +132,7 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
     }
 
     /**
-
-
      * Builder for constructing instances.
-
-
      */
 
 

@@ -265,12 +265,6 @@ public final class Message implements EventKind, StreamingEventKind {
      *     .build();
      * }</pre>
      */
-    /**
-
-     * Builder for constructing instances.
-
-     */
-
     public static class Builder {
 
         private Role role;
@@ -310,12 +304,6 @@ public final class Message implements EventKind, StreamingEventKind {
          * @param role the message role (required)
          * @return this builder for method chaining
          */
-        /**
-         * Sets the role.
-         *
-         * @param role the role
-         * @return this builder for method chaining
-         */
         public Builder role(Role role) {
             this.role = role;
             return this;
@@ -351,12 +339,6 @@ public final class Message implements EventKind, StreamingEventKind {
          * @param messageId the message identifier (optional)
          * @return this builder for method chaining
          */
-        /**
-         * Sets the messageId.
-         *
-         * @param messageId the messageId
-         * @return this builder for method chaining
-         */
         public Builder messageId(String messageId) {
             this.messageId = messageId;
             return this;
@@ -368,12 +350,6 @@ public final class Message implements EventKind, StreamingEventKind {
          * @param contextId the context identifier (optional)
          * @return this builder for method chaining
          */
-        /**
-         * Sets the contextId.
-         *
-         * @param contextId the contextId
-         * @return this builder for method chaining
-         */
         public Builder contextId(String contextId) {
             this.contextId = contextId;
             return this;
@@ -383,12 +359,6 @@ public final class Message implements EventKind, StreamingEventKind {
          * Sets the task identifier this message is associated with.
          *
          * @param taskId the task identifier (optional)
-         * @return this builder for method chaining
-         */
-        /**
-         * Sets the taskId.
-         *
-         * @param taskId the taskId
          * @return this builder for method chaining
          */
         public Builder taskId(String taskId) {

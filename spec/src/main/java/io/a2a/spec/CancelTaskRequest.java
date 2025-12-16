@@ -22,8 +22,6 @@ import java.util.UUID;
 public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdParams> {
 
     /** The JSON-RPC method name for canceling tasks. */
-    /** The JSON-RPC method name. */
-
     public static final String METHOD = "CancelTask";
 
     /**
@@ -64,12 +62,6 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
      * Provides a fluent API for setting request parameters. If no id is provided,
      * a random UUID will be generated when {@link #build()} is called.
      */
-    /**
-
-     * Builder for constructing instances.
-
-     */
-
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -87,17 +79,6 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
          * @param jsonrpc the JSON-RPC version (optional, defaults to "2.0")
          * @return this builder for method chaining
          */
-        /**
-
-         * Sets the JSON-RPC version.
-
-         *
-
-         * @param jsonrpc the JSON-RPC version
-
-         * @return this builder for method chaining
-
-         */
 
         public CancelTaskRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
@@ -110,18 +91,6 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
          * @param id the request identifier (string, integer, or null; if null, a UUID will be generated)
          * @return this builder for method chaining
          */
-        /**
-
-         * Sets the request ID.
-
-         *
-
-         * @param id the request ID
-
-         * @return this builder for method chaining
-
-         */
-
         public CancelTaskRequest.Builder id(Object id) {
             this.id = id;
             return this;
@@ -132,17 +101,6 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
          *
          * @param params the request parameters (required)
          * @return this builder for method chaining
-         */
-        /**
-
-         * Sets the request parameters.
-
-         *
-
-         * @param params the request parameters
-
-         * @return this builder for method chaining
-
          */
 
         public CancelTaskRequest.Builder params(TaskIdParams params) {
@@ -158,16 +116,6 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
          * @return a new CancelTaskRequest instance
          * @throws IllegalArgumentException if validation fails (invalid method, null params, invalid id type)
          */
-        /**
-
-         * Builds the instance.
-
-         *
-
-         * @return a new instance
-
-         */
-
         public CancelTaskRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

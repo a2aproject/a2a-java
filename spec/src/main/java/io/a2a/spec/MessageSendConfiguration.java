@@ -54,12 +54,6 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
      * <p>
      * Provides a fluent API for configuring message send behavior with sensible defaults.
      */
-    /**
-
-     * Builder for constructing instances.
-
-     */
-
     public static class Builder {
 
         List<String> acceptedOutputModes;

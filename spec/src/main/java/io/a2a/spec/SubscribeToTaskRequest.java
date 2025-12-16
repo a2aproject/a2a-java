@@ -60,11 +60,7 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
     }
 
     /**
-
-
      * Builder for constructing instances.
-
-
      */
 
 

@@ -67,14 +67,8 @@ public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSO
     }
 
     /**
-
-
      * Builder for constructing instances.
-
-
      */
-
-
     public static class Builder {
         private String jsonrpc;
         private Object id;

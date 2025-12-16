@@ -87,24 +87,6 @@ public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSON
         }
 
         /**
-
-
-         * Sets the JSON-RPC version.
-
-
-         *
-
-
-         * @param jsonrpc the JSON-RPC version
-
-
-         * @return this builder for method chaining
-
-
-         */
-
-
-        /**
          * Sets the jsonrpc.
          *
          * @param jsonrpc the jsonrpc
@@ -116,27 +98,9 @@ public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSON
         }
 
         /**
-
-
          * Sets the request ID.
-
-
          *
-
-
          * @param id the request ID
-
-
-         * @return this builder for method chaining
-
-
-         */
-
-
-        /**
-         * Sets the id.
-         *
-         * @param id the id
          * @return this builder for method chaining
          */
         public GetTaskPushNotificationConfigRequest.Builder id(Object id) {
@@ -145,27 +109,9 @@ public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSON
         }
 
         /**
-
-
          * Sets the request parameters.
-
-
          *
-
-
          * @param params the request parameters
-
-
-         * @return this builder for method chaining
-
-
-         */
-
-
-        /**
-         * Sets the params.
-         *
-         * @param params the params
          * @return this builder for method chaining
          */
         public GetTaskPushNotificationConfigRequest.Builder params(GetTaskPushNotificationConfigParams params) {

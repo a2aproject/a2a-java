@@ -131,21 +131,8 @@ public class JsonUtil {
      *
      * @param data the object to serialize
      * @return JSON string representation of the object
-     */
-    /**
-
-     * Converts object to JSON string.
-
-     *
-
-     * @param data the object to convert
-
-     * @return JSON string representation
-
      * @throws JsonProcessingException if conversion fails
-
      */
-
     public static String toJson(Object data) throws JsonProcessingException {
         try {
             return OBJECT_MAPPER.toJson(data);

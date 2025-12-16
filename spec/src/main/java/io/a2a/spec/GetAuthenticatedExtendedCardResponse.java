@@ -19,29 +19,13 @@ package io.a2a.spec;
 public final class GetAuthenticatedExtendedCardResponse extends JSONRPCResponse<AgentCard> {
 
     /**
-
-
      * Constructs response with full parameters.
-
-
      *
-
-
      * @param jsonrpc the JSON-RPC version
-
-
      * @param id the request ID
-
-
      * @param result the agent card result
-
-
      * @param error the error if any
-
-
      */
-
-
     public GetAuthenticatedExtendedCardResponse(String jsonrpc, Object id, AgentCard result, JSONRPCError error) {
         super(jsonrpc, id, result, error, AgentCard.class);
     }

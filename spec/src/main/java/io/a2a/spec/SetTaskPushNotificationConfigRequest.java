@@ -54,11 +54,7 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
     }
 
     /**
-
-
      * Builder for constructing instances.
-
-
      */
 
 
