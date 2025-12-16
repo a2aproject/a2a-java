@@ -66,12 +66,12 @@ public final class OpenIdConnectSecurityScheme implements SecurityScheme {
         this.type = type;
     }
 
-    @Override
     /**
      * Gets the Description.
      *
      * @return the Description
      */
+    @Override
     public String getDescription() {
         return description;
     }
