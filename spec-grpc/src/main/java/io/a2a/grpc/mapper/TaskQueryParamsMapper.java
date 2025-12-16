@@ -28,5 +28,6 @@ public interface TaskQueryParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "name", expression = "java(ResourceNameParser.defineTaskName(domain.id()))")
     @Mapping(target = "historyLength", source = "historyLength")
+    @Mapping(target = "tenant", source = "tenant")
     io.a2a.grpc.GetTaskRequest toProto(TaskQueryParams domain);
 }

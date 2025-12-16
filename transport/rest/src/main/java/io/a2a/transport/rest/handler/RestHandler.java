@@ -92,10 +92,11 @@ public class RestHandler {
         this.executor = executor;
     }
 
-    public HTTPRestResponse sendMessage(String body, ServerCallContext context) {
+    public HTTPRestResponse sendMessage(String body, String tenant, ServerCallContext context) {
         try {
             io.a2a.grpc.SendMessageRequest.Builder request = io.a2a.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
+            request.setTenant(tenant);
             EventKind result = requestHandler.onMessageSend(ProtoUtils.FromProto.messageSendParams(request), context);
             return createSuccessResponse(200, io.a2a.grpc.SendMessageResponse.newBuilder(ProtoUtils.ToProto.taskOrMessage(result)));
         } catch (JSONRPCError e) {
@@ -105,13 +106,14 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse sendStreamingMessage(String body, ServerCallContext context) {
+    public HTTPRestResponse sendStreamingMessage(String body, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().streaming()) {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
             }
             io.a2a.grpc.SendMessageRequest.Builder request = io.a2a.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
+            request.setTenant(tenant);
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(ProtoUtils.FromProto.messageSendParams(request), context);
             return createStreamingResponse(publisher);
         } catch (JSONRPCError e) {
@@ -121,12 +123,12 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse cancelTask(String taskId, ServerCallContext context) {
+    public HTTPRestResponse cancelTask(String taskId, String tenant, ServerCallContext context) {
         try {
             if (taskId == null || taskId.isEmpty()) {
                 throw new InvalidParamsError();
             }
-            TaskIdParams params = new TaskIdParams(taskId);
+            TaskIdParams params = new TaskIdParams(taskId, tenant);
             Task task = requestHandler.onCancelTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
@@ -139,13 +141,14 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse setTaskPushNotificationConfiguration(String taskId, String body, ServerCallContext context) {
+    public HTTPRestResponse setTaskPushNotificationConfiguration(String taskId, String body, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
             io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder();
             parseRequestBody(body, builder);
+            builder.setTenant(tenant);
             TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils.FromProto.setTaskPushNotificationConfig(builder), context);
             return createSuccessResponse(201, io.a2a.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(result)));
         } catch (JSONRPCError e) {
@@ -155,12 +158,12 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse resubscribeTask(String taskId, ServerCallContext context) {
+    public HTTPRestResponse subscribeToTask(String taskId, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().streaming()) {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
             }
-            TaskIdParams params = new TaskIdParams(taskId);
+            TaskIdParams params = new TaskIdParams(taskId, tenant);
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onResubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (JSONRPCError e) {
@@ -170,9 +173,9 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse getTask(String taskId, int historyLength, ServerCallContext context) {
+    public HTTPRestResponse getTask(String taskId, @Nullable Integer historyLength, String tenant, ServerCallContext context) {
         try {
-            TaskQueryParams params = new TaskQueryParams(taskId, historyLength, "");
+            TaskQueryParams params = new TaskQueryParams(taskId, historyLength, tenant);
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
@@ -233,12 +236,12 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, ServerCallContext context) {
+    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
-            GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams(taskId, configId);
+            GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams(taskId, configId, tenant);
             TaskPushNotificationConfig config = requestHandler.onGetTaskPushNotificationConfig(params, context);
             return createSuccessResponse(200, io.a2a.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(config)));
         } catch (JSONRPCError e) {
@@ -248,12 +251,12 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse listTaskPushNotificationConfigurations(String taskId, ServerCallContext context) {
+    public HTTPRestResponse listTaskPushNotificationConfigurations(String taskId, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
-            ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId);
+            ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId,tenant);
             List<TaskPushNotificationConfig> configs = requestHandler.onListTaskPushNotificationConfig(params, context);
             return createSuccessResponse(200, io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(configs)));
         } catch (JSONRPCError e) {
@@ -263,12 +266,12 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse deleteTaskPushNotificationConfiguration(String taskId, String configId, ServerCallContext context) {
+    public HTTPRestResponse deleteTaskPushNotificationConfiguration(String taskId, String configId, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
-            DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(taskId, configId);
+            DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(taskId, configId, tenant);
             requestHandler.onDeleteTaskPushNotificationConfig(params, context);
             return new HTTPRestResponse(204, "application/json", "");
         } catch (JSONRPCError e) {
@@ -399,7 +402,7 @@ public class RestHandler {
         return 500;
     }
 
-    public HTTPRestResponse getAuthenticatedExtendedCard() {
+    public HTTPRestResponse getExtendedAgentCard(String tenant) {
         try {
             if (!agentCard.supportsExtendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
                 throw new AuthenticatedExtendedCardNotConfiguredError(null, "Authenticated Extended Card not configured", null);

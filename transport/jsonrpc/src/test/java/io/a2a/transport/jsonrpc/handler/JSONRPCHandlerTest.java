@@ -676,13 +676,17 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         TaskPushNotificationConfig taskPushConfig
                 = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.getId(), PushNotificationConfig.builder().url("http://example.com")
-                        .id("c295ea44-7543-4f78-b524-7a38915ad6e4").build(), "tenant");
+                        MINIMAL_TASK.getId(), 
+                        PushNotificationConfig.builder().url("http://example.com")
+                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4").build(), 
+                        "tenant");
         SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
         SetTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
         TaskPushNotificationConfig taskPushConfigResult
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.getId(), PushNotificationConfig.builder().url("http://example.com").id("c295ea44-7543-4f78-b524-7a38915ad6e4").build(), null);
+                = new TaskPushNotificationConfig( MINIMAL_TASK.getId(), 
+                        PushNotificationConfig.builder().url("http://example.com")
+                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4").build(),
+                        "tenant");
 
         Assertions.assertEquals(taskPushConfigResult, response.getResult());
     }
@@ -708,7 +712,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         GetTaskPushNotificationConfigResponse getResponse = handler.getPushNotificationConfig(getRequest, callContext);
 
         TaskPushNotificationConfig expectedConfig = new TaskPushNotificationConfig(MINIMAL_TASK.getId(),
-                PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), null);
+                PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "");
 
         assertEquals(expectedConfig, getResponse.getResult());
     }
@@ -1350,7 +1354,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         MINIMAL_TASK.getId(), PushNotificationConfig.builder()
                         .url("http://example.com")
                         .id(MINIMAL_TASK.getId())
-                        .build(), null);
+                        .build(), "");
         ListTaskPushNotificationConfigRequest listRequest
                 = new ListTaskPushNotificationConfigRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.getId()));
         ListTaskPushNotificationConfigResponse listResponse = handler.listPushNotificationConfig(listRequest, callContext);

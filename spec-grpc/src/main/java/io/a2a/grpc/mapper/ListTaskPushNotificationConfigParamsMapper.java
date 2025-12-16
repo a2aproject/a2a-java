@@ -22,6 +22,7 @@ public interface ListTaskPushNotificationConfigParamsMapper {
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", expression = "java(ResourceNameParser.extractParentId(proto.getParent()))")
+    @Mapping(target = "tenant", source = "tenant")
     ListTaskPushNotificationConfigParams fromProto(io.a2a.grpc.ListTaskPushNotificationConfigRequest proto);
 
     /**

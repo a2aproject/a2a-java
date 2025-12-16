@@ -76,12 +76,12 @@ public class A2AServerRoutes {
     @Inject
     Instance<CallContextFactory> callContextFactory;
 
-    @Route(regex = "^/v1/message:send$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)message:send$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     public void sendMessage(@Body String body, RoutingContext rc) {
         ServerCallContext context = createCallContext(rc, SendMessageRequest.METHOD);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.sendMessage(body, context);
+            response = jsonRestHandler.sendMessage(body, extractTenant(rc), context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
@@ -89,13 +89,13 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(regex = "^/v1/message:stream$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)message:stream$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     public void sendMessageStreaming(@Body String body, RoutingContext rc) {
         ServerCallContext context = createCallContext(rc, SendStreamingMessageRequest.METHOD);
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
-            HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(body, context);
+            HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(body, extractTenant(rc), context);
             if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
                 streamingResponse = hTTPRestStreamingResponse;
             } else {
@@ -114,7 +114,7 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(path = "/v1/tasks", order = 0, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\??", order = 0, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
     public void listTasks(RoutingContext rc) {
         ServerCallContext context = createCallContext(rc, ListTasksRequest.METHOD);
         HTTPRestResponse response = null;
@@ -130,21 +130,16 @@ public class A2AServerRoutes {
             String historyLengthStr = rc.request().params().get("historyLength");
             String lastUpdatedAfter = rc.request().params().get("lastUpdatedAfter");
             String includeArtifactsStr = rc.request().params().get("includeArtifacts");
-            //TODO replace by path extraction
-            String tenant = rc.request().params().get("tenant");
-            if (tenant == null) {
-                tenant = "";
-            }
 
             // Parse optional parameters
             Integer pageSize = null;
             if (pageSizeStr != null && !pageSizeStr.isEmpty()) {
-                pageSize = Integer.parseInt(pageSizeStr);
+                pageSize = Integer.valueOf(pageSizeStr);
             }
 
             Integer historyLength = null;
             if (historyLengthStr != null && !historyLengthStr.isEmpty()) {
-                historyLength = Integer.parseInt(historyLengthStr);
+                historyLength = Integer.valueOf(historyLengthStr);
             }
 
             Boolean includeArtifacts = null;
@@ -153,7 +148,7 @@ public class A2AServerRoutes {
             }
 
             response = jsonRestHandler.listTasks(contextId, statusStr, pageSize, pageToken,
-                    historyLength, lastUpdatedAfter, includeArtifacts, tenant, context);
+                    historyLength, lastUpdatedAfter, includeArtifacts, extractTenant(rc), context);
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
         } catch (IllegalArgumentException e) {
@@ -165,20 +160,20 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(path = "/v1/tasks/:id", order = 1, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^:^/]+)$", order = 1, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
     public void getTask(RoutingContext rc) {
-        String taskId = rc.pathParam("id");
+        String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, GetTaskRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                int historyLength = 0;
+                Integer historyLength = null;
                 if (rc.request().params().contains("history_length")) {
-                    historyLength = Integer.parseInt(rc.request().params().get("history_length"));
+                    historyLength = Integer.valueOf(rc.request().params().get("history_length"));
                 }
-                response = jsonRestHandler.getTask(taskId, historyLength, context);
+                response = jsonRestHandler.getTask(taskId, historyLength, extractTenant(rc), context);
             }
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad history_length"));
@@ -189,16 +184,16 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(regex = "^/v1/tasks/([^/]+):cancel$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void cancelTask(RoutingContext rc) {
-        String taskId = rc.pathParam("param0");
+        String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, CancelTaskRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.cancelTask(taskId, context);
+                response = jsonRestHandler.cancelTask(taskId, extractTenant(rc), context);
             }
         } catch (Throwable t) {
             if (t instanceof JSONRPCError error) {
@@ -222,9 +217,9 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(regex = "^/v1/tasks/([^/]+):subscribe$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
-    public void resubscribeTask(RoutingContext rc) {
-        String taskId = rc.pathParam("param0");
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):subscribe$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
+    public void subscribeToTask(RoutingContext rc) {
+        String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, SubscribeToTaskRequest.METHOD);
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
@@ -232,7 +227,7 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 error = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                HTTPRestResponse response = jsonRestHandler.resubscribeTask(taskId, context);
+                HTTPRestResponse response = jsonRestHandler.subscribeToTask(taskId, extractTenant(rc), context);
                 if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
                     streamingResponse = hTTPRestStreamingResponse;
                 } else {
@@ -252,16 +247,16 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(path = "/v1/tasks/:id/pushNotificationConfigs", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     public void setTaskPushNotificationConfiguration(@Body String body, RoutingContext rc) {
-        String taskId = rc.pathParam("id");
+        String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, SetTaskPushNotificationConfigRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, context);
+                response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, extractTenant(rc), context);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
@@ -270,9 +265,9 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(path = "/v1/tasks/:id/pushNotificationConfigs/:configId", order = 1, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^\\/]+)", order = 2, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
     public void getTaskPushNotificationConfiguration(RoutingContext rc) {
-        String taskId = rc.pathParam("id");
+        String taskId = rc.pathParam("taskId");
         String configId = rc.pathParam("configId");
         ServerCallContext context = createCallContext(rc, GetTaskPushNotificationConfigRequest.METHOD);
         HTTPRestResponse response = null;
@@ -280,7 +275,7 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, context);
+                response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, extractTenant(rc), context);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
@@ -289,16 +284,35 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(path = "/v1/tasks/:id/pushNotificationConfigs", order = 1, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/$", order = 1, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    public void getTaskPushNotificationConfigurationWithoutId(RoutingContext rc) {
+        String taskId = rc.pathParam("taskId");
+        ServerCallContext context = createCallContext(rc, GetTaskPushNotificationConfigRequest.METHOD);
+        HTTPRestResponse response = null;
+        try {
+            if (taskId == null || taskId.isEmpty()) {
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            } else {
+                // Call get with null configId - trailing slash distinguishes this from list
+                response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, null, extractTenant(rc), context);
+            }
+        } catch (Throwable t) {
+            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
+        } finally {
+            sendResponse(rc, response);
+        }
+    }
+
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs", order = 3, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
     public void listTaskPushNotificationConfigurations(RoutingContext rc) {
-        String taskId = rc.pathParam("id");
+        String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, ListTaskPushNotificationConfigRequest.METHOD);
         HTTPRestResponse response = null;
         try {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, context);
+                response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, extractTenant(rc), context);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
@@ -307,9 +321,9 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(path = "/v1/tasks/:id/pushNotificationConfigs/:configId", order = 1, methods = {Route.HttpMethod.DELETE}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^/]+)", order = 1, methods = {Route.HttpMethod.DELETE}, type = Route.HandlerType.BLOCKING)
     public void deleteTaskPushNotificationConfiguration(RoutingContext rc) {
-        String taskId = rc.pathParam("id");
+        String taskId = rc.pathParam("taskId");
         String configId = rc.pathParam("configId");
         ServerCallContext context = createCallContext(rc, DeleteTaskPushNotificationConfigRequest.METHOD);
         HTTPRestResponse response = null;
@@ -319,7 +333,7 @@ public class A2AServerRoutes {
             } else if (configId == null || configId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad config id"));
             } else {
-                response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, context);
+                response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, extractTenant(rc), context);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
@@ -328,6 +342,19 @@ public class A2AServerRoutes {
         }
     }
 
+    private String extractTenant(RoutingContext rc) {
+        String tenantPath = rc.pathParam("tenant");
+        if (tenantPath == null || tenantPath.isBlank()) {
+            return "";
+        }
+        if (tenantPath.startsWith("/")) {
+            tenantPath = tenantPath.substring(1);
+        }
+        if (tenantPath.endsWith("/")) {
+            tenantPath = tenantPath.substring(0, tenantPath.length() - 1);
+        }
+        return tenantPath;
+    }
     /**
      * /**
      * Handles incoming GET requests to the agent card endpoint.
@@ -342,13 +369,13 @@ public class A2AServerRoutes {
         sendResponse(rc, response);
     }
 
-    @Route(path = "/v1/card", order = 1, methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
-    public void getAuthenticatedExtendedCard(RoutingContext rc) {
-        HTTPRestResponse response = jsonRestHandler.getAuthenticatedExtendedCard();
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$", order = 1, methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
+    public void getExtendedAgentCard(RoutingContext rc) {
+        HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(extractTenant(rc));
         sendResponse(rc, response);
     }
 
-    @Route(path = "^/v1/.*", order = 100, methods = {Route.HttpMethod.DELETE, Route.HttpMethod.GET, Route.HttpMethod.HEAD, Route.HttpMethod.OPTIONS, Route.HttpMethod.POST, Route.HttpMethod.PUT}, produces = APPLICATION_JSON)
+    @Route(path = "^/.*", order = 100, methods = {Route.HttpMethod.DELETE, Route.HttpMethod.GET, Route.HttpMethod.HEAD, Route.HttpMethod.OPTIONS, Route.HttpMethod.POST, Route.HttpMethod.PUT}, produces = APPLICATION_JSON)
     public void methodNotFoundMessage(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.createErrorResponse(new MethodNotFoundError());
         sendResponse(rc, response);

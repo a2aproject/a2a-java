@@ -570,7 +570,7 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         PushNotificationConfig pushNotificationConfig = pushConfigStore.setInfo(params.taskId(), params.pushNotificationConfig());
-        return new TaskPushNotificationConfig(params.taskId(), pushNotificationConfig, null);
+        return new TaskPushNotificationConfig(params.taskId(), pushNotificationConfig, params.tenant());
     }
 
     @Override
@@ -590,7 +590,7 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         @Nullable String configId = params.pushNotificationConfigId();
-        return new TaskPushNotificationConfig(params.id(), getPushNotificationConfig(pushNotificationConfigList, configId), null);
+        return new TaskPushNotificationConfig(params.id(), getPushNotificationConfig(pushNotificationConfigList, configId), params.tenant());
     }
 
     private PushNotificationConfig getPushNotificationConfig(List<PushNotificationConfig> notificationConfigList,
@@ -652,7 +652,7 @@ public class DefaultRequestHandler implements RequestHandler {
         List<TaskPushNotificationConfig> taskPushNotificationConfigList = new ArrayList<>();
         if (pushNotificationConfigList != null) {
             for (PushNotificationConfig pushNotificationConfig : pushNotificationConfigList) {
-                TaskPushNotificationConfig taskPushNotificationConfig = new TaskPushNotificationConfig(params.id(), pushNotificationConfig, null);
+                TaskPushNotificationConfig taskPushNotificationConfig = new TaskPushNotificationConfig(params.id(), pushNotificationConfig, params.tenant());
                 taskPushNotificationConfigList.add(taskPushNotificationConfig);
             }
         }

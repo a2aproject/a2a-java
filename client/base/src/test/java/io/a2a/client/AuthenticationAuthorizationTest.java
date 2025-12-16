@@ -194,7 +194,7 @@ public class AuthenticationAuthorizationTest {
         server.when(
                 request()
                         .withMethod("POST")
-                        .withPath("/v1/message:send")
+                        .withPath("/message:send")
         ).respond(
                 response()
                         .withStatusCode(401)
@@ -215,7 +215,7 @@ public class AuthenticationAuthorizationTest {
         server.when(
                 request()
                         .withMethod("POST")
-                        .withPath("/v1/message:send")
+                        .withPath("/message:send")
         ).respond(
                 response()
                         .withStatusCode(403)
@@ -236,7 +236,7 @@ public class AuthenticationAuthorizationTest {
         server.when(
                 request()
                         .withMethod("POST")
-                        .withPath("/v1/message:stream")
+                        .withPath("/message:stream")
         ).respond(
                 response()
                         .withStatusCode(401)
@@ -253,7 +253,7 @@ public class AuthenticationAuthorizationTest {
         server.when(
                 request()
                         .withMethod("POST")
-                        .withPath("/v1/message:stream")
+                        .withPath("/message:stream")
         ).respond(
                 response()
                         .withStatusCode(403)

@@ -19,11 +19,11 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, String
             throw new IllegalArgumentException("Invalid history length");
         }
     }
-    public TaskQueryParams(String id, Integer historyLength) {
+    public TaskQueryParams(String id, @Nullable Integer historyLength) {
         this(id, historyLength, "");
     }
 
     public TaskQueryParams(String id) {
-        this(id, 0, "");
+        this(id, null, "");
     }
 }

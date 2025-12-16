@@ -39,6 +39,7 @@ public interface TaskIdParamsMapper {
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", expression = "java(ResourceNameParser.extractTaskId(proto.getName()))")
+    @Mapping(target = "tenant", source = "tenant")
     TaskIdParams fromProtoSubscribeToTaskRequest(io.a2a.grpc.SubscribeToTaskRequest proto);
 
     /**

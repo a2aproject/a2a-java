@@ -117,7 +117,7 @@ public class RestTransportTest {
         this.server.when(
                 request()
                         .withMethod("POST")
-                        .withPath("/v1/message:send")
+                        .withPath("/message:send")
                         .withBody(JsonBody.json(SEND_MESSAGE_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
         )
                 .respond(
@@ -160,7 +160,7 @@ public class RestTransportTest {
         this.server.when(
                 request()
                         .withMethod("POST")
-                        .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64:cancel")
+                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64:cancel")
                         .withBody(JsonBody.json(CANCEL_TASK_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
         )
                 .respond(
@@ -186,7 +186,7 @@ public class RestTransportTest {
         this.server.when(
                 request()
                         .withMethod("GET")
-                        .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64")
+                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64")
         )
                 .respond(
                         response()
@@ -238,7 +238,7 @@ public class RestTransportTest {
         this.server.when(
                 request()
                         .withMethod("POST")
-                        .withPath("/v1/message:stream")
+                        .withPath("/message:stream")
                         .withBody(JsonBody.json(SEND_MESSAGE_STREAMING_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
         )
                 .respond(
@@ -290,7 +290,7 @@ public class RestTransportTest {
         this.server.when(
                 request()
                         .withMethod("POST")
-                        .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
+                        .withPath("/tenant/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
                         .withBody(JsonBody.json(SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
         )
                 .respond(
@@ -324,7 +324,7 @@ public class RestTransportTest {
         this.server.when(
                 request()
                         .withMethod("GET")
-                        .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10")
+                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10")
         )
                 .respond(
                         response()
@@ -351,7 +351,7 @@ public class RestTransportTest {
         this.server.when(
                 request()
                         .withMethod("GET")
-                        .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
+                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs")
         )
                 .respond(
                         response()
@@ -388,7 +388,7 @@ public class RestTransportTest {
         this.server.when(
                 request()
                         .withMethod("DELETE")
-                        .withPath("/v1/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10")
+                        .withPath("/tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10")
         )
                 .respond(
                         response()
@@ -409,7 +409,7 @@ public class RestTransportTest {
         this.server.when(
                         request()
                                 .withMethod("POST")
-                                .withPath("/v1/tasks/task-1234:subscribe")
+                                .withPath("/tasks/task-1234:subscribe")
                 )
                 .respond(
                         response()
