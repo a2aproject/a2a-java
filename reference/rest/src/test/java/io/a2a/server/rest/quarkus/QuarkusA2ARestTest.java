@@ -35,22 +35,22 @@ public class QuarkusA2ARestTest extends AbstractA2AServerTest {
     protected void configureTransport(ClientBuilder builder) {
         builder.withTransport(RestTransport.class, new RestTransportConfigBuilder());
     }
+
     @Test
     public void testMethodNotFound() throws Exception {
-        
         // Create the client
         HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .build();
         // Create the request
         HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/v1/message:send"))
+                .uri(URI.create("http://localhost:" + serverPort + "/message:send"))
                 .PUT(HttpRequest.BodyPublishers.ofString("test"))
                 .header("Content-Type", APPLICATION_JSON);
         HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
         Assertions.assertEquals(405, response.statusCode());
         builder = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/v1/message:send"))
+                .uri(URI.create("http://localhost:" + serverPort + "/message:send"))
                 .DELETE()
                 .header("Content-Type", APPLICATION_JSON);
         response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());

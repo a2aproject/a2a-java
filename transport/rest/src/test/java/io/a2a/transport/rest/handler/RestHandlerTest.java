@@ -26,13 +26,13 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
-        RestHandler.HTTPRestResponse response = handler.getTask(MINIMAL_TASK.getId(), 0, callContext);
+        RestHandler.HTTPRestResponse response = handler.getTask(MINIMAL_TASK.getId(), 0, "", callContext);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.getId()));
 
-        response = handler.getTask(MINIMAL_TASK.getId(),2 , callContext);
+        response = handler.getTask(MINIMAL_TASK.getId(),2 , "",callContext);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -43,7 +43,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testGetTaskNotFound() {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.getTask("nonexistent", 0, callContext);
+        RestHandler.HTTPRestResponse response = handler.getTask("nonexistent", 0, "",callContext);
 
         Assertions.assertEquals(404, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -75,7 +75,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
               }
             }""";
 
-        RestHandler.HTTPRestResponse response = handler.sendMessage(requestBody, callContext);
+        RestHandler.HTTPRestResponse response = handler.sendMessage(requestBody, "", callContext);
         Assertions.assertEquals(200, response.getStatusCode(), response.toString());
         Assertions.assertEquals("application/json", response.getContentType());
         Assertions.assertNotNull(response.getBody());
@@ -86,7 +86,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
         String invalidBody = "invalid json";
-        RestHandler.HTTPRestResponse response = handler.sendMessage(invalidBody, callContext);
+        RestHandler.HTTPRestResponse response = handler.sendMessage(invalidBody, "", callContext);
 
         Assertions.assertEquals(400, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -110,7 +110,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                           }
                       }
                     }""";
-        RestHandler.HTTPRestResponse response = handler.sendMessage(requestBody, callContext);
+        RestHandler.HTTPRestResponse response = handler.sendMessage(requestBody, "", callContext);
 
         Assertions.assertEquals(422, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -121,7 +121,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testSendMessageEmptyBody() {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.sendMessage("", callContext);
+        RestHandler.HTTPRestResponse response = handler.sendMessage("", "", callContext);
 
         Assertions.assertEquals(400, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -142,7 +142,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             taskUpdater.cancel();
         };
 
-        RestHandler.HTTPRestResponse response = handler.cancelTask(MINIMAL_TASK.getId(), callContext);
+        RestHandler.HTTPRestResponse response = handler.cancelTask(MINIMAL_TASK.getId(), "", callContext);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -153,7 +153,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testCancelTaskNotFound() {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.cancelTask("nonexistent", callContext);
+        RestHandler.HTTPRestResponse response = handler.cancelTask("nonexistent", "", callContext);
 
         Assertions.assertEquals(404, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -183,7 +183,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
               }
             }""";
 
-        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(requestBody, callContext);
+        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(requestBody, "", callContext);
         Assertions.assertEquals(200, response.getStatusCode(), response.toString());
         Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
         RestHandler.HTTPRestStreamingResponse streamingResponse = (RestHandler.HTTPRestStreamingResponse) response;
@@ -206,7 +206,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             }
             """;
 
-        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(requestBody, callContext);
+        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(requestBody, "", callContext);
 
         Assertions.assertEquals(400, response.getStatusCode());
         Assertions.assertTrue(response.getBody().contains("InvalidRequestError"));
@@ -232,7 +232,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
               }
             }""".formatted(MINIMAL_TASK.getId(), MINIMAL_TASK.getId());
 
-        RestHandler.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration( MINIMAL_TASK.getId(), requestBody, callContext);
+        RestHandler.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration( MINIMAL_TASK.getId(), requestBody, "", callContext);
 
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -253,7 +253,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             }
             """.formatted(MINIMAL_TASK.getId());
 
-        RestHandler.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration(MINIMAL_TASK.getId(), requestBody, callContext);
+        RestHandler.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration(MINIMAL_TASK.getId(), requestBody, "", callContext);
 
         Assertions.assertEquals(501, response.getStatusCode());
         Assertions.assertTrue(response.getBody().contains("PushNotificationNotSupportedError"));
@@ -279,7 +279,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 }
               }
             }""".formatted(MINIMAL_TASK.getId(), MINIMAL_TASK.getId());
-        RestHandler.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration(MINIMAL_TASK.getId(), createRequestBody, callContext);
+        RestHandler.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration(MINIMAL_TASK.getId(), createRequestBody, "", callContext);
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
         Assertions.assertEquals("application/json", response.getContentType());
         // Now get it
@@ -292,7 +292,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testDeletePushNotificationConfig() {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
-        RestHandler.HTTPRestResponse response = handler.deleteTaskPushNotificationConfiguration(MINIMAL_TASK.getId(), "default-config-id", callContext);
+        RestHandler.HTTPRestResponse response = handler.deleteTaskPushNotificationConfiguration(MINIMAL_TASK.getId(), "default-config-id", "", callContext);
         Assertions.assertEquals(204, response.getStatusCode());
     }
 
@@ -301,7 +301,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
-        RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(MINIMAL_TASK.getId(), callContext);
+        RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(MINIMAL_TASK.getId(), "", callContext);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -313,11 +313,11 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
         // Test 400 for invalid request
-        RestHandler.HTTPRestResponse response = handler.sendMessage("", callContext);
+        RestHandler.HTTPRestResponse response = handler.sendMessage("", "", callContext);
         Assertions.assertEquals(400, response.getStatusCode());
 
         // Test 404 for not found
-        response = handler.getTask("nonexistent", 0, callContext);
+        response = handler.getTask("nonexistent", 0, "", callContext);
         Assertions.assertEquals(404, response.getStatusCode());
     }
 
@@ -357,7 +357,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             }""";
 
         // Start streaming
-        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(requestBody, callContext);
+        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(requestBody, "", callContext);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
