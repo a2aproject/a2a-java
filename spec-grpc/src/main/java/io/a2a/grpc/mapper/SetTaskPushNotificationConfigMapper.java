@@ -30,6 +30,7 @@ public interface SetTaskPushNotificationConfigMapper {
      * <p>
      * Extracts taskId from parent resource name and maps PushNotificationConfig with
      * ID override from config_id field.
+     * The tenant field is set to null as it's not present in the protobuf definition.
      *
      * @param request the protobuf SetTaskPushNotificationConfigRequest
      * @return domain TaskPushNotificationConfig

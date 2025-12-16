@@ -1,6 +1,5 @@
 package io.a2a.spec;
 
-import java.util.Map;
 
 import io.a2a.util.Assert;
 
@@ -11,18 +10,19 @@ import io.a2a.util.Assert;
  * all configured notification endpoints for that task.
  *
  * @param id the task identifier (required)
- * @param metadata optional arbitrary key-value metadata for the request
+ * @param tenant optional tenant, provided as a path parameter.
  * @see ListTaskPushNotificationConfigRequest for the request using these parameters
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record ListTaskPushNotificationConfigParams(String id, Map<String, Object> metadata) {
+public record ListTaskPushNotificationConfigParams(String id, String tenant) {
 
     public ListTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("id", id);
+        Assert.checkNotNullParam("tenant", tenant);
     }
 
     public ListTaskPushNotificationConfigParams(String id) {
-        this(id, null);
+        this(id, "");
     }
 }

@@ -12,9 +12,9 @@ public class JsonMessages {
                  "name": "GeoSpatial Route Planner Agent",
                  "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
                  "supportedInterfaces" : [
-                   {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC"},
-                   {"url": "https://georoute-agent.example.com/a2a/grpc", "protocolBinding": "GRPC"},
-                   {"url": "https://georoute-agent.example.com/a2a/json", "protocolBinding": "HTTP+JSON"}
+                   {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC", "tenant": ""},
+                   {"url": "https://georoute-agent.example.com/a2a/grpc", "protocolBinding": "GRPC", "tenant": ""},
+                   {"url": "https://georoute-agent.example.com/a2a/json", "protocolBinding": "HTTP+JSON", "tenant": ""}
                  ],
                  "provider": {
                    "organization": "Example Geo Services Inc.",
@@ -73,7 +73,7 @@ public class JsonMessages {
                      ]
                    }
                  ],
-                 "supportsAuthenticatedExtendedCard": false,
+                 "supportsExtendedAgentCard": false,
                  "signatures": [
                    {
                      "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJrZXktMSIsImprdSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWdlbnQvandrcy5qc29uIn0",
@@ -81,86 +81,6 @@ public class JsonMessages {
                    }
                  ]
                }""";
-
-    static final String AUTHENTICATION_EXTENDED_AGENT_CARD = """
-            {
-                "name": "GeoSpatial Route Planner Agent Extended",
-                "description": "Extended description",
-                "supportedInterfaces": [
-                  {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC"}
-                ],
-                "provider": {
-                  "organization": "Example Geo Services Inc.",
-                  "url": "https://www.examplegeoservices.com"
-                },
-                "iconUrl": "https://georoute-agent.example.com/icon.png",
-                "version": "1.2.0",
-                "documentationUrl": "https://docs.examplegeoservices.com/georoute-agent/api",
-                "capabilities": {
-                  "streaming": true,
-                  "pushNotifications": true,
-                  "stateTransitionHistory": false
-                },
-                "securitySchemes": {
-                  "google": {
-                    "openIdConnectSecurityScheme": {
-                      "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
-                    }
-                  }
-                },
-               "security": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
-                "defaultInputModes": ["application/json", "text/plain"],
-                "defaultOutputModes": ["application/json", "image/png"],
-                "skills": [
-                  {
-                    "id": "route-optimizer-traffic",
-                    "name": "Traffic-Aware Route Optimizer",
-                    "description": "Calculates the optimal driving route between two or more locations, taking into account real-time traffic conditions, road closures, and user preferences (e.g., avoid tolls, prefer highways).",
-                    "tags": ["maps", "routing", "navigation", "directions", "traffic"],
-                    "examples": [
-                      "Plan a route from '1600 Amphitheatre Parkway, Mountain View, CA' to 'San Francisco International Airport' avoiding tolls.",
-                      "{\\"origin\\": {\\"lat\\": 37.422, \\"lng\\": -122.084}, \\"destination\\": {\\"lat\\": 37.7749, \\"lng\\": -122.4194}, \\"preferences\\": [\\"avoid_ferries\\"]}"
-                    ],
-                    "inputModes": ["application/json", "text/plain"],
-                    "outputModes": [
-                      "application/json",
-                      "application/vnd.geo+json",
-                      "text/html"
-                    ]
-                  },
-                  {
-                    "id": "custom-map-generator",
-                    "name": "Personalized Map Generator",
-                    "description": "Creates custom map images or interactive map views based on user-defined points of interest, routes, and style preferences. Can overlay data layers.",
-                    "tags": ["maps", "customization", "visualization", "cartography"],
-                    "examples": [
-                      "Generate a map of my upcoming road trip with all planned stops highlighted.",
-                      "Show me a map visualizing all coffee shops within a 1-mile radius of my current location."
-                    ],
-                    "inputModes": ["application/json"],
-                    "outputModes": [
-                      "image/png",
-                      "image/jpeg",
-                      "application/json",
-                      "text/html"
-                    ]
-                  },
-                  {
-                    "id": "skill-extended",
-                    "name": "Extended Skill",
-                    "description": "This is an extended skill.",
-                    "tags": ["extended"]
-                  }
-                ],
-                "supportsAuthenticatedExtendedCard": true,
-                "protocolVersion": "0.2.9",
-                "signatures": [
-                   {
-                     "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJrZXktMSIsImprdSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWdlbnQvandrcy5qc29uIn0",
-                     "signature": "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ"
-                   }
-                 ]
-              }""";
 
     static final String SEND_MESSAGE_TEST_REQUEST = """
            {
@@ -676,7 +596,7 @@ public class JsonMessages {
                     "name": "GeoSpatial Route Planner Agent Extended",
                     "description": "Extended description",
                     "supportedInterfaces": [
-                      {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC"}
+                      {"url": "https://georoute-agent.example.com/a2a/v1", "protocolBinding": "JSONRPC", "tenant": ""}
                     ],
                     "provider": {
                       "organization": "Example Geo Services Inc.",
@@ -741,7 +661,7 @@ public class JsonMessages {
                         "tags": ["extended"]
                       }
                     ],
-                    "supportsAuthenticatedExtendedCard": true,
+                    "supportsExtendedAgentCard": true,
                     "protocolVersion": "0.2.5",
                     "signatures": [
                        {
@@ -816,7 +736,7 @@ public class JsonMessages {
                     ]
                   }
                 ],
-                "supportsAuthenticatedExtendedCard": true,
+                "supportsExtendedAgentCard": true,
                 "protocolVersion": "1.0.0"
               }""";
 }

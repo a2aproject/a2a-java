@@ -239,7 +239,7 @@ public class JSONRPCHandler {
     // TODO: Add authentication (https://github.com/a2aproject/a2a-java/issues/77)
     public GetAuthenticatedExtendedCardResponse onGetAuthenticatedExtendedCardRequest(
             GetAuthenticatedExtendedCardRequest request, ServerCallContext context) {
-        if (!agentCard.supportsAuthenticatedExtendedCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
+        if (!agentCard.supportsExtendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
             return new GetAuthenticatedExtendedCardResponse(request.getId(),
                     new AuthenticatedExtendedCardNotConfiguredError(null, "Authenticated Extended Card not configured", null));
         }

@@ -119,7 +119,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
             .id("test-config-1")
             .build();
 
-        TaskPushNotificationConfig taskPushConfig = new TaskPushNotificationConfig(taskId, pushConfig);
+        TaskPushNotificationConfig taskPushConfig = new TaskPushNotificationConfig(taskId, pushConfig, "tenant");
         TaskPushNotificationConfig setResult = client.setTaskPushNotificationConfiguration(taskPushConfig);
         assertNotNull(setResult);
 

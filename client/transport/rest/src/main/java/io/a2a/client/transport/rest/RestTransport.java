@@ -136,7 +136,7 @@ public class RestTransport implements ClientTransport {
                 agentCard, context);
         try {
             String url;
-            if (taskQueryParams.historyLength() > 0) {
+            if (taskQueryParams.historyLength() != null && taskQueryParams.historyLength() > 0) {
                 url = agentUrl + String.format("/v1/tasks/%1s?historyLength=%2d", taskQueryParams.id(), taskQueryParams.historyLength());
             } else {
                 url = agentUrl + String.format("/v1/tasks/%1s", taskQueryParams.id());
@@ -200,6 +200,9 @@ public class RestTransport implements ClientTransport {
         if (request.historyLength() != null) {
             builder.setHistoryLength(request.historyLength());
         }
+        if (request.tenant() != null) {
+            builder.setTenant(request.tenant());
+        }
         if (request.includeArtifacts() != null && request.includeArtifacts()) {
             builder.setIncludeArtifacts(true);
         }
@@ -209,7 +212,8 @@ public class RestTransport implements ClientTransport {
 
         try {
             // Build query string
-            StringBuilder urlBuilder = new StringBuilder(agentUrl).append("/v1/tasks");
+            StringBuilder urlBuilder = new StringBuilder(agentUrl);
+            urlBuilder.append("/v1/tasks");
             String queryParams = buildListTasksQueryString(request);
             if (!queryParams.isEmpty()) {
                 urlBuilder.append("?").append(queryParams);
@@ -268,8 +272,8 @@ public class RestTransport implements ClientTransport {
     @Override
     public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
-        io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder builder =
-                io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder();
+        io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder builder
+                = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder();
         builder.setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(request))
                 .setParent("tasks/" + request.taskId());
         if (request.pushNotificationConfig().id() != null) {
@@ -291,8 +295,8 @@ public class RestTransport implements ClientTransport {
     @Override
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
-        io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder builder =
-                io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
+        io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder builder
+                = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
         builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId()));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
@@ -322,8 +326,8 @@ public class RestTransport implements ClientTransport {
     @Override
     public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
-        io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder builder =
-                io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder();
+        io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder builder
+                = io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder();
         builder.setParent(String.format("/tasks/%1s/pushNotificationConfigs", request.id()));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(ListTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
@@ -410,7 +414,7 @@ public class RestTransport implements ClientTransport {
             if (agentCard == null) {
                 resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
                 agentCard = resolver.getAgentCard();
-                needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
+                needsExtendedCard = agentCard.supportsExtendedAgentCard();
             }
             if (!needsExtendedCard) {
                 return agentCard;

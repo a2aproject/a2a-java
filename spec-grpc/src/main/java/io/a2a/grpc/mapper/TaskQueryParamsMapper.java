@@ -23,7 +23,6 @@ public interface TaskQueryParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", expression = "java(ResourceNameParser.extractTaskId(proto.getName()))")
     @Mapping(target = "historyLength", source = "historyLength")
-    @Mapping(target = "metadata", ignore = true)
     TaskQueryParams fromProto(io.a2a.grpc.GetTaskRequest proto);
 
     @BeanMapping(builder = @Builder(buildMethod = "build"))

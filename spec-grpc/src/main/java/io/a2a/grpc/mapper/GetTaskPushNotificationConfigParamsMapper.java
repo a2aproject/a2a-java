@@ -26,7 +26,6 @@ public interface GetTaskPushNotificationConfigParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", expression = "java(ResourceNameParser.parseGetTaskPushNotificationConfigName(proto.getName())[0])")
     @Mapping(target = "pushNotificationConfigId", expression = "java(ResourceNameParser.parseGetTaskPushNotificationConfigName(proto.getName())[1])")
-    @Mapping(target = "metadata", ignore = true)
     GetTaskPushNotificationConfigParams fromProto(io.a2a.grpc.GetTaskPushNotificationConfigRequest proto);
 
     /**

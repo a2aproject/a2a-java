@@ -1,7 +1,6 @@
 package io.a2a.spec;
 
 import io.a2a.util.Assert;
-import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -9,22 +8,22 @@ import org.jspecify.annotations.Nullable;
  *
  * @param id the ID for the task to be queried
  * @param historyLength the maximum number of items of history for the task to include in the response
- * @param metadata additional properties
+ * @param tenant optional tenant, provided as a path parameter.
  */
-public record TaskQueryParams(String id, int historyLength, @Nullable Map<String, Object> metadata) {
+public record TaskQueryParams(String id, @Nullable Integer historyLength, String tenant) {
 
     public TaskQueryParams {
         Assert.checkNotNullParam("id", id);
-        if (historyLength < 0) {
+        Assert.checkNotNullParam("tenant", tenant);
+        if (historyLength != null && historyLength < 0) {
             throw new IllegalArgumentException("Invalid history length");
         }
     }
-
-    public TaskQueryParams(String id) {
-        this(id, 0, null);
+    public TaskQueryParams(String id, Integer historyLength) {
+        this(id, historyLength, "");
     }
 
-    public TaskQueryParams(String id, int historyLength) {
-        this(id, historyLength, null);
+    public TaskQueryParams(String id) {
+        this(id, 0, "");
     }
 }

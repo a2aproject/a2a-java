@@ -130,6 +130,11 @@ public class A2AServerRoutes {
             String historyLengthStr = rc.request().params().get("historyLength");
             String lastUpdatedAfter = rc.request().params().get("lastUpdatedAfter");
             String includeArtifactsStr = rc.request().params().get("includeArtifacts");
+            //TODO replace by path extraction
+            String tenant = rc.request().params().get("tenant");
+            if (tenant == null) {
+                tenant = "";
+            }
 
             // Parse optional parameters
             Integer pageSize = null;
@@ -148,7 +153,7 @@ public class A2AServerRoutes {
             }
 
             response = jsonRestHandler.listTasks(contextId, statusStr, pageSize, pageToken,
-                    historyLength, lastUpdatedAfter, includeArtifacts, context);
+                    historyLength, lastUpdatedAfter, includeArtifacts, tenant, context);
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
         } catch (IllegalArgumentException e) {

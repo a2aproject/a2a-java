@@ -1,6 +1,5 @@
 package io.a2a.spec;
 
-import java.util.Map;
 
 
 import io.a2a.util.Assert;
@@ -13,11 +12,11 @@ import io.a2a.util.Assert;
  *
  * @param id the task identifier (required)
  * @param pushNotificationConfigId the specific configuration ID to delete (required)
- * @param metadata optional arbitrary key-value metadata for the request
+ * @param tenant optional tenant, provided as a path parameter.
  * @see DeleteTaskPushNotificationConfigRequest for the request using these parameters
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record DeleteTaskPushNotificationConfigParams(String id, String pushNotificationConfigId, Map<String, Object> metadata) {
+public record DeleteTaskPushNotificationConfigParams(String id, String pushNotificationConfigId, String tenant) {
 
     /**
      * Compact constructor that validates required fields.
@@ -27,6 +26,7 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
     public DeleteTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("pushNotificationConfigId", pushNotificationConfigId);
+        Assert.checkNotNullParam("tenant", tenant);
     }
 
     /**
@@ -37,7 +37,7 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
      * @throws IllegalArgumentException if id or pushNotificationConfigId is null
      */
     public DeleteTaskPushNotificationConfigParams(String id, String pushNotificationConfigId) {
-        this(id, pushNotificationConfigId, null);
+        this(id, pushNotificationConfigId, "");
     }
 
     /**
@@ -57,7 +57,7 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
     public static class Builder {
         String id;
         String pushNotificationConfigId;
-        Map<String, Object> metadata;
+        String tenant;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -88,13 +88,13 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
         }
 
         /**
-         * Sets optional metadata for the request.
+         * Sets optional tenant for the request.
          *
-         * @param metadata arbitrary key-value metadata (optional)
+         * @param tenant arbitrary tenant (optional)
          * @return this builder for method chaining
          */
-        public Builder metadata(Map<String, Object> metadata) {
-            this.metadata = metadata;
+        public Builder tenant(String tenant) {
+            this.tenant = tenant;
             return this;
         }
 
@@ -105,7 +105,7 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
          * @throws IllegalArgumentException if id or pushNotificationConfigId is null
          */
         public DeleteTaskPushNotificationConfigParams build() {
-            return new DeleteTaskPushNotificationConfigParams(id, pushNotificationConfigId, metadata);
+            return new DeleteTaskPushNotificationConfigParams(id, pushNotificationConfigId, tenant);
         }
     }
 }

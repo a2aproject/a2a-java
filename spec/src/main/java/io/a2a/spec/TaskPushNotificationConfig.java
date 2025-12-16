@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Associates a push notification configuration with a specific task.
@@ -19,11 +20,11 @@ import io.a2a.util.Assert;
  * @see SetTaskPushNotificationConfigRequest for setting push notifications
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record TaskPushNotificationConfig(String taskId, PushNotificationConfig pushNotificationConfig) {
+public record TaskPushNotificationConfig(String taskId, PushNotificationConfig pushNotificationConfig, @Nullable String tenant) {
 
     public TaskPushNotificationConfig {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("pushNotificationConfig", pushNotificationConfig);
         Assert.checkNotNullParam("configId", pushNotificationConfig.id());
-    }
+    } 
 }

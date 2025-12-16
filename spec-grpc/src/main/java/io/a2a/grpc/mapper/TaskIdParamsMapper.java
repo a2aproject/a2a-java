@@ -22,7 +22,6 @@ public interface TaskIdParamsMapper {
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", expression = "java(ResourceNameParser.extractTaskId(proto.getName()))")
-    @Mapping(target = "metadata", ignore = true)
     TaskIdParams fromProtoCancelTaskRequest(io.a2a.grpc.CancelTaskRequest proto);
     
      /**
@@ -40,7 +39,6 @@ public interface TaskIdParamsMapper {
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", expression = "java(ResourceNameParser.extractTaskId(proto.getName()))")
-    @Mapping(target = "metadata", ignore = true)
     TaskIdParams fromProtoSubscribeToTaskRequest(io.a2a.grpc.SubscribeToTaskRequest proto);
 
     /**

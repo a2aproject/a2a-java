@@ -1,6 +1,5 @@
 package io.a2a.spec;
 
-import java.util.Map;
 
 
 import io.a2a.util.Assert;
@@ -14,23 +13,24 @@ import org.jspecify.annotations.Nullable;
  *
  * @param id the task identifier (required)
  * @param pushNotificationConfigId optional specific configuration ID to retrieve
- * @param metadata optional arbitrary key-value metadata for the request
+ * @param tenant optional tenant, provided as a path parameter.
  * @see GetTaskPushNotificationConfigRequest for the request using these parameters
  * @see TaskPushNotificationConfig for the returned configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record GetTaskPushNotificationConfigParams(String id, @Nullable String pushNotificationConfigId, @Nullable Map<String, Object> metadata) {
+public record GetTaskPushNotificationConfigParams(String id, @Nullable String pushNotificationConfigId, String tenant) {
 
     public GetTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("id", id);
+        Assert.checkNotNullParam("tenant", tenant);
     }
 
     public GetTaskPushNotificationConfigParams(String id) {
-        this(id, null, null);
+        this(id, null, "");
     }
 
     public GetTaskPushNotificationConfigParams(String id, String pushNotificationConfigId) {
-        this(id, pushNotificationConfigId, null);
+        this(id, pushNotificationConfigId, "");
     }
 
     /**
@@ -45,7 +45,7 @@ public record GetTaskPushNotificationConfigParams(String id, @Nullable String pu
     public static class Builder {
         String id;
         String pushNotificationConfigId;
-        Map<String, Object> metadata;
+        String tenant;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -63,13 +63,13 @@ public record GetTaskPushNotificationConfigParams(String id, @Nullable String pu
             return this;
         }
 
-        public Builder metadata(Map<String, Object> metadata) {
-            this.metadata = metadata;
+        public Builder tenant(String tenant) {
+            this.tenant = tenant;
             return this;
         }
 
         public GetTaskPushNotificationConfigParams build() {
-            return new GetTaskPushNotificationConfigParams(id, pushNotificationConfigId, metadata);
+            return new GetTaskPushNotificationConfigParams(id, pushNotificationConfigId, tenant == null ? "" : tenant);
         }
     }
 }

@@ -337,8 +337,9 @@ public class A2AServerRoutesTest {
                         .id("config-123")
                         .url("https://example.com/callback")
                         .authentication(new AuthenticationInfo(Collections.singletonList("jwt"), null))
-                        .build()
-        );
+                        .build(),
+                "tenant");
+
         SetTaskPushNotificationConfigResponse realResponse = new SetTaskPushNotificationConfigResponse("1", responseConfig);
         when(mockJsonRpcHandler.setPushNotificationConfig(any(SetTaskPushNotificationConfigRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);
@@ -376,7 +377,8 @@ public class A2AServerRoutesTest {
                 PushNotificationConfig.builder()
                         .id("config-456")
                         .url("https://example.com/callback")
-                        .build()
+                        .build(),
+                null
         );
         GetTaskPushNotificationConfigResponse realResponse = new GetTaskPushNotificationConfigResponse("1", responseConfig);
         when(mockJsonRpcHandler.getPushNotificationConfig(any(GetTaskPushNotificationConfigRequest.class),
@@ -415,7 +417,8 @@ public class A2AServerRoutesTest {
                 PushNotificationConfig.builder()
                         .id("config-123")
                         .url("https://example.com/callback")
-                        .build()
+                        .build(),
+                null
         );
         ListTaskPushNotificationConfigResponse realResponse = new ListTaskPushNotificationConfigResponse("1", Collections.singletonList(config));
         when(mockJsonRpcHandler.listPushNotificationConfig(any(ListTaskPushNotificationConfigRequest.class),

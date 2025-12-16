@@ -23,7 +23,6 @@ public interface DeleteTaskPushNotificationConfigParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", expression = "java(ResourceNameParser.parseTaskPushNotificationConfigName(proto.getName())[0])")
     @Mapping(target = "pushNotificationConfigId", expression = "java(ResourceNameParser.parseTaskPushNotificationConfigName(proto.getName())[1])")
-    @Mapping(target = "metadata", ignore = true)
     DeleteTaskPushNotificationConfigParams fromProto(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest proto);
 
     /**

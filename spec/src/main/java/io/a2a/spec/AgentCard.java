@@ -28,7 +28,7 @@ import io.a2a.util.Assert;
  * @param defaultInputModes list of supported input modes, e.g., "text", "audio" (required)
  * @param defaultOutputModes list of supported output modes, e.g., "text", "audio" (required)
  * @param skills list of skills that this agent can perform (required)
- * @param supportsAuthenticatedExtendedCard whether the agent supports authenticated extended card retrieval (optional, defaults to false)
+ * @param supportsExtendedAgentCard whether the agent supports authenticated extended card retrieval (optional, defaults to false)
  * @param securitySchemes map of security scheme names to their definitions (optional)
  * @param security list of security requirements for accessing the agent (optional)
  * @param iconUrl URL to an icon representing the agent (optional)
@@ -47,7 +47,7 @@ public record AgentCard(
         List<String> defaultInputModes,
         List<String> defaultOutputModes,
         List<AgentSkill> skills,
-        boolean supportsAuthenticatedExtendedCard,
+        boolean supportsExtendedAgentCard,
         Map<String, SecurityScheme> securitySchemes,
         List<Map<String, List<String>>> security,
         String iconUrl,
@@ -152,7 +152,7 @@ public record AgentCard(
         private List<String> defaultInputModes;
         private List<String> defaultOutputModes;
         private List<AgentSkill> skills;
-        private boolean supportsAuthenticatedExtendedCard = false;
+        private boolean supportsExtendedAgentCard = false;
         private Map<String, SecurityScheme> securitySchemes;
         private List<Map<String, List<String>>> security;
         private String iconUrl;
@@ -185,7 +185,7 @@ public record AgentCard(
             this.defaultInputModes = card.defaultInputModes != null ? new ArrayList<>(card.defaultInputModes) : null;
             this.defaultOutputModes = card.defaultOutputModes != null ? new ArrayList<>(card.defaultOutputModes) : null;
             this.skills = card.skills != null ? new ArrayList<>(card.skills) : null;
-            this.supportsAuthenticatedExtendedCard = card.supportsAuthenticatedExtendedCard;
+            this.supportsExtendedAgentCard = card.supportsExtendedAgentCard;
             this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
             this.security = card.security != null ? new ArrayList<>(card.security) : null;
             this.iconUrl = card.iconUrl;
@@ -307,17 +307,17 @@ public record AgentCard(
         }
 
         /**
-         * Sets whether the agent supports authenticated extended card retrieval.
+         * Sets whether the agent supports extended card retrieval.
          * <p>
          * When true, the agent can provide additional information through the
          * {@code GetAuthenticatedExtendedCard} method, which may include private
          * or user-specific details not in the public card.
          *
-         * @param supportsAuthenticatedExtendedCard true if supported, false otherwise
+         * @param supportsExtendedAgentCard true if supported, false otherwise
          * @return this builder for method chaining
          */
-        public Builder supportsAuthenticatedExtendedCard(boolean supportsAuthenticatedExtendedCard) {
-            this.supportsAuthenticatedExtendedCard = supportsAuthenticatedExtendedCard;
+        public Builder supportsExtendedAgentCard(boolean supportsExtendedAgentCard) {
+            this.supportsExtendedAgentCard = supportsExtendedAgentCard;
             return this;
         }
 
@@ -414,7 +414,7 @@ public record AgentCard(
         public AgentCard build() {
             return new AgentCard(name, description, provider, version, documentationUrl,
                     capabilities, defaultInputModes, defaultOutputModes, skills,
-                    supportsAuthenticatedExtendedCard, securitySchemes, security, iconUrl,
+                    supportsExtendedAgentCard, securitySchemes, security, iconUrl,
                     supportedInterfaces, protocolVersion, signatures);
         }
     }

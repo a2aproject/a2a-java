@@ -286,8 +286,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Task task = client.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64",
-                new HashMap<>()), null);
+        Task task = client.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.getId());
         assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.getContextId());
         assertEquals(TaskState.CANCELED, task.getStatus().state());
@@ -311,8 +310,7 @@ public class JSONRPCTransportTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
-                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "c295ea44-7543-4f78-b524-7a38915ad6e4",
-                        new HashMap<>()), null);
+                new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "c295ea44-7543-4f78-b524-7a38915ad6e4"), null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
@@ -344,7 +342,7 @@ public class JSONRPCTransportTest {
                                 .url("https://example.com/callback")
                                 .authentication(new AuthenticationInfo(Collections.singletonList("jwt"),
                                         null))
-                                .build()), null);
+                                .build(), "tenant"), null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
@@ -418,7 +416,7 @@ public class JSONRPCTransportTest {
         assertEquals(inputModes, skills.get(1).inputModes());
         outputModes = List.of("image/png", "image/jpeg", "application/json", "text/html");
         assertEquals(outputModes, skills.get(1).outputModes());
-        assertFalse(agentCard.supportsAuthenticatedExtendedCard());
+        assertFalse(agentCard.supportsExtendedAgentCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
         assertEquals("0.2.9", agentCard.protocolVersion());
         assertEquals("JSONRPC", agentCard.supportedInterfaces().get(0).protocolBinding());
@@ -511,7 +509,7 @@ public class JSONRPCTransportTest {
         assertEquals("Extended Skill", skills.get(2).name());
         assertEquals("This is an extended skill.", skills.get(2).description());
         assertEquals(List.of("extended"), skills.get(2).tags());
-        assertTrue(agentCard.supportsAuthenticatedExtendedCard());
+        assertTrue(agentCard.supportsExtendedAgentCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
         assertEquals("0.2.5", agentCard.protocolVersion());
     }

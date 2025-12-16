@@ -1,9 +1,9 @@
 package io.a2a.spec;
 
+import io.a2a.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
-import java.util.Map;
 
 /**
  * Parameters for listing tasks with optional filtering and pagination.
@@ -15,7 +15,7 @@ import java.util.Map;
  * @param historyLength Number of recent messages to include in each task's history (defaults to 0)
  * @param lastUpdatedAfter Filter tasks updated after this timestamp
  * @param includeArtifacts Whether to include artifacts in the returned tasks (defaults to false)
- * @param metadata Additional filter properties
+ * @param tenant optional tenant, provided as a path parameter.
  */
 public record ListTasksParams(
         @Nullable String contextId,
@@ -25,13 +25,16 @@ public record ListTasksParams(
         @Nullable Integer historyLength,
         @Nullable Instant lastUpdatedAfter,
         @Nullable Boolean includeArtifacts,
-        @Nullable Map<String, Object> metadata
+        String tenant
 ) {
+    public ListTasksParams {
+        Assert.checkNotNullParam("tenant", tenant);
+    }
     /**
      * Default constructor for listing all tasks.
      */
     public ListTasksParams() {
-        this(null, null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, "");
     }
 
     /**
@@ -41,7 +44,7 @@ public record ListTasksParams(
      * @param pageToken Token for pagination
      */
     public ListTasksParams(Integer pageSize, String pageToken) {
-        this(null, null, pageSize, pageToken, null, null, null, null);
+        this(null, null, pageSize, pageToken, null, null, null, "");
     }
 
     /**
@@ -100,7 +103,7 @@ public record ListTasksParams(
         private Integer historyLength;
         private Instant lastUpdatedAfter;
         private Boolean includeArtifacts;
-        private Map<String, Object> metadata;
+        private String tenant;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -143,14 +146,14 @@ public record ListTasksParams(
             return this;
         }
 
-        public Builder metadata(Map<String, Object> metadata) {
-            this.metadata = metadata;
+        public Builder tenant(String tenant) {
+            this.tenant = tenant;
             return this;
         }
 
         public ListTasksParams build() {
             return new ListTasksParams(contextId, status, pageSize, pageToken, historyLength,
-                    lastUpdatedAfter, includeArtifacts, metadata);
+                    lastUpdatedAfter, includeArtifacts, tenant);
         }
     }
 }

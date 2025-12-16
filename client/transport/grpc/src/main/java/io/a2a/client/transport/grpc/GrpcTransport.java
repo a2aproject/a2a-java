@@ -123,7 +123,11 @@ public class GrpcTransport implements ClientTransport {
 
         io.a2a.grpc.GetTaskRequest.Builder requestBuilder = io.a2a.grpc.GetTaskRequest.newBuilder();
         requestBuilder.setName("tasks/" + request.id());
-        requestBuilder.setHistoryLength(request.historyLength());
+        if(request.historyLength() != null) {
+            requestBuilder.setHistoryLength(request.historyLength());
+        } else {
+            requestBuilder.clearHistoryLength();
+        }
         io.a2a.grpc.GetTaskRequest getTaskRequest = requestBuilder.build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetTaskRequest.METHOD, getTaskRequest,
                 agentCard, context);
@@ -218,7 +222,7 @@ public class GrpcTransport implements ClientTransport {
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             return FromProto.taskPushNotificationConfig(stubWithMetadata.setTaskPushNotificationConfig(grpcRequest));
-        } catch (StatusRuntimeException e) {
+        } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to create task push notification config: ");
         }
     }

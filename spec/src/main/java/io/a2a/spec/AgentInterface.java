@@ -17,20 +17,27 @@ import io.a2a.util.Assert;
  * This class is immutable.
  *
  * @param protocolBinding the protocol binding supported at this URL (e.g., "JSONRPC", "GRPC", "HTTP+JSON") (required)
- * @param url the endpoint URL where this interface is available; must be a valid absolute HTTPS URL in production (required)
+ * @param url the endpoint URL where this interface is available; must be a valid absolute HTTPS URL in production
+ * (required)
+ * @param tenant the tenant to be set in the request when calling the agent.
  * @see AgentCard
  * @see TransportProtocol
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentInterface(String protocolBinding, String url) {
+public record AgentInterface(String protocolBinding, String url, String tenant) {
 
     /**
      * Compact constructor that validates required fields.
      *
      * @throws IllegalArgumentException if protocolBinding or url is null
      */
-    public AgentInterface {
+    public AgentInterface   {
         Assert.checkNotNullParam("protocolBinding", protocolBinding);
         Assert.checkNotNullParam("url", url);
+        Assert.checkNotNullParam("tenant", tenant);
+    }
+
+    public AgentInterface(String protocolBinding, String url) {
+        this(protocolBinding, url, "");
     }
 }

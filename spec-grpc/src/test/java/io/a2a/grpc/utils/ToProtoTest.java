@@ -47,7 +47,7 @@ public class ToProtoTest {
         AgentCard agentCard = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999", "")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(AgentCapabilities.builder()
@@ -82,7 +82,7 @@ public class ToProtoTest {
         agentCard = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999", "")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(AgentCapabilities.builder()
@@ -206,7 +206,7 @@ public class ToProtoTest {
                 PushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("xyz")
-                        .build());
+                        .build(), null);
         io.a2a.grpc.TaskPushNotificationConfig result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
         assertEquals("tasks/push-task-123/pushNotificationConfigs/xyz", result.getName());
         assertNotNull(result.getPushNotificationConfig());
@@ -220,7 +220,7 @@ public class ToProtoTest {
                                 .authentication(new AuthenticationInfo(Collections.singletonList("jwt"), "credentials"))
                                 .url("http://example.com")
                                 .id("xyz")
-                                .build());
+                                .build(), null);
         result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
         assertEquals("tasks/push-task-123/pushNotificationConfigs/xyz", result.getName());
         assertNotNull(result.getPushNotificationConfig());

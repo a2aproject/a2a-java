@@ -40,7 +40,7 @@ public class HelloWorldClient {
             System.out.println("Using public agent card for client initialization (default).");
             finalAgentCard = publicAgentCard;
 
-            if (publicAgentCard.supportsAuthenticatedExtendedCard()) {
+            if (publicAgentCard.supportsExtendedAgentCard()) {
                 System.out.println("Public card supports authenticated extended card. Attempting to fetch from: " + SERVER_URL + "/agent/authenticatedExtendedCard");
                 Map<String, String> authHeaders = new HashMap<>();
                 authHeaders.put("Authorization", "Bearer dummy-token-for-extended-card");
