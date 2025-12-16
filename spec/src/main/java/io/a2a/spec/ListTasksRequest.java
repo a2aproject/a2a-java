@@ -8,7 +8,7 @@ import java.util.UUID;
 public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasksParams> {
 
     /** The JSON-RPC method name. */
-    public static final String METHOD = "ListTask";
+    public static final String METHOD = "ListTasks";
 
     /**
      * Constructs request with all parameters.
