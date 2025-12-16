@@ -1,11 +1,14 @@
 package io.a2a.server.requesthandlers;
 
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -17,6 +20,8 @@ import jakarta.enterprise.context.Dependent;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
@@ -31,18 +36,14 @@ import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
+import io.a2a.spec.Event;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
-import io.a2a.spec.Event;
 import io.a2a.spec.TextPart;
-import io.a2a.json.JsonProcessingException;
-import io.a2a.json.JsonUtil;
 import io.quarkus.arc.profile.IfBuildProfile;
-import java.util.Map;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -126,7 +127,7 @@ public class AbstractA2ARequestHandlerTest {
                 .defaultInputModes(new ArrayList<>())
                 .defaultOutputModes(new ArrayList<>())
                 .skills(new ArrayList<>())
-                .protocolVersion("0.2.5");
+                .protocolVersion(CURRENT_PROTOCOL_VERSION);
         return builder.build();
     }
 

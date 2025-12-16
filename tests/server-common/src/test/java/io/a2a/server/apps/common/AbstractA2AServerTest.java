@@ -1,5 +1,6 @@
 package io.a2a.server.apps.common;
 
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -30,7 +31,6 @@ import java.util.stream.Stream;
 
 import jakarta.ws.rs.core.MediaType;
 
-import io.a2a.json.JsonProcessingException;
 import io.a2a.client.Client;
 import io.a2a.client.ClientBuilder;
 import io.a2a.client.ClientEvent;
@@ -40,6 +40,8 @@ import io.a2a.client.TaskUpdateEvent;
 import io.a2a.client.config.ClientConfig;
 import io.a2a.grpc.utils.JSONRPCUtils;
 import io.a2a.grpc.utils.ProtoUtils;
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
@@ -74,7 +76,6 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.TransportProtocol;
 import io.a2a.spec.UnsupportedOperationError;
-import io.a2a.json.JsonUtil;
 import io.a2a.util.Utils;
 import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
@@ -1985,7 +1986,7 @@ public abstract class AbstractA2AServerTest {
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
                 .supportedInterfaces(List.of(new AgentInterface(getTransportProtocol(), getTransportUrl())))
-                .protocolVersion("0.2.5")
+                .protocolVersion(CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 

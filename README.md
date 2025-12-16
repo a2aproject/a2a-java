@@ -132,7 +132,7 @@ public class WeatherAgentCardProducer {
                         .tags(Collections.singletonList("weather"))
                         .examples(List.of("weather in LA, CA"))
                         .build()))
-                .protocolVersion("0.3.0")
+                .protocolVersion(io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 }
