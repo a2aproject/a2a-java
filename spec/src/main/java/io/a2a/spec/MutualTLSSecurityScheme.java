@@ -67,36 +67,21 @@ public final class MutualTLSSecurityScheme implements SecurityScheme {
         this.type = type;
     }
 
-    @Override
     /**
-
      * Gets the Description.
-
      *
-
      * @return the Description
-
      */
-
+    @Override
     public String getDescription() {
         return description;
     }
 
     /**
-
-
      * Gets the Type.
-
-
      *
-
-
      * @return the Type
-
-
      */
-
-
     public String getType() {
         return type;
     }

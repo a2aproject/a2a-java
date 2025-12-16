@@ -68,53 +68,28 @@ public final class OpenIdConnectSecurityScheme implements SecurityScheme {
 
     @Override
     /**
-
      * Gets the Description.
-
      *
-
      * @return the Description
-
      */
-
     public String getDescription() {
         return description;
     }
 
     /**
-
-
      * Gets the OpenIdConnectUrl.
-
-
      *
-
-
      * @return the OpenIdConnectUrl
-
-
      */
-
-
     public String getOpenIdConnectUrl() {
         return openIdConnectUrl;
     }
 
     /**
-
-
      * Gets the Type.
-
-
      *
-
-
      * @return the Type
-
-
      */
-
-
     public String getType() {
         return type;
     }

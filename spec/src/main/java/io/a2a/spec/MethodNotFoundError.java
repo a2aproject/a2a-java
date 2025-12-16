@@ -42,14 +42,8 @@ public class MethodNotFoundError extends JSONRPCError {
     }
 
     /**
-
-
      * Constructs error with default message.
-
-
      */
-
-
     public MethodNotFoundError() {
         this(METHOD_NOT_FOUND_ERROR_CODE, null, null);
     }

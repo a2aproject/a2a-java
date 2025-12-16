@@ -8,53 +8,25 @@ import java.util.UUID;
 public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasksParams> {
 
     /** The JSON-RPC method name. */
-
-
     public static final String METHOD = "ListTask";
 
     /**
-
-
      * Constructs request with all parameters.
-
-
      *
-
-
      * @param jsonrpc the JSON-RPC version
-
-
      * @param id the request ID
-
-
      * @param params the request parameters
-
-
      */
-
-
     public ListTasksRequest(String jsonrpc, Object id, ListTasksParams params) {
         super(jsonrpc, METHOD, id, params);
     }
 
     /**
-
-
      * Constructs request with ID and parameters.
-
-
      *
-
-
      * @param id the request ID
-
-
      * @param params the request parameters
-
-
      */
-
-
     public ListTasksRequest(Object id, ListTasksParams params) {
         this(JSONRPC_VERSION, id, params);
     }
@@ -71,8 +43,6 @@ public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasks
     /**
      * Builder for constructing instances.
      */
-
-
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -118,20 +88,10 @@ public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasks
         }
 
         /**
-
-
          * Builds the instance.
-
-
          *
-
-
          * @return a new instance
-
-
          */
-
-
         public ListTasksRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

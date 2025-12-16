@@ -31,17 +31,15 @@ import io.a2a.util.Utils;
 public abstract sealed class JSONRPCRequest<T> implements JSONRPCMessage permits NonStreamingJSONRPCRequest, StreamingJSONRPCRequest {
 
     /** The JSON-RPC protocol version. */
-
-
     protected String jsonrpc;
+
     /** The request identifier. */
-
     protected Object id;
+
     /** The method name to invoke. */
-
     protected String method;
-    /** The method parameters. */
 
+    /** The method parameters. */
     protected T params;
 
     /**
@@ -85,32 +83,14 @@ public abstract sealed class JSONRPCRequest<T> implements JSONRPCMessage permits
     }
 
     /**
-
-
      * Validates and sets JSON-RPC parameters.
-
-
      *
-
-
      * @param jsonrpc the JSON-RPC version
-
-
      * @param method the method name
-
-
      * @param id the request ID
-
-
      * @param params the parameters
-
-
      * @param paramsIsRequired whether parameters are required
-
-
      */
-
-
     protected void validateAndSetJsonParameters(String jsonrpc, String method, Object id, T params, boolean paramsIsRequired) {
         this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
         if (!JSONRPC_VERSION.equals(this.jsonrpc)) {

@@ -62,14 +62,8 @@ public record GetTaskPushNotificationConfigParams(String id, @Nullable String pu
     }
 
     /**
-
-
      * Builder for constructing GetTaskPushNotificationConfigParams instances.
-
-
      */
-
-
     public static class Builder {
         String id;
         String pushNotificationConfigId;

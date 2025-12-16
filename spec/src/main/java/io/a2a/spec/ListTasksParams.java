@@ -111,8 +111,6 @@ public record ListTasksParams(
     /**
      * Builder for constructing instances.
      */
-
-
     public static class Builder {
         private String contextId;
         private TaskState status;

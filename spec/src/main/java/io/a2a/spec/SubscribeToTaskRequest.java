@@ -25,8 +25,6 @@ import java.util.UUID;
 public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskIdParams> {
 
     /** The JSON-RPC method name. */
-
-
     public static final String METHOD = "SubscribeToTask";
 
     /**
@@ -62,8 +60,6 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
     /**
      * Builder for constructing instances.
      */
-
-
     public static class Builder {
         private String jsonrpc;
         private Object id;

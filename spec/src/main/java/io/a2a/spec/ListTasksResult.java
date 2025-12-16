@@ -74,8 +74,6 @@ public record ListTasksResult(
     /**
      * Builder for constructing instances.
      */
-
-
     public static class Builder {
         private List<Task> tasks;
         private int totalSize;

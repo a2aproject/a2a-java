@@ -18,31 +18,15 @@ import java.util.UUID;
 public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<ListTaskPushNotificationConfigParams> {
 
     /** The JSON-RPC method name. */
-
-
     public static final String METHOD = "ListTaskPushNotificationConfig";
 
     /**
-
-
      * Constructs request with all parameters.
-
-
      *
-
-
      * @param jsonrpc the JSON-RPC version
-
-
      * @param id the request ID
-
-
      * @param params the request parameters
-
-
      */
-
-
     public ListTaskPushNotificationConfigRequest(String jsonrpc, Object id, ListTaskPushNotificationConfigParams params) {
         super(jsonrpc, METHOD, id, params);
     }
@@ -114,20 +98,10 @@ public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSO
         }
 
         /**
-
-
          * Builds the instance.
-
-
          *
-
-
          * @return a new instance
-
-
          */
-
-
         public ListTaskPushNotificationConfigRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();
