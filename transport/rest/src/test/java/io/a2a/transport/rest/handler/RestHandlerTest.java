@@ -283,7 +283,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
         Assertions.assertEquals("application/json", response.getContentType());
         // Now get it
-        response = handler.getTaskPushNotificationConfiguration(MINIMAL_TASK.getId(), "default-config-id", callContext);
+        response = handler.getTaskPushNotificationConfiguration(MINIMAL_TASK.getId(), "default-config-id", "", callContext);
         Assertions.assertEquals(200, response.getStatusCode(), response.toString());
         Assertions.assertEquals("application/json", response.getContentType());
     }

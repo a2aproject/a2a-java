@@ -236,12 +236,12 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, ServerCallContext context) {
+    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
-            GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams(taskId, configId);
+            GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams(taskId, configId, tenant);
             TaskPushNotificationConfig config = requestHandler.onGetTaskPushNotificationConfig(params, context);
             return createSuccessResponse(200, io.a2a.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(config)));
         } catch (JSONRPCError e) {

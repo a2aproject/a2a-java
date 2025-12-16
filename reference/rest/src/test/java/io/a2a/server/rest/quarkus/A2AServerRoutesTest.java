@@ -229,7 +229,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.getTaskPushNotificationConfiguration(anyString(), anyString(),
+        when(mockRestHandler.getTaskPushNotificationConfiguration(anyString(), anyString(), anyString(),
                 any(ServerCallContext.class))).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -238,7 +238,7 @@ public class A2AServerRoutesTest {
         routes.getTaskPushNotificationConfiguration(mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).getTaskPushNotificationConfiguration(eq("task123"), eq("config456"),
+        verify(mockRestHandler).getTaskPushNotificationConfiguration(eq("task123"), eq("config456"), anyString(),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);

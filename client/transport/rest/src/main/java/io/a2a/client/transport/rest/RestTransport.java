@@ -320,7 +320,8 @@ public class RestTransport implements ClientTransport {
         if (configId != null && !configId.isEmpty()) {
             builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId));
         } else {
-            builder.setName(String.format("/tasks/%1s/pushNotificationConfigs", request.id()));
+            // Use trailing slash to distinguish GET from LIST
+            builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/", request.id()));
         }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
@@ -329,7 +330,8 @@ public class RestTransport implements ClientTransport {
             if (configId != null && !configId.isEmpty()) {
                 url = buildBaseUrl(request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId);
             } else {
-                url = buildBaseUrl(request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.id());
+                // Trailing slash distinguishes GET from LIST
+                url = buildBaseUrl(request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs/", request.id());
             }
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
             if (payloadAndHeaders.getHeaders() != null) {
