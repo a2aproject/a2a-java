@@ -28,7 +28,6 @@ import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
  * <p>
  * The {@code lastChunk} flag indicates whether this is the final update for an artifact,
  * allowing clients to distinguish between intermediate and final states.
- *
  * @see UpdateEvent
  * @see StreamingEventKind
  * @see Artifact
@@ -150,9 +149,9 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
     }
 
     /**
-     * Creates a new Builder
+     * Creates a new builder for {@link TaskArtifactUpdateEvent}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();

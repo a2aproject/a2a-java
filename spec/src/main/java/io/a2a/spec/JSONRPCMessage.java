@@ -11,7 +11,6 @@ package io.a2a.spec;
  * According to the JSON-RPC 2.0 specification, all messages must include a {@code jsonrpc}
  * version field set to "2.0", and may optionally include an {@code id} field for correlation
  * between requests and responses.
- *
  * @see JSONRPCRequest
  * @see JSONRPCResponse
  * @see <a href="https://www.jsonrpc.org/specification">JSON-RPC 2.0 Specification</a>

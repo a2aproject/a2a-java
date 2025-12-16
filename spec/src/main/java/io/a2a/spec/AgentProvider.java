@@ -24,8 +24,6 @@ public record AgentProvider(String organization, String url) {
     /**
      * Compact constructor that validates required fields.
      *
-     * @param organization the organization parameter (see class-level JavaDoc)
-     * @param url the url parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if organization or url is null
      */
     public AgentProvider {

@@ -37,8 +37,6 @@ import static io.a2a.spec.HTTPAuthSecurityScheme.HTTP;
 public final class HTTPAuthSecurityScheme implements SecurityScheme {
 
     /** The HTTP security scheme type identifier. */
-
-
     public static final String HTTP = "http";
     private final String bearerFormat;
     private final String scheme;
@@ -46,54 +44,24 @@ public final class HTTPAuthSecurityScheme implements SecurityScheme {
     private final String type;
 
     /**
-
-
      * Constructs HTTP auth security scheme without type.
-
-
      *
-
-
      * @param bearerFormat the bearer token format
-
-
      * @param scheme the authentication scheme
-
-
      * @param description the scheme description
-
-
      */
-
-
     public HTTPAuthSecurityScheme(String bearerFormat, String scheme, String description) {
         this(bearerFormat, scheme, description, HTTP);
     }
 
     /**
-
-
      * Constructs HTTP auth security scheme with full parameters.
-
-
      *
-
-
      * @param bearerFormat the bearer token format
-
-
      * @param scheme the authentication scheme
-
-
      * @param description the scheme description
-
-
      * @param type the security scheme type
-
-
      */
-
-
     public HTTPAuthSecurityScheme(String bearerFormat, String scheme, String description, String type) {
         Assert.checkNotNullParam("scheme", scheme);
         Assert.checkNotNullParam("type", type);
@@ -112,66 +80,36 @@ public final class HTTPAuthSecurityScheme implements SecurityScheme {
     }
 
     /**
-
-
      * Gets the bearer token format.
-
-
      *
-
-
      * @return the bearer format
-
-
      */
-
-
     public String getBearerFormat() {
         return bearerFormat;
     }
 
     /**
-
-
      * Gets the authentication scheme.
-
-
      *
-
-
      * @return the scheme
-
-
      */
-
-
     public String getScheme() {
         return scheme;
     }
 
     /**
-
-
      * Gets the security scheme type.
-
-
      *
-
-
      * @return the type
-
-
      */
-
-
     public String getType() {
         return type;
     }
 
     /**
-     * Create a new Builder
+     * Creates a new builder for {@link HTTPAuthSecurityScheme}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();

@@ -20,9 +20,6 @@ public record TaskIdParams(String id, String tenant) {
     /**
      * Compact constructor for validation.
      * Validates that required parameters are not null.
-     *
-     * @param id the task identifier
-     * @param tenant the tenant identifier
      */
     public TaskIdParams  {
         Assert.checkNotNullParam("id", id);

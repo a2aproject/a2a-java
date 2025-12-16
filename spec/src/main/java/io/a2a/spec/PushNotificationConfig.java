@@ -31,26 +31,23 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
      * Compact constructor for validation.
      * Validates that the URL is not null.
      *
-     * @param url the notification endpoint URL
-     * @param token optional bearer token
-     * @param authentication optional authentication info
-     * @param id optional configuration identifier
+     * @throws IllegalArgumentException if url is null
      */
     public PushNotificationConfig {
         Assert.checkNotNullParam("url", url);
     }
 
     /**
-     * Create a new Builder
+     * Creates a new builder for {@link PushNotificationConfig}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * Create a new Builder initialized with values from an existing PushNotificationConfig.
+     * Creates a new builder initialized with values from an existing {@link PushNotificationConfig}.
      *
      * @param config the PushNotificationConfig to copy values from
      * @return the builder

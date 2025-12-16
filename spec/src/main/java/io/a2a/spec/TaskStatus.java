@@ -43,10 +43,6 @@ public record TaskStatus(TaskState state, Message message,
     /**
      * Compact constructor for validation and timestamp initialization.
      * Validates that the state is not null and sets the timestamp to current UTC time if not provided.
-     *
-     * @param state the task state
-     * @param message optional status message
-     * @param timestamp the status timestamp
      */
     public TaskStatus {
         Assert.checkNotNullParam("state", state);

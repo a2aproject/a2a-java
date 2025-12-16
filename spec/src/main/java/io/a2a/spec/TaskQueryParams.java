@@ -16,9 +16,6 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, String
      * Compact constructor for validation.
      * Validates that required parameters are not null and historyLength is non-negative if provided.
      *
-     * @param id the task identifier
-     * @param historyLength maximum number of history items
-     * @param tenant the tenant identifier
      * @throws IllegalArgumentException if historyLength is negative
      */
     public TaskQueryParams {

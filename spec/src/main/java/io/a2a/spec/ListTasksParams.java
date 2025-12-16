@@ -30,15 +30,6 @@ public record ListTasksParams(
     /**
      * Compact constructor for validation.
      * Validates that the tenant parameter is not null.
-     *
-     * @param contextId filter by context ID
-     * @param status filter by task status
-     * @param pageSize maximum number of results per page
-     * @param pageToken pagination token
-     * @param historyLength number of history items to include
-     * @param lastUpdatedAfter filter by last update timestamp
-     * @param includeArtifacts whether to include artifacts
-     * @param tenant the tenant identifier
      */
     public ListTasksParams {
         Assert.checkNotNullParam("tenant", tenant);
@@ -100,9 +91,9 @@ public record ListTasksParams(
     }
 
     /**
-     * Create a new Builder
+     * Creates a new builder for {@link ListTasksParams}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();
@@ -111,8 +102,6 @@ public record ListTasksParams(
     /**
      * Builder for constructing instances.
      */
-
-
     public static class Builder {
         private String contextId;
         private TaskState status;

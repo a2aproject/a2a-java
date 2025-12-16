@@ -33,7 +33,6 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * This class implements {@link EventKind} and {@link StreamingEventKind}, allowing Task instances to
  * be transmitted as events in both blocking and streaming scenarios.
- *
  * @see TaskStatus
  * @see TaskState
  * @see Artifact
@@ -160,16 +159,16 @@ public final class Task implements EventKind, StreamingEventKind {
     }
 
     /**
-     * Create a new Builder
+     * Creates a new builder for {@link Task}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * Create a new Builder initialized with values from an existing Task.
+     * Creates a new builder initialized with values from an existing Task.
      * <p>
      * This Builder allows for creating a modified copy of an existing Task
      * by copying all fields and then selectively updating specific values.

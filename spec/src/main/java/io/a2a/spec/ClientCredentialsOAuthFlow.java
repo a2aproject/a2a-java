@@ -31,9 +31,6 @@ public record ClientCredentialsOAuthFlow(String refreshUrl, Map<String, String> 
     /**
      * Compact constructor that validates required fields.
      *
-     * @param refreshUrl the refreshUrl parameter (see class-level JavaDoc)
-     * @param scopes the scopes parameter (see class-level JavaDoc)
-     * @param tokenUrl the tokenUrl parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if scopes or tokenUrl is null
      */
     public ClientCredentialsOAuthFlow {

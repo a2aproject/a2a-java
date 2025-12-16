@@ -25,8 +25,6 @@ import java.util.UUID;
 public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskIdParams> {
 
     /** The JSON-RPC method name. */
-
-
     public static final String METHOD = "SubscribeToTask";
 
     /**
@@ -59,6 +57,7 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
         return new Builder();
     }
 
+
     /**
      * Builder for constructing instances.
      */
@@ -76,89 +75,43 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
         }
 
         /**
-
-
          * Sets the JSON-RPC version.
-
-
          *
-
-
          * @param jsonrpc the JSON-RPC version
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public SubscribeToTaskRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
 
         /**
-
-
          * Sets the request ID.
-
-
          *
-
-
          * @param id the request ID
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public SubscribeToTaskRequest.Builder id(Object id) {
             this.id = id;
             return this;
         }
 
         /**
-
-
          * Sets the request parameters.
-
-
          *
-
-
          * @param params the request parameters
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public SubscribeToTaskRequest.Builder params(TaskIdParams params) {
             this.params = params;
             return this;
         }
 
         /**
-
-
          * Builds the instance.
-
-
          *
-
-
          * @return a new instance
-
-
          */
-
-
         public SubscribeToTaskRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

@@ -65,24 +65,6 @@ public record AgentCard(
 
     /**
      * Compact constructor that validates required fields and sets defaults.
-     *
-     * @param name the name parameter (see class-level JavaDoc)
-     * @param description the description parameter (see class-level JavaDoc)
-     * @param provider the provider parameter (see class-level JavaDoc)
-     * @param version the version parameter (see class-level JavaDoc)
-     * @param documentationUrl the documentationUrl parameter (see class-level JavaDoc)
-     * @param capabilities the capabilities parameter (see class-level JavaDoc)
-     * @param defaultInputModes the defaultInputModes parameter (see class-level JavaDoc)
-     * @param defaultOutputModes the defaultOutputModes parameter (see class-level JavaDoc)
-     * @param skills the skills parameter (see class-level JavaDoc)
-     * @param supportsExtendedAgentCard the supportsExtendedAgentCard parameter (see class-level JavaDoc)
-     * @param securitySchemes the securitySchemes parameter (see class-level JavaDoc)
-     * @param security the security parameter (see class-level JavaDoc)
-     * @param iconUrl the iconUrl parameter (see class-level JavaDoc)
-     * @param supportedInterfaces the supportedInterfaces parameter (see class-level JavaDoc)
-     * @param protocolVersion the protocolVersion parameter (see class-level JavaDoc)
-     * @param signatures the signatures parameter (see class-level JavaDoc)
-     * @throws IllegalArgumentException if any required field is null
      */
     public AgentCard {
         Assert.checkNotNullParam("capabilities", capabilities);
@@ -123,7 +105,7 @@ public record AgentCard(
 
 
     /**
-     * Builder for constructing immutable {@link AgentCard} instances.
+     * Builder for constructing immutable {@code AgentCard} instances.
      * <p>
      * The Builder pattern is used to enforce immutability of AgentCard objects while providing
      * a fluent API for setting required and optional fields. This approach ensures that once

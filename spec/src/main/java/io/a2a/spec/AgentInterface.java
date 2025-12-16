@@ -29,9 +29,6 @@ public record AgentInterface(String protocolBinding, String url, String tenant) 
     /**
      * Compact constructor that validates required fields.
      *
-     * @param protocolBinding the protocolBinding parameter (see class-level JavaDoc)
-     * @param url the url parameter (see class-level JavaDoc)
-     * @param tenant the tenant parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if protocolBinding or url is null
      */
     public AgentInterface   {

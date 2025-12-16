@@ -27,8 +27,6 @@ public record AuthenticationInfo(List<String> schemes, String credentials) {
     /**
      * Compact constructor that validates required fields.
      *
-     * @param schemes the schemes parameter (see class-level JavaDoc)
-     * @param credentials the credentials parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if schemes is null
      */
     public AuthenticationInfo {

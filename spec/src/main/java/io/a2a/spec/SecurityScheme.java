@@ -17,7 +17,6 @@ import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
  *   <li>{@link OpenIdConnectSecurityScheme} - OpenID Connect discovery</li>
  *   <li>{@link MutualTLSSecurityScheme} - Client certificate authentication</li>
  * </ul>
- *
  * @see AgentCard#securitySchemes() for security scheme declarations
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme Object</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>

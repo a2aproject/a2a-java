@@ -15,7 +15,6 @@ import io.a2a.util.Assert;
  * <p>
  * The {@code result} field must be absent or null in error responses. This class
  * enforces that constraint by fixing the result type parameter to {@code Void}.
- *
  * @see JSONRPCError
  * @see JSONRPCResponse
  * @see <a href="https://www.jsonrpc.org/specification#response_object">JSON-RPC 2.0 Response Object</a>

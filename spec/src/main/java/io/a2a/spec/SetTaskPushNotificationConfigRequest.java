@@ -19,8 +19,6 @@ import java.util.UUID;
 public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {
 
     /** The JSON-RPC method name. */
-
-
     public static final String METHOD = "SetTaskPushNotificationConfig";
 
     /**
@@ -45,9 +43,9 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
     }
 
     /**
-     * Create a new Builder
+     * Creates a new builder for {@link SetTaskPushNotificationConfigRequest}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();
@@ -56,8 +54,6 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
     /**
      * Builder for constructing instances.
      */
-
-
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -70,89 +66,43 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
         }
 
         /**
-
-
          * Sets the JSON-RPC version.
-
-
          *
-
-
          * @param jsonrpc the JSON-RPC version
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public SetTaskPushNotificationConfigRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
 
         /**
-
-
          * Sets the request ID.
-
-
          *
-
-
          * @param id the request ID
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public SetTaskPushNotificationConfigRequest.Builder id(Object id) {
             this.id = id;
             return this;
         }
 
         /**
-
-
          * Sets the request parameters.
-
-
          *
-
-
          * @param params the request parameters
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public SetTaskPushNotificationConfigRequest.Builder params(TaskPushNotificationConfig params) {
             this.params = params;
             return this;
         }
 
         /**
-
-
          * Builds the instance.
-
-
          *
-
-
          * @return a new instance
-
-
          */
-
-
         public SetTaskPushNotificationConfigRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

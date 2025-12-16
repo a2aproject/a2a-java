@@ -30,7 +30,6 @@ import io.a2a.util.Assert;
  *     Map.of("source", "weather-api", "timestamp", "2024-01-20T12:00:00Z")
  * );
  * }</pre>
- *
  * @see Part
  * @see Message
  * @see Artifact

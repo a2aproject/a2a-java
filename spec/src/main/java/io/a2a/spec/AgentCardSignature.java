@@ -37,9 +37,6 @@ public record AgentCardSignature(Map<String, Object> header, @SerializedName("pr
     /**
      * Compact constructor that validates required fields.
      *
-     * @param header the header parameter (see class-level JavaDoc)
-     * @param protectedHeader the protectedHeader parameter (see class-level JavaDoc)
-     * @param signature the signature parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if protectedHeader or signature is null
      */
     public AgentCardSignature {
@@ -48,9 +45,9 @@ public record AgentCardSignature(Map<String, Object> header, @SerializedName("pr
     }
 
     /**
-     * Create a new Builder
+     * Creates a new builder for {@link AgentCardSignature}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();

@@ -10,6 +10,9 @@ import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
 /**
  * An event sent by the agent to notify the client of a change in a task's status.
  * This is typically used in streaming or subscription models.
+ * @see TaskStatus
+ * @see StreamingEventKind
+ * @see Task
  */
 public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKind, UpdateEvent {
 

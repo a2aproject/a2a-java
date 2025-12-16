@@ -29,7 +29,6 @@ import io.a2a.util.Assert;
  *     new FileWithUri("image/png", "photo.png", "https://example.com/photo.png")
  * );
  * }</pre>
- *
  * @see Part
  * @see FileContent
  * @see FileWithBytes

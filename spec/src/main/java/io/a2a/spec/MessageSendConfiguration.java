@@ -28,10 +28,6 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
      * Compact constructor for validation.
      * Validates that historyLength is non-negative if provided.
      *
-     * @param acceptedOutputModes list of accepted output modes
-     * @param historyLength maximum number of history items
-     * @param pushNotificationConfig push notification configuration
-     * @param blocking whether the request should block
      * @throws IllegalArgumentException if historyLength is negative
      */
     public MessageSendConfiguration {
@@ -41,9 +37,9 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
     }
 
     /**
-     * Create a new Builder
+     * Creates a new builder for {@link MessageSendConfiguration}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();

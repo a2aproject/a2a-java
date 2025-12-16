@@ -23,10 +23,6 @@ public record ListTasksResult(
      * Compact constructor for validation.
      * Validates parameters and creates a defensive copy of the tasks list.
      *
-     * @param tasks the list of tasks
-     * @param totalSize total number of tasks available
-     * @param pageSize number of tasks in this page
-     * @param nextPageToken token for next page
      * @throws IllegalArgumentException if validation fails
      */
     public ListTasksResult {
@@ -63,9 +59,9 @@ public record ListTasksResult(
     }
 
     /**
-     * Create a new Builder
+     * Creates a new builder for {@link ListTasksResult}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();
@@ -74,8 +70,6 @@ public record ListTasksResult(
     /**
      * Builder for constructing instances.
      */
-
-
     public static class Builder {
         private List<Task> tasks;
         private int totalSize;

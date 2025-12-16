@@ -23,9 +23,6 @@ public record GetTaskPushNotificationConfigParams(String id, @Nullable String pu
     /**
      * Compact constructor that validates required fields.
      *
-     * @param id the id parameter (see class-level JavaDoc)
-     * @param pushNotificationConfigId the pushNotificationConfigId parameter (see class-level JavaDoc)
-     * @param tenant the tenant parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if id or tenant is null
      */
     public GetTaskPushNotificationConfigParams {
@@ -53,23 +50,17 @@ public record GetTaskPushNotificationConfigParams(String id, @Nullable String pu
     }
 
     /**
-     * Create a new Builder
+     * Creates a new builder for {@link GetTaskPushNotificationConfigParams}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-
-
      * Builder for constructing GetTaskPushNotificationConfigParams instances.
-
-
      */
-
-
     public static class Builder {
         String id;
         String pushNotificationConfigId;
@@ -82,89 +73,43 @@ public record GetTaskPushNotificationConfigParams(String id, @Nullable String pu
         }
 
         /**
-
-
          * Sets the task ID.
-
-
          *
-
-
          * @param id the task ID
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public Builder id(String id) {
             this.id = id;
             return this;
         }
 
         /**
-
-
          * Sets the push notification configuration ID.
-
-
          *
-
-
          * @param pushNotificationConfigId the configuration ID
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public Builder pushNotificationConfigId(String pushNotificationConfigId) {
             this.pushNotificationConfigId = pushNotificationConfigId;
             return this;
         }
 
         /**
-
-
          * Sets the tenant.
-
-
          *
-
-
          * @param tenant the tenant
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public Builder tenant(String tenant) {
             this.tenant = tenant;
             return this;
         }
 
         /**
-
-
          * Builds the parameters instance.
-
-
          *
-
-
          * @return a new GetTaskPushNotificationConfigParams
-
-
          */
-
-
         public GetTaskPushNotificationConfigParams build() {
             return new GetTaskPushNotificationConfigParams(id, pushNotificationConfigId, tenant == null ? "" : tenant);
         }

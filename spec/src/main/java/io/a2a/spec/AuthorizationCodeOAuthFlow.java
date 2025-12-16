@@ -31,10 +31,6 @@ public record AuthorizationCodeOAuthFlow(String authorizationUrl, String refresh
     /**
      * Compact constructor that validates required fields.
      *
-     * @param authorizationUrl the authorizationUrl parameter (see class-level JavaDoc)
-     * @param refreshUrl the refreshUrl parameter (see class-level JavaDoc)
-     * @param scopes the scopes parameter (see class-level JavaDoc)
-     * @param tokenUrl the tokenUrl parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if authorizationUrl, scopes, or tokenUrl is null
      */
     public AuthorizationCodeOAuthFlow {
