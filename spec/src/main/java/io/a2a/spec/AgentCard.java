@@ -33,7 +33,7 @@ import io.a2a.util.Assert;
  * @param security list of security requirements for accessing the agent (optional)
  * @param iconUrl URL to an icon representing the agent (optional)
  * @param supportedInterfaces ordered list of supported interfaces. First entry is preferred. (required)
- * @param protocolVersion the version of the A2A Protocol this agent implements (defaults to {@link #DEFAULT_PROTOCOL_VERSION})
+ * @param protocolVersion the version of the A2A Protocol this agent implements (defaults to {@link #CURRENT_PROTOCOL_VERSION})
  * @param signatures digital signatures verifying the authenticity of the agent card (optional)
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
@@ -56,7 +56,7 @@ public record AgentCard(
         List<AgentCardSignature> signatures) {
 
     /** The default A2A Protocol version used when not explicitly specified. */
-    public static final String DEFAULT_PROTOCOL_VERSION = "1.0.0";
+    public static final String CURRENT_PROTOCOL_VERSION = "1.0";
 
     /**
      * Compact constructor that validates required fields and sets defaults.
@@ -74,7 +74,7 @@ public record AgentCard(
         Assert.checkNotNullParam("version", version);
 
         if (protocolVersion == null) {
-            protocolVersion = DEFAULT_PROTOCOL_VERSION;
+            protocolVersion = CURRENT_PROTOCOL_VERSION;
         }
     }
 
@@ -378,7 +378,7 @@ public record AgentCard(
         /**
          * Sets the version of the A2A Protocol this agent implements.
          * <p>
-         * If not set, defaults to {@link AgentCard#DEFAULT_PROTOCOL_VERSION}.
+         * If not set, defaults to {@link AgentCard#CURRENT_PROTOCOL_VERSION}.
          *
          * @param protocolVersion the protocol version string
          * @return this builder for method chaining

@@ -1,5 +1,10 @@
 package io.a2a.client;
 
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+
+import java.util.Collections;
+import java.util.List;
+
 import io.a2a.client.config.ClientConfig;
 import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.client.transport.grpc.GrpcTransport;
@@ -15,9 +20,6 @@ import io.a2a.spec.AgentSkill;
 import io.a2a.spec.TransportProtocol;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.List;
 
 public class ClientBuilderTest {
 
@@ -40,7 +42,7 @@ public class ClientBuilderTest {
                                 .tags(Collections.singletonList("hello world"))
             .examples(List.of("hi", "hello world"))
             .build()))
-            .protocolVersion("0.3.0")
+            .protocolVersion(CURRENT_PROTOCOL_VERSION)
             .supportedInterfaces(List.of(
                     new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
             .build();

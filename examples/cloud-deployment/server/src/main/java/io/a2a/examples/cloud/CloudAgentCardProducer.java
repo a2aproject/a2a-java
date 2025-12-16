@@ -1,18 +1,20 @@
 package io.a2a.examples.cloud;
 
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+
+import java.util.Collections;
+import java.util.List;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
+
 import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Producer for the cloud deployment example agent card.
@@ -56,7 +58,7 @@ public class CloudAgentCardProducer {
                                 ))
                                 .build()
                 ))
-                .protocolVersion("0.3.0")
+                .protocolVersion(CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 }

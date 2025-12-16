@@ -1,14 +1,18 @@
 package io.a2a.client.transport.jsonrpc;
 
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+
+import io.a2a.spec.AgentCard;
+
 /**
  * Request and response messages used by the tests. These have been created following examples from
  * the <a href="https://google.github.io/A2A/specification/sample-messages">A2A sample messages</a>.
  */
 public class JsonMessages {
 
-    static final String AGENT_CARD = """
+    static final String AGENT_CARD = String.format("""
             {
-                 "protocolVersion": "0.2.9",
+                 "protocolVersion": "%s",
                  "name": "GeoSpatial Route Planner Agent",
                  "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
                  "supportedInterfaces" : [
@@ -80,7 +84,7 @@ public class JsonMessages {
                      "signature": "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ"
                    }
                  ]
-               }""";
+               }""", CURRENT_PROTOCOL_VERSION);
 
     static final String AUTHENTICATION_EXTENDED_AGENT_CARD = """
             {
@@ -668,7 +672,7 @@ public class JsonMessages {
             }
             """;
 
-    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE = """
+    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE = String.format("""
             {
                 "jsonrpc": "2.0",
                 "id": "1",
@@ -742,7 +746,7 @@ public class JsonMessages {
                       }
                     ],
                     "supportsAuthenticatedExtendedCard": true,
-                    "protocolVersion": "0.2.5",
+                    "protocolVersion": "%s",
                     "signatures": [
                        {
                          "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJrZXktMSIsImprdUI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWdlbnQvandrcy5qc29uIn0",
@@ -750,9 +754,9 @@ public class JsonMessages {
                        }
                      ]
                 }
-            }""";
+            }""", CURRENT_PROTOCOL_VERSION);
 
-    static final String AGENT_CARD_SUPPORTS_EXTENDED = """
+    static final String AGENT_CARD_SUPPORTS_EXTENDED = String.format("""
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -817,6 +821,6 @@ public class JsonMessages {
                   }
                 ],
                 "supportsAuthenticatedExtendedCard": true,
-                "protocolVersion": "1.0.0"
-              }""";
+                "protocolVersion": "%s"
+              }""", CURRENT_PROTOCOL_VERSION);
 }

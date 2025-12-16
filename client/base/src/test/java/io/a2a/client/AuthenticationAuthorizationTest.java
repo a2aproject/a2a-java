@@ -1,5 +1,18 @@
 package io.a2a.client;
 
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
 import io.a2a.client.config.ClientConfig;
 import io.a2a.client.transport.grpc.GrpcTransport;
 import io.a2a.client.transport.grpc.GrpcTransportConfigBuilder;
@@ -29,18 +42,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
 
 /**
  * Tests for handling HTTP 401 (Unauthorized) and 403 (Forbidden) responses
@@ -89,7 +90,7 @@ public class AuthenticationAuthorizationTest {
                         .description("Test skill")
                         .tags(Collections.singletonList("test"))
                         .build()))
-                .protocolVersion("0.3.0")
+                .protocolVersion(CURRENT_PROTOCOL_VERSION)
                 .supportedInterfaces(java.util.Arrays.asList(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), AGENT_URL),
                         new AgentInterface(TransportProtocol.HTTP_JSON.asString(), AGENT_URL),

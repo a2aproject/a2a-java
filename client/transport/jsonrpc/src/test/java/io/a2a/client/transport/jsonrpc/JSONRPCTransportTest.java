@@ -24,6 +24,7 @@ import static io.a2a.client.transport.jsonrpc.JsonMessages.SEND_MESSAGE_WITH_MIX
 import static io.a2a.client.transport.jsonrpc.JsonMessages.SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -43,6 +44,7 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
+import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.DataPart;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.FileContent;
@@ -55,7 +57,6 @@ import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
 import io.a2a.spec.Part;
-import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.SecurityScheme;
 import io.a2a.spec.Task;
@@ -66,7 +67,6 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.TransportProtocol;
 import io.a2a.util.Utils;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -420,7 +420,7 @@ public class JSONRPCTransportTest {
         assertEquals(outputModes, skills.get(1).outputModes());
         assertFalse(agentCard.supportsAuthenticatedExtendedCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals("0.2.9", agentCard.protocolVersion());
+        assertEquals(CURRENT_PROTOCOL_VERSION, agentCard.protocolVersion());
         assertEquals("JSONRPC", agentCard.supportedInterfaces().get(0).protocolBinding());
         List<AgentInterface> additionalInterfaces = agentCard.supportedInterfaces();
         assertEquals(3, additionalInterfaces.size());
@@ -513,7 +513,7 @@ public class JSONRPCTransportTest {
         assertEquals(List.of("extended"), skills.get(2).tags());
         assertTrue(agentCard.supportsAuthenticatedExtendedCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals("0.2.5", agentCard.protocolVersion());
+        assertEquals(CURRENT_PROTOCOL_VERSION, agentCard.protocolVersion());
     }
 
     @Test

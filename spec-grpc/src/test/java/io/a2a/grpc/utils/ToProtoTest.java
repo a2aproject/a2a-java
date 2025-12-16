@@ -2,9 +2,15 @@ package io.a2a.grpc.utils;
 
 import static io.a2a.grpc.Role.ROLE_AGENT;
 import static io.a2a.grpc.Role.ROLE_USER;
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import io.a2a.grpc.SendMessageConfiguration;
 import io.a2a.spec.AgentCapabilities;
@@ -12,12 +18,12 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
+import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.HTTPAuthSecurityScheme;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
-import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
@@ -26,11 +32,6 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
-
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class ToProtoTest {
@@ -64,7 +65,7 @@ public class ToProtoTest {
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
-                .protocolVersion("1.0.0")
+                .protocolVersion("123") // Weird protool version on purpose to make sure non-default takes effect
                 .build();
         io.a2a.grpc.AgentCard result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
@@ -78,7 +79,7 @@ public class ToProtoTest {
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        assertEquals("1.0.0", result.getProtocolVersion());
+        assertEquals("123", result.getProtocolVersion());
         agentCard = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
@@ -102,7 +103,7 @@ public class ToProtoTest {
                 //                .iconUrl("http://example.com/icon.svg")
                 .securitySchemes(Map.of("basic", HTTPAuthSecurityScheme.builder().scheme("basic").description("Basic Auth").build()))
                 .security(List.of(Map.of("oauth", List.of("read"))))
-                .protocolVersion("1.0.0")
+                .protocolVersion(CURRENT_PROTOCOL_VERSION)
                 .build();
         result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
@@ -116,7 +117,7 @@ public class ToProtoTest {
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        assertEquals("1.0.0", result.getProtocolVersion());
+        assertEquals(CURRENT_PROTOCOL_VERSION, result.getProtocolVersion());
         assertEquals(1, result.getSecurityCount());
         assertEquals(1, result.getSecurity(0).getSchemesMap().size());
         assertEquals(true, result.getSecurity(0).getSchemesMap().containsKey("oauth"));

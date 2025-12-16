@@ -1,13 +1,15 @@
 package io.a2a.extras.queuemanager.replicated.tests;
 
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+
 import java.util.List;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
 import io.a2a.server.PublicAgentCard;
-import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentCapabilities;
+import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.TransportProtocol;
 import io.quarkus.arc.profile.IfBuildProfile;
@@ -37,7 +39,7 @@ public class ReplicationTestAgentCardProducer {
                 .skills(List.of())
                 .supportedInterfaces(List.of(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:8081")))
-                .protocolVersion("0.2.5")
+                .protocolVersion(CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 }

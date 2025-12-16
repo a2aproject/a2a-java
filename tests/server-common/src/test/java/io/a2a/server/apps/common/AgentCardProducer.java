@@ -1,5 +1,7 @@
 package io.a2a.server.apps.common;
 
+import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -14,7 +16,6 @@ import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
-import io.a2a.spec.TransportProtocol;
 import io.quarkus.arc.profile.IfBuildProfile;
 import org.junit.jupiter.api.Assertions;
 
@@ -44,7 +45,7 @@ public class AgentCardProducer {
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(new ArrayList<>())
-                .protocolVersion("0.2.5")
+                .protocolVersion(CURRENT_PROTOCOL_VERSION)
                 .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, "http://localhost:" + port)));
         return builder.build();
     }
