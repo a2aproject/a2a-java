@@ -9,6 +9,7 @@ package io.a2a.spec;
  * If the task cannot be canceled (e.g., already completed) or is not found, the error
  * field will contain a {@link JSONRPCError} such as {@link TaskNotCancelableError} or
  * {@link TaskNotFoundError}.
+ *
  * @see CancelTaskRequest for the corresponding request
  * @see Task for the task structure
  * @see TaskNotCancelableError for the error when cancellation fails

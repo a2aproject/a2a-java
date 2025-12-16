@@ -24,6 +24,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  *     throw new AuthenticatedExtendedCardNotConfiguredError();
  * }
  * }</pre>
+ *
  * @see GetAuthenticatedExtendedCardRequest for retrieving authenticated extended cards
  * @see AgentCard for the base agent card structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>

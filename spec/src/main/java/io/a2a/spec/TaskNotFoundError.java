@@ -27,6 +27,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  *     throw new TaskNotFoundError();
  * }
  * }</pre>
+ *
  * @see Task for task object definition
  * @see GetTaskRequest for task retrieval
  * @see CancelTaskRequest for task cancellation

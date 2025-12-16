@@ -26,7 +26,9 @@ public record TaskPushNotificationConfig(String taskId, PushNotificationConfig p
      * Compact constructor for validation.
      * Validates that required parameters are not null.
      *
-     * @throws IllegalArgumentException if taskId, pushNotificationConfig, or configId is null
+     * @param taskId the task identifier
+     * @param pushNotificationConfig the push notification configuration
+     * @param tenant the tenant identifier
      */
     public TaskPushNotificationConfig {
         Assert.checkNotNullParam("taskId", taskId);

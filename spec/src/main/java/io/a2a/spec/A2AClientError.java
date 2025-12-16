@@ -14,6 +14,7 @@ package io.a2a.spec;
  *   <li>{@link A2AClientInvalidStateError} - Invalid client state errors</li>
  *   <li>{@link A2AClientInvalidArgsError} - Invalid argument errors</li>
  * </ul>
+ *
  * @see A2AClientException for general client exceptions
  * @see A2AClientHTTPError for HTTP-specific errors
  * @see A2AClientJSONError for JSON-specific errors

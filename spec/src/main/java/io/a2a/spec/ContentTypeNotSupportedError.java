@@ -32,6 +32,7 @@ import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
  *     );
  * }
  * }</pre>
+ *
  * @see AgentCard#defaultInputModes() for agent input capabilities
  * @see AgentCard#defaultOutputModes() for agent output capabilities
  * @see MessageSendConfiguration for client content type preferences

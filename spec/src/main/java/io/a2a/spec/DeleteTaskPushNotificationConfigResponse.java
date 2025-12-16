@@ -7,6 +7,7 @@ package io.a2a.spec;
  * The result is void (no content) on success.
  * <p>
  * If an error occurs during deletion, the error field will contain a {@link JSONRPCError}.
+ *
  * @see DeleteTaskPushNotificationConfigRequest for the corresponding request
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */

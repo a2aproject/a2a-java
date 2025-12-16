@@ -31,21 +31,45 @@ public final class GetAuthenticatedExtendedCardResponse extends JSONRPCResponse<
     }
 
     /**
+
+
      * Constructs error response.
+
+
      *
+
+
      * @param id the request ID
+
+
      * @param error the error
+
+
      */
+
+
     public GetAuthenticatedExtendedCardResponse(Object id, JSONRPCError error) {
         this(null, id, null, error);
     }
 
     /**
+
+
      * Constructs successful response.
+
+
      *
+
+
      * @param id the request ID
+
+
      * @param result the agent card result
+
+
      */
+
+
     public GetAuthenticatedExtendedCardResponse(Object id, AgentCard result) {
         this(null, id, result, null);
     }

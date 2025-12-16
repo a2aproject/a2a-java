@@ -12,6 +12,7 @@ package io.a2a.spec;
  *   <li>{@link A2AServerException} - Server-side failures</li>
  *   <li>{@link A2AClientException} - Client-side failures</li>
  * </ul>
+ *
  * @see A2AServerException for server-side errors
  * @see A2AClientException for client-side errors
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>

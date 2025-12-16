@@ -149,9 +149,9 @@ public final class APIKeySecurityScheme implements SecurityScheme {
     }
 
     /**
-     * Creates a new builder for {@link APIKeySecurityScheme}.
+     * Create a new Builder
      *
-     * @return a new builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();

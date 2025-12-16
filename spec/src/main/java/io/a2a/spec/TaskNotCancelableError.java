@@ -24,6 +24,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  *     );
  * }
  * }</pre>
+ *
  * @see CancelTaskRequest for task cancellation
  * @see TaskState for task state definitions
  * @see TaskStatus#state() for current task state

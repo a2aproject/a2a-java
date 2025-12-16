@@ -22,6 +22,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  *     throw new PushNotificationNotSupportedError();
  * }
  * }</pre>
+ *
  * @see AgentCapabilities#pushNotifications() for push notification capability
  * @see SetTaskPushNotificationConfigRequest for configuring push notifications
  * @see TaskPushNotificationConfig for push notification configuration
@@ -30,8 +31,14 @@ import static io.a2a.util.Utils.defaultIfNull;
 public class PushNotificationNotSupportedError extends JSONRPCError {
 
     /**
+
+
      * Constructs error with default message.
+
+
      */
+
+
     public PushNotificationNotSupportedError() {
         this(null, null, null);
     }

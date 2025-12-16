@@ -30,7 +30,10 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
      * Compact constructor for validation.
      * Validates that required parameters are not null.
      *
-     * @throws IllegalArgumentException if message or tenant is null
+     * @param message the message to send
+     * @param configuration optional message send configuration
+     * @param metadata optional metadata
+     * @param tenant the tenant identifier
      */
     public MessageSendParams {
         Assert.checkNotNullParam("message", message);
@@ -49,9 +52,9 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
     }
 
     /**
-     * Creates a new builder for {@link MessageSendParams}.
+     * Create a new Builder
      *
-     * @return a new builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();

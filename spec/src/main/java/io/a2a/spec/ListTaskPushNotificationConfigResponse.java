@@ -29,11 +29,23 @@ public final class ListTaskPushNotificationConfigResponse extends JSONRPCRespons
     }
 
     /**
+
+
      * Constructs error response.
+
+
      *
+
+
      * @param id the request ID
+
+
      * @param error the error
+
+
      */
+
+
     public ListTaskPushNotificationConfigResponse(Object id, JSONRPCError error) {
         this(null, id, null, error);
     }
@@ -47,5 +59,5 @@ public final class ListTaskPushNotificationConfigResponse extends JSONRPCRespons
     public ListTaskPushNotificationConfigResponse(Object id, List<TaskPushNotificationConfig> result) {
         this(null, id,  result, null);
     }
-}
+
 }

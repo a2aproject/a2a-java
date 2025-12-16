@@ -35,15 +35,15 @@ public record AgentCapabilities(boolean streaming, boolean pushNotifications, bo
                                 List<AgentExtension> extensions) {
 
     /**
-     * Creates a new builder for {@link AgentCapabilities}.
+     * Create a new Builder
      *
-     * @return a new builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();
     }
     /**
-     * Builder for constructing immutable {@code AgentCapabilities} instances.
+     * Builder for constructing immutable {@link AgentCapabilities} instances.
      * <p>
      * The Builder pattern provides a fluent API for setting capability flags.
      * All capabilities default to false if not explicitly set.

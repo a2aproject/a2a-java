@@ -21,6 +21,9 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
     /**
      * Compact constructor that validates required fields.
      *
+     * @param id the id parameter (see class-level JavaDoc)
+     * @param pushNotificationConfigId the pushNotificationConfigId parameter (see class-level JavaDoc)
+     * @param tenant the tenant parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if id or pushNotificationConfigId is null
      */
     public DeleteTaskPushNotificationConfigParams {
@@ -41,9 +44,9 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
     }
 
     /**
-     * Creates a new builder for {@link DeleteTaskPushNotificationConfigParams}.
+     * Create a new Builder
      *
-     * @return a new builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();

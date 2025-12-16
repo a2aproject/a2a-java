@@ -44,9 +44,9 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
     }
 
     /**
-     * Creates a new builder for {@link DeleteTaskPushNotificationConfigRequest}.
+     * Create a new Builder
      *
-     * @return a new builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();

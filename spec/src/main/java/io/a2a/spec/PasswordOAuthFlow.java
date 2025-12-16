@@ -28,6 +28,9 @@ public record PasswordOAuthFlow(String refreshUrl, Map<String, String> scopes, S
     /**
      * Compact constructor that validates required fields.
      *
+     * @param refreshUrl the refreshUrl parameter (see class-level JavaDoc)
+     * @param scopes the scopes parameter (see class-level JavaDoc)
+     * @param tokenUrl the tokenUrl parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if scopes or tokenUrl is null
      */
     public PasswordOAuthFlow {

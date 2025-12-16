@@ -27,6 +27,7 @@ import io.a2a.util.Assert;
  *   <li>-32603: Internal error</li>
  *   <li>-32000 to -32099: Server error (implementation-defined)</li>
  * </ul>
+ *
  * @see Event
  * @see A2AError
  * @see JSONRPCErrorResponse

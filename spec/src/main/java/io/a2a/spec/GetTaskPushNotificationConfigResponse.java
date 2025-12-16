@@ -16,33 +16,73 @@ package io.a2a.spec;
 public final class GetTaskPushNotificationConfigResponse extends JSONRPCResponse<TaskPushNotificationConfig> {
 
     /**
+
+
      * Constructs response with full parameters.
+
+
      *
+
+
      * @param jsonrpc the JSON-RPC version
+
+
      * @param id the request ID
+
+
      * @param result the push notification config result
+
+
      * @param error the error if any
+
+
      */
+
+
     public GetTaskPushNotificationConfigResponse(String jsonrpc, Object id, TaskPushNotificationConfig result, JSONRPCError error) {
         super(jsonrpc, id, result, error, TaskPushNotificationConfig.class);
     }
 
     /**
+
+
      * Constructs error response.
+
+
      *
+
+
      * @param id the request ID
+
+
      * @param error the error
+
+
      */
+
+
     public GetTaskPushNotificationConfigResponse(Object id, JSONRPCError error) {
         this(null, id, null, error);
     }
 
     /**
+
+
      * Constructs successful response.
+
+
      *
+
+
      * @param id the request ID
+
+
      * @param result the push notification config result
+
+
      */
+
+
     public GetTaskPushNotificationConfigResponse(Object id, TaskPushNotificationConfig result) {
         this(null, id, result, null);
     }

@@ -60,9 +60,9 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
     }
 
     /**
-     * Creates a new builder for {@link SendMessageRequest}.
+     * Create a new Builder
      *
-     * @return a new builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();

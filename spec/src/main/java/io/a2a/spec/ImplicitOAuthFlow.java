@@ -21,7 +21,7 @@ import io.a2a.util.Assert;
  * @param scopes map of available OAuth scopes to their descriptions (required)
  * @see OAuthFlows for the container of all supported OAuth flows
  * @see OAuth2SecurityScheme for the security scheme using these flows
- * @see <a href="https://datatracker.ietf.org/doc/html/rfc6749">RFC 6749 - Implicit Grant</a>
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.2">RFC 6749 - Implicit Grant</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record ImplicitOAuthFlow(String authorizationUrl, String refreshUrl, Map<String, String> scopes) {
@@ -29,6 +29,9 @@ public record ImplicitOAuthFlow(String authorizationUrl, String refreshUrl, Map<
     /**
      * Compact constructor that validates required fields.
      *
+     * @param authorizationUrl the authorizationUrl parameter (see class-level JavaDoc)
+     * @param refreshUrl the refreshUrl parameter (see class-level JavaDoc)
+     * @param scopes the scopes parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if authorizationUrl or scopes is null
      */
     public ImplicitOAuthFlow {

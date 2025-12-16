@@ -62,10 +62,15 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
 
     @Override
     /**
+
      * Gets the Description.
+
      *
+
      * @return the Description
+
      */
+
     public String getDescription() {
         return description;
     }
@@ -80,27 +85,47 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
     }
 
     /**
+
+
      * Gets the Type.
+
+
      *
+
+
      * @return the Type
+
+
      */
+
+
     public String getType() {
         return type;
     }
 
     /**
+
+
      * Gets the Oauth2MetadataUrl.
+
+
      *
+
+
      * @return the Oauth2MetadataUrl
+
+
      */
+
+
     public String getOauth2MetadataUrl() {
         return oauth2MetadataUrl;
     }
 
     /**
-     * Creates a new builder for {@link OAuth2SecurityScheme}.
+     * Create a new Builder
      *
-     * @return a new builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();
@@ -109,6 +134,8 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
     /**
      * Builder for constructing instances.
      */
+
+
     public static class Builder {
         private OAuthFlows flows;
         private String description;

@@ -48,9 +48,9 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
     }
 
     /**
-     * Creates a new builder for {@link CancelTaskRequest}.
+     * Create a new Builder
      *
-     * @return a new builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();

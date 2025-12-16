@@ -13,6 +13,7 @@ package io.a2a.spec;
  *   <li>Resource exhaustion or limits exceeded</li>
  *   <li>Configuration errors</li>
  * </ul>
+ *
  * @see A2AException for the base exception class
  * @see A2AClientException for client-side errors
  */

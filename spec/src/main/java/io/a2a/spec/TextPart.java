@@ -18,6 +18,7 @@ import io.a2a.util.Assert;
  * TextPart greeting = new TextPart("Hello, how can I help you?");
  * TextPart withMetadata = new TextPart("Bonjour!", Map.of("language", "fr"));
  * }</pre>
+ *
  * @see Part
  * @see Message
  * @see Artifact

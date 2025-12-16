@@ -20,9 +20,9 @@ public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCre
                          ImplicitOAuthFlow implicit, PasswordOAuthFlow password) {
 
     /**
-     * Creates a new builder for {@link OAuthFlows}.
+     * Create a new Builder
      *
-     * @return a new builder instance
+     * @return the builder
      */
     public static Builder builder() {
         return new Builder();

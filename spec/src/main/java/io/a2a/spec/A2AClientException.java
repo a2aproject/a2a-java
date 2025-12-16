@@ -13,6 +13,7 @@ package io.a2a.spec;
  *   <li>HTTP errors ({@link A2AClientHTTPError})</li>
  *   <li>JSON parsing errors ({@link A2AClientJSONError})</li>
  * </ul>
+ *
  * @see A2AException for the base exception class
  * @see A2AServerException for server-side errors
  * @see A2AClientError for more specific client errors

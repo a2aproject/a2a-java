@@ -19,8 +19,12 @@ import static io.a2a.spec.Message.MESSAGE;
  * communication between users and agents. Each message has a unique identifier and can reference
  * related tasks and contexts.
  * <p>
+ * Messages implement both {@link EventKind} and {@link StreamingEventKind}, meaning they can be
+ * sent as standalone events or as part of a streaming response sequence.
+ * <p>
  * This class is mutable (allows setting taskId and contextId) to support post-construction correlation
  * with tasks and conversation contexts. Use the {@link Builder} for construction.
+ *
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public final class Message implements EventKind, StreamingEventKind {
