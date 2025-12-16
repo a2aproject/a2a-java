@@ -82,89 +82,43 @@ public record GetTaskPushNotificationConfigParams(String id, @Nullable String pu
         }
 
         /**
-
-
          * Sets the task ID.
-
-
          *
-
-
          * @param id the task ID
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public Builder id(String id) {
             this.id = id;
             return this;
         }
 
         /**
-
-
          * Sets the push notification configuration ID.
-
-
          *
-
-
          * @param pushNotificationConfigId the configuration ID
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public Builder pushNotificationConfigId(String pushNotificationConfigId) {
             this.pushNotificationConfigId = pushNotificationConfigId;
             return this;
         }
 
         /**
-
-
          * Sets the tenant.
-
-
          *
-
-
          * @param tenant the tenant
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public Builder tenant(String tenant) {
             this.tenant = tenant;
             return this;
         }
 
         /**
-
-
          * Builds the parameters instance.
-
-
          *
-
-
          * @return a new GetTaskPushNotificationConfigParams
-
-
          */
-
-
         public GetTaskPushNotificationConfigParams build() {
             return new GetTaskPushNotificationConfigParams(id, pushNotificationConfigId, tenant == null ? "" : tenant);
         }

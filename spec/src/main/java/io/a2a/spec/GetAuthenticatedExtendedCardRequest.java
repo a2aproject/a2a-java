@@ -73,66 +73,32 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
         }
 
         /**
-
-
          * Sets the JSON-RPC version.
-
-
          *
-
-
          * @param jsonrpc the JSON-RPC version
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public GetAuthenticatedExtendedCardRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
 
         /**
-
-
          * Sets the request ID.
-
-
          *
-
-
          * @param id the request ID
-
-
          * @return this builder for method chaining
-
-
          */
-
-
         public GetAuthenticatedExtendedCardRequest.Builder id(Object id) {
             this.id = id;
             return this;
         }
 
         /**
-
-
          * Builds the instance.
-
-
          *
-
-
          * @return a new instance
-
-
          */
-
-
         public GetAuthenticatedExtendedCardRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

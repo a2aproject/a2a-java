@@ -19,53 +19,25 @@ import java.util.UUID;
 public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryParams> {
 
     /** The JSON-RPC method name. */
-
-
     public static final String METHOD = "GetTask";
 
     /**
-
-
      * Constructs request with all parameters.
-
-
      *
-
-
      * @param jsonrpc the JSON-RPC version
-
-
      * @param id the request ID
-
-
      * @param params the request parameters
-
-
      */
-
-
     public GetTaskRequest(String jsonrpc, Object id, TaskQueryParams params) {
         super(jsonrpc, METHOD, id, params);
     }
 
     /**
-
-
      * Constructs request with ID and parameters.
-
-
      *
-
-
      * @param id the request ID
-
-
      * @param params the request parameters
-
-
      */
-
-
     public GetTaskRequest(Object id, TaskQueryParams params) {
         this(null, id, params);
     }
@@ -127,20 +99,10 @@ public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryPa
         }
 
         /**
-
-
          * Builds the instance.
-
-
          *
-
-
          * @return a new instance
-
-
          */
-
-
         public GetTaskRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();
