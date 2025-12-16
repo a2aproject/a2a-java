@@ -28,6 +28,10 @@ public record AgentExtension (String description, Map<String, Object> params, bo
     /**
      * Compact constructor that validates required fields.
      *
+     * @param description the description parameter (see class-level JavaDoc)
+     * @param params the params parameter (see class-level JavaDoc)
+     * @param required the required parameter (see class-level JavaDoc)
+     * @param uri the uri parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if uri is null
      */
     public AgentExtension {

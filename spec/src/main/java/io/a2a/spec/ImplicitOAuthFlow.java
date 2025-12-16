@@ -26,6 +26,14 @@ import io.a2a.util.Assert;
  */
 public record ImplicitOAuthFlow(String authorizationUrl, String refreshUrl, Map<String, String> scopes) {
 
+    /**
+     * Compact constructor that validates required fields.
+     *
+     * @param authorizationUrl the authorizationUrl parameter (see class-level JavaDoc)
+     * @param refreshUrl the refreshUrl parameter (see class-level JavaDoc)
+     * @param scopes the scopes parameter (see class-level JavaDoc)
+     * @throws IllegalArgumentException if authorizationUrl or scopes is null
+     */
     public ImplicitOAuthFlow {
         Assert.checkNotNullParam("authorizationUrl", authorizationUrl);
         Assert.checkNotNullParam("scopes", scopes);

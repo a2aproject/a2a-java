@@ -11,8 +11,8 @@ import io.a2a.util.Assert;
  * are JSONRPC, GRPC, and HTTP+JSON.
  * <p>
  * Agents may support multiple interfaces to allow flexibility in how clients communicate.
- * The {@link AgentCard} includes a primary interface (url + preferredTransport) and may
- * list additional interfaces for alternative access methods.
+ * The {@link AgentCard#supportedInterfaces()} field contains an ordered list of interfaces,
+ * with the first entry being the preferred method for accessing the agent.
  * <p>
  * This class is immutable.
  *
@@ -29,6 +29,9 @@ public record AgentInterface(String protocolBinding, String url, String tenant) 
     /**
      * Compact constructor that validates required fields.
      *
+     * @param protocolBinding the protocolBinding parameter (see class-level JavaDoc)
+     * @param url the url parameter (see class-level JavaDoc)
+     * @param tenant the tenant parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if protocolBinding or url is null
      */
     public AgentInterface   {
@@ -37,6 +40,12 @@ public record AgentInterface(String protocolBinding, String url, String tenant) 
         Assert.checkNotNullParam("tenant", tenant);
     }
 
+    /**
+     * Convenience constructor for creating an AgentInterface without a tenant.
+     *
+     * @param protocolBinding the protocol binding (see class-level JavaDoc)
+     * @param url the endpoint URL (see class-level JavaDoc)
+     */
     public AgentInterface(String protocolBinding, String url) {
         this(protocolBinding, url, "");
     }

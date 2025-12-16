@@ -18,6 +18,10 @@ import io.a2a.util.Assert;
  * <p>
  * This class is immutable and uses the Builder pattern for construction to handle the mix of
  * required and optional fields defined by the specification.
+ * <p>
+ * <b>Important:</b> The {@link #supportedInterfaces()} field specifies how clients can
+ * communicate with the agent. Each entry combines a protocol binding (e.g., "JSONRPC",
+ * "GRPC") with a URL endpoint. The first entry in the list is the preferred interface.
  *
  * @param name the human-readable name of the agent (required)
  * @param description a brief description of the agent's purpose and functionality (required)
@@ -32,9 +36,10 @@ import io.a2a.util.Assert;
  * @param securitySchemes map of security scheme names to their definitions (optional)
  * @param security list of security requirements for accessing the agent (optional)
  * @param iconUrl URL to an icon representing the agent (optional)
- * @param supportedInterfaces ordered list of supported interfaces. First entry is preferred. (required)
+ * @param supportedInterfaces ordered list of protocol+URL interface combinations; first entry is preferred (required)
  * @param protocolVersion the version of the A2A Protocol this agent implements (defaults to {@link #DEFAULT_PROTOCOL_VERSION})
  * @param signatures digital signatures verifying the authenticity of the agent card (optional)
+ * @see AgentInterface
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record AgentCard(
@@ -61,6 +66,22 @@ public record AgentCard(
     /**
      * Compact constructor that validates required fields and sets defaults.
      *
+     * @param name the name parameter (see class-level JavaDoc)
+     * @param description the description parameter (see class-level JavaDoc)
+     * @param provider the provider parameter (see class-level JavaDoc)
+     * @param version the version parameter (see class-level JavaDoc)
+     * @param documentationUrl the documentationUrl parameter (see class-level JavaDoc)
+     * @param capabilities the capabilities parameter (see class-level JavaDoc)
+     * @param defaultInputModes the defaultInputModes parameter (see class-level JavaDoc)
+     * @param defaultOutputModes the defaultOutputModes parameter (see class-level JavaDoc)
+     * @param skills the skills parameter (see class-level JavaDoc)
+     * @param supportsExtendedAgentCard the supportsExtendedAgentCard parameter (see class-level JavaDoc)
+     * @param securitySchemes the securitySchemes parameter (see class-level JavaDoc)
+     * @param security the security parameter (see class-level JavaDoc)
+     * @param iconUrl the iconUrl parameter (see class-level JavaDoc)
+     * @param supportedInterfaces the supportedInterfaces parameter (see class-level JavaDoc)
+     * @param protocolVersion the protocolVersion parameter (see class-level JavaDoc)
+     * @param signatures the signatures parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if any required field is null
      */
     public AgentCard {
@@ -76,17 +97,6 @@ public record AgentCard(
         if (protocolVersion == null) {
             protocolVersion = DEFAULT_PROTOCOL_VERSION;
         }
-    }
-
-    /**
-     * Returns the list of additional interfaces.
-     *
-     * @return the list of supported interfaces
-     * @deprecated Use {@link #supportedInterfaces()} instead. This field has been renamed to 'supportedInterfaces'.
-     */
-    @Deprecated(since = "0.4.0", forRemoval = true)
-    public List<AgentInterface> additionalInterfaces() {
-        return supportedInterfaces;
     }
 
     /**
@@ -362,11 +372,21 @@ public record AgentCard(
         }
 
         /**
-         * Sets the ordered list of supported interfaces (first entry is preferred).
+         * Sets the ordered list of supported protocol interfaces (first entry is preferred).
          * <p>
-         * Each interface defines a combination of protocol binding and URL for accessing the agent.
+         * Each interface defines a combination of protocol binding (e.g., "JSONRPC", "GRPC", "REST")
+         * and URL endpoint for accessing the agent. This is the primary field for declaring how
+         * clients can communicate with the agent as of protocol version 1.0.0.
+         * <p>
+         * Example:
+         * <pre>{@code
+         * .supportedInterfaces(List.of(
+         *     new AgentInterface("JSONRPC", "http://localhost:9999"),
+         *     new AgentInterface("GRPC", "grpc://localhost:9090")
+         * ))
+         * }</pre>
          *
-         * @param supportedInterfaces the ordered list of supported interfaces (optional)
+         * @param supportedInterfaces the ordered list of supported interfaces (required)
          * @return this builder for method chaining
          * @see AgentInterface
          */

@@ -18,15 +18,35 @@ package io.a2a.spec;
 
 public final class CancelTaskResponse extends JSONRPCResponse<Task> {
 
+    /**
+     * Constructs a CancelTaskResponse with full parameters.
+     *
+     * @param jsonrpc the JSON-RPC version
+     * @param id the request ID
+     * @param result the task result
+     * @param error the error if any
+     */
     public CancelTaskResponse(String jsonrpc, Object id, Task result, JSONRPCError error) {
         super(jsonrpc, id, result, error, Task.class);
     }
 
+    /**
+     * Constructs a CancelTaskResponse with an error.
+     *
+     * @param id the request ID
+     * @param error the error
+     */
     public CancelTaskResponse(Object id, JSONRPCError error) {
         this(null, id, null, error);
     }
 
 
+    /**
+     * Constructs a CancelTaskResponse with a successful result.
+     *
+     * @param id the request ID
+     * @param result the task result
+     */
     public CancelTaskResponse(Object id, Task result) {
         this(null, id, result, null);
     }

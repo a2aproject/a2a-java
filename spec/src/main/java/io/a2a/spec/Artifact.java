@@ -35,6 +35,12 @@ public record Artifact(String artifactId, String name, String description, List<
     /**
      * Compact constructor that validates required fields.
      *
+     * @param artifactId the artifactId parameter (see class-level JavaDoc)
+     * @param name the name parameter (see class-level JavaDoc)
+     * @param description the description parameter (see class-level JavaDoc)
+     * @param parts the parts parameter (see class-level JavaDoc)
+     * @param metadata the metadata parameter (see class-level JavaDoc)
+     * @param extensions the extensions parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if artifactId or parts is null, or if parts is empty
      */
     public Artifact {

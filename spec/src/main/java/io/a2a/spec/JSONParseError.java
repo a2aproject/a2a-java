@@ -28,14 +28,29 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class JSONParseError extends JSONRPCError implements A2AError {
 
+    /**
+     * Constructs a JSON parse error with default message.
+     */
     public JSONParseError() {
         this(null, null, null);
     }
 
+    /**
+     * Constructs a JSON parse error with a message.
+     *
+     * @param message the error message
+     */
     public JSONParseError(String message) {
         this(null, message, null);
     }
 
+    /**
+     * Constructs a JSON parse error with full parameters.
+     *
+     * @param code the error code
+     * @param message the error message
+     * @param data additional error data
+     */
     public JSONParseError(
             Integer code,
             String message,

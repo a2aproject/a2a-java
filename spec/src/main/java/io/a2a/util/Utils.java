@@ -172,7 +172,7 @@ public class Utils {
      *
      * @param agentCard the agentcard where the interfaces are defined.
      * @return the first defined URL in the supported interaces of the agent card.
-     * @throws A2AClientException
+     * @throws A2AClientException if no server interface is available in the AgentCard
      */
     public static String getFavoriteInterface(AgentCard agentCard) throws A2AClientException {
         if (agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {

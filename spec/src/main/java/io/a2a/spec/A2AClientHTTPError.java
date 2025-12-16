@@ -30,7 +30,14 @@ import io.a2a.util.Assert;
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">HTTP Status Codes</a>
  */
 public class A2AClientHTTPError extends A2AClientError {
+    /**
+     * The HTTP status code.
+     */
     private final int code;
+
+    /**
+     * The error message.
+     */
     private final String message;
 
     /**

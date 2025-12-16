@@ -11,13 +11,58 @@ import io.a2a.util.Assert;
  */
 public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permits CancelTaskResponse, DeleteTaskPushNotificationConfigResponse, GetAuthenticatedExtendedCardResponse, GetTaskPushNotificationConfigResponse, GetTaskResponse, JSONRPCErrorResponse, ListTaskPushNotificationConfigResponse, ListTasksResponse, SendMessageResponse, SendStreamingMessageResponse, SetTaskPushNotificationConfigResponse {
 
+    /** The JSON-RPC protocol version. */
+
+
     protected String jsonrpc;
+    /** The request identifier this response corresponds to. */
+
     protected Object id;
+    /** The result of the method invocation. */
+
     protected T result;
+    /** The error object if the invocation failed. */
+
     protected JSONRPCError error;
+
+    /**
+
+
+     * Default constructor for deserialization.
+
+
+     */
+
 
     public JSONRPCResponse() {
     }
+
+    /**
+
+
+     * Constructs a JSON-RPC response.
+
+
+     *
+
+
+     * @param jsonrpc the JSON-RPC version
+
+
+     * @param id the request ID
+
+
+     * @param result the result value
+
+
+     * @param error the error if any
+
+
+     * @param resultType the result type class
+
+
+     */
+
 
     public JSONRPCResponse(String jsonrpc, Object id, T result, JSONRPCError error, Class<T> resultType) {
         if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
@@ -46,9 +91,39 @@ public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permit
         return this.id;
     }
 
+    /**
+
+
+     * Gets the result value.
+
+
+     *
+
+
+     * @return the result
+
+
+     */
+
+
     public T getResult() {
         return this.result;
     }
+
+    /**
+
+
+     * Gets the error object.
+
+
+     *
+
+
+     * @return the error if any
+
+
+     */
+
 
     public JSONRPCError getError() {
         return this.error;

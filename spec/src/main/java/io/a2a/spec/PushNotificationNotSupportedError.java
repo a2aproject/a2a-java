@@ -30,10 +30,26 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class PushNotificationNotSupportedError extends JSONRPCError {
 
+    /**
+
+
+     * Constructs error with default message.
+
+
+     */
+
+
     public PushNotificationNotSupportedError() {
         this(null, null, null);
     }
 
+    /**
+     * Constructs error with all parameters.
+     *
+     * @param code the error code (defaults to -32003 if null)
+     * @param message the error message (defaults to "Push Notification is not supported" if null)
+     * @param data additional error data (optional)
+     */
     public PushNotificationNotSupportedError(
             Integer code,
             String message,

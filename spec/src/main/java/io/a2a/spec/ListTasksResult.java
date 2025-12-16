@@ -19,6 +19,16 @@ public record ListTasksResult(
         int pageSize,
         @Nullable String nextPageToken
 ) {
+    /**
+     * Compact constructor for validation.
+     * Validates parameters and creates a defensive copy of the tasks list.
+     *
+     * @param tasks the list of tasks
+     * @param totalSize total number of tasks available
+     * @param pageSize number of tasks in this page
+     * @param nextPageToken token for next page
+     * @throws IllegalArgumentException if validation fails
+     */
     public ListTasksResult {
         Assert.checkNotNullParam("tasks", tasks);
         if (totalSize < 0) {
@@ -61,6 +71,15 @@ public record ListTasksResult(
         return new Builder();
     }
 
+    /**
+
+
+     * Builder for constructing instances.
+
+
+     */
+
+
     public static class Builder {
         private List<Task> tasks;
         private int totalSize;
@@ -73,26 +92,56 @@ public record ListTasksResult(
         private Builder() {
         }
 
+        /**
+         * Sets the tasks list.
+         *
+         * @param tasks the list of tasks
+         * @return this builder for method chaining
+         */
         public Builder tasks(List<Task> tasks) {
             this.tasks = tasks;
             return this;
         }
 
+        /**
+         * Sets the totalSize.
+         *
+         * @param totalSize the totalSize
+         * @return this builder for method chaining
+         */
         public Builder totalSize(int totalSize) {
             this.totalSize = totalSize;
             return this;
         }
 
+        /**
+         * Sets the pageSize.
+         *
+         * @param pageSize the pageSize
+         * @return this builder for method chaining
+         */
         public Builder pageSize(int pageSize) {
             this.pageSize = pageSize;
             return this;
         }
 
+        /**
+         * Sets the nextPageToken.
+         *
+         * @param nextPageToken the nextPageToken
+         * @return this builder for method chaining
+         */
         public Builder nextPageToken(String nextPageToken) {
             this.nextPageToken = nextPageToken;
             return this;
         }
 
+        /**
+         * Builds the ListTasksResult.
+         *
+         * @return a new ListTasksResult instance
+         * @throws IllegalArgumentException if validation fails
+         */
         public ListTasksResult build() {
             return new ListTasksResult(tasks, totalSize, pageSize, nextPageToken);
         }

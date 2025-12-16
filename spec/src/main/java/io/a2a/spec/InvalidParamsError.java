@@ -32,6 +32,13 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class InvalidParamsError extends JSONRPCError {
 
+    /**
+     * Constructs an invalid params error with full parameters.
+     *
+     * @param code the error code
+     * @param message the error message
+     * @param data additional error data
+     */
     public InvalidParamsError(Integer code, String message, Object data) {
         super(
                 defaultIfNull(code, INVALID_PARAMS_ERROR_CODE),
@@ -39,10 +46,18 @@ public class InvalidParamsError extends JSONRPCError {
                 data);
     }
 
+    /**
+     * Constructs an invalid params error with a message.
+     *
+     * @param message the error message
+     */
     public InvalidParamsError(String message) {
         this(null, message, null);
     }
 
+    /**
+     * Constructs an invalid params error with default message.
+     */
     public InvalidParamsError() {
         this(null, null, null);
     }

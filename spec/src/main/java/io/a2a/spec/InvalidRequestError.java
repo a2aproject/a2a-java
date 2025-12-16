@@ -33,10 +33,20 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class InvalidRequestError extends JSONRPCError {
 
+    /**
+     * Constructs an invalid request error with default message.
+     */
     public InvalidRequestError() {
         this(null, null, null);
     }
 
+    /**
+     * Constructs an invalid request error with full parameters.
+     *
+     * @param code the error code
+     * @param message the error message
+     * @param data additional error data
+     */
     public InvalidRequestError(Integer code, String message, Object data) {
         super(
                 defaultIfNull(code, INVALID_REQUEST_ERROR_CODE),
@@ -44,6 +54,11 @@ public class InvalidRequestError extends JSONRPCError {
                 data);
     }
 
+    /**
+     * Constructs an invalid request error with a message.
+     *
+     * @param message the error message
+     */
     public InvalidRequestError(String message) {
         this(null, message, null);
     }

@@ -20,6 +20,7 @@ public interface TaskStatusUpdateEventMapper {
     /**
      * Converts domain TaskStatusUpdateEvent to proto.
      * Uses declarative mapping with CommonFieldMapper for metadata conversion.
+     * Note: MapStruct derives property "final" from domain's isFinal() getter (strips "is" prefix).
      */
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     @Mapping(target = "final", source = "final")

@@ -40,6 +40,13 @@ import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
  */
 public class ContentTypeNotSupportedError extends JSONRPCError {
 
+    /**
+     * Constructs a content type not supported error.
+     *
+     * @param code the error code
+     * @param message the error message
+     * @param data additional error data
+     */
     public ContentTypeNotSupportedError(Integer code, String message, Object data) {
         super(defaultIfNull(code, CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE),
                 defaultIfNull(message, "Incompatible content types"),

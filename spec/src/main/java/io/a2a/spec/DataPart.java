@@ -42,6 +42,12 @@ public class DataPart extends Part<Map<String, Object>> {
     private final Map<String, Object> data;
     private final Kind kind;
 
+    /**
+     * Constructs a DataPart with structured data.
+     *
+     * @param data the structured data map (required)
+     * @throws IllegalArgumentException if data is null
+     */
     public DataPart(Map<String, Object> data) {
         Assert.checkNotNullParam("data", data);
         this.data = data;

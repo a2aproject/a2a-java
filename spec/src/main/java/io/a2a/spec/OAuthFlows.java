@@ -28,6 +28,9 @@ public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCre
         return new Builder();
     }
 
+    /**
+     * Builder for constructing {@link OAuthFlows} instances.
+     */
     public static class Builder {
         private AuthorizationCodeOAuthFlow authorizationCode;
         private ClientCredentialsOAuthFlow clientCredentials;
@@ -40,26 +43,55 @@ public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCre
         private Builder() {
         }
 
+        /**
+         * Sets the authorization code flow configuration.
+         *
+         * @param authorizationCode the authorization code flow (optional)
+         * @return this builder for method chaining
+         */
         public Builder authorizationCode(AuthorizationCodeOAuthFlow authorizationCode) {
             this.authorizationCode = authorizationCode;
             return this;
         }
 
+        /**
+         * Sets the client credentials flow configuration.
+         *
+         * @param clientCredentials the client credentials flow (optional)
+         * @return this builder for method chaining
+         */
         public Builder clientCredentials(ClientCredentialsOAuthFlow clientCredentials) {
             this.clientCredentials = clientCredentials;
             return this;
         }
 
+        /**
+         * Sets the implicit flow configuration.
+         *
+         * @param implicit the implicit flow (optional)
+         * @return this builder for method chaining
+         */
         public Builder implicit(ImplicitOAuthFlow implicit) {
             this.implicit = implicit;
             return this;
         }
 
+        /**
+         * Sets the password flow configuration.
+         *
+         * @param password the password flow (optional)
+         * @return this builder for method chaining
+         */
         public Builder password(PasswordOAuthFlow password) {
             this.password = password;
             return this;
         }
 
+        /**
+         * Builds a new immutable OAuthFlows instance.
+         *
+         * @return a new OAuthFlows instance
+         */
         public OAuthFlows build() {
             return new OAuthFlows(authorizationCode, clientCredentials, implicit, password);
         }

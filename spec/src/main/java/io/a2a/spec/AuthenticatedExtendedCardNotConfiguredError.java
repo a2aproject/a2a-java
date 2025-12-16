@@ -31,6 +31,13 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class AuthenticatedExtendedCardNotConfiguredError extends JSONRPCError {
 
+    /**
+     * Constructs an error for agents that don't support authenticated extended card retrieval.
+     *
+     * @param code the error code
+     * @param message the error message
+     * @param data additional error data
+     */
     public AuthenticatedExtendedCardNotConfiguredError(
             Integer code,
             String message,

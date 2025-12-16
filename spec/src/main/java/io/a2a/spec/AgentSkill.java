@@ -46,6 +46,14 @@ public record AgentSkill(String id, String name, String description, List<String
     /**
      * Compact constructor that validates required fields.
      *
+     * @param id the id parameter (see class-level JavaDoc)
+     * @param name the name parameter (see class-level JavaDoc)
+     * @param description the description parameter (see class-level JavaDoc)
+     * @param tags the tags parameter (see class-level JavaDoc)
+     * @param examples the examples parameter (see class-level JavaDoc)
+     * @param inputModes the inputModes parameter (see class-level JavaDoc)
+     * @param outputModes the outputModes parameter (see class-level JavaDoc)
+     * @param security the security parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if id, name, description, or tags is null
      */
     public AgentSkill {

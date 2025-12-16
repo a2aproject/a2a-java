@@ -25,10 +25,18 @@ import io.a2a.util.Assert;
  */
 public class TextPart extends Part<String> {
 
+    /**
+     * The kind identifier for text parts: "text".
+     */
     public static final String TEXT = "text";
     private final String text;
     private final Kind kind;
 
+    /**
+     * Constructs a TextPart with the specified text content.
+     *
+     * @param text the text content (required, must not be null)
+     */
     public TextPart(String text) {
         Assert.checkNotNullParam("text", text);
         this.text = text;
@@ -40,6 +48,11 @@ public class TextPart extends Part<String> {
         return kind;
     }
 
+    /**
+     * Returns the text content.
+     *
+     * @return the text content
+     */
     public String getText() {
         return text;
     }

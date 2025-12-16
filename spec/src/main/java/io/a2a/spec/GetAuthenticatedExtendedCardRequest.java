@@ -28,12 +28,24 @@ import java.util.UUID;
  */
 public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONRPCRequest<Void> {
 
+    /** The JSON-RPC method name for getting extended agent card. */
     public static final String METHOD = "GetExtendedAgentCard";
 
+    /**
+     * Constructs request with full parameters.
+     *
+     * @param jsonrpc the JSON-RPC version
+     * @param id the request ID
+     */
     public GetAuthenticatedExtendedCardRequest(String jsonrpc, Object id) {
         super(jsonrpc, METHOD, id);
     }
 
+    /**
+     * Constructs request with ID only (uses default JSON-RPC version).
+     *
+     * @param id the request ID
+     */
     public GetAuthenticatedExtendedCardRequest(String id) {
         this(null, id);
     }
@@ -47,6 +59,15 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
         return new Builder();
     }
 
+    /**
+
+
+     * Builder for constructing instances.
+
+
+     */
+
+
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -57,10 +78,46 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
         private Builder() {
         }
 
+        /**
+
+
+         * Sets the JSON-RPC version.
+
+
+         *
+
+
+         * @param jsonrpc the JSON-RPC version
+
+
+         * @return this builder for method chaining
+
+
+         */
+
+
         public GetAuthenticatedExtendedCardRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
+
+        /**
+
+
+         * Sets the request ID.
+
+
+         *
+
+
+         * @param id the request ID
+
+
+         * @return this builder for method chaining
+
+
+         */
+
 
         public GetAuthenticatedExtendedCardRequest.Builder id(Object id) {
             this.id = id;
@@ -68,11 +125,19 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
         }
 
         /**
-         * @deprecated
+
+
+         * Builds the instance.
+
+
+         *
+
+
+         * @return a new instance
+
+
          */
-        public GetAuthenticatedExtendedCardRequest.Builder method(String method) {
-            return this;
-        }
+
 
         public GetAuthenticatedExtendedCardRequest build() {
             if (id == null) {

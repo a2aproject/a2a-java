@@ -35,10 +35,20 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class TaskNotFoundError extends JSONRPCError {
 
+    /**
+     * Constructs error with default message.
+     */
     public TaskNotFoundError() {
         this(null, null, null);
     }
 
+    /**
+     * Constructs error with all parameters.
+     *
+     * @param code the error code (defaults to -32001 if null)
+     * @param message the error message (defaults to "Task not found" if null)
+     * @param data additional error data (optional)
+     */
     public TaskNotFoundError(
             Integer code,
             String message,

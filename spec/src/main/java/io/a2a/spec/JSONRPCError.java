@@ -35,7 +35,14 @@ import io.a2a.util.Assert;
  */
 public class JSONRPCError extends Error implements Event, A2AError {
 
+    /**
+     * The numeric error code (see JSON-RPC 2.0 spec for standard codes).
+     */
     private final Integer code;
+
+    /**
+     * Additional error information (structure defined by the error code).
+     */
     private final Object data;
 
     /**

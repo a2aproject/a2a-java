@@ -17,11 +17,23 @@ import io.a2a.util.Assert;
  */
 public record ListTaskPushNotificationConfigParams(String id, String tenant) {
 
+    /**
+     * Compact constructor for validation.
+     * Validates that required parameters are not null.
+     *
+     * @param id the task identifier
+     * @param tenant the tenant identifier
+     */
     public ListTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("tenant", tenant);
     }
 
+    /**
+     * Convenience constructor with default tenant.
+     *
+     * @param id the task identifier (required)
+     */
     public ListTaskPushNotificationConfigParams(String id) {
         this(id, "");
     }

@@ -21,12 +21,42 @@ import java.util.UUID;
  */
 public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<MessageSendParams> {
 
+    /** The JSON-RPC method name. */
+
+
     public static final String METHOD = "SendStreamingMessage";
+
+    /**
+
+
+     * Constructs request with all parameters.
+
+
+     *
+
+
+     * @param jsonrpc the JSON-RPC version
+
+
+     * @param id the request ID
+
+
+     * @param params the request parameters
+
+
+     */
+
 
     public SendStreamingMessageRequest(String jsonrpc, Object id, MessageSendParams params) {
         super(jsonrpc, METHOD, id, params);
     }
 
+    /**
+     * Constructs request with ID and parameters.
+     *
+     * @param id the request ID
+     * @param params the request parameters
+     */
     public SendStreamingMessageRequest(Object id,  MessageSendParams params) {
         this(null, id, params);
     }
@@ -46,6 +76,12 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
      * Provides a fluent API for building streaming message requests with optional customization
      * of JSON-RPC protocol fields.
      */
+    /**
+
+     * Builder for constructing instances.
+
+     */
+
     public static class Builder {
             private String jsonrpc;
             private Object id;
@@ -63,6 +99,12 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
              * @param jsonrpc the JSON-RPC version (defaults to "2.0")
              * @return this builder
              */
+            /**
+             * Sets the jsonrpc.
+             *
+             * @param jsonrpc the jsonrpc
+             * @return this builder for method chaining
+             */
             public Builder jsonrpc(String jsonrpc) {
                 this.jsonrpc = jsonrpc;
                 return this;
@@ -74,19 +116,14 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
              * @param id the request identifier (auto-generated UUID if null)
              * @return this builder
              */
+            /**
+             * Sets the id.
+             *
+             * @param id the id
+             * @return this builder for method chaining
+             */
             public Builder id(Object id) {
                 this.id = id;
-                return this;
-            }
-
-            /**
-             * Sets the JSON-RPC method name.
-             *
-             * @param method the method name (defaults to "SendStreamingMessage")
-             * @return this builder
-             * @deprecated
-             */
-            public Builder method(String method) {
                 return this;
             }
 
@@ -95,6 +132,12 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
              *
              * @param params the parameters containing the message and configuration
              * @return this builder
+             */
+            /**
+             * Sets the params.
+             *
+             * @param params the params
+             * @return this builder for method chaining
              */
             public Builder params(MessageSendParams params) {
                 this.params = params;
@@ -106,6 +149,16 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
              *
              * @return a new streaming message request instance
              */
+            /**
+
+             * Builds the instance.
+
+             *
+
+             * @return a new instance
+
+             */
+
             public SendStreamingMessageRequest build() {
                 if (id == null) {
                     id = UUID.randomUUID().toString();

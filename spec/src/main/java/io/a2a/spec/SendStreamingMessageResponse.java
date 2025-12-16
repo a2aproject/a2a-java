@@ -19,13 +19,73 @@ package io.a2a.spec;
  */
 public final class SendStreamingMessageResponse extends JSONRPCResponse<StreamingEventKind> {
 
+    /**
+
+
+     * Constructs response with all parameters.
+
+
+     *
+
+
+     * @param jsonrpc the JSON-RPC version
+
+
+     * @param id the request ID
+
+
+     * @param result the result
+
+
+     * @param error the error if any
+
+
+     */
+
+
     public SendStreamingMessageResponse(String jsonrpc, Object id, StreamingEventKind result, JSONRPCError error) {
         super(jsonrpc, id, result, error, StreamingEventKind.class);
     }
 
+    /**
+
+
+     * Constructs successful response.
+
+
+     *
+
+
+     * @param id the request ID
+
+
+     * @param result the result
+
+
+     */
+
+
     public SendStreamingMessageResponse(Object id, StreamingEventKind result) {
         this(null, id, result, null);
     }
+
+    /**
+
+
+     * Constructs error response.
+
+
+     *
+
+
+     * @param id the request ID
+
+
+     * @param error the error
+
+
+     */
+
 
     public SendStreamingMessageResponse(Object id, JSONRPCError error) {
         this(null, id, null, error);

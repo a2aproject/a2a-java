@@ -29,18 +29,35 @@ import static io.a2a.spec.MutualTLSSecurityScheme.MUTUAL_TLS;
  */
 public final class MutualTLSSecurityScheme implements SecurityScheme {
 
+    /**
+     * The type identifier for mutual TLS security schemes: "mutualTLS".
+     */
     public static final String MUTUAL_TLS = "mutualTLS";
     private final String description;
     private final String type;
 
+    /**
+     * Constructs a mutual TLS security scheme with the specified description.
+     *
+     * @param description optional description of the security scheme
+     */
     public MutualTLSSecurityScheme(String description) {
         this(description, MUTUAL_TLS);
     }
 
+    /**
+     * Constructs a mutual TLS security scheme with no description.
+     */
     public MutualTLSSecurityScheme() {
         this(null, MUTUAL_TLS);
     }
 
+    /**
+     * Constructs a mutual TLS security scheme with the specified description and type.
+     *
+     * @param description optional description of the security scheme
+     * @param type the security scheme type (must be "mutualTLS")
+     */
     public MutualTLSSecurityScheme(String description, String type) {
         Assert.checkNotNullParam("type", type);
         if (!type.equals(MUTUAL_TLS)) {
@@ -51,9 +68,34 @@ public final class MutualTLSSecurityScheme implements SecurityScheme {
     }
 
     @Override
+    /**
+
+     * Gets the Description.
+
+     *
+
+     * @return the Description
+
+     */
+
     public String getDescription() {
         return description;
     }
+
+    /**
+
+
+     * Gets the Type.
+
+
+     *
+
+
+     * @return the Type
+
+
+     */
+
 
     public String getType() {
         return type;

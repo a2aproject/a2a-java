@@ -39,6 +39,13 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class InvalidAgentResponseError extends JSONRPCError {
 
+    /**
+     * Constructs an invalid agent response error.
+     *
+     * @param code the error code
+     * @param message the error message
+     * @param data additional error data
+     */
     public InvalidAgentResponseError(Integer code, String message, Object data) {
         super(
                 defaultIfNull(code, INVALID_AGENT_RESPONSE_ERROR_CODE),

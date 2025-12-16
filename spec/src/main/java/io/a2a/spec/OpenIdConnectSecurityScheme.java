@@ -30,15 +30,31 @@ import static io.a2a.spec.OpenIdConnectSecurityScheme.OPENID_CONNECT;
  */
 public final class OpenIdConnectSecurityScheme implements SecurityScheme {
 
+    /**
+     * The type identifier for OpenID Connect security schemes: "openIdConnect".
+     */
     public static final String OPENID_CONNECT = "openIdConnect";
     private final String openIdConnectUrl;
     private final String description;
     private final String type;
 
+    /**
+     * Constructs an OpenID Connect security scheme.
+     *
+     * @param openIdConnectUrl URL to the OpenID Connect Discovery document (required)
+     * @param description optional description of the security scheme
+     */
     public OpenIdConnectSecurityScheme(String openIdConnectUrl, String description) {
         this(openIdConnectUrl, description, OPENID_CONNECT);
     }
 
+    /**
+     * Constructs an OpenID Connect security scheme with explicit type.
+     *
+     * @param openIdConnectUrl URL to the OpenID Connect Discovery document (required)
+     * @param description optional description of the security scheme
+     * @param type the security scheme type (must be "openIdConnect")
+     */
     public OpenIdConnectSecurityScheme(String openIdConnectUrl, String description, String type) {
         Assert.checkNotNullParam("type", type);
         Assert.checkNotNullParam("openIdConnectUrl", openIdConnectUrl);
@@ -51,13 +67,53 @@ public final class OpenIdConnectSecurityScheme implements SecurityScheme {
     }
 
     @Override
+    /**
+
+     * Gets the Description.
+
+     *
+
+     * @return the Description
+
+     */
+
     public String getDescription() {
         return description;
     }
 
+    /**
+
+
+     * Gets the OpenIdConnectUrl.
+
+
+     *
+
+
+     * @return the OpenIdConnectUrl
+
+
+     */
+
+
     public String getOpenIdConnectUrl() {
         return openIdConnectUrl;
     }
+
+    /**
+
+
+     * Gets the Type.
+
+
+     *
+
+
+     * @return the Type
+
+
+     */
+
 
     public String getType() {
         return type;
@@ -78,6 +134,12 @@ public final class OpenIdConnectSecurityScheme implements SecurityScheme {
      * Provides a fluent API for creating OpenID Connect security schemes.
      * The {@code openIdConnectUrl} parameter is required.
      */
+    /**
+
+     * Builder for constructing instances.
+
+     */
+
     public static class Builder {
         private String openIdConnectUrl;
         private String description;
@@ -94,6 +156,12 @@ public final class OpenIdConnectSecurityScheme implements SecurityScheme {
          * @param openIdConnectUrl URL to the OpenID Connect Discovery document (required)
          * @return this builder instance
          */
+        /**
+         * Sets the openIdConnectUrl.
+         *
+         * @param openIdConnectUrl the openIdConnectUrl
+         * @return this builder for method chaining
+         */
         public Builder openIdConnectUrl(String openIdConnectUrl) {
             this.openIdConnectUrl = openIdConnectUrl;
             return this;
@@ -104,6 +172,12 @@ public final class OpenIdConnectSecurityScheme implements SecurityScheme {
          *
          * @param description human-readable description
          * @return this builder instance
+         */
+        /**
+         * Sets the description.
+         *
+         * @param description the description
+         * @return this builder for method chaining
          */
         public Builder description(String description) {
             this.description = description;

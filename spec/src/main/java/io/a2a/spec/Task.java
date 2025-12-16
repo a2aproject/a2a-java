@@ -43,6 +43,9 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class Task implements EventKind, StreamingEventKind {
 
+    /**
+     * The kind identifier for Task events: "task".
+     */
     public static final String TASK = "task";
     private final String id;
     private final String contextId;
@@ -52,11 +55,32 @@ public final class Task implements EventKind, StreamingEventKind {
     private final Map<String, Object> metadata;
     private final String kind;
 
+    /**
+     * Constructs a Task with default kind.
+     *
+     * @param id the task identifier (required)
+     * @param contextId the context identifier (required)
+     * @param status the task status (required)
+     * @param artifacts the list of artifacts (optional)
+     * @param history the conversation history (optional)
+     * @param metadata additional metadata (optional)
+     */
     public Task(String id, String contextId, TaskStatus status, List<Artifact> artifacts,
                 List<Message> history, Map<String, Object> metadata) {
         this(id, contextId, status, artifacts, history, metadata, TASK);
     }
 
+    /**
+     * Constructs a Task with all parameters.
+     *
+     * @param id the task identifier (required)
+     * @param contextId the context identifier (required)
+     * @param status the task status (required)
+     * @param artifacts the list of artifacts (optional)
+     * @param history the conversation history (optional)
+     * @param metadata additional metadata (optional)
+     * @param kind the event kind (must be "task")
+     */
     public Task(String id, String contextId, TaskStatus status,
                 @Nullable List<Artifact> artifacts, @Nullable List<Message> history,
                 Map<String, Object> metadata, String kind) {
@@ -76,26 +100,56 @@ public final class Task implements EventKind, StreamingEventKind {
         this.kind = kind;
     }
 
+    /**
+     * Returns the unique identifier for this task.
+     *
+     * @return the task ID
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Returns the conversation context identifier.
+     *
+     * @return the context ID
+     */
     public String getContextId() {
         return contextId;
     }
 
+    /**
+     * Returns the current status of this task.
+     *
+     * @return the task status
+     */
     public TaskStatus getStatus() {
         return status;
     }
 
+    /**
+     * Returns the artifacts produced by the agent during task execution.
+     *
+     * @return an immutable list of artifacts
+     */
     public List<Artifact> getArtifacts() {
         return artifacts;
     }
 
+    /**
+     * Returns the conversation history for this task.
+     *
+     * @return an immutable list of messages
+     */
     public List<Message> getHistory() {
         return history;
     }
 
+    /**
+     * Returns the metadata associated with this task.
+     *
+     * @return a map of metadata key-value pairs, or null if not set
+     */
     public Map<String, Object> getMetadata() {
         return metadata;
     }

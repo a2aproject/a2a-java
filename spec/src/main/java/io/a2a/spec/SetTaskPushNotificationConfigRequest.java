@@ -18,12 +18,28 @@ import java.util.UUID;
  */
 public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {
 
+    /** The JSON-RPC method name. */
+
+
     public static final String METHOD = "SetTaskPushNotificationConfig";
 
+    /**
+     * Constructs request with all parameters.
+     *
+     * @param jsonrpc the JSON-RPC version
+     * @param id the request ID
+     * @param params the request parameters
+     */
     public SetTaskPushNotificationConfigRequest(String jsonrpc, Object id, TaskPushNotificationConfig params) {
         super(jsonrpc, METHOD, id, params);
     }
 
+    /**
+     * Constructs request with ID and parameters.
+     *
+     * @param id the request ID
+     * @param taskPushConfig the task push notification configuration
+     */
     public SetTaskPushNotificationConfigRequest(String id, TaskPushNotificationConfig taskPushConfig) {
         this(null, id, taskPushConfig);
     }
@@ -37,6 +53,15 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
         return new Builder();
     }
 
+    /**
+
+
+     * Builder for constructing instances.
+
+
+     */
+
+
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -48,10 +73,46 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
         private Builder() {
         }
 
+        /**
+
+
+         * Sets the JSON-RPC version.
+
+
+         *
+
+
+         * @param jsonrpc the JSON-RPC version
+
+
+         * @return this builder for method chaining
+
+
+         */
+
+
         public SetTaskPushNotificationConfigRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
+
+        /**
+
+
+         * Sets the request ID.
+
+
+         *
+
+
+         * @param id the request ID
+
+
+         * @return this builder for method chaining
+
+
+         */
+
 
         public SetTaskPushNotificationConfigRequest.Builder id(Object id) {
             this.id = id;
@@ -59,16 +120,42 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
         }
 
         /**
-         * @deprecated
+
+
+         * Sets the request parameters.
+
+
+         *
+
+
+         * @param params the request parameters
+
+
+         * @return this builder for method chaining
+
+
          */
-        public SetTaskPushNotificationConfigRequest.Builder method(String method) {
-            return this;
-        }
+
 
         public SetTaskPushNotificationConfigRequest.Builder params(TaskPushNotificationConfig params) {
             this.params = params;
             return this;
         }
+
+        /**
+
+
+         * Builds the instance.
+
+
+         *
+
+
+         * @return a new instance
+
+
+         */
+
 
         public SetTaskPushNotificationConfigRequest build() {
             if (id == null) {

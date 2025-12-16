@@ -22,9 +22,17 @@ import org.jspecify.annotations.Nullable;
  */
 public record TaskPushNotificationConfig(String taskId, PushNotificationConfig pushNotificationConfig, @Nullable String tenant) {
 
+    /**
+     * Compact constructor for validation.
+     * Validates that required parameters are not null.
+     *
+     * @param taskId the task identifier
+     * @param pushNotificationConfig the push notification configuration
+     * @param tenant the tenant identifier
+     */
     public TaskPushNotificationConfig {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("pushNotificationConfig", pushNotificationConfig);
         Assert.checkNotNullParam("configId", pushNotificationConfig.id());
-    } 
+    }
 }

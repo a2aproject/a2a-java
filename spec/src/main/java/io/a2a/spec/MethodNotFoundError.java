@@ -24,6 +24,13 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class MethodNotFoundError extends JSONRPCError {
 
+    /**
+     * Constructs error with all parameters.
+     *
+     * @param code the error code (defaults to -32601 if null)
+     * @param message the error message (defaults to "Method not found" if null)
+     * @param data additional error data (optional)
+     */
     public MethodNotFoundError(
             Integer code,
             String message,
@@ -33,6 +40,15 @@ public class MethodNotFoundError extends JSONRPCError {
                 defaultIfNull(message, "Method not found"),
                 data);
     }
+
+    /**
+
+
+     * Constructs error with default message.
+
+
+     */
+
 
     public MethodNotFoundError() {
         this(METHOD_NOT_FOUND_ERROR_CODE, null, null);

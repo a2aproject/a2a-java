@@ -33,6 +33,13 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class UnsupportedOperationError extends JSONRPCError {
 
+    /**
+     * Constructs error with all parameters.
+     *
+     * @param code the error code (defaults to -32004 if null)
+     * @param message the error message (defaults to "This operation is not supported" if null)
+     * @param data additional error data (optional)
+     */
     public UnsupportedOperationError(
             Integer code,
             String message,
@@ -43,6 +50,9 @@ public class UnsupportedOperationError extends JSONRPCError {
                 data);
     }
 
+    /**
+     * Constructs error with default message.
+     */
     public UnsupportedOperationError() {
         this(null, null, null);
     }

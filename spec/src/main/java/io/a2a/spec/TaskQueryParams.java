@@ -12,6 +12,15 @@ import org.jspecify.annotations.Nullable;
  */
 public record TaskQueryParams(String id, @Nullable Integer historyLength, String tenant) {
 
+    /**
+     * Compact constructor for validation.
+     * Validates that required parameters are not null and historyLength is non-negative if provided.
+     *
+     * @param id the task identifier
+     * @param historyLength maximum number of history items
+     * @param tenant the tenant identifier
+     * @throws IllegalArgumentException if historyLength is negative
+     */
     public TaskQueryParams {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("tenant", tenant);
@@ -19,10 +28,22 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, String
             throw new IllegalArgumentException("Invalid history length");
         }
     }
+
+    /**
+     * Convenience constructor with default tenant.
+     *
+     * @param id the task identifier (required)
+     * @param historyLength maximum number of history items to include (optional)
+     */
     public TaskQueryParams(String id, @Nullable Integer historyLength) {
         this(id, historyLength, "");
     }
 
+    /**
+     * Convenience constructor with defaults for tenant and historyLength.
+     *
+     * @param id the task identifier (required)
+     */
     public TaskQueryParams(String id) {
         this(id, null, "");
     }

@@ -43,6 +43,12 @@ public class FilePart extends Part<FileContent> {
     private final Kind kind;
 
 
+    /**
+     * Constructs a FilePart with file content.
+     *
+     * @param file the file content (required, either FileWithBytes or FileWithUri)
+     * @throws IllegalArgumentException if file is null
+     */
     public FilePart(FileContent file) {
         Assert.checkNotNullParam("file", file);
         this.file = file;
@@ -54,6 +60,11 @@ public class FilePart extends Part<FileContent> {
         return kind;
     }
 
+    /**
+     * Gets the file content contained in this part.
+     *
+     * @return the file content (FileWithBytes or FileWithUri)
+     */
     public FileContent getFile() {
         return file;
     }

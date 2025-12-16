@@ -29,6 +29,9 @@ import static io.a2a.spec.Message.MESSAGE;
  */
 public final class Message implements EventKind, StreamingEventKind {
 
+    /**
+     * The kind identifier for Message events: "message".
+     */
     public static final String MESSAGE = "message";
     private final Role role;
     private final List<Part<?>> parts;
@@ -40,11 +43,36 @@ public final class Message implements EventKind, StreamingEventKind {
     private final List<String> referenceTaskIds;
     private final List<String> extensions;
 
+    /**
+     * Constructs a Message with default kind.
+     *
+     * @param role the message role (required)
+     * @param parts the message content parts (required)
+     * @param messageId the message identifier (required)
+     * @param contextId the context identifier (optional)
+     * @param taskId the task identifier (optional)
+     * @param referenceTaskIds list of related task IDs (optional)
+     * @param metadata additional metadata (optional)
+     * @param extensions list of protocol extensions (optional)
+     */
     public Message(Role role, List<Part<?>> parts, String messageId, String contextId, String taskId,
                    List<String> referenceTaskIds, Map<String, Object> metadata, List<String> extensions) {
         this(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata, extensions, MESSAGE);
     }
 
+    /**
+     * Constructs a Message with all parameters.
+     *
+     * @param role the message role (required)
+     * @param parts the message content parts (required)
+     * @param messageId the message identifier (required)
+     * @param contextId the context identifier (optional)
+     * @param taskId the task identifier (optional)
+     * @param referenceTaskIds list of related task IDs (optional)
+     * @param metadata additional metadata (optional)
+     * @param extensions list of protocol extensions (optional)
+     * @param kind the event kind (must be "message")
+     */
     public Message(Role role, List<Part<?>> parts,
                    String messageId, String contextId,
                    String taskId, List<String> referenceTaskIds,
@@ -71,42 +99,96 @@ public final class Message implements EventKind, StreamingEventKind {
         this.kind = kind;
     }
 
+    /**
+     * Returns the role of the message sender.
+     *
+     * @return the message role (USER or AGENT)
+     */
     public Role getRole() {
         return role;
     }
 
+    /**
+     * Returns the content parts of this message.
+     *
+     * @return an immutable list of message parts
+     */
     public List<Part<?>> getParts() {
         return parts;
     }
 
+    /**
+     * Returns the unique identifier for this message.
+     *
+     * @return the message ID
+     */
     public String getMessageId() {
         return messageId;
     }
 
+    /**
+     * Returns the conversation context identifier.
+     *
+     * @return the context ID, or null if not set
+     */
     public String getContextId() {
         return contextId;
     }
 
+    /**
+     * Returns the task identifier this message is associated with.
+     *
+     * @return the task ID, or null if not set
+     */
     public String getTaskId() {
         return taskId;
     }
 
+    /**
+     * Returns the metadata associated with this message.
+     *
+     * @return a map of metadata key-value pairs, or null if not set
+     */
     public Map<String, Object> getMetadata() {
         return metadata;
     }
 
+    /**
+     * Sets the task identifier for this message.
+     * <p>
+     * This method allows associating the message with a task after construction.
+     *
+     * @param taskId the task ID to set
+     */
     public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
 
+    /**
+     * Sets the conversation context identifier for this message.
+     * <p>
+     * This method allows associating the message with a context after construction.
+     *
+     * @param contextId the context ID to set
+     */
     public void setContextId(String contextId) {
         this.contextId = contextId;
     }
 
+    /**
+     * Returns the list of reference task identifiers this message relates to.
+     *
+     * @return a list of task IDs, or null if not set
+     */
     public List<String> getReferenceTaskIds() {
         return referenceTaskIds;
     }
 
+    /**
+     * Returns the list of protocol extensions used in this message.
+     *
+     * @return a list of extension identifiers, or null if not set
+     */
     public List<String> getExtensions() {
         return extensions;
     }
@@ -183,6 +265,12 @@ public final class Message implements EventKind, StreamingEventKind {
      *     .build();
      * }</pre>
      */
+    /**
+
+     * Builder for constructing instances.
+
+     */
+
     public static class Builder {
 
         private Role role;
@@ -222,6 +310,12 @@ public final class Message implements EventKind, StreamingEventKind {
          * @param role the message role (required)
          * @return this builder for method chaining
          */
+        /**
+         * Sets the role.
+         *
+         * @param role the role
+         * @return this builder for method chaining
+         */
         public Builder role(Role role) {
             this.role = role;
             return this;
@@ -257,6 +351,12 @@ public final class Message implements EventKind, StreamingEventKind {
          * @param messageId the message identifier (optional)
          * @return this builder for method chaining
          */
+        /**
+         * Sets the messageId.
+         *
+         * @param messageId the messageId
+         * @return this builder for method chaining
+         */
         public Builder messageId(String messageId) {
             this.messageId = messageId;
             return this;
@@ -268,6 +368,12 @@ public final class Message implements EventKind, StreamingEventKind {
          * @param contextId the context identifier (optional)
          * @return this builder for method chaining
          */
+        /**
+         * Sets the contextId.
+         *
+         * @param contextId the contextId
+         * @return this builder for method chaining
+         */
         public Builder contextId(String contextId) {
             this.contextId = contextId;
             return this;
@@ -277,6 +383,12 @@ public final class Message implements EventKind, StreamingEventKind {
          * Sets the task identifier this message is associated with.
          *
          * @param taskId the task identifier (optional)
+         * @return this builder for method chaining
+         */
+        /**
+         * Sets the taskId.
+         *
+         * @param taskId the taskId
          * @return this builder for method chaining
          */
         public Builder taskId(String taskId) {

@@ -18,6 +18,8 @@ import java.util.UUID;
 public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<DeleteTaskPushNotificationConfigParams> {
 
     /** The JSON-RPC method name for deleting push notification configurations. */
+    /** The JSON-RPC method name. */
+
     public static final String METHOD = "DeleteTaskPushNotificationConfig";
 
     /**
@@ -58,6 +60,12 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
      * Provides a fluent API for setting request parameters. If no id is provided,
      * a random UUID will be generated when {@link #build()} is called.
      */
+    /**
+
+     * Builder for constructing instances.
+
+     */
+
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -92,18 +100,6 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
         }
 
         /**
-         * Sets the JSON-RPC method name.
-         *
-         * @param method the method name (should be "DeleteTaskPushNotificationConfig")
-         * @return this builder for method chaining
-
-         * @deprecated
-         */
-        public Builder method(String method) {
-            return this;
-        }
-
-        /**
          * Sets the request parameters.
          *
          * @param params the request parameters containing task and config IDs (required)
@@ -122,6 +118,16 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
          * @return a new DeleteTaskPushNotificationConfigRequest instance
          * @throws IllegalArgumentException if validation fails (invalid method, invalid id type)
          */
+        /**
+
+         * Builds the instance.
+
+         *
+
+         * @return a new instance
+
+         */
+
         public DeleteTaskPushNotificationConfigRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

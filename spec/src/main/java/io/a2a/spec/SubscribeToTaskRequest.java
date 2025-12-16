@@ -24,12 +24,28 @@ import java.util.UUID;
  */
 public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskIdParams> {
 
+    /** The JSON-RPC method name. */
+
+
     public static final String METHOD = "SubscribeToTask";
 
+    /**
+     * Constructs request with all parameters.
+     *
+     * @param jsonrpc the JSON-RPC version
+     * @param id the request ID
+     * @param params the request parameters
+     */
     public SubscribeToTaskRequest(String jsonrpc, Object id, TaskIdParams params) {
         super(jsonrpc, METHOD, id == null ? UUID.randomUUID().toString() : id, params);
     }
 
+    /**
+     * Constructs request with ID and parameters.
+     *
+     * @param id the request ID
+     * @param params the request parameters
+     */
     public SubscribeToTaskRequest(Object id, TaskIdParams params) {
         this(null, id, params);
     }
@@ -43,6 +59,15 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
         return new Builder();
     }
 
+    /**
+
+
+     * Builder for constructing instances.
+
+
+     */
+
+
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -54,10 +79,46 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
         private Builder() {
         }
 
+        /**
+
+
+         * Sets the JSON-RPC version.
+
+
+         *
+
+
+         * @param jsonrpc the JSON-RPC version
+
+
+         * @return this builder for method chaining
+
+
+         */
+
+
         public SubscribeToTaskRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
+
+        /**
+
+
+         * Sets the request ID.
+
+
+         *
+
+
+         * @param id the request ID
+
+
+         * @return this builder for method chaining
+
+
+         */
+
 
         public SubscribeToTaskRequest.Builder id(Object id) {
             this.id = id;
@@ -65,16 +126,42 @@ public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskId
         }
 
         /**
-         * @deprecated
+
+
+         * Sets the request parameters.
+
+
+         *
+
+
+         * @param params the request parameters
+
+
+         * @return this builder for method chaining
+
+
          */
-        public SubscribeToTaskRequest.Builder method(String method) {
-            return this;
-        }
+
 
         public SubscribeToTaskRequest.Builder params(TaskIdParams params) {
             this.params = params;
             return this;
         }
+
+        /**
+
+
+         * Builds the instance.
+
+
+         *
+
+
+         * @return a new instance
+
+
+         */
+
 
         public SubscribeToTaskRequest build() {
             if (id == null) {

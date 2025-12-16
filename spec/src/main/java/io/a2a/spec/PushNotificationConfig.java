@@ -27,6 +27,15 @@ import io.a2a.util.Assert;
  */
 public record PushNotificationConfig(String url, String token, AuthenticationInfo authentication, String id) {
 
+    /**
+     * Compact constructor for validation.
+     * Validates that the URL is not null.
+     *
+     * @param url the notification endpoint URL
+     * @param token optional bearer token
+     * @param authentication optional authentication info
+     * @param id optional configuration identifier
+     */
     public PushNotificationConfig {
         Assert.checkNotNullParam("url", url);
     }
@@ -56,6 +65,12 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
      * Provides a fluent API for building push notification configurations with optional
      * authentication and identification.
      */
+    /**
+
+     * Builder for constructing instances.
+
+     */
+
     public static class Builder {
         private String url;
         private String token;
@@ -84,6 +99,12 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
          * @param url the HTTP/HTTPS endpoint (required)
          * @return this builder
          */
+        /**
+         * Sets the url.
+         *
+         * @param url the url
+         * @return this builder for method chaining
+         */
         public Builder url(String url) {
             this.url = url;
             return this;
@@ -94,6 +115,12 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
          *
          * @param token the bearer token
          * @return this builder
+         */
+        /**
+         * Sets the token.
+         *
+         * @param token the token
+         * @return this builder for method chaining
          */
         public Builder token(String token) {
             this.token = token;
@@ -106,6 +133,12 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
          * @param authenticationInfo the authentication configuration
          * @return this builder
          */
+        /**
+         * Sets the authenticationInfo.
+         *
+         * @param authenticationInfo the authenticationInfo
+         * @return this builder for method chaining
+         */
         public Builder authentication(AuthenticationInfo authenticationInfo) {
             this.authentication = authenticationInfo;
             return this;
@@ -116,6 +149,12 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
          *
          * @param id the configuration ID
          * @return this builder
+         */
+        /**
+         * Sets the id.
+         *
+         * @param id the id
+         * @return this builder for method chaining
          */
         public Builder id(String id) {
             this.id = id;

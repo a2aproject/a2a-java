@@ -27,6 +27,19 @@ public record ListTasksParams(
         @Nullable Boolean includeArtifacts,
         String tenant
 ) {
+    /**
+     * Compact constructor for validation.
+     * Validates that the tenant parameter is not null.
+     *
+     * @param contextId filter by context ID
+     * @param status filter by task status
+     * @param pageSize maximum number of results per page
+     * @param pageToken pagination token
+     * @param historyLength number of history items to include
+     * @param lastUpdatedAfter filter by last update timestamp
+     * @param includeArtifacts whether to include artifacts
+     * @param tenant the tenant identifier
+     */
     public ListTasksParams {
         Assert.checkNotNullParam("tenant", tenant);
     }
@@ -95,6 +108,15 @@ public record ListTasksParams(
         return new Builder();
     }
 
+    /**
+
+
+     * Builder for constructing instances.
+
+
+     */
+
+
     public static class Builder {
         private String contextId;
         private TaskState status;
@@ -111,46 +133,99 @@ public record ListTasksParams(
         private Builder() {
         }
 
+        /**
+         * Sets the contextId.
+         *
+         * @param contextId the contextId
+         * @return this builder for method chaining
+         */
         public Builder contextId(String contextId) {
             this.contextId = contextId;
             return this;
         }
 
+        /**
+         * Sets the status.
+         *
+         * @param status the status
+         * @return this builder for method chaining
+         */
         public Builder status(TaskState status) {
             this.status = status;
             return this;
         }
 
+        /**
+         * Sets the pageSize.
+         *
+         * @param pageSize the pageSize
+         * @return this builder for method chaining
+         */
         public Builder pageSize(Integer pageSize) {
             this.pageSize = pageSize;
             return this;
         }
 
+        /**
+         * Sets the pageToken.
+         *
+         * @param pageToken the pageToken
+         * @return this builder for method chaining
+         */
         public Builder pageToken(String pageToken) {
             this.pageToken = pageToken;
             return this;
         }
 
+        /**
+         * Sets the historyLength.
+         *
+         * @param historyLength the historyLength
+         * @return this builder for method chaining
+         */
         public Builder historyLength(Integer historyLength) {
             this.historyLength = historyLength;
             return this;
         }
 
+        /**
+         * Sets the lastUpdatedAfter.
+         *
+         * @param lastUpdatedAfter the lastUpdatedAfter
+         * @return this builder for method chaining
+         */
         public Builder lastUpdatedAfter(Instant lastUpdatedAfter) {
             this.lastUpdatedAfter = lastUpdatedAfter;
             return this;
         }
 
+        /**
+         * Sets the includeArtifacts.
+         *
+         * @param includeArtifacts the includeArtifacts
+         * @return this builder for method chaining
+         */
         public Builder includeArtifacts(Boolean includeArtifacts) {
             this.includeArtifacts = includeArtifacts;
             return this;
         }
 
+        /**
+         * Sets the tenant.
+         *
+         * @param tenant the tenant
+         * @return this builder for method chaining
+         */
         public Builder tenant(String tenant) {
             this.tenant = tenant;
             return this;
         }
 
+        /**
+         * Builds the ListTasksParams.
+         *
+         * @return a new ListTasksParams instance
+         */
         public ListTasksParams build() {
             return new ListTasksParams(contextId, status, pageSize, pageToken, historyLength,
                     lastUpdatedAfter, includeArtifacts, tenant);

@@ -32,10 +32,20 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class TaskNotCancelableError extends JSONRPCError {
 
+    /**
+     * Constructs error with default message.
+     */
     public TaskNotCancelableError() {
         this(null, null, null);
     }
 
+    /**
+     * Constructs error with all parameters.
+     *
+     * @param code the error code (defaults to -32002 if null)
+     * @param message the error message (defaults to "Task cannot be canceled" if null)
+     * @param data additional error data (optional)
+     */
     public TaskNotCancelableError(
             Integer code,
             String message,
@@ -46,6 +56,11 @@ public class TaskNotCancelableError extends JSONRPCError {
                 data);
     }
 
+    /**
+     * Constructs error with custom message.
+     *
+     * @param message the error message
+     */
     public TaskNotCancelableError(String message) {
         this(null, message, null);
     }

@@ -24,6 +24,16 @@ import org.jspecify.annotations.Nullable;
 public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer historyLength,
         PushNotificationConfig pushNotificationConfig, Boolean blocking) {
 
+    /**
+     * Compact constructor for validation.
+     * Validates that historyLength is non-negative if provided.
+     *
+     * @param acceptedOutputModes list of accepted output modes
+     * @param historyLength maximum number of history items
+     * @param pushNotificationConfig push notification configuration
+     * @param blocking whether the request should block
+     * @throws IllegalArgumentException if historyLength is negative
+     */
     public MessageSendConfiguration {
         if (historyLength != null && historyLength < 0) {
             throw new IllegalArgumentException("Invalid history length");
@@ -44,6 +54,12 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
      * <p>
      * Provides a fluent API for configuring message send behavior with sensible defaults.
      */
+    /**
+
+     * Builder for constructing instances.
+
+     */
+
     public static class Builder {
 
         List<String> acceptedOutputModes;

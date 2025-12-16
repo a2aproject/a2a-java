@@ -58,6 +58,9 @@ import org.jspecify.annotations.Nullable;
 
 import static io.a2a.json.JsonUtil.JSONRPCErrorTypeAdapter.THROWABLE_MARKER_FIELD;
 
+/**
+ * Utility class for JSON operations.
+ */
 public class JsonUtil {
 
     private static GsonBuilder createBaseGsonBuilder() {
@@ -86,6 +89,15 @@ public class JsonUtil {
             .registerTypeHierarchyAdapter(StreamingEventKind.class, new StreamingEventKindTypeAdapter())
             .create();
 
+    /**
+     * Deserializes JSON string to an object of the specified class.
+     *
+     * @param <T> the type of the object to deserialize to
+     * @param json the JSON string to parse
+     * @param classOfT the class of the object to deserialize to
+     * @return the deserialized object
+     * @throws JsonProcessingException if JSON parsing fails
+     */
     public static <T> T fromJson(String json, Class<T> classOfT) throws JsonProcessingException {
         try {
             return OBJECT_MAPPER.fromJson(json, classOfT);
@@ -94,6 +106,15 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Deserializes JSON string to an object of the specified type.
+     *
+     * @param <T> the type of the object to deserialize to
+     * @param json the JSON string to parse
+     * @param type the type of the object to deserialize to (supports generics)
+     * @return the deserialized object
+     * @throws JsonProcessingException if JSON parsing fails
+     */
     public static <T> T fromJson(String json, Type type) throws JsonProcessingException {
         try {
             return OBJECT_MAPPER.fromJson(json, type);
@@ -111,6 +132,20 @@ public class JsonUtil {
      * @param data the object to serialize
      * @return JSON string representation of the object
      */
+    /**
+
+     * Converts object to JSON string.
+
+     *
+
+     * @param data the object to convert
+
+     * @return JSON string representation
+
+     * @throws JsonProcessingException if conversion fails
+
+     */
+
     public static String toJson(Object data) throws JsonProcessingException {
         try {
             return OBJECT_MAPPER.toJson(data);

@@ -17,12 +17,42 @@ import java.util.UUID;
  */
 public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<ListTaskPushNotificationConfigParams> {
 
+    /** The JSON-RPC method name. */
+
+
     public static final String METHOD = "ListTaskPushNotificationConfig";
+
+    /**
+
+
+     * Constructs request with all parameters.
+
+
+     *
+
+
+     * @param jsonrpc the JSON-RPC version
+
+
+     * @param id the request ID
+
+
+     * @param params the request parameters
+
+
+     */
+
 
     public ListTaskPushNotificationConfigRequest(String jsonrpc, Object id, ListTaskPushNotificationConfigParams params) {
         super(jsonrpc, METHOD, id, params);
     }
 
+    /**
+     * Constructs request with ID and parameters.
+     *
+     * @param id the request ID
+     * @param params the request parameters
+     */
     public ListTaskPushNotificationConfigRequest(String id, ListTaskPushNotificationConfigParams params) {
         this(null, id, params);
     }
@@ -36,6 +66,15 @@ public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSO
         return new Builder();
     }
 
+    /**
+
+
+     * Builder for constructing instances.
+
+
+     */
+
+
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -47,27 +86,53 @@ public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSO
         private Builder() {
         }
 
+        /**
+         * Sets the jsonrpc.
+         *
+         * @param jsonrpc the jsonrpc
+         * @return this builder for method chaining
+         */
         public Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
 
+        /**
+         * Sets the id.
+         *
+         * @param id the id
+         * @return this builder for method chaining
+         */
         public Builder id(Object id) {
             this.id = id;
             return this;
         }
 
         /**
-         * @deprecated
+         * Sets the params.
+         *
+         * @param params the params
+         * @return this builder for method chaining
          */
-        public Builder method(String method) {
-            return this;
-        }
-
         public Builder params(ListTaskPushNotificationConfigParams params) {
             this.params = params;
             return this;
         }
+
+        /**
+
+
+         * Builds the instance.
+
+
+         *
+
+
+         * @return a new instance
+
+
+         */
+
 
         public ListTaskPushNotificationConfigRequest build() {
             if (id == null) {

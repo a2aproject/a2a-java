@@ -22,12 +22,13 @@ public interface AgentCardMapper {
 
     AgentCardMapper INSTANCE = A2AMappers.getMapper(AgentCardMapper.class);
 
+    // Deprecated proto fields - not present in spec API (removed in 1.0.0)
+    @Mapping(target = "url", ignore = true)
+    @Mapping(target = "preferredTransport", ignore = true)
+    @Mapping(target = "additionalInterfaces", ignore = true)
     @Mapping(target = "provider", source = "provider", conditionExpression = "java(domain.provider() != null)")
     @Mapping(target = "documentationUrl", source = "documentationUrl", conditionExpression = "java(domain.documentationUrl() != null)")
     @Mapping(target = "iconUrl", source = "iconUrl", conditionExpression = "java(domain.iconUrl() != null)")
-    @Mapping(target = "url", ignore = true)  // Deprecated in proto, derived from supportedInterfaces[0]
-    @Mapping(target = "preferredTransport", ignore = true)  // Deprecated in proto, derived from supportedInterfaces[0]
-    @Mapping(target = "additionalInterfaces", ignore = true)  // Deprecated in proto, use supportedInterfaces instead
     io.a2a.grpc.AgentCard toProto(io.a2a.spec.AgentCard domain);
 
     @Mapping(target = "provider", source = "provider", conditionExpression = "java(proto.hasProvider())")

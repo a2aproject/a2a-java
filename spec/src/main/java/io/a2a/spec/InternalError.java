@@ -29,6 +29,13 @@ import static io.a2a.util.Utils.defaultIfNull;
  */
 public class InternalError extends JSONRPCError {
 
+    /**
+     * Constructs an internal error with full parameters.
+     *
+     * @param code the error code
+     * @param message the error message
+     * @param data additional error data
+     */
     public InternalError(Integer code, String message, Object data) {
         super(
                 defaultIfNull(code, INTERNAL_ERROR_CODE),
@@ -36,6 +43,11 @@ public class InternalError extends JSONRPCError {
                 data);
     }
 
+    /**
+     * Constructs an internal error with a message.
+     *
+     * @param message the error message
+     */
     public InternalError(String message) {
         this(null, message, null);
     }

@@ -3,13 +3,13 @@ package io.a2a.spec;
 import java.util.UUID;
 
 /**
- * JSON-RPC request for the {@code message/send} method in the A2A Protocol.
+ * JSON-RPC request for the {@code SendMessage} method in the A2A Protocol.
  * <p>
  * This request initiates a new task or continues an existing task by sending a message
  * to an agent. The request returns a single response containing the final {@link Task}
- * state once processing completes.
+ * state once processing completes (blocking/non-streaming mode).
  * <p>
- * The {@code message/send} method is used for:
+ * The {@code SendMessage} method is used for:
  * <ul>
  *   <li>Creating new tasks with an initial user message</li>
  *   <li>Continuing existing tasks with additional messages</li>
@@ -17,9 +17,10 @@ import java.util.UUID;
  * </ul>
  * <p>
  * For real-time event streaming during task execution, use {@link SendStreamingMessageRequest}
- * with the {@code message/stream} method instead.
+ * with the {@code SendStreamingMessage} method instead.
  * <p>
- * This class includes a fluent {@link Builder} for convenient request construction.
+ * This class includes a fluent {@link Builder} for convenient request construction. The method
+ * name is fixed as {@value #METHOD} and is set automatically by the constructor.
  *
  * @see SendStreamingMessageRequest
  * @see MessageSendParams
@@ -31,6 +32,8 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
     /**
      * The JSON-RPC method name for sending a message: "SendMessage".
      */
+    /** The JSON-RPC method name. */
+
     public static final String METHOD = "SendMessage";
 
     /**
@@ -44,6 +47,20 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
      * @param params  the message send parameters (required)
      * @throws IllegalArgumentException if validation fails
      */
+    /**
+
+     * Constructs request with all parameters.
+
+     *
+
+     * @param jsonrpc the JSON-RPC version
+
+     * @param id the request ID
+
+     * @param params the request parameters
+
+     */
+
     public SendMessageRequest(String jsonrpc, Object id, MessageSendParams params) {
         super(jsonrpc, METHOD, id, params);
     }
@@ -54,6 +71,18 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
      * @param id the request correlation identifier
      * @param params the message send parameters (required)
      */
+    /**
+
+     * Constructs request with ID and parameters.
+
+     *
+
+     * @param id the request ID
+
+     * @param params the request parameters
+
+     */
+
     public SendMessageRequest(Object id, MessageSendParams params) {
         this(JSONRPC_VERSION, id, params);
     }
@@ -70,8 +99,22 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
     /**
      * Builder for constructing {@link SendMessageRequest} instances with a fluent API.
      * <p>
+     * The method name is automatically set to {@value SendMessageRequest#METHOD} and cannot be changed.
      * If no ID is provided, a UUID will be auto-generated when {@link #build()} is called.
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * SendMessageRequest request = SendMessageRequest.builder()
+     *     .params(new MessageSendParams(message, taskId, pushNotificationConfig))
+     *     .build();
+     * }</pre>
      */
+    /**
+
+     * Builder for constructing instances.
+
+     */
+
     public static class Builder {
         private String jsonrpc;
         private Object id;
@@ -83,28 +126,34 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
         private Builder() {
         }
 
-        /** Sets the JSON-RPC version. */
+        /**
+         * Sets the JSON-RPC version.
+         *
+         * @param jsonrpc the JSON-RPC version (typically "2.0")
+         * @return this builder for method chaining
+         */
         public Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
 
-        /** Sets the request correlation ID. */
+        /**
+         * Sets the request correlation ID.
+         *
+         * @param id the request correlation identifier
+         * @return this builder for method chaining
+         */
         public Builder id(Object id) {
             this.id = id;
             return this;
         }
 
         /**
-         * Sets the method name.
+         * Sets the message send parameters (required).
          *
-         * @deprecated
-         * */
-        public Builder method(String method) {
-            return this;
-        }
-
-        /** Sets the message send parameters (required). */
+         * @param params the message send parameters
+         * @return this builder for method chaining
+         */
         public Builder params(MessageSendParams params) {
             this.params = params;
             return this;
@@ -116,6 +165,16 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
          *
          * @return the constructed request
          */
+        /**
+
+         * Builds the instance.
+
+         *
+
+         * @return a new instance
+
+         */
+
         public SendMessageRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();

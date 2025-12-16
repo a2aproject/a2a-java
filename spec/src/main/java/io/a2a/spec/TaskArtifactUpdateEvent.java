@@ -36,6 +36,9 @@ import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
  */
 public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventKind, UpdateEvent {
 
+    /**
+     * The kind identifier for artifact update events: "artifact-update".
+     */
     public static final String ARTIFACT_UPDATE = "artifact-update";
     private final String taskId;
     private final Boolean append;
@@ -45,10 +48,31 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
     private final Map<String, Object> metadata;
     private final String kind;
 
+    /**
+     * Constructs a TaskArtifactUpdateEvent with default kind.
+     *
+     * @param taskId the task identifier (required)
+     * @param artifact the artifact being updated (required)
+     * @param contextId the context identifier (required)
+     * @param append whether to append to existing artifact (optional)
+     * @param lastChunk whether this is the final chunk (optional)
+     * @param metadata additional metadata (optional)
+     */
     public TaskArtifactUpdateEvent(String taskId, Artifact artifact, String contextId, Boolean append, Boolean lastChunk, Map<String, Object> metadata) {
         this(taskId, artifact, contextId, append, lastChunk, metadata, ARTIFACT_UPDATE);
     }
 
+    /**
+     * Constructs a TaskArtifactUpdateEvent with all parameters.
+     *
+     * @param taskId the task identifier (required)
+     * @param artifact the artifact being updated (required)
+     * @param contextId the context identifier (required)
+     * @param append whether to append to existing artifact (optional)
+     * @param lastChunk whether this is the final chunk (optional)
+     * @param metadata additional metadata (optional)
+     * @param kind the event kind (must be "artifact-update")
+     */
     public TaskArtifactUpdateEvent(String taskId, Artifact artifact, String contextId, Boolean append, Boolean lastChunk, Map<String, Object> metadata, String kind) {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("artifact", artifact);
@@ -66,26 +90,56 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
         this.kind = kind;
     }
 
+    /**
+     * Returns the task identifier.
+     *
+     * @return the task ID
+     */
     public String getTaskId() {
         return taskId;
     }
 
+    /**
+     * Returns the artifact being updated.
+     *
+     * @return the artifact
+     */
     public Artifact getArtifact() {
         return artifact;
     }
 
+    /**
+     * Returns the context identifier.
+     *
+     * @return the context ID
+     */
     public String getContextId() {
         return contextId;
     }
 
+    /**
+     * Returns whether this update should append to an existing artifact.
+     *
+     * @return true if appending, false or null for new artifact
+     */
     public Boolean isAppend() {
         return append;
     }
 
+    /**
+     * Returns whether this is the final chunk for the artifact.
+     *
+     * @return true if final chunk, false or null otherwise
+     */
     public Boolean isLastChunk() {
         return lastChunk;
     }
 
+    /**
+     * Returns the metadata associated with this event.
+     *
+     * @return a map of metadata key-value pairs, or null if not set
+     */
     public Map<String, Object> getMetadata() {
         return metadata;
     }
@@ -164,36 +218,78 @@ public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventK
             this.metadata = existingTaskArtifactUpdateEvent.metadata;
         }
 
+        /**
+         * Sets the task identifier.
+         *
+         * @param taskId the task ID (required)
+         * @return this builder for method chaining
+         */
         public Builder taskId(String taskId) {
             this.taskId = taskId;
             return this;
         }
 
+        /**
+         * Sets the artifact being updated.
+         *
+         * @param artifact the artifact (required)
+         * @return this builder for method chaining
+         */
         public Builder artifact(Artifact artifact) {
             this.artifact = artifact;
             return this;
         }
 
+        /**
+         * Sets the context identifier.
+         *
+         * @param contextId the context ID (required)
+         * @return this builder for method chaining
+         */
         public Builder contextId(String contextId) {
             this.contextId = contextId;
             return this;
         }
 
+        /**
+         * Sets whether this update should append to an existing artifact.
+         *
+         * @param append true to append, false or null for new artifact
+         * @return this builder for method chaining
+         */
         public Builder append(Boolean append) {
             this.append = append;
             return this;
         }
 
+        /**
+         * Sets whether this is the final chunk for the artifact.
+         *
+         * @param lastChunk true if final chunk, false or null otherwise
+         * @return this builder for method chaining
+         */
         public Builder lastChunk(Boolean lastChunk) {
             this.lastChunk  = lastChunk;
             return this;
         }
 
+        /**
+         * Sets the metadata for this event.
+         *
+         * @param metadata map of metadata key-value pairs (optional)
+         * @return this builder for method chaining
+         */
         public Builder metadata(Map<String, Object> metadata) {
             this.metadata = metadata;
             return this;
         }
 
+        /**
+         * Builds the TaskArtifactUpdateEvent.
+         *
+         * @return a new TaskArtifactUpdateEvent instance
+         * @throws IllegalArgumentException if required fields are missing
+         */
         public TaskArtifactUpdateEvent build() {
             return new TaskArtifactUpdateEvent(taskId, artifact, contextId, append, lastChunk, metadata);
         }
