@@ -342,7 +342,7 @@ public class JSONRPCTransportTest {
                                 .url("https://example.com/callback")
                                 .authentication(new AuthenticationInfo(Collections.singletonList("jwt"),
                                         null))
-                                .build(), "tenant"), null);
+                                .build(), ""), null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
@@ -369,7 +369,7 @@ public class JSONRPCTransportTest {
         AgentCard agentCard = client.getAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent", agentCard.name());
         assertEquals("Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.", agentCard.description());
-        assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard));
+        assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard).url());
         assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
         assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
         assertEquals("1.2.0", agentCard.version());
@@ -457,7 +457,7 @@ public class JSONRPCTransportTest {
         AgentCard agentCard = client.getAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
-        assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard));
+        assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard).url());
         assertEquals("Example Geo Services Inc.", agentCard.provider().organization());
         assertEquals("https://www.examplegeoservices.com", agentCard.provider().url());
         assertEquals("1.2.0", agentCard.version());

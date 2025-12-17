@@ -15,6 +15,10 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.JSONRPCError;
 import org.jspecify.annotations.Nullable;
 
+import static io.a2a.util.Assert.checkNotNullParam;
+
+import io.a2a.spec.AgentInterface;
+
 public class A2ACardResolver {
     private final A2AHttpClient httpClient;
     private final String url;
@@ -23,52 +27,77 @@ public class A2ACardResolver {
     private static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
 
     /**
-     * Get the agent card for an A2A agent.
-     * The {@code JdkA2AHttpClient} will be used to fetch the agent card.
+     * Get the agent card for an A2A agent. The {@code JdkA2AHttpClient} will be used to fetch the agent card.
      *
-     * @param baseUrl the base URL for the agent whose agent card we want to retrieve
+     * @param baseUrl the base URL for the agent whose agent card we want to retrieve, must not be null
      * @throws A2AClientError if the URL for the agent is invalid
+     * @throws IllegalArgumentException if baseUrl is null
      */
     public A2ACardResolver(String baseUrl) throws A2AClientError {
         this(new JdkA2AHttpClient(), baseUrl, null, null);
     }
 
     /**
+     * Get the agent card for an A2A agent. The {@code JdkA2AHttpClient} will be used to fetch the agent card.
+     *
+     * @param baseUrl the base URL for the agent whose agent card we want to retrieve, must not be null
+     * @param tenant the tenant path to use when fetching the agent card, may be null for no tenant
+     * @throws A2AClientError if the URL for the agent is invalid
+     * @throws IllegalArgumentException if baseUrl is null
+     */
+    public A2ACardResolver(String baseUrl, @Nullable String tenant) throws A2AClientError {
+        this(new JdkA2AHttpClient(), baseUrl, tenant, null);
+    }
+
+    /**
      * Constructs an A2ACardResolver with a specific HTTP client and base URL.
      *
-     * @param httpClient the http client to use
-     * @param baseUrl the base URL for the agent whose agent card we want to retrieve
+     * @param httpClient the HTTP client to use for fetching the agent card, must not be null
+     * @param baseUrl the base URL for the agent whose agent card we want to retrieve, must not be null
+     * @param tenant the tenant path to use when fetching the agent card, may be null for no tenant
      * @throws A2AClientError if the URL for the agent is invalid
+     * @throws IllegalArgumentException if httpClient or baseUrl is null
      */
-    public A2ACardResolver(A2AHttpClient httpClient, String baseUrl) throws A2AClientError {
-        this(httpClient, baseUrl, null, null);
+    public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, @Nullable String tenant) throws A2AClientError {
+        this(httpClient, baseUrl, tenant, null);
     }
 
     /**
-     * @param httpClient the http client to use
-     * @param baseUrl the base URL for the agent whose agent card we want to retrieve
+     * Constructs an A2ACardResolver with a specific HTTP client, base URL, and custom agent card path.
+     *
+     * @param httpClient the HTTP client to use for fetching the agent card, must not be null
+     * @param baseUrl the base URL for the agent whose agent card we want to retrieve, must not be null
+     * @param tenant the tenant path to use when fetching the agent card, may be null for no tenant
      * @param agentCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent-card.json"
+     *                      agent URL, defaults to "/.well-known/agent-card.json" if null or empty
      * @throws A2AClientError if the URL for the agent is invalid
+     * @throws IllegalArgumentException if httpClient or baseUrl is null
      */
-    public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, String agentCardPath) throws A2AClientError {
-        this(httpClient, baseUrl, agentCardPath, null);
+    public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, @Nullable String tenant, @Nullable String agentCardPath) throws A2AClientError {
+        this(httpClient, baseUrl, tenant, agentCardPath, null);
     }
 
     /**
-     * @param httpClient the http client to use
-     * @param baseUrl the base URL for the agent whose agent card we want to retrieve
+     * Constructs an A2ACardResolver with full configuration including authentication headers.
+     *
+     * @param httpClient the HTTP client to use for fetching the agent card, must not be null
+     * @param baseUrl the base URL for the agent whose agent card we want to retrieve, must not be null
+     * @param tenant the tenant path to use when fetching the agent card, may be null for no tenant
      * @param agentCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent-card.json"
-     * @param authHeaders the HTTP authentication headers to use. May be {@code null}
+     *                      agent URL, defaults to "/.well-known/agent-card.json" if null or empty
+     * @param authHeaders the HTTP authentication headers to use, may be null
      * @throws A2AClientError if the URL for the agent is invalid
+     * @throws IllegalArgumentException if httpClient or baseUrl is null
      */
-    public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, @Nullable String agentCardPath,
+    public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, @Nullable String tenant, @Nullable String agentCardPath,
                            @Nullable Map<String, String> authHeaders) throws A2AClientError {
+        checkNotNullParam("httpClient", httpClient);
+        checkNotNullParam("baseUrl", baseUrl);
+
         this.httpClient = httpClient;
-        String effectiveAgentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
+        String effectiveAgentCardPath = (agentCardPath == null || agentCardPath.isEmpty()) ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
         try {
-            this.url = new URI(baseUrl).resolve(effectiveAgentCardPath).toString();
+            this.url = new URI(io.a2a.util.Utils.buildBaseUrl(new AgentInterface("JSONRPC", baseUrl, ""), tenant)).resolve(effectiveAgentCardPath).toString();
         } catch (URISyntaxException e) {
             throw new A2AClientError("Invalid agent URL", e);
         }

@@ -3,6 +3,7 @@ package io.a2a.client.transport.grpc;
 import io.a2a.client.transport.spi.ClientTransportProvider;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.TransportProtocol;
 import io.grpc.Channel;
 
@@ -12,12 +13,12 @@ import io.grpc.Channel;
 public class GrpcTransportProvider implements ClientTransportProvider<GrpcTransport, GrpcTransportConfig> {
 
     @Override
-    public GrpcTransport create(GrpcTransportConfig grpcTransportConfig, AgentCard agentCard, String agentUrl) throws A2AClientException {
+    public GrpcTransport create(GrpcTransportConfig grpcTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException {
         // not making use of the interceptors for gRPC for now
 
-        Channel channel = grpcTransportConfig.getChannelFactory().apply(agentUrl);
+        Channel channel = grpcTransportConfig.getChannelFactory().apply(agentInterface.url());
         if (channel != null) {
-            return new GrpcTransport(channel, agentCard, grpcTransportConfig.getInterceptors());
+            return new GrpcTransport(channel, agentCard, agentInterface.tenant(), grpcTransportConfig.getInterceptors());
         }
 
         throw new A2AClientException("Missing required GrpcTransportConfig");

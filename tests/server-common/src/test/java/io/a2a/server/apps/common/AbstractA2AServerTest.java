@@ -267,7 +267,7 @@ public abstract class AbstractA2AServerTest {
 
         try {
             // Test listing all tasks (no filters)
-            io.a2a.spec.ListTasksParams params = ListTasksParams.builder().tenant("tenant").build();
+            io.a2a.spec.ListTasksParams params = ListTasksParams.builder().tenant("").build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
 
             assertNotNull(result);
@@ -308,7 +308,7 @@ public abstract class AbstractA2AServerTest {
             // Filter by contextId
             io.a2a.spec.ListTasksParams params = ListTasksParams.builder()
                     .contextId("context-filter-1")
-                    .tenant("tenant")
+                    .tenant("")
                     .build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
 
@@ -349,7 +349,7 @@ public abstract class AbstractA2AServerTest {
             // Filter by status WORKING
             io.a2a.spec.ListTasksParams params = ListTasksParams.builder()
                     .status(TaskState.WORKING)
-                    .tenant("tenant")
+                    .tenant("")
                     .build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
 
@@ -393,7 +393,7 @@ public abstract class AbstractA2AServerTest {
             // Get first page with pageSize=2
             io.a2a.spec.ListTasksParams params1 = ListTasksParams.builder()
                     .contextId("page-context")
-                    .tenant("tenant")
+                    .tenant("")
                     .pageSize(2)
                     .build();
             io.a2a.spec.ListTasksResult result1 = getClient().listTasks(params1);
@@ -406,7 +406,7 @@ public abstract class AbstractA2AServerTest {
             // Get second page using pageToken
             io.a2a.spec.ListTasksParams params2 = ListTasksParams.builder()
                     .contextId("page-context")
-                    .tenant("tenant")
+                    .tenant("")
                     .pageSize(2)
                     .pageToken(result1.nextPageToken())
                     .build();
@@ -443,7 +443,7 @@ public abstract class AbstractA2AServerTest {
             // List with history limited to 2 messages
             io.a2a.spec.ListTasksParams params = ListTasksParams.builder()
                     .contextId("context-history")
-                    .tenant("tenant")
+                    .tenant("")
                     .historyLength(2)
                     .build();
             io.a2a.spec.ListTasksResult result = getClient().listTasks(params);
@@ -548,7 +548,7 @@ public abstract class AbstractA2AServerTest {
         try {
             TaskPushNotificationConfig taskPushConfig
                     = new TaskPushNotificationConfig(
-                            MINIMAL_TASK.id(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
+                            MINIMAL_TASK.id(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "");
             TaskPushNotificationConfig config = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
             assertEquals(MINIMAL_TASK.id(), config.taskId());
             assertEquals("http://example.com", config.pushNotificationConfig().url());
@@ -567,7 +567,7 @@ public abstract class AbstractA2AServerTest {
         try {
             TaskPushNotificationConfig taskPushConfig
                     = new TaskPushNotificationConfig(
-                            MINIMAL_TASK.id(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
+                            MINIMAL_TASK.id(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "");
 
             TaskPushNotificationConfig setResult = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
             assertNotNull(setResult);
@@ -610,7 +610,7 @@ public abstract class AbstractA2AServerTest {
         assertEquals("A test agent card", agentCard.description());
         assertNotNull(agentCard.supportedInterfaces());
         assertFalse(agentCard.supportedInterfaces().isEmpty());
-        assertEquals(getTransportUrl(), Utils.getFavoriteInterface(agentCard));
+        assertEquals(getTransportUrl(), Utils.getFavoriteInterface(agentCard).url());
         assertEquals("1.0", agentCard.version());
         assertEquals("http://example.com/docs", agentCard.documentationUrl());
         assertTrue(agentCard.capabilities().pushNotifications());

@@ -4,6 +4,7 @@ import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.client.transport.spi.ClientTransportProvider;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.TransportProtocol;
 
 public class RestTransportProvider implements ClientTransportProvider<RestTransport, RestTransportConfig> {
@@ -14,12 +15,12 @@ public class RestTransportProvider implements ClientTransportProvider<RestTransp
     }
 
     @Override
-    public RestTransport create(RestTransportConfig clientTransportConfig, AgentCard agentCard, String agentUrl) throws A2AClientException {
+    public RestTransport create(RestTransportConfig clientTransportConfig, AgentCard agentCard, AgentInterface agentInterface) throws A2AClientException {
         RestTransportConfig transportConfig = clientTransportConfig;
          if (transportConfig == null) {
             transportConfig = new RestTransportConfig(new JdkA2AHttpClient());
         }
-        return new RestTransport(clientTransportConfig.getHttpClient(), agentCard, agentUrl, transportConfig.getInterceptors());
+        return new RestTransport(clientTransportConfig.getHttpClient(), agentCard, agentInterface, transportConfig.getInterceptors());
     }
 
     @Override

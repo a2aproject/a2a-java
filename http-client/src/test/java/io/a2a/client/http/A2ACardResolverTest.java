@@ -28,13 +28,13 @@ public class A2ACardResolverTest {
         TestHttpClient client = new TestHttpClient();
         client.body = JsonMessages.AGENT_CARD;
 
-        A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/");
+        A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/", "");
         AgentCard card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
 
 
-        resolver = new A2ACardResolver(client, "http://example.com");
+        resolver = new A2ACardResolver(client, "http://example.com", "");
         card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
@@ -70,7 +70,7 @@ public class A2ACardResolverTest {
         TestHttpClient client = new TestHttpClient();
         client.body = JsonMessages.AGENT_CARD;
 
-        A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/");
+        A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/", "");
         AgentCard card = resolver.getAgentCard();
 
         AgentCard expectedCard = unmarshalFrom(JsonMessages.AGENT_CARD);
@@ -95,7 +95,7 @@ public class A2ACardResolverTest {
         TestHttpClient client = new TestHttpClient();
         client.body = "X" + JsonMessages.AGENT_CARD;
 
-        A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/");
+        A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/", "");
 
         boolean success = false;
         try {
@@ -112,7 +112,7 @@ public class A2ACardResolverTest {
         TestHttpClient client = new TestHttpClient();
         client.status = 503;
 
-        A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/");
+        A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/", "");
 
         String msg = null;
         try {

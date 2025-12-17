@@ -31,6 +31,7 @@ import io.a2a.json.JsonUtil;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
@@ -60,7 +61,7 @@ public class RestTransport implements ClientTransport {
 
     private static final Logger log = Logger.getLogger(RestTransport.class.getName());
     private final A2AHttpClient httpClient;
-    private final String agentUrl;
+    private final AgentInterface agentInterface;
     private @Nullable final List<ClientCallInterceptor> interceptors;
     private AgentCard agentCard;
     private boolean needsExtendedCard = false;
@@ -70,10 +71,10 @@ public class RestTransport implements ClientTransport {
     }
 
     public RestTransport(@Nullable A2AHttpClient httpClient, AgentCard agentCard,
-            String agentUrl, @Nullable List<ClientCallInterceptor> interceptors) {
+            AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors) {
         this.httpClient = httpClient == null ? new JdkA2AHttpClient() : httpClient;
         this.agentCard = agentCard;
-        this.agentUrl = agentUrl.endsWith("/") ? agentUrl.substring(0, agentUrl.length() - 1) : agentUrl;
+        this.agentInterface = agentInterface;
         this.interceptors = interceptors;
     }
 
@@ -83,7 +84,7 @@ public class RestTransport implements ClientTransport {
         io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder(ProtoUtils.ToProto.sendMessageRequest(messageSendParams));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SendMessageRequest.METHOD, builder, agentCard, context);
         try {
-            String httpResponseBody = sendPostRequest(buildBaseUrl(messageSendParams.tenant()) + "/message:send", payloadAndHeaders);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:send", payloadAndHeaders);
             io.a2a.grpc.SendMessageResponse.Builder responseBuilder = io.a2a.grpc.SendMessageResponse.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             if (responseBuilder.hasMsg()) {
@@ -111,7 +112,7 @@ public class RestTransport implements ClientTransport {
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         RestSSEEventListener sseEventListener = new RestSSEEventListener(eventConsumer, errorConsumer);
         try {
-            A2AHttpClient.PostBuilder postBuilder = createPostBuilder(buildBaseUrl(messageSendParams.tenant()) + "/message:stream", payloadAndHeaders);
+            A2AHttpClient.PostBuilder postBuilder = createPostBuilder(Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:stream", payloadAndHeaders);
             ref.set(postBuilder.postAsyncSSE(
                     msg -> sseEventListener.onMessage(msg, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
@@ -135,7 +136,7 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetTaskRequest.METHOD, builder,
                 agentCard, context);
         try {
-            StringBuilder url = new StringBuilder(buildBaseUrl(taskQueryParams.tenant()));
+            StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, taskQueryParams.tenant()));
             if (taskQueryParams.historyLength() != null && taskQueryParams.historyLength() > 0) {
                 url.append(String.format("/tasks/%1s?historyLength=%2d", taskQueryParams.id(), taskQueryParams.historyLength()));
             } else {
@@ -170,7 +171,7 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(CancelTaskRequest.METHOD, builder,
                 agentCard, context);
         try {
-            String httpResponseBody = sendPostRequest(buildBaseUrl(taskIdParams.tenant()) + String.format("/tasks/%1s:cancel", taskIdParams.id()), payloadAndHeaders);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, taskIdParams.tenant()) + String.format("/tasks/%1s:cancel", taskIdParams.id()), payloadAndHeaders);
             io.a2a.grpc.Task.Builder responseBuilder = io.a2a.grpc.Task.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.task(responseBuilder);
@@ -212,7 +213,7 @@ public class RestTransport implements ClientTransport {
 
         try {
             // Build query string
-            StringBuilder urlBuilder = new StringBuilder(buildBaseUrl(request.tenant()));
+            StringBuilder urlBuilder = new StringBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()));
             urlBuilder.append("/tasks");
             String queryParams = buildListTasksQueryString(request);
             if (!queryParams.isEmpty()) {
@@ -246,25 +247,7 @@ public class RestTransport implements ClientTransport {
         }
     }
 
-    private String buildBaseUrl(@Nullable String tenant) {
-        StringBuilder urlBuilder = new StringBuilder(agentUrl);
-        urlBuilder.append(extractTenant(tenant));
-        return urlBuilder.toString();
-    }
-
-    private String extractTenant(@Nullable String tenant) {
-        String tenantPath = tenant;
-        if (tenantPath == null || tenantPath.isBlank()) {
-            return "";
-        }
-        if(! tenantPath.startsWith("/")){
-            tenantPath = '/' + tenantPath;
-        }
-        if(tenantPath.endsWith("/")){
-            tenantPath = tenantPath.substring(0, tenantPath.length() -1);
-        }
-        return tenantPath;
-    }
+    
     private String buildListTasksQueryString(ListTasksParams request) {
         java.util.List<String> queryParts = new java.util.ArrayList<>();
         if (request.contextId() != null) {
@@ -300,7 +283,7 @@ public class RestTransport implements ClientTransport {
         }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SetTaskPushNotificationConfigRequest.METHOD, builder, agentCard, context);
         try {
-            String httpResponseBody = sendPostRequest(buildBaseUrl(request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.taskId()), payloadAndHeaders);
+            String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.taskId()), payloadAndHeaders);
             io.a2a.grpc.TaskPushNotificationConfig.Builder responseBuilder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
             return ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder);
@@ -316,7 +299,7 @@ public class RestTransport implements ClientTransport {
         checkNotNullParam("request", request);
         io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder builder
                 = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
-        StringBuilder url = new StringBuilder(buildBaseUrl(request.tenant()));
+        StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()));
         String configId = request.pushNotificationConfigId();
         if (configId != null && !configId.isEmpty()) {
             builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId));
@@ -359,7 +342,7 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(ListTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
         try {
-            String url = buildBaseUrl(request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.id());
+            String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.id());
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
             if (payloadAndHeaders.getHeaders() != null) {
                 for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
@@ -388,7 +371,7 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(DeleteTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
         try {
-            String url = buildBaseUrl(request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId());
+            String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId());
             A2AHttpClient.DeleteBuilder deleteBuilder = httpClient.createDelete().url(url);
             if (payloadAndHeaders.getHeaders() != null) {
                 for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
@@ -417,7 +400,7 @@ public class RestTransport implements ClientTransport {
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
         RestSSEEventListener sseEventListener = new RestSSEEventListener(eventConsumer, errorConsumer);
         try {
-            String url = buildBaseUrl(request.tenant()) + String.format("/tasks/%1s:subscribe", request.id());
+            String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s:subscribe", request.id());
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders);
             ref.set(postBuilder.postAsyncSSE(
                     msg -> sseEventListener.onMessage(msg, ref.get()),
@@ -439,7 +422,7 @@ public class RestTransport implements ClientTransport {
         A2ACardResolver resolver;
         try {
             if (agentCard == null) {
-                resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
+                resolver = new A2ACardResolver(httpClient, agentInterface.url(), agentInterface.tenant(), null, getHttpHeaders(context));
                 agentCard = resolver.getAgentCard();
                 needsExtendedCard = agentCard.supportsExtendedAgentCard();
             }
@@ -448,7 +431,7 @@ public class RestTransport implements ClientTransport {
             }
             PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetTaskRequest.METHOD, null,
                     agentCard, context);
-            String url = buildBaseUrl("") + String.format("/extendedAgentCard");
+            String url = Utils.buildBaseUrl(agentInterface, "") + "/extendedAgentCard";
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
             if (payloadAndHeaders.getHeaders() != null) {
                 for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {

@@ -105,7 +105,7 @@ public class ClientBuilder {
             throw new A2AClientException("Missing required TransportConfig for " + agentInterface.protocolBinding());
         }
 
-        return clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface.url());
+        return clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface);
     }
 
     private Map<String, String> getServerPreferredTransports() throws A2AClientException {

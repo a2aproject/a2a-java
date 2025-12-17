@@ -8,14 +8,16 @@ import io.a2a.json.JsonProcessingException;
 import io.a2a.json.JsonUtil;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.Part;
 import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
-
+import static io.a2a.util.Assert.checkNotNullParam;
 
 /**
  * Utility class providing common helper methods for A2A Protocol operations.
@@ -36,7 +38,6 @@ import java.util.logging.Logger;
  * @see TaskArtifactUpdateEvent for streaming artifact updates
  */
 public class Utils {
-
 
     private static final Logger log = Logger.getLogger(Utils.class.getName());
 
@@ -179,11 +180,120 @@ public class Utils {
      * @return the first defined URL in the supported interaces of the agent card.
      * @throws A2AClientException if no server interface is available in the AgentCard
      */
-    public static String getFavoriteInterface(AgentCard agentCard) throws A2AClientException {
+    public static AgentInterface getFavoriteInterface(AgentCard agentCard) throws A2AClientException {
         if (agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {
             throw new A2AClientException("No server interface available in the AgentCard");
         }
-        return agentCard.supportedInterfaces().get(0).url();
+        return agentCard.supportedInterfaces().get(0);
     }
 
+    /**
+     * Validates that a tenant path is safe and well-formed.
+     * <p>
+     * This method performs security validation to prevent:
+     * <ul>
+     * <li>Path traversal attacks (e.g., {@code ../../admin})</li>
+     * <li>Excessive length (max 256 characters)</li>
+     * <li>Invalid characters (only allows {@code /a-zA-Z0-9_-.})</li>
+     * </ul>
+     *
+     * @param tenant the tenant path to validate
+     * @throws IllegalArgumentException if the tenant is invalid or unsafe
+     */
+    private static void validateTenant(String tenant) {
+        if (tenant.isEmpty()) {
+            return; // Empty string is valid (no tenant)
+        }
+
+        if (tenant.length() > 256) {
+            throw new IllegalArgumentException("Tenant path exceeds maximum length of 256 characters");
+        }
+
+        if (tenant.contains("..")) {
+            throw new IllegalArgumentException("Tenant path contains invalid '..' sequence (path traversal attempt)");
+        }
+
+        if (tenant.contains("//")) {
+            throw new IllegalArgumentException("Tenant path contains invalid '//' sequence");
+        }
+
+        if (!tenant.matches("^[/a-zA-Z0-9_.\\-]+$")) {
+            throw new IllegalArgumentException("Tenant path contains invalid characters. Only /a-zA-Z0-9_-. are allowed");
+        }
+    }
+
+    /**
+     * Extracts and normalizes a tenant path, using the agent's default tenant if no override is provided.
+     * <p>
+     * This method normalizes tenant paths by ensuring they:
+     * <ul>
+     * <li>Start with a forward slash ({@code /})</li>
+     * <li>Do not end with a forward slash (unless it's just {@code /})</li>
+     * <li>Are validated for security (no path traversal, length limits, valid characters)</li>
+     * </ul>
+     * <p>
+     * If the provided {@code tenant} parameter is null or blank, the {@code agentTenant} is returned instead.
+     *
+     * @param agentTenant the default tenant from the agent card, must not be null
+     * @param tenant the tenant override from the request, may be null or blank
+     * @return the normalized tenant path
+     * @throws IllegalArgumentException if the tenant is invalid or unsafe
+     */
+    private static String extractTenant(String agentTenant, @Nullable String tenant) {
+        checkNotNullParam("agentTenant", agentTenant);
+
+        String tenantPath = tenant;
+        if (tenantPath == null || tenantPath.isBlank()) {
+            return agentTenant;
+        }
+
+        // Normalize slashes
+        if (!tenantPath.startsWith("/")) {
+            tenantPath = '/' + tenantPath;
+        }
+        if (tenantPath.endsWith("/") && tenantPath.length() > 1) {
+            tenantPath = tenantPath.substring(0, tenantPath.length() - 1);
+        }
+
+        // Validate for security
+        validateTenant(tenantPath);
+
+        return tenantPath;
+    }
+
+    /**
+     * Builds a base URL for A2A operations by combining the agent's URL with a tenant path.
+     * <p>
+     * This method:
+     * <ul>
+     * <li>Uses the tenant from the {@link AgentInterface} as the default</li>
+     * <li>Allows overriding with a custom tenant path if provided</li>
+     * <li>Normalizes trailing slashes on the base URL</li>
+     * <li>Validates and normalizes the tenant path</li>
+     * </ul>
+     * <p>
+     * Example:
+     * <pre>{@code
+     * AgentInterface iface = new AgentInterface("jsonrpc", "http://example.com", "default-tenant");
+     * String url = Utils.buildBaseUrl(iface, null);
+     * // Returns: "http://example.com/default-tenant"
+     *
+     * String url2 = Utils.buildBaseUrl(iface, "custom-tenant");
+     * // Returns: "http://example.com/custom-tenant"
+     * }</pre>
+     *
+     * @param agentInterface the agent interface containing the base URL and default tenant, must not be null
+     * @param tenant the tenant override from the request, may be null to use the interface default
+     * @return the complete base URL with tenant path appended
+     * @throws IllegalArgumentException if agentInterface is null or tenant validation fails
+     */
+    public static String buildBaseUrl(AgentInterface agentInterface, @Nullable String tenant) {
+        checkNotNullParam("agentInterface", agentInterface);
+
+        String agentUrl = agentInterface.url();
+        agentUrl = agentUrl.endsWith("/") ? agentUrl.substring(0, agentUrl.length() - 1) : agentUrl;
+        StringBuilder urlBuilder = new StringBuilder(agentUrl);
+        urlBuilder.append(extractTenant(agentInterface.tenant(), tenant));
+        return urlBuilder.toString();
+    }
 }
