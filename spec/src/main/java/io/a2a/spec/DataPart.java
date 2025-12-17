@@ -40,7 +40,12 @@ import static io.a2a.util.Utils.SPEC_VERSION_1_0;
  */
 public record DataPart(Map<String, Object> data) implements Part<Map<String, Object>> {
 
-    /** The type identifier for data parts in messages and artifacts. */
+    /**
+     * The JSON member name discriminator for data parts: "data".
+     * <p>
+     * In protocol v1.0+, this constant defines the JSON member name used for serialization:
+     * {@code { "data": { "data": { "temperature": 22.5, "unit": "C" } } }}
+     */
     public static final String DATA = "data";
 
     /**
@@ -51,11 +56,6 @@ public record DataPart(Map<String, Object> data) implements Part<Map<String, Obj
     public DataPart {
         Assert.checkNotNullParam("data", data);
         data = Map.copyOf(data);
-    }
-
-    @Override
-    public Kind getKind() {
-        return Kind.DATA;
     }
 
     /**

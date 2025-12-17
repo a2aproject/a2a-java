@@ -11,10 +11,18 @@ package io.a2a.spec;
  *   <li>{@link DataPart} - Structured data (JSON objects)</li>
  * </ul>
  * <p>
- * Parts use polymorphic JSON serialization with the "kind" discriminator property to
- * determine the concrete type during deserialization.
+ * Parts use polymorphic JSON serialization where the JSON member name itself acts as the
+ * type discriminator (e.g., "text", "file", "data"). This aligns with Protocol Buffers'
+ * oneof semantics and modern API design practices.
  * <p>
- * Each Part can include optional metadata for additional context about the content.
+ * Use {@code instanceof} pattern matching to determine the concrete Part type at runtime:
+ * <pre>{@code
+ * if (part instanceof TextPart textPart) {
+ *     String text = textPart.text();
+ * } else if (part instanceof FilePart filePart) {
+ *     FileContent file = filePart.file();
+ * }
+ * }</pre>
  *
  * @param <T> the type of content contained in this part
  * @see Message
@@ -22,45 +30,5 @@ package io.a2a.spec;
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public interface Part<T> {
-    /**
-     * Enum defining the different types of content parts.
-     */
-    enum Kind {
-        /**
-         * Plain text content part.
-         */
-        TEXT("text"),
-
-        /**
-         * File content part (bytes or URI).
-         */
-        FILE("file"),
-
-        /**
-         * Structured data content part (JSON).
-         */
-        DATA("data");
-
-        private final String kind;
-
-        Kind(String kind) {
-            this.kind = kind;
-        }
-
-        /**
-         * Returns the string representation of the kind for JSON serialization.
-         *
-         * @return the kind as a string
-         */
-        public String asString() {
-            return this.kind;
-        }
-    }
-
-    /**
-     * Returns the kind of this part.
-     *
-     * @return the Part.Kind indicating the content type
-     */
-    Kind getKind();
+    // No methods - use instanceof for type discrimination
 }

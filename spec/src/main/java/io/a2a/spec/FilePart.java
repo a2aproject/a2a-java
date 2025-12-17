@@ -40,7 +40,12 @@ import static io.a2a.util.Utils.SPEC_VERSION_1_0;
  */
 public record FilePart(FileContent file) implements Part<FileContent> {
 
-    /** The type identifier for file parts in messages and artifacts. */
+    /**
+     * The JSON member name discriminator for file parts: "file".
+     * <p>
+     * In protocol v1.0+, this constant defines the JSON member name used for serialization:
+     * {@code { "file": { "mediaType": "image/png", "name": "photo.png", ... } }}
+     */
     public static final String FILE = "file";
 
     /**
@@ -51,10 +56,4 @@ public record FilePart(FileContent file) implements Part<FileContent> {
     public FilePart {
         Assert.checkNotNullParam("file", file);
     }
-
-    @Override
-    public Kind getKind() {
-        return Kind.FILE;
-    }
-
 }

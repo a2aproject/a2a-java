@@ -31,8 +31,7 @@ public class TaskManagerTest {
             {
                 "id": "task-abc",
                 "contextId" : "session-xyz",
-                "status": {"state": "submitted"},
-                "kind": "task"
+                "status": {"state": "submitted"}
             }""";
 
     Task minimalTask;

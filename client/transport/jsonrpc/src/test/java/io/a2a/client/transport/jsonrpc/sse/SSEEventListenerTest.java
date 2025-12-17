@@ -136,7 +136,7 @@ public class SSEEventListenerTest {
         Artifact artifact = taskArtifactUpdateEvent.artifact();
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals(1, artifact.parts().size());
-        assertEquals(Part.Kind.TEXT, artifact.parts().get(0).getKind());
+        assertTrue(artifact.parts().get(0) instanceof TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).text());
     }
 

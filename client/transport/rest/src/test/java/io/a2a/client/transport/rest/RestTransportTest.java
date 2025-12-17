@@ -48,7 +48,6 @@ import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.Part;
-import io.a2a.spec.Part.Kind;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -148,7 +147,7 @@ public class RestTransportTest {
         assertEquals("message-1234", history.messageId());
         assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.taskId());
         assertEquals(1, history.parts().size());
-        assertEquals(Kind.TEXT, history.parts().get(0).getKind());
+        assertTrue(history.parts().get(0) instanceof io.a2a.spec.TextPart);
         assertEquals("tell me a joke", ((TextPart) history.parts().get(0)).text());
         assertNull(task.metadata());
         assertNull(history.referenceTaskIds());
@@ -210,7 +209,7 @@ public class RestTransportTest {
         assertEquals("artifact-1", artifact.artifactId());
         assertNull(artifact.name());
         assertEquals(false, artifact.parts().isEmpty());
-        assertEquals(Kind.TEXT, artifact.parts().get(0).getKind());
+        assertTrue(artifact.parts().get(0) instanceof io.a2a.spec.TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) artifact.parts().get(0)).text());
         assertEquals(1, task.history().size());
         Message history = task.history().get(0);
@@ -218,14 +217,14 @@ public class RestTransportTest {
         assertEquals(Message.Role.USER, history.role());
         assertEquals("message-123", history.messageId());
         assertEquals(3, history.parts().size());
-        assertEquals(Kind.TEXT, history.parts().get(0).getKind());
+        assertTrue(history.parts().get(0) instanceof io.a2a.spec.TextPart);
         assertEquals("tell me a joke", ((TextPart) history.parts().get(0)).text());
-        assertEquals(Kind.FILE, history.parts().get(1).getKind());
+        assertTrue(history.parts().get(1) instanceof FilePart);
         FilePart part = (FilePart) history.parts().get(1);
         assertEquals("text/plain", part.file().mimeType());
         assertEquals("file:///path/to/file.txt", ((FileWithUri) part.file()).uri());
         part = (FilePart) history.parts().get(2);
-        assertEquals(Kind.FILE, part.getKind());
+        assertTrue(part instanceof FilePart);
         assertEquals("text/plain", part.file().mimeType());
         assertEquals("aGVsbG8=", ((FileWithBytes) part.file()).bytes());
         assertNull(history.metadata());
@@ -448,7 +447,7 @@ public class RestTransportTest {
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("joke", artifact.name());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
+        assertTrue(part instanceof io.a2a.spec.TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
     }
 }

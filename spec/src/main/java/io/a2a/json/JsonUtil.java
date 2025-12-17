@@ -17,7 +17,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DataPart;
@@ -45,6 +47,7 @@ import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
 import java.io.StringReader;
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -64,7 +67,6 @@ public class JsonUtil {
                 .registerTypeHierarchyAdapter(JSONRPCError.class, new JSONRPCErrorTypeAdapter())
                 .registerTypeAdapter(TaskState.class, new TaskStateTypeAdapter())
                 .registerTypeAdapter(Message.Role.class, new RoleTypeAdapter())
-                .registerTypeAdapter(Part.Kind.class, new PartKindTypeAdapter())
                 .registerTypeHierarchyAdapter(FileContent.class, new FileContentTypeAdapter());
     }
 
@@ -513,54 +515,6 @@ public class JsonUtil {
     }
 
     /**
-     * Gson TypeAdapter for serializing and deserializing {@link Part.Kind} enum.
-     * <p>
-     * This adapter ensures that Part.Kind enum values are serialized using their
-     * wire format string representation (e.g., "text", "file", "data") rather than
-     * the Java enum constant name (e.g., "TEXT", "FILE", "DATA").
-     * <p>
-     * For serialization, it uses {@link Part.Kind#asString()} to get the wire format.
-     * For deserialization, it parses the string to the enum constant.
-     *
-     * @see Part.Kind
-     * @see Part.Kind#asString()
-     */
-    static class PartKindTypeAdapter extends TypeAdapter<Part.Kind> {
-
-        @Override
-        public void write(JsonWriter out, Part.Kind value) throws java.io.IOException {
-            if (value == null) {
-                out.nullValue();
-            } else {
-                out.value(value.asString());
-            }
-        }
-
-        @Override
-        public Part.@Nullable Kind read(JsonReader in) throws java.io.IOException {
-            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
-                in.nextNull();
-                return null;
-            }
-            String kindString = in.nextString();
-            try {
-                return switch (kindString) {
-                    case "text" ->
-                        Part.Kind.TEXT;
-                    case "file" ->
-                        Part.Kind.FILE;
-                    case "data" ->
-                        Part.Kind.DATA;
-                    default ->
-                        throw new IllegalArgumentException("Invalid Part.Kind: " + kindString);
-                };
-            } catch (IllegalArgumentException e) {
-                throw new JsonSyntaxException("Invalid Part.Kind: " + kindString, e);
-            }
-        }
-    }
-
-    /**
      * Gson TypeAdapter for serializing and deserializing {@link Part} and its subclasses.
      * <p>
      * This adapter handles polymorphic deserialization based on the "kind" field, creating the
@@ -586,61 +540,69 @@ public class JsonUtil {
                 return;
             }
 
-            // Serialize the concrete type to a JsonElement
-            com.google.gson.JsonElement jsonElement;
+            // Write wrapper object with member name as discriminator
+            out.beginObject();
+
             if (value instanceof TextPart textPart) {
-                jsonElement = delegateGson.toJsonTree(textPart, TextPart.class);
+                // TextPart: { "text": "value" } - direct string value
+                out.name("text");
+                out.value(textPart.text());
             } else if (value instanceof FilePart filePart) {
-                jsonElement = delegateGson.toJsonTree(filePart, FilePart.class);
+                // FilePart: { "file": {...} }
+                out.name("file");
+                delegateGson.toJson(filePart.file(), FileContent.class, out);
             } else if (value instanceof DataPart dataPart) {
-                jsonElement = delegateGson.toJsonTree(dataPart, DataPart.class);
+                // DataPart: { "data": { "data": {...} } }
+                out.name("data");
+                out.beginObject();
+                out.name("data");
+                delegateGson.toJson(dataPart.data(), Map.class, out);
+                out.endObject();
             } else {
                 throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
             }
 
-
-            // TODO temorary workaround to be fixed in https://github.com/a2aproject/a2a-java/issues/544
-            // Add the "kind" field from getKind() method
-            if (jsonElement.isJsonObject()) {
-                jsonElement.getAsJsonObject().addProperty("kind", value.getKind().asString());
-            }
-
-            // Write the modified JSON
-            delegateGson.toJson(jsonElement, out);
+            out.endObject();
         }
 
         @Override
         public @Nullable
         Part<?> read(JsonReader in) throws java.io.IOException {
-            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+            if (in.peek() == JsonToken.NULL) {
                 in.nextNull();
                 return null;
             }
 
-            // Read the JSON as a tree so we can inspect the "kind" field
+            // Read the JSON as a tree to inspect the member name discriminator
             com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseReader(in);
             if (!jsonElement.isJsonObject()) {
                 throw new JsonSyntaxException("Part must be a JSON object");
             }
 
             com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
-            com.google.gson.JsonElement kindElement = jsonObject.get("kind");
-            if (kindElement == null || !kindElement.isJsonPrimitive()) {
-                throw new JsonSyntaxException("Part must have a 'kind' field");
-            }
 
-            String kind = kindElement.getAsString();
-            // Use the delegate Gson to deserialize to the concrete type
-            return switch (kind) {
-                case "text" ->
-                    delegateGson.fromJson(jsonElement, TextPart.class);
-                case "file" ->
-                    delegateGson.fromJson(jsonElement, FilePart.class);
-                case "data" ->
-                    delegateGson.fromJson(jsonElement, DataPart.class);
-                default ->
-                    throw new JsonSyntaxException("Unknown Part kind: " + kind);
-            };
+            // Check for member name discriminators (v1.0 protocol)
+            if (jsonObject.has("text")) {
+                // TextPart: { "text": "value" } - direct string value
+                return new TextPart(jsonObject.get("text").getAsString());
+            } else if (jsonObject.has("file")) {
+                // FilePart: { "file": {...} }
+                return new FilePart(delegateGson.fromJson(jsonObject.get("file"), FileContent.class));
+            } else if (jsonObject.has("data")) {
+                // DataPart: { "data": { "data": {...} } }
+                com.google.gson.JsonObject dataWrapper = jsonObject.getAsJsonObject("data");
+                if (dataWrapper == null || !dataWrapper.has("data")) {
+                    throw new JsonSyntaxException("DataPart wrapper must contain 'data' field");
+                }
+                @SuppressWarnings("unchecked")
+                Map<String, Object> dataMap = delegateGson.fromJson(
+                    dataWrapper.get("data"),
+                    new TypeToken<Map<String, Object>>(){}.getType()
+                );
+                return new DataPart(dataMap);
+            } else {
+                throw new JsonSyntaxException("Part must have one of: text, file, data (found: " + jsonObject.keySet() + ")");
+            }
         }
     }
 
@@ -673,64 +635,77 @@ public class JsonUtil {
                 return;
             }
 
-            // Serialize the concrete type to a JsonElement
-            com.google.gson.JsonElement jsonElement;
+            // Write wrapper object with member name as discriminator
+            out.beginObject();
+
             if (value instanceof Task task) {
-                jsonElement = delegateGson.toJsonTree(task, Task.class);
+                // Task: { "task": {...} }
+                out.name("task");
+                delegateGson.toJson(task, Task.class, out);
             } else if (value instanceof Message message) {
-                jsonElement = delegateGson.toJsonTree(message, Message.class);
+                // Message: { "message": {...} }
+                out.name("message");
+                delegateGson.toJson(message, Message.class, out);
             } else if (value instanceof TaskStatusUpdateEvent event) {
-                jsonElement = delegateGson.toJsonTree(event, TaskStatusUpdateEvent.class);
+                // TaskStatusUpdateEvent: { "statusUpdate": {...} } - camelCase per spec
+                out.name("statusUpdate");
+                delegateGson.toJson(event, TaskStatusUpdateEvent.class, out);
             } else if (value instanceof TaskArtifactUpdateEvent event) {
-                jsonElement = delegateGson.toJsonTree(event, TaskArtifactUpdateEvent.class);
+                // TaskArtifactUpdateEvent: { "artifactUpdate": {...} } - camelCase per spec
+                out.name("artifactUpdate");
+                delegateGson.toJson(event, TaskArtifactUpdateEvent.class, out);
             } else {
                 throw new JsonSyntaxException("Unknown StreamingEventKind implementation: " + value.getClass().getName());
             }
 
-            // TODO temorary workaround to be fixed in https://github.com/a2aproject/a2a-java/issues/544
-            // Add the "kind" field from getKind() method
-            if (jsonElement.isJsonObject()) {
-                jsonElement.getAsJsonObject().addProperty("kind", value.kind());
-            }
-
-            // Write the modified JSON
-            delegateGson.toJson(jsonElement, out);
+            out.endObject();
         }
 
         @Override
         public @Nullable
         StreamingEventKind read(JsonReader in) throws java.io.IOException {
-            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+            if (in.peek() == JsonToken.NULL) {
                 in.nextNull();
                 return null;
             }
 
-            // Read the JSON as a tree so we can inspect the "kind" field
+            // Read the JSON as a tree to inspect the member name discriminator
             com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseReader(in);
             if (!jsonElement.isJsonObject()) {
                 throw new JsonSyntaxException("StreamingEventKind must be a JSON object");
             }
 
             com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
-            com.google.gson.JsonElement kindElement = jsonObject.get("kind");
-            if (kindElement == null || !kindElement.isJsonPrimitive()) {
-                throw new JsonSyntaxException("StreamingEventKind must have a 'kind' field");
+
+            // Check for wrapped member name discriminators (v1.0 protocol - streaming format)
+            if (jsonObject.has("task")) {
+                return delegateGson.fromJson(jsonObject.get("task"), Task.class);
+            } else if (jsonObject.has("message")) {
+                return delegateGson.fromJson(jsonObject.get("message"), Message.class);
+            } else if (jsonObject.has("statusUpdate")) {
+                return delegateGson.fromJson(jsonObject.get("statusUpdate"), TaskStatusUpdateEvent.class);
+            } else if (jsonObject.has("artifactUpdate")) {
+                return delegateGson.fromJson(jsonObject.get("artifactUpdate"), TaskArtifactUpdateEvent.class);
             }
 
-            String kind = kindElement.getAsString();
-            // Use the delegate Gson to deserialize to the concrete type
-            return switch (kind) {
-                case "task" ->
-                    delegateGson.fromJson(jsonElement, Task.class);
-                case "message" ->
-                    delegateGson.fromJson(jsonElement, Message.class);
-                case "status-update" ->
-                    delegateGson.fromJson(jsonElement, TaskStatusUpdateEvent.class);
-                case "artifact-update" ->
-                    delegateGson.fromJson(jsonElement, TaskArtifactUpdateEvent.class);
-                default ->
-                    throw new JsonSyntaxException("Unknown StreamingEventKind kind: " + kind);
-            };
+            // Check for unwrapped format (direct Task/Message deserialization)
+            // Task objects have "id" and "contextId" fields
+            // Message objects have "role" and "messageId" fields
+            if (jsonObject.has("role") && jsonObject.has("messageId")) {
+                // This is an unwrapped Message
+                return delegateGson.fromJson(jsonObject, Message.class);
+            } else if (jsonObject.has("id") && jsonObject.has("contextId")) {
+                // This is an unwrapped Task
+                return delegateGson.fromJson(jsonObject, Task.class);
+            } else if (jsonObject.has("taskId") && jsonObject.has("status")) {
+                // This is an unwrapped TaskStatusUpdateEvent
+                return delegateGson.fromJson(jsonObject, TaskStatusUpdateEvent.class);
+            } else if (jsonObject.has("taskId") && jsonObject.has("artifact")) {
+                // This is an unwrapped TaskArtifactUpdateEvent
+                return delegateGson.fromJson(jsonObject, TaskArtifactUpdateEvent.class);
+            } else {
+                throw new JsonSyntaxException("StreamingEventKind must have wrapper (task/message/statusUpdate/artifactUpdate) or recognizable unwrapped fields (found: " + jsonObject.keySet() + ")");
+            }
         }
     }
 

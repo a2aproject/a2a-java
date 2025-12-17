@@ -68,7 +68,7 @@ public class ReplicationTestAgentExecutor {
             throw new InvalidRequestError("No parts in message");
         }
         Part<?> part = message.parts().get(message.parts().size() - 1);
-        if (part.getKind() == Part.Kind.TEXT) {
+        if (part instanceof TextPart) {
             return ((TextPart) part).text();
         }
         throw new InvalidRequestError("Last part is not text");

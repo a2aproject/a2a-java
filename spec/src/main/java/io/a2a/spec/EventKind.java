@@ -7,8 +7,8 @@ package io.a2a.spec;
  * These events provide complete state information and are typically returned as the final
  * result of an operation.
  * <p>
- * EventKind implementations use polymorphic JSON serialization with the "kind" discriminator
- * to determine the concrete type during deserialization.
+ * EventKind implementations use polymorphic JSON serialization where the JSON member name
+ * itself acts as the type discriminator (e.g., "task", "message").
  * <p>
  * Permitted implementations:
  * <ul>
@@ -22,7 +22,10 @@ package io.a2a.spec;
 public interface EventKind {
 
     /**
-     * Returns the kind identifier for this event.
+     * Returns the type identifier for this event.
+     * <p>
+     * This method provides programmatic type discrimination for routing, logging, and debugging.
+     * <strong>NOTE:</strong> This value is NOT serialized to JSON in protocol v1.0+.
      *
      * @return the event kind string (e.g., "task", "message")
      */

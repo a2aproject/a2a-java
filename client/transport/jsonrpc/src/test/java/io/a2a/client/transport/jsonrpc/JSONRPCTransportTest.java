@@ -131,7 +131,7 @@ public class JSONRPCTransportTest {
         assertEquals("joke", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
+        assertTrue(part instanceof TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
         assertTrue(task.metadata().isEmpty());
     }
@@ -172,7 +172,7 @@ public class JSONRPCTransportTest {
         Message agentMessage = (Message) result;
         assertEquals(Message.Role.AGENT, agentMessage.role());
         Part<?> part = agentMessage.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
+        assertTrue(part instanceof TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
         assertEquals("msg-456", agentMessage.messageId());
     }
@@ -243,7 +243,7 @@ public class JSONRPCTransportTest {
         assertEquals(1, artifact.parts().size());
         assertEquals("artifact-1", artifact.artifactId());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
+        assertTrue(part instanceof TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
         assertTrue(task.metadata().isEmpty());
         List<Message> history = task.history();
@@ -255,15 +255,15 @@ public class JSONRPCTransportTest {
         assertNotNull(parts);
         assertEquals(3, parts.size());
         part = parts.get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
+        assertTrue(part instanceof TextPart);
         assertEquals("tell me a joke", ((TextPart)part).text());
         part = parts.get(1);
-        assertEquals(Part.Kind.FILE, part.getKind());
+        assertTrue(part instanceof FilePart);
         FileContent filePart = ((FilePart) part).file();
         assertEquals("file:///path/to/file.txt", ((FileWithUri) filePart).uri());
         assertEquals("text/plain", filePart.mimeType());
         part = parts.get(2);
-        assertEquals(Part.Kind.FILE, part.getKind());
+        assertTrue(part instanceof FilePart);
         filePart = ((FilePart) part).file();
         assertEquals("aGVsbG8=", ((FileWithBytes) filePart).bytes());
         assertEquals("hello.txt", filePart.name());
@@ -558,7 +558,7 @@ public class JSONRPCTransportTest {
         assertEquals("image-analysis", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
+        assertTrue(part instanceof TextPart);
         assertEquals("This is an image of a cat sitting on a windowsill.", ((TextPart) part).text());
         assertFalse(task.metadata().isEmpty());
         assertEquals(1, task.metadata().size());
@@ -618,7 +618,7 @@ public class JSONRPCTransportTest {
         assertEquals("data-analysis", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
+        assertTrue(part instanceof TextPart);
         assertEquals("Processed weather data: Temperature is 25.5°C, humidity is 60.2% in San Francisco.", ((TextPart) part).text());
         assertTrue(task.metadata().isEmpty());
     }
@@ -676,7 +676,7 @@ public class JSONRPCTransportTest {
         assertEquals("mixed-analysis", artifact.name());
         assertEquals(1, artifact.parts().size());
         Part<?> part = artifact.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
+        assertTrue(part instanceof TextPart);
         assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart) part).text());
         assertTrue(task.metadata().isEmpty());
     }

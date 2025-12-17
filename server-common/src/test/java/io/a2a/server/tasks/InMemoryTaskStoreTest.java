@@ -12,8 +12,7 @@ public class InMemoryTaskStoreTest {
             {
                 "id": "task-abc",
                 "contextId" : "session-xyz",
-                "status": {"state": "submitted"},
-                "kind": "task"
+                "status": {"state": "submitted"}
             }""";
 
     @Test

@@ -203,7 +203,7 @@ class ReplicatedQueueManagerTest {
         assertNotNull(json);
         assertTrue(json.contains("json-test-task"));
         assertTrue(json.contains("\"event\":{"));
-        assertTrue(json.contains("\"kind\":\"status-update\""));
+        assertTrue(json.contains("\"statusUpdate\""));
 
         // Deserialize back
         ReplicatedEventQueueItem deserialized = JsonUtil.fromJson(json, ReplicatedEventQueueItem.class);

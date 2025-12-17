@@ -142,7 +142,7 @@ public class RequestContext {
 
     private List<String> getTextParts(List<Part<?>> parts) {
         return parts.stream()
-                .filter(part -> part.getKind() == Part.Kind.TEXT)
+                .filter(part -> part instanceof TextPart)
                 .map(part -> (TextPart) part)
                 .map(TextPart::text)
                 .collect(Collectors.toList());

@@ -495,7 +495,7 @@ public abstract class AbstractA2AServerTest {
         assertEquals(MESSAGE.messageId(), messageResponse.messageId());
         assertEquals(MESSAGE.role(), messageResponse.role());
         Part<?> part = messageResponse.parts().get(0);
-        assertEquals(Part.Kind.TEXT, part.getKind());
+        assertTrue(part instanceof TextPart);
         assertEquals("test message", ((TextPart) part).text());
     }
 
@@ -533,7 +533,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals(MESSAGE.messageId(), messageResponse.messageId());
             assertEquals(MESSAGE.role(), messageResponse.role());
             Part<?> part = messageResponse.parts().get(0);
-            assertEquals(Part.Kind.TEXT, part.getKind());
+            assertTrue(part instanceof TextPart);
             assertEquals("test message", ((TextPart) part).text());
         } catch (A2AClientException e) {
             fail("Unexpected exception during sendMessage: " + e.getMessage(), e);
@@ -714,7 +714,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals(MINIMAL_TASK.id(), receivedArtifactEvent.taskId());
             assertEquals(MINIMAL_TASK.contextId(), receivedArtifactEvent.contextId());
             Part<?> part = receivedArtifactEvent.artifact().parts().get(0);
-            assertEquals(Part.Kind.TEXT, part.getKind());
+            assertTrue(part instanceof TextPart);
             assertEquals("text", ((TextPart) part).text());
 
             // Verify status update event
@@ -820,7 +820,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals(MINIMAL_TASK.id(), receivedArtifactEvent.taskId());
             assertEquals(MINIMAL_TASK.contextId(), receivedArtifactEvent.contextId());
             Part<?> part = receivedArtifactEvent.artifact().parts().get(0);
-            assertEquals(Part.Kind.TEXT, part.getKind());
+            assertTrue(part instanceof TextPart);
             assertEquals("text", ((TextPart) part).text());
 
             // Verify status update event
@@ -1607,7 +1607,7 @@ public abstract class AbstractA2AServerTest {
                         assertEquals(MESSAGE.messageId(), messageResponse.messageId());
                         assertEquals(MESSAGE.role(), messageResponse.role());
                         Part<?> part = messageResponse.parts().get(0);
-                        assertEquals(Part.Kind.TEXT, part.getKind());
+                        assertTrue(part instanceof TextPart);
                         assertEquals("test message", ((TextPart) part).text());
                         latch.countDown();
                     }
@@ -1673,7 +1673,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals(MESSAGE.messageId(), messageResponse.messageId());
             assertEquals(MESSAGE.role(), messageResponse.role());
             Part<?> part = messageResponse.parts().get(0);
-            assertEquals(Part.Kind.TEXT, part.getKind());
+            assertTrue(part instanceof TextPart);
             assertEquals("test message", ((TextPart) part).text());
         } catch (A2AClientException e) {
             fail("Unexpected exception during sendMessage: " + e.getMessage(), e);

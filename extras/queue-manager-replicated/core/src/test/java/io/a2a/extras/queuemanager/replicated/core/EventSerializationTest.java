@@ -53,7 +53,7 @@ public class EventSerializationTest {
 
         // Test serialization as Event
         String json = JsonUtil.toJson(originalTask);
-        assertTrue(json.contains("\"kind\":\"task\""), "JSON should contain task kind");
+        assertTrue(json.contains("\"task\""), "JSON should contain task wrapper");
         assertTrue(json.contains("\"id\":\"test-task-123\""), "JSON should contain task ID");
 
         // Test deserialization back to StreamingEventKind
@@ -84,7 +84,7 @@ public class EventSerializationTest {
 
         // Test serialization as Event
         String json = JsonUtil.toJson(originalMessage);
-        assertTrue(json.contains("\"kind\":\"message\""), "JSON should contain message kind");
+        assertTrue(json.contains("\"message\""), "JSON should contain message wrapper");
         assertTrue(json.contains("\"taskId\":\"test-task-789\""), "JSON should contain task ID");
 
         // Test deserialization back to StreamingEventKind
@@ -115,7 +115,7 @@ public class EventSerializationTest {
 
         // Test serialization as Event
         String json = JsonUtil.toJson((Event) originalEvent);
-        assertTrue(json.contains("\"kind\":\"status-update\""), "JSON should contain status-update kind");
+        assertTrue(json.contains("\"statusUpdate\""), "JSON should contain statusUpdate wrapper");
         assertTrue(json.contains("\"taskId\":\"test-task-abc\""), "JSON should contain task ID");
         assertTrue(json.contains("\"final\":true"), "JSON should contain final flag");
 
@@ -148,7 +148,7 @@ public class EventSerializationTest {
 
         // Test serialization as Event
         String json = JsonUtil.toJson((Event) originalEvent);
-        assertTrue(json.contains("\"kind\":\"artifact-update\""), "JSON should contain artifact-update kind");
+        assertTrue(json.contains("\"artifactUpdate\""), "JSON should contain artifactUpdate wrapper");
         assertTrue(json.contains("\"taskId\":\"test-task-xyz\""), "JSON should contain task ID");
         assertTrue(json.contains("\"test-artifact-123\""), "JSON should contain artifact ID");
 
@@ -216,7 +216,7 @@ public class EventSerializationTest {
         String json = JsonUtil.toJson(originalReplicatedEvent);
         assertTrue(json.contains("\"taskId\":\"replicated-test-task\""), "JSON should contain task ID");
         assertTrue(json.contains("\"event\""), "JSON should contain event field");
-        assertTrue(json.contains("\"kind\":\"status-update\""), "JSON should contain the event kind");
+        assertTrue(json.contains("\"statusUpdate\""), "JSON should contain the event type wrapper");
         assertFalse(json.contains("\"error\""), "JSON should not contain error field");
 
         // Deserialize the ReplicatedEventQueueItem

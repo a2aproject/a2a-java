@@ -29,7 +29,10 @@ import static io.a2a.util.Utils.SPEC_VERSION_1_0;
 public record TextPart(String text) implements Part<String> {
 
     /**
-     * The kind identifier for text parts: "text".
+     * The JSON member name discriminator for text parts: "text".
+     * <p>
+     * In protocol v1.0+, this constant defines the JSON member name used for serialization:
+     * {@code { "text": "Hello, world!" }}
      */
     public static final String TEXT = "text";
 
@@ -40,10 +43,5 @@ public record TextPart(String text) implements Part<String> {
      */
     public TextPart {
         Assert.checkNotNullParam("text", text);
-    }
-
-    @Override
-    public Kind getKind() {
-        return Kind.TEXT;
     }
 }

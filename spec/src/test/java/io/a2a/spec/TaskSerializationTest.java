@@ -245,8 +245,8 @@ class TaskSerializationTest {
         // Serialize
         String json = JsonUtil.toJson(task);
 
-        // Verify JSON contains file part data
-        assertTrue(json.contains("\"kind\":\"file\""));
+        // Verify JSON contains file part data (v1.0 format uses member name "file", not "kind")
+        assertTrue(json.contains("\"file\""));
         assertTrue(json.contains("document.pdf"));
         assertTrue(json.contains("application/pdf"));
 
@@ -316,8 +316,8 @@ class TaskSerializationTest {
         // Serialize
         String json = JsonUtil.toJson(task);
 
-        // Verify JSON contains data part
-        assertTrue(json.contains("\"kind\":\"data\""));
+        // Verify JSON contains data part (v1.0 format uses member name "data", not "kind")
+        assertTrue(json.contains("\"data\""));
         assertTrue(json.contains("temperature"));
 
         // Deserialize
@@ -416,8 +416,7 @@ class TaskSerializationTest {
               "contextId": "context-456",
               "status": {
                 "state": "submitted"
-              },
-              "kind": "task"
+              }
             }
             """;
 
@@ -446,13 +445,11 @@ class TaskSerializationTest {
                   "name": "Result",
                   "parts": [
                     {
-                      "kind": "text",
                       "text": "Hello World"
                     }
                   ]
                 }
-              ],
-              "kind": "task"
+              ]
             }
             """;
 
@@ -482,7 +479,6 @@ class TaskSerializationTest {
                   "artifactId": "file-artifact",
                   "parts": [
                     {
-                      "kind": "file",
                       "file": {
                         "mimeType": "application/pdf",
                         "name": "document.pdf",
@@ -491,8 +487,7 @@ class TaskSerializationTest {
                     }
                   ]
                 }
-              ],
-              "kind": "task"
+              ]
             }
             """;
 
@@ -524,7 +519,6 @@ class TaskSerializationTest {
                   "artifactId": "uri-artifact",
                   "parts": [
                     {
-                      "kind": "file",
                       "file": {
                         "mimeType": "image/png",
                         "name": "photo.png",
@@ -533,8 +527,7 @@ class TaskSerializationTest {
                     }
                   ]
                 }
-              ],
-              "kind": "task"
+              ]
             }
             """;
 
@@ -565,16 +558,16 @@ class TaskSerializationTest {
                   "artifactId": "data-artifact",
                   "parts": [
                     {
-                      "kind": "data",
                       "data": {
-                        "temperature": 22.5,
-                        "humidity": 65
+                        "data": {
+                          "temperature": 22.5,
+                          "humidity": 65
+                        }
                       }
                     }
                   ]
                 }
-              ],
-              "kind": "task"
+              ]
             }
             """;
 
@@ -601,7 +594,6 @@ class TaskSerializationTest {
                   "role": "user",
                   "parts": [
                     {
-                      "kind": "text",
                       "text": "User message"
                     }
                   ],
@@ -611,14 +603,12 @@ class TaskSerializationTest {
                   "role": "agent",
                   "parts": [
                     {
-                      "kind": "text",
                       "text": "Agent response"
                     }
                   ],
                   "messageId": "msg-2"
                 }
-              ],
-              "kind": "task"
+              ]
             }
             """;
 
@@ -641,8 +631,7 @@ class TaskSerializationTest {
               "status": {
                 "state": "working",
                 "timestamp": "2023-10-01T12:00:00.234-05:00"
-              },
-              "kind": "task"
+              }
             }
             """;
 
@@ -666,8 +655,7 @@ class TaskSerializationTest {
               "metadata": {
                 "key1": "value1",
                 "key2": 42
-              },
-              "kind": "task"
+              }
             }
             """;
 
