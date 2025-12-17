@@ -380,7 +380,6 @@ public class JSONRPCTransportTest {
         Map<String, SecurityScheme> securitySchemes = agentCard.securitySchemes();
         assertNotNull(securitySchemes);
         OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
-        assertEquals(OpenIdConnectSecurityScheme.OPENID_CONNECT, "openIdConnect");
         assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.openIdConnectUrl());
         List<Map<String, List<String>>> security = agentCard.security();
         assertEquals(1, security.size());
@@ -469,7 +468,6 @@ public class JSONRPCTransportTest {
         Map<String, SecurityScheme> securitySchemes = agentCard.securitySchemes();
         assertNotNull(securitySchemes);
         OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
-        assertEquals(OpenIdConnectSecurityScheme.OPENID_CONNECT, "openIdConnect");
         assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.openIdConnectUrl());
         List<Map<String, List<String>>> security = agentCard.security();
         assertEquals(1, security.size());
