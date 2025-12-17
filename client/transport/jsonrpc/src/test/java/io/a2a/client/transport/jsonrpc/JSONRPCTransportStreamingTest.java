@@ -74,8 +74,8 @@ public class JSONRPCTransportStreamingTest {
         assertNotNull(params);
         assertEquals(message, params.message());
         assertEquals(configuration, params.configuration());
-        assertEquals(Message.Role.USER, params.message().getRole());
-        assertEquals("test message", ((TextPart) params.message().getParts().get(0)).getText());
+        assertEquals(Message.Role.USER, params.message().role());
+        assertEquals("test message", ((TextPart) params.message().parts().get(0)).text());
     }
 
     @Test
@@ -159,16 +159,16 @@ public class JSONRPCTransportStreamingTest {
         assertNotNull(eventKind);
         assertInstanceOf(Task.class, eventKind);
         Task task = (Task) eventKind;
-        assertEquals("2", task.getId());
-        assertEquals("context-1234", task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
-        List<Artifact> artifacts = task.getArtifacts();
+        assertEquals("2", task.id());
+        assertEquals("context-1234", task.contextId());
+        assertEquals(TaskState.COMPLETED, task.status().state());
+        List<Artifact> artifacts = task.artifacts();
         assertEquals(1, artifacts.size());
         Artifact artifact = artifacts.get(0);
         assertEquals("artifact-1", artifact.artifactId());
         assertEquals("joke", artifact.name());
         Part<?> part = artifact.parts().get(0);
         assertEquals(Part.Kind.TEXT, part.getKind());
-        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).getText());
+        assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
     }
 } 

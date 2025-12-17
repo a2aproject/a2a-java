@@ -289,7 +289,7 @@ public class ToProtoTest {
 
         io.a2a.grpc.Task grpcTask = ProtoUtils.ToProto.task(task);
         task = ProtoUtils.FromProto.task(grpcTask);
-        TaskStatus status = task.getStatus();
+        TaskStatus status = task.status();
         assertEquals(TaskState.COMPLETED, status.state());
         assertNotNull(status.timestamp());
         assertEquals(expectedTimestamp, status.timestamp());

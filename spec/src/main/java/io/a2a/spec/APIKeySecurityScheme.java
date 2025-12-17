@@ -12,18 +12,31 @@ import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
  * <p>
  * Corresponds to the OpenAPI "apiKey" security scheme type.
  *
+ * @param location the location where the API key is sent (required)
+ * @param name the name of the API key parameter (required)
+ * @param description a human-readable description (optional)
  * @see SecurityScheme for the base interface
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class APIKeySecurityScheme implements SecurityScheme {
+public record APIKeySecurityScheme(
+        Location location,
+        String name,
+        String description
+) implements SecurityScheme {
 
     /** The security scheme type identifier for API key authentication. */
     public static final String API_KEY = "apiKey";
-    private final Location location;
-    private final String name;
-    private final String type;
-    private final String description;
+
+    /**
+     * Compact constructor with validation.
+     *
+     * @throws IllegalArgumentException if location or name is null
+     */
+    public APIKeySecurityScheme {
+        Assert.checkNotNullParam("location", location);
+        Assert.checkNotNullParam("name", name);
+    }
 
     /**
      * Represents the location of the API key.
@@ -74,78 +87,6 @@ public final class APIKeySecurityScheme implements SecurityScheme {
                 default -> throw new IllegalArgumentException("Invalid API key location: " + location);
             }
         }
-    }
-
-    /**
-     * Creates a new APIKeySecurityScheme with the specified location, name, and description.
-     *
-     * @param location the location where the API key is sent (required)
-     * @param name the name of the API key parameter (required)
-     * @param description a human-readable description (optional)
-     * @throws IllegalArgumentException if location or name is null
-     */
-    public APIKeySecurityScheme(Location location, String name, String description) {
-        this(location, name, description, API_KEY);
-    }
-
-    /**
-     * Creates a new APIKeySecurityScheme with explicit type specification.
-     *
-     * @param location the location where the API key is sent (required)
-     * @param name the name of the API key parameter (required)
-     * @param description a human-readable description (optional)
-     * @param type the security scheme type (must be "apiKey")
-     * @throws IllegalArgumentException if location, name, or type is null, or if type is not "apiKey"
-     */
-    public APIKeySecurityScheme(Location location, String name,
-                                String description, String type) {
-        Assert.checkNotNullParam("location", location);
-        Assert.checkNotNullParam("name", name);
-        Assert.checkNotNullParam("type", type);
-        if (! type.equals(API_KEY)) {
-            throw new IllegalArgumentException("Invalid type for APIKeySecurityScheme");
-        }
-        this.location = location;
-        this.name = name;
-        this.description = description;
-        this.type = type;
-    }
-
-    /**
-     * Gets the human-readable description of this security scheme.
-     *
-     * @return the description, or null if not provided
-     */
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Gets the location where the API key is sent.
-     *
-     * @return the API key location
-     */
-    public Location getLocation() {
-        return location;
-    }
-
-    /**
-     * Gets the name of the API key parameter.
-     *
-     * @return the parameter name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Gets the security scheme type.
-     *
-     * @return always returns "apiKey"
-     */
-    public String getType() {
-        return type;
     }
 
     /**

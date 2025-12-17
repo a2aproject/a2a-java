@@ -41,6 +41,11 @@ public class Utils {
     private static final Logger log = Logger.getLogger(Utils.class.getName());
 
     /**
+     * Specification version constant for deprecation annotations.
+     */
+    public static final String SPEC_VERSION_1_0 = "1.0";
+
+    /**
      * Deserializes JSON string into a typed object using Gson.
      * <p>
      * This method uses the pre-configured {@link JsonUtil#fromJson(String, Class)} to parse JSON.
@@ -113,11 +118,11 @@ public class Utils {
      */
     public static Task appendArtifactToTask(Task task, TaskArtifactUpdateEvent event, String taskId) {
         // Append artifacts
-        List<Artifact> artifacts = task.getArtifacts() == null ? new ArrayList<>() : new ArrayList<>(task.getArtifacts());
+        List<Artifact> artifacts = task.artifacts() == null ? new ArrayList<>() : new ArrayList<>(task.artifacts());
 
-        Artifact newArtifact = event.getArtifact();
+        Artifact newArtifact = event.artifact();
         String artifactId = newArtifact.artifactId();
-        boolean appendParts = event.isAppend() != null && event.isAppend();
+        boolean appendParts = event.append() != null && event.append();
 
         Artifact existingArtifact = null;
         int existingArtifactIndex = -1;

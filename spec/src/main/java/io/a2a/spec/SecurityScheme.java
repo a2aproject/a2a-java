@@ -26,9 +26,9 @@ public sealed interface SecurityScheme permits APIKeySecurityScheme, HTTPAuthSec
         OpenIdConnectSecurityScheme, MutualTLSSecurityScheme {
 
     /**
-     * Gets the human-readable description of this security scheme.
+     * Returns the human-readable description of this security scheme.
      *
      * @return the description, or null if not provided
      */
-    String getDescription();
+    String description();
 }

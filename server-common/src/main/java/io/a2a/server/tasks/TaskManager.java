@@ -61,28 +61,28 @@ public class TaskManager {
     }
 
     Task saveTaskEvent(Task task) throws A2AServerException {
-        checkIdsAndUpdateIfNecessary(task.getId(), task.getContextId());
+        checkIdsAndUpdateIfNecessary(task.id(), task.contextId());
         return saveTask(task);
     }
 
     Task saveTaskEvent(TaskStatusUpdateEvent event) throws A2AServerException {
-        checkIdsAndUpdateIfNecessary(event.getTaskId(), event.getContextId());
-        Task task = ensureTask(event.getTaskId(), event.getContextId());
+        checkIdsAndUpdateIfNecessary(event.taskId(), event.contextId());
+        Task task = ensureTask(event.taskId(), event.contextId());
 
 
         Task.Builder builder = Task.builder(task)
-                .status(event.getStatus());
+                .status(event.status());
 
-        if (task.getStatus().message() != null) {
-            List<Message> newHistory = task.getHistory() == null ? new ArrayList<>() : new ArrayList<>(task.getHistory());
-            newHistory.add(task.getStatus().message());
+        if (task.status().message() != null) {
+            List<Message> newHistory = task.history() == null ? new ArrayList<>() : new ArrayList<>(task.history());
+            newHistory.add(task.status().message());
             builder.history(newHistory);
         }
 
         // Handle metadata from the event
-        if (event.getMetadata() != null) {
-            Map<String, Object> metadata = task.getMetadata() == null ? new HashMap<>() : new HashMap<>(task.getMetadata());
-            metadata.putAll(event.getMetadata());
+        if (event.metadata() != null) {
+            Map<String, Object> metadata = task.metadata() == null ? new HashMap<>() : new HashMap<>(task.metadata());
+            metadata.putAll(event.metadata());
             builder.metadata(metadata);
         }
 
@@ -91,8 +91,8 @@ public class TaskManager {
     }
 
     Task saveTaskEvent(TaskArtifactUpdateEvent event) throws A2AServerException {
-        checkIdsAndUpdateIfNecessary(event.getTaskId(), event.getContextId());
-        Task task = ensureTask(event.getTaskId(), event.getContextId());
+        checkIdsAndUpdateIfNecessary(event.taskId(), event.contextId());
+        Task task = ensureTask(event.taskId(), event.contextId());
         // taskId is guaranteed to be non-null after checkIdsAndUpdateIfNecessary
         String nonNullTaskId = taskId;
         if (nonNullTaskId == null) {
@@ -114,9 +114,9 @@ public class TaskManager {
     }
 
     public Task updateWithMessage(Message message, Task task) {
-        List<Message> history = new ArrayList<>(task.getHistory());
+        List<Message> history = new ArrayList<>(task.history());
 
-        TaskStatus status = task.getStatus();
+        TaskStatus status = task.status();
         if (status.message() != null) {
             history.add(status.message());
             status = new TaskStatus(status.state(), null, status.timestamp());
@@ -174,8 +174,8 @@ public class TaskManager {
     private Task saveTask(Task task) {
         taskStore.save(task);
         if (taskId == null) {
-            taskId = task.getId();
-            contextId = task.getContextId();
+            taskId = task.id();
+            contextId = task.contextId();
         }
         currentTask = task;
         return currentTask;

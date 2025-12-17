@@ -21,7 +21,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
     @Override
     public void save(Task task) {
-        tasks.put(task.getId(), task);
+        tasks.put(task.id(), task);
     }
 
     @Override
@@ -38,20 +38,20 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
     public ListTasksResult list(ListTasksParams params) {
         // Filter and sort tasks in a single stream pipeline
         List<Task> allFilteredTasks = tasks.values().stream()
-                .filter(task -> params.contextId() == null || params.contextId().equals(task.getContextId()))
+                .filter(task -> params.contextId() == null || params.contextId().equals(task.contextId()))
                 .filter(task -> params.status() == null ||
-                        (task.getStatus() != null && params.status().equals(task.getStatus().state())))
+                        (task.status() != null && params.status().equals(task.status().state())))
                 .filter(task -> params.lastUpdatedAfter() == null ||
-                        (task.getStatus() != null &&
-                         task.getStatus().timestamp() != null &&
-                         task.getStatus().timestamp().toInstant().isAfter(params.lastUpdatedAfter())))
+                        (task.status() != null &&
+                         task.status().timestamp() != null &&
+                         task.status().timestamp().toInstant().isAfter(params.lastUpdatedAfter())))
                 .sorted(Comparator.comparing(
-                        (Task t) -> (t.getStatus() != null && t.getStatus().timestamp() != null)
+                        (Task t) -> (t.status() != null && t.status().timestamp() != null)
                                 // Truncate to milliseconds for consistency with pageToken precision
-                                ? t.getStatus().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+                                ? t.status().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
                                 : null,
                         Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Task::getId))
+                        .thenComparing(Task::id))
                 .toList();
 
         int totalSize = allFilteredTasks.size();
@@ -81,11 +81,11 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
                         // All tasks have timestamps (TaskStatus canonical constructor ensures this)
                         // Truncate to milliseconds for consistency with pageToken precision
-                        java.time.Instant taskTimestamp = task.getStatus().timestamp().toInstant()
+                        java.time.Instant taskTimestamp = task.status().timestamp().toInstant()
                                 .truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
                         int timestampCompare = taskTimestamp.compareTo(tokenTimestamp);
 
-                        if (timestampCompare < 0 || (timestampCompare == 0 && task.getId().compareTo(tokenId) > 0)) {
+                        if (timestampCompare < 0 || (timestampCompare == 0 && task.id().compareTo(tokenId) > 0)) {
                             // This task is after the token, search left half
                             right = mid;
                         } else {
@@ -115,8 +115,8 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
         if (endIndex < allFilteredTasks.size()) {
             Task lastTask = allFilteredTasks.get(endIndex - 1);
             // All tasks have timestamps (TaskStatus canonical constructor ensures this)
-            long timestampMillis = lastTask.getStatus().timestamp().toInstant().toEpochMilli();
-            nextPageToken = timestampMillis + ":" + lastTask.getId();
+            long timestampMillis = lastTask.status().timestamp().toInstant().toEpochMilli();
+            nextPageToken = timestampMillis + ":" + lastTask.id();
         }
 
         // Transform tasks: limit history and optionally remove artifacts
@@ -132,16 +132,16 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
     private Task transformTask(Task task, int historyLength, boolean includeArtifacts) {
         // Limit history if needed (keep most recent N messages)
-        List<Message> history = task.getHistory();
+        List<Message> history = task.history();
         if (historyLength > 0 && history != null && history.size() > historyLength) {
             history = history.subList(history.size() - historyLength, history.size());
         }
 
         // Remove artifacts if not requested
-        List<Artifact> artifacts = includeArtifacts ? task.getArtifacts() : List.of();
+        List<Artifact> artifacts = includeArtifacts ? task.artifacts() : List.of();
 
         // If no transformation needed, return original task
-        if (history == task.getHistory() && artifacts == task.getArtifacts()) {
+        if (history == task.history() && artifacts == task.artifacts()) {
             return task;
         }
 
@@ -159,7 +159,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
             return false;
         }
         // Task is active if not in final state
-        return task.getStatus() == null || task.getStatus().state() == null || !task.getStatus().state().isFinal();
+        return task.status() == null || task.status().state() == null || !task.status().state().isFinal();
     }
 
     @Override
@@ -169,8 +169,8 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
             return false;
         }
         // Task is finalized if in final state (ignores grace period)
-        return task.getStatus() != null
-                && task.getStatus().state() != null
-                && task.getStatus().state().isFinal();
+        return task.status() != null
+                && task.status().state() != null
+                && task.status().state().isFinal();
     }
 }

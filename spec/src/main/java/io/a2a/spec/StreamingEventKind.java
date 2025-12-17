@@ -1,10 +1,5 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.Message.MESSAGE;
-import static io.a2a.spec.Task.TASK;
-import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
-import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
-
 /**
  * Sealed interface for events that can be emitted during streaming A2A Protocol operations.
  * <p>
@@ -41,5 +36,5 @@ public sealed interface StreamingEventKind extends Event permits Task, Message, 
      *
      * @return the event kind string (e.g., "task", "message", "status-update", "artifact-update")
      */
-    String getKind();
+    String kind();
 }

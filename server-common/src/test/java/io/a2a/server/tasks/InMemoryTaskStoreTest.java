@@ -21,7 +21,7 @@ public class InMemoryTaskStoreTest {
         InMemoryTaskStore store = new InMemoryTaskStore();
         Task task = Utils.unmarshalFrom(TASK_JSON, Task.class);
         store.save(task);
-        Task retrieved = store.get(task.getId());
+        Task retrieved = store.get(task.id());
         assertSame(task, retrieved);
     }
 
@@ -37,8 +37,8 @@ public class InMemoryTaskStoreTest {
         InMemoryTaskStore store = new InMemoryTaskStore();
         Task task = Utils.unmarshalFrom(TASK_JSON, Task.class);
         store.save(task);
-        store.delete(task.getId());
-        Task retrieved = store.get(task.getId());
+        store.delete(task.id());
+        Task retrieved = store.get(task.id());
         assertNull(retrieved);
     }
 

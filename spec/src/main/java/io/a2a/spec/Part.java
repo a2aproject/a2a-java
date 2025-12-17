@@ -1,7 +1,7 @@
 package io.a2a.spec;
 
 /**
- * Base class for content parts within {@link Message}s and {@link Artifact}s.
+ * Base interface for content parts within {@link Message}s and {@link Artifact}s.
  * <p>
  * Parts represent the fundamental content units in the A2A Protocol, allowing multi-modal
  * communication through different content types. A Part can be:
@@ -21,11 +21,11 @@ package io.a2a.spec;
  * @see Artifact
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public abstract class Part<T> {
+public interface Part<T> {
     /**
      * Enum defining the different types of content parts.
      */
-    public enum Kind {
+    enum Kind {
         /**
          * Plain text content part.
          */
@@ -62,5 +62,5 @@ public abstract class Part<T> {
      *
      * @return the Part.Kind indicating the content type
      */
-    public abstract Kind getKind();
+    Kind getKind();
 }

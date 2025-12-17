@@ -20,8 +20,8 @@ public interface TaskArtifactUpdateEventMapper {
      * Converts domain TaskArtifactUpdateEvent to proto.
      * Uses declarative mapping with CommonFieldMapper for metadata conversion.
      */
-    @Mapping(target = "append", source = "append", conditionExpression = "java(domain.isAppend() != null)")
-    @Mapping(target = "lastChunk", source = "lastChunk", conditionExpression = "java(domain.isLastChunk() != null)")
+    @Mapping(target = "append", source = "append", conditionExpression = "java(domain.append() != null)")
+    @Mapping(target = "lastChunk", source = "lastChunk", conditionExpression = "java(domain.lastChunk() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     io.a2a.grpc.TaskArtifactUpdateEvent toProto(TaskArtifactUpdateEvent domain);
 

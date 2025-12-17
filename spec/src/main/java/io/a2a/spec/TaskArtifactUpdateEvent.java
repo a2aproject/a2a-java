@@ -29,124 +29,45 @@ import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
  * The {@code lastChunk} flag indicates whether this is the final update for an artifact,
  * allowing clients to distinguish between intermediate and final states.
  *
+ * @param taskId the task identifier (required)
+ * @param artifact the artifact being updated (required)
+ * @param contextId the context identifier (required)
+ * @param append whether to append to existing artifact (optional)
+ * @param lastChunk whether this is the final chunk (optional)
+ * @param metadata additional metadata (optional)
  * @see UpdateEvent
  * @see StreamingEventKind
  * @see Artifact
  * @see Task
  */
-public final class TaskArtifactUpdateEvent implements EventKind, StreamingEventKind, UpdateEvent {
+public record TaskArtifactUpdateEvent(
+        String taskId,
+        Artifact artifact,
+        String contextId,
+        Boolean append,
+        Boolean lastChunk,
+        Map<String, Object> metadata
+) implements EventKind, StreamingEventKind, UpdateEvent {
 
     /**
      * The kind identifier for artifact update events: "artifact-update".
      */
     public static final String ARTIFACT_UPDATE = "artifact-update";
-    private final String taskId;
-    private final Boolean append;
-    private final Boolean lastChunk;
-    private final Artifact artifact;
-    private final String contextId;
-    private final Map<String, Object> metadata;
-    private final String kind;
 
     /**
-     * Constructs a TaskArtifactUpdateEvent with default kind.
+     * Compact constructor with validation.
      *
-     * @param taskId the task identifier (required)
-     * @param artifact the artifact being updated (required)
-     * @param contextId the context identifier (required)
-     * @param append whether to append to existing artifact (optional)
-     * @param lastChunk whether this is the final chunk (optional)
-     * @param metadata additional metadata (optional)
+     * @throws IllegalArgumentException if taskId, artifact, or contextId is null
      */
-    public TaskArtifactUpdateEvent(String taskId, Artifact artifact, String contextId, Boolean append, Boolean lastChunk, Map<String, Object> metadata) {
-        this(taskId, artifact, contextId, append, lastChunk, metadata, ARTIFACT_UPDATE);
-    }
-
-    /**
-     * Constructs a TaskArtifactUpdateEvent with all parameters.
-     *
-     * @param taskId the task identifier (required)
-     * @param artifact the artifact being updated (required)
-     * @param contextId the context identifier (required)
-     * @param append whether to append to existing artifact (optional)
-     * @param lastChunk whether this is the final chunk (optional)
-     * @param metadata additional metadata (optional)
-     * @param kind the event kind (must be "artifact-update")
-     */
-    public TaskArtifactUpdateEvent(String taskId, Artifact artifact, String contextId, Boolean append, Boolean lastChunk, Map<String, Object> metadata, String kind) {
+    public TaskArtifactUpdateEvent {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("artifact", artifact);
         Assert.checkNotNullParam("contextId", contextId);
-        Assert.checkNotNullParam("kind", kind);
-        if (! kind.equals(ARTIFACT_UPDATE)) {
-            throw new IllegalArgumentException("Invalid TaskArtifactUpdateEvent");
-        }
-        this.taskId = taskId;
-        this.artifact = artifact;
-        this.contextId = contextId;
-        this.append = append;
-        this.lastChunk = lastChunk;
-        this.metadata = metadata;
-        this.kind = kind;
-    }
-
-    /**
-     * Returns the task identifier.
-     *
-     * @return the task ID
-     */
-    public String getTaskId() {
-        return taskId;
-    }
-
-    /**
-     * Returns the artifact being updated.
-     *
-     * @return the artifact
-     */
-    public Artifact getArtifact() {
-        return artifact;
-    }
-
-    /**
-     * Returns the context identifier.
-     *
-     * @return the context ID
-     */
-    public String getContextId() {
-        return contextId;
-    }
-
-    /**
-     * Returns whether this update should append to an existing artifact.
-     *
-     * @return true if appending, false or null for new artifact
-     */
-    public Boolean isAppend() {
-        return append;
-    }
-
-    /**
-     * Returns whether this is the final chunk for the artifact.
-     *
-     * @return true if final chunk, false or null otherwise
-     */
-    public Boolean isLastChunk() {
-        return lastChunk;
-    }
-
-    /**
-     * Returns the metadata associated with this event.
-     *
-     * @return a map of metadata key-value pairs, or null if not set
-     */
-    public Map<String, Object> getMetadata() {
-        return metadata;
     }
 
     @Override
-    public String getKind() {
-        return kind;
+    public String kind() {
+        return ARTIFACT_UPDATE;
     }
 
     /**

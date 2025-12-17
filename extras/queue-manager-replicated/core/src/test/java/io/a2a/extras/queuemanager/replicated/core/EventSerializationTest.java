@@ -61,10 +61,10 @@ public class EventSerializationTest {
         assertInstanceOf(Task.class, deserializedEvent, "Should deserialize to Task");
 
         Task deserializedTask = (Task) deserializedEvent;
-        assertEquals(originalTask.getId(), deserializedTask.getId());
-        assertEquals(originalTask.getKind(), deserializedTask.getKind());
-        assertEquals(originalTask.getContextId(), deserializedTask.getContextId());
-        assertEquals(originalTask.getStatus().state(), deserializedTask.getStatus().state());
+        assertEquals(originalTask.id(), deserializedTask.id());
+        assertEquals(originalTask.kind(), deserializedTask.kind());
+        assertEquals(originalTask.contextId(), deserializedTask.contextId());
+        assertEquals(originalTask.status().state(), deserializedTask.status().state());
 
         // Test as StreamingEventKind
         StreamingEventKind deserializedAsStreaming = JsonUtil.fromJson(json, StreamingEventKind.class);
@@ -92,10 +92,10 @@ public class EventSerializationTest {
         assertInstanceOf(Message.class, deserializedEvent, "Should deserialize to Message");
 
         Message deserializedMessage = (Message) deserializedEvent;
-        assertEquals(originalMessage.getTaskId(), deserializedMessage.getTaskId());
-        assertEquals(originalMessage.getKind(), deserializedMessage.getKind());
-        assertEquals(originalMessage.getRole(), deserializedMessage.getRole());
-        assertEquals(originalMessage.getParts().size(), deserializedMessage.getParts().size());
+        assertEquals(originalMessage.taskId(), deserializedMessage.taskId());
+        assertEquals(originalMessage.kind(), deserializedMessage.kind());
+        assertEquals(originalMessage.role(), deserializedMessage.role());
+        assertEquals(originalMessage.parts().size(), deserializedMessage.parts().size());
 
         // Test as StreamingEventKind
         StreamingEventKind deserializedAsStreaming = JsonUtil.fromJson(json, StreamingEventKind.class);
@@ -124,10 +124,10 @@ public class EventSerializationTest {
         assertInstanceOf(TaskStatusUpdateEvent.class, deserializedEvent, "Should deserialize to TaskStatusUpdateEvent");
 
         TaskStatusUpdateEvent deserializedStatusEvent = (TaskStatusUpdateEvent) deserializedEvent;
-        assertEquals(originalEvent.getTaskId(), deserializedStatusEvent.getTaskId());
-        assertEquals(originalEvent.getKind(), deserializedStatusEvent.getKind());
-        assertEquals(originalEvent.getContextId(), deserializedStatusEvent.getContextId());
-        assertEquals(originalEvent.getStatus().state(), deserializedStatusEvent.getStatus().state());
+        assertEquals(originalEvent.taskId(), deserializedStatusEvent.taskId());
+        assertEquals(originalEvent.kind(), deserializedStatusEvent.kind());
+        assertEquals(originalEvent.contextId(), deserializedStatusEvent.contextId());
+        assertEquals(originalEvent.status().state(), deserializedStatusEvent.status().state());
         assertEquals(originalEvent.isFinal(), deserializedStatusEvent.isFinal());
 
         // Test as StreamingEventKind
@@ -157,11 +157,11 @@ public class EventSerializationTest {
         assertInstanceOf(TaskArtifactUpdateEvent.class, deserializedEvent, "Should deserialize to TaskArtifactUpdateEvent");
 
         TaskArtifactUpdateEvent deserializedArtifactEvent = (TaskArtifactUpdateEvent) deserializedEvent;
-        assertEquals(originalEvent.getTaskId(), deserializedArtifactEvent.getTaskId());
-        assertEquals(originalEvent.getKind(), deserializedArtifactEvent.getKind());
-        assertEquals(originalEvent.getContextId(), deserializedArtifactEvent.getContextId());
-        assertEquals(originalEvent.getArtifact().artifactId(), deserializedArtifactEvent.getArtifact().artifactId());
-        assertEquals(originalEvent.getArtifact().name(), deserializedArtifactEvent.getArtifact().name());
+        assertEquals(originalEvent.taskId(), deserializedArtifactEvent.taskId());
+        assertEquals(originalEvent.kind(), deserializedArtifactEvent.kind());
+        assertEquals(originalEvent.contextId(), deserializedArtifactEvent.contextId());
+        assertEquals(originalEvent.artifact().artifactId(), deserializedArtifactEvent.artifact().artifactId());
+        assertEquals(originalEvent.artifact().name(), deserializedArtifactEvent.artifact().name());
 
         // Test as StreamingEventKind
         StreamingEventKind deserializedAsStreaming = JsonUtil.fromJson(json, StreamingEventKind.class);
@@ -229,9 +229,9 @@ public class EventSerializationTest {
         assertInstanceOf(TaskStatusUpdateEvent.class, retrievedEventAsEvent, "Should deserialize to TaskStatusUpdateEvent");
 
         TaskStatusUpdateEvent retrievedStatusEvent = (TaskStatusUpdateEvent) retrievedEventAsEvent;
-        assertEquals(statusEvent.getTaskId(), retrievedStatusEvent.getTaskId());
-        assertEquals(statusEvent.getContextId(), retrievedStatusEvent.getContextId());
-        assertEquals(statusEvent.getStatus().state(), retrievedStatusEvent.getStatus().state());
+        assertEquals(statusEvent.taskId(), retrievedStatusEvent.taskId());
+        assertEquals(statusEvent.contextId(), retrievedStatusEvent.contextId());
+        assertEquals(statusEvent.status().state(), retrievedStatusEvent.status().state());
         assertEquals(statusEvent.isFinal(), retrievedStatusEvent.isFinal());
 
         // Test helper methods

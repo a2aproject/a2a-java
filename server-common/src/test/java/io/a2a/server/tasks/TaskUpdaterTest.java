@@ -61,11 +61,11 @@ public class TaskUpdaterTest {
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
         TaskArtifactUpdateEvent taue = (TaskArtifactUpdateEvent) event;
-        assertEquals(TEST_TASK_ID, taue.getTaskId());
-        assertEquals(TEST_TASK_CONTEXT_ID, taue.getContextId());
-        assertEquals("custom-artifact-id", taue.getArtifact().artifactId());
-        assertEquals("Custom Artifact", taue.getArtifact().name());
-        assertSame(SAMPLE_PARTS, taue.getArtifact().parts());
+        assertEquals(TEST_TASK_ID, taue.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, taue.contextId());
+        assertEquals("custom-artifact-id", taue.artifact().artifactId());
+        assertEquals("Custom Artifact", taue.artifact().name());
+        assertSame(SAMPLE_PARTS, taue.artifact().parts());
 
 
         assertNull(eventQueue.dequeueEventItem(0));
@@ -215,12 +215,12 @@ public class TaskUpdaterTest {
     public void testNewAgentMessage() throws Exception {
         Message message = taskUpdater.newAgentMessage(SAMPLE_PARTS, null);
 
-        assertEquals(AGENT, message.getRole());
-        assertEquals(TEST_TASK_ID, message.getTaskId());
-        assertEquals(TEST_TASK_CONTEXT_ID, message.getContextId());
-        assertNotNull(message.getMessageId());
-        assertEquals(SAMPLE_PARTS, message.getParts());
-        assertNull(message.getMetadata());
+        assertEquals(AGENT, message.role());
+        assertEquals(TEST_TASK_ID, message.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
+        assertNotNull(message.messageId());
+        assertEquals(SAMPLE_PARTS, message.parts());
+        assertNull(message.metadata());
     }
 
     @Test
@@ -228,12 +228,12 @@ public class TaskUpdaterTest {
         Map<String, Object> metadata = Map.of("key", "value");
         Message message = taskUpdater.newAgentMessage(SAMPLE_PARTS, metadata);
 
-        assertEquals(AGENT, message.getRole());
-        assertEquals(TEST_TASK_ID, message.getTaskId());
-        assertEquals(TEST_TASK_CONTEXT_ID, message.getContextId());
-        assertNotNull(message.getMessageId());
-        assertEquals(SAMPLE_PARTS, message.getParts());
-        assertEquals(metadata, message.getMetadata());
+        assertEquals(AGENT, message.role());
+        assertEquals(TEST_TASK_ID, message.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
+        assertNotNull(message.messageId());
+        assertEquals(SAMPLE_PARTS, message.parts());
+        assertEquals(metadata, message.metadata());
     }
 
     @Test
@@ -244,13 +244,13 @@ public class TaskUpdaterTest {
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
         TaskArtifactUpdateEvent taue = (TaskArtifactUpdateEvent) event;
-        assertEquals(TEST_TASK_ID, taue.getTaskId());
-        assertEquals(TEST_TASK_CONTEXT_ID, taue.getContextId());
-        assertEquals("artifact-id", taue.getArtifact().artifactId());
-        assertEquals("Test Artifact", taue.getArtifact().name());
-        assertSame(SAMPLE_PARTS, taue.getArtifact().parts());
-        assertEquals(true, taue.isAppend());
-        assertNull(taue.isLastChunk());
+        assertEquals(TEST_TASK_ID, taue.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, taue.contextId());
+        assertEquals("artifact-id", taue.artifact().artifactId());
+        assertEquals("Test Artifact", taue.artifact().name());
+        assertSame(SAMPLE_PARTS, taue.artifact().parts());
+        assertEquals(true, taue.append());
+        assertNull(taue.lastChunk());
 
         assertNull(eventQueue.dequeueEventItem(0));
     }
@@ -263,9 +263,9 @@ public class TaskUpdaterTest {
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
         TaskArtifactUpdateEvent taue = (TaskArtifactUpdateEvent) event;
-        assertEquals("artifact-id", taue.getArtifact().artifactId());
-        assertNull(taue.isAppend());
-        assertEquals(true, taue.isLastChunk());
+        assertEquals("artifact-id", taue.artifact().artifactId());
+        assertNull(taue.append());
+        assertEquals(true, taue.lastChunk());
 
         assertNull(eventQueue.dequeueEventItem(0));
     }
@@ -278,8 +278,8 @@ public class TaskUpdaterTest {
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
         TaskArtifactUpdateEvent taue = (TaskArtifactUpdateEvent) event;
-        assertEquals(true, taue.isAppend());
-        assertEquals(false, taue.isLastChunk());
+        assertEquals(true, taue.append());
+        assertEquals(false, taue.lastChunk());
 
         assertNull(eventQueue.dequeueEventItem(0));
     }
@@ -292,9 +292,9 @@ public class TaskUpdaterTest {
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
         TaskArtifactUpdateEvent taue = (TaskArtifactUpdateEvent) event;
-        assertNotNull(taue.getArtifact().artifactId());
+        assertNotNull(taue.artifact().artifactId());
         // Check that it's a valid UUID format
-        String artifactId = taue.getArtifact().artifactId();
+        String artifactId = taue.artifact().artifactId();
         assertEquals(36, artifactId.length()); // Standard UUID length
         assertTrue(artifactId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
 
@@ -389,7 +389,7 @@ public class TaskUpdaterTest {
 
         TaskStatusUpdateEvent tsue = (TaskStatusUpdateEvent) event;
         assertTrue(tsue.isFinal());
-        assertTrue(tsue.getStatus().state() == TaskState.COMPLETED || tsue.getStatus().state() == TaskState.FAILED);
+        assertTrue(tsue.status().state() == TaskState.COMPLETED || tsue.status().state() == TaskState.FAILED);
 
         // No additional events should be queued
         assertNull(eventQueue.dequeueEventItem(0));
@@ -402,11 +402,11 @@ public class TaskUpdaterTest {
         assertInstanceOf(TaskStatusUpdateEvent.class, event);
 
         TaskStatusUpdateEvent tsue = (TaskStatusUpdateEvent) event;
-        assertEquals(TEST_TASK_ID, tsue.getTaskId());
-        assertEquals(TEST_TASK_CONTEXT_ID, tsue.getContextId());
+        assertEquals(TEST_TASK_ID, tsue.taskId());
+        assertEquals(TEST_TASK_CONTEXT_ID, tsue.contextId());
         assertEquals(isFinal, tsue.isFinal());
-        assertEquals(state, tsue.getStatus().state());
-        assertEquals(statusMessage, tsue.getStatus().message());
+        assertEquals(state, tsue.status().state());
+        assertEquals(statusMessage, tsue.status().message());
 
         assertNull(eventQueue.dequeueEventItem(0));
 

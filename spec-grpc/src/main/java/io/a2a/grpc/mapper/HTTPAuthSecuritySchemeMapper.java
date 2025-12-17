@@ -13,8 +13,8 @@ public interface HTTPAuthSecuritySchemeMapper {
 
     HTTPAuthSecuritySchemeMapper INSTANCE = A2AMappers.getMapper(HTTPAuthSecuritySchemeMapper.class);
 
-    @Mapping(target = "bearerFormat", source = "bearerFormat", conditionExpression = "java(domain.getBearerFormat() != null)")
-    @Mapping(target = "description", source = "description", conditionExpression = "java(domain.getDescription() != null)")
+    @Mapping(target = "bearerFormat", source = "bearerFormat", conditionExpression = "java(domain.bearerFormat() != null)")
+    @Mapping(target = "description", source = "description", conditionExpression = "java(domain.description() != null)")
     io.a2a.grpc.HTTPAuthSecurityScheme toProto(io.a2a.spec.HTTPAuthSecurityScheme domain);
 
     default io.a2a.spec.HTTPAuthSecurityScheme fromProto(io.a2a.grpc.HTTPAuthSecurityScheme proto) {

@@ -13,7 +13,7 @@ public interface OpenIdConnectSecuritySchemeMapper {
 
     OpenIdConnectSecuritySchemeMapper INSTANCE = A2AMappers.getMapper(OpenIdConnectSecuritySchemeMapper.class);
 
-    @Mapping(target = "description", source = "description", conditionExpression = "java(domain.getDescription() != null)")
+    @Mapping(target = "description", source = "description", conditionExpression = "java(domain.description() != null)")
     io.a2a.grpc.OpenIdConnectSecurityScheme toProto(io.a2a.spec.OpenIdConnectSecurityScheme domain);
 
     default io.a2a.spec.OpenIdConnectSecurityScheme fromProto(io.a2a.grpc.OpenIdConnectSecurityScheme proto) {

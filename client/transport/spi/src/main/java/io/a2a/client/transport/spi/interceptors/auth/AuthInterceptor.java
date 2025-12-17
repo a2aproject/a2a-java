@@ -47,7 +47,7 @@ public class AuthInterceptor extends ClientCallInterceptor {
                         continue;
                     }
                     if (securityScheme instanceof HTTPAuthSecurityScheme httpAuthSecurityScheme) {
-                        if (httpAuthSecurityScheme.getScheme().toLowerCase(Locale.ROOT).equals(BEARER_SCHEME)) {
+                        if (httpAuthSecurityScheme.scheme().toLowerCase(Locale.ROOT).equals(BEARER_SCHEME)) {
                             updatedHeaders.put(AUTHORIZATION, getBearerValue(credential));
                             return new PayloadAndHeaders(payload, updatedHeaders);
                         }
@@ -56,7 +56,7 @@ public class AuthInterceptor extends ClientCallInterceptor {
                         updatedHeaders.put(AUTHORIZATION, getBearerValue(credential));
                         return new PayloadAndHeaders(payload, updatedHeaders);
                     } else if (securityScheme instanceof APIKeySecurityScheme apiKeySecurityScheme) {
-                        updatedHeaders.put(apiKeySecurityScheme.getName(), credential);
+                        updatedHeaders.put(apiKeySecurityScheme.name(), credential);
                         return new PayloadAndHeaders(payload, updatedHeaders);
                     }
                 }

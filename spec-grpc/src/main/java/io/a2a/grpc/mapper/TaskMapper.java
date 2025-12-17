@@ -24,8 +24,8 @@ public interface TaskMapper {
      * Converts domain Task to proto Task.
      * Uses CommonFieldMapper for metadata conversion and ADDER_PREFERRED for lists.
      */
-    @Mapping(target = "id", source = "id", conditionExpression = "java(domain.getId() != null)")
-    @Mapping(target = "contextId", source = "contextId", conditionExpression = "java(domain.getContextId() != null)")
+    @Mapping(target = "id", source = "id", conditionExpression = "java(domain.id() != null)")
+    @Mapping(target = "contextId", source = "contextId", conditionExpression = "java(domain.contextId() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     io.a2a.grpc.Task toProto(Task domain);
 

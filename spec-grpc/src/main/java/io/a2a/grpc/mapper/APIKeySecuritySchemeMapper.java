@@ -14,7 +14,7 @@ public interface APIKeySecuritySchemeMapper {
     APIKeySecuritySchemeMapper INSTANCE = A2AMappers.getMapper(APIKeySecuritySchemeMapper.class);
 
     // location enum is converted to string via ProtoMapperConfig.map(Location)
-    @Mapping(target = "description", source = "description", conditionExpression = "java(domain.getDescription() != null)")
+    @Mapping(target = "description", source = "description", conditionExpression = "java(domain.description() != null)")
     io.a2a.grpc.APIKeySecurityScheme toProto(io.a2a.spec.APIKeySecurityScheme domain);
 
     default io.a2a.spec.APIKeySecurityScheme fromProto(io.a2a.grpc.APIKeySecurityScheme proto) {

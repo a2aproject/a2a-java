@@ -78,7 +78,7 @@ public class EventConsumer {
                         } else if (event instanceof Message) {
                             isFinalEvent = true;
                         } else if (event instanceof Task task) {
-                            isFinalEvent = task.getStatus().state().isFinal();
+                            isFinalEvent = task.status().state().isFinal();
                         } else if (event instanceof QueueClosedEvent) {
                             // Poison pill event - signals queue closure from remote node
                             // Do NOT send to subscribers - just close the queue

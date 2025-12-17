@@ -13,88 +13,32 @@ import static io.a2a.spec.OAuth2SecurityScheme.OAUTH2;
  * <p>
  * Corresponds to the OpenAPI "oauth2" security scheme type.
  *
+ * @param flows the OAuth 2.0 flow configuration (required)
+ * @param description optional description of the security scheme
+ * @param oauth2MetadataUrl optional URL to OAuth 2.0 metadata (RFC 8414)
  * @see SecurityScheme for the base interface
  * @see OAuthFlows for flow configuration
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class OAuth2SecurityScheme implements SecurityScheme {
+public record OAuth2SecurityScheme(
+        OAuthFlows flows,
+        String description,
+        String oauth2MetadataUrl
+) implements SecurityScheme {
 
     /**
      * The type identifier for OAuth 2.0 security schemes: "oauth2".
      */
     public static final String OAUTH2 = "oauth2";
-    private final OAuthFlows flows;
-    private final String description;
-    private final String type;
-    private final String oauth2MetadataUrl;
 
     /**
-     * Constructs an OAuth 2.0 security scheme.
+     * Compact constructor with validation.
      *
-     * @param flows the OAuth 2.0 flow configuration (required)
-     * @param description optional description of the security scheme
-     * @param oauth2MetadataUrl optional URL to OAuth 2.0 metadata (RFC 8414)
+     * @throws IllegalArgumentException if flows is null
      */
-    public OAuth2SecurityScheme(OAuthFlows flows, String description, String oauth2MetadataUrl) {
-        this(flows, description, oauth2MetadataUrl, OAUTH2);
-    }
-
-    /**
-     * Constructs an OAuth 2.0 security scheme with explicit type.
-     *
-     * @param flows the OAuth 2.0 flow configuration (required)
-     * @param description optional description of the security scheme
-     * @param oauth2MetadataUrl optional URL to OAuth 2.0 metadata (RFC 8414)
-     * @param type the security scheme type (must be "oauth2")
-     */
-    public OAuth2SecurityScheme(OAuthFlows flows, String description, String oauth2MetadataUrl, String type) {
+    public OAuth2SecurityScheme {
         Assert.checkNotNullParam("flows", flows);
-        Assert.checkNotNullParam("type", type);
-        if (!type.equals(OAUTH2)) {
-            throw new IllegalArgumentException("Invalid type for OAuth2SecurityScheme");
-        }
-        this.flows = flows;
-        this.description = description;
-        this.oauth2MetadataUrl = oauth2MetadataUrl;
-        this.type = type;
-    }
-
-    /**
-     * Gets the Description.
-     *
-     * @return the Description
-     */
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Returns the OAuth flows configuration.
-     *
-     * @return the OAuth flows
-     */
-    public OAuthFlows getFlows() {
-        return flows;
-    }
-
-    /**
-     * Gets the Type.
-     *
-     * @return the Type
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * Gets the Oauth2MetadataUrl.
-     *
-     * @return the Oauth2MetadataUrl
-     */
-    public String getOauth2MetadataUrl() {
-        return oauth2MetadataUrl;
     }
 
     /**
@@ -107,7 +51,16 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
     }
 
     /**
-     * Builder for constructing instances.
+     * Builder for constructing immutable {@link OAuth2SecurityScheme} instances.
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * OAuth2SecurityScheme scheme = OAuth2SecurityScheme.builder()
+     *     .flows(flows)
+     *     .description("OAuth 2.0 authentication")
+     *     .oauth2MetadataUrl("https://example.com/.well-known/oauth-authorization-server")
+     *     .build();
+     * }</pre>
      */
     public static class Builder {
         private OAuthFlows flows;
@@ -121,9 +74,9 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
         }
 
         /**
-         * Sets the flows.
+         * Sets the OAuth flows configuration.
          *
-         * @param flows the flows
+         * @param flows the OAuth 2.0 flow configuration (required)
          * @return this builder for method chaining
          */
         public Builder flows(OAuthFlows flows) {
@@ -132,9 +85,9 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
         }
 
         /**
-         * Sets the description.
+         * Sets the human-readable description of the security scheme.
          *
-         * @param description the description
+         * @param description the description (optional)
          * @return this builder for method chaining
          */
         public Builder description(String description) {
@@ -143,9 +96,9 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
         }
 
         /**
-         * Sets the oauth2MetadataUrl.
+         * Sets the OAuth 2.0 metadata URL.
          *
-         * @param oauth2MetadataUrl the oauth2MetadataUrl
+         * @param oauth2MetadataUrl URL to OAuth 2.0 metadata document (RFC 8414) (optional)
          * @return this builder for method chaining
          */
         public Builder oauth2MetadataUrl(String oauth2MetadataUrl) {
@@ -154,9 +107,10 @@ public final class OAuth2SecurityScheme implements SecurityScheme {
         }
 
         /**
-         * Builds the OAuth2SecurityScheme.
+         * Builds a new immutable {@link OAuth2SecurityScheme} from the current builder state.
          *
          * @return a new OAuth2SecurityScheme instance
+         * @throws IllegalArgumentException if flows is null
          */
         public OAuth2SecurityScheme build() {
             return new OAuth2SecurityScheme(flows, description, oauth2MetadataUrl);

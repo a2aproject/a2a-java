@@ -24,30 +24,13 @@ public interface DataPartMapper {
      * Uses CommonFieldMapper for Map → Struct conversion.
      * Metadata is ignored (not part of proto definition).
      */
-    @Mapping(target = "data", source = "data", conditionExpression = "java(domain.getData() != null)", qualifiedByName = "mapToStruct")
+    @Mapping(target = "data", source = "data", conditionExpression = "java(domain.data() != null)", qualifiedByName = "mapToStruct")
     io.a2a.grpc.DataPart toProto(io.a2a.spec.DataPart domain);
 
     /**
      * Converts proto DataPart to domain DataPart.
-     * Uses CommonFieldMapper for Struct → Map conversion.
-     * Uses factory method to construct DataPart with single-arg constructor.
-     * Metadata is ignored (not part of proto definition).
+     * Uses CommonFieldMapper for Struct → Map conversion via Builder.
      */
     @Mapping(target = "data", source = "data", qualifiedByName = "structToMap")
     io.a2a.spec.DataPart fromProto(io.a2a.grpc.DataPart proto);
-
-    /**
-     * Object factory for creating DataPart instances.
-     * <p>
-     * Resolves constructor ambiguity by explicitly using the single-arg constructor.
-     * The metadata field will be null (not part of proto definition).
-     *
-     * @param proto the proto DataPart
-     * @return new DataPart instance using single-arg constructor
-     */
-    @ObjectFactory
-    default io.a2a.spec.DataPart createDataPart(io.a2a.grpc.DataPart proto) {
-        java.util.Map<String, Object> data = A2ACommonFieldMapper.INSTANCE.structToMap(proto.getData());
-        return new io.a2a.spec.DataPart(data);
-    }
 }

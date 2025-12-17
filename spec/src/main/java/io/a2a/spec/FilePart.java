@@ -3,6 +3,8 @@ package io.a2a.spec;
 
 import io.a2a.util.Assert;
 
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
+
 
 /**
  * Represents a file content part within a {@link Message} or {@link Artifact}.
@@ -30,43 +32,29 @@ import io.a2a.util.Assert;
  * );
  * }</pre>
  *
+ * @param file the file content (required, either FileWithBytes or FileWithUri)
  * @see Part
  * @see FileContent
  * @see FileWithBytes
  * @see FileWithUri
  */
-public class FilePart extends Part<FileContent> {
+public record FilePart(FileContent file) implements Part<FileContent> {
 
     /** The type identifier for file parts in messages and artifacts. */
     public static final String FILE = "file";
-    private final FileContent file;
-    private final Kind kind;
-
 
     /**
-     * Constructs a FilePart with file content.
+     * Compact constructor with validation.
      *
-     * @param file the file content (required, either FileWithBytes or FileWithUri)
      * @throws IllegalArgumentException if file is null
      */
-    public FilePart(FileContent file) {
+    public FilePart {
         Assert.checkNotNullParam("file", file);
-        this.file = file;
-        this.kind = Kind.FILE;
     }
 
     @Override
     public Kind getKind() {
-        return kind;
-    }
-
-    /**
-     * Gets the file content contained in this part.
-     *
-     * @return the file content (FileWithBytes or FileWithUri)
-     */
-    public FileContent getFile() {
-        return file;
+        return Kind.FILE;
     }
 
 }

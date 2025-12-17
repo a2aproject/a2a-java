@@ -4,6 +4,8 @@ import java.util.Map;
 
 import io.a2a.util.Assert;
 
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
+
 
 /**
  * Represents a structured data content part within a {@link Message} or {@link Artifact}.
@@ -31,40 +33,71 @@ import io.a2a.util.Assert;
  * );
  * }</pre>
  *
+ * @param data the structured data map (required, defensively copied for immutability)
  * @see Part
  * @see Message
  * @see Artifact
  */
-public class DataPart extends Part<Map<String, Object>> {
+public record DataPart(Map<String, Object> data) implements Part<Map<String, Object>> {
 
     /** The type identifier for data parts in messages and artifacts. */
     public static final String DATA = "data";
-    private final Map<String, Object> data;
-    private final Kind kind;
 
     /**
-     * Constructs a DataPart with structured data.
+     * Compact constructor with validation and defensive copying.
      *
-     * @param data the structured data map (required)
      * @throws IllegalArgumentException if data is null
      */
-    public DataPart(Map<String, Object> data) {
+    public DataPart {
         Assert.checkNotNullParam("data", data);
-        this.data = data;
-        this.kind = Kind.DATA;
+        data = Map.copyOf(data);
     }
 
     @Override
     public Kind getKind() {
-        return kind;
+        return Kind.DATA;
     }
 
     /**
-     * Gets the structured data contained in this part.
+     * Create a new Builder
      *
-     * @return a map of key-value pairs representing the data
+     * @return the builder
      */
-    public Map<String, Object> getData() {
-        return data;
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder for constructing immutable {@link DataPart} instances.
+     */
+    public static class Builder {
+        private Map<String, Object> data;
+
+        /**
+         * Creates a new Builder with all fields unset.
+         */
+        private Builder() {
+        }
+
+        /**
+         * Sets the structured data map.
+         *
+         * @param data the structured data (required)
+         * @return this builder for method chaining
+         */
+        public Builder data(Map<String, Object> data) {
+            this.data = data;
+            return this;
+        }
+
+        /**
+         * Builds a new immutable {@link DataPart} from the current builder state.
+         *
+         * @return a new DataPart instance
+         * @throws IllegalArgumentException if data is null
+         */
+        public DataPart build() {
+            return new DataPart(data);
+        }
     }
 }

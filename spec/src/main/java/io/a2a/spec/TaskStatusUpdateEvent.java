@@ -10,110 +10,38 @@ import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
 /**
  * An event sent by the agent to notify the client of a change in a task's status.
  * This is typically used in streaming or subscription models.
+ *
+ * @param taskId the task identifier (required)
+ * @param status the task status (required)
+ * @param contextId the context identifier (required)
+ * @param isFinal whether this is a final status
+ * @param metadata additional metadata (optional)
  */
-public final class TaskStatusUpdateEvent implements EventKind, StreamingEventKind, UpdateEvent {
+public record TaskStatusUpdateEvent(
+        String taskId,
+        TaskStatus status,
+        String contextId,
+        @SerializedName("final") boolean isFinal,
+        Map<String, Object> metadata
+) implements EventKind, StreamingEventKind, UpdateEvent {
 
     /**
      * The kind identifier for status update events: "status-update".
      */
     public static final String STATUS_UPDATE = "status-update";
-    private final String taskId;
-    private final TaskStatus status;
-    private final String contextId;
-    @SerializedName("final")
-    private final boolean isFinal;
-    private final Map<String, Object> metadata;
-    private final String kind;
-
 
     /**
-     * Constructs a TaskStatusUpdateEvent with default kind.
-     *
-     * @param taskId the task identifier (required)
-     * @param status the task status (required)
-     * @param contextId the context identifier (required)
-     * @param isFinal whether this is a final status
-     * @param metadata additional metadata (optional)
+     * Compact constructor with validation.
      */
-    public TaskStatusUpdateEvent(String taskId, TaskStatus status, String contextId, boolean isFinal,
-                                 Map<String, Object> metadata) {
-        this(taskId, status, contextId, isFinal, metadata, STATUS_UPDATE);
-    }
-
-    /**
-     * Constructs a TaskStatusUpdateEvent with all parameters.
-     *
-     * @param taskId the task identifier (required)
-     * @param status the task status (required)
-     * @param contextId the context identifier (required)
-     * @param isFinal whether this is a final status
-     * @param metadata additional metadata (optional)
-     * @param kind the event kind (must be "status-update")
-     */
-    public TaskStatusUpdateEvent(String taskId, TaskStatus status, String contextId, boolean isFinal, Map<String, Object> metadata, String kind) {
+    public TaskStatusUpdateEvent {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("status", status);
         Assert.checkNotNullParam("contextId", contextId);
-        Assert.checkNotNullParam("kind", kind);
-        if (! kind.equals(STATUS_UPDATE)) {
-            throw new IllegalArgumentException("Invalid TaskStatusUpdateEvent");
-        }
-        this.taskId = taskId;
-        this.status = status;
-        this.contextId = contextId;
-        this.isFinal = isFinal;
-        this.metadata = metadata;
-        this.kind = kind;
-    }
-
-    /**
-     * Returns the task identifier.
-     *
-     * @return the task ID
-     */
-    public String getTaskId() {
-        return taskId;
-    }
-
-    /**
-     * Returns the task status.
-     *
-     * @return the task status
-     */
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * Returns the context identifier.
-     *
-     * @return the context ID
-     */
-    public String getContextId() {
-        return contextId;
-    }
-
-    /**
-     * Returns whether this is a final status.
-     *
-     * @return true if this is a final status
-     */
-    public boolean isFinal() {
-        return isFinal;
-    }
-
-    /**
-     * Returns the metadata.
-     *
-     * @return the metadata map
-     */
-    public Map<String, Object> getMetadata() {
-        return metadata;
     }
 
     @Override
-    public String getKind() {
-        return kind;
+    public String kind() {
+        return STATUS_UPDATE;
     }
 
     /**

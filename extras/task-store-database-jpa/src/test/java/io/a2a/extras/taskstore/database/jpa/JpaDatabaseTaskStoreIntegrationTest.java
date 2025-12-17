@@ -99,8 +99,8 @@ public class JpaDatabaseTaskStoreIntegrationTest {
         assertTrue(latch.await(10, TimeUnit.SECONDS), "Timeout waiting for task creation");
         Task createdTask = taskRef.get();
         assertNotNull(createdTask);
-        assertEquals(0, createdTask.getArtifacts().size());
-        assertEquals(TaskState.SUBMITTED, createdTask.getStatus().state());
+        assertEquals(0, createdTask.artifacts().size());
+        assertEquals(TaskState.SUBMITTED, createdTask.status().state());
 
         // Send a message updating the Task
         userMessage = Message.builder()
@@ -128,24 +128,24 @@ public class JpaDatabaseTaskStoreIntegrationTest {
         assertTrue(latch2.await(10, TimeUnit.SECONDS), "Timeout waiting for task creation");
         Task updatedTask = taskRef2.get();
         assertNotNull(updatedTask);
-        assertEquals(1, updatedTask.getArtifacts().size());
-        assertEquals(TaskState.SUBMITTED, updatedTask.getStatus().state());
+        assertEquals(1, updatedTask.artifacts().size());
+        assertEquals(TaskState.SUBMITTED, updatedTask.status().state());
 
         Task retrievedTask = client.getTask(new TaskQueryParams(taskId), null);
         assertNotNull(retrievedTask);
-        assertEquals(1, retrievedTask.getArtifacts().size());
-        assertEquals(TaskState.SUBMITTED, retrievedTask.getStatus().state());
+        assertEquals(1, retrievedTask.artifacts().size());
+        assertEquals(TaskState.SUBMITTED, retrievedTask.status().state());
 
         // Cancel the task
         Task cancelledTask = client.cancelTask(new TaskIdParams(taskId), null);
         assertNotNull(cancelledTask);
-        assertEquals(1, cancelledTask.getArtifacts().size());
-        assertEquals(TaskState.CANCELED, cancelledTask.getStatus().state());
+        assertEquals(1, cancelledTask.artifacts().size());
+        assertEquals(TaskState.CANCELED, cancelledTask.status().state());
 
         Task retrievedCancelledTask = client.getTask(new TaskQueryParams(taskId), null);
         assertNotNull(retrievedCancelledTask);
-        assertEquals(1, retrievedCancelledTask.getArtifacts().size());
-        assertEquals(TaskState.CANCELED, retrievedCancelledTask.getStatus().state());
+        assertEquals(1, retrievedCancelledTask.artifacts().size());
+        assertEquals(TaskState.CANCELED, retrievedCancelledTask.status().state());
 
         // None of the framework code deletes tasks, so just do this manually
         taskStore.delete(taskId);

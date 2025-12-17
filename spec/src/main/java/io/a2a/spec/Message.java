@@ -7,6 +7,7 @@ import java.util.UUID;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.Message.MESSAGE;
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
 
 /**
  * Represents a single message in the conversation between a user and an agent in the A2A Protocol.
@@ -25,183 +26,51 @@ import static io.a2a.spec.Message.MESSAGE;
  * This class is mutable (allows setting taskId and contextId) to support post-construction correlation
  * with tasks and conversation contexts. Use the {@link Builder} for construction.
  *
+ * @param role the role of the message sender (user or agent)
+ * @param parts the content parts of the message (text, file, or data)
+ * @param messageId the unique identifier for this message
+ * @param contextId the conversation context identifier
+ * @param taskId the task identifier this message is associated with
+ * @param referenceTaskIds list of reference task identifiers
+ * @param metadata additional metadata for the message
+ * @param extensions list of protocol extensions used in this message
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class Message implements EventKind, StreamingEventKind {
+public record Message(Role role, List<Part<?>> parts,
+                      String messageId, String contextId,
+                      String taskId, List<String> referenceTaskIds,
+                      Map<String, Object> metadata, List<String> extensions
+) implements EventKind, StreamingEventKind {
 
-    /**
-     * The kind identifier for Message events: "message".
-     */
     public static final String MESSAGE = "message";
-    private final Role role;
-    private final List<Part<?>> parts;
-    private final String messageId;
-    private String contextId;
-    private String taskId;
-    private final Map<String, Object> metadata;
-    private final String kind;
-    private final List<String> referenceTaskIds;
-    private final List<String> extensions;
 
     /**
-     * Constructs a Message with default kind.
+     * Compact constructor with validation and defensive copying.
      *
-     * @param role the message role (required)
-     * @param parts the message content parts (required)
-     * @param messageId the message identifier (required)
-     * @param contextId the context identifier (optional)
-     * @param taskId the task identifier (optional)
-     * @param referenceTaskIds list of related task IDs (optional)
-     * @param metadata additional metadata (optional)
-     * @param extensions list of protocol extensions (optional)
+     * @throws IllegalArgumentException if role, parts, or messageId is null, or if parts is empty
      */
-    public Message(Role role, List<Part<?>> parts, String messageId, String contextId, String taskId,
-                   List<String> referenceTaskIds, Map<String, Object> metadata, List<String> extensions) {
-        this(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata, extensions, MESSAGE);
-    }
-
-    /**
-     * Constructs a Message with all parameters.
-     *
-     * @param role the message role (required)
-     * @param parts the message content parts (required)
-     * @param messageId the message identifier (required)
-     * @param contextId the context identifier (optional)
-     * @param taskId the task identifier (optional)
-     * @param referenceTaskIds list of related task IDs (optional)
-     * @param metadata additional metadata (optional)
-     * @param extensions list of protocol extensions (optional)
-     * @param kind the event kind (must be "message")
-     */
-    public Message(Role role, List<Part<?>> parts,
-                   String messageId, String contextId,
-                   String taskId, List<String> referenceTaskIds,
-                   Map<String, Object> metadata, List<String> extensions,
-                   String kind) {
-        Assert.checkNotNullParam("kind", kind);
+    public Message {
+        Assert.checkNotNullParam("role", role);
         Assert.checkNotNullParam("parts", parts);
+        Assert.checkNotNullParam("messageId", messageId);
         if (parts.isEmpty()) {
             throw new IllegalArgumentException("Parts cannot be empty");
         }
-        Assert.checkNotNullParam("role", role);
-        if (! kind.equals(MESSAGE)) {
-            throw new IllegalArgumentException("Invalid Message");
-        }
-        Assert.checkNotNullParam("messageId", messageId);
-        this.role = role;
-        this.parts = parts;
-        this.messageId = messageId;
-        this.contextId = contextId;
-        this.taskId = taskId;
-        this.referenceTaskIds = referenceTaskIds;
-        this.metadata = metadata;
-        this.extensions = extensions;
-        this.kind = kind;
-    }
-
-    /**
-     * Returns the role of the message sender.
-     *
-     * @return the message role (USER or AGENT)
-     */
-    public Role getRole() {
-        return role;
-    }
-
-    /**
-     * Returns the content parts of this message.
-     *
-     * @return an immutable list of message parts
-     */
-    public List<Part<?>> getParts() {
-        return parts;
-    }
-
-    /**
-     * Returns the unique identifier for this message.
-     *
-     * @return the message ID
-     */
-    public String getMessageId() {
-        return messageId;
-    }
-
-    /**
-     * Returns the conversation context identifier.
-     *
-     * @return the context ID, or null if not set
-     */
-    public String getContextId() {
-        return contextId;
-    }
-
-    /**
-     * Returns the task identifier this message is associated with.
-     *
-     * @return the task ID, or null if not set
-     */
-    public String getTaskId() {
-        return taskId;
-    }
-
-    /**
-     * Returns the metadata associated with this message.
-     *
-     * @return a map of metadata key-value pairs, or null if not set
-     */
-    public Map<String, Object> getMetadata() {
-        return metadata;
-    }
-
-    /**
-     * Sets the task identifier for this message.
-     * <p>
-     * This method allows associating the message with a task after construction.
-     *
-     * @param taskId the task ID to set
-     */
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
-    }
-
-    /**
-     * Sets the conversation context identifier for this message.
-     * <p>
-     * This method allows associating the message with a context after construction.
-     *
-     * @param contextId the context ID to set
-     */
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
-    }
-
-    /**
-     * Returns the list of reference task identifiers this message relates to.
-     *
-     * @return a list of task IDs, or null if not set
-     */
-    public List<String> getReferenceTaskIds() {
-        return referenceTaskIds;
-    }
-
-    /**
-     * Returns the list of protocol extensions used in this message.
-     *
-     * @return a list of extension identifiers, or null if not set
-     */
-    public List<String> getExtensions() {
-        return extensions;
+        parts = List.copyOf(parts);
+        referenceTaskIds = referenceTaskIds != null ? List.copyOf(referenceTaskIds) : null;
+        extensions = extensions != null ? List.copyOf(extensions) : null;
+        metadata = (metadata != null) ? Map.copyOf(metadata) : null;
     }
 
     @Override
-    public String getKind() {
-        return kind;
+    public String kind() {
+        return MESSAGE;
     }
 
     /**
      * Creates a new Builder for constructing Message instances.
      *
-     * @return a new Message.Builder instance
+     * @return a Message.builder instance
      */
     public static Builder builder() {
         return new Builder();
@@ -211,7 +80,6 @@ public final class Message implements EventKind, StreamingEventKind {
      * Creates a new Builder initialized with values from an existing Message.
      *
      * @param message the Message to copy values from
-     * @return the builder
      */
     public static Builder builder(Message message) {
         return new Builder(message);
@@ -260,7 +128,7 @@ public final class Message implements EventKind, StreamingEventKind {
      * <pre>{@code
      * Message userMessage = Message.builder()
      *     .role(Message.Role.USER)
-     *     .parts(List.of(new TextPart("Hello, agent!", null)))
+     *     .parts(List.of(new TextPart("Hello, agent!")))
      *     .contextId("conv-123")
      *     .build();
      * }</pre>
@@ -288,14 +156,14 @@ public final class Message implements EventKind, StreamingEventKind {
          * @param message the Message to copy values from
          */
         private Builder(Message message) {
-            role = message.role;
-            parts = message.parts;
-            messageId = message.messageId;
-            contextId = message.contextId;
-            taskId = message.taskId;
-            referenceTaskIds = message.referenceTaskIds;
-            metadata = message.metadata;
-            extensions = message.extensions;
+            role = message.role();
+            parts = message.parts();
+            messageId = message.messageId();
+            contextId = message.contextId();
+            taskId = message.taskId();
+            referenceTaskIds = message.referenceTaskIds();
+            metadata = message.metadata();
+            extensions = message.extensions();
         }
 
         /**

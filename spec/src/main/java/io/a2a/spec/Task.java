@@ -6,9 +6,7 @@ import java.util.Map;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.Task.TASK;
-
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
+import static io.a2a.util.Utils.SPEC_VERSION_1_0;
 
 /**
  * Represents a single, stateful operation or conversation between a client and an agent in the A2A Protocol.
@@ -28,159 +26,75 @@ import org.jspecify.annotations.Nullable;
  *   <li><b>Streaming:</b> Client subscribes to Task updates and receives incremental artifacts as they are produced</li>
  * </ul>
  * <p>
- * Tasks are immutable once created and use the Builder pattern for construction. Updates to a Task's
+ * Tasks are immutable once created (including their history, artifacts and metadata attributes).
+ * They use the Builder pattern for construction. Updates to a Task's
  * state are communicated via new Task instances or TaskStatusUpdateEvent/TaskArtifactUpdateEvent objects.
  * <p>
  * This class implements {@link EventKind} and {@link StreamingEventKind}, allowing Task instances to
  * be transmitted as events in both blocking and streaming scenarios.
  *
+ * @param id the unique identifier for this task
+ * @param contextId the context identifier associating this task with a conversation or session
+ * @param status the current status of the task
+ * @param artifacts the list of artifacts produced by the agent during task execution
+ * @param history the conversation history for this task
+ * @param metadata arbitrary metadata associated with the task
  * @see TaskStatus
  * @see TaskState
  * @see Artifact
  * @see Message
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-@NullMarked
-public final class Task implements EventKind, StreamingEventKind {
+public record Task(
+        String id,
+        String contextId,
+        TaskStatus status,
+        List<Artifact> artifacts,
+        List<Message> history,
+        Map<String, Object> metadata
+) implements EventKind, StreamingEventKind {
 
-    /**
-     * The kind identifier for Task events: "task".
-     */
     public static final String TASK = "task";
-    private final String id;
-    private final String contextId;
-    private final TaskStatus status;
-    private final List<Artifact> artifacts;
-    private final List<Message> history;
-    private final Map<String, Object> metadata;
-    private final String kind;
 
     /**
-     * Constructs a Task with default kind.
+     * Compact constructor with validation and defensive copying.
      *
-     * @param id the task identifier (required)
-     * @param contextId the context identifier (required)
-     * @param status the task status (required)
-     * @param artifacts the list of artifacts (optional)
-     * @param history the conversation history (optional)
-     * @param metadata additional metadata (optional)
+     * @throws IllegalArgumentException if id, contextId, or status is null
      */
-    public Task(String id, String contextId, TaskStatus status, List<Artifact> artifacts,
-                List<Message> history, Map<String, Object> metadata) {
-        this(id, contextId, status, artifacts, history, metadata, TASK);
-    }
-
-    /**
-     * Constructs a Task with all parameters.
-     *
-     * @param id the task identifier (required)
-     * @param contextId the context identifier (required)
-     * @param status the task status (required)
-     * @param artifacts the list of artifacts (optional)
-     * @param history the conversation history (optional)
-     * @param metadata additional metadata (optional)
-     * @param kind the event kind (must be "task")
-     */
-    public Task(String id, String contextId, TaskStatus status,
-                @Nullable List<Artifact> artifacts, @Nullable List<Message> history,
-                Map<String, Object> metadata, String kind) {
+    public Task {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("contextId", contextId);
         Assert.checkNotNullParam("status", status);
-        Assert.checkNotNullParam("kind", kind);
-        if (! TASK.equals(kind)) {
-            throw new IllegalArgumentException("Invalid Task");
-        }
-        this.id = id;
-        this.contextId = contextId;
-        this.status = status;
-        this.artifacts = artifacts != null ? List.copyOf(artifacts) : List.of();
-        this.history = history != null ? List.copyOf(history) : List.of();
-        this.metadata = metadata;
-        this.kind = kind;
-    }
-
-    /**
-     * Returns the unique identifier for this task.
-     *
-     * @return the task ID
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Returns the conversation context identifier.
-     *
-     * @return the context ID
-     */
-    public String getContextId() {
-        return contextId;
-    }
-
-    /**
-     * Returns the current status of this task.
-     *
-     * @return the task status
-     */
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * Returns the artifacts produced by the agent during task execution.
-     *
-     * @return an immutable list of artifacts
-     */
-    public List<Artifact> getArtifacts() {
-        return artifacts;
-    }
-
-    /**
-     * Returns the conversation history for this task.
-     *
-     * @return an immutable list of messages
-     */
-    public List<Message> getHistory() {
-        return history;
-    }
-
-    /**
-     * Returns the metadata associated with this task.
-     *
-     * @return a map of metadata key-value pairs, or null if not set
-     */
-    public Map<String, Object> getMetadata() {
-        return metadata;
+        artifacts = artifacts != null ? List.copyOf(artifacts) : List.of();
+        history = history != null ? List.copyOf(history) : List.of();
+        metadata = (metadata != null) ? Map.copyOf(metadata) : null;
     }
 
     @Override
-    public String getKind() {
-        return kind;
+    public String kind() {
+        return TASK;
     }
 
     /**
-     * Create a new Builder
+     * Creates a new Builder for constructing Task instances.
      *
-     * @return the builder
+     * @return a new Task.Builder instance
      */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * Create a new Builder initialized with values from an existing Task.
+     * Creates a new Builder initialized with values from an existing Task.
      * <p>
-     * This Builder allows for creating a modified copy of an existing Task
+     * This constructor allows for creating a modified copy of an existing Task
      * by copying all fields and then selectively updating specific values.
      *
      * @param task the Task to copy values from
-     * @return a new builder
      */
     public static Builder builder(Task task) {
         return new Builder(task);
     }
-
 
     /**
      * Builder for constructing immutable {@link Task} instances.
@@ -192,7 +106,7 @@ public final class Task implements EventKind, StreamingEventKind {
      * <p>
      * Example usage:
      * <pre>{@code
-     * Task task = new Task.Builder()
+     * Task task = Task.builder()
      *     .id("task-123")
      *     .contextId("context-456")
      *     .status(new TaskStatus(TaskState.WORKING))
@@ -202,7 +116,6 @@ public final class Task implements EventKind, StreamingEventKind {
      *     .build();
      * }</pre>
      */
-    @SuppressWarnings("NullAway")
     public static class Builder {
         private String id;
         private String contextId;
@@ -215,24 +128,20 @@ public final class Task implements EventKind, StreamingEventKind {
          * Creates a new Builder with all fields unset.
          */
         private Builder() {
-
         }
 
         /**
          * Creates a new Builder initialized with values from an existing Task.
-         * <p>
-         * This constructor allows for creating a modified copy of an existing Task
-         * by copying all fields and then selectively updating specific values.
          *
          * @param task the Task to copy values from
          */
         private Builder(Task task) {
-            id = task.id;
-            contextId = task.contextId;
-            status = task.status;
-            artifacts = task.artifacts;
-            history = task.history;
-            metadata = task.metadata;
+            id = task.id();
+            contextId = task.contextId();
+            status = task.status();
+            artifacts = task.artifacts();
+            history = task.history();
+            metadata = task.metadata();
 
         }
 

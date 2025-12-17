@@ -50,11 +50,12 @@ public class RequestContextTest {
 
             RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
 
-            assertEquals(mockParams.message(), context.getMessage());
+            // getMessage() returns a new Message with generated IDs, not the original
+            assertNotNull(context.getMessage());
             assertEquals(taskId.toString(), context.getTaskId());
-            assertEquals(mockParams.message().getTaskId(), taskId.toString());
+            assertEquals(taskId.toString(), context.getMessage().taskId());
             assertEquals(contextId.toString(), context.getContextId());
-            assertEquals(mockParams.message().getContextId(), contextId.toString());
+            assertEquals(contextId.toString(), context.getMessage().contextId());
         }
     }
 
@@ -67,7 +68,7 @@ public class RequestContextTest {
         RequestContext context = new RequestContext(mockParams, taskId, null, null, null, null);
 
         assertEquals(taskId, context.getTaskId());
-        assertEquals(taskId, mockParams.message().getTaskId());
+        assertEquals(taskId, mockParams.message().taskId());
     }
 
     @Test
@@ -78,7 +79,7 @@ public class RequestContextTest {
         RequestContext context = new RequestContext(mockParams, null, contextId, null, null, null);
 
         assertEquals(contextId, context.getContextId());
-        assertEquals(contextId, mockParams.message().getContextId());
+        assertEquals(contextId, mockParams.message().contextId());
     }
 
     @Test
@@ -90,9 +91,9 @@ public class RequestContextTest {
         RequestContext context = new RequestContext(mockParams, taskId, contextId, null, null, null);
 
         assertEquals(taskId, context.getTaskId());
-        assertEquals(taskId, mockParams.message().getTaskId());
+        assertEquals(taskId, mockParams.message().taskId());
         assertEquals(contextId, context.getContextId());
-        assertEquals(contextId, mockParams.message().getContextId());
+        assertEquals(contextId, mockParams.message().contextId());
     }
 
     @Test
@@ -138,7 +139,7 @@ public class RequestContextTest {
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
 
         assertEquals(existingId, context.getTaskId());
-        assertEquals(existingId, mockParams.message().getTaskId());
+        assertEquals(existingId, mockParams.message().taskId());
     }
 
     @Test
@@ -151,7 +152,7 @@ public class RequestContextTest {
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
 
         assertEquals(existingId, context.getContextId());
-        assertEquals(existingId, mockParams.message().getContextId());
+        assertEquals(existingId, mockParams.message().contextId());
     }
 
     @Test
@@ -173,7 +174,7 @@ public class RequestContextTest {
         var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
 
         InvalidParamsError error = assertThrows(InvalidParamsError.class, () ->
-                new RequestContext(mockParams, mockTask.getId(), "wrong-context-id", mockTask, null, null));
+                new RequestContext(mockParams, mockTask.id(), "wrong-context-id", mockTask, null, null));
 
         assertTrue(error.getMessage().contains("bad context id"));
     }
@@ -204,7 +205,10 @@ public class RequestContextTest {
         var mockParams = MessageSendParams.builder().message(mockMessage).build();
 
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
-        assertEquals(mockParams.message(), context.getMessage());
+        // getMessage() returns a new Message with generated IDs, not the original
+        assertNotNull(context.getMessage());
+        assertEquals(mockMessage.role(), context.getMessage().role());
+        assertEquals(mockMessage.parts(), context.getMessage().parts());
     }
 
     @Test
@@ -229,9 +233,9 @@ public class RequestContextTest {
         var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
 
 
-        RequestContext context = new RequestContext(mockParams, mockTask.getId(), null, mockTask, null, null);
+        RequestContext context = new RequestContext(mockParams, mockTask.id(), null, mockTask, null, null);
 
-        assertEquals(mockTask.getId(), context.getTaskId());
+        assertEquals(mockTask.id(), context.getTaskId());
         assertEquals(mockTask, context.getTask());
     }
 
@@ -242,9 +246,9 @@ public class RequestContextTest {
         var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
 
 
-        RequestContext context = new RequestContext(mockParams, mockTask.getId(), mockTask.getContextId(), mockTask, null, null);
+        RequestContext context = new RequestContext(mockParams, mockTask.id(), mockTask.contextId(), mockTask, null, null);
 
-        assertEquals(mockTask.getContextId(), context.getContextId());
+        assertEquals(mockTask.contextId(), context.getContextId());
         assertEquals(mockTask, context.getTask());
     }
 
@@ -254,8 +258,8 @@ public class RequestContextTest {
         var mockParams = MessageSendParams.builder().message(mockMessage).build();
 
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
-        assertNotNull(mockMessage.getMessageId());
-        assertFalse(mockMessage.getMessageId().isEmpty());
+        assertNotNull(mockMessage.messageId());
+        assertFalse(mockMessage.messageId().isEmpty());
     }
 
     @Test
@@ -264,6 +268,6 @@ public class RequestContextTest {
         var mockParams = MessageSendParams.builder().message(mockMessage).build();
 
         RequestContext context = new RequestContext(mockParams, null, null, null, null, null);
-        assertEquals("123", mockMessage.getMessageId());
+        assertEquals("123", mockMessage.messageId());
     }
 }

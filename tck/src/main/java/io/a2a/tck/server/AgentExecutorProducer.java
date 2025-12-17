@@ -50,7 +50,7 @@ public class AgentExecutorProducer {
             }
 
             // Sleep to allow task state persistence before TCK resubscribe test
-            if (context.getMessage() != null && context.getMessage().getMessageId().startsWith("test-resubscribe-message-id")) {
+            if (context.getMessage() != null && context.getMessage().messageId().startsWith("test-resubscribe-message-id")) {
                 int timeoutMs = Integer.parseInt(System.getenv().getOrDefault("RESUBSCRIBE_TIMEOUT_MS", "3000"));
                 System.out.println("====> task id starts with test-resubscribe-message-id, sleeping for " + timeoutMs + " ms");
                 try {
@@ -77,12 +77,12 @@ public class AgentExecutorProducer {
                 System.out.println("====> No task found");
                 throw new TaskNotCancelableError();
             }
-            if (task.getStatus().state() == TaskState.CANCELED) {
+            if (task.status().state() == TaskState.CANCELED) {
                 System.out.println("====> task already canceled");
                 throw new TaskNotCancelableError();
             }
 
-            if (task.getStatus().state() == TaskState.COMPLETED) {
+            if (task.status().state() == TaskState.COMPLETED) {
                 System.out.println("====> task already completed");
                 throw new TaskNotCancelableError();
             }
@@ -90,8 +90,8 @@ public class AgentExecutorProducer {
             TaskUpdater updater = new TaskUpdater(context, eventQueue);
             updater.cancel();
             eventQueue.enqueueEvent(TaskStatusUpdateEvent.builder()
-                    .taskId(task.getId())
-                    .contextId(task.getContextId())
+                    .taskId(task.id())
+                    .contextId(task.contextId())
                     .status(new TaskStatus(TaskState.CANCELED))
                     .isFinal(true)
                     .build());

@@ -159,7 +159,7 @@ public class PushNotificationSenderTest {
         // Verify the task was sent via HTTP
         assertEquals(1, testHttpClient.tasks.size());
         Task sentTask = testHttpClient.tasks.get(0);
-        assertEquals(taskData.getId(), sentTask.getId());
+        assertEquals(taskData.id(), sentTask.id());
         
         // Verify that no authentication header was sent (invalid token should not add header)
         assertEquals(1, testHttpClient.headers.size());
@@ -208,9 +208,9 @@ public class PushNotificationSenderTest {
         // Verify the task was sent via HTTP
         assertEquals(1, testHttpClient.tasks.size());
         Task sentTask = testHttpClient.tasks.get(0);
-        assertEquals(taskData.getId(), sentTask.getId());
-        assertEquals(taskData.getContextId(), sentTask.getContextId());
-        assertEquals(taskData.getStatus().state(), sentTask.getStatus().state());
+        assertEquals(taskData.id(), sentTask.id());
+        assertEquals(taskData.contextId(), sentTask.contextId());
+        assertEquals(taskData.status().state(), sentTask.status().state());
     }
 
     @Test
@@ -233,7 +233,7 @@ public class PushNotificationSenderTest {
         // Verify the task was sent via HTTP
         assertEquals(1, testHttpClient.tasks.size());
         Task sentTask = testHttpClient.tasks.get(0);
-        assertEquals(taskData.getId(), sentTask.getId());
+        assertEquals(taskData.id(), sentTask.id());
         
         // Verify that the X-A2A-Notification-Token header is sent with the correct token
         assertEquals(1, testHttpClient.headers.size());
@@ -295,9 +295,9 @@ public class PushNotificationSenderTest {
         
         // Both tasks should be identical (same task sent to different endpoints)
         for (Task sentTask : testHttpClient.tasks) {
-            assertEquals(taskData.getId(), sentTask.getId());
-            assertEquals(taskData.getContextId(), sentTask.getContextId());
-            assertEquals(taskData.getStatus().state(), sentTask.getStatus().state());
+            assertEquals(taskData.id(), sentTask.id());
+            assertEquals(taskData.contextId(), sentTask.contextId());
+            assertEquals(taskData.status().state(), sentTask.status().state());
         }
     }
 

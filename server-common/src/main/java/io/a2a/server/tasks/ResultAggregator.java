@@ -161,10 +161,10 @@ public class ResultAggregator {
                     // Determine interrupt behavior
                     boolean shouldInterrupt = false;
                     boolean continueInBackground = false;
-                    boolean isFinalEvent = (event instanceof Task task && task.getStatus().state().isFinal())
+                    boolean isFinalEvent = (event instanceof Task task && task.status().state().isFinal())
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.isFinal());
-                    boolean isAuthRequired = (event instanceof Task task && task.getStatus().state() == TaskState.AUTH_REQUIRED)
-                            || (event instanceof TaskStatusUpdateEvent tsue && tsue.getStatus().state() == TaskState.AUTH_REQUIRED);
+                    boolean isAuthRequired = (event instanceof Task task && task.status().state() == TaskState.AUTH_REQUIRED)
+                            || (event instanceof TaskStatusUpdateEvent tsue && tsue.status().state() == TaskState.AUTH_REQUIRED);
 
                     // Always interrupt on auth_required, as it needs external action.
                     if (isAuthRequired) {
@@ -286,7 +286,7 @@ public class ResultAggregator {
 
     private String taskIdForLogging() {
         Task task = taskManager.getTask();
-        return task != null ? task.getId() : "unknown";
+        return task != null ? task.id() : "unknown";
     }
 
     public record EventTypeAndInterrupt(EventKind eventType, boolean interrupted, CompletableFuture<Void> consumptionFuture) {

@@ -155,8 +155,8 @@ public class KafkaReplicationIntegrationTest {
 
         Task task = createdTask.get();
         assertNotNull(task, "Task should be created");
-        assertEquals(taskId, task.getId());
-        assertEquals(TaskState.SUBMITTED, task.getStatus().state());
+        assertEquals(taskId, task.id());
+        assertEquals(TaskState.SUBMITTED, task.status().state());
 
         // Wait for the event to be replicated to Kafka
         ReplicatedEventQueueItem replicatedEvent = testConsumer.waitForEvent(taskId, 30);
@@ -173,11 +173,11 @@ public class KafkaReplicationIntegrationTest {
         TaskStatusUpdateEvent statusUpdateEvent = (TaskStatusUpdateEvent) receivedEvent;
 
         // Verify the event data is consistent with the task returned from the client
-        assertEquals(taskId, statusUpdateEvent.getTaskId(), "Event task ID should match original task ID");
-        assertEquals(contextId, statusUpdateEvent.getContextId(), "Event context ID should match original context ID");
-        assertEquals(TaskState.SUBMITTED, statusUpdateEvent.getStatus().state(), "Event should show SUBMITTED state");
+        assertEquals(taskId, statusUpdateEvent.taskId(), "Event task ID should match original task ID");
+        assertEquals(contextId, statusUpdateEvent.contextId(), "Event context ID should match original context ID");
+        assertEquals(TaskState.SUBMITTED, statusUpdateEvent.status().state(), "Event should show SUBMITTED state");
         assertFalse(statusUpdateEvent.isFinal(), "Event should show final:false");
-        assertEquals("status-update", statusUpdateEvent.getKind(), "Event should indicate status-update type");
+        assertEquals("status-update", statusUpdateEvent.kind(), "Event should indicate status-update type");
     }
 
     @Test
@@ -212,7 +212,7 @@ public class KafkaReplicationIntegrationTest {
         assertTrue(createLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
         Task initialTask = createdTask.get();
         assertNotNull(initialTask, "Task should be created");
-        assertEquals(TaskState.SUBMITTED, initialTask.getStatus().state(), "Initial task should be in SUBMITTED state");
+        assertEquals(TaskState.SUBMITTED, initialTask.status().state(), "Initial task should be in SUBMITTED state");
 
         // Add a small delay to ensure the task is fully processed before resubscription
         Thread.sleep(1000);
@@ -227,7 +227,7 @@ public class KafkaReplicationIntegrationTest {
         BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
             if (event instanceof TaskUpdateEvent taskUpdateEvent) {
                 if (taskUpdateEvent.getUpdateEvent() instanceof TaskStatusUpdateEvent statusEvent) {
-                    if (statusEvent.getStatus().state() == TaskState.COMPLETED) {
+                    if (statusEvent.status().state() == TaskState.COMPLETED) {
                         receivedCompletedEvent.set(statusEvent);
                         resubscribeLatch.countDown();
                     }
@@ -277,10 +277,10 @@ public class KafkaReplicationIntegrationTest {
         // Verify the received event
         TaskStatusUpdateEvent completedEvent = receivedCompletedEvent.get();
         assertNotNull(completedEvent, "Should have received a TaskStatusUpdateEvent");
-        assertEquals(TaskState.COMPLETED, completedEvent.getStatus().state(), "Event should show COMPLETED state");
+        assertEquals(TaskState.COMPLETED, completedEvent.status().state(), "Event should show COMPLETED state");
         assertTrue(completedEvent.isFinal(), "Event should be marked as final");
-        assertEquals(taskId, completedEvent.getTaskId(), "Event should have correct task ID");
-        assertEquals(contextId, completedEvent.getContextId(), "Event should have correct context ID");
+        assertEquals(taskId, completedEvent.taskId(), "Event should have correct task ID");
+        assertEquals(contextId, completedEvent.contextId(), "Event should have correct context ID");
 
         // Note: We do NOT verify TaskStore state here because replicated events intentionally
         // skip TaskStore updates to avoid duplicates. The TaskStore is updated on the originating
@@ -311,11 +311,11 @@ public class KafkaReplicationIntegrationTest {
 
         pollingClient.sendMessage(workingMessage, List.of((ClientEvent event, AgentCard card) -> {
             if (event instanceof TaskEvent taskEvent) {
-                taskIdRef.set(taskEvent.getTask().getId());
+                taskIdRef.set(taskEvent.getTask().id());
                 workingLatch.countDown();
             } else if (event instanceof TaskUpdateEvent tue && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
-                if (status.getStatus().state() == TaskState.WORKING) {
-                    taskIdRef.set(status.getTaskId());
+                if (status.status().state() == TaskState.WORKING) {
+                    taskIdRef.set(status.taskId());
                     workingLatch.countDown();
                 }
             }

@@ -64,12 +64,12 @@ public class ReplicationTestAgentExecutor {
     }
 
     private String getLastTextPart(Message message) throws JSONRPCError {
-        if (message.getParts().isEmpty()) {
+        if (message.parts().isEmpty()) {
             throw new InvalidRequestError("No parts in message");
         }
-        Part<?> part = message.getParts().get(message.getParts().size() - 1);
+        Part<?> part = message.parts().get(message.parts().size() - 1);
         if (part.getKind() == Part.Kind.TEXT) {
-            return ((TextPart) part).getText();
+            return ((TextPart) part).text();
         }
         throw new InvalidRequestError("Last part is not text");
     }

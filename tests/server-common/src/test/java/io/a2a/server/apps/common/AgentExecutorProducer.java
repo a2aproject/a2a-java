@@ -51,10 +51,10 @@ public class AgentExecutorProducer {
 
             @Override
             public void cancel(RequestContext context, EventQueue eventQueue) throws JSONRPCError {
-                if (context.getTask().getId().equals("cancel-task-123")) {
+                if (context.getTask().id().equals("cancel-task-123")) {
                     TaskUpdater taskUpdater = new TaskUpdater(context, eventQueue);
                     taskUpdater.cancel();
-                } else if (context.getTask().getId().equals("cancel-task-not-supported-123")) {
+                } else if (context.getTask().id().equals("cancel-task-not-supported-123")) {
                     throw new UnsupportedOperationError();
                 }
             }

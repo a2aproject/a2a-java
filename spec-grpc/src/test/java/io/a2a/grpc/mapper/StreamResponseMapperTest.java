@@ -59,9 +59,9 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(Task.class, result);
         Task task = (Task) result;
-        assertEquals("task-123", task.getId());
-        assertEquals("context-456", task.getContextId());
-        assertEquals(TaskState.COMPLETED, task.getStatus().state());
+        assertEquals("task-123", task.id());
+        assertEquals("context-456", task.contextId());
+        assertEquals(TaskState.COMPLETED, task.status().state());
     }
 
     @Test
@@ -106,9 +106,9 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(Message.class, result);
         Message message = (Message) result;
-        assertEquals("msg-123", message.getMessageId());
-        assertEquals("context-456", message.getContextId());
-        assertEquals(Message.Role.USER, message.getRole());
+        assertEquals("msg-123", message.messageId());
+        assertEquals("context-456", message.contextId());
+        assertEquals(Message.Role.USER, message.role());
     }
 
     @Test
@@ -154,9 +154,9 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(TaskStatusUpdateEvent.class, result);
         TaskStatusUpdateEvent event = (TaskStatusUpdateEvent) result;
-        assertEquals("task-123", event.getTaskId());
-        assertEquals("context-456", event.getContextId());
-        assertEquals(TaskState.WORKING, event.getStatus().state());
+        assertEquals("task-123", event.taskId());
+        assertEquals("context-456", event.contextId());
+        assertEquals(TaskState.WORKING, event.status().state());
         assertEquals(false, event.isFinal());
     }
 
@@ -209,10 +209,10 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(TaskArtifactUpdateEvent.class, result);
         TaskArtifactUpdateEvent event = (TaskArtifactUpdateEvent) result;
-        assertEquals("task-123", event.getTaskId());
-        assertEquals("context-456", event.getContextId());
-        assertEquals("artifact-1", event.getArtifact().artifactId());
-        assertEquals("result", event.getArtifact().name());
+        assertEquals("task-123", event.taskId());
+        assertEquals("context-456", event.contextId());
+        assertEquals("artifact-1", event.artifact().artifactId());
+        assertEquals("result", event.artifact().name());
     }
 
     @Test
@@ -244,9 +244,9 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(Task.class, result);
         Task roundtrippedTask = (Task) result;
-        assertEquals(originalTask.getId(), roundtrippedTask.getId());
-        assertEquals(originalTask.getContextId(), roundtrippedTask.getContextId());
-        assertEquals(originalTask.getStatus().state(), roundtrippedTask.getStatus().state());
+        assertEquals(originalTask.id(), roundtrippedTask.id());
+        assertEquals(originalTask.contextId(), roundtrippedTask.contextId());
+        assertEquals(originalTask.status().state(), roundtrippedTask.status().state());
     }
 
     @Test
@@ -267,8 +267,8 @@ public class StreamResponseMapperTest {
         assertNotNull(result);
         assertInstanceOf(Message.class, result);
         Message roundtrippedMessage = (Message) result;
-        assertEquals(originalMessage.getMessageId(), roundtrippedMessage.getMessageId());
-        assertEquals(originalMessage.getContextId(), roundtrippedMessage.getContextId());
-        assertEquals(originalMessage.getRole(), roundtrippedMessage.getRole());
+        assertEquals(originalMessage.messageId(), roundtrippedMessage.messageId());
+        assertEquals(originalMessage.contextId(), roundtrippedMessage.contextId());
+        assertEquals(originalMessage.role(), roundtrippedMessage.role());
     }
 }

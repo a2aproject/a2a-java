@@ -1,11 +1,5 @@
 package io.a2a.json;
 
-import static com.google.gson.stream.JsonToken.BEGIN_ARRAY;
-import static com.google.gson.stream.JsonToken.BEGIN_OBJECT;
-import static com.google.gson.stream.JsonToken.BOOLEAN;
-import static com.google.gson.stream.JsonToken.NULL;
-import static com.google.gson.stream.JsonToken.NUMBER;
-import static com.google.gson.stream.JsonToken.STRING;
 import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.INTERNAL_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.INVALID_AGENT_RESPONSE_ERROR_CODE;
@@ -591,16 +585,28 @@ public class JsonUtil {
                 out.nullValue();
                 return;
             }
-            // Delegate to Gson's default serialization for the concrete type
+
+            // Serialize the concrete type to a JsonElement
+            com.google.gson.JsonElement jsonElement;
             if (value instanceof TextPart textPart) {
-                delegateGson.toJson(textPart, TextPart.class, out);
+                jsonElement = delegateGson.toJsonTree(textPart, TextPart.class);
             } else if (value instanceof FilePart filePart) {
-                delegateGson.toJson(filePart, FilePart.class, out);
+                jsonElement = delegateGson.toJsonTree(filePart, FilePart.class);
             } else if (value instanceof DataPart dataPart) {
-                delegateGson.toJson(dataPart, DataPart.class, out);
+                jsonElement = delegateGson.toJsonTree(dataPart, DataPart.class);
             } else {
                 throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
             }
+
+
+            // TODO temorary workaround to be fixed in https://github.com/a2aproject/a2a-java/issues/544
+            // Add the "kind" field from getKind() method
+            if (jsonElement.isJsonObject()) {
+                jsonElement.getAsJsonObject().addProperty("kind", value.getKind().asString());
+            }
+
+            // Write the modified JSON
+            delegateGson.toJson(jsonElement, out);
         }
 
         @Override
@@ -666,18 +672,29 @@ public class JsonUtil {
                 out.nullValue();
                 return;
             }
-            // Delegate to Gson's default serialization for the concrete type
+
+            // Serialize the concrete type to a JsonElement
+            com.google.gson.JsonElement jsonElement;
             if (value instanceof Task task) {
-                delegateGson.toJson(task, Task.class, out);
+                jsonElement = delegateGson.toJsonTree(task, Task.class);
             } else if (value instanceof Message message) {
-                delegateGson.toJson(message, Message.class, out);
+                jsonElement = delegateGson.toJsonTree(message, Message.class);
             } else if (value instanceof TaskStatusUpdateEvent event) {
-                delegateGson.toJson(event, TaskStatusUpdateEvent.class, out);
+                jsonElement = delegateGson.toJsonTree(event, TaskStatusUpdateEvent.class);
             } else if (value instanceof TaskArtifactUpdateEvent event) {
-                delegateGson.toJson(event, TaskArtifactUpdateEvent.class, out);
+                jsonElement = delegateGson.toJsonTree(event, TaskArtifactUpdateEvent.class);
             } else {
                 throw new JsonSyntaxException("Unknown StreamingEventKind implementation: " + value.getClass().getName());
             }
+
+            // TODO temorary workaround to be fixed in https://github.com/a2aproject/a2a-java/issues/544
+            // Add the "kind" field from getKind() method
+            if (jsonElement.isJsonObject()) {
+                jsonElement.getAsJsonObject().addProperty("kind", value.kind());
+            }
+
+            // Write the modified JSON
+            delegateGson.toJson(jsonElement, out);
         }
 
         @Override

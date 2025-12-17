@@ -254,8 +254,8 @@ public class JpaPushNotificationConfigStoreTest {
 
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
-        assertTrue(sentBody.contains(task.getId()));
-        assertTrue(sentBody.contains(task.getStatus().state().asString()));
+        assertTrue(sentBody.contains(task.id()));
+        assertTrue(sentBody.contains(task.status().state().asString()));
     }
 
     @Test
@@ -290,8 +290,8 @@ public class JpaPushNotificationConfigStoreTest {
 
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
-        assertTrue(sentBody.contains(task.getId()));
-        assertTrue(sentBody.contains(task.getStatus().state().asString()));
+        assertTrue(sentBody.contains(task.id()));
+        assertTrue(sentBody.contains(task.status().state().asString()));
     }
 
     @Test

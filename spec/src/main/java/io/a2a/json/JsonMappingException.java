@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * <pre>{@code
  * try {
  *     Task task = JsonUtil.fromJson(json, Task.class);
- *     if (task.getId() == null) {
+ *     if (task.id() == null) {
  *         throw new JsonMappingException(null, "Task ID cannot be null");
  *     }
  * } catch (JsonProcessingException e) {

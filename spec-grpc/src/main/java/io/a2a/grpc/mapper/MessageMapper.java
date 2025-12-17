@@ -24,9 +24,9 @@ public interface MessageMapper {
      * Converts domain Message to proto Message.
      * Uses CommonFieldMapper for metadata conversion and ADDER_PREFERRED for lists.
      */
-    @Mapping(target = "messageId", source = "messageId", conditionExpression = "java(domain.getMessageId() != null)")
-    @Mapping(target = "contextId", source = "contextId", conditionExpression = "java(domain.getContextId() != null)")
-    @Mapping(target = "taskId", source = "taskId", conditionExpression = "java(domain.getTaskId() != null)")
+    @Mapping(target = "messageId", source = "messageId", conditionExpression = "java(domain.messageId() != null)")
+    @Mapping(target = "contextId", source = "contextId", conditionExpression = "java(domain.contextId() != null)")
+    @Mapping(target = "taskId", source = "taskId", conditionExpression = "java(domain.taskId() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     io.a2a.grpc.Message toProto(Message domain);
 
