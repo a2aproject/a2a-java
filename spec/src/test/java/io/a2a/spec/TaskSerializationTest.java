@@ -559,10 +559,8 @@ class TaskSerializationTest {
                   "parts": [
                     {
                       "data": {
-                        "data": {
-                          "temperature": 22.5,
-                          "humidity": 65
-                        }
+                        "temperature": 22.5,
+                        "humidity": 65
                       }
                     }
                   ]

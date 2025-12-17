@@ -552,12 +552,9 @@ public class JsonUtil {
                 out.name("file");
                 delegateGson.toJson(filePart.file(), FileContent.class, out);
             } else if (value instanceof DataPart dataPart) {
-                // DataPart: { "data": { "data": {...} } }
-                out.name("data");
-                out.beginObject();
+                // DataPart: { "data": {...} }
                 out.name("data");
                 delegateGson.toJson(dataPart.data(), Map.class, out);
-                out.endObject();
             } else {
                 throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
             }
@@ -589,14 +586,10 @@ public class JsonUtil {
                 // FilePart: { "file": {...} }
                 return new FilePart(delegateGson.fromJson(jsonObject.get("file"), FileContent.class));
             } else if (jsonObject.has("data")) {
-                // DataPart: { "data": { "data": {...} } }
-                com.google.gson.JsonObject dataWrapper = jsonObject.getAsJsonObject("data");
-                if (dataWrapper == null || !dataWrapper.has("data")) {
-                    throw new JsonSyntaxException("DataPart wrapper must contain 'data' field");
-                }
+                // DataPart: { "data": {...} }
                 @SuppressWarnings("unchecked")
                 Map<String, Object> dataMap = delegateGson.fromJson(
-                    dataWrapper.get("data"),
+                    jsonObject.get("data"),
                     new TypeToken<Map<String, Object>>(){}.getType()
                 );
                 return new DataPart(dataMap);
