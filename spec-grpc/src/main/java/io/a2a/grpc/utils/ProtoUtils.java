@@ -139,39 +139,33 @@ public class ProtoUtils {
         }
 
         public static io.a2a.grpc.SendMessageResponse taskOrMessage(EventKind eventKind) {
-            if (eventKind instanceof Task) {
-                return io.a2a.grpc.SendMessageResponse.newBuilder()
+            return switch (eventKind.kind()) {
+                case Task.STREAMING_EVENT_ID -> io.a2a.grpc.SendMessageResponse.newBuilder()
                         .setTask(task((Task) eventKind))
                         .build();
-            } else if (eventKind instanceof Message) {
-                return io.a2a.grpc.SendMessageResponse.newBuilder()
+                case Message.STREAMING_EVENT_ID -> io.a2a.grpc.SendMessageResponse.newBuilder()
                         .setMsg(message((Message) eventKind))
                         .build();
-            } else {
-                throw new IllegalArgumentException("Unsupported event type: " + eventKind);
-            }
+                default -> throw new IllegalArgumentException("Unsupported event type: " + eventKind);
+            };
         }
 
         public static io.a2a.grpc.StreamResponse taskOrMessageStream(StreamingEventKind eventKind) {
-            if (eventKind instanceof Task task) {
-                return io.a2a.grpc.StreamResponse.newBuilder()
-                        .setTask(task(task))
+            return switch (eventKind.kind()) {
+                case Task.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
+                        .setTask(task((Task) eventKind))
                         .build();
-            } else if (eventKind instanceof Message msg) {
-                return io.a2a.grpc.StreamResponse.newBuilder()
-                        .setMsg(message(msg))
+                case Message.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
+                        .setMsg(message((Message) eventKind))
                         .build();
-            } else if (eventKind instanceof TaskArtifactUpdateEvent update) {
-                return io.a2a.grpc.StreamResponse.newBuilder()
-                        .setArtifactUpdate(taskArtifactUpdateEvent(update))
+                case TaskStatusUpdateEvent.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
+                        .setStatusUpdate(taskStatusUpdateEvent((TaskStatusUpdateEvent) eventKind))
                         .build();
-            } else if (eventKind instanceof TaskStatusUpdateEvent update) {
-                return io.a2a.grpc.StreamResponse.newBuilder()
-                        .setStatusUpdate(taskStatusUpdateEvent(update))
+                case TaskArtifactUpdateEvent.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
+                        .setArtifactUpdate(taskArtifactUpdateEvent((TaskArtifactUpdateEvent) eventKind))
                         .build();
-            } else {
-                throw new IllegalArgumentException("Unsupported event type: " + eventKind);
-            }
+                default -> throw new IllegalArgumentException("Unsupported event type: " + eventKind);
+            };
         }
 
         public static io.a2a.grpc.TaskPushNotificationConfig setTaskPushNotificationConfigResponse(TaskPushNotificationConfig config) {

@@ -631,26 +631,16 @@ public class JsonUtil {
             // Write wrapper object with member name as discriminator
             out.beginObject();
 
-            if (value instanceof Task task) {
-                // Task: { "task": {...} }
-                out.name("task");
-                delegateGson.toJson(task, Task.class, out);
-            } else if (value instanceof Message message) {
-                // Message: { "message": {...} }
-                out.name("message");
-                delegateGson.toJson(message, Message.class, out);
-            } else if (value instanceof TaskStatusUpdateEvent event) {
-                // TaskStatusUpdateEvent: { "statusUpdate": {...} } - camelCase per spec
-                out.name("statusUpdate");
-                delegateGson.toJson(event, TaskStatusUpdateEvent.class, out);
-            } else if (value instanceof TaskArtifactUpdateEvent event) {
-                // TaskArtifactUpdateEvent: { "artifactUpdate": {...} } - camelCase per spec
-                out.name("artifactUpdate");
-                delegateGson.toJson(event, TaskArtifactUpdateEvent.class, out);
-            } else {
-                throw new JsonSyntaxException("Unknown StreamingEventKind implementation: " + value.getClass().getName());
-            }
+            Type type = switch (value.kind()) {
+                case Task.STREAMING_EVENT_ID -> Task.class;
+                case Message.STREAMING_EVENT_ID -> Message.class;
+                case TaskStatusUpdateEvent.STREAMING_EVENT_ID -> TaskStatusUpdateEvent.class;
+                case TaskArtifactUpdateEvent.STREAMING_EVENT_ID -> TaskArtifactUpdateEvent.class;
+                default -> throw new JsonSyntaxException("Unknown StreamingEventKind implementation: " + value.getClass().getName());
+            };
 
+            out.name(value.kind());
+            delegateGson.toJson(value, type, out);
             out.endObject();
         }
 
@@ -671,14 +661,16 @@ public class JsonUtil {
             com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
 
             // Check for wrapped member name discriminators (v1.0 protocol - streaming format)
-            if (jsonObject.has("task")) {
-                return delegateGson.fromJson(jsonObject.get("task"), Task.class);
-            } else if (jsonObject.has("message")) {
-                return delegateGson.fromJson(jsonObject.get("message"), Message.class);
-            } else if (jsonObject.has("statusUpdate")) {
-                return delegateGson.fromJson(jsonObject.get("statusUpdate"), TaskStatusUpdateEvent.class);
-            } else if (jsonObject.has("artifactUpdate")) {
-                return delegateGson.fromJson(jsonObject.get("artifactUpdate"), TaskArtifactUpdateEvent.class);
+            if (jsonObject.has(Task.STREAMING_EVENT_ID)) {
+                return delegateGson.fromJson(jsonObject.get(Task.STREAMING_EVENT_ID), Task.class);
+            } else if (jsonObject.has(Message.STREAMING_EVENT_ID)) {
+                return delegateGson.fromJson(jsonObject.get(Message.STREAMING_EVENT_ID), Message.class);
+            } else if (jsonObject.has(TaskStatusUpdateEvent.STREAMING_EVENT_ID)) {
+                return delegateGson.fromJson(
+                        jsonObject.get(TaskStatusUpdateEvent.STREAMING_EVENT_ID), TaskStatusUpdateEvent.class);
+            } else if (jsonObject.has(TaskArtifactUpdateEvent.STREAMING_EVENT_ID)) {
+                return delegateGson.fromJson(
+                        jsonObject.get(TaskArtifactUpdateEvent.STREAMING_EVENT_ID), TaskArtifactUpdateEvent.class);
             }
 
             // Check for unwrapped format (direct Task/Message deserialization)

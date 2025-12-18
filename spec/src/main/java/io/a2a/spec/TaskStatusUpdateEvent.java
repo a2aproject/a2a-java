@@ -5,8 +5,6 @@ import java.util.Map;
 
 import io.a2a.util.Assert;
 
-import static io.a2a.spec.TaskStatusUpdateEvent.STATUS_UPDATE;
-
 /**
  * An event sent by the agent to notify the client of a change in a task's status.
  * This is typically used in streaming or subscription models.
@@ -26,9 +24,9 @@ public record TaskStatusUpdateEvent(
 ) implements EventKind, StreamingEventKind, UpdateEvent {
 
     /**
-     * The kind identifier for status update events: "status-update".
+     * The identifier when used in streaming responses
      */
-    public static final String STATUS_UPDATE = "status-update";
+    public static final String STREAMING_EVENT_ID = "statusUpdate";
 
     /**
      * Compact constructor with validation.
@@ -41,7 +39,7 @@ public record TaskStatusUpdateEvent(
 
     @Override
     public String kind() {
-        return STATUS_UPDATE;
+        return STREAMING_EVENT_ID;
     }
 
     /**

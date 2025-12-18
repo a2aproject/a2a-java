@@ -5,9 +5,6 @@ import java.util.Map;
 
 import io.a2a.util.Assert;
 
-import static io.a2a.spec.Task.TASK;
-import static io.a2a.util.Utils.SPEC_VERSION_1_0;
-
 /**
  * Represents a single, stateful operation or conversation between a client and an agent in the A2A Protocol.
  * <p>
@@ -54,7 +51,10 @@ public record Task(
         Map<String, Object> metadata
 ) implements EventKind, StreamingEventKind {
 
-    public static final String TASK = "task";
+    /**
+     * The identifier when used in streaming responses
+     */
+    public static final String STREAMING_EVENT_ID = "task";
 
     /**
      * Compact constructor with validation and defensive copying.
@@ -72,7 +72,7 @@ public record Task(
 
     @Override
     public String kind() {
-        return TASK;
+        return STREAMING_EVENT_ID;
     }
 
     /**

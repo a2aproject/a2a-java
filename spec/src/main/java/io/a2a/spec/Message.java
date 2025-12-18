@@ -6,9 +6,6 @@ import java.util.UUID;
 
 import io.a2a.util.Assert;
 
-import static io.a2a.spec.Message.MESSAGE;
-import static io.a2a.util.Utils.SPEC_VERSION_1_0;
-
 /**
  * Represents a single message in the conversation between a user and an agent in the A2A Protocol.
  * <p>
@@ -42,7 +39,10 @@ public record Message(Role role, List<Part<?>> parts,
                       Map<String, Object> metadata, List<String> extensions
 ) implements EventKind, StreamingEventKind {
 
-    public static final String MESSAGE = "message";
+    /**
+     * The identifier when used in streaming responses
+     */
+    public static final String STREAMING_EVENT_ID = "message";
 
     /**
      * Compact constructor with validation and defensive copying.
@@ -64,7 +64,7 @@ public record Message(Role role, List<Part<?>> parts,
 
     @Override
     public String kind() {
-        return MESSAGE;
+        return STREAMING_EVENT_ID;
     }
 
     /**

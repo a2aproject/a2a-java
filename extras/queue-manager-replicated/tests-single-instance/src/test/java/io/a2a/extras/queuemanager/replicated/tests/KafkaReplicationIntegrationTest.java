@@ -177,7 +177,7 @@ public class KafkaReplicationIntegrationTest {
         assertEquals(contextId, statusUpdateEvent.contextId(), "Event context ID should match original context ID");
         assertEquals(TaskState.SUBMITTED, statusUpdateEvent.status().state(), "Event should show SUBMITTED state");
         assertFalse(statusUpdateEvent.isFinal(), "Event should show final:false");
-        assertEquals("status-update", statusUpdateEvent.kind(), "Event should indicate status-update type");
+        assertEquals(TaskStatusUpdateEvent.STREAMING_EVENT_ID, statusUpdateEvent.kind(), "Event should indicate status-update type");
     }
 
     @Test

@@ -48,7 +48,7 @@ public sealed interface StreamingEventKind extends Event permits Task, Message, 
      * }
      * }</pre>
      *
-     * @return the event type identifier (e.g., "task", "message", "status-update", "artifact-update")
+     * @return the event type identifier (e.g., "task", "message", "statusUpdate", "artifactUpdate")
      */
     String kind();
 }

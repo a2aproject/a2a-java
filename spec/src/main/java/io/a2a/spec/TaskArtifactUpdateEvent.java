@@ -4,8 +4,6 @@ import java.util.Map;
 
 import io.a2a.util.Assert;
 
-import static io.a2a.spec.TaskArtifactUpdateEvent.ARTIFACT_UPDATE;
-
 /**
  * Event notifying that a task artifact has been created, modified, or appended to.
  * <p>
@@ -50,9 +48,9 @@ public record TaskArtifactUpdateEvent(
 ) implements EventKind, StreamingEventKind, UpdateEvent {
 
     /**
-     * The kind identifier for artifact update events: "artifact-update".
+     * The identifier when used in streaming responses
      */
-    public static final String ARTIFACT_UPDATE = "artifact-update";
+    public static final String STREAMING_EVENT_ID = "artifactUpdate";
 
     /**
      * Compact constructor with validation.
@@ -67,7 +65,7 @@ public record TaskArtifactUpdateEvent(
 
     @Override
     public String kind() {
-        return ARTIFACT_UPDATE;
+        return STREAMING_EVENT_ID;
     }
 
     /**

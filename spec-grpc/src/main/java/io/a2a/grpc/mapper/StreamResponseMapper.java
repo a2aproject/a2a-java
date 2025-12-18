@@ -40,25 +40,22 @@ public interface StreamResponseMapper {
             return null;
         }
 
-        if (domain instanceof Task task) {
-            return io.a2a.grpc.StreamResponse.newBuilder()
-                    .setTask(TaskMapper.INSTANCE.toProto(task))
+        return switch (domain.kind()) {
+            case Task.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
+                    .setTask(TaskMapper.INSTANCE.toProto((Task) domain))
                     .build();
-        } else if (domain instanceof Message message) {
-            return io.a2a.grpc.StreamResponse.newBuilder()
-                    .setMsg(MessageMapper.INSTANCE.toProto(message))
+            case Message.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
+                    .setMsg(MessageMapper.INSTANCE.toProto((Message) domain))
                     .build();
-        } else if (domain instanceof TaskStatusUpdateEvent statusUpdate) {
-            return io.a2a.grpc.StreamResponse.newBuilder()
-                    .setStatusUpdate(TaskStatusUpdateEventMapper.INSTANCE.toProto(statusUpdate))
+            case TaskStatusUpdateEvent.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
+                    .setStatusUpdate(TaskStatusUpdateEventMapper.INSTANCE.toProto((TaskStatusUpdateEvent) domain))
                     .build();
-        } else if (domain instanceof TaskArtifactUpdateEvent artifactUpdate) {
-            return io.a2a.grpc.StreamResponse.newBuilder()
-                    .setArtifactUpdate(TaskArtifactUpdateEventMapper.INSTANCE.toProto(artifactUpdate))
+            case TaskArtifactUpdateEvent.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
+                    .setArtifactUpdate(TaskArtifactUpdateEventMapper.INSTANCE.toProto((TaskArtifactUpdateEvent) domain))
                     .build();
-        }
-
-        throw new IllegalArgumentException("Unknown StreamingEventKind type: " + domain.getClass().getName());
+            default ->
+                    throw new IllegalArgumentException("Unknown StreamingEventKind type: " + domain.getClass().getName());
+        };
     }
 
     /**
