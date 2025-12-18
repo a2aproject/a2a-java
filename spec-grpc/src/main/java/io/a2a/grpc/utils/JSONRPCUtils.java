@@ -304,7 +304,7 @@ public class JSONRPCUtils {
             case ListTaskPushNotificationConfigRequest.METHOD -> {
                 io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                return new ListTaskPushNotificationConfigResponse(id, ProtoUtils.FromProto.listTaskPushNotificationConfigParams(builder));
+                return new ListTaskPushNotificationConfigResponse(id, ProtoUtils.FromProto.listTaskPushNotificationConfigResult(builder));
             }
             case DeleteTaskPushNotificationConfigRequest.METHOD -> {
                 return new DeleteTaskPushNotificationConfigResponse(id);

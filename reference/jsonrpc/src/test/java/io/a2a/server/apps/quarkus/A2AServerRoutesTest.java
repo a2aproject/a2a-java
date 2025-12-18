@@ -2,6 +2,7 @@ package io.a2a.server.apps.quarkus;
 
 import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +34,7 @@ import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.GetTaskResponse;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigResponse;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.SendMessageRequest;
 import io.a2a.spec.SendMessageResponse;
@@ -421,7 +423,7 @@ public class A2AServerRoutesTest {
                         .build(),
                 null
         );
-        ListTaskPushNotificationConfigResponse realResponse = new ListTaskPushNotificationConfigResponse("1", Collections.singletonList(config));
+        ListTaskPushNotificationConfigResponse realResponse = new ListTaskPushNotificationConfigResponse("1", new ListTaskPushNotificationConfigResult(singletonList(config)));
         when(mockJsonRpcHandler.listPushNotificationConfig(any(ListTaskPushNotificationConfigRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);
 

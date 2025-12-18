@@ -301,7 +301,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
-        RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(MINIMAL_TASK.id(), "", callContext);
+        RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(MINIMAL_TASK.id(), 0, "", "", callContext);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());

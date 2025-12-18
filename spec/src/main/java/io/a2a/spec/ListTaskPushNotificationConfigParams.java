@@ -1,6 +1,5 @@
 package io.a2a.spec;
 
-
 import io.a2a.util.Assert;
 
 /**
@@ -15,7 +14,7 @@ import io.a2a.util.Assert;
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record ListTaskPushNotificationConfigParams(String id, String tenant) {
+public record ListTaskPushNotificationConfigParams(String id, int pageSize, String pageToken, String tenant) {
 
     /**
      * Compact constructor for validation.
@@ -24,7 +23,7 @@ public record ListTaskPushNotificationConfigParams(String id, String tenant) {
      * @param id the task identifier
      * @param tenant the tenant identifier
      */
-    public ListTaskPushNotificationConfigParams {
+    public ListTaskPushNotificationConfigParams    {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("tenant", tenant);
     }
@@ -35,6 +34,6 @@ public record ListTaskPushNotificationConfigParams(String id, String tenant) {
      * @param id the task identifier (required)
      */
     public ListTaskPushNotificationConfigParams(String id) {
-        this(id, "");
+        this(id, 0, "", "");
     }
 }

@@ -55,11 +55,16 @@ import io.a2a.spec.SendMessageRequest;
 import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import io.a2a.spec.SubscribeToTaskRequest;
+import io.a2a.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 @Singleton
 @Authenticated
 public class A2AServerRoutes {
+
+    private static final String HISTORY_LENGTH_PARAM = "historyLength";
+    private static final String PAGE_SIZE_PARAM = "pageSize";
+    private static final String PAGE_TOKEN_PARAM = "pageToken";
 
     @Inject
     RestHandler jsonRestHandler;
@@ -125,9 +130,9 @@ public class A2AServerRoutes {
             if (statusStr != null && !statusStr.isEmpty()) {
                 statusStr = statusStr.toUpperCase();
             }
-            String pageSizeStr = rc.request().params().get("pageSize");
-            String pageToken = rc.request().params().get("pageToken");
-            String historyLengthStr = rc.request().params().get("historyLength");
+            String pageSizeStr = rc.request().params().get(PAGE_SIZE_PARAM);
+            String pageToken = rc.request().params().get(PAGE_TOKEN_PARAM);
+            String historyLengthStr = rc.request().params().get(HISTORY_LENGTH_PARAM);
             String lastUpdatedAfter = rc.request().params().get("lastUpdatedAfter");
             String includeArtifactsStr = rc.request().params().get("includeArtifacts");
 
@@ -170,13 +175,13 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
                 Integer historyLength = null;
-                if (rc.request().params().contains("history_length")) {
-                    historyLength = Integer.valueOf(rc.request().params().get("history_length"));
+                if (rc.request().params().contains(HISTORY_LENGTH_PARAM)) {
+                    historyLength = Integer.valueOf(rc.request().params().get(HISTORY_LENGTH_PARAM));
                 }
                 response = jsonRestHandler.getTask(taskId, historyLength, extractTenant(rc), context);
             }
         } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad history_length"));
+            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad historyLength"));
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
@@ -312,8 +317,18 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, extractTenant(rc), context);
+                 int pageSize = 0;
+                if (rc.request().params().contains(PAGE_SIZE_PARAM)) {
+                    pageSize = Integer.parseInt(rc.request().params().get(PAGE_SIZE_PARAM));
+                }
+                String pageToken = "";
+                if (rc.request().params().contains(PAGE_TOKEN_PARAM)) {
+                    pageToken = Utils.defaultIfNull(rc.request().params().get(PAGE_TOKEN_PARAM), "");
+                }
+                response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, pageSize, pageToken, extractTenant(rc), context);
             }
+        } catch (NumberFormatException e) {
+            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
@@ -355,6 +370,7 @@ public class A2AServerRoutes {
         }
         return tenantPath;
     }
+
     /**
      * /**
      * Handles incoming GET requests to the agent card endpoint.

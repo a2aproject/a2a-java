@@ -34,6 +34,7 @@ import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigResponse;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksRequest;
 import io.a2a.spec.ListTasksResponse;
 import io.a2a.spec.ListTasksResult;
@@ -210,9 +211,9 @@ public class JSONRPCHandler {
                     new PushNotificationNotSupportedError());
         }
         try {
-            List<TaskPushNotificationConfig> pushNotificationConfigList =
+            ListTaskPushNotificationConfigResult result =
                     requestHandler.onListTaskPushNotificationConfig(request.getParams(), context);
-            return new ListTaskPushNotificationConfigResponse(request.getId(), pushNotificationConfigList);
+            return new ListTaskPushNotificationConfigResponse(request.getId(), result);
         } catch (JSONRPCError e) {
             return new ListTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {

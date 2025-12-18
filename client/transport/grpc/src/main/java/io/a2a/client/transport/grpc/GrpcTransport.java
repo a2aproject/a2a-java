@@ -29,6 +29,7 @@ import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTasksRequest;
 import io.a2a.spec.ListTasksResult;
@@ -265,7 +266,7 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+    public ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request,
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
@@ -273,15 +274,16 @@ public class GrpcTransport implements ClientTransport {
         io.a2a.grpc.ListTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder()
                 .setParent("tasks/" + request.id())
                 .setTenant(resolveTenant(request.tenant()))
+                .setPageSize(request.pageSize())
+                .setPageToken(request.pageToken())
                 .build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(ListTaskPushNotificationConfigRequest.METHOD,
                 grpcRequest, agentCard, context);
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return stubWithMetadata.listTaskPushNotificationConfig(grpcRequest).getConfigsList().stream()
-                    .map(FromProto::taskPushNotificationConfig)
-                    .collect(Collectors.toList());
+            io.a2a.grpc.ListTaskPushNotificationConfigResponse grpcResponse = stubWithMetadata.listTaskPushNotificationConfig(grpcRequest);
+            return FromProto.listTaskPushNotificationConfigResult(grpcResponse);
         } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to list task push notification config: ");
         }

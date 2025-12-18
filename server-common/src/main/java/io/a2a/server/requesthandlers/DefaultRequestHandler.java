@@ -52,6 +52,7 @@ import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.Message;
@@ -637,7 +638,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
-    public List<TaskPushNotificationConfig> onListTaskPushNotificationConfig(
+    public ListTaskPushNotificationConfigResult onListTaskPushNotificationConfig(
             ListTaskPushNotificationConfigParams params, ServerCallContext context) throws JSONRPCError {
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
@@ -656,7 +657,8 @@ public class DefaultRequestHandler implements RequestHandler {
                 taskPushNotificationConfigList.add(taskPushNotificationConfig);
             }
         }
-        return taskPushNotificationConfigList;
+        // Return result without pagination for now (pagination can be implemented in the store later)
+        return new ListTaskPushNotificationConfigResult(taskPushNotificationConfigList, null);
     }
 
     @Override

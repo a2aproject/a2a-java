@@ -10,6 +10,7 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.MessageSendParams;
@@ -102,14 +103,14 @@ public interface ClientTransport {
             @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
-     * Retrieve the list of push notification configurations for a specific task.
+     * Retrieve the list of push notification configurations for a specific task with pagination support.
      *
      * @param request the parameters specifying which task's notification configs to retrieve
      * @param context optional client call context for the request (may be {@code null})
-     * @return the list of task push notification configs
+     * @return the result containing the list of task push notification configs and pagination information
      * @throws A2AClientException if getting the task push notification configs fails for any reason
      */
-    List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+    ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request,
             @Nullable ClientCallContext context) throws A2AClientException;
 

@@ -1361,7 +1361,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         assertEquals("111", listResponse.getId());
         assertEquals(1, listResponse.getResult().size());
-        assertEquals(result, listResponse.getResult().get(0));
+        assertEquals(result, listResponse.getResult().configs().get(0));
     }
 
     @Test

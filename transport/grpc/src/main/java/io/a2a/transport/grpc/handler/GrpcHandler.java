@@ -41,6 +41,7 @@ import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.PushNotificationNotSupportedError;
@@ -208,13 +209,9 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         try {
             ServerCallContext context = createCallContext(responseObserver);
             ListTaskPushNotificationConfigParams params = FromProto.listTaskPushNotificationConfigParams(request);
-            List<TaskPushNotificationConfig> configList = getRequestHandler().onListTaskPushNotificationConfig(params, context);
-            io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder responseBuilder =
-                io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder();
-            for (TaskPushNotificationConfig config : configList) {
-                responseBuilder.addConfigs(ToProto.taskPushNotificationConfig(config));
-            }
-            responseObserver.onNext(responseBuilder.build());
+            ListTaskPushNotificationConfigResult result = getRequestHandler().onListTaskPushNotificationConfig(params, context);
+            io.a2a.grpc.ListTaskPushNotificationConfigResponse response = ToProto.listTaskPushNotificationConfigResponse(result);
+            responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);

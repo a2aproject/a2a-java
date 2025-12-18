@@ -1,31 +1,31 @@
 package io.a2a.spec;
 
-import java.util.List;
-
 /**
- * JSON-RPC response containing all push notification configurations for a task.
+ * JSON-RPC response containing all push notification configurations for a task with pagination support.
  * <p>
- * This response returns a list of all {@link TaskPushNotificationConfig} entries
- * configured for the requested task, showing all active notification endpoints.
+ * This response returns a {@link ListTaskPushNotificationConfigResult} containing
+ * {@link TaskPushNotificationConfig} entries configured for the requested task,
+ * showing all active notification endpoints with optional pagination information.
  * <p>
  * If an error occurs, the error field will contain a {@link JSONRPCError}.
  *
  * @see ListTaskPushNotificationConfigRequest for the corresponding request
+ * @see ListTaskPushNotificationConfigResult for the result structure
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class ListTaskPushNotificationConfigResponse extends JSONRPCResponse<List<TaskPushNotificationConfig>> {
+public final class ListTaskPushNotificationConfigResponse extends JSONRPCResponse<ListTaskPushNotificationConfigResult> {
 
     /**
      * Constructs response with all parameters.
      *
      * @param jsonrpc the JSON-RPC version
      * @param id the request ID
-     * @param result the list of push notification configurations
+     * @param result the result containing list of push notification configurations and pagination info
      * @param error the error (if any)
      */
-    public ListTaskPushNotificationConfigResponse(String jsonrpc, Object id, List<TaskPushNotificationConfig> result, JSONRPCError error) {
-        super(jsonrpc, id, result, error, (Class<List<TaskPushNotificationConfig>>) (Class<?>) List.class);
+    public ListTaskPushNotificationConfigResponse(String jsonrpc, Object id, ListTaskPushNotificationConfigResult result, JSONRPCError error) {
+        super(jsonrpc, id, result, error, ListTaskPushNotificationConfigResult.class);
     }
 
     /**
@@ -42,10 +42,10 @@ public final class ListTaskPushNotificationConfigResponse extends JSONRPCRespons
      * Constructs success response.
      *
      * @param id the request ID
-     * @param result the list of push notification configurations
+     * @param result the result containing list of push notification configurations and pagination info
      */
-    public ListTaskPushNotificationConfigResponse(Object id, List<TaskPushNotificationConfig> result) {
-        this(null, id,  result, null);
+    public ListTaskPushNotificationConfigResponse(Object id, ListTaskPushNotificationConfigResult result) {
+        this(null, id, result, null);
     }
 
 }

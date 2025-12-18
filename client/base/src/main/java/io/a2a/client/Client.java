@@ -16,6 +16,7 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.Message;
@@ -108,7 +109,7 @@ public class Client extends AbstractClient {
     }
 
     @Override
-    public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+    public ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         return clientTransport.listTaskPushNotificationConfigurations(request, context);
     }

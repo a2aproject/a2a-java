@@ -22,7 +22,6 @@ public interface ListTaskPushNotificationConfigParamsMapper {
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", expression = "java(ResourceNameParser.extractParentId(proto.getParent()))")
-    @Mapping(target = "tenant", source = "tenant")
     ListTaskPushNotificationConfigParams fromProto(io.a2a.grpc.ListTaskPushNotificationConfigRequest proto);
 
     /**
@@ -30,7 +29,5 @@ public interface ListTaskPushNotificationConfigParamsMapper {
      * Constructs the parent field from task ID.
      */
     @Mapping(target = "parent", expression = "java(ResourceNameParser.defineTaskName(domain.id()))")
-    @Mapping(target = "pageSize", ignore = true)
-    @Mapping(target = "pageToken", ignore = true)
     io.a2a.grpc.ListTaskPushNotificationConfigRequest toProto(ListTaskPushNotificationConfigParams domain);
 }

@@ -29,6 +29,7 @@ import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTasksResult;
 import io.a2a.spec.Message;
@@ -126,12 +127,16 @@ public class ProtoUtils {
             return MessageSendParamsMapper.INSTANCE.toProto(request);
         }
 
-        public static io.a2a.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfigResponse(List<TaskPushNotificationConfig> configs) {
-            List<io.a2a.grpc.TaskPushNotificationConfig> confs = new ArrayList<>(configs.size());
-            for (TaskPushNotificationConfig config : configs) {
+        public static io.a2a.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfigResponse(ListTaskPushNotificationConfigResult result) {
+            List<io.a2a.grpc.TaskPushNotificationConfig> confs = new ArrayList<>(result.configs().size());
+            for (TaskPushNotificationConfig config : result.configs()) {
                 confs.add(taskPushNotificationConfig(config));
             }
-            return io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder().addAllConfigs(confs).build();
+            io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder().addAllConfigs(confs);
+            if (result.nextPageToken() != null) {
+                builder.setNextPageToken(result.nextPageToken());
+            }
+            return builder.build();
         }
 
         public static StreamResponse streamResponse(StreamingEventKind streamingEventKind) {
@@ -254,13 +259,17 @@ public class ProtoUtils {
             return convert(() -> TaskIdParamsMapper.INSTANCE.fromProtoSubscribeToTaskRequest(reqProto));
         }
 
-        public static List<TaskPushNotificationConfig> listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigResponseOrBuilder response) {
+        public static ListTaskPushNotificationConfigResult listTaskPushNotificationConfigResult(io.a2a.grpc.ListTaskPushNotificationConfigResponseOrBuilder response) {
             List<io.a2a.grpc.TaskPushNotificationConfig> configs = response.getConfigsList();
             List<TaskPushNotificationConfig> result = new ArrayList<>(configs.size());
             for (io.a2a.grpc.TaskPushNotificationConfig config : configs) {
                 result.add(taskPushNotificationConfig(config));
             }
-            return result;
+            String nextPageToken = response.getNextPageToken();
+            if (nextPageToken != null && nextPageToken.isEmpty()) {
+                nextPageToken = null;
+            }
+            return new ListTaskPushNotificationConfigResult(result, nextPageToken);
         }
 
         public static ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigRequestOrBuilder request) {

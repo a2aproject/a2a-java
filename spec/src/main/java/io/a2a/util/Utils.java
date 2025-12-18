@@ -72,7 +72,7 @@ public class Utils {
      * @param defaultValue the default value to return if value is null
      * @return value if non-null, otherwise defaultValue
      */
-    public static <T> T defaultIfNull(T value, T defaultValue) {
+    public static <T> T defaultIfNull(@Nullable T value, T defaultValue) {
         if (value == null) {
             return defaultValue;
         }

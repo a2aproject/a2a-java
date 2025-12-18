@@ -45,6 +45,7 @@ import io.a2a.spec.JSONRPCResponse;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigResponse;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTasksRequest;
 import io.a2a.spec.ListTasksResponse;
@@ -222,7 +223,7 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public List<TaskPushNotificationConfig> listTaskPushNotificationConfigurations(
+    public ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(
             ListTaskPushNotificationConfigParams request,
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
