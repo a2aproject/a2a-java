@@ -517,8 +517,8 @@ public class JsonUtil {
     /**
      * Gson TypeAdapter for serializing and deserializing {@link Part} and its subclasses.
      * <p>
-     * This adapter handles polymorphic deserialization based on the "kind" field, creating the
-     * appropriate subclass instance (TextPart, FilePart, or DataPart).
+     * This adapter handles polymorphic deserialization, creating the
+     * appropriate subclass instance (TextPart, FilePart, or DataPart) based on available fields.
      * <p>
      * The adapter uses a two-pass approach: first reads the JSON as a tree to inspect the "kind"
      * field, then deserializes to the appropriate concrete type.

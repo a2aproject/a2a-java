@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -247,6 +248,7 @@ class TaskSerializationTest {
 
         // Verify JSON contains file part data (v1.0 format uses member name "file", not "kind")
         assertTrue(json.contains("\"file\""));
+        assertFalse(json.contains("\"kind\""));
         assertTrue(json.contains("document.pdf"));
         assertTrue(json.contains("application/pdf"));
 
@@ -284,6 +286,7 @@ class TaskSerializationTest {
 
         // Verify JSON contains URI
         assertTrue(json.contains("https://example.com/photo.png"));
+        assertFalse(json.contains("\"kind\"")); // Removed in spec 1.0
 
         // Deserialize
         Task deserialized = JsonUtil.fromJson(json, Task.class);
@@ -318,6 +321,7 @@ class TaskSerializationTest {
 
         // Verify JSON contains data part (v1.0 format uses member name "data", not "kind")
         assertTrue(json.contains("\"data\""));
+        assertFalse(json.contains("\"kind\""));
         assertTrue(json.contains("temperature"));
 
         // Deserialize
