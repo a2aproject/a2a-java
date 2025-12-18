@@ -1,5 +1,7 @@
 package io.a2a.server.tasks;
 
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -10,14 +12,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jspecify.annotations.Nullable;
-
 import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.TaskPushNotificationConfig;
 
 /**
  * In-memory implementation of the PushNotificationConfigStore interface.
  *
- *     Stores push notification configurations in memory
+ * Stores push notification configurations in memory
  */
 @ApplicationScoped
 public class InMemoryPushNotificationConfigStore implements PushNotificationConfigStore {
@@ -51,8 +52,48 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     }
 
     @Override
-    public @Nullable List<PushNotificationConfig> getInfo(String taskId) {
-        return pushNotificationInfos.get(taskId);
+    public ListTaskPushNotificationConfigResult getInfo(ListTaskPushNotificationConfigParams params) {
+        List<PushNotificationConfig> configs = pushNotificationInfos.get(params.id());
+        if (configs == null) {
+            return new ListTaskPushNotificationConfigResult(Collections.emptyList());
+        }
+        if (params.pageSize() <= 0) {
+            return new ListTaskPushNotificationConfigResult(convertPushNotificationConfig(configs, params), null);
+        }
+        if (params.pageToken() != null && !params.pageToken().isBlank()) {
+            //find first index
+            int index = findFirstIndex(configs, params.pageToken());
+            if (index < configs.size()) {
+                configs = configs.subList(index, configs.size());
+            }
+        }
+        if (configs.size() <= params.pageSize()) {
+            return new ListTaskPushNotificationConfigResult(convertPushNotificationConfig(configs, params), null);
+        }
+        String newToken = configs.get(params.pageSize()).token();
+        return new ListTaskPushNotificationConfigResult(convertPushNotificationConfig(configs.subList(0, params.pageSize()), params), newToken);
+    }
+
+    private int findFirstIndex(List<PushNotificationConfig> configs, String token) {
+        //find first index
+        Iterator<PushNotificationConfig> iter = configs.iterator();
+        int index = 0;
+        while (iter.hasNext()) {
+            if (token.equals(iter.next().token())) {
+                return index;
+            }
+            index++;
+        }
+        return index;
+    }
+
+    private List<TaskPushNotificationConfig> convertPushNotificationConfig(List<PushNotificationConfig> pushNotificationConfigList, ListTaskPushNotificationConfigParams params) {
+        List<TaskPushNotificationConfig> taskPushNotificationConfigList = new ArrayList<>(pushNotificationConfigList.size());
+        for (PushNotificationConfig pushNotificationConfig : pushNotificationConfigList) {
+            TaskPushNotificationConfig taskPushNotificationConfig = new TaskPushNotificationConfig(params.id(), pushNotificationConfig, params.tenant());
+            taskPushNotificationConfigList.add(taskPushNotificationConfig);
+        }
+        return taskPushNotificationConfigList;
     }
 
     @Override

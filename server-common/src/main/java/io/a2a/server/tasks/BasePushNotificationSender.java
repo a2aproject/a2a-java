@@ -12,11 +12,12 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import io.a2a.json.JsonProcessingException;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.json.JsonUtil;
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 
@@ -44,14 +45,14 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     @Override
     public void sendNotification(Task task) {
-        List<PushNotificationConfig> pushConfigs = configStore.getInfo(task.id());
+        ListTaskPushNotificationConfigResult pushConfigs = configStore.getInfo(new ListTaskPushNotificationConfigParams(task.id()));
         if (pushConfigs == null || pushConfigs.isEmpty()) {
             return;
         }
 
-        List<CompletableFuture<Boolean>> dispatchResults = pushConfigs
+        List<CompletableFuture<Boolean>> dispatchResults = pushConfigs.configs()
                 .stream()
-                .map(pushConfig -> dispatch(task, pushConfig))
+                .map(pushConfig -> dispatch(task, pushConfig.pushNotificationConfig()))
                 .toList();
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(dispatchResults.toArray(new CompletableFuture[0]));
         CompletableFuture<Boolean> dispatchResult = allFutures.thenApply(v -> dispatchResults.stream()

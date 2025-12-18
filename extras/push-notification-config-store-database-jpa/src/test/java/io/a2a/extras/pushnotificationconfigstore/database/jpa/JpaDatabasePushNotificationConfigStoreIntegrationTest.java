@@ -3,10 +3,12 @@ package io.a2a.extras.pushnotificationconfigstore.database.jpa;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Queue;
@@ -23,6 +25,8 @@ import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.Message;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
@@ -181,5 +185,236 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         assertThrows(A2AClientException.class, () -> {
             client.getTaskPushNotificationConfiguration(new GetTaskPushNotificationConfigParams(taskId));
         }, "Getting a deleted config should throw an A2AClientException");
+    }
+
+    private PushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
+        return PushNotificationConfig.builder()
+                .url(url)
+                .id(configId)
+                .token(token)
+                .build();
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationWithPageSize() {
+        String taskId = "task_pagination_" + System.currentTimeMillis();
+        // Create 5 configs
+        for (int i = 0; i < 5; i++) {
+            PushNotificationConfig config = createSamplePushConfig(
+                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            pushNotificationConfigStore.setInfo(taskId, config);
+        }
+
+        // Request first page with pageSize=2
+        ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
+
+        assertNotNull(result);
+        assertEquals(2, result.configs().size(), "Should return 2 configs");
+        assertNotNull(result.nextPageToken(), "Should have nextPageToken when more items exist");
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationWithPageToken() {
+        String taskId = "task_pagination_token_" + System.currentTimeMillis();
+        // Create 5 configs
+        createSamples(taskId, 5);
+
+        // Get first page
+        ListTaskPushNotificationConfigParams firstPageParams = new ListTaskPushNotificationConfigParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigResult firstPage = pushNotificationConfigStore.getInfo(firstPageParams);
+        assertNotNull(firstPage.nextPageToken());
+
+        // Get second page using nextPageToken
+        ListTaskPushNotificationConfigParams secondPageParams = new ListTaskPushNotificationConfigParams(
+                taskId, 2, firstPage.nextPageToken(), "");
+        ListTaskPushNotificationConfigResult secondPage = pushNotificationConfigStore.getInfo(secondPageParams);
+
+        assertNotNull(secondPage);
+        assertEquals(2, secondPage.configs().size(), "Should return 2 configs for second page");
+        assertNotNull(secondPage.nextPageToken(), "Should have nextPageToken when more items exist");
+
+        // Verify NO overlap between pages - collect all IDs from both pages
+        List<String> firstPageIds = firstPage.configs().stream()
+                .map(c -> c.pushNotificationConfig().id())
+                .toList();
+        List<String> secondPageIds = secondPage.configs().stream()
+                .map(c -> c.pushNotificationConfig().id())
+                .toList();
+
+        // Check that no ID from first page appears in second page
+        for (String id : firstPageIds) {
+            assertTrue(!secondPageIds.contains(id),
+                "Config " + id + " appears in both pages - overlap detected!");
+        }
+
+        // Also verify the pages are sequential (first page ends before second page starts)
+        // Since configs are created in order, we can verify the IDs
+        assertEquals("cfg0", firstPageIds.get(0));
+        assertEquals("cfg1", firstPageIds.get(1));
+        assertEquals("cfg2", secondPageIds.get(0));
+        assertEquals("cfg3", secondPageIds.get(1));
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationLastPage() {
+        String taskId = "task_pagination_last_" + System.currentTimeMillis();
+        // Create 5 configs
+        createSamples(taskId, 5);
+
+        // Get first page (2 items)
+        ListTaskPushNotificationConfigParams firstPageParams = new ListTaskPushNotificationConfigParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigResult firstPage = pushNotificationConfigStore.getInfo(firstPageParams);
+
+        // Get second page (2 items)
+        ListTaskPushNotificationConfigParams secondPageParams = new ListTaskPushNotificationConfigParams(
+                taskId, 2, firstPage.nextPageToken(), "");
+        ListTaskPushNotificationConfigResult secondPage = pushNotificationConfigStore.getInfo(secondPageParams);
+
+        // Get last page (1 item remaining)
+        ListTaskPushNotificationConfigParams lastPageParams = new ListTaskPushNotificationConfigParams(
+                taskId, 2, secondPage.nextPageToken(), "");
+        ListTaskPushNotificationConfigResult lastPage = pushNotificationConfigStore.getInfo(lastPageParams);
+
+        assertNotNull(lastPage);
+        assertEquals(1, lastPage.configs().size(), "Last page should have 1 remaining config");
+        assertNull(lastPage.nextPageToken(), "Last page should not have nextPageToken");
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationWithZeroPageSize() {
+        String taskId = "task_pagination_zero_" + System.currentTimeMillis();
+        // Create 5 configs
+        createSamples(taskId, 5);
+
+        // Request with pageSize=0 should return all configs
+        ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, 0, "", "");
+        ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
+
+        assertNotNull(result);
+        assertEquals(5, result.configs().size(), "Should return all 5 configs when pageSize=0");
+        assertNull(result.nextPageToken(), "Should not have nextPageToken when returning all");
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationWithNegativePageSize() {
+        String taskId = "task_pagination_negative_" + System.currentTimeMillis();
+        // Create 3 configs
+        createSamples(taskId, 3);
+
+        // Request with negative pageSize should return all configs
+        ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, -1, "", "");
+        ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
+
+        assertNotNull(result);
+        assertEquals(3, result.configs().size(), "Should return all configs when pageSize is negative");
+        assertNull(result.nextPageToken(), "Should not have nextPageToken when returning all");
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationPageSizeLargerThanConfigs() {
+        String taskId = "task_pagination_large_" + System.currentTimeMillis();
+        // Create 3 configs
+        createSamples(taskId, 3);
+
+        // Request with pageSize larger than available configs
+        ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, 10, "", "");
+        ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
+
+        assertNotNull(result);
+        assertEquals(3, result.configs().size(), "Should return all 3 configs");
+        assertNull(result.nextPageToken(), "Should not have nextPageToken when all configs fit in one page");
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationExactlyPageSize() {
+        String taskId = "task_pagination_exact_" + System.currentTimeMillis();
+        // Create exactly 3 configs
+        createSamples(taskId, 3);
+
+        // Request with pageSize equal to number of configs
+        ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, 3, "", "");
+        ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
+
+        assertNotNull(result);
+        assertEquals(3, result.configs().size(), "Should return all 3 configs");
+        assertNull(result.nextPageToken(), "Should not have nextPageToken when configs exactly match pageSize");
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationWithInvalidToken() {
+        String taskId = "task_pagination_invalid_token_" + System.currentTimeMillis();
+        // Create 5 configs
+        createSamples(taskId, 5);
+
+        // Request with invalid pageToken - JPA implementation behavior is to start from beginning
+        ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(
+                taskId, 2, "invalid_token_that_does_not_exist", "");
+        ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
+
+        assertNotNull(result);
+        // When token is not found, implementation starts from beginning
+        assertEquals(2, result.configs().size(), "Should return first page when token is not found");
+        assertNotNull(result.nextPageToken(), "Should have nextPageToken since more items exist");
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationEmptyTaskWithPageSize() {
+        String taskId = "task_pagination_empty_" + System.currentTimeMillis();
+        // No configs created
+
+        ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, 2, "", "");
+        ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
+
+        assertNotNull(result);
+        assertTrue(result.configs().isEmpty(), "Should return empty list for non-existent task");
+        assertNull(result.nextPageToken(), "Should not have nextPageToken for empty result");
+    }
+
+    @Test
+    @Transactional
+    public void testPaginationFullIteration() {
+        String taskId = "task_pagination_full_" + System.currentTimeMillis();
+        // Create 7 configs
+        createSamples(taskId, 7);
+
+        // Iterate through all pages with pageSize=3
+        int totalCollected = 0;
+        String pageToken = "";
+        int pageCount = 0;
+
+        do {
+            ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, 3, pageToken, "");
+            ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
+
+            totalCollected += result.configs().size();
+            pageToken = result.nextPageToken();
+            pageCount++;
+
+            // Safety check to prevent infinite loop
+            assertTrue(pageCount <= 7, "Should not have more than 7 pages for 7 configs");
+
+        } while (pageToken != null);
+
+        assertEquals(7, totalCollected, "Should collect all 7 configs across all pages");
+        assertEquals(3, pageCount, "Should have exactly 3 pages (3+3+1)");
+    }
+
+    private void createSamples(String taskId, int size) {
+        // Create 7 configs
+        for (int i = 0; i < size; i++) {
+            PushNotificationConfig config = createSamplePushConfig(
+                    "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
+            pushNotificationConfigStore.setInfo(taskId, config);
+        }
     }
 }

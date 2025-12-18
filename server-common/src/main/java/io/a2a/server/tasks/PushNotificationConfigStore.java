@@ -1,8 +1,8 @@
 package io.a2a.server.tasks;
 
-import java.util.List;
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 
-import org.jspecify.annotations.Nullable;
 
 import io.a2a.spec.PushNotificationConfig;
 
@@ -22,9 +22,9 @@ public interface PushNotificationConfigStore {
     /**
      * Retrieves the push notification configuration for a task.
      * @param taskId the task ID
-     * @return the push notification configurations for a task, or null if not found
+     * @return the push notification configurations for a task, or with emty list if not found
      */
-    @Nullable List<PushNotificationConfig> getInfo(String taskId);
+    ListTaskPushNotificationConfigResult getInfo(ListTaskPushNotificationConfigParams params);
 
     /**
      * Deletes the push notification configuration for a task.

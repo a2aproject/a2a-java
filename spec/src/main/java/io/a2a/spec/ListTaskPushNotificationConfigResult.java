@@ -11,10 +11,8 @@ import java.util.List;
  * @param configs List of push notification configurations for the task
  * @param nextPageToken Token for retrieving the next page of results (null if no more results)
  */
-public record ListTaskPushNotificationConfigResult(
-        List<TaskPushNotificationConfig> configs,
-        @Nullable String nextPageToken
-) {
+public record ListTaskPushNotificationConfigResult(List<TaskPushNotificationConfig> configs,
+        @Nullable String nextPageToken) {
     /**
      * Compact constructor for validation.
      * Validates parameters and creates a defensive copy of the configs list.
@@ -47,7 +45,19 @@ public record ListTaskPushNotificationConfigResult(
         return nextPageToken != null && !nextPageToken.isEmpty();
     }
 
+    /**
+     * Return the size of the configs.
+     * @return the size of the configs.
+     */
     public int size() {
         return configs.size();
+    }
+
+    /**
+     * Return if the configs is empty or not.
+     * @return true if the configs is empty - false otherwise.
+     */
+    public boolean isEmpty() {
+        return configs.isEmpty();
     }
 }

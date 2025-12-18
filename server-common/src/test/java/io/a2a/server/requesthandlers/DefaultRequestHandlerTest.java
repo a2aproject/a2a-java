@@ -22,6 +22,8 @@ import io.a2a.server.tasks.InMemoryPushNotificationConfigStore;
 import io.a2a.server.tasks.InMemoryTaskStore;
 import io.a2a.server.tasks.TaskUpdater;
 import io.a2a.spec.JSONRPCError;
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
@@ -863,12 +865,13 @@ public class DefaultRequestHandlerTest {
         assertEquals(taskId, returnedTask.id());
 
         // THE KEY ASSERTION: Verify pushNotificationConfig was stored
-        List<PushNotificationConfig> storedConfigs = pushConfigStore.getInfo(taskId);
+        ListTaskPushNotificationConfigResult storedConfigs = pushConfigStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertNotNull(storedConfigs, "Push notification config should be stored for new task");
         assertEquals(1, storedConfigs.size(),
             "Should have exactly 1 push config stored");
-        assertEquals("config-1", storedConfigs.get(0).id());
-        assertEquals("https://example.com/webhook", storedConfigs.get(0).url());
+        PushNotificationConfig storedConfig = storedConfigs.configs().get(0).pushNotificationConfig();
+        assertEquals("config-1", storedConfig.id());
+        assertEquals("https://example.com/webhook", storedConfig.url());
     }
 
     /**
@@ -940,13 +943,12 @@ public class DefaultRequestHandlerTest {
         assertTrue(result instanceof Task, "Result should be a Task");
 
         // Verify pushNotificationConfig was stored (initMessageSend path)
-        List<PushNotificationConfig> storedConfigs = pushConfigStore.getInfo(taskId);
-        assertNotNull(storedConfigs,
-            "Push notification config should be stored for existing task");
-        assertEquals(1, storedConfigs.size(),
-            "Should have exactly 1 push config stored");
-        assertEquals("config-existing-1", storedConfigs.get(0).id());
-        assertEquals("https://example.com/existing-webhook", storedConfigs.get(0).url());
+        ListTaskPushNotificationConfigResult storedConfigs = pushConfigStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
+        assertNotNull(storedConfigs,"Push notification config should be stored for existing task");
+        assertEquals(1, storedConfigs.size(),"Should have exactly 1 push config stored");
+        PushNotificationConfig storedConfig = storedConfigs.configs().get(0).pushNotificationConfig();
+        assertEquals("config-existing-1", storedConfig.id());
+        assertEquals("https://example.com/existing-webhook", storedConfig.url());
     }
 
     /**

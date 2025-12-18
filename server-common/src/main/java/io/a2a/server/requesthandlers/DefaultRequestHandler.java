@@ -6,7 +6,6 @@ import static io.a2a.server.util.async.AsyncUtils.processor;
 import static java.util.concurrent.TimeUnit.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -585,25 +584,25 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new TaskNotFoundError();
         }
 
-        List<PushNotificationConfig> pushNotificationConfigList = pushConfigStore.getInfo(params.id());
-        if (pushNotificationConfigList == null || pushNotificationConfigList.isEmpty()) {
+        ListTaskPushNotificationConfigResult listTaskPushNotificationConfigResult = pushConfigStore.getInfo(new ListTaskPushNotificationConfigParams(params.id()));
+        if (listTaskPushNotificationConfigResult == null || listTaskPushNotificationConfigResult.isEmpty()) {
             throw new InternalError("No push notification config found");
         }
 
         @Nullable String configId = params.pushNotificationConfigId();
-        return new TaskPushNotificationConfig(params.id(), getPushNotificationConfig(pushNotificationConfigList, configId), params.tenant());
+        return new TaskPushNotificationConfig(params.id(), getPushNotificationConfig(listTaskPushNotificationConfigResult, configId), params.tenant());
     }
 
-    private PushNotificationConfig getPushNotificationConfig(List<PushNotificationConfig> notificationConfigList,
+    private PushNotificationConfig getPushNotificationConfig(ListTaskPushNotificationConfigResult notificationConfigList,
                                                              @Nullable String configId) {
         if (configId != null) {
-            for (PushNotificationConfig notificationConfig : notificationConfigList) {
-                if (configId.equals(notificationConfig.id())) {
-                    return notificationConfig;
+            for (TaskPushNotificationConfig notificationConfig : notificationConfigList.configs()) {
+                if (configId.equals(notificationConfig.pushNotificationConfig().id())) {
+                    return notificationConfig.pushNotificationConfig();
                 }
             }
         }
-        return notificationConfigList.get(0);
+        return notificationConfigList.configs().get(0).pushNotificationConfig();
     }
 
     @Override
@@ -643,22 +642,11 @@ public class DefaultRequestHandler implements RequestHandler {
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }
-
         Task task = taskStore.get(params.id());
         if (task == null) {
             throw new TaskNotFoundError();
         }
-
-        List<PushNotificationConfig> pushNotificationConfigList = pushConfigStore.getInfo(params.id());
-        List<TaskPushNotificationConfig> taskPushNotificationConfigList = new ArrayList<>();
-        if (pushNotificationConfigList != null) {
-            for (PushNotificationConfig pushNotificationConfig : pushNotificationConfigList) {
-                TaskPushNotificationConfig taskPushNotificationConfig = new TaskPushNotificationConfig(params.id(), pushNotificationConfig, params.tenant());
-                taskPushNotificationConfigList.add(taskPushNotificationConfig);
-            }
-        }
-        // Return result without pagination for now (pagination can be implemented in the store later)
-        return new ListTaskPushNotificationConfigResult(taskPushNotificationConfigList, null);
+        return pushConfigStore.getInfo(params);
     }
 
     @Override
