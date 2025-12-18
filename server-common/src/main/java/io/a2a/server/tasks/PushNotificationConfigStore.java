@@ -21,8 +21,8 @@ public interface PushNotificationConfigStore {
 
     /**
      * Retrieves the push notification configuration for a task.
-     * @param taskId the task ID
-     * @return the push notification configurations for a task, or with emty list if not found
+     * @param params the parameters for listing push notification configurations
+     * @return the push notification configurations for a task, or with empty list if not found
      */
     ListTaskPushNotificationConfigResult getInfo(ListTaskPushNotificationConfigParams params);
 

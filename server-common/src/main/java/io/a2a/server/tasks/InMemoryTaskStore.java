@@ -14,6 +14,17 @@ import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * In-memory implementation of {@link TaskStore} and {@link TaskStateProvider}.
+ * <p>
+ * This implementation uses a {@link ConcurrentHashMap} to store tasks in memory.
+ * Tasks are lost on application restart. For persistent storage, use a database-backed
+ * implementation such as the JPA TaskStore in the extras module.
+ * </p>
+ * <p>
+ * This is the default TaskStore used when no other implementation is provided.
+ * </p>
+ */
 @ApplicationScoped
 public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 

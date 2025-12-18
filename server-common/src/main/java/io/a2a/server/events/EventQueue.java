@@ -16,21 +16,50 @@ import io.a2a.spec.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Abstract base class for event queues that manage task event streaming.
+ * <p>
+ * An EventQueue provides a thread-safe mechanism for enqueueing and dequeueing events
+ * related to task execution. It supports backpressure through semaphore-based throttling
+ * and hierarchical queue structures via MainQueue and ChildQueue implementations.
+ * </p>
+ * <p>
+ * Use {@link #builder()} to create configured instances or extend MainQueue/ChildQueue directly.
+ * </p>
+ */
 public abstract class EventQueue implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventQueue.class);
 
+    /**
+     * Default maximum queue size for event queues.
+     */
     public static final int DEFAULT_QUEUE_SIZE = 1000;
 
     private final int queueSize;
+    /**
+     * Internal blocking queue for storing event queue items.
+     */
     protected final BlockingQueue<EventQueueItem> queue = new LinkedBlockingDeque<>();
+    /**
+     * Semaphore for backpressure control, limiting the number of pending events.
+     */
     protected final Semaphore semaphore;
     private volatile boolean closed = false;
 
+    /**
+     * Creates an EventQueue with the default queue size.
+     */
     protected EventQueue() {
         this(DEFAULT_QUEUE_SIZE);
     }
 
+    /**
+     * Creates an EventQueue with the specified queue size.
+     *
+     * @param queueSize the maximum number of events that can be queued
+     * @throws IllegalArgumentException if queueSize is less than or equal to 0
+     */
     protected EventQueue(int queueSize) {
         if (queueSize <= 0) {
             throw new IllegalArgumentException("Queue size must be greater than 0");
@@ -40,6 +69,11 @@ public abstract class EventQueue implements AutoCloseable {
         LOGGER.trace("Creating {} with queue size: {}", this, queueSize);
     }
 
+    /**
+     * Creates an EventQueue as a child of the specified parent queue.
+     *
+     * @param parent the parent event queue
+     */
     protected EventQueue(EventQueue parent) {
         this(DEFAULT_QUEUE_SIZE);
         LOGGER.trace("Creating {}, parent: {}", this, parent);
@@ -49,6 +83,13 @@ public abstract class EventQueue implements AutoCloseable {
         return new EventQueueBuilder();
     }
 
+    /**
+     * Builder for creating configured EventQueue instances.
+     * <p>
+     * Supports configuration of queue size, enqueue hooks, task association,
+     * close callbacks, and task state providers.
+     * </p>
+     */
     public static class EventQueueBuilder {
         private int queueSize = DEFAULT_QUEUE_SIZE;
         private @Nullable EventEnqueueHook hook;
@@ -56,21 +97,45 @@ public abstract class EventQueue implements AutoCloseable {
         private List<Runnable> onCloseCallbacks = new java.util.ArrayList<>();
         private @Nullable TaskStateProvider taskStateProvider;
 
+        /**
+         * Sets the maximum queue size.
+         *
+         * @param queueSize the maximum number of events that can be queued
+         * @return this builder
+         */
         public EventQueueBuilder queueSize(int queueSize) {
             this.queueSize = queueSize;
             return this;
         }
 
+        /**
+         * Sets the enqueue hook for event replication or logging.
+         *
+         * @param hook the hook to be invoked when items are enqueued
+         * @return this builder
+         */
         public EventQueueBuilder hook(EventEnqueueHook hook) {
             this.hook = hook;
             return this;
         }
 
+        /**
+         * Associates this queue with a specific task ID.
+         *
+         * @param taskId the task identifier
+         * @return this builder
+         */
         public EventQueueBuilder taskId(String taskId) {
             this.taskId = taskId;
             return this;
         }
 
+        /**
+         * Adds a callback to be executed when the queue is closed.
+         *
+         * @param onCloseCallback the callback to execute on close
+         * @return this builder
+         */
         public EventQueueBuilder addOnCloseCallback(Runnable onCloseCallback) {
             if (onCloseCallback != null) {
                 this.onCloseCallbacks.add(onCloseCallback);
@@ -78,11 +143,22 @@ public abstract class EventQueue implements AutoCloseable {
             return this;
         }
 
+        /**
+         * Sets the task state provider for tracking task finalization.
+         *
+         * @param taskStateProvider the task state provider
+         * @return this builder
+         */
         public EventQueueBuilder taskStateProvider(TaskStateProvider taskStateProvider) {
             this.taskStateProvider = taskStateProvider;
             return this;
         }
 
+        /**
+         * Builds and returns the configured EventQueue.
+         *
+         * @return a new MainQueue instance
+         */
         public EventQueue build() {
             if (hook != null || !onCloseCallbacks.isEmpty() || taskStateProvider != null) {
                 return new MainQueue(queueSize, hook, taskId, onCloseCallbacks, taskStateProvider);
@@ -92,18 +168,48 @@ public abstract class EventQueue implements AutoCloseable {
         }
     }
 
+    /**
+     * Returns the configured queue size.
+     *
+     * @return the maximum number of events that can be queued
+     */
     public int getQueueSize() {
         return queueSize;
     }
 
+    /**
+     * Waits for the queue poller to start consuming events.
+     * This method blocks until signaled by {@link #signalQueuePollerStarted()}.
+     *
+     * @throws InterruptedException if the thread is interrupted while waiting
+     */
     public abstract void awaitQueuePollerStart() throws InterruptedException ;
 
+    /**
+     * Signals that the queue poller has started consuming events.
+     * This unblocks any threads waiting in {@link #awaitQueuePollerStart()}.
+     */
     public abstract void signalQueuePollerStarted();
 
+    /**
+     * Enqueues an event for processing.
+     *
+     * @param event the event to enqueue
+     */
     public void enqueueEvent(Event event) {
         enqueueItem(new LocalEventQueueItem(event));
     }
 
+    /**
+     * Enqueues an event queue item for processing.
+     * <p>
+     * This method will block if the queue is full, waiting to acquire a semaphore permit.
+     * If the queue is closed, the event will not be enqueued and a warning will be logged.
+     * </p>
+     *
+     * @param item the event queue item to enqueue
+     * @throws RuntimeException if interrupted while waiting to acquire the semaphore
+     */
     public void enqueueItem(EventQueueItem item) {
         Event event = item.getEvent();
         if (closed) {
@@ -121,6 +227,16 @@ public abstract class EventQueue implements AutoCloseable {
         LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
     }
 
+    /**
+     * Creates a child queue that shares events with this queue.
+     * <p>
+     * For MainQueue: creates a ChildQueue that receives all events enqueued to the parent.
+     * For ChildQueue: throws IllegalStateException (only MainQueue can be tapped).
+     * </p>
+     *
+     * @return a new ChildQueue instance
+     * @throws IllegalStateException if called on a ChildQueue
+     */
     public abstract EventQueue tap();
 
     /**
@@ -172,12 +288,24 @@ public abstract class EventQueue implements AutoCloseable {
         }
     }
 
+    /**
+     * Placeholder method for task completion notification.
+     * Currently not used as BlockingQueue.poll()/take() automatically remove events.
+     */
     public void taskDone() {
         // TODO Not sure if needed yet. BlockingQueue.poll()/.take() remove the events.
     }
 
+    /**
+     * Closes this event queue gracefully, allowing pending events to be consumed.
+     */
     public abstract void close();
 
+    /**
+     * Closes this event queue with control over immediate shutdown.
+     *
+     * @param immediate if true, clears all pending events immediately; if false, allows graceful drain
+     */
     public abstract void close(boolean immediate);
 
     /**
@@ -191,14 +319,28 @@ public abstract class EventQueue implements AutoCloseable {
      */
     public abstract void close(boolean immediate, boolean notifyParent);
 
+    /**
+     * Checks if this queue has been closed.
+     *
+     * @return true if the queue is closed, false otherwise
+     */
     public boolean isClosed() {
         return closed;
     }
 
+    /**
+     * Internal method to close the queue gracefully.
+     * Delegates to {@link #doClose(boolean)} with immediate=false.
+     */
     protected void doClose() {
         doClose(false);
     }
 
+    /**
+     * Internal method to close the queue with control over immediate shutdown.
+     *
+     * @param immediate if true, clears all pending events immediately; if false, allows graceful drain
+     */
     protected void doClose(boolean immediate) {
         synchronized (this) {
             if (closed) {
