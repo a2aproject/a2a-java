@@ -23,7 +23,7 @@ public record ListTaskPushNotificationConfigParams(String id, int pageSize, Stri
      * @param id the task identifier
      * @param tenant the tenant identifier
      */
-    public ListTaskPushNotificationConfigParams    {
+    public ListTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("tenant", tenant);
     }
