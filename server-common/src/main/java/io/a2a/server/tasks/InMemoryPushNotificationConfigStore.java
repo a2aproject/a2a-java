@@ -70,16 +70,16 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
         if (configs.size() <= params.pageSize()) {
             return new ListTaskPushNotificationConfigResult(convertPushNotificationConfig(configs, params), null);
         }
-        String newToken = configs.get(params.pageSize()).token();
+        String newToken = configs.get(params.pageSize()).id();
         return new ListTaskPushNotificationConfigResult(convertPushNotificationConfig(configs.subList(0, params.pageSize()), params), newToken);
     }
 
-    private int findFirstIndex(List<PushNotificationConfig> configs, String token) {
+    private int findFirstIndex(List<PushNotificationConfig> configs, String id) {
         //find first index
         Iterator<PushNotificationConfig> iter = configs.iterator();
         int index = 0;
         while (iter.hasNext()) {
-            if (token.equals(iter.next().token())) {
+            if (id.equals(iter.next().id())) {
                 return index;
             }
             index++;
