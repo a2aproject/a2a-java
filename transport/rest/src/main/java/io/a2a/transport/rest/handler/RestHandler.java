@@ -28,11 +28,13 @@ import io.a2a.server.AgentCardValidator;
 import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.ServerCallContext;
+import io.a2a.server.extensions.A2AExtensions;
 import io.a2a.server.requesthandlers.RequestHandler;
+import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
@@ -56,6 +58,8 @@ import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.spec.ExtensionSupportRequiredError;
+import io.a2a.spec.VersionNotSupportedError;
 import mutiny.zero.ZeroPublisher;
 import org.jspecify.annotations.Nullable;
 
@@ -94,6 +98,8 @@ public class RestHandler {
 
     public HTTPRestResponse sendMessage(String body, String tenant, ServerCallContext context) {
         try {
+            A2AVersionValidator.validateProtocolVersion(agentCard, context);
+            A2AExtensions.validateRequiredExtensions(agentCard, context);
             io.a2a.grpc.SendMessageRequest.Builder request = io.a2a.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(tenant);
@@ -111,6 +117,8 @@ public class RestHandler {
             if (!agentCard.capabilities().streaming()) {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
             }
+            A2AVersionValidator.validateProtocolVersion(agentCard, context);
+            A2AExtensions.validateRequiredExtensions(agentCard, context);
             io.a2a.grpc.SendMessageRequest.Builder request = io.a2a.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(tenant);
@@ -381,13 +389,15 @@ public class RestHandler {
         if (error instanceof InvalidParamsError) {
             return 422;
         }
-        if (error instanceof MethodNotFoundError || error instanceof TaskNotFoundError || error instanceof AuthenticatedExtendedCardNotConfiguredError) {
+        if (error instanceof MethodNotFoundError || error instanceof TaskNotFoundError) {
             return 404;
         }
         if (error instanceof TaskNotCancelableError) {
             return 409;
         }
-        if (error instanceof PushNotificationNotSupportedError || error instanceof UnsupportedOperationError) {
+        if (error instanceof PushNotificationNotSupportedError
+                || error instanceof UnsupportedOperationError
+                || error instanceof VersionNotSupportedError) {
             return 501;
         }
         if (error instanceof ContentTypeNotSupportedError) {
@@ -395,6 +405,10 @@ public class RestHandler {
         }
         if (error instanceof InvalidAgentResponseError) {
             return 502;
+        }
+        if (error instanceof ExtendedCardNotConfiguredError
+                || error instanceof ExtensionSupportRequiredError) {
+            return 400;
         }
         if (error instanceof InternalError) {
             return 500;
@@ -405,7 +419,7 @@ public class RestHandler {
     public HTTPRestResponse getExtendedAgentCard(String tenant) {
         try {
             if (!agentCard.supportsExtendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
-                throw new AuthenticatedExtendedCardNotConfiguredError(null, "Authenticated Extended Card not configured", null);
+                throw new ExtendedCardNotConfiguredError(null, "Extended Card not configured", null);
             }
             return new HTTPRestResponse(200, "application/json", JsonUtil.toJson(extendedAgentCard.get()));
         } catch (A2AError e) {

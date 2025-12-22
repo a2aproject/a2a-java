@@ -2,7 +2,7 @@ package io.a2a.jsonrpc.common.wrappers;
 
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedCardNotConfiguredError;
 
 /**
  * JSON-RPC response containing an agent's extended card with authenticated details.
@@ -13,11 +13,11 @@ import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
  * <p>
  * If the agent doesn't support authenticated extended cards or authentication fails,
  * the error field will contain a {@link A2AError} such as
- * {@link AuthenticatedExtendedCardNotConfiguredError}.
+ * {@link ExtendedCardNotConfiguredError}.
  *
  * @see GetAuthenticatedExtendedCardRequest for the corresponding request
  * @see AgentCard for the card structure
- * @see AuthenticatedExtendedCardNotConfiguredError for the error when unsupported
+ * @see ExtendedCardNotConfiguredError for the error when unsupported
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public final class GetAuthenticatedExtendedCardResponse extends A2AResponse<AgentCard> {

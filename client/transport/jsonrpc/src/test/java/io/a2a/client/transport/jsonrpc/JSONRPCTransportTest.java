@@ -41,6 +41,8 @@ import java.util.Map;
 
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.ExtensionSupportRequiredError;
+import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
@@ -679,5 +681,118 @@ public class JSONRPCTransportTest {
         assertTrue(part instanceof TextPart);
         assertEquals("Analyzed chart image and data: Bar chart showing quarterly data with values [10, 20, 30, 40].", ((TextPart) part).text());
         assertTrue(task.metadata().isEmpty());
+    }
+
+    /**
+     * Test that ExtensionSupportRequiredError is properly unmarshalled from JSON-RPC error response.
+     */
+    @Test
+    public void testExtensionSupportRequiredErrorUnmarshalling() throws Exception {
+        // Mock server returns JSON-RPC error with code -32008 (EXTENSION_SUPPORT_REQUIRED_ERROR)
+        String errorResponseBody = """
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32008,
+                        "message": "Extension required: https://example.com/test-extension"
+                    }
+                }
+                """;
+
+        this.server.when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(errorResponseBody)
+                );
+
+        JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        Message message = Message.builder()
+                .role(Message.Role.USER)
+                .parts(Collections.singletonList(new TextPart("test message")))
+                .contextId("context-test")
+                .messageId("message-test")
+                .build();
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
+                .acceptedOutputModes(List.of("text"))
+                .blocking(true)
+                .build();
+        MessageSendParams params = MessageSendParams.builder()
+                .message(message)
+                .configuration(configuration)
+                .build();
+
+        // Should throw A2AClientException with ExtensionSupportRequiredError as cause
+        try {
+            client.sendMessage(params, null);
+            fail("Expected A2AClientException to be thrown");
+        } catch (A2AClientException e) {
+            // Verify the cause is ExtensionSupportRequiredError
+            assertInstanceOf(ExtensionSupportRequiredError.class, e.getCause());
+            ExtensionSupportRequiredError extensionError = (ExtensionSupportRequiredError) e.getCause();
+            assertTrue(extensionError.getMessage().contains("https://example.com/test-extension"));
+        }
+    }
+
+    /**
+     * Test that VersionNotSupportedError is properly unmarshalled from JSON-RPC error response.
+     */
+    @Test
+    public void testVersionNotSupportedErrorUnmarshalling() throws Exception {
+        // Mock server returns JSON-RPC error with code -32009 (VERSION_NOT_SUPPORTED_ERROR)
+        String errorResponseBody = """
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32009,
+                        "message": "Protocol version 2.0 is not supported. This agent supports version 1.0"
+                    }
+                }
+                """;
+
+        this.server.when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(errorResponseBody)
+                );
+
+        JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        Message message = Message.builder()
+                .role(Message.Role.USER)
+                .parts(Collections.singletonList(new TextPart("test message")))
+                .contextId("context-test")
+                .messageId("message-test")
+                .build();
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
+                .acceptedOutputModes(List.of("text"))
+                .blocking(true)
+                .build();
+        MessageSendParams params = MessageSendParams.builder()
+                .message(message)
+                .configuration(configuration)
+                .build();
+
+        // Should throw A2AClientException with VersionNotSupportedError as cause
+        try {
+            client.sendMessage(params, null);
+            fail("Expected A2AClientException to be thrown");
+        } catch (A2AClientException e) {
+            // Verify the cause is VersionNotSupportedError
+            assertInstanceOf(VersionNotSupportedError.class, e.getCause());
+            VersionNotSupportedError versionError = (VersionNotSupportedError) e.getCause();
+            assertTrue(versionError.getMessage().contains("2.0"));
+            assertTrue(versionError.getMessage().contains("1.0"));
+        }
     }
 }

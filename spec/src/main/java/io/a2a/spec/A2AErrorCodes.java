@@ -23,8 +23,16 @@ public interface A2AErrorCodes {
     /** Error code indicating the agent returned an invalid response (-32006). */
     int INVALID_AGENT_RESPONSE_ERROR_CODE = -32006;
 
-    /** Error code indicating authenticated extended card is not configured (-32007). */
-    int AUTHENTICATED_EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE = -32007;
+    /** Error code indicating extended card is not configured (-32007). */
+    int EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE = -32007;
+
+    /** Error code indicating client requested use of an extension marked as required: true in the Agent Card
+     * but the client did not declare support for it in the request (-32008). */
+    int EXTENSION_SUPPORT_REQUIRED_ERROR = -32008;
+
+    /** Error code indicating the A2A protocol version specified in the request (via A2A-Version service parameter)
+     * is not supported by the agent (-32009). */
+    int VERSION_NOT_SUPPORTED_ERROR_CODE = -32009;
 
     /** JSON-RPC error code for invalid request structure (-32600). */
     int INVALID_REQUEST_ERROR_CODE = -32600;

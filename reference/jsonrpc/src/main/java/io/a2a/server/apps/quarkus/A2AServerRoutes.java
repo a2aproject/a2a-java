@@ -241,11 +241,14 @@ public class A2AServerRoutes {
             headerNames.forEach(name -> headers.put(name, rc.request().getHeader(name)));
             state.put(HEADERS_KEY, headers);
 
+            // Extract requested protocol version from X-A2A-Version header
+            String requestedVersion = rc.request().getHeader(A2AHeaders.X_A2A_VERSION);
+
             // Extract requested extensions from X-A2A-Extensions header
             List<String> extensionHeaderValues = rc.request().headers().getAll(A2AHeaders.X_A2A_EXTENSIONS);
             Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
 
-            return new ServerCallContext(user, state, requestedExtensions);
+            return new ServerCallContext(user, state, requestedExtensions, requestedVersion);
         } else {
             CallContextFactory builder = callContextFactory.get();
             return builder.build(rc);

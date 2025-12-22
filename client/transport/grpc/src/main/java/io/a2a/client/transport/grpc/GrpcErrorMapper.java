@@ -3,6 +3,8 @@ package io.a2a.client.transport.grpc;
 import io.a2a.common.A2AErrorMessages;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.ContentTypeNotSupportedError;
+import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.InvalidAgentResponseError;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
@@ -12,6 +14,7 @@ import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.spec.VersionNotSupportedError;
 import io.grpc.Status;
 
 /**
@@ -52,6 +55,12 @@ public class GrpcErrorMapper {
                 return new A2AClientException(errorPrefix + description, new ContentTypeNotSupportedError(null, description, null));
             } else if (description.contains("InvalidAgentResponseError")) {
                 return new A2AClientException(errorPrefix + description, new InvalidAgentResponseError(null, description, null));
+            } else if (description.contains("ExtendedCardNotConfiguredError")) {
+                return new A2AClientException(errorPrefix + description, new ExtendedCardNotConfiguredError(null, description, null));
+            } else if (description.contains("ExtensionSupportRequiredError")) {
+                return new A2AClientException(errorPrefix + description, new ExtensionSupportRequiredError(null, description, null));
+            } else if (description.contains("VersionNotSupportedError")) {
+                return new A2AClientException(errorPrefix + description, new VersionNotSupportedError(null, description, null));
             }
         }
         

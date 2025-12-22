@@ -26,7 +26,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  * @see TaskPushNotificationConfig for push notification configuration
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public class PushNotificationNotSupportedError extends A2AError {
+public class PushNotificationNotSupportedError extends A2AProtocolError {
 
     /**
      * Constructs error with default message.
@@ -49,6 +49,7 @@ public class PushNotificationNotSupportedError extends A2AError {
         super(
                 defaultIfNull(code, PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE),
                 defaultIfNull(message, "Push Notification is not supported"),
-                data);
+                data,
+                "https://a2a-protocol.org/errors/push-notification-not-supported");
     }
 }
