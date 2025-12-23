@@ -21,11 +21,11 @@ jbangFile.eachLine { line ->
     if (line.trim().startsWith(groupPrefix)) {
         def lastColon = line.lastIndexOf(":")
         if (lastColon != -1) {
-            def actualVersion = line.substring(lastColon + 1).trim()
+            def actualVersion = line.substring(lastColon + 1).trim().tokenize()[0]
             if (actualVersion != expectedVersion) {
                 System.err.println("[ERROR] JBang Version Mismatch in " + scriptName)
                 System.err.println("  Expected: " + expectedVersion)
-                System.err.println("  Found:    " + actualVersion)
+                System.err.println("  Found:    " + actualVersion + " in line: \"" + line.trim() + "\"")
                 success = false
             }
         }

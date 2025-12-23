@@ -16,7 +16,7 @@ The release process involves:
 
 ### Required Accounts & Access
 - GitHub repository write access to `a2aproject/a2a-java`
-- Maven Central account: `kkhan+a2asdk@redhat.com` (namespace: `io.github.a2asdk`)
+- Maven Central account: namespace: `io.github.a2asdk`
 
 ### Required Secrets (Repository Maintainers)
 The following secrets must be configured in GitHub repository settings:
@@ -211,7 +211,7 @@ https://central.sonatype.com/publishing
 **Cause**: Maven Central tokens expired or incorrect
 
 **Fix**: Repository maintainers:
-1. Log in to Maven Central with `kkhan+a2asdk@redhat.com`
+1. Log in to Maven Central with the GitHub account for the a2asdk user.
 2. Generate new tokens: `User → Generate User Token`
 3. Update secrets: `CENTRAL_TOKEN_USERNAME` and `CENTRAL_TOKEN_PASSWORD`
 

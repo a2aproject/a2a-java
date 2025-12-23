@@ -55,7 +55,7 @@
                         </goals>
                         <configuration>
                             <scripts>
-                                <script>file:///${project.basedir}/../../../.enforcer-scripts/validate-jbang-versions.groovy</script>
+                                <script>file:///${maven.multiModuleProjectDirectory}/.enforcer-scripts/validate-jbang-versions.groovy</script>
                             </scripts>
                         </configuration>
                     </execution>
