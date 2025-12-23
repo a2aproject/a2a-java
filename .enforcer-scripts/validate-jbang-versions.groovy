@@ -3,7 +3,6 @@ def scriptName = project.properties['jbang.script.name']
 
 // Fail if the script property is missing
 if (scriptName == null) {
-    System.err.println("[ERROR] JBang validator: No jbang.script.name set in properties")
     throw new IllegalStateException("[ERROR] JBang validator: No jbang.script.name set in properties")
 }
 
@@ -11,7 +10,6 @@ def jbangFile = new File(project.basedir, scriptName)
 if (!jbangFile.exists()) {
     // If a script name was explicitly provided but doesn't exist, fail.
     // If using the fallback, we might want to just skip (return true).
-    System.err.println("[INFO] JBang validator: File not found: " + jbangFile.absolutePath)
     throw new IllegalStateException("[ERROR] JBang validator: File not found: " + jbangFile.absolutePath)
 }
 

@@ -3,29 +3,33 @@
 # Update version across POMs and JBang scripts
 # Usage: ./update-version.sh FROM_VERSION TO_VERSION [--dry-run]
 
-set -e  # Exit on error
+set -euo pipefail # Exit on error, unset var, and pipe failure
 
 FROM_VERSION=$1
 TO_VERSION=$2
-DRY_RUN=false
-
-# Check for dry-run flag
-if [ "$3" = "--dry-run" ] || [ "$2" = "--dry-run" ]; then
-    DRY_RUN=true
-fi
 
 # Validate arguments
-if [ -z "$FROM_VERSION" ]; then
-    echo "❌ Error: No from version specified"
+if [ -z "$FROM_VERSION" ] || [ -z "$TO_VERSION" ]; then
+    echo "❌ Error: Missing version arguments."
     echo "Usage: $0 FROM_VERSION TO_VERSION [--dry-run]"
     echo "Example: $0 0.3.0.Beta1-SNAPSHOT 0.3.0.Beta1"
     exit 1
 fi
 
-if [ -z "$TO_VERSION" ] && [ "$FROM_VERSION" != "--dry-run" ]; then
-    echo "❌ Error: No to version specified"
+# Check if TO_VERSION looks like a flag
+if [[ "$TO_VERSION" == --* ]]; then
+    echo "❌ Error: TO_VERSION cannot be a flag. Did you mean to provide both FROM_VERSION and TO_VERSION?"
     echo "Usage: $0 FROM_VERSION TO_VERSION [--dry-run]"
     echo "Example: $0 0.3.0.Beta1-SNAPSHOT 0.3.0.Beta1"
+    exit 1
+fi
+
+DRY_RUN=false
+if [ "$3" = "--dry-run" ]; then
+    DRY_RUN=true
+elif [ -n "$3" ]; then
+    echo "❌ Error: Invalid third argument. Only '--dry-run' is supported."
+    echo "Usage: $0 FROM_VERSION TO_VERSION [--dry-run]"
     exit 1
 fi
 
@@ -89,10 +93,10 @@ for file in $POM_FILES; do
     if grep -q "$FROM_VERSION" "$file"; then
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # macOS requires empty string after -i
-            sed -i "" -e "s/$FROM_VERSION/$TO_VERSION/g" "$file"
+            sed -i "" -e "s|>$FROM_VERSION<|>$TO_VERSION<|g" "$file"
         else
             # Linux doesn't need it
-            sed -i "s/$FROM_VERSION/$TO_VERSION/g" "$file"
+            sed -i "s|>$FROM_VERSION<|>$TO_VERSION<|g" "$file"
         fi
         echo "  ✅ $file"
         UPDATED_POMS=$((UPDATED_POMS + 1))

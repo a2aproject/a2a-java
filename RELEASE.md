@@ -27,6 +27,8 @@ The following secrets must be configured in GitHub repository settings:
 
 ## Release Steps
 
+The examples below use versions like `0.4.0.Alpha1-SNAPSHOT` and `0.4.0.Alpha1` for demonstration. Be sure to substitute these with the actual versions for your release.
+
 ### 1. Prepare Release Version
 
 Use the provided script to update all version numbers:
@@ -46,8 +48,8 @@ The script automatically updates:
 
 **What gets updated**:
 ```
-pom.xml:              0.3.0.Beta1-SNAPSHOT → 0.3.0.Beta1
-//DEPS io.github...:  0.3.0.Beta1-SNAPSHOT → 0.3.0.Beta1
+pom.xml:              0.4.0.Alpha1-SNAPSHOT → 0.4.0.Alpha1
+//DEPS io.github...:  0.4.0.Alpha1-SNAPSHOT → 0.4.0.Alpha1
 ```
 
 ### 2. Verify Changes
@@ -58,11 +60,8 @@ Review the changes before committing:
 # Review all changes
 git diff
 
-# Verify build with release profile
-mvn validate
-
-# Check that JBang validation passes
-cd examples/helloworld/client && mvn validate
+# Verify build works
+mvn clean install
 ```
 
 ### 3. Create Release PR
