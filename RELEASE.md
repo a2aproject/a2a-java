@@ -42,9 +42,9 @@ Use the provided script to update all version numbers:
 ```
 
 The script automatically updates:
-- ✅ All `pom.xml` files (48 files)
+- ✅ All `pom.xml` files
 - ✅ All JBang script `//DEPS` declarations in `examples/`
-- ✅ Validates the update with built-in GMavenPlus validation
+- ✅ Validates the JBang update with built-in GMavenPlus validation
 
 **What gets updated**:
 ```
