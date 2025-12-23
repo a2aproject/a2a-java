@@ -33,6 +33,9 @@ public record OAuth2SecurityScheme(
     /**
      * Compact constructor with validation.
      *
+     * @param flows the OAuth 2.0 flow configuration (required)
+     * @param description optional description of the security scheme
+     * @param oauth2MetadataUrl optional URL to OAuth 2.0 metadata (RFC 8414)
      * @throws IllegalArgumentException if flows is null
      */
     public OAuth2SecurityScheme {

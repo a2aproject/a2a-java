@@ -20,6 +20,8 @@ public record ListTaskPushNotificationConfigParams(String id, int pageSize, Stri
      * Validates that required parameters are not null.
      *
      * @param id the task identifier
+     * @param pageSize the maximum number of items to return per page
+     * @param pageToken the pagination token for the next page
      * @param tenant the tenant identifier
      */
     public ListTaskPushNotificationConfigParams {

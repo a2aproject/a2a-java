@@ -49,6 +49,7 @@ public record FilePart(FileContent file) implements Part<FileContent> {
     /**
      * Compact constructor with validation.
      *
+     * @param file the file content (required, either FileWithBytes or FileWithUri)
      * @throws IllegalArgumentException if file is null
      */
     public FilePart {

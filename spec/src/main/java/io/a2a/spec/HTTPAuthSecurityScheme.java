@@ -47,6 +47,9 @@ public record HTTPAuthSecurityScheme(
     /**
      * Compact constructor with validation.
      *
+     * @param bearerFormat the bearer token format (optional)
+     * @param scheme the authentication scheme (required)
+     * @param description the scheme description (optional)
      * @throws IllegalArgumentException if scheme is null
      */
     public HTTPAuthSecurityScheme {

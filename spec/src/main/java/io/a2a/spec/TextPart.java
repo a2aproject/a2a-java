@@ -37,6 +37,7 @@ public record TextPart(String text) implements Part<String> {
     /**
      * Compact constructor with validation.
      *
+     * @param text the text content (required, must not be null)
      * @throws IllegalArgumentException if text is null
      */
     public TextPart {
