@@ -55,6 +55,12 @@ public record TaskArtifactUpdateEvent(
     /**
      * Compact constructor with validation.
      *
+     * @param taskId the task identifier (required)
+     * @param artifact the artifact being updated (required)
+     * @param contextId the context identifier (required)
+     * @param append whether to append to existing artifact (optional)
+     * @param lastChunk whether this is the final chunk (optional)
+     * @param metadata additional metadata (optional)
      * @throws IllegalArgumentException if taskId, artifact, or contextId is null
      */
     public TaskArtifactUpdateEvent {

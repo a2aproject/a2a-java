@@ -59,6 +59,12 @@ public record Task(
     /**
      * Compact constructor with validation and defensive copying.
      *
+     * @param id the task identifier
+     * @param contextId the context identifier
+     * @param status the task status
+     * @param artifacts the list of artifacts produced by the task
+     * @param history the message history for this task
+     * @param metadata additional metadata for the task
      * @throws IllegalArgumentException if id, contextId, or status is null
      */
     public Task {
@@ -91,6 +97,7 @@ public record Task(
      * by copying all fields and then selectively updating specific values.
      *
      * @param task the Task to copy values from
+     * @return a new Builder instance initialized with the task's values
      */
     public static Builder builder(Task task) {
         return new Builder(task);

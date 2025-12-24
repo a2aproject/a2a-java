@@ -41,6 +41,8 @@ public record OpenIdConnectSecurityScheme(
     /**
      * Compact constructor with validation.
      *
+     * @param openIdConnectUrl URL to the OpenID Connect Discovery document (required)
+     * @param description optional description of the security scheme
      * @throws IllegalArgumentException if openIdConnectUrl is null
      */
     public OpenIdConnectSecurityScheme {
