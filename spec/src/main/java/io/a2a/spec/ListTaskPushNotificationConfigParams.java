@@ -18,11 +18,11 @@ public record ListTaskPushNotificationConfigParams(String id, int pageSize, Stri
     /**
      * Compact constructor for validation.
      * Validates that required parameters are not null.
-     *
      * @param id the task identifier
      * @param pageSize the maximum number of items to return per page
      * @param pageToken the pagination token for the next page
      * @param tenant the tenant identifier
+     * @throws IllegalArgumentException if id or tenant is null
      */
     public ListTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("id", id);
