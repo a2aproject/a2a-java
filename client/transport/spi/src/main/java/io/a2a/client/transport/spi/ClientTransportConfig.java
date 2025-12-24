@@ -55,12 +55,12 @@ public abstract class ClientTransportConfig<T extends ClientTransport> {
     /**
      * Get the list of configured interceptors.
      * <p>
-     * Returns the internal list of interceptors. Modifications to the returned list
-     * will affect this configuration.
+     * Returns an unmodifiable view of the interceptor list. Attempting to modify
+     * the returned list will throw {@link UnsupportedOperationException}.
      *
-     * @return the list of configured interceptors (never null, but may be empty)
+     * @return an unmodifiable list of configured interceptors (never null, but may be empty)
      */
     public List<ClientCallInterceptor> getInterceptors() {
-        return interceptors;
+        return java.util.Collections.unmodifiableList(interceptors);
     }
 }

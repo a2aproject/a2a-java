@@ -52,30 +52,40 @@ import org.jspecify.annotations.Nullable;
  *   <li><b>Resubscription:</b> Resume receiving events for ongoing tasks after disconnection</li>
  * </ul>
  * <p>
- * <b>Creating a client:</b> Use {@link #builder(AgentCard)} to create instances:
+ * <b>Resource management:</b> Client implements {@link AutoCloseable} and should be used with
+ * try-with-resources to ensure proper cleanup:
  * <pre>{@code
- * // 1. Get agent card
  * AgentCard card = A2A.getAgentCard("http://localhost:9999");
  *
- * // 2. Build and configure client
+ * try (Client client = Client.builder(card)
+ *         .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
+ *         .addConsumer((event, agentCard) -> {
+ *             if (event instanceof MessageEvent me) {
+ *                 System.out.println("Response: " + me.getMessage().parts());
+ *             }
+ *         })
+ *         .build()) {
+ *
+ *     // Send messages - client automatically closed when done
+ *     client.sendMessage(A2A.toUserMessage("Tell me a joke"));
+ * }
+ * }</pre>
+ * <p>
+ * <b>Manual resource management:</b> If not using try-with-resources, call {@link #close()}
+ * explicitly when done:
+ * <pre>{@code
  * Client client = Client.builder(card)
  *     .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
  *     .addConsumer((event, agentCard) -> {
- *         if (event instanceof MessageEvent me) {
- *             Message msg = me.getMessage();
- *             System.out.println("Agent response: " + msg.parts());
- *         } else if (event instanceof TaskUpdateEvent tue) {
- *             Task task = tue.getTask();
- *             System.out.println("Task " + task.id() + " is " + task.status().state());
- *         }
+ *         // Handle events
  *     })
  *     .build();
  *
- * // 3. Send messages
- * client.sendMessage(A2A.toUserMessage("Tell me a joke"));
- *
- * // 4. Clean up when done
- * client.close();
+ * try {
+ *     client.sendMessage(A2A.toUserMessage("Tell me a joke"));
+ * } finally {
+ *     client.close();  // Always close to release resources
+ * }
  * }</pre>
  * <p>
  * <b>Event consumption model:</b> Responses from the agent are delivered as {@link ClientEvent}
