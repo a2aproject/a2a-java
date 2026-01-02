@@ -113,8 +113,8 @@ public class RequestContext {
     /**
      * Returns the task identifier.
      * <p>
-     * Auto-generated (UUID) if not provided by the client. Never null after
-     * construction completes.
+     * This is auto-generated (UUID) if not provided by the client in the message parameters.
+     * It can be null if the context was not created from message parameters.
      * </p>
      *
      * @return the task ID
