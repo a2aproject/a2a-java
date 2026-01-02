@@ -127,7 +127,8 @@ public class RequestContext {
      * Returns the conversation context identifier.
      * <p>
      * Conversation contexts group related tasks together (e.g., multiple tasks
-     * in the same user session). Auto-generated (UUID) if not provided.
+     * in the same user session). This is auto-generated (UUID) if not provided by the client
+     * in the message parameters. It can be null if the context was not created from message parameters.
      * </p>
      *
      * @return the context ID
