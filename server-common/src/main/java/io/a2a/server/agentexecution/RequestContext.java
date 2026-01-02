@@ -16,6 +16,62 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TextPart;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Container for request parameters and task state provided to {@link AgentExecutor}.
+ * <p>
+ * This class encapsulates all the information an agent needs to process a request:
+ * the user's message, existing task state (for continuing conversations), configuration,
+ * and server call context. It's the primary way agents access request data.
+ * </p>
+ *
+ * <h2>Key Components</h2>
+ * <ul>
+ *   <li><b>Message:</b> The user's input message with parts (text, images, etc.)</li>
+ *   <li><b>Task:</b> Existing task state for continuing conversations (null for new conversations)</li>
+ *   <li><b>TaskId/ContextId:</b> Identifiers for the task and conversation (auto-generated if not provided)</li>
+ *   <li><b>Configuration:</b> Request settings (blocking mode, push notifications, etc.)</li>
+ *   <li><b>Related Tasks:</b> Other tasks in the same conversation context</li>
+ * </ul>
+ *
+ * <h2>Common Usage Patterns</h2>
+ * <pre>{@code
+ * public void execute(RequestContext context, EventQueue queue) {
+ *     // Check if this is a new conversation or continuation
+ *     Task existingTask = context.getTask();
+ *     if (existingTask == null) {
+ *         // New conversation - initialize
+ *     } else {
+ *         // Continuing conversation - access history
+ *         List<Message> history = existingTask.history();
+ *     }
+ *
+ *     // Extract user input
+ *     String userMessage = context.getUserInput("\n");
+ *
+ *     // Access configuration if needed
+ *     MessageSendConfiguration config = context.getConfiguration();
+ *     boolean isBlocking = config != null && config.blocking();
+ *
+ *     // Process and respond...
+ * }
+ * }</pre>
+ *
+ * <h2>Text Extraction Helper</h2>
+ * The {@link #getUserInput(String)} method is a convenient way to extract text from
+ * message parts:
+ * <pre>{@code
+ * // Get all text parts joined with newlines
+ * String text = context.getUserInput("\n");
+ *
+ * // Get all text parts joined with spaces
+ * String text = context.getUserInput(" ");
+ * }</pre>
+ *
+ * @see AgentExecutor
+ * @see Message
+ * @see Task
+ * @see MessageSendConfiguration
+ */
 public class RequestContext {
 
     private @Nullable MessageSendParams params;
@@ -54,38 +110,131 @@ public class RequestContext {
         }
     }
 
-    public @Nullable MessageSendParams getParams() {
-        return params;
-    }
-
+    /**
+     * Returns the task identifier.
+     * <p>
+     * Auto-generated (UUID) if not provided by the client. Never null after
+     * construction completes.
+     * </p>
+     *
+     * @return the task ID
+     */
     public @Nullable String getTaskId() {
         return taskId;
     }
 
+    /**
+     * Returns the conversation context identifier.
+     * <p>
+     * Conversation contexts group related tasks together (e.g., multiple tasks
+     * in the same user session). Auto-generated (UUID) if not provided.
+     * </p>
+     *
+     * @return the context ID
+     */
     public @Nullable String getContextId() {
         return contextId;
     }
 
+    /**
+     * Returns the existing task state, if this is a continuation of a conversation.
+     * <p>
+     * For new conversations, this is null. For continuing conversations, contains
+     * the full task state including history, artifacts, and status.
+     * </p>
+     * <p>
+     * <b>Common Pattern:</b>
+     * <pre>{@code
+     * if (context.getTask() == null) {
+     *     // New conversation - initialize state
+     * } else {
+     *     // Continuing - access previous messages
+     *     List<Message> history = context.getTask().history();
+     * }
+     * }</pre>
+     * </p>
+     *
+     * @return the existing task, or null if this is a new conversation
+     */
     public @Nullable Task getTask() {
         return task;
     }
 
+    /**
+     * Returns other tasks in the same conversation context.
+     * <p>
+     * Useful for multi-task conversations where the agent needs to access
+     * state from related tasks.
+     * </p>
+     *
+     * @return unmodifiable list of related tasks (empty if none)
+     */
     public List<Task> getRelatedTasks() {
         return Collections.unmodifiableList(relatedTasks);
     }
 
+    /**
+     * Returns the user's message.
+     * <p>
+     * Contains the message parts (text, images, etc.) sent by the client.
+     * Use {@link #getUserInput(String)} for convenient text extraction.
+     * </p>
+     *
+     * @return the message, or null if not available
+     * @see #getUserInput(String)
+     */
     public @Nullable Message getMessage() {
         return params != null ? params.message() : null;
     }
 
+    /**
+     * Returns the request configuration.
+     * <p>
+     * Contains settings like blocking mode, push notification config, etc.
+     * </p>
+     *
+     * @return the configuration, or null if not provided
+     */
     public @Nullable MessageSendConfiguration getConfiguration() {
         return params != null ? params.configuration() : null;
     }
 
+    /**
+     * Returns the server call context.
+     * <p>
+     * Contains transport-specific information like authentication, headers, etc.
+     * Most agents don't need this.
+     * </p>
+     *
+     * @return the call context, or null if not available
+     */
     public @Nullable ServerCallContext getCallContext() {
         return callContext;
     }
 
+    /**
+     * Extracts all text content from the message and joins with the specified delimiter.
+     * <p>
+     * This is a convenience method for getting text input from messages that may contain
+     * multiple text parts. Non-text parts (images, etc.) are ignored.
+     * </p>
+     * <p>
+     * <b>Examples:</b>
+     * <pre>{@code
+     * // Join with newlines (common for multi-paragraph input)
+     * String text = context.getUserInput("\n");
+     *
+     * // Join with spaces (common for single-line input)
+     * String text = context.getUserInput(" ");
+     *
+     * // Default delimiter is newline
+     * String text = context.getUserInput(null);  // uses "\n"
+     * }</pre>
+     * </p>
+     *
+     * @param delimiter the string to insert between text parts (null defaults to "\n")
+     * @return all text parts joined with delimiter, or empty string if no message
+     */
     public String getUserInput(String delimiter) {
         if (params == null) {
             return "";
