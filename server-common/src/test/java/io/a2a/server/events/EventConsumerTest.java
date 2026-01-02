@@ -114,32 +114,7 @@ public class EventConsumerTest {
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Throwable> error = new AtomicReference<>();
 
-        publisher.subscribe(new Flow.Subscriber<>() {
-            private Flow.Subscription subscription;
-
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
-
-            @Override
-            public void onNext(EventQueueItem item) {
-                receivedEvents.add(item.getEvent());
-                subscription.request(1);
-
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                error.set(throwable);
-            }
-
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+        publisher.subscribe(getSubscriber(receivedEvents, error));
 
         assertNull(error.get());
         assertEquals(events.size(), receivedEvents.size());
@@ -175,32 +150,7 @@ public class EventConsumerTest {
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Throwable> error = new AtomicReference<>();
 
-        publisher.subscribe(new Flow.Subscriber<>() {
-            private Flow.Subscription subscription;
-
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
-
-            @Override
-            public void onNext(EventQueueItem item) {
-                receivedEvents.add(item.getEvent());
-                subscription.request(1);
-
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                error.set(throwable);
-            }
-
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
+        publisher.subscribe(getSubscriber(receivedEvents, error));
 
         assertNull(error.get());
         assertEquals(3, receivedEvents.size());
@@ -224,7 +174,55 @@ public class EventConsumerTest {
         final List<Event> receivedEvents = new ArrayList<>();
         final AtomicReference<Throwable> error = new AtomicReference<>();
 
-        publisher.subscribe(new Flow.Subscriber<>() {
+        publisher.subscribe(getSubscriber(receivedEvents, error));
+
+        assertNull(error.get());
+        // The stream is closed after the first Message
+        assertEquals(1, receivedEvents.size());
+        assertSame(message, receivedEvents.get(0));
+    }
+
+    @Test
+    public void testConsumeTaskInputRequired() {
+        Task task = Task.builder()
+            .id("task-id")
+            .contextId("task-context")
+            .status(new TaskStatus(TaskState.INPUT_REQUIRED))
+            .build();
+        List<Event> events = List.of(
+            task,
+            TaskArtifactUpdateEvent.builder()
+                .taskId("task-123")
+                .contextId("session-xyz")
+                .artifact(Artifact.builder()
+                    .artifactId("11")
+                    .parts(new TextPart("text"))
+                    .build())
+                .build(),
+            TaskStatusUpdateEvent.builder()
+                .taskId("task-123")
+                .contextId("session-xyz")
+                .status(new TaskStatus(TaskState.WORKING))
+                .isFinal(true)
+                .build());
+        for (Event event : events) {
+            eventQueue.enqueueEvent(event);
+        }
+
+        Flow.Publisher<EventQueueItem> publisher = eventConsumer.consumeAll();
+        final List<Event> receivedEvents = new ArrayList<>();
+        final AtomicReference<Throwable> error = new AtomicReference<>();
+
+        publisher.subscribe(getSubscriber(receivedEvents, error));
+
+        assertNull(error.get());
+        // The stream is closed after the input_required task
+        assertEquals(1, receivedEvents.size());
+        assertSame(task, receivedEvents.get(0));
+    }
+
+    private Flow.Subscriber<EventQueueItem> getSubscriber(List<Event> receivedEvents, AtomicReference<Throwable> error) {
+        return new Flow.Subscriber<>() {
             private Flow.Subscription subscription;
 
             @Override
@@ -237,7 +235,6 @@ public class EventConsumerTest {
             public void onNext(EventQueueItem item) {
                 receivedEvents.add(item.getEvent());
                 subscription.request(1);
-
             }
 
             @Override
@@ -249,12 +246,7 @@ public class EventConsumerTest {
             public void onComplete() {
                 subscription.cancel();
             }
-        });
-
-        assertNull(error.get());
-        // The stream is closed after the first Message
-        assertEquals(1, receivedEvents.size());
-        assertSame(message, receivedEvents.get(0));
+        };
     }
 
     @Test
