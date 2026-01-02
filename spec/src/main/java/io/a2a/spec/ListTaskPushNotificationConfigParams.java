@@ -35,4 +35,16 @@ public record ListTaskPushNotificationConfigParams(String id, int pageSize, Stri
     public ListTaskPushNotificationConfigParams(String id) {
         this(id, 0, "", "");
     }
+
+    /**
+     * Validates and returns the effective page size (between 1 and 100, defaults to 100).
+     *
+     * @return the effective page size
+     */
+    public int getEffectivePageSize() {
+      if (pageSize <= 0 || pageSize > 100) {
+        return 100;
+      }
+      return pageSize;
+    }
 }

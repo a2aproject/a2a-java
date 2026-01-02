@@ -1,7 +1,7 @@
 package io.a2a.extras.pushnotificationconfigstore.database.jpa;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import jakarta.persistence.TypedQuery;
+import java.time.Instant;
 import java.util.List;
 
 import jakarta.annotation.Priority;
@@ -17,6 +17,7 @@ import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,9 @@ import org.slf4j.LoggerFactory;
 public class JpaDatabasePushNotificationConfigStore implements PushNotificationConfigStore {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaDatabasePushNotificationConfigStore.class);
-    
+
+    private static final Instant NULL_TIMESTAMP_SENTINEL = Instant.EPOCH;
+
     @PersistenceContext(unitName = "a2a-java")
     EntityManager em;
 
@@ -36,6 +39,8 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
         // Ensure config has an ID - default to taskId if not provided (mirroring InMemoryPushNotificationConfigStore behavior)
         PushNotificationConfig.Builder builder = PushNotificationConfig.builder(notificationConfig);
         if (notificationConfig.id() == null || notificationConfig.id().isEmpty()) {
+            // This means the taskId and configId are same. This will not allow having multiple configs for a single Task.
+            // The configId is a required field in the spec and should not be empty
             builder.id(taskId);
         }
         notificationConfig = builder.build();
@@ -72,15 +77,61 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
     @Override
     public ListTaskPushNotificationConfigResult getInfo(ListTaskPushNotificationConfigParams params) {
         String taskId = params.id();
-        LOGGER.debug("Retrieving PushNotificationConfigs for Task '{}'", taskId);
+        LOGGER.debug("Retrieving PushNotificationConfigs for Task '{}' with params: pageSize={}, pageToken={}",
+            taskId, params.pageSize(), params.pageToken());
         try {
-            List<JpaPushNotificationConfig> jpaConfigs = em.createQuery(
-                    "SELECT c FROM JpaPushNotificationConfig c WHERE c.id.taskId = :taskId",
-                    JpaPushNotificationConfig.class)
-                    .setParameter("taskId", taskId)
-                    .getResultList();
+            StringBuilder queryBuilder = new StringBuilder("SELECT c FROM JpaPushNotificationConfig c WHERE c.id.taskId = :taskId");
 
-            List<PushNotificationConfig> configs = jpaConfigs.stream()
+            if (params.pageToken() != null && !params.pageToken().isEmpty()) {
+              String[] tokenParts = params.pageToken().split(":", 2);
+              if (tokenParts.length == 2) {
+                // Keyset pagination: get tasks where timestamp < tokenTimestamp OR (timestamp = tokenTimestamp AND id > tokenId)
+                // All tasks have timestamps (TaskStatus canonical constructor ensures this)
+                queryBuilder.append(" AND (COALESCE(c.createdAt, :nullSentinel) < :tokenTimestamp OR (COALESCE(c.createdAt, :nullSentinel) = :tokenTimestamp AND c.id.configId > :tokenId))");
+              } else {
+                // Based on the comments in the test case, if the pageToken is invalid start from the beginning.
+              }
+            }
+
+            queryBuilder.append(" ORDER BY  COALESCE(c.createdAt, :nullSentinel) DESC, c.id.configId ASC");
+
+            TypedQuery<JpaPushNotificationConfig> query = em.createQuery(queryBuilder.toString(), JpaPushNotificationConfig.class);
+            query.setParameter("taskId", taskId);
+            query.setParameter("nullSentinel", NULL_TIMESTAMP_SENTINEL);
+
+            if (params.pageToken() != null && !params.pageToken().isEmpty()) {
+              String[] tokenParts = params.pageToken().split(":", 2);
+              if (tokenParts.length == 2) {
+                try {
+                  long timestampMillis = Long.parseLong(tokenParts[0]);
+                  String tokenId = tokenParts[1];
+
+                  Instant tokenTimestamp = Instant.ofEpochMilli(timestampMillis);
+                  query.setParameter("tokenTimestamp", tokenTimestamp);
+                  query.setParameter("tokenId", tokenId);
+                } catch (NumberFormatException e) {
+                  // Malformed timestamp in pageToken
+                  throw new io.a2a.spec.InvalidParamsError(null,
+                      "Invalid pageToken format: timestamp must be numeric milliseconds", null);
+                }
+              }
+            }
+
+            int pageSize = params.getEffectivePageSize();
+            query.setMaxResults(pageSize + 1);
+            List<JpaPushNotificationConfig> jpaConfigsPage = query.getResultList();
+
+            String nextPageToken = null;
+            if (jpaConfigsPage.size() > pageSize) {
+              // There are more results than the page size, and in this case, a nextToken should be created with the last item.
+              // Format: "timestamp_millis:taskId" for keyset pagination
+              jpaConfigsPage = jpaConfigsPage.subList(0, pageSize);
+              JpaPushNotificationConfig lastConfig =  jpaConfigsPage.get(jpaConfigsPage.size() - 1);
+              Instant timestamp = lastConfig.getCreatedAt() != null ? lastConfig.getCreatedAt() : NULL_TIMESTAMP_SENTINEL;
+              nextPageToken = timestamp.toEpochMilli() + ":" + lastConfig.getId().getConfigId();
+            }
+
+            List<PushNotificationConfig> configs = jpaConfigsPage.stream()
                     .map(jpaConfig -> {
                         try {
                             return jpaConfig.getConfig();
@@ -95,55 +146,15 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
 
             LOGGER.debug("Successfully retrieved {} PushNotificationConfigs for Task '{}'", configs.size(), taskId);
 
-            // Handle pagination
-            if (configs.isEmpty()) {
-                return new ListTaskPushNotificationConfigResult(Collections.emptyList());
-            }
+            List<TaskPushNotificationConfig> taskPushNotificationConfigs = configs.stream()
+                .map(config -> new TaskPushNotificationConfig(params.id(), config, params.tenant()))
+                .collect(Collectors.toList());
 
-            if (params.pageSize() <= 0) {
-                return new ListTaskPushNotificationConfigResult(convertPushNotificationConfig(configs, params), null);
-            }
-
-            // Apply pageToken filtering if provided
-            List<PushNotificationConfig> paginatedConfigs = configs;
-            if (params.pageToken() != null && !params.pageToken().isBlank()) {
-                int index = findFirstIndex(configs, params.pageToken());
-                if (index < configs.size()) {
-                    paginatedConfigs = configs.subList(index, configs.size());
-                }
-            }
-
-            // Apply page size limit
-            if (paginatedConfigs.size() <= params.pageSize()) {
-                return new ListTaskPushNotificationConfigResult(convertPushNotificationConfig(paginatedConfigs, params), null);
-            }
-
-            String nextToken = paginatedConfigs.get(params.pageSize()).token();
-            return new ListTaskPushNotificationConfigResult(
-                    convertPushNotificationConfig(paginatedConfigs.subList(0, params.pageSize()), params),
-                    nextToken);
+            return new ListTaskPushNotificationConfigResult(taskPushNotificationConfigs, nextPageToken);
         } catch (Exception e) {
             LOGGER.error("Failed to retrieve PushNotificationConfigs for Task '{}'", taskId, e);
             throw e;
         }
-    }
-
-    private int findFirstIndex(List<PushNotificationConfig> configs, String token) {
-        for (int i = 0; i < configs.size(); i++) {
-            if (token.equals(configs.get(i).token())) {
-                return i;
-            }
-        }
-        return configs.size();
-    }
-
-    private List<TaskPushNotificationConfig> convertPushNotificationConfig(List<PushNotificationConfig> pushNotificationConfigList, ListTaskPushNotificationConfigParams params) {
-        List<TaskPushNotificationConfig> taskPushNotificationConfigList = new ArrayList<>(pushNotificationConfigList.size());
-        for (PushNotificationConfig pushNotificationConfig : pushNotificationConfigList) {
-            TaskPushNotificationConfig taskPushNotificationConfig = new TaskPushNotificationConfig(params.id(), pushNotificationConfig, params.tenant());
-            taskPushNotificationConfigList.add(taskPushNotificationConfig);
-        }
-        return taskPushNotificationConfigList;
     }
 
     @Transactional

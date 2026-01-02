@@ -4,13 +4,16 @@ import static io.a2a.client.http.A2AHttpClient.APPLICATION_JSON;
 import static io.a2a.client.http.A2AHttpClient.CONTENT_TYPE;
 import static io.a2a.common.A2AHeaders.X_A2A_NOTIFICATION_TOKEN;
 
+import io.a2a.spec.TaskPushNotificationConfig;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.JdkA2AHttpClient;
@@ -26,6 +29,7 @@ import org.slf4j.LoggerFactory;
 public class BasePushNotificationSender implements PushNotificationSender {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasePushNotificationSender.class);
+    public static final int DEFAULT_PAGE_SIZE = 100;
 
     private final A2AHttpClient httpClient;
     private final PushNotificationConfigStore configStore;
@@ -43,12 +47,18 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     @Override
     public void sendNotification(Task task) {
-        ListTaskPushNotificationConfigResult pushConfigs = configStore.getInfo(new ListTaskPushNotificationConfigParams(task.id()));
-        if (pushConfigs == null || pushConfigs.isEmpty()) {
-            return;
-        }
+        List<TaskPushNotificationConfig> configs = new ArrayList<>();
+        String nextPageToken = null;
+        do {
+          ListTaskPushNotificationConfigResult pageResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(task.id(),
+              DEFAULT_PAGE_SIZE, nextPageToken, ""));
+          if (!pageResult.configs().isEmpty()) {
+            configs.addAll(pageResult.configs());
+          }
+          nextPageToken = pageResult.nextPageToken();
+        } while (nextPageToken != null);
 
-        List<CompletableFuture<Boolean>> dispatchResults = pushConfigs.configs()
+        List<CompletableFuture<Boolean>> dispatchResults = configs
                 .stream()
                 .map(pushConfig -> dispatch(task, pushConfig.pushNotificationConfig()))
                 .toList();
@@ -57,7 +67,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
                 .allMatch(CompletableFuture::join));
         try {
             boolean allSent = dispatchResult.get();
-            if (! allSent) {
+            if (!allSent) {
                 LOGGER.warn("Some push notifications failed to send for taskId: " + task.id());
             }
         } catch (InterruptedException | ExecutionException e) {

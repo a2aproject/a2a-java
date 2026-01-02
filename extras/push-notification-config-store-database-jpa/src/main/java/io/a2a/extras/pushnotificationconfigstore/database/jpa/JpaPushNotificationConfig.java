@@ -3,12 +3,14 @@ package io.a2a.extras.pushnotificationconfigstore.database.jpa;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.spec.PushNotificationConfig;
+import java.time.Instant;
 
 @Entity
 @Table(name = "a2a_push_notification_configs")
@@ -18,6 +20,9 @@ public class JpaPushNotificationConfig {
 
     @Column(name = "task_data", columnDefinition = "TEXT", nullable = false)
     private String configJson;
+
+    @Column(name = "created_at")
+    private Instant createdAt;
 
     @Transient
     private PushNotificationConfig config;
@@ -31,6 +36,12 @@ public class JpaPushNotificationConfig {
         this.configJson = configJson;
     }
 
+    @PrePersist
+    protected void onCreate() {
+      if (createdAt == null) {
+        createdAt = Instant.now();
+      }
+    }
 
     public TaskConfigId getId() {
         return id;
@@ -58,6 +69,14 @@ public class JpaPushNotificationConfig {
         }
         configJson = JsonUtil.toJson(config);
         this.config = config;
+    }
+
+    public Instant getCreatedAt() {
+      return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+      this.createdAt = createdAt;
     }
 
     static JpaPushNotificationConfig createFromConfig(String taskId, PushNotificationConfig config) throws JsonProcessingException {
