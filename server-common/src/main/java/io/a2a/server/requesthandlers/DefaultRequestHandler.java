@@ -109,7 +109,7 @@ import org.slf4j.LoggerFactory;
  *   <li>Transport calls {@link #onMessageSendStream(MessageSendParams, ServerCallContext)}</li>
  *   <li>Initialize components (same as blocking)</li>
  *   <li>Execute {@link AgentExecutor#execute(RequestContext, EventQueue)} asynchronously</li>
- *   <li>Return {@link java.util.concurrent.Flow.Publisher Flow.Publisher<StreamingEventKind>} immediately</li>
+ *   <li>Return {@link java.util.concurrent.Flow.Publisher Flow.Publisher}&lt;StreamingEventKind&gt; immediately</li>
  *   <li>Events stream to client as they arrive in the queue</li>
  *   <li>On client disconnect: continue consumption in background (fire-and-forget)</li>
  *   <li>Cleanup after streaming completes</li>

@@ -87,7 +87,6 @@ public interface PushNotificationConfigStore {
      * <p>
      * Returns all configs if {@code params.pageSize()} is 0. Otherwise, returns up to
      * {@code pageSize} configs and a continuation token for the next page.
-     * </p>
      * <p>
      * <b>Pagination Example:</b>
      * <pre>{@code
@@ -103,7 +102,6 @@ public interface PushNotificationConfigStore {
      *     result = store.getInfo(params);
      * }
      * }</pre>
-     * </p>
      *
      * @param params the query parameters including task ID, page size, and page token
      * @return the configurations for this task (empty list if none found)

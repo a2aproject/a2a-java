@@ -142,7 +142,6 @@ public class RequestContext {
      * <p>
      * For new conversations, this is null. For continuing conversations, contains
      * the full task state including history, artifacts, and status.
-     * </p>
      * <p>
      * <b>Common Pattern:</b>
      * <pre>{@code
@@ -153,7 +152,6 @@ public class RequestContext {
      *     List<Message> history = context.getTask().history();
      * }
      * }</pre>
-     * </p>
      *
      * @return the existing task, or null if this is a new conversation
      */
@@ -218,7 +216,6 @@ public class RequestContext {
      * <p>
      * This is a convenience method for getting text input from messages that may contain
      * multiple text parts. Non-text parts (images, etc.) are ignored.
-     * </p>
      * <p>
      * <b>Examples:</b>
      * <pre>{@code
@@ -231,7 +228,6 @@ public class RequestContext {
      * // Default delimiter is newline
      * String text = context.getUserInput(null);  // uses "\n"
      * }</pre>
-     * </p>
      *
      * @param delimiter the string to insert between text parts (null defaults to "\n")
      * @return all text parts joined with delimiter, or empty string if no message

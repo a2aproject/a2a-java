@@ -131,12 +131,10 @@ public interface AgentExecutor {
      *   <li>Enqueue a CANCELED status event (typically via {@code TaskUpdater.cancel()})</li>
      *   <li>Clean up resources (close connections, release locks)</li>
      * </ul>
-     * </p>
      * <p>
      * <b>Note:</b> The {@link #execute(RequestContext, EventQueue)} method may still be
      * running on another thread. Use appropriate synchronization or interruption mechanisms
      * if your agent maintains cancellable state.
-     * </p>
      * <p>
      * <b>Error Handling:</b>
      * <ul>
@@ -146,7 +144,6 @@ public interface AgentExecutor {
      *       (e.g., unable to interrupt running operation)</li>
      *   <li>Return normally after enqueueing CANCELED event if cancellation succeeds</li>
      * </ul>
-     * </p>
      *
      * @param context the request context for the task being canceled
      * @param eventQueue the queue for enqueueing the cancellation event

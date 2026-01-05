@@ -116,11 +116,9 @@ public interface QueueManager {
      *   <li>Canceling a task while still receiving status updates</li>
      *   <li>Multiple concurrent consumers of the same task</li>
      * </ul>
-     * </p>
      * <p>
      * The ChildQueue receives events enqueued AFTER it's created. Historical events
      * are not replayed.
-     * </p>
      *
      * @param taskId the task identifier
      * @return a ChildQueue that receives future events, or null if the MainQueue doesn't exist
@@ -146,7 +144,6 @@ public interface QueueManager {
      *   <li><b>New task:</b> Creates and returns a MainQueue</li>
      *   <li><b>Resubscription:</b> Taps existing MainQueue and returns a ChildQueue</li>
      * </ul>
-     * </p>
      *
      * @param taskId the task identifier
      * @return a MainQueue (if new task) or ChildQueue (if tapping existing)
