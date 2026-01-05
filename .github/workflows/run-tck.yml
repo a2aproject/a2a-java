@@ -107,6 +107,7 @@ jobs:
         id: run-tck
         timeout-minutes: 5
         run: |
+          set -o pipefail
           ./run_tck.py --sut-url ${{ env.SUT_JSONRPC_URL }} --category all --transports jsonrpc,grpc,rest --compliance-report report.json 2>&1 | tee tck-output.log
         working-directory: tck/a2a-tck
       - name: Capture Diagnostics on Failure
