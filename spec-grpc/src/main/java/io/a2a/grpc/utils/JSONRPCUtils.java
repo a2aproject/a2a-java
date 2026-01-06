@@ -418,8 +418,8 @@ public class JSONRPCUtils {
         try {
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
-            log.log(Level.SEVERE, "Protocol buffer parsing failed for JSON: {0}", body);
-            log.log(Level.SEVERE, "Proto parsing error details", e);
+            log.log(Level.FINE, "Protocol buffer parsing failed for JSON: {0}", body);
+            log.log(Level.FINE, "Proto parsing error details", e);
             throw convertProtoBufExceptionToJsonProcessingException(e, id);
         }
     }
