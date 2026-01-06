@@ -2,6 +2,7 @@ package io.a2a.tck.server;
 
 import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 
+import io.a2a.server.ExtendedAgentCard;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class AgentCardProducer {
 
     @Produces
     @PublicAgentCard
+    @ExtendedAgentCard
     public AgentCard agentCard() {
 
         String sutJsonRpcUrl = getEnvOrDefault("SUT_JSONRPC_URL", DEFAULT_SUT_URL);
@@ -51,6 +53,7 @@ public class AgentCardProducer {
                                 .examples(List.of("hi", "hello world"))
                                 .build()))
                 .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .supportsExtendedAgentCard(true)
                 .build();
     }
 
