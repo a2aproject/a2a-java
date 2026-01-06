@@ -36,7 +36,7 @@ public interface MessageMapper {
      * Uses Builder pattern explicitly configured via @BeanMapping.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "messageId", source = "messageId", qualifiedByName = "emptyToNull")
+    @Mapping(target = "messageId", source = "messageId", qualifiedByName = "requireNonEmpty")
     @Mapping(target = "contextId", source = "contextId", qualifiedByName = "emptyToNull")
     @Mapping(target = "taskId", source = "taskId", qualifiedByName = "emptyToNull")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")

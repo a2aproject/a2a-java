@@ -14,6 +14,8 @@ import com.google.protobuf.Value;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
+import io.a2a.spec.InvalidParamsError;
+
 /**
  * Common field mapping utilities shared across all mappers.
  * <p>
@@ -44,6 +46,24 @@ public interface A2ACommonFieldMapper {
     @Named("emptyToNull")
     default String emptyToNull(String value) {
         return (value == null || value.isEmpty()) ? null : value;
+    }
+
+    /**
+     * Validates that a required string field is not null or empty.
+     * <p>
+     * Throws an exception if the protobuf string is null or empty.
+     * Use this with {@code @Mapping(qualifiedByName = "requireNonEmpty")}.
+     *
+     * @param value the protobuf string value
+     * @return the value if not null/empty
+     * @throws IllegalArgumentException if value is null or empty
+     */
+    @Named("requireNonEmpty")
+    default String requireNonEmpty(String value) {
+        if (value == null || value.isEmpty()) {
+            throw new InvalidParamsError("Required field cannot be null or empty");
+        }
+        return value;
     }
 
     /**
