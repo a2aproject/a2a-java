@@ -177,7 +177,31 @@ public interface QueueManager {
      * @return a builder for creating event queues
      */
     default EventQueue.EventQueueBuilder getEventQueueBuilder(String taskId) {
-        return EventQueue.builder();
+        throw new UnsupportedOperationException(
+            "QueueManager implementations must override getEventQueueBuilder() to provide MainEventBus"
+        );
+    }
+
+    /**
+     * Creates a base EventQueueBuilder with standard configuration for this QueueManager.
+     * This method provides the foundation for creating event queues with proper configuration
+     * (MainEventBus, TaskStateProvider, cleanup callbacks, etc.).
+     * <p>
+     * QueueManager implementations that use custom factories can call this method directly
+     * to get the base builder without going through the factory (which could cause infinite
+     * recursion if the factory delegates back to getEventQueueBuilder()).
+     * </p>
+     * <p>
+     * Callers can then add additional configuration (hooks, callbacks) before building the queue.
+     * </p>
+     *
+     * @param taskId the task ID for the queue
+     * @return a builder with base configuration specific to this QueueManager implementation
+     */
+    default EventQueue.EventQueueBuilder createBaseEventQueueBuilder(String taskId) {
+        throw new UnsupportedOperationException(
+            "QueueManager implementations must override createBaseEventQueueBuilder() to provide MainEventBus"
+        );
     }
 
     /**

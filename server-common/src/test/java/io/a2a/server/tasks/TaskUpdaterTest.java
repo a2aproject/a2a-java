@@ -14,7 +14,10 @@ import java.util.Map;
 
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
+import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.EventQueueUtil;
+import io.a2a.server.events.MainEventBus;
+import io.a2a.server.events.MainEventBusProcessor;
 import io.a2a.spec.Event;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
@@ -22,6 +25,7 @@ import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,14 +42,27 @@ public class TaskUpdaterTest {
 
     private static final List<Part<?>> SAMPLE_PARTS = List.of(new TextPart("Test message"));
 
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
+
     EventQueue eventQueue;
+    private MainEventBus mainEventBus;
+    private MainEventBusProcessor mainEventBusProcessor;
     private TaskUpdater taskUpdater;
 
 
 
     @BeforeEach
     public void init() {
-        eventQueue = EventQueueUtil.getEventQueueBuilder().build();
+        // Set up MainEventBus and processor for production-like test environment
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        mainEventBus = new MainEventBus();
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER);
+        EventQueueUtil.start(mainEventBusProcessor);
+
+        eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(TEST_TASK_ID)
+                .mainEventBus(mainEventBus)
+                .build().tap();
         RequestContext context = new RequestContext.Builder()
                 .setTaskId(TEST_TASK_ID)
                 .setContextId(TEST_TASK_CONTEXT_ID)
@@ -53,10 +70,19 @@ public class TaskUpdaterTest {
         taskUpdater = new TaskUpdater(context, eventQueue);
     }
 
+    @AfterEach
+    public void cleanup() {
+        if (mainEventBusProcessor != null) {
+            EventQueueUtil.stop(mainEventBusProcessor);
+        }
+    }
+
     @Test
     public void testAddArtifactWithCustomIdAndName() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "custom-artifact-id", "Custom Artifact", null);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -239,7 +265,9 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactWithAppendTrue() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, true, null);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -258,7 +286,9 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactWithLastChunkTrue() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, null, true);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -273,7 +303,9 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactWithAppendAndLastChunk() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, "artifact-id", "Test Artifact", null, true, false);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -287,7 +319,9 @@ public class TaskUpdaterTest {
     @Test
     public void testAddArtifactGeneratesIdWhenNull() throws Exception {
         taskUpdater.addArtifact(SAMPLE_PARTS, null, "Test Artifact", null);
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskArtifactUpdateEvent.class, event);
 
@@ -383,7 +417,9 @@ public class TaskUpdaterTest {
         thread2.join();
 
         // Exactly one event should have been queued
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
         assertNotNull(event);
         assertInstanceOf(TaskStatusUpdateEvent.class, event);
 
@@ -396,7 +432,10 @@ public class TaskUpdaterTest {
     }
 
     private TaskStatusUpdateEvent checkTaskStatusUpdateEventOnQueue(boolean isFinal, TaskState state, Message statusMessage) throws Exception {
-        Event event = eventQueue.dequeueEventItem(0).getEvent();
+        // Wait up to 5 seconds for event (async MainEventBusProcessor needs time to distribute)
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event event = item.getEvent();
 
         assertNotNull(event);
         assertInstanceOf(TaskStatusUpdateEvent.class, event);
@@ -408,6 +447,7 @@ public class TaskUpdaterTest {
         assertEquals(state, tsue.status().state());
         assertEquals(statusMessage, tsue.status().message());
 
+        // Check no additional events (still use 0 timeout for this check)
         assertNull(eventQueue.dequeueEventItem(0));
 
         return tsue;

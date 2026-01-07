@@ -26,7 +26,10 @@ import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.EventQueueItem;
+import io.a2a.server.events.EventQueueUtil;
 import io.a2a.server.events.InMemoryQueueManager;
+import io.a2a.server.events.MainEventBus;
+import io.a2a.server.events.MainEventBusProcessor;
 import io.a2a.server.tasks.BasePushNotificationSender;
 import io.a2a.server.tasks.InMemoryPushNotificationConfigStore;
 import io.a2a.server.tasks.InMemoryTaskStore;
@@ -66,6 +69,8 @@ public class AbstractA2ARequestHandlerTest {
     private static final String PREFERRED_TRANSPORT = "preferred-transport";
     private static final String A2A_REQUESTHANDLER_TEST_PROPERTIES = "/a2a-requesthandler-test.properties";
 
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
+
     protected AgentExecutor executor;
     protected TaskStore taskStore;
     protected RequestHandler requestHandler;
@@ -73,6 +78,8 @@ public class AbstractA2ARequestHandlerTest {
     protected AgentExecutorMethod agentExecutorCancel;
     protected InMemoryQueueManager queueManager;
     protected TestHttpClient httpClient;
+    protected MainEventBus mainEventBus;
+    protected MainEventBusProcessor mainEventBusProcessor;
 
     protected final Executor internalExecutor = Executors.newCachedThreadPool();
 
@@ -96,19 +103,32 @@ public class AbstractA2ARequestHandlerTest {
 
         InMemoryTaskStore inMemoryTaskStore = new InMemoryTaskStore();
         taskStore = inMemoryTaskStore;
-        queueManager = new InMemoryQueueManager(inMemoryTaskStore);
+
+        // Create push notification components BEFORE MainEventBusProcessor
         httpClient = new TestHttpClient();
         PushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
         PushNotificationSender pushSender = new BasePushNotificationSender(pushConfigStore, httpClient);
 
+        // Create MainEventBus and MainEventBusProcessor (production code path)
+        mainEventBus = new MainEventBus();
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, pushSender);
+        EventQueueUtil.start(mainEventBusProcessor);
+
+        queueManager = new InMemoryQueueManager(inMemoryTaskStore, mainEventBus);
+
         requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, pushConfigStore, pushSender, internalExecutor);
+                executor, taskStore, queueManager, pushConfigStore, internalExecutor);
     }
 
     @AfterEach
     public void cleanup() {
         agentExecutorExecute = null;
         agentExecutorCancel = null;
+
+        // Stop MainEventBusProcessor background thread
+        if (mainEventBusProcessor != null) {
+            EventQueueUtil.stop(mainEventBusProcessor);
+        }
     }
 
     protected static AgentCard createAgentCard(boolean streaming, boolean pushNotifications, boolean stateTransitionHistory) {
