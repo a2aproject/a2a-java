@@ -213,13 +213,17 @@ public class RestHandler {
                 try {
                     paramsBuilder.status(TaskState.fromString(status));
                 } catch (IllegalArgumentException e) {
-                    String validStates = Arrays.stream(TaskState.values())
-                            .map(TaskState::asString)
-                            .collect(Collectors.joining(", "));
-                    Map<String, Object> errorData = new HashMap<>();
-                    errorData.put("parameter", "status");
-                    errorData.put("reason", "Must be one of: " + validStates);
-                    throw new InvalidParamsError(null, "Invalid params", errorData);
+                    try {
+                        paramsBuilder.status(TaskState.valueOf(status));
+                    } catch (IllegalArgumentException valueOfError) {
+                        String validStates = Arrays.stream(TaskState.values())
+                                .map(TaskState::asString)
+                                .collect(Collectors.joining(", "));
+                        Map<String, Object> errorData = new HashMap<>();
+                        errorData.put("parameter", "status");
+                        errorData.put("reason", "Must be one of: " + validStates);
+                        throw new InvalidParamsError(null, "Invalid params", errorData);
+                    }
                 }
             }
             if (pageSize != null) {
