@@ -5,6 +5,7 @@ import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
 
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -12,6 +13,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
@@ -211,9 +213,12 @@ public class RestHandler {
                 try {
                     paramsBuilder.status(TaskState.fromString(status));
                 } catch (IllegalArgumentException e) {
+                    String validStates = Arrays.stream(TaskState.values())
+                            .map(TaskState::asString)
+                            .collect(Collectors.joining(", "));
                     Map<String, Object> errorData = new HashMap<>();
                     errorData.put("parameter", "status");
-                    errorData.put("reason", "Must be one of: submitted, working, input-required, auth-required, completed, canceled, failed, rejected, unknown");
+                    errorData.put("reason", "Must be one of: " + validStates);
                     throw new InvalidParamsError(null, "Invalid params", errorData);
                 }
             }
