@@ -59,6 +59,31 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
+    public void testListTasksStatusWireString() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK);
+
+        RestHandler.HTTPRestResponse response = handler.listTasks(null, "submitted", null, null,
+                null, null, null, "", callContext);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testListTasksInvalidStatus() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+
+        RestHandler.HTTPRestResponse response = handler.listTasks(null, "not-a-status", null, null,
+                null, null, null, "", callContext);
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("InvalidParamsError"));
+    }
+
+    @Test
     public void testSendMessage() throws InvalidProtocolBufferException {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         agentExecutorExecute = (context, eventQueue) -> {

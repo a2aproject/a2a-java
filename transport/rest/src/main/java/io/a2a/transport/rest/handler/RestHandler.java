@@ -208,7 +208,14 @@ public class RestHandler {
                 paramsBuilder.contextId(contextId);
             }
             if (status != null) {
-                paramsBuilder.status(TaskState.valueOf(status));
+                try {
+                    paramsBuilder.status(TaskState.fromString(status));
+                } catch (IllegalArgumentException e) {
+                    Map<String, Object> errorData = new HashMap<>();
+                    errorData.put("parameter", "status");
+                    errorData.put("reason", "Must be one of: submitted, working, input-required, auth-required, completed, canceled, failed, rejected, unknown");
+                    throw new InvalidParamsError(null, "Invalid params", errorData);
+                }
             }
             if (pageSize != null) {
                 paramsBuilder.pageSize(pageSize);
