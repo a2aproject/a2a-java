@@ -6,20 +6,26 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import io.a2a.client.config.ClientConfig;
 import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.client.transport.spi.ClientTransportConfig;
 import io.a2a.client.transport.spi.ClientTransportConfigBuilder;
 import io.a2a.client.transport.spi.ClientTransportProvider;
+import io.a2a.client.transport.spi.ClientTransportWrapper;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.TransportProtocol;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Builder for creating instances of {@link Client} to communicate with A2A agents.
@@ -96,6 +102,7 @@ public class ClientBuilder {
 
     private static final Map<String, ClientTransportProvider<? extends ClientTransport, ? extends ClientTransportConfig<?>>> transportProviderRegistry = new HashMap<>();
     private static final Map<Class<? extends ClientTransport>, String> transportProtocolMapping = new HashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientBuilder.class);
 
     static {
         ServiceLoader<ClientTransportProvider> loader = ServiceLoader.load(ClientTransportProvider.class);
@@ -108,7 +115,8 @@ public class ClientBuilder {
     private final AgentCard agentCard;
 
     private final List<BiConsumer<ClientEvent, AgentCard>> consumers = new ArrayList<>();
-    private @Nullable Consumer<Throwable> streamErrorHandler;
+    private @Nullable
+    Consumer<Throwable> streamErrorHandler;
     private ClientConfig clientConfig = new ClientConfig.Builder().build();
 
     private final Map<Class<? extends ClientTransport>, ClientTransportConfig<? extends ClientTransport>> clientTransports = new LinkedHashMap<>();
@@ -318,7 +326,7 @@ public class ClientBuilder {
             throw new A2AClientException("Missing required TransportConfig for " + agentInterface.protocolBinding());
         }
 
-        return clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface);
+        return wrap(clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface), clientTransportConfig);
     }
 
     private Map<String, String> getServerPreferredTransports() throws A2AClientException {
@@ -373,10 +381,50 @@ public class ClientBuilder {
         if (transportProtocol == null || transportUrl == null) {
             throw new A2AClientException("No compatible transport found");
         }
-        if (! transportProviderRegistry.containsKey(transportProtocol)) {
+        if (!transportProviderRegistry.containsKey(transportProtocol)) {
             throw new A2AClientException("No client available for " + transportProtocol);
         }
 
         return new AgentInterface(transportProtocol, transportUrl);
+    }
+
+    /**
+     * Wraps the transport with all available transport wrappers discovered via ServiceLoader.
+     * Wrappers are applied in priority order (highest priority first).
+     *
+     * @param transport the base transport to wrap
+     * @param clientTransportConfig the transport configuration
+     * @return the wrapped transport (or original if no wrappers are available/applicable)
+     */
+    private ClientTransport wrap(ClientTransport transport, ClientTransportConfig<? extends ClientTransport> clientTransportConfig) {
+        ServiceLoader<ClientTransportWrapper> wrapperLoader = ServiceLoader.load(ClientTransportWrapper.class);
+
+        // Collect all wrappers and sort by natural order (uses Comparable implementation)
+        List<ClientTransportWrapper> wrappers = wrapperLoader.stream().map(Provider::get)
+                .sorted()
+                .collect(Collectors.toList());
+
+        if (wrappers.isEmpty()) {
+            LOGGER.debug("No client transport wrappers found via ServiceLoader");
+            return transport;
+        }
+
+        // Apply wrappers in priority order
+        ClientTransport wrapped = transport;
+        for (ClientTransportWrapper wrapper : wrappers) {
+            try {
+                ClientTransport newWrapped = wrapper.wrap(wrapped, clientTransportConfig);
+                if (newWrapped != wrapped) {
+                    LOGGER.debug("Applied transport wrapper: {} (priority: {})",
+                            wrapper.getClass().getName(), wrapper.priority());
+                }
+                wrapped = newWrapped;
+            } catch (Exception e) {
+                LOGGER.warn("Failed to apply transport wrapper {}: {}",
+                        wrapper.getClass().getName(), e.getMessage(), e);
+            }
+        }
+
+        return wrapped;
     }
 }

@@ -9,6 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
 import io.a2a.server.PublicAgentCard;
+import io.a2a.server.interceptors.Trace;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
@@ -17,6 +18,7 @@ import io.a2a.spec.AgentSkill;
 @ApplicationScoped
 public class AgentCardProducer {
 
+    @Trace
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
@@ -26,7 +28,7 @@ public class AgentCardProducer {
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
                 .supportedInterfaces(Collections.singletonList(
-                        new AgentInterface("jsonrpc", "http://localhost:9999")))
+                        new AgentInterface("JSONRPC", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(AgentCapabilities.builder()
