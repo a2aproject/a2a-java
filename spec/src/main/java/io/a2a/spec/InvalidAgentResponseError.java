@@ -35,7 +35,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  *
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public class InvalidAgentResponseError extends A2AError {
+public class InvalidAgentResponseError extends A2AProtocolError {
 
     /**
      * Constructs an invalid agent response error.
@@ -48,6 +48,7 @@ public class InvalidAgentResponseError extends A2AError {
         super(
                 defaultIfNull(code, INVALID_AGENT_RESPONSE_ERROR_CODE),
                 defaultIfNull(message, "Invalid agent response"),
-                data);
+                data,
+                "https://a2a-protocol.org/errors/invalid-agent-response");
     }
 }

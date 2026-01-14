@@ -49,6 +49,7 @@ public record DataPart(Map<String, Object> data) implements Part<Map<String, Obj
     /**
      * Compact constructor with validation and defensive copying.
      *
+     * @param data the structured data map (required, defensively copied for immutability)
      * @throws IllegalArgumentException if data is null
      */
     public DataPart {

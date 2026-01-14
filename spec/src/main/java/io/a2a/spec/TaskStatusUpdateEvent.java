@@ -30,6 +30,12 @@ public record TaskStatusUpdateEvent(
 
     /**
      * Compact constructor with validation.
+     * @param taskId the task identifier (required)
+     * @param status the task status (required)
+     * @param contextId the context identifier (required)
+     * @param isFinal whether this is a final status
+     * @param metadata additional metadata (optional)
+     * @throws IllegalArgumentException if taskId, status, or contextId is null
      */
     public TaskStatusUpdateEvent {
         Assert.checkNotNullParam("taskId", taskId);

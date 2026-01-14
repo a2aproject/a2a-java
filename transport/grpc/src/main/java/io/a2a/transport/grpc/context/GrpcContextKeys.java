@@ -12,10 +12,17 @@ import io.grpc.Context;
 public final class GrpcContextKeys {
     
     /**
+     * Context key for storing the X-A2A-Version header value.
+     * Set by server interceptors and accessed by service handlers.
+     */
+    public static final Context.Key<String> VERSION_HEADER_KEY =
+        Context.key("x-a2a-version");
+
+    /**
      * Context key for storing the X-A2A-Extensions header value.
      * Set by server interceptors and accessed by service handlers.
      */
-    public static final Context.Key<String> EXTENSIONS_HEADER_KEY = 
+    public static final Context.Key<String> EXTENSIONS_HEADER_KEY =
         Context.key("x-a2a-extensions");
     
     /**

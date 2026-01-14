@@ -29,6 +29,9 @@ public record APIKeySecurityScheme(
     /**
      * Compact constructor with validation.
      *
+     * @param location the location where the API key is sent (required)
+     * @param name the name of the API key parameter (required)
+     * @param description a human-readable description (optional)
      * @throws IllegalArgumentException if location or name is null
      */
     public APIKeySecurityScheme {

@@ -36,11 +36,14 @@ import io.a2a.server.AgentCardValidator;
 import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.ServerCallContext;
+import io.a2a.server.extensions.A2AExtensions;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.server.util.async.Internal;
+import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidRequestError;
@@ -50,16 +53,34 @@ import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
+import io.a2a.spec.VersionNotSupportedError;
 import mutiny.zero.ZeroPublisher;
 import org.jspecify.annotations.Nullable;
 
 @ApplicationScoped
 public class JSONRPCHandler {
 
+    // Fields set by constructor injection cannot be final. We need a noargs constructor for
+    // Jakarta compatibility, and it seems that making fields set by constructor injection
+    // final, is not proxyable in all runtimes
     private AgentCard agentCard;
     private @Nullable Instance<AgentCard> extendedAgentCard;
     private RequestHandler requestHandler;
-    private final Executor executor;
+    private Executor executor;
+
+    /**
+     * No-args constructor for CDI proxy creation.
+     * CDI requires a non-private constructor to create proxies for @ApplicationScoped beans.
+     * All fields are initialized by the @Inject constructor during actual bean creation.
+     */
+    @SuppressWarnings("NullAway")
+    protected JSONRPCHandler() {
+        // For CDI proxy creation
+        this.agentCard = null;
+        this.extendedAgentCard = null;
+        this.requestHandler = null;
+        this.executor = null;
+    }
 
     @Inject
     public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, @Nullable @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
@@ -79,6 +100,8 @@ public class JSONRPCHandler {
 
     public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
         try {
+            A2AVersionValidator.validateProtocolVersion(agentCard, context);
+            A2AExtensions.validateRequiredExtensions(agentCard, context);
             EventKind taskOrMessage = requestHandler.onMessageSend(request.getParams(), context);
             return new SendMessageResponse(request.getId(), taskOrMessage);
         } catch (A2AError e) {
@@ -99,6 +122,8 @@ public class JSONRPCHandler {
         }
 
         try {
+            A2AVersionValidator.validateProtocolVersion(agentCard, context);
+            A2AExtensions.validateRequiredExtensions(agentCard, context);
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onMessageSendStream(request.getParams(), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
@@ -241,7 +266,7 @@ public class JSONRPCHandler {
             GetAuthenticatedExtendedCardRequest request, ServerCallContext context) {
         if (!agentCard.supportsExtendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
             return new GetAuthenticatedExtendedCardResponse(request.getId(),
-                    new AuthenticatedExtendedCardNotConfiguredError(null, "Authenticated Extended Card not configured", null));
+                    new ExtendedCardNotConfiguredError(null, "Extended Card not configured", null));
         }
         try {
             return new GetAuthenticatedExtendedCardResponse(request.getId(), extendedAgentCard.get());

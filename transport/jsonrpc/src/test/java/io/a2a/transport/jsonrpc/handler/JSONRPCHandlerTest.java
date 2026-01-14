@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -43,9 +44,14 @@ import io.a2a.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import io.a2a.server.requesthandlers.DefaultRequestHandler;
 import io.a2a.server.tasks.ResultAggregator;
 import io.a2a.server.tasks.TaskUpdater;
+import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentExtension;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.Artifact;
-import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtensionSupportRequiredError;
+import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
@@ -1519,7 +1525,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         GetAuthenticatedExtendedCardRequest request = new GetAuthenticatedExtendedCardRequest("1");
         GetAuthenticatedExtendedCardResponse response = handler.onGetAuthenticatedExtendedCardRequest(request, callContext);
         assertEquals(request.getId(), response.getId());
-        assertInstanceOf(AuthenticatedExtendedCardNotConfiguredError.class, response.getError());
+        assertInstanceOf(ExtendedCardNotConfiguredError.class, response.getError());
         assertNull(response.getResult());
     }
 
@@ -1599,5 +1605,358 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         // Verify we received the event and main thread was not blocked
         Assertions.assertTrue(eventReceived.get(), "Should have received streaming event");
         Assertions.assertFalse(mainThreadBlocked.get(), "Main thread should not have been blocked");
+    }
+
+    @Test
+    public void testExtensionSupportRequiredErrorOnMessageSend() {
+        // Create AgentCard with a required extension
+        AgentCard cardWithExtension = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with required extension")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("JSONRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extensions(List.of(
+                                AgentExtension.builder()
+                                        .uri("https://example.com/test-extension")
+                                        .required(true)
+                                        .build()
+                        ))
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .build();
+
+        JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);
+
+        // Use callContext which has empty requestedExtensions set
+        Message message = Message.builder(MESSAGE)
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
+                .build();
+        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
+        SendMessageResponse response = handler.onMessageSend(request, callContext);
+
+        assertInstanceOf(ExtensionSupportRequiredError.class, response.getError());
+        Assertions.assertTrue(response.getError().getMessage().contains("https://example.com/test-extension"));
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testExtensionSupportRequiredErrorOnMessageSendStream() {
+        // Create AgentCard with a required extension
+        AgentCard cardWithExtension = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with required extension")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("JSONRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extensions(List.of(
+                                AgentExtension.builder()
+                                        .uri("https://example.com/streaming-extension")
+                                        .required(true)
+                                        .build()
+                        ))
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .build();
+
+        JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);
+
+        Message message = Message.builder(MESSAGE)
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
+                .build();
+        SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(message, null, null));
+        Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
+
+        List<SendStreamingMessageResponse> results = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        response.subscribe(new Flow.Subscriber<SendStreamingMessageResponse>() {
+            private Flow.Subscription subscription;
+
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(SendStreamingMessageResponse item) {
+                results.add(item);
+                subscription.request(1);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                error.set(throwable);
+                subscription.cancel();
+            }
+
+            @Override
+            public void onComplete() {
+                subscription.cancel();
+            }
+        });
+
+        assertEquals(1, results.size());
+        assertInstanceOf(ExtensionSupportRequiredError.class, results.get(0).getError());
+        Assertions.assertTrue(results.get(0).getError().getMessage().contains("https://example.com/streaming-extension"));
+        assertNull(results.get(0).getResult());
+    }
+
+    @Test
+    public void testRequiredExtensionProvidedSuccess() {
+        // Create AgentCard with a required extension
+        AgentCard cardWithExtension = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with required extension")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("JSONRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extensions(List.of(
+                                AgentExtension.builder()
+                                        .uri("https://example.com/required-extension")
+                                        .required(true)
+                                        .build()
+                        ))
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .build();
+
+        JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);
+
+        // Create context WITH the required extension
+        Set<String> requestedExtensions = new HashSet<>();
+        requestedExtensions.add("https://example.com/required-extension");
+        ServerCallContext contextWithExtension = new ServerCallContext(
+                UnauthenticatedUser.INSTANCE,
+                Map.of("foo", "bar"),
+                requestedExtensions
+        );
+
+        agentExecutorExecute = (context, eventQueue) -> {
+            eventQueue.enqueueEvent(context.getMessage());
+        };
+
+        Message message = Message.builder(MESSAGE)
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
+                .build();
+        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
+        SendMessageResponse response = handler.onMessageSend(request, contextWithExtension);
+
+        // Should succeed without ExtensionSupportRequiredError
+        assertNull(response.getError());
+        Assertions.assertSame(message, response.getResult());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnMessageSend() {
+        // Create AgentCard with protocol version 1.0
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("JSONRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        JSONRPCHandler handler = new JSONRPCHandler(agentCard, requestHandler, internalExecutor);
+
+        // Create context with incompatible version 2.0
+        ServerCallContext contextWithVersion = new ServerCallContext(
+                UnauthenticatedUser.INSTANCE,
+                Map.of("foo", "bar"),
+                new HashSet<>(),
+                "2.0"  // Incompatible version
+        );
+
+        Message message = Message.builder(MESSAGE)
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
+                .build();
+        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
+        SendMessageResponse response = handler.onMessageSend(request, contextWithVersion);
+
+        assertInstanceOf(VersionNotSupportedError.class, response.getError());
+        Assertions.assertTrue(response.getError().getMessage().contains("2.0"));
+        assertNull(response.getResult());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnMessageSendStream() throws Exception {
+        // Create AgentCard with protocol version 1.0
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("JSONRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        JSONRPCHandler handler = new JSONRPCHandler(agentCard, requestHandler, internalExecutor);
+
+        // Create context with incompatible version 2.0
+        ServerCallContext contextWithVersion = new ServerCallContext(
+                UnauthenticatedUser.INSTANCE,
+                Map.of("foo", "bar"),
+                new HashSet<>(),
+                "2.0"  // Incompatible version
+        );
+
+        Message message = Message.builder(MESSAGE)
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
+                .build();
+        SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(message, null, null));
+        Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, contextWithVersion);
+
+        List<SendStreamingMessageResponse> results = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        CountDownLatch latch = new CountDownLatch(1);
+
+        response.subscribe(new Flow.Subscriber<SendStreamingMessageResponse>() {
+            private Flow.Subscription subscription;
+
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(SendStreamingMessageResponse item) {
+                results.add(item);
+                subscription.request(1);
+                latch.countDown();
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                error.set(throwable);
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        // Wait for async processing
+        Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "Expected to receive error event within timeout");
+
+        assertEquals(1, results.size());
+        SendStreamingMessageResponse result = results.get(0);
+        assertInstanceOf(VersionNotSupportedError.class, result.getError());
+        Assertions.assertTrue(result.getError().getMessage().contains("2.0"));
+        assertNull(result.getResult());
+    }
+
+    @Test
+    public void testCompatibleVersionSuccess() {
+        // Create AgentCard with protocol version 1.0
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("JSONRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        JSONRPCHandler handler = new JSONRPCHandler(agentCard, requestHandler, internalExecutor);
+
+        // Create context with compatible version 1.1
+        ServerCallContext contextWithVersion = new ServerCallContext(
+                UnauthenticatedUser.INSTANCE,
+                Map.of("foo", "bar"),
+                new HashSet<>(),
+                "1.1"  // Compatible version (same major version)
+        );
+
+        agentExecutorExecute = (context, eventQueue) -> {
+            eventQueue.enqueueEvent(context.getMessage());
+        };
+
+        Message message = Message.builder(MESSAGE)
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
+                .build();
+        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
+        SendMessageResponse response = handler.onMessageSend(request, contextWithVersion);
+
+        // Should succeed without error
+        assertNull(response.getError());
+        Assertions.assertSame(message, response.getResult());
+    }
+
+    @Test
+    public void testNoVersionDefaultsToCurrentVersionSuccess() {
+        // Create AgentCard with protocol version 1.0 (current version)
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("JSONRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        JSONRPCHandler handler = new JSONRPCHandler(agentCard, requestHandler, internalExecutor);
+
+        // Use default callContext (no version - should default to 1.0)
+        agentExecutorExecute = (context, eventQueue) -> {
+            eventQueue.enqueueEvent(context.getMessage());
+        };
+
+        Message message = Message.builder(MESSAGE)
+                .taskId(MINIMAL_TASK.id())
+                .contextId(MINIMAL_TASK.contextId())
+                .build();
+        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(message, null, null));
+        SendMessageResponse response = handler.onMessageSend(request, callContext);
+
+        // Should succeed without error (defaults to 1.0)
+        assertNull(response.getError());
+        Assertions.assertSame(message, response.getResult());
     }
 }

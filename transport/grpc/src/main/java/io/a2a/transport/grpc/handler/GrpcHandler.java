@@ -27,11 +27,14 @@ import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
 import io.a2a.server.extensions.A2AExtensions;
 import io.a2a.server.requesthandlers.RequestHandler;
+import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidAgentResponseError;
@@ -51,6 +54,7 @@ import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.transport.grpc.context.GrpcContextKeys;
 import io.grpc.Context;
 import io.grpc.Status;
@@ -63,7 +67,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     // Without this we get intermittent failures
     private static volatile Runnable streamingSubscribedRunnable;
 
-    private AtomicBoolean initialised = new AtomicBoolean(false);
+    private final AtomicBoolean initialised = new AtomicBoolean(false);
 
     private static final Logger LOGGER = Logger.getLogger(GrpcHandler.class.getName());
 
@@ -76,6 +80,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                            StreamObserver<io.a2a.grpc.SendMessageResponse> responseObserver) {
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             MessageSendParams params = FromProto.messageSendParams(request);
             EventKind taskOrMessage = getRequestHandler().onMessageSend(params, context);
             io.a2a.grpc.SendMessageResponse response = ToProto.taskOrMessage(taskOrMessage);
@@ -232,6 +238,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
+            A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             MessageSendParams params = FromProto.messageSendParams(request);
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onMessageSendStream(params, context);
             convertToStreamResponse(publisher, responseObserver);
@@ -390,14 +398,17 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                 LOGGER.fine(() -> "Error getting data from current context" + e);
             }
             
+            // Extract requested protocol version from gRPC context (set by interceptor)
+            String requestedVersion = getVersionFromContext();
+
             // Extract requested extensions from gRPC context (set by interceptor)
             Set<String> requestedExtensions = new HashSet<>();
             String extensionsHeader = getExtensionsFromContext();
             if (extensionsHeader != null) {
                 requestedExtensions = A2AExtensions.getRequestedExtensions(List.of(extensionsHeader));
             }
-            
-            return new ServerCallContext(user, state, requestedExtensions);
+
+            return new ServerCallContext(user, state, requestedExtensions, requestedVersion);
         } else {
             // TODO: CallContextFactory interface expects ServerCall + Metadata, but we only have StreamObserver
             // This is another manifestation of the architectural limitation mentioned above
@@ -424,7 +435,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             status = Status.NOT_FOUND;
             description = "TaskNotFoundError: " + error.getMessage();
         } else if (error instanceof TaskNotCancelableError) {
-            status = Status.UNIMPLEMENTED;
+            status = Status.FAILED_PRECONDITION;
             description = "TaskNotCancelableError: " + error.getMessage();
         } else if (error instanceof PushNotificationNotSupportedError) {
             status = Status.UNIMPLEMENTED;
@@ -436,11 +447,20 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             status = Status.INTERNAL;
             description = "JSONParseError: " + error.getMessage();
         } else if (error instanceof ContentTypeNotSupportedError) {
-            status = Status.UNIMPLEMENTED;
+            status = Status.INVALID_ARGUMENT;
             description = "ContentTypeNotSupportedError: " + error.getMessage();
         } else if (error instanceof InvalidAgentResponseError) {
             status = Status.INTERNAL;
             description = "InvalidAgentResponseError: " + error.getMessage();
+        } else if (error instanceof ExtendedCardNotConfiguredError) {
+            status = Status.FAILED_PRECONDITION;
+            description = "ExtendedCardNotConfiguredError: " + error.getMessage();
+        } else if (error instanceof ExtensionSupportRequiredError) {
+            status = Status.FAILED_PRECONDITION;
+            description = "ExtensionSupportRequiredError: " + error.getMessage();
+        } else if (error instanceof VersionNotSupportedError) {
+            status = Status.UNIMPLEMENTED;
+            description = "VersionNotSupportedError: " + error.getMessage();
         } else {
             status = Status.UNKNOWN;
             description = "Unknown error type: " + error.getMessage();
@@ -523,10 +543,26 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     protected abstract Executor getExecutor();
 
     /**
+     * Attempts to extract the X-A2A-Version header from the current gRPC context.
+     * This will only work if a server interceptor has been configured to capture
+     * the metadata and store it in the context.
+     *
+     * @return the version header value, or null if not available
+     */
+    private String getVersionFromContext() {
+        try {
+            return GrpcContextKeys.VERSION_HEADER_KEY.get();
+        } catch (Exception e) {
+            // Context not available or key not set
+            return null;
+        }
+    }
+
+    /**
      * Attempts to extract the X-A2A-Extensions header from the current gRPC context.
      * This will only work if a server interceptor has been configured to capture
      * the metadata and store it in the context.
-     * 
+     *
      * @return the extensions header value, or null if not available
      */
     private String getExtensionsFromContext() {

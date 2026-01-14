@@ -59,6 +59,9 @@ public class GrpcTransport implements ClientTransport {
     private static final Metadata.Key<String> EXTENSIONS_KEY = Metadata.Key.of(
             A2AHeaders.X_A2A_EXTENSIONS,
             Metadata.ASCII_STRING_MARSHALLER);
+    private static final Metadata.Key<String> VERSION_KEY = Metadata.Key.of(
+            A2AHeaders.X_A2A_VERSION,
+            Metadata.ASCII_STRING_MARSHALLER);
     private final A2AServiceBlockingV2Stub blockingStub;
     private final A2AServiceStub asyncStub;
     private final @Nullable List<ClientCallInterceptor> interceptors;
@@ -366,6 +369,12 @@ public class GrpcTransport implements ClientTransport {
         Metadata metadata = new Metadata();
 
         if (context != null && context.getHeaders() != null) {
+            // Set X-A2A-Version header if present
+            String versionHeader = context.getHeaders().get(A2AHeaders.X_A2A_VERSION);
+            if (versionHeader != null) {
+                metadata.put(VERSION_KEY, versionHeader);
+            }
+
             // Set X-A2A-Extensions header if present
             String extensionsHeader = context.getHeaders().get(A2AHeaders.X_A2A_EXTENSIONS);
             if (extensionsHeader != null) {
@@ -373,7 +382,6 @@ public class GrpcTransport implements ClientTransport {
             }
 
             // Add other headers as needed in the future
-            // For now, we only handle X-A2A-Extensions
         }
         if (payloadAndHeaders != null && payloadAndHeaders.getHeaders() != null) {
             // Handle all headers from interceptors (including auth headers)

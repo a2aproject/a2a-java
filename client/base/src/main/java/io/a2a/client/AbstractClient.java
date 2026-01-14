@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
  * transport protocol. It supports sending messages, managing tasks, and
  * handling event streams.
  */
-public abstract class AbstractClient {
+public abstract class AbstractClient implements AutoCloseable {
 
     protected final @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers;
     protected final @Nullable Consumer<Throwable> streamingErrorHandler;

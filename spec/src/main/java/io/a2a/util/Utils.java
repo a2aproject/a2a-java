@@ -39,11 +39,6 @@ public class Utils {
     private static final Logger log = Logger.getLogger(Utils.class.getName());
 
     /**
-     * Specification version constant for deprecation annotations.
-     */
-    public static final String SPEC_VERSION_1_0 = "1.0";
-
-    /**
      * Returns the provided value if non-null, otherwise returns the default value.
      * <p>
      * This is a null-safe utility for providing default values when a parameter

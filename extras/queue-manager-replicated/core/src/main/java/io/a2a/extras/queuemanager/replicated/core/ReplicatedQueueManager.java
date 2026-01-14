@@ -24,11 +24,25 @@ import org.slf4j.LoggerFactory;
 public class ReplicatedQueueManager implements QueueManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReplicatedQueueManager.class);
 
-    private final InMemoryQueueManager delegate;
-
+    // Fields set by constructor injection cannot be final. We need a noargs constructor for
+    // Jakarta compatibility, and it seems that making fields set by constructor injection
+    // final, is not proxyable in all runtimes
+    private InMemoryQueueManager delegate;
     private ReplicationStrategy replicationStrategy;
-
     private TaskStateProvider taskStateProvider;
+
+    /**
+     * No-args constructor for CDI proxy creation.
+     * CDI requires a non-private constructor to create proxies for @ApplicationScoped beans.
+     * All fields are initialized by the @Inject constructor during actual bean creation.
+     */
+    @SuppressWarnings("NullAway")
+    protected ReplicatedQueueManager() {
+        // For CDI proxy creation
+        this.delegate = null;
+        this.replicationStrategy = null;
+        this.taskStateProvider = null;
+    }
 
     @Inject
     public ReplicatedQueueManager(ReplicationStrategy replicationStrategy, TaskStateProvider taskStateProvider) {

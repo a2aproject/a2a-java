@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
+import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentSkill;
@@ -39,6 +40,8 @@ import io.a2a.spec.Artifact;
 import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.ExtensionSupportRequiredError;
+import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
@@ -407,7 +410,7 @@ public class RestTransportTest {
     @Test
     public void testResubscribe() throws Exception {
         log.info("Testing resubscribe");
-        
+
         this.server.when(
                         request()
                                 .withMethod("POST")
@@ -450,5 +453,165 @@ public class RestTransportTest {
         Part<?> part = artifact.parts().get(0);
         assertTrue(part instanceof io.a2a.spec.TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
+    }
+
+    /**
+     * Test that ExtensionSupportRequiredError is properly unmarshalled from REST error response.
+     */
+    @Test
+    public void testExtensionSupportRequiredErrorUnmarshalling() throws Exception {
+        log.info("Testing ExtensionSupportRequiredError unmarshalling");
+
+        // Mock server returns HTTP 400 with ExtensionSupportRequiredError
+        String errorResponseBody = """
+                {
+                    "error": "io.a2a.spec.ExtensionSupportRequiredError",
+                    "message": "Extension required: https://example.com/test-extension"
+                }
+                """;
+
+        this.server.when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/message:send")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(400)
+                                .withHeader("Content-Type", "application/json")
+                                .withBody(errorResponseBody)
+                );
+
+        RestTransport client = new RestTransport(CARD);
+        Message message = Message.builder()
+                .role(Message.Role.USER)
+                .parts(Collections.singletonList(new TextPart("test message")))
+                .contextId("context-test")
+                .messageId("message-test")
+                .build();
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
+
+        // Should throw A2AClientException with ExtensionSupportRequiredError as cause
+        try {
+            client.sendMessage(params, null);
+            org.junit.jupiter.api.Assertions.fail("Expected A2AClientException to be thrown");
+        } catch (A2AClientException e) {
+            // Verify the cause is ExtensionSupportRequiredError
+            assertInstanceOf(ExtensionSupportRequiredError.class, e.getCause());
+            ExtensionSupportRequiredError extensionError = (ExtensionSupportRequiredError) e.getCause();
+            assertTrue(extensionError.getMessage().contains("https://example.com/test-extension"));
+        }
+    }
+
+    /**
+     * Test that VersionNotSupportedError is properly unmarshalled from REST error response.
+     */
+    @Test
+    public void testVersionNotSupportedErrorUnmarshalling() throws Exception {
+        log.info("Testing VersionNotSupportedError unmarshalling");
+
+        // Mock server returns HTTP 501 with VersionNotSupportedError
+        String errorResponseBody = """
+                {
+                    "error": "io.a2a.spec.VersionNotSupportedError",
+                    "message": "Protocol version 2.0 is not supported. This agent supports version 1.0"
+                }
+                """;
+
+        this.server.when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/message:send")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(501)
+                                .withHeader("Content-Type", "application/json")
+                                .withBody(errorResponseBody)
+                );
+
+        RestTransport client = new RestTransport(CARD);
+        Message message = Message.builder()
+                .role(Message.Role.USER)
+                .parts(Collections.singletonList(new TextPart("test message")))
+                .contextId("context-test")
+                .messageId("message-test")
+                .build();
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
+
+        // Should throw A2AClientException with VersionNotSupportedError as cause
+        try {
+            client.sendMessage(params, null);
+            org.junit.jupiter.api.Assertions.fail("Expected A2AClientException to be thrown");
+        } catch (A2AClientException e) {
+            // Verify the cause is VersionNotSupportedError
+            assertInstanceOf(VersionNotSupportedError.class, e.getCause());
+            VersionNotSupportedError versionError = (VersionNotSupportedError) e.getCause();
+            assertTrue(versionError.getMessage().contains("2.0"));
+            assertTrue(versionError.getMessage().contains("1.0"));
+        }
+    }
+
+    /**
+     * Test that VersionNotSupportedError is properly handled in streaming responses.
+     */
+    @Test
+    public void testVersionNotSupportedErrorUnmarshallingStreaming() throws Exception {
+        log.info("Testing VersionNotSupportedError unmarshalling in streaming");
+
+        // Mock server returns HTTP 200 with error event in SSE stream
+        String streamResponseBody = """
+                data: {"kind":"error","error":"io.a2a.spec.VersionNotSupportedError","message":"Protocol version 2.0 is not supported. This agent supports version 1.0"}
+
+                """;
+
+        this.server.when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/message:stream")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withHeader("Content-Type", "text/event-stream")
+                                .withBody(streamResponseBody)
+                );
+
+        RestTransport client = new RestTransport(CARD);
+        Message message = Message.builder()
+                .role(Message.Role.USER)
+                .parts(Collections.singletonList(new TextPart("test message")))
+                .contextId("context-test")
+                .messageId("message-test")
+                .build();
+        MessageSendConfiguration configuration = MessageSendConfiguration.builder()
+                .acceptedOutputModes(List.of("text"))
+                .blocking(false)
+                .build();
+        MessageSendParams params = MessageSendParams.builder()
+                .message(message)
+                .configuration(configuration)
+                .build();
+
+        AtomicReference<Throwable> receivedError = new AtomicReference<>();
+        CountDownLatch latch = new CountDownLatch(1);
+        Consumer<StreamingEventKind> eventHandler = event -> {
+            // Should not receive events, only error
+        };
+        Consumer<Throwable> errorHandler = error -> {
+            receivedError.set(error);
+            latch.countDown();
+        };
+        client.sendMessageStreaming(params, eventHandler, errorHandler, null);
+
+        boolean errorReceived = latch.await(10, TimeUnit.SECONDS);
+        assertTrue(errorReceived);
+        assertNotNull(receivedError.get());
+        assertInstanceOf(A2AClientException.class, receivedError.get());
+        A2AClientException clientException = (A2AClientException) receivedError.get();
+        assertInstanceOf(VersionNotSupportedError.class, clientException.getCause());
+        VersionNotSupportedError versionError = (VersionNotSupportedError) clientException.getCause();
+        assertTrue(versionError.getMessage().contains("2.0"));
+        assertTrue(versionError.getMessage().contains("1.0"));
     }
 }

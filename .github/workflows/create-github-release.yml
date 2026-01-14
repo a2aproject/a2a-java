@@ -1,0 +1,127 @@
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v?[0-9]+.[0-9]+.[0-9]+*' # Trigger on tags like v1.0.0, 1.2.3, v1.2.3.Alpha1 etc.
+
+jobs:
+  create-release:
+    # Only run this job for the main repository, not for forks
+    if: github.repository == 'a2aproject/a2a-java'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to create releases
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          # Remove 'v' prefix if present
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Generate release notes
+        id: release_notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.version.outputs.version }}';
+
+            // Get the previous tag
+            let previousTag = '';
+            try {
+              const { data: tags } = await github.rest.repos.listTags({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100
+              });
+
+              // Find current tag index
+              const currentIndex = tags.findIndex(tag => tag.name === context.ref.replace('refs/tags/', ''));
+
+              // Get previous tag (next in list)
+              if (currentIndex >= 0 && currentIndex < tags.length - 1) {
+                previousTag = tags[currentIndex + 1].name;
+              }
+            } catch (error) {
+              console.log('Could not fetch previous tag:', error.message);
+            }
+
+            // Build release notes
+            let releaseNotes = `## A2A Java SDK ${version}\n\n`;
+
+            // Add Maven Central installation instructions
+            releaseNotes += `### Installation\n\n`;
+            releaseNotes += `**Maven**:\n\`\`\`xml\n<dependency>\n`;
+            releaseNotes += `    <groupId>io.github.a2asdk</groupId>\n`;
+            releaseNotes += `    <artifactId>a2a-java-sdk-client</artifactId>\n`;
+            releaseNotes += `    <version>${version}</version>\n`;
+            releaseNotes += `</dependency>\n\`\`\`\n\n`;
+
+            releaseNotes += `**Gradle**:\n\`\`\`gradle\n`;
+            releaseNotes += `implementation 'io.github.a2asdk:a2a-java-sdk-client:${version}'\n`;
+            releaseNotes += `\`\`\`\n\n`;
+
+            // Add links
+            releaseNotes += `### Links\n\n`;
+            releaseNotes += `- [Maven Central](https://central.sonatype.com/artifact/io.github.a2asdk/a2a-java-sdk-parent/${version})\n`;
+            releaseNotes += `- [JavaDoc](https://javadoc.io/doc/io.github.a2asdk/a2a-java-sdk-parent/${version})\n`;
+            releaseNotes += `- [GitHub](https://github.com/a2aproject/a2a-java/tree/v${version})\n\n`;
+
+            // Add changelog header
+            if (previousTag) {
+              releaseNotes += `### Changes since ${previousTag}\n\n`;
+              releaseNotes += `[Full Changelog](https://github.com/a2aproject/a2a-java/compare/${previousTag}...v${version})\n\n`;
+            } else {
+              releaseNotes += `### Changes\n\n`;
+            }
+
+            return releaseNotes;
+
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.version.outputs.version }}';
+            const tag = context.ref.replace('refs/tags/', '');
+            const releaseNotes = ${{ steps.release_notes.outputs.result }};
+
+            // Determine if this is a pre-release
+            const isPrerelease = version.includes('Alpha') ||
+                                version.includes('Beta') ||
+                                version.includes('RC') ||
+                                version.includes('SNAPSHOT');
+
+            try {
+              const { data: release } = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag,
+                name: `v${version}`,
+                body: releaseNotes,
+                draft: false,
+                prerelease: isPrerelease,
+                generate_release_notes: true  // GitHub will append auto-generated notes
+              });
+
+              console.log(`✅ Created release: ${release.html_url}`);
+              core.summary
+                .addHeading(`Release v${version} Created`)
+                .addLink('View Release', release.html_url)
+                .addLink('Maven Central', `https://central.sonatype.com/artifact/io.github.a2asdk/a2a-java-sdk-parent/${version}`)
+                .write();
+
+            } catch (error) {
+              if (error.status === 422 && error.message.includes('already_exists')) {
+                console.log('⚠️  Release already exists for this tag');
+              } else {
+                throw error;
+              }
+            }

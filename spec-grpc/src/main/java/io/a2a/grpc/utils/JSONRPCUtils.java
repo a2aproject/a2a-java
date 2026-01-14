@@ -1,6 +1,8 @@
 package io.a2a.grpc.utils;
 
 import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
+import static io.a2a.spec.A2AErrorCodes.EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE;
+import static io.a2a.spec.A2AErrorCodes.EXTENSION_SUPPORT_REQUIRED_ERROR;
 import static io.a2a.spec.A2AErrorCodes.INTERNAL_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.INVALID_AGENT_RESPONSE_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.INVALID_PARAMS_ERROR_CODE;
@@ -11,6 +13,7 @@ import static io.a2a.spec.A2AErrorCodes.PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CO
 import static io.a2a.spec.A2AErrorCodes.TASK_NOT_CANCELABLE_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
+import static io.a2a.spec.A2AErrorCodes.VERSION_NOT_SUPPORTED_ERROR_CODE;
 import static io.a2a.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static io.a2a.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
@@ -63,6 +66,8 @@ import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.ContentTypeNotSupportedError;
+import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.InvalidAgentResponseError;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
@@ -72,6 +77,7 @@ import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -387,6 +393,12 @@ public class JSONRPCUtils {
                     return new ContentTypeNotSupportedError(code, message, data);
                 case INVALID_AGENT_RESPONSE_ERROR_CODE:
                     return new InvalidAgentResponseError(code, message, data);
+                case EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE:
+                    return new ExtendedCardNotConfiguredError(code, message, data);
+                case EXTENSION_SUPPORT_REQUIRED_ERROR:
+                    return new ExtensionSupportRequiredError(code, message, data);
+                case VERSION_NOT_SUPPORTED_ERROR_CODE:
+                    return new VersionNotSupportedError(code, message, data);
                 case TASK_NOT_CANCELABLE_ERROR_CODE:
                     return new TaskNotCancelableError(code, message, data);
                 case TASK_NOT_FOUND_ERROR_CODE:
@@ -406,8 +418,8 @@ public class JSONRPCUtils {
         try {
             JsonFormat.parser().merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
-            log.log(Level.SEVERE, "Protocol buffer parsing failed for JSON: {0}", body);
-            log.log(Level.SEVERE, "Proto parsing error details", e);
+            log.log(Level.FINE, "Protocol buffer parsing failed for JSON: {0}", body);
+            log.log(Level.FINE, "Proto parsing error details", e);
             throw convertProtoBufExceptionToJsonProcessingException(e, id);
         }
     }

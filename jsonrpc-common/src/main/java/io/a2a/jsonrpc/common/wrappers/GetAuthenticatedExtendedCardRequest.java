@@ -5,7 +5,7 @@ import static io.a2a.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import java.util.UUID;
 
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedCardNotConfiguredError;
 
 /**
  * JSON-RPC request to retrieve an agent's extended card with authenticated details.
@@ -28,7 +28,7 @@ import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
  *
  * @see GetAuthenticatedExtendedCardResponse for the corresponding response
  * @see AgentCard for the card structure
- * @see AuthenticatedExtendedCardNotConfiguredError for the error when unsupported
+ * @see ExtendedCardNotConfiguredError for the error when unsupported
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONRPCRequest<Void> {

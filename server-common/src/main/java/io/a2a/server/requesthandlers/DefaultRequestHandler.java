@@ -70,6 +70,110 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Central request orchestrator that coordinates transport requests with agent execution,
+ * task persistence, event routing, and push notifications.
+ * <p>
+ * This class is the core of the A2A server runtime. It receives requests from transport
+ * layers (JSON-RPC, gRPC, REST), executes user-provided {@link AgentExecutor} logic
+ * asynchronously, manages event queues for response streaming, and ensures task state
+ * is persisted through {@link TaskStore}.
+ * </p>
+ *
+ * <h2>Architecture Overview</h2>
+ * <pre>
+ * Transport Layer (JSON-RPC/gRPC/REST)
+ *     ↓ calls DefaultRequestHandler methods
+ * DefaultRequestHandler (orchestrates)
+ *     ↓
+ * ┌─────────────┬──────────────┬─────────────────┬──────────────────┐
+ * │ AgentExecutor│  TaskStore   │  QueueManager   │ PushNotification │
+ * │ (user logic) │ (persistence)│ (event routing) │ (notifications)  │
+ * └─────────────┴──────────────┴─────────────────┴──────────────────┘
+ * </pre>
+ *
+ * <h2>Request Flow - Blocking Mode (onMessageSend)</h2>
+ * <ol>
+ *   <li>Transport calls {@link #onMessageSend(MessageSendParams, ServerCallContext)}</li>
+ *   <li>Initialize {@link TaskManager} and {@link RequestContext}</li>
+ *   <li>Create or tap {@link EventQueue} via {@link QueueManager}</li>
+ *   <li>Execute {@link AgentExecutor#execute(RequestContext, EventQueue)} asynchronously in background thread pool</li>
+ *   <li>Consume events from queue on Vert.x worker thread via {@link EventConsumer}</li>
+ *   <li>For blocking=true: wait for agent completion and full event consumption</li>
+ *   <li>Return {@link Task} or {@link Message} to transport</li>
+ *   <li>Cleanup queue and agent future in background</li>
+ * </ol>
+ *
+ * <h2>Request Flow - Streaming Mode (onMessageSendStream)</h2>
+ * <ol>
+ *   <li>Transport calls {@link #onMessageSendStream(MessageSendParams, ServerCallContext)}</li>
+ *   <li>Initialize components (same as blocking)</li>
+ *   <li>Execute {@link AgentExecutor#execute(RequestContext, EventQueue)} asynchronously</li>
+ *   <li>Return {@link java.util.concurrent.Flow.Publisher Flow.Publisher}&lt;StreamingEventKind&gt; immediately</li>
+ *   <li>Events stream to client as they arrive in the queue</li>
+ *   <li>On client disconnect: continue consumption in background (fire-and-forget)</li>
+ *   <li>Cleanup after streaming completes</li>
+ * </ol>
+ *
+ * <h2>Queue Lifecycle Management</h2>
+ * <ul>
+ *   <li>{@link QueueManager#createOrTap(String)} creates a MainQueue (new task) or ChildQueue (resubscription)</li>
+ *   <li>Agent enqueues events on background thread via {@link EventQueue#enqueueEvent(Event)}</li>
+ *   <li>{@link EventConsumer} polls and processes events on Vert.x worker thread</li>
+ *   <li>Queue closes automatically on final event (COMPLETED/FAILED/CANCELED)</li>
+ *   <li>Cleanup waits for both agent execution AND event consumption to complete</li>
+ *   <li>Background tasks tracked via {@link #trackBackgroundTask(CompletableFuture)}</li>
+ * </ul>
+ *
+ * <h2>Threading Model</h2>
+ * <ul>
+ *   <li><b>Vert.x worker threads:</b> Execute request handler methods (onMessageSend, etc.)</li>
+ *   <li><b>Agent-executor pool (@Internal):</b> Execute {@link AgentExecutor#execute(RequestContext, EventQueue)}</li>
+ *   <li><b>Background cleanup:</b> {@link java.util.concurrent.CompletableFuture CompletableFuture} async tasks</li>
+ * </ul>
+ * <p>
+ * <b>Important:</b> Avoid blocking operations on Vert.x worker threads - they are limited
+ * and shared across all requests.
+ * </p>
+ *
+ * <h2>Blocking vs Streaming</h2>
+ * <ul>
+ *   <li><b>Blocking (configuration.blocking=true):</b> Client waits for first event or final task state</li>
+ *   <li><b>Streaming:</b> Client receives events as they arrive via reactive streams</li>
+ *   <li>Both modes support fire-and-forget (agent continues after client disconnect)</li>
+ *   <li>Configurable timeouts via {@code a2a.blocking.agent.timeout.seconds} and
+ *       {@code a2a.blocking.consumption.timeout.seconds}</li>
+ * </ul>
+ *
+ * <h2>CDI Dependencies</h2>
+ * This class is {@code @ApplicationScoped} and automatically injects:
+ * <ul>
+ *   <li>{@link AgentExecutor} - User-provided agent business logic (required)</li>
+ *   <li>{@link TaskStore} - Task persistence (default: {@link io.a2a.server.tasks.InMemoryTaskStore})</li>
+ *   <li>{@link QueueManager} - Event queue management (default: {@link io.a2a.server.events.InMemoryQueueManager})</li>
+ *   <li>{@link PushNotificationConfigStore} - Push config storage (default: {@link io.a2a.server.tasks.InMemoryPushNotificationConfigStore})</li>
+ *   <li>{@link PushNotificationSender} - Push notification delivery (default: {@link io.a2a.server.tasks.BasePushNotificationSender})</li>
+ *   <li>{@link io.a2a.server.config.A2AConfigProvider} - Configuration values</li>
+ *   <li>{@link java.util.concurrent.Executor} (@Internal) - Background thread pool</li>
+ * </ul>
+ *
+ * <h2>Extension Strategy</h2>
+ * Users typically don't replace DefaultRequestHandler. Instead, provide custom implementations
+ * of its dependencies via CDI:
+ * <ul>
+ *   <li>{@link AgentExecutor} (required) - Your agent business logic</li>
+ *   <li>{@link TaskStore} (@Alternative @Priority) - Database persistence (see extras/task-store-database-jpa)</li>
+ *   <li>{@link QueueManager} (@Alternative @Priority) - Replication support (see extras/queue-manager-replicated)</li>
+ *   <li>{@link PushNotificationSender} (@Alternative @Priority) - Custom notification delivery</li>
+ * </ul>
+ *
+ * @see RequestHandler
+ * @see AgentExecutor
+ * @see TaskStore
+ * @see QueueManager
+ * @see EventQueue
+ * @see TaskManager
+ */
 @ApplicationScoped
 public class DefaultRequestHandler implements RequestHandler {
 
@@ -103,17 +207,37 @@ public class DefaultRequestHandler implements RequestHandler {
      */
     int consumptionCompletionTimeoutSeconds;
 
-    private final AgentExecutor agentExecutor;
-    private final TaskStore taskStore;
-    private final QueueManager queueManager;
-    private final PushNotificationConfigStore pushConfigStore;
-    private final PushNotificationSender pushSender;
-    private final Supplier<RequestContext.Builder> requestContextBuilder;
+    // Fields set by constructor injection cannot be final. We need a noargs constructor for
+    // Jakarta compatibility, and it seems that making fields set by constructor injection
+    // final, is not proxyable in all runtimes
+    private AgentExecutor agentExecutor;
+    private TaskStore taskStore;
+    private QueueManager queueManager;
+    private PushNotificationConfigStore pushConfigStore;
+    private PushNotificationSender pushSender;
+    private Supplier<RequestContext.Builder> requestContextBuilder;
 
     private final ConcurrentMap<String, CompletableFuture<Void>> runningAgents = new ConcurrentHashMap<>();
     private final Set<CompletableFuture<Void>> backgroundTasks = ConcurrentHashMap.newKeySet();
 
-    private final Executor executor;
+    private Executor executor;
+
+    /**
+     * No-args constructor for CDI proxy creation.
+     * CDI requires a non-private constructor to create proxies for @ApplicationScoped beans.
+     * All fields are initialized by the @Inject constructor during actual bean creation.
+     */
+    @SuppressWarnings("NullAway")
+    protected DefaultRequestHandler() {
+        // For CDI proxy creation
+        this.agentExecutor = null;
+        this.taskStore = null;
+        this.queueManager = null;
+        this.pushConfigStore = null;
+        this.pushSender = null;
+        this.requestContextBuilder = null;
+        this.executor = null;
+    }
 
     @Inject
     public DefaultRequestHandler(AgentExecutor agentExecutor, TaskStore taskStore,

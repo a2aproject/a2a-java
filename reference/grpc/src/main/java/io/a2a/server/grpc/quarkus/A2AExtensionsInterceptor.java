@@ -31,8 +31,13 @@ public class A2AExtensionsInterceptor implements ServerInterceptor {
             Metadata metadata,
             ServerCallHandler<ReqT, RespT> serverCallHandler) {
 
+        // Extract A2A protocol version header
+        Metadata.Key<String> versionKey =
+            Metadata.Key.of(A2AHeaders.X_A2A_VERSION, Metadata.ASCII_STRING_MARSHALLER);
+        String version = metadata.get(versionKey);
+
         // Extract A2A extensions header
-        Metadata.Key<String> extensionsKey = 
+        Metadata.Key<String> extensionsKey =
             Metadata.Key.of(A2AHeaders.X_A2A_EXTENSIONS, Metadata.ASCII_STRING_MARSHALLER);
         String extensions = metadata.get(extensionsKey);
 
@@ -44,6 +49,11 @@ public class A2AExtensionsInterceptor implements ServerInterceptor {
             .withValue(GrpcContextKeys.METHOD_NAME_KEY, serverCall.getMethodDescriptor().getFullMethodName())
             // Store peer information for client connection details
             .withValue(GrpcContextKeys.PEER_INFO_KEY, getPeerInfo(serverCall));
+
+        // Store A2A version if present
+        if (version != null) {
+            context = context.withValue(GrpcContextKeys.VERSION_HEADER_KEY, version);
+        }
 
         // Store A2A extensions if present
         if (extensions != null) {

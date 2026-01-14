@@ -3,7 +3,11 @@ package io.a2a.transport.grpc.handler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,20 +35,28 @@ import io.a2a.grpc.TaskPushNotificationConfig;
 import io.a2a.grpc.TaskState;
 import io.a2a.grpc.TaskStatus;
 import io.a2a.server.ServerCallContext;
+import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import io.a2a.server.requesthandlers.DefaultRequestHandler;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.server.tasks.TaskUpdater;
+import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentExtension;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Event;
+import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.InternalError;
+import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.transport.grpc.context.GrpcContextKeys;
+import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.internal.testing.StreamRecorder;
@@ -806,6 +818,329 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertTrue(eventReceived.get(), "Should have received streaming event");
         Assertions.assertTrue(errors.isEmpty(), "Should not have any errors");
         Assertions.assertEquals(1, results.size(), "Should have received exactly one event");
+    }
+
+    @Test
+    public void testExtensionSupportRequiredErrorOnSendMessage() throws Exception {
+        // Create AgentCard with a required extension
+        AgentCard cardWithExtension = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with required extension")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("GRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extensions(List.of(
+                                AgentExtension.builder()
+                                        .uri("https://example.com/test-extension")
+                                        .required(true)
+                                        .build()
+                        ))
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .build();
+
+        GrpcHandler handler = new TestGrpcHandler(cardWithExtension, requestHandler, internalExecutor);
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
+    }
+
+    @Test
+    public void testExtensionSupportRequiredErrorOnSendStreamingMessage() throws Exception {
+        // Create AgentCard with a required extension
+        AgentCard cardWithExtension = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with required extension")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("GRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extensions(List.of(
+                                AgentExtension.builder()
+                                        .uri("https://example.com/streaming-extension")
+                                        .required(true)
+                                        .build()
+                        ))
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .build();
+
+        GrpcHandler handler = new TestGrpcHandler(cardWithExtension, requestHandler, internalExecutor);
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
+        handler.sendStreamingMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.FAILED_PRECONDITION);
+    }
+
+    @Test
+    public void testRequiredExtensionProvidedSuccess() throws Exception {
+        // Create AgentCard with a required extension
+        AgentCard cardWithExtension = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with required extension")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("GRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extensions(List.of(
+                                AgentExtension.builder()
+                                        .uri("https://example.com/required-extension")
+                                        .required(true)
+                                        .build()
+                        ))
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .build();
+
+        // Create a TestGrpcHandler that provides the required extension in the context
+        GrpcHandler handler = new TestGrpcHandler(cardWithExtension, requestHandler, internalExecutor) {
+            @Override
+            protected CallContextFactory getCallContextFactory() {
+                return new CallContextFactory() {
+                    @Override
+                    public <V> ServerCallContext create(StreamObserver<V> streamObserver) {
+                        Set<String> requestedExtensions = new HashSet<>();
+                        requestedExtensions.add("https://example.com/required-extension");
+                        return new ServerCallContext(
+                                UnauthenticatedUser.INSTANCE,
+                                Map.of("grpc_response_observer", streamObserver),
+                                requestedExtensions
+                        );
+                    }
+                };
+            }
+        };
+
+        agentExecutorExecute = (context, eventQueue) -> {
+            eventQueue.enqueueEvent(context.getMessage());
+        };
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        // Should succeed without error
+        Assertions.assertNull(streamRecorder.getError());
+        Assertions.assertFalse(streamRecorder.getValues().isEmpty());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnSendMessage() throws Exception {
+        // Create AgentCard with protocol version 1.0
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("GRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        // Create handler that provides incompatible version 2.0 in the context
+        GrpcHandler handler = new TestGrpcHandler(agentCard, requestHandler, internalExecutor) {
+            @Override
+            protected CallContextFactory getCallContextFactory() {
+                return new CallContextFactory() {
+                    @Override
+                    public <V> ServerCallContext create(StreamObserver<V> streamObserver) {
+                        return new ServerCallContext(
+                                UnauthenticatedUser.INSTANCE,
+                                Map.of("grpc_response_observer", streamObserver),
+                                new HashSet<>(),
+                                "2.0"  // Incompatible version
+                        );
+                    }
+                };
+            }
+        };
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnSendStreamingMessage() throws Exception {
+        // Create AgentCard with protocol version 1.0
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("GRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        // Create handler that provides incompatible version 2.0 in the context
+        GrpcHandler handler = new TestGrpcHandler(agentCard, requestHandler, internalExecutor) {
+            @Override
+            protected CallContextFactory getCallContextFactory() {
+                return new CallContextFactory() {
+                    @Override
+                    public <V> ServerCallContext create(StreamObserver<V> streamObserver) {
+                        return new ServerCallContext(
+                                UnauthenticatedUser.INSTANCE,
+                                Map.of("grpc_response_observer", streamObserver),
+                                new HashSet<>(),
+                                "2.0"  // Incompatible version
+                        );
+                    }
+                };
+            }
+        };
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
+        handler.sendStreamingMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
+    }
+
+    @Test
+    public void testCompatibleVersionSuccess() throws Exception {
+        // Create AgentCard with protocol version 1.0
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("GRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        // Create handler that provides compatible version 1.1 in the context
+        GrpcHandler handler = new TestGrpcHandler(agentCard, requestHandler, internalExecutor) {
+            @Override
+            protected CallContextFactory getCallContextFactory() {
+                return new CallContextFactory() {
+                    @Override
+                    public <V> ServerCallContext create(StreamObserver<V> streamObserver) {
+                        return new ServerCallContext(
+                                UnauthenticatedUser.INSTANCE,
+                                Map.of("grpc_response_observer", streamObserver),
+                                new HashSet<>(),
+                                "1.1"  // Compatible version (same major version)
+                        );
+                    }
+                };
+            }
+        };
+
+        agentExecutorExecute = (context, eventQueue) -> {
+            eventQueue.enqueueEvent(context.getMessage());
+        };
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        // Should succeed without error
+        Assertions.assertNull(streamRecorder.getError());
+        Assertions.assertFalse(streamRecorder.getValues().isEmpty());
+    }
+
+    @Test
+    public void testNoVersionDefaultsToCurrentVersionSuccess() throws Exception {
+        // Create AgentCard with protocol version 1.0 (current version)
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("GRPC", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        // Create handler that provides null version (should default to 1.0)
+        GrpcHandler handler = new TestGrpcHandler(agentCard, requestHandler, internalExecutor) {
+            @Override
+            protected CallContextFactory getCallContextFactory() {
+                return new CallContextFactory() {
+                    @Override
+                    public <V> ServerCallContext create(StreamObserver<V> streamObserver) {
+                        return new ServerCallContext(
+                                UnauthenticatedUser.INSTANCE,
+                                Map.of("grpc_response_observer", streamObserver),
+                                new HashSet<>(),
+                                null  // No version - should default to 1.0
+                        );
+                    }
+                };
+            }
+        };
+
+        agentExecutorExecute = (context, eventQueue) -> {
+            eventQueue.enqueueEvent(context.getMessage());
+        };
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        // Should succeed without error (defaults to 1.0)
+        Assertions.assertNull(streamRecorder.getError());
+        Assertions.assertFalse(streamRecorder.getValues().isEmpty());
     }
 
     private StreamRecorder<SendMessageResponse> sendMessageRequest(GrpcHandler handler) throws Exception {

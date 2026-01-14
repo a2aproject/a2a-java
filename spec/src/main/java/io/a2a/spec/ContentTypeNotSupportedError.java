@@ -36,7 +36,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  * @see MessageSendConfiguration for client content type preferences
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public class ContentTypeNotSupportedError extends A2AError {
+public class ContentTypeNotSupportedError extends A2AProtocolError {
 
     /**
      * Constructs a content type not supported error.
@@ -48,6 +48,7 @@ public class ContentTypeNotSupportedError extends A2AError {
     public ContentTypeNotSupportedError(Integer code, String message, Object data) {
         super(defaultIfNull(code, CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE),
                 defaultIfNull(message, "Incompatible content types"),
-                data);
+                data,
+                "https://a2a-protocol.org/errors/content-type-not-supported");
     }
 }

@@ -29,7 +29,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  * @see TaskStatus#state() for current task state
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public class TaskNotCancelableError extends A2AError {
+public class TaskNotCancelableError extends A2AProtocolError {
 
     /**
      * Constructs error with default message.
@@ -52,7 +52,8 @@ public class TaskNotCancelableError extends A2AError {
         super(
                 defaultIfNull(code, TASK_NOT_CANCELABLE_ERROR_CODE),
                 defaultIfNull(message, "Task cannot be canceled"),
-                data);
+                data,
+                "https://a2a-protocol.org/errors/task-not-cancelable");
     }
 
     /**

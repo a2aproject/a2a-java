@@ -8,8 +8,9 @@ import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.spec.A2AClientException;
-import io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
+import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidAgentResponseError;
 import io.a2a.spec.InvalidParamsError;
@@ -20,6 +21,7 @@ import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.spec.VersionNotSupportedError;
 
 /**
  * Utility class to A2AHttpResponse to appropriate A2A error types
@@ -48,7 +50,8 @@ public class RestErrorMapper {
     public static A2AClientException mapRestError(String className, String errorMessage, int code) {
         return switch (className) {
             case "io.a2a.spec.TaskNotFoundError" -> new A2AClientException(errorMessage, new TaskNotFoundError());
-            case "io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError" -> new A2AClientException(errorMessage, new AuthenticatedExtendedCardNotConfiguredError(null, errorMessage, null));
+            case "io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError",
+                 "io.a2a.spec.ExtendedCardNotConfiguredError" -> new A2AClientException(errorMessage, new ExtendedCardNotConfiguredError(null, errorMessage, null));
             case "io.a2a.spec.ContentTypeNotSupportedError" -> new A2AClientException(errorMessage, new ContentTypeNotSupportedError(null, null, errorMessage));
             case "io.a2a.spec.InternalError" -> new A2AClientException(errorMessage, new InternalError(errorMessage));
             case "io.a2a.spec.InvalidAgentResponseError" -> new A2AClientException(errorMessage, new InvalidAgentResponseError(null, null, errorMessage));
@@ -59,6 +62,8 @@ public class RestErrorMapper {
             case "io.a2a.spec.PushNotificationNotSupportedError" -> new A2AClientException(errorMessage, new PushNotificationNotSupportedError());
             case "io.a2a.spec.TaskNotCancelableError" -> new A2AClientException(errorMessage, new TaskNotCancelableError());
             case "io.a2a.spec.UnsupportedOperationError" -> new A2AClientException(errorMessage, new UnsupportedOperationError());
+            case "io.a2a.spec.ExtensionSupportRequiredError" -> new A2AClientException(errorMessage, new ExtensionSupportRequiredError(null, errorMessage, null));
+            case "io.a2a.spec.VersionNotSupportedError" -> new A2AClientException(errorMessage, new VersionNotSupportedError(null, errorMessage, null));
             default -> new A2AClientException(errorMessage);
         };
     }

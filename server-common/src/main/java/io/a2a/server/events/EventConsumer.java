@@ -6,6 +6,7 @@ import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
+import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import mutiny.zero.BackpressureStrategy;
 import mutiny.zero.TubeConfiguration;
@@ -77,7 +78,7 @@ public class EventConsumer {
                         } else if (event instanceof Message) {
                             isFinalEvent = true;
                         } else if (event instanceof Task task) {
-                            isFinalEvent = task.status().state().isFinal();
+                            isFinalEvent = isStreamTerminatingTask(task);
                         } else if (event instanceof QueueClosedEvent) {
                             // Poison pill event - signals queue closure from remote node
                             // Do NOT send to subscribers - just close the queue
@@ -94,7 +95,7 @@ public class EventConsumer {
                         }
 
                         if (isFinalEvent) {
-                            LOGGER.debug("Final event detected, closing queue and breaking loop for queue {}", System.identityHashCode(queue));
+                            LOGGER.debug("Final or interrupted event detected, closing queue and breaking loop for queue {}", System.identityHashCode(queue));
                             queue.close();
                             LOGGER.debug("Queue closed, breaking loop for queue {}", System.identityHashCode(queue));
                             break;
@@ -118,6 +119,21 @@ public class EventConsumer {
                 }
             }
         });
+    }
+
+    /**
+     * Determines if a task is in a state for terminating the stream.
+     * <p>A task is terminating if:</p>
+     * <ul>
+     *   <li>Its state is final (e.g., completed, canceled, rejected, failed), OR</li>
+     *   <li>Its state is interrupted (e.g., input-required)</li>
+     * </ul>
+     * @param task the task to check
+     * @return true if the task has a final state or an interrupted state, false otherwise
+     */
+    private boolean isStreamTerminatingTask(Task task) {
+        TaskState state = task.status().state();
+        return state.isFinal() || state == TaskState.INPUT_REQUIRED;
     }
 
     public EnhancedRunnable.DoneCallback createAgentRunnableDoneCallback() {

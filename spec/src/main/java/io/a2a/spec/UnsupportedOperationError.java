@@ -31,7 +31,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  * @see MethodNotFoundError for unknown method errors
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public class UnsupportedOperationError extends A2AError {
+public class UnsupportedOperationError extends A2AProtocolError {
 
     /**
      * Constructs error with all parameters.
@@ -47,7 +47,8 @@ public class UnsupportedOperationError extends A2AError {
         super(
                 defaultIfNull(code, UNSUPPORTED_OPERATION_ERROR_CODE),
                 defaultIfNull(message, "This operation is not supported"),
-                data);
+                data,
+                "https://a2a-protocol.org/errors/unsupported-operation");
     }
 
     /**

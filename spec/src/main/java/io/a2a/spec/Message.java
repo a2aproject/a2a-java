@@ -47,6 +47,14 @@ public record Message(Role role, List<Part<?>> parts,
     /**
      * Compact constructor with validation and defensive copying.
      *
+     * @param role the role of the message sender (user or agent)
+     * @param parts the content parts of the message (text, file, or data)
+     * @param messageId the unique identifier for this message
+     * @param contextId the conversation context identifier
+     * @param taskId the task identifier this message is associated with
+     * @param referenceTaskIds list of reference task identifiers
+     * @param metadata additional metadata for the message
+     * @param extensions list of protocol extensions used in this message
      * @throws IllegalArgumentException if role, parts, or messageId is null, or if parts is empty
      */
     public Message {
@@ -80,6 +88,7 @@ public record Message(Role role, List<Part<?>> parts,
      * Creates a new Builder initialized with values from an existing Message.
      *
      * @param message the Message to copy values from
+     * @return a new Builder instance initialized with the message's values
      */
     public static Builder builder(Message message) {
         return new Builder(message);

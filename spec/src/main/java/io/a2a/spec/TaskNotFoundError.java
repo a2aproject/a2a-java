@@ -30,7 +30,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  * @see Task for task object definition
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public class TaskNotFoundError extends A2AError {
+public class TaskNotFoundError extends A2AProtocolError {
 
     /**
      * Constructs error with default message.
@@ -53,6 +53,7 @@ public class TaskNotFoundError extends A2AError {
         super(
                 defaultIfNull(code, TASK_NOT_FOUND_ERROR_CODE),
                 defaultIfNull(message, "Task not found"),
-                data);
+                data,
+                "https://a2a-protocol.org/errors/task-not-found");
     }
 }

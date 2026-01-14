@@ -16,8 +16,23 @@ public class InMemoryQueueManager implements QueueManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryQueueManager.class);
 
     private final ConcurrentMap<String, EventQueue> queues = new ConcurrentHashMap<>();
-    private final EventQueueFactory factory;
-    private final TaskStateProvider taskStateProvider;
+    // Fields set by constructor injection cannot be final. We need a noargs constructor for
+    // Jakarta compatibility, and it seems that making fields set by constructor injection
+    // final, is not proxyable in all runtimes
+    private EventQueueFactory factory;
+    private TaskStateProvider taskStateProvider;
+
+    /**
+     * No-args constructor for CDI proxy creation.
+     * CDI requires a non-private constructor to create proxies for @ApplicationScoped beans.
+     * All fields are initialized by the @Inject constructor during actual bean creation.
+     */
+    @SuppressWarnings("NullAway")
+    protected InMemoryQueueManager() {
+        // For CDI proxy creation
+        this.factory = null;
+        this.taskStateProvider = null;
+    }
 
     @Inject
     public InMemoryQueueManager(TaskStateProvider taskStateProvider) {

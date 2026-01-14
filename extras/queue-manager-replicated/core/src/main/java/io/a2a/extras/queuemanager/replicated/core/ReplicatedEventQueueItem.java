@@ -1,9 +1,5 @@
 package io.a2a.extras.queuemanager.replicated.core;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.Event;
@@ -12,10 +8,8 @@ import io.a2a.spec.StreamingEventKind;
 public class ReplicatedEventQueueItem implements EventQueueItem {
     private String taskId;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private StreamingEventKind event;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private A2AError error;
 
     private boolean closedEvent;
@@ -71,13 +65,10 @@ public class ReplicatedEventQueueItem implements EventQueueItem {
      * Get the StreamingEventKind event field (for JSON serialization).
      * @return the StreamingEventKind event or null
      */
-    @JsonGetter("event")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public StreamingEventKind getStreamingEvent() {
         return event;
     }
 
-    @JsonSetter("event")
     public void setEvent(StreamingEventKind event) {
         this.event = event;
         this.error = null; // Clear error when setting event
@@ -87,13 +78,10 @@ public class ReplicatedEventQueueItem implements EventQueueItem {
      * Get the A2AError field (for JSON serialization).
      * @return the A2AError or null
      */
-    @JsonGetter("error")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public A2AError getErrorObject() {
         return error;
     }
 
-    @JsonSetter("error")
     public void setError(A2AError error) {
         this.error = error;
         this.event = null; // Clear event when setting error
@@ -104,7 +92,6 @@ public class ReplicatedEventQueueItem implements EventQueueItem {
      * This is the method required by the EventQueueItem interface.
      * @return the event (StreamingEventKind, A2AError, or QueueClosedEvent) or null if none is set
      */
-    @JsonIgnore
     @Override
     public Event getEvent() {
         if (closedEvent) {
@@ -120,7 +107,6 @@ public class ReplicatedEventQueueItem implements EventQueueItem {
      * Indicates this is a replicated event (implements EventQueueItem).
      * @return always true for replicated events
      */
-    @JsonIgnore
     @Override
     public boolean isReplicated() {
         return true;
@@ -147,7 +133,6 @@ public class ReplicatedEventQueueItem implements EventQueueItem {
      * For JSON serialization.
      * @return true if this is a queue closed event
      */
-    @JsonGetter("closedEvent")
     public boolean isClosedEvent() {
         return closedEvent;
     }
@@ -156,7 +141,6 @@ public class ReplicatedEventQueueItem implements EventQueueItem {
      * Set the closed event flag (for JSON deserialization).
      * @param closedEvent true if this is a queue closed event
      */
-    @JsonSetter("closedEvent")
     public void setClosedEvent(boolean closedEvent) {
         this.closedEvent = closedEvent;
         if (closedEvent) {

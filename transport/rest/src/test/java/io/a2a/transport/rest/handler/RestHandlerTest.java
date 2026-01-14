@@ -1,7 +1,10 @@
 package io.a2a.transport.rest.handler;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +15,12 @@ import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import io.a2a.server.tasks.TaskUpdater;
+import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentExtension;
+import io.a2a.spec.AgentInterface;
+import io.a2a.spec.ExtensionSupportRequiredError;
+import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.spec.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -48,6 +56,31 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(404, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("TaskNotFoundError"));
+    }
+
+    @Test
+    public void testListTasksStatusWireString() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK);
+
+        RestHandler.HTTPRestResponse response = handler.listTasks(null, "submitted", null, null,
+                null, null, null, "", callContext);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testListTasksInvalidStatus() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+
+        RestHandler.HTTPRestResponse response = handler.listTasks(null, "not-a-status", null, null,
+                null, null, null, "", callContext);
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("InvalidParamsError"));
     }
 
     @Test
@@ -402,5 +435,448 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         // Verify we received the event
         Assertions.assertTrue(eventReceived.get(), "Should have received streaming event");
+    }
+
+    @Test
+    public void testExtensionSupportRequiredErrorOnSendMessage() {
+        // Create AgentCard with a required extension
+        AgentCard cardWithExtension = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with required extension")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extensions(List.of(
+                                AgentExtension.builder()
+                                        .uri("https://example.com/test-extension")
+                                        .required(true)
+                                        .build()
+                        ))
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .build();
+
+        RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
+
+        String requestBody = """
+            {
+              "message": {
+                "messageId": "message-1234",
+                "contextId": "context-1234",
+                "role": "ROLE_USER",
+                "parts": [{
+                  "text": "tell me a joke"
+                }],
+                "metadata": {}
+              },
+              "configuration": {
+                "blocking": true
+              }
+            }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendMessage(requestBody, "", callContext);
+
+        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("ExtensionSupportRequiredError"));
+        Assertions.assertTrue(response.getBody().contains("https://example.com/test-extension"));
+    }
+
+    @Test
+    public void testExtensionSupportRequiredErrorOnSendStreamingMessage() {
+        // Create AgentCard with a required extension
+        AgentCard cardWithExtension = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with required extension")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extensions(List.of(
+                                AgentExtension.builder()
+                                        .uri("https://example.com/streaming-extension")
+                                        .required(true)
+                                        .build()
+                        ))
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .build();
+
+        RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
+
+        String requestBody = """
+            {
+              "message": {
+                "role": "ROLE_USER",
+                "parts": [{
+                  "text": "tell me some jokes"
+                }],
+                "messageId": "message-1234",
+                "contextId": "context-1234"
+              },
+              "configuration": {
+                "acceptedOutputModes": ["text"]
+              }
+            }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(requestBody, "", callContext);
+
+        // Streaming responses embed errors in the stream with status 200
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
+        
+        // Subscribe to publisher and verify error in stream
+        RestHandler.HTTPRestStreamingResponse streamingResponse = (RestHandler.HTTPRestStreamingResponse) response;
+        Flow.Publisher<String> publisher = streamingResponse.getPublisher();
+        
+        AtomicBoolean errorFound = new AtomicBoolean(false);
+        CountDownLatch latch = new CountDownLatch(1);
+        
+        publisher.subscribe(new Flow.Subscriber<String>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(String item) {
+                if (item.contains("ExtensionSupportRequiredError") && 
+                    item.contains("https://example.com/streaming-extension")) {
+                    errorFound.set(true);
+                }
+                latch.countDown();
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        try {
+            Assertions.assertTrue(latch.await(1, TimeUnit.SECONDS));
+            Assertions.assertTrue(errorFound.get(), "Error should be found in streaming response");
+        } catch (InterruptedException e) {
+            Assertions.fail("Test interrupted");
+        }
+    }
+
+    @Test
+    public void testRequiredExtensionProvidedSuccess() {
+        // Create AgentCard with a required extension
+        AgentCard cardWithExtension = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with required extension")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .extensions(List.of(
+                                AgentExtension.builder()
+                                        .uri("https://example.com/required-extension")
+                                        .required(true)
+                                        .build()
+                        ))
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .build();
+
+        RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
+
+        // Create context WITH the required extension
+        Set<String> requestedExtensions = new HashSet<>();
+        requestedExtensions.add("https://example.com/required-extension");
+        ServerCallContext contextWithExtension = new ServerCallContext(
+                UnauthenticatedUser.INSTANCE,
+                Map.of("foo", "bar"),
+                requestedExtensions
+        );
+
+        agentExecutorExecute = (context, eventQueue) -> {
+            eventQueue.enqueueEvent(context.getMessage());
+        };
+
+        String requestBody = """
+            {
+              "message": {
+                "messageId": "message-1234",
+                "contextId": "context-1234",
+                "role": "ROLE_USER",
+                "parts": [{
+                  "text": "tell me a joke"
+                }],
+                "metadata": {}
+              },
+              "configuration": {
+                "blocking": true
+              }
+            }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendMessage(requestBody, "", contextWithExtension);
+
+        // Should succeed without error
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertNotNull(response.getBody());
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnSendMessage() {
+        // Create AgentCard with protocol version 1.0
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        RestHandler handler = new RestHandler(agentCard, requestHandler, internalExecutor);
+
+        // Create context with incompatible version 2.0
+        ServerCallContext contextWithVersion = new ServerCallContext(
+                UnauthenticatedUser.INSTANCE,
+                Map.of("foo", "bar"),
+                new HashSet<>(),
+                "2.0"  // Incompatible version
+        );
+
+        String requestBody = """
+            {
+              "message": {
+                "messageId": "message-1234",
+                "contextId": "context-1234",
+                "role": "ROLE_USER",
+                "parts": [{
+                  "text": "tell me a joke"
+                }],
+                "metadata": {}
+              },
+              "configuration": {
+                "blocking": true
+              }
+            }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendMessage(requestBody, "", contextWithVersion);
+
+        Assertions.assertEquals(501, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("VersionNotSupportedError"));
+        Assertions.assertTrue(response.getBody().contains("2.0"));
+    }
+
+    @Test
+    public void testVersionNotSupportedErrorOnSendStreamingMessage() {
+        // Create AgentCard with protocol version 1.0
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        RestHandler handler = new RestHandler(agentCard, requestHandler, internalExecutor);
+
+        // Create context with incompatible version 2.0
+        ServerCallContext contextWithVersion = new ServerCallContext(
+                UnauthenticatedUser.INSTANCE,
+                Map.of("foo", "bar"),
+                new HashSet<>(),
+                "2.0"  // Incompatible version
+        );
+
+        String requestBody = """
+            {
+              "message": {
+                "role": "ROLE_USER",
+                "parts": [{
+                  "text": "tell me some jokes"
+                }],
+                "messageId": "message-1234",
+                "contextId": "context-1234"
+              },
+              "configuration": {
+                "acceptedOutputModes": ["text"]
+              }
+            }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(requestBody, "", contextWithVersion);
+
+        // Streaming responses embed errors in the stream with status 200
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, response);
+
+        // Subscribe to publisher and verify error in stream
+        RestHandler.HTTPRestStreamingResponse streamingResponse = (RestHandler.HTTPRestStreamingResponse) response;
+        Flow.Publisher<String> publisher = streamingResponse.getPublisher();
+
+        AtomicBoolean errorFound = new AtomicBoolean(false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(String item) {
+                if (item.contains("VersionNotSupportedError") &&
+                    item.contains("2.0")) {
+                    errorFound.set(true);
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        try {
+            Assertions.assertTrue(latch.await(1, TimeUnit.SECONDS));
+            Assertions.assertTrue(errorFound.get(), "Error should be found in streaming response");
+        } catch (InterruptedException e) {
+            Assertions.fail("Test interrupted");
+        }
+    }
+
+    @Test
+    public void testCompatibleVersionSuccess() {
+        // Create AgentCard with protocol version 1.0
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        RestHandler handler = new RestHandler(agentCard, requestHandler, internalExecutor);
+
+        // Create context with compatible version 1.1
+        ServerCallContext contextWithVersion = new ServerCallContext(
+                UnauthenticatedUser.INSTANCE,
+                Map.of("foo", "bar"),
+                new HashSet<>(),
+                "1.1"  // Compatible version (same major version)
+        );
+
+        agentExecutorExecute = (context, eventQueue) -> {
+            eventQueue.enqueueEvent(context.getMessage());
+        };
+
+        String requestBody = """
+            {
+              "message": {
+                "messageId": "message-1234",
+                "contextId": "context-1234",
+                "role": "ROLE_USER",
+                "parts": [{
+                  "text": "tell me a joke"
+                }],
+                "metadata": {}
+              },
+              "configuration": {
+                "blocking": true
+              }
+            }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendMessage(requestBody, "", contextWithVersion);
+
+        // Should succeed without error
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertNotNull(response.getBody());
+    }
+
+    @Test
+    public void testNoVersionDefaultsToCurrentVersionSuccess() {
+        // Create AgentCard with protocol version 1.0 (current version)
+        AgentCard agentCard = AgentCard.builder()
+                .name("test-card")
+                .description("Test card with version 1.0")
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("REST", "http://localhost:9999")))
+                .version("1.0.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .build();
+
+        RestHandler handler = new RestHandler(agentCard, requestHandler, internalExecutor);
+
+        // Use default callContext (no version - should default to 1.0)
+        agentExecutorExecute = (context, eventQueue) -> {
+            eventQueue.enqueueEvent(context.getMessage());
+        };
+
+        String requestBody = """
+            {
+              "message": {
+                "messageId": "message-1234",
+                "contextId": "context-1234",
+                "role": "ROLE_USER",
+                "parts": [{
+                  "text": "tell me a joke"
+                }],
+                "metadata": {}
+              },
+              "configuration": {
+                "blocking": true
+              }
+            }""";
+
+        RestHandler.HTTPRestResponse response = handler.sendMessage(requestBody, "", callContext);
+
+        // Should succeed without error (defaults to 1.0)
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertNotNull(response.getBody());
     }
 }
