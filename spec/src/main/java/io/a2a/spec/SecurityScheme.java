@@ -29,4 +29,9 @@ public sealed interface SecurityScheme permits APIKeySecurityScheme, HTTPAuthSec
      * @return the description, or null if not provided
      */
     String description();
+
+    /**
+     * Returns the type of the security scheme.
+     */
+    String type();
 }

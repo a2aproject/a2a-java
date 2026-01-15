@@ -27,8 +27,12 @@ package io.a2a.spec;
 public record MutualTLSSecurityScheme(String description) implements SecurityScheme {
 
     /**
-     * The type identifier for mutual TLS security schemes: "mutualTLS".
+     * The type identifier for mutual TLS security schemes: "mtlsSecurityScheme".
      */
-    public static final String MUTUAL_TLS = "mutualTLS";
+    public static final String TYPE = "mtlsSecurityScheme";
 
+    @Override
+    public String type() {
+        return TYPE;
+    }
 }

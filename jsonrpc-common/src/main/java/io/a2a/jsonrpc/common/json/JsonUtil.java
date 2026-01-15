@@ -14,11 +14,13 @@ import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
 
 import java.io.StringReader;
+import java.lang.InternalError;
 import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -29,30 +31,9 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import io.a2a.spec.A2AError;
-import io.a2a.spec.ContentTypeNotSupportedError;
-import io.a2a.spec.DataPart;
-import io.a2a.spec.FileContent;
-import io.a2a.spec.FilePart;
-import io.a2a.spec.FileWithBytes;
-import io.a2a.spec.FileWithUri;
-import io.a2a.spec.InvalidAgentResponseError;
-import io.a2a.spec.InvalidParamsError;
-import io.a2a.spec.InvalidRequestError;
-import io.a2a.spec.JSONParseError;
-import io.a2a.spec.Message;
-import io.a2a.spec.MethodNotFoundError;
-import io.a2a.spec.Part;
-import io.a2a.spec.PushNotificationNotSupportedError;
-import io.a2a.spec.StreamingEventKind;
-import io.a2a.spec.Task;
-import io.a2a.spec.TaskArtifactUpdateEvent;
-import io.a2a.spec.TaskNotCancelableError;
-import io.a2a.spec.TaskNotFoundError;
-import io.a2a.spec.TaskState;
-import io.a2a.spec.TaskStatusUpdateEvent;
-import io.a2a.spec.TextPart;
-import io.a2a.spec.UnsupportedOperationError;
+
+import io.a2a.spec.*;
+
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -83,6 +64,7 @@ public class JsonUtil {
     public static final Gson OBJECT_MAPPER = createBaseGsonBuilder()
             .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
             .registerTypeHierarchyAdapter(StreamingEventKind.class, new StreamingEventKindTypeAdapter())
+            .registerTypeHierarchyAdapter(SecurityScheme.class, new SecuritySchemeTypeAdapter())
             .create();
 
     /**
@@ -755,6 +737,140 @@ public class JsonUtil {
                 return delegateGson.fromJson(jsonElement, FileWithUri.class);
             } else {
                 throw new JsonSyntaxException("FileContent must have either 'bytes' or 'uri' field");
+            }
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link APIKeySecurityScheme.Location} enum.
+     * <p>
+     * This adapter ensures that Location enum values are serialized using their
+     * wire format string representation (e.g., "header") rather than
+     * the Java enum constant name (e.g., "HEADER").
+     * <p>
+     * For serialization, it uses {@link APIKeySecurityScheme.Location#asString()} to get the wire format.
+     * For deserialization, it uses {@link APIKeySecurityScheme.Location#fromString(String)} to parse the
+     * wire format back to the enum constant.
+     *
+     * @see APIKeySecurityScheme.Location
+     */
+    static class APIKeyLocationTypeAdapter extends TypeAdapter<APIKeySecurityScheme.Location> {
+
+        @Override
+        public void write(JsonWriter out, APIKeySecurityScheme.Location value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value.asString());
+            }
+        }
+
+        @Override
+        public APIKeySecurityScheme.@Nullable Location read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String locationString = in.nextString();
+            try {
+                return APIKeySecurityScheme.Location.fromString(locationString);
+            } catch (IllegalArgumentException e) {
+                throw new JsonSyntaxException("Invalid APIKeySecurityScheme.Location: " + locationString, e);
+            }
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link SecurityScheme} and its implementations.
+     * <p>
+     * This adapter handles polymorphic deserialization for the sealed SecurityScheme interface,
+     * which permits five implementations:
+     * <ul>
+     * <li>{@link APIKeySecurityScheme} - API key authentication</li>
+     * <li>{@link HTTPAuthSecurityScheme} - HTTP authentication (basic or bearer)</li>
+     * <li>{@link OAuth2SecurityScheme} - OAuth 2.0 flows</li>
+     * <li>{@link OpenIdConnectSecurityScheme} - OpenID Connect discovery</li>
+     * <li>{@link MutualTLSSecurityScheme} - Client certificate authentication</li>
+     * </ul>
+     * <p>
+     * The adapter uses a wrapper object with the security scheme type as the discriminator field.
+     * Each SecurityScheme is serialized as a JSON object with a single field whose name identifies
+     * the security scheme type.
+     * <p>
+     * Serialization format examples:
+     * <pre>{@code
+     * // HTTPAuthSecurityScheme
+     * {
+     *   "httpAuthSecurityScheme": {
+     *     "scheme": "bearer",
+     *     "bearerFormat": "JWT",
+     *     "description": "..."
+     *   }
+     * }
+     *
+     * // APIKeySecurityScheme
+     * {
+     *   "apiKeySecurityScheme": {
+     *     "location": "header",
+     *     "name": "X-API-Key",
+     *     "description": "..."
+     *   }
+     * }
+     * }</pre>
+     *
+     * @see SecurityScheme
+     * @see APIKeySecurityScheme
+     * @see HTTPAuthSecurityScheme
+     * @see OAuth2SecurityScheme
+     * @see OpenIdConnectSecurityScheme
+     * @see MutualTLSSecurityScheme
+     */
+    static class SecuritySchemeTypeAdapter extends TypeAdapter<SecurityScheme> {
+
+        // Create separate Gson instance without the SecurityScheme adapter to avoid recursion
+        // Register custom adapter for APIKeySecurityScheme.Location enum
+        private final Gson delegateGson = new GsonBuilder()
+                .registerTypeAdapter(APIKeySecurityScheme.Location.class, new APIKeyLocationTypeAdapter())
+                .create();
+
+        @Override
+        public void write(JsonWriter out, SecurityScheme value) throws java.io.IOException {
+            // Write wrapper object with member name as discriminator
+            out.beginObject();
+            out.name(value.getType());
+            delegateGson.toJson(value, value.getClass(), out);
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable
+        SecurityScheme read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            // Read the JSON as a tree to inspect the member name discriminator
+            com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseReader(in);
+            if (!jsonElement.isJsonObject()) {
+                throw new JsonSyntaxException("SecurityScheme must be a JSON object");
+            }
+
+            com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+            // Check for member name discriminators
+            if (jsonObject.has(APIKeySecurityScheme.TYPE)) {
+                return delegateGson.fromJson(jsonObject.get(APIKeySecurityScheme.TYPE), APIKeySecurityScheme.class);
+            } else if (jsonObject.has(HTTPAuthSecurityScheme.TYPE)) {
+                return delegateGson.fromJson(jsonObject.get(HTTPAuthSecurityScheme.TYPE), HTTPAuthSecurityScheme.class);
+            } else if (jsonObject.has(OAuth2SecurityScheme.TYPE)) {
+                return delegateGson.fromJson(jsonObject.get(OAuth2SecurityScheme.TYPE), OAuth2SecurityScheme.class);
+            } else if (jsonObject.has(OpenIdConnectSecurityScheme.TYPE)) {
+                return delegateGson.fromJson(jsonObject.get(OpenIdConnectSecurityScheme.TYPE), OpenIdConnectSecurityScheme.class);
+            } else if (jsonObject.has(MutualTLSSecurityScheme.TYPE)) {
+                return delegateGson.fromJson(jsonObject.get(MutualTLSSecurityScheme.TYPE), MutualTLSSecurityScheme.class);
+            } else {
+                throw new JsonSyntaxException(String.format("SecurityScheme must have one of: %s (found: %s)", SecurityScheme.VALID_TYPES, jsonObject.keySet()));
             }
         }
     }
