@@ -26,6 +26,7 @@ import io.a2a.jsonrpc.common.json.IdJsonMappingException;
 import io.a2a.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
+import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.jsonrpc.common.json.MethodNotFoundJsonMappingException;
 import io.a2a.jsonrpc.common.wrappers.A2AErrorResponse;
 import io.a2a.jsonrpc.common.wrappers.A2ARequest;
@@ -156,8 +157,8 @@ public class A2AServerRoutes {
      * @return the agent card
      */
     @Route(path = "/.well-known/agent-card.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
-    public AgentCard getAgentCard() {
-        return jsonRpcHandler.getAgentCard();
+    public String getAgentCard() throws JsonProcessingException {
+        return JsonUtil.toJson(jsonRpcHandler.getAgentCard());
     }
 
     private A2AResponse<?> processNonStreamingRequest(NonStreamingJSONRPCRequest<?> request, ServerCallContext context) {
