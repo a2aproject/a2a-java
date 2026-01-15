@@ -3,15 +3,19 @@ package io.a2a.tck.server;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
+import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
+import io.a2a.spec.HTTPAuthSecurityScheme;
+import io.a2a.spec.OpenIdConnectSecurityScheme;
 import io.a2a.spec.TransportProtocol;
 
 @ApplicationScoped
@@ -39,6 +43,11 @@ public class AgentCardProducer {
                         .streaming(true)
                         .pushNotifications(true)
                         .build())
+                .securitySchemes(Map.of("acme", HTTPAuthSecurityScheme.builder()
+                       .scheme("basic")
+                       .build()))
+                .security(List.of(Map.of("acme", Collections.emptyList())))
+                .supportsExtendedAgentCard(true)
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(Collections.singletonList(AgentSkill.builder()
@@ -54,6 +63,14 @@ public class AgentCardProducer {
     private static String getEnvOrDefault(String envVar, String defaultValue) {
         String value = System.getenv(envVar);
         return value == null || value.isBlank() ? defaultValue : value;
+    }
+
+    @Produces
+    @ExtendedAgentCard
+    public AgentCard extendedAgentCard() {
+        return AgentCard.builder(agentCard())
+                //TODO what can we put in the extended agent card
+                .build();
     }
 }
 
