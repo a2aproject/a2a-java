@@ -36,6 +36,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-http-client-vertx</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
         </dependency>
         <dependency>

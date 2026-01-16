@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 
 
 import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
@@ -52,7 +52,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     @Inject
     public BasePushNotificationSender(PushNotificationConfigStore configStore) {
-        this.httpClient = new JdkA2AHttpClient();
+        this.httpClient = A2AHttpClientFactory.create();
         this.configStore = configStore;
     }
 

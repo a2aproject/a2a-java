@@ -1,7 +1,7 @@
 package io.a2a.client.transport.rest;
 
 import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.client.transport.spi.ClientTransportConfigBuilder;
 import org.jspecify.annotations.Nullable;
 
@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
  * This builder provides a fluent API for configuring the REST transport protocol.
  * All configuration options are optional - if not specified, sensible defaults are used:
  * <ul>
- *   <li><b>HTTP client:</b> {@link JdkA2AHttpClient} (JDK's built-in HTTP client)</li>
+ *   <li><b>HTTP client:</b> Auto-selected via {@link A2AHttpClientFactory} (prefers Vert.x, falls back to JDK)</li>
  *   <li><b>Interceptors:</b> None</li>
  * </ul>
  * <p>
@@ -78,7 +78,7 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
      *   <li>Custom header handling</li>
      * </ul>
      * <p>
-     * If not specified, the default {@link JdkA2AHttpClient} is used.
+     * If not specified, a client is auto-selected via {@link A2AHttpClientFactory}.
      * <p>
      * Example:
      * <pre>{@code
@@ -101,16 +101,16 @@ public class RestTransportConfigBuilder extends ClientTransportConfigBuilder<Res
     /**
      * Build the REST transport configuration.
      * <p>
-     * If no HTTP client was configured, the default {@link JdkA2AHttpClient} is used.
+     * If no HTTP client was configured, one is auto-selected via {@link A2AHttpClientFactory}.
      * Any configured interceptors are transferred to the configuration.
      *
      * @return the configured REST transport configuration
      */
     @Override
     public RestTransportConfig build() {
-        // No HTTP client provided, fallback to the default one (JDK-based implementation)
+        // No HTTP client provided, use factory to get best available implementation
         if (httpClient == null) {
-            httpClient = new JdkA2AHttpClient();
+            httpClient = A2AHttpClientFactory.create();
         }
 
         RestTransportConfig config = new RestTransportConfig(httpClient);

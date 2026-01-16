@@ -27,18 +27,18 @@ public class A2ACardResolver {
     private static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
 
     /**
-     * Get the agent card for an A2A agent. The {@code JdkA2AHttpClient} will be used to fetch the agent card.
+     * Get the agent card for an A2A agent. An HTTP client will be auto-selected via {@link A2AHttpClientFactory}.
      *
      * @param baseUrl the base URL for the agent whose agent card we want to retrieve, must not be null
      * @throws A2AClientError if the URL for the agent is invalid
      * @throws IllegalArgumentException if baseUrl is null
      */
     public A2ACardResolver(String baseUrl) throws A2AClientError {
-        this(new JdkA2AHttpClient(), baseUrl, null, null);
+        this(A2AHttpClientFactory.create(), baseUrl, null, null);
     }
 
     /**
-     * Get the agent card for an A2A agent. The {@code JdkA2AHttpClient} will be used to fetch the agent card.
+     * Get the agent card for an A2A agent. An HTTP client will be auto-selected via {@link A2AHttpClientFactory}.
      *
      * @param baseUrl the base URL for the agent whose agent card we want to retrieve, must not be null
      * @param tenant the tenant path to use when fetching the agent card, may be null for no tenant
@@ -46,7 +46,7 @@ public class A2ACardResolver {
      * @throws IllegalArgumentException if baseUrl is null
      */
     public A2ACardResolver(String baseUrl, @Nullable String tenant) throws A2AClientError {
-        this(new JdkA2AHttpClient(), baseUrl, tenant, null);
+        this(A2AHttpClientFactory.create(), baseUrl, tenant, null);
     }
 
     /**

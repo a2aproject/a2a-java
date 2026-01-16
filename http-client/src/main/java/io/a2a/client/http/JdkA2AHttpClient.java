@@ -199,7 +199,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         private HttpRequest.Builder createRequestBuilder(boolean SSE) throws IOException {
             HttpRequest.Builder builder = super.createRequestBuilder().GET();
             if (SSE) {
-                builder.header("Accept", "text/event-stream");
+                builder.header(ACCEPT, EVENT_STREAM);
             }
             return builder;
         }
@@ -250,7 +250,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             HttpRequest.Builder builder = super.createRequestBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
             if (SSE) {
-                builder.header("Accept", "text/event-stream");
+                builder.header(ACCEPT, EVENT_STREAM);
             }
             return builder;
         }

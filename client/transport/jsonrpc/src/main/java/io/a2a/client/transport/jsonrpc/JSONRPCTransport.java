@@ -23,8 +23,8 @@ import java.util.function.Consumer;
 import com.google.protobuf.MessageOrBuilder;
 import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.http.A2AHttpClient;
+import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.client.http.A2AHttpResponse;
-import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.client.transport.jsonrpc.sse.SSEEventListener;
 import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
@@ -84,7 +84,7 @@ public class JSONRPCTransport implements ClientTransport {
 
     public JSONRPCTransport(@Nullable A2AHttpClient httpClient, @Nullable AgentCard agentCard,
                             AgentInterface agentInterface, @Nullable List<ClientCallInterceptor> interceptors) {
-        this.httpClient = httpClient == null ? new JdkA2AHttpClient() : httpClient;
+        this.httpClient = httpClient == null ? A2AHttpClientFactory.create() : httpClient;
         this.agentCard = agentCard;
         this.agentInterface = agentInterface;
         this.interceptors = interceptors;
