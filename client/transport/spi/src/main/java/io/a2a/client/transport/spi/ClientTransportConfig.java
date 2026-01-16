@@ -1,7 +1,10 @@
 package io.a2a.client.transport.spi;
 
 import java.util.ArrayList;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
 
@@ -35,6 +38,7 @@ import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
 public abstract class ClientTransportConfig<T extends ClientTransport> {
 
     protected List<ClientCallInterceptor> interceptors = new ArrayList<>();
+    protected Map<String, ? extends Object > parameters = new HashMap<>();
 
     /**
      * Set the list of request/response interceptors.
@@ -62,5 +66,13 @@ public abstract class ClientTransportConfig<T extends ClientTransport> {
      */
     public List<ClientCallInterceptor> getInterceptors() {
         return java.util.Collections.unmodifiableList(interceptors);
+    }
+
+    public void setParameters(Map<String, ? extends Object > parameters) {
+        this.parameters = new HashMap<>(parameters);
+    }
+
+    public Map<String, ? extends Object > getParameters() {
+        return parameters;
     }
 }

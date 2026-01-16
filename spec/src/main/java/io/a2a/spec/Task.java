@@ -103,6 +103,11 @@ public record Task(
         return new Builder(task);
     }
 
+    @Override
+    public String toString() {
+        return "Task{" + "id=" + id + ", contextId=" + contextId + ", status=" + status + ", artifacts=" + artifacts + ", history=" + history + ", metadata=" + metadata + '}';
+    }
+
     /**
      * Builder for constructing immutable {@link Task} instances.
      * <p>

@@ -1,5 +1,6 @@
 package io.a2a.transport.rest.handler;
 
+import static io.a2a.server.interceptors.Kind.SERVER;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
 
@@ -31,6 +32,7 @@ import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.extensions.A2AExtensions;
+import io.a2a.server.interceptors.Trace;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.server.util.async.Internal;
@@ -107,7 +109,9 @@ public class RestHandler {
         this.executor = executor;
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse sendMessage(String body, String tenant, ServerCallContext context) {
+
         try {
             A2AVersionValidator.validateProtocolVersion(agentCard, context);
             A2AExtensions.validateRequiredExtensions(agentCard, context);
@@ -123,6 +127,7 @@ public class RestHandler {
         }
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse sendStreamingMessage(String body, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().streaming()) {
@@ -142,6 +147,7 @@ public class RestHandler {
         }
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse cancelTask(String taskId, String tenant, ServerCallContext context) {
         try {
             if (taskId == null || taskId.isEmpty()) {
@@ -160,6 +166,7 @@ public class RestHandler {
         }
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse setTaskPushNotificationConfiguration(String taskId, String body, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
@@ -177,6 +184,7 @@ public class RestHandler {
         }
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse subscribeToTask(String taskId, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().streaming()) {
@@ -192,6 +200,7 @@ public class RestHandler {
         }
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse getTask(String taskId, @Nullable Integer historyLength, String tenant, ServerCallContext context) {
         try {
             TaskQueryParams params = new TaskQueryParams(taskId, historyLength, tenant);
@@ -207,6 +216,7 @@ public class RestHandler {
         }
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse listTasks(@Nullable String contextId, @Nullable String status,
                                        @Nullable Integer pageSize, @Nullable String pageToken,
                                        @Nullable Integer historyLength, @Nullable String lastUpdatedAfter,
@@ -269,6 +279,7 @@ public class RestHandler {
         }
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
@@ -284,6 +295,7 @@ public class RestHandler {
         }
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse listTaskPushNotificationConfigurations(String taskId, int pageSize, String pageToken, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
@@ -299,6 +311,7 @@ public class RestHandler {
         }
     }
 
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
     public HTTPRestResponse deleteTaskPushNotificationConfiguration(String taskId, String configId, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {

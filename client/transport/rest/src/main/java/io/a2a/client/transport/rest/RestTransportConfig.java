@@ -48,7 +48,7 @@ import org.jspecify.annotations.Nullable;
  * @see A2AHttpClient
  * @see io.a2a.client.http.JdkA2AHttpClient
  */
-public class RestTransportConfig extends ClientTransportConfig<RestTransport>  {
+public class RestTransportConfig extends ClientTransportConfig<RestTransport> {
 
     private final @Nullable A2AHttpClient httpClient;
 
