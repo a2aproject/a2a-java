@@ -29,7 +29,7 @@ public record ListTasksParams(
 ) {
     /**
      * Compact constructor for validation.
-     * Validates that the tenant parameter is not null.
+     * Validates that the tenant parameter is not null and parameters are within valid ranges.
      *
      * @param contextId filter by context ID
      * @param status filter by task status
@@ -39,9 +39,22 @@ public record ListTasksParams(
      * @param lastUpdatedAfter filter by last update timestamp
      * @param includeArtifacts whether to include artifacts
      * @param tenant the tenant identifier
+     * @throws InvalidParamsError if pageSize or historyLength are out of valid range
      */
     public ListTasksParams {
         Assert.checkNotNullParam("tenant", tenant);
+
+        // Validate pageSize (1-100)
+        if (pageSize != null && (pageSize < 1 || pageSize > 100)) {
+            throw new InvalidParamsError(null,
+                "pageSize must be between 1 and 100, got: " + pageSize, null);
+        }
+
+        // Validate historyLength (>= 0)
+        if (historyLength != null && historyLength < 0) {
+            throw new InvalidParamsError(null,
+                "historyLength must be non-negative, got: " + historyLength, null);
+        }
     }
     /**
      * Default constructor for listing all tasks.

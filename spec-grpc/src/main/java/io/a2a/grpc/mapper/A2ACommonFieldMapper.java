@@ -285,7 +285,23 @@ public interface A2ACommonFieldMapper {
      */
     @Named("zeroToNull")
     default Integer zeroToNull(int value) {
-        return value > 0 ? value : null;
+        return value != 0 ? value : null;
+    }
+
+    /**
+     * Converts protobuf int to Integer, preserving all values including 0.
+     * <p>
+     * Unlike zeroToNull, this method preserves 0 values, allowing compact constructor
+     * validation to catch invalid values (e.g., pageSize=0 must fail validation).
+     * For truly optional fields where 0 means "unset", use zeroToNull instead.
+     * Use this with {@code @Mapping(qualifiedByName = "intToIntegerOrNull")}.
+     *
+     * @param value the protobuf int value
+     * @return Integer (never null for primitive int input)
+     */
+    @Named("intToIntegerOrNull")
+    default Integer intToIntegerOrNull(int value) {
+        return value;
     }
 
     /**
@@ -337,13 +353,20 @@ public interface A2ACommonFieldMapper {
      * Converts protobuf milliseconds-since-epoch (int64) to domain Instant.
      * <p>
      * Returns null if input is 0 (protobuf default for unset field).
+     * Throws InvalidParamsError for negative values (invalid timestamps).
      * Use this with {@code @Mapping(qualifiedByName = "millisToInstant")}.
      *
      * @param millis milliseconds since epoch
      * @return domain Instant, or null if millis is 0
+     * @throws InvalidParamsError if millis is negative
      */
     @Named("millisToInstant")
     default Instant millisToInstant(long millis) {
+        if (millis < 0L) {
+            throw new InvalidParamsError(null,
+                "lastUpdatedAfter must be a valid timestamp (non-negative milliseconds since epoch), got: " + millis,
+                null);
+        }
         return millis > 0L ? Instant.ofEpochMilli(millis) : null;
     }
 
@@ -351,21 +374,28 @@ public interface A2ACommonFieldMapper {
     // Enum Conversions (handling UNSPECIFIED/UNKNOWN)
     // ========================================================================
     /**
-     * Converts protobuf TaskState to domain TaskState, treating UNSPECIFIED/UNKNOWN as null.
+     * Converts protobuf TaskState to domain TaskState, treating UNSPECIFIED as null.
      * <p>
-     * Protobuf enums default to UNSPECIFIED (0 value) when unset. The domain may also have
-     * UNKNOWN for unparseable values. Both should map to null for optional fields.
+     * Protobuf enums default to UNSPECIFIED (0 value) when unset, which maps to null for optional fields.
+     * However, UNRECOGNIZED (invalid enum values from JSON) throws InvalidParamsError for proper validation.
      * Use this with {@code @Mapping(qualifiedByName = "taskStateOrNull")}.
      *
      * @param state the protobuf TaskState
-     * @return domain TaskState or null if UNSPECIFIED/UNKNOWN
+     * @return domain TaskState or null if UNSPECIFIED
+     * @throws InvalidParamsError if state is UNRECOGNIZED (invalid enum value)
      */
     @Named("taskStateOrNull")
     default io.a2a.spec.TaskState taskStateOrNull(io.a2a.grpc.TaskState state) {
         if (state == null || state == io.a2a.grpc.TaskState.TASK_STATE_UNSPECIFIED) {
             return null;
         }
+        // Reject invalid enum values (e.g., "INVALID_STATUS" from JSON)
+        if (state == io.a2a.grpc.TaskState.UNRECOGNIZED) {
+            throw new InvalidParamsError(null,
+                "Invalid task state value. Must be one of: SUBMITTED, WORKING, INPUT_REQUIRED, AUTH_REQUIRED, COMPLETED, CANCELED, FAILED, REJECTED",
+                null);
+        }
         io.a2a.spec.TaskState result = TaskStateMapper.INSTANCE.fromProto(state);
-        return result == io.a2a.spec.TaskState.UNKNOWN ? null : result;
+        return result;
     }
 }

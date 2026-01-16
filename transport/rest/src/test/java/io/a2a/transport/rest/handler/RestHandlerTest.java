@@ -879,4 +879,82 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals("application/json", response.getContentType());
         Assertions.assertNotNull(response.getBody());
     }
+
+    @Test
+    public void testListTasksNegativeTimestampReturns422() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+
+        // Negative timestamp should return 422 (Invalid params)
+        RestHandler.HTTPRestResponse response = handler.listTasks(null, null, null, null,
+                null, "-1", null, "", callContext);
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("InvalidParamsError"));
+    }
+
+    @Test
+    public void testListTasksUnixMillisecondsTimestamp() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK);
+
+        // Unix milliseconds timestamp should be accepted
+        String timestampMillis = String.valueOf(System.currentTimeMillis() - 10000);
+        RestHandler.HTTPRestResponse response = handler.listTasks(null, null, null, null,
+                null, timestampMillis, null, "", callContext);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("tasks"));
+    }
+
+    @Test
+    public void testListTasksProtobufEnumStatus() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK);
+
+        // Protobuf enum format (TASK_STATE_SUBMITTED) should be accepted
+        RestHandler.HTTPRestResponse response = handler.listTasks(null, "TASK_STATE_SUBMITTED", null, null,
+                null, null, null, "", callContext);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testListTasksEnumConstantStatus() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK);
+
+        // Enum constant format (SUBMITTED) should be accepted
+        RestHandler.HTTPRestResponse response = handler.listTasks(null, "SUBMITTED", null, null,
+                null, null, null, "", callContext);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testListTasksEmptyResultIncludesAllFields() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+
+        // Query for a context that doesn't exist - should return empty result with all fields
+        RestHandler.HTTPRestResponse response = handler.listTasks("nonexistent-context-id", null, null, null,
+                null, null, null, "", callContext);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+
+        String body = response.getBody();
+        // Verify all required fields are present (not missing)
+        Assertions.assertTrue(body.contains("\"tasks\""), "Response should contain tasks field");
+        Assertions.assertTrue(body.contains("\"totalSize\""), "Response should contain totalSize field");
+        Assertions.assertTrue(body.contains("\"pageSize\""), "Response should contain pageSize field");
+        Assertions.assertTrue(body.contains("\"nextPageToken\""), "Response should contain nextPageToken field");
+        // Verify empty array, not null
+        Assertions.assertTrue(body.contains("\"tasks\":[]") || body.contains("\"tasks\": []"),
+                "tasks should be empty array");
+    }
 }

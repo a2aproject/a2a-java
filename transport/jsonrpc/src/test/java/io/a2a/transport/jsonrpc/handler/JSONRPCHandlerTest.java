@@ -30,12 +30,15 @@ import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageResponse;
 import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
+import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
@@ -56,7 +59,9 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
+import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
+import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
@@ -1958,5 +1963,28 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         // Should succeed without error (defaults to 1.0)
         assertNull(response.getError());
         Assertions.assertSame(message, response.getResult());
+    }
+
+    @Test
+    public void testListTasksEmptyResultIncludesAllFields() {
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+
+        // Query for a context that doesn't exist - should return empty result
+        ListTasksParams params = ListTasksParams.builder()
+                .contextId("nonexistent-context-id")
+                .tenant("")
+                .build();
+        ListTasksRequest request = new ListTasksRequest("1", params);
+        ListTasksResponse response = handler.onListTasks(request, callContext);
+
+        // Should return success with all fields present (not null)
+        assertNull(response.getError());
+        ListTasksResult result = response.getResult();
+        Assertions.assertNotNull(result);
+        Assertions.assertNotNull(result.tasks(), "tasks field should not be null");
+        assertEquals(0, result.tasks().size(), "tasks should be empty list");
+        assertEquals(0, result.totalSize(), "totalSize should be 0");
+        assertEquals(0, result.pageSize(), "pageSize should be 0");
+        // nextPageToken can be null for empty results
     }
 }

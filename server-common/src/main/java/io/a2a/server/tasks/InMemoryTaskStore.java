@@ -144,7 +144,10 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
     private Task transformTask(Task task, int historyLength, boolean includeArtifacts) {
         // Limit history if needed (keep most recent N messages)
         List<Message> history = task.history();
-        if (historyLength > 0 && history != null && history.size() > historyLength) {
+        if (historyLength == 0) {
+            // When historyLength is 0, return empty history
+            history = List.of();
+        } else if (historyLength > 0 && history != null && history.size() > historyLength) {
             history = history.subList(history.size() - historyLength, history.size());
         }
 
