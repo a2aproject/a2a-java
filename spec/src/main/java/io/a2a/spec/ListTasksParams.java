@@ -78,33 +78,23 @@ public record ListTasksParams(
     }
 
     /**
-     * Validates and returns the effective page size (between 1 and 100, defaults to 50).
+     * Returns the effective page size (defaults to 50 if not specified).
+     * Values are validated in the constructor to be within the range [1, 100].
      *
      * @return the effective page size
      */
     public int getEffectivePageSize() {
-        if (pageSize == null) {
-            return DEFAULT_PAGE_SIZE;
-        }
-        if (pageSize < MIN_PAGE_SIZE) {
-            return MIN_PAGE_SIZE;
-        }
-        if (pageSize > MAX_PAGE_SIZE) {
-            return MAX_PAGE_SIZE;
-        }
-        return pageSize;
+        return pageSize != null ? pageSize : DEFAULT_PAGE_SIZE;
     }
 
     /**
-     * Returns the effective history length (non-negative, defaults to 0).
+     * Returns the effective history length (defaults to 0 if not specified).
+     * Values are validated in the constructor to be non-negative.
      *
      * @return the effective history length
      */
     public int getEffectiveHistoryLength() {
-        if (historyLength == null || historyLength < 0) {
-            return 0;
-        }
-        return historyLength;
+        return historyLength != null ? historyLength : 0;
     }
 
     /**

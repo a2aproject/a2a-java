@@ -57,7 +57,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
                          task.status().timestamp() != null &&
                          task.status().timestamp().toInstant().isAfter(params.lastUpdatedAfter())))
                 .sorted(Comparator.comparing(
-                        (Task t) -> (t.status() != null)
+                        (Task t) -> (t.status() != null && t.status().timestamp() != null)
                                 // Truncate to milliseconds for consistency with pageToken precision
                                 ? t.status().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
                                 : null,
