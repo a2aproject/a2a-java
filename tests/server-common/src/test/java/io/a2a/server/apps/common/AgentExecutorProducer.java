@@ -27,7 +27,7 @@ public class AgentExecutorProducer {
                 String taskId = context.getTaskId();
 
                 // Special handling for multi-event test
-                if ("multi-event-test".equals(taskId)) {
+                if (taskId != null && taskId.startsWith("multi-event-test")) {
                     // First call: context.getTask() == null (new task)
                     if (context.getTask() == null) {
                         updater.startWork();

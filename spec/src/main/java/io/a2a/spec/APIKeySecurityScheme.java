@@ -24,7 +24,12 @@ public record APIKeySecurityScheme(
 ) implements SecurityScheme {
 
     /** The security scheme type identifier for API key authentication. */
-    public static final String API_KEY = "apiKey";
+    public static final String TYPE = "apiKeySecurityScheme";
+
+    @Override
+    public String type() {
+        return TYPE;
+    }
 
     /**
      * Compact constructor with validation.

@@ -42,7 +42,7 @@ public record HTTPAuthSecurityScheme(
 ) implements SecurityScheme {
 
     /** The HTTP security scheme type identifier. */
-    public static final String HTTP = "http";
+    public static final String TYPE = "httpAuthSecurityScheme";
 
     /**
      * Compact constructor with validation.
@@ -54,6 +54,11 @@ public record HTTPAuthSecurityScheme(
      */
     public HTTPAuthSecurityScheme {
         Assert.checkNotNullParam("scheme", scheme);
+    }
+
+    @Override
+    public String type() {
+        return TYPE;
     }
 
     /**

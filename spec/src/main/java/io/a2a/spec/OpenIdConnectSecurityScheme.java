@@ -36,7 +36,7 @@ public record OpenIdConnectSecurityScheme(
     /**
      * The type identifier for OpenID Connect security schemes: "openIdConnect".
      */
-    public static final String OPENID_CONNECT = "openIdConnect";
+    public static final String TYPE = "openIdConnectSecurityScheme";
 
     /**
      * Compact constructor with validation.
@@ -47,6 +47,11 @@ public record OpenIdConnectSecurityScheme(
      */
     public OpenIdConnectSecurityScheme {
         Assert.checkNotNullParam("openIdConnectUrl", openIdConnectUrl);
+    }
+
+    @Override
+    public String type() {
+        return TYPE;
     }
 
     /**

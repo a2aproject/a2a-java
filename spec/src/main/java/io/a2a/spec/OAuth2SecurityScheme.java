@@ -26,9 +26,9 @@ public record OAuth2SecurityScheme(
 ) implements SecurityScheme {
 
     /**
-     * The type identifier for OAuth 2.0 security schemes: "oauth2".
+     * The type identifier for OAuth 2.0 security schemes: "oauth2SecurityScheme".
      */
-    public static final String OAUTH2 = "oauth2";
+    public static final String TYPE = "oauth2SecurityScheme";
 
     /**
      * Compact constructor with validation.
@@ -40,6 +40,11 @@ public record OAuth2SecurityScheme(
      */
     public OAuth2SecurityScheme {
         Assert.checkNotNullParam("flows", flows);
+    }
+
+    @Override
+    public String type() {
+        return TYPE;
     }
 
     /**

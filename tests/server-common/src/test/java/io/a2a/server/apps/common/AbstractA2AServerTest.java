@@ -1274,9 +1274,11 @@ public abstract class AbstractA2AServerTest {
     @Test
     @Timeout(value = 1, unit = TimeUnit.MINUTES)
     public void testNonBlockingWithMultipleMessages() throws Exception {
+        String multiEventTaskId = "multi-event-test-" + java.util.UUID.randomUUID();
+        try {
         // 1. Send first non-blocking message to create task in WORKING state
         Message message1 = Message.builder(MESSAGE)
-                .taskId("multi-event-test")
+                .taskId(multiEventTaskId)
                 .contextId("test-context")
                 .parts(new TextPart("First request"))
                 .build();
@@ -1301,7 +1303,7 @@ public abstract class AbstractA2AServerTest {
         assertTrue(firstTaskLatch.await(10, TimeUnit.SECONDS));
         String taskId = taskIdRef.get();
         assertNotNull(taskId);
-        assertEquals("multi-event-test", taskId);
+        assertEquals(multiEventTaskId, taskId);
 
         // 2. Resubscribe to task (queue should still be open)
         CountDownLatch resubEventLatch = new CountDownLatch(2);  // artifact-2 + completion
@@ -1337,7 +1339,7 @@ public abstract class AbstractA2AServerTest {
 
         // 3. Send second streaming message to same taskId
         Message message2 = Message.builder(MESSAGE)
-                .taskId("multi-event-test") // Same taskId
+                .taskId(multiEventTaskId) // Same taskId
                 .contextId("test-context")
                 .parts(new TextPart("Second request"))
                 .build();
@@ -1411,6 +1413,9 @@ public abstract class AbstractA2AServerTest {
         assertEquals("artifact-2", streamArtifact.artifact().artifactId());
         assertEquals("Second message artifact",
                 ((TextPart) streamArtifact.artifact().parts().get(0)).text());
+        } finally {
+            deleteTaskInTaskStore(multiEventTaskId);
+        }
     }
 
     @Test
