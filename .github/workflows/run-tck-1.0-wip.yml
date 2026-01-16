@@ -110,6 +110,7 @@ jobs:
         timeout-minutes: 10
         run: |
           set -o pipefail
+          export PYTHONUNBUFFERED=1
           A2A_AUTH_TYPE=basic \
           A2A_AUTH_USERNAME=alice \
           A2A_AUTH_PASSWORD=$A2A_PASSWORD \
