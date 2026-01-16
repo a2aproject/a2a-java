@@ -5,15 +5,15 @@ on:
   push:
     branches:
       - main
-  #pull_request:
-  #  branches:
-  #     - main
+  pull_request:
+    branches:
+       - main
   workflow_dispatch:
 
 env:
   # TODO this is currently running the TCK off the main branch which included changes needed for 0.4.0
   # Tag/branch of the TCK
-  TCK_VERSION: spec_1.0
+  TCK_VERSION: extended_security_tests
   # Tell the TCK runner to report failure if the quality tests fail
   A2A_TCK_FAIL_ON_QUALITY: 1
   # Tell the TCK runner to report failure if the features tests fail
@@ -42,7 +42,7 @@ jobs:
       - name: Checkout a2a-tck
         uses: actions/checkout@v4
         with:
-          repository: a2aproject/a2a-tck
+          repository: jmesnil/a2a-tck
           path: tck/a2a-tck
           ref: ${{ env.TCK_VERSION }}
       - name: Set up JDK ${{ matrix.java-version }}
@@ -64,8 +64,12 @@ jobs:
         working-directory: tck/a2a-tck
       - name: Build with Maven, skipping tests
         run: mvn -B install -DskipTests
+      - name: Generate random password
+        run: |
+          A2A_PASSWORD=$(openssl rand -base64 16)
+          echo "A2A_PASSWORD=$A2A_PASSWORD" >> $GITHUB_ENV
       - name: Start SUT
-        run: SUT_GRPC_URL=${{ env.SUT_JSONRPC_URL }} SUT_REST_URL=${{ env.SUT_JSONRPC_URL }} mvn -B quarkus:dev & #SUT_JSONRPC_URL already set
+        run: SUT_GRPC_URL=${{ env.SUT_JSONRPC_URL }} SUT_REST_URL=${{ env.SUT_JSONRPC_URL }} mvn -B quarkus:dev -Dquarkus.security.users.embedded.users.alice=${A2A_PASSWORD} &
         working-directory: tck
       - name: Wait for SUT to start
         run: |
@@ -101,12 +105,16 @@ jobs:
             sleep "$RETRY_INTERVAL"
           done
           
-      - name: Run TCK (JSONRPC)
+      - name: Run TCK
         id: run-tck
-        timeout-minutes: 5
+        timeout-minutes: 10
         run: |
           set -o pipefail
-          ./run_tck.py --sut-url ${{ env.SUT_JSONRPC_URL }} --category all --transports jsonrpc --compliance-report report.json 2>&1 | tee tck-output.log
+          export PYTHONUNBUFFERED=1
+          A2A_AUTH_TYPE=basic \
+          A2A_AUTH_USERNAME=alice \
+          A2A_AUTH_PASSWORD=$A2A_PASSWORD \
+          ./run_tck.py --sut-url ${{ env.SUT_JSONRPC_URL }} --category all --transports jsonrpc,grpc,rest --compliance-report report.json 2>&1 | tee tck-output.log
         working-directory: tck/a2a-tck
       - name: Capture Diagnostics on Failure
         if: failure()
