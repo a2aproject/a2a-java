@@ -458,18 +458,12 @@ public class JSONRPCUtils {
             return new JsonProcessingException(ERROR_MESSAGE.formatted("unknown parsing error"));
         }
 
-        // Extract field name if present in error message
-        String prefix = "Cannot find field: ";
-        if (message.contains(prefix)) {
-            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(message.substring(message.indexOf(prefix) + prefix.length())), id);
-        }
-        prefix = "Invalid value for";
-        if (message.contains(prefix)) {
-            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(message.substring(message.indexOf(prefix) + prefix.length())), id);
-        }
-        prefix = "Invalid enum value:";
-        if (message.contains(prefix)) {
-            return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(message.substring(message.indexOf(prefix) + prefix.length())), id);
+        // Extract field name if present in error message - check common prefixes
+        String[] prefixes = {"Cannot find field: ", "Invalid value for", "Invalid enum value:"};
+        for (String prefix : prefixes) {
+            if (message.contains(prefix)) {
+                return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(message.substring(message.indexOf(prefix) + prefix.length())), id);
+            }
         }
 
         // Try to extract specific error details using regex patterns

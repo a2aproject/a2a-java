@@ -69,6 +69,7 @@ import org.jspecify.annotations.Nullable;
 public class RestHandler {
 
     private static final Logger log = Logger.getLogger(RestHandler.class.getName());
+    private static final String TASK_STATE_PREFIX = "TASK_STATE_";
 
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
@@ -226,8 +227,8 @@ public class RestHandler {
                     taskState = TaskState.fromString(status);
                 } catch (IllegalArgumentException e) {
                     // Try protobuf enum format (e.g., "TASK_STATE_WORKING")
-                    if (status.startsWith("TASK_STATE_")) {
-                        String enumName = status.substring("TASK_STATE_".length());
+                    if (status.startsWith(TASK_STATE_PREFIX)) {
+                        String enumName = status.substring(TASK_STATE_PREFIX.length());
                         try {
                             taskState = TaskState.valueOf(enumName);
                         } catch (IllegalArgumentException protoError) {

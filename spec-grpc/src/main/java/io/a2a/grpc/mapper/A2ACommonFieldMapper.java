@@ -364,7 +364,7 @@ public interface A2ACommonFieldMapper {
     default Instant millisToInstant(long millis) {
         if (millis < 0L) {
             throw new InvalidParamsError(null,
-                "lastUpdatedAfter must be a valid timestamp (non-negative milliseconds since epoch), got: " + millis,
+                "Timestamp must be a non-negative number of milliseconds since epoch, but got: " + millis,
                 null);
         }
         return millis > 0L ? Instant.ofEpochMilli(millis) : null;
@@ -391,8 +391,12 @@ public interface A2ACommonFieldMapper {
         }
         // Reject invalid enum values (e.g., "INVALID_STATUS" from JSON)
         if (state == io.a2a.grpc.TaskState.UNRECOGNIZED) {
+            String validStates = java.util.Arrays.stream(io.a2a.spec.TaskState.values())
+                    .filter(s -> s != io.a2a.spec.TaskState.UNKNOWN)
+                    .map(Enum::name)
+                    .collect(java.util.stream.Collectors.joining(", "));
             throw new InvalidParamsError(null,
-                "Invalid task state value. Must be one of: SUBMITTED, WORKING, INPUT_REQUIRED, AUTH_REQUIRED, COMPLETED, CANCELED, FAILED, REJECTED",
+                "Invalid task state value. Must be one of: " + validStates,
                 null);
         }
         io.a2a.spec.TaskState result = TaskStateMapper.INSTANCE.fromProto(state);

@@ -2,7 +2,6 @@ package io.a2a.spec;
 
 import java.time.Instant;
 
-import io.a2a.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -27,6 +26,9 @@ public record ListTasksParams(
         @Nullable Boolean includeArtifacts,
         String tenant
 ) {
+    private static final int MIN_PAGE_SIZE = 1;
+    private static final int MAX_PAGE_SIZE = 100;
+    private static final int DEFAULT_PAGE_SIZE = 50;
     /**
      * Compact constructor for validation.
      * Validates that the tenant parameter is not null and parameters are within valid ranges.
@@ -39,15 +41,17 @@ public record ListTasksParams(
      * @param lastUpdatedAfter filter by last update timestamp
      * @param includeArtifacts whether to include artifacts
      * @param tenant the tenant identifier
-     * @throws InvalidParamsError if pageSize or historyLength are out of valid range
+     * @throws InvalidParamsError if tenant is null or if pageSize or historyLength are out of valid range
      */
     public ListTasksParams {
-        Assert.checkNotNullParam("tenant", tenant);
+        if (tenant == null) {
+            throw new InvalidParamsError(null, "Parameter 'tenant' may not be null", null);
+        }
 
         // Validate pageSize (1-100)
-        if (pageSize != null && (pageSize < 1 || pageSize > 100)) {
+        if (pageSize != null && (pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE)) {
             throw new InvalidParamsError(null,
-                "pageSize must be between 1 and 100, got: " + pageSize, null);
+                "pageSize must be between " + MIN_PAGE_SIZE + " and " + MAX_PAGE_SIZE + ", got: " + pageSize, null);
         }
 
         // Validate historyLength (>= 0)
@@ -80,13 +84,13 @@ public record ListTasksParams(
      */
     public int getEffectivePageSize() {
         if (pageSize == null) {
-            return 50;
+            return DEFAULT_PAGE_SIZE;
         }
-        if (pageSize < 1) {
-            return 1;
+        if (pageSize < MIN_PAGE_SIZE) {
+            return MIN_PAGE_SIZE;
         }
-        if (pageSize > 100) {
-            return 100;
+        if (pageSize > MAX_PAGE_SIZE) {
+            return MAX_PAGE_SIZE;
         }
         return pageSize;
     }
