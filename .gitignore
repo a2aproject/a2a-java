@@ -44,8 +44,11 @@ nb-configuration.xml
 # TLS Certificates
 .certs/
 nbproject/
+nbactions.xml
+
 
 # Private Claude config
+.bob
 .claude/
 .serena/
 claudedocs
