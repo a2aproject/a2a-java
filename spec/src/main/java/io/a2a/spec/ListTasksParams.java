@@ -2,7 +2,6 @@ package io.a2a.spec;
 
 import java.time.Instant;
 
-import io.a2a.util.Assert;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -27,9 +26,12 @@ public record ListTasksParams(
         @Nullable Boolean includeArtifacts,
         String tenant
 ) {
+    private static final int MIN_PAGE_SIZE = 1;
+    private static final int MAX_PAGE_SIZE = 100;
+    private static final int DEFAULT_PAGE_SIZE = 50;
     /**
      * Compact constructor for validation.
-     * Validates that the tenant parameter is not null.
+     * Validates that the tenant parameter is not null and parameters are within valid ranges.
      *
      * @param contextId filter by context ID
      * @param status filter by task status
@@ -39,9 +41,24 @@ public record ListTasksParams(
      * @param lastUpdatedAfter filter by last update timestamp
      * @param includeArtifacts whether to include artifacts
      * @param tenant the tenant identifier
+     * @throws InvalidParamsError if tenant is null or if pageSize or historyLength are out of valid range
      */
     public ListTasksParams {
-        Assert.checkNotNullParam("tenant", tenant);
+        if (tenant == null) {
+            throw new InvalidParamsError(null, "Parameter 'tenant' may not be null", null);
+        }
+
+        // Validate pageSize (1-100)
+        if (pageSize != null && (pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE)) {
+            throw new InvalidParamsError(null,
+                "pageSize must be between " + MIN_PAGE_SIZE + " and " + MAX_PAGE_SIZE + ", got: " + pageSize, null);
+        }
+
+        // Validate historyLength (>= 0)
+        if (historyLength != null && historyLength < 0) {
+            throw new InvalidParamsError(null,
+                "historyLength must be non-negative, got: " + historyLength, null);
+        }
     }
     /**
      * Default constructor for listing all tasks.
@@ -61,33 +78,23 @@ public record ListTasksParams(
     }
 
     /**
-     * Validates and returns the effective page size (between 1 and 100, defaults to 50).
+     * Returns the effective page size (defaults to 50 if not specified).
+     * Values are validated in the constructor to be within the range [1, 100].
      *
      * @return the effective page size
      */
     public int getEffectivePageSize() {
-        if (pageSize == null) {
-            return 50;
-        }
-        if (pageSize < 1) {
-            return 1;
-        }
-        if (pageSize > 100) {
-            return 100;
-        }
-        return pageSize;
+        return pageSize != null ? pageSize : DEFAULT_PAGE_SIZE;
     }
 
     /**
-     * Returns the effective history length (non-negative, defaults to 0).
+     * Returns the effective history length (defaults to 0 if not specified).
+     * Values are validated in the constructor to be non-negative.
      *
      * @return the effective history length
      */
     public int getEffectiveHistoryLength() {
-        if (historyLength == null || historyLength < 0) {
-            return 0;
-        }
-        return historyLength;
+        return historyLength != null ? historyLength : 0;
     }
 
     /**

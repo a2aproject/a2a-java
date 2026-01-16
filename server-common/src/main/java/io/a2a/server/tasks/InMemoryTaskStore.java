@@ -90,18 +90,24 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
                         int mid = left + (right - left) / 2;
                         Task task = allFilteredTasks.get(mid);
 
-                        // All tasks have timestamps (TaskStatus canonical constructor ensures this)
-                        // Truncate to milliseconds for consistency with pageToken precision
-                        java.time.Instant taskTimestamp = task.status().timestamp().toInstant()
-                                .truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
-                        int timestampCompare = taskTimestamp.compareTo(tokenTimestamp);
+                        java.time.Instant taskTimestamp = (task.status() != null && task.status().timestamp() != null)
+                                ? task.status().timestamp().toInstant().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+                                : null;
 
-                        if (timestampCompare < 0 || (timestampCompare == 0 && task.id().compareTo(tokenId) > 0)) {
-                            // This task is after the token, search left half
-                            right = mid;
-                        } else {
-                            // This task is before or equal to token, search right half
+                        if (taskTimestamp == null) {
+                            // Task with null timestamp is always "before" a token with a timestamp, as they are sorted last.
+                            // So, we search in the right half.
                             left = mid + 1;
+                        } else {
+                            int timestampCompare = taskTimestamp.compareTo(tokenTimestamp);
+
+                            if (timestampCompare < 0 || (timestampCompare == 0 && task.id().compareTo(tokenId) > 0)) {
+                                // This task is after the token, search left half
+                                right = mid;
+                            } else {
+                                // This task is before or equal to token, search right half
+                                left = mid + 1;
+                            }
                         }
                     }
                     startIndex = left;
@@ -144,7 +150,10 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
     private Task transformTask(Task task, int historyLength, boolean includeArtifacts) {
         // Limit history if needed (keep most recent N messages)
         List<Message> history = task.history();
-        if (historyLength > 0 && history != null && history.size() > historyLength) {
+        if (historyLength == 0) {
+            // When historyLength is 0, return empty history
+            history = List.of();
+        } else if (historyLength > 0 && history != null && history.size() > historyLength) {
             history = history.subList(history.size() - historyLength, history.size());
         }
 

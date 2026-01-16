@@ -38,7 +38,8 @@ public interface ListTasksParamsMapper {
      */
     @Mapping(target = "contextId", source = "contextId", qualifiedByName = "emptyToNull")
     @Mapping(target = "status", source = "status", qualifiedByName = "taskStateOrNull")
-    @Mapping(target = "pageSize", source = "pageSize", qualifiedByName = "zeroToNull")
+    // pageSize: Check if field is set using hasPageSize() to distinguish unset (null) from explicit 0 (validation error)
+    @Mapping(target = "pageSize", expression = "java(request.hasPageSize() ? request.getPageSize() : null)")
     @Mapping(target = "pageToken", source = "pageToken", qualifiedByName = "emptyToNull")
     @Mapping(target = "historyLength", source = "historyLength", qualifiedByName = "zeroToNull")
     @Mapping(target = "lastUpdatedAfter", source = "lastUpdatedAfter", qualifiedByName = "millisToInstant")

@@ -69,6 +69,7 @@ import org.jspecify.annotations.Nullable;
 public class RestHandler {
 
     private static final Logger log = Logger.getLogger(RestHandler.class.getName());
+    private static final String TASK_STATE_PREFIX = "TASK_STATE_";
 
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
@@ -219,21 +220,41 @@ public class RestHandler {
                 paramsBuilder.contextId(contextId);
             }
             if (status != null) {
+                TaskState taskState = null;
+
+                // Try JSON format first (e.g., "working", "completed")
                 try {
-                    paramsBuilder.status(TaskState.fromString(status));
+                    taskState = TaskState.fromString(status);
                 } catch (IllegalArgumentException e) {
-                    try {
-                        paramsBuilder.status(TaskState.valueOf(status));
-                    } catch (IllegalArgumentException valueOfError) {
-                        String validStates = Arrays.stream(TaskState.values())
-                                .map(TaskState::asString)
-                                .collect(Collectors.joining(", "));
-                        Map<String, Object> errorData = new HashMap<>();
-                        errorData.put("parameter", "status");
-                        errorData.put("reason", "Must be one of: " + validStates);
-                        throw new InvalidParamsError(null, "Invalid params", errorData);
+                    // Try protobuf enum format (e.g., "TASK_STATE_WORKING")
+                    if (status.startsWith(TASK_STATE_PREFIX)) {
+                        String enumName = status.substring(TASK_STATE_PREFIX.length());
+                        try {
+                            taskState = TaskState.valueOf(enumName);
+                        } catch (IllegalArgumentException protoError) {
+                            // Fall through to error handling below
+                        }
+                    } else {
+                        // Try enum constant name directly (e.g., "WORKING")
+                        try {
+                            taskState = TaskState.valueOf(status);
+                        } catch (IllegalArgumentException valueOfError) {
+                            // Fall through to error handling below
+                        }
                     }
                 }
+
+                if (taskState == null) {
+                    String validStates = Arrays.stream(TaskState.values())
+                            .map(TaskState::asString)
+                            .collect(Collectors.joining(", "));
+                    Map<String, Object> errorData = new HashMap<>();
+                    errorData.put("parameter", "status");
+                    errorData.put("reason", "Must be one of: " + validStates);
+                    throw new InvalidParamsError(null, "Invalid params", errorData);
+                }
+
+                paramsBuilder.status(taskState);
             }
             if (pageSize != null) {
                 paramsBuilder.pageSize(pageSize);
@@ -247,12 +268,25 @@ public class RestHandler {
             paramsBuilder.tenant(tenant);
             if (lastUpdatedAfter != null) {
                 try {
-                    paramsBuilder.lastUpdatedAfter(Instant.parse(lastUpdatedAfter));
-                } catch (DateTimeParseException e) {
-                    Map<String, Object> errorData = new HashMap<>();
-                    errorData.put("parameter", "lastUpdatedAfter");
-                    errorData.put("reason", "Must be valid ISO-8601 timestamp");
-                    throw new InvalidParamsError(null, "Invalid params", errorData);
+                    // Try parsing as Unix milliseconds first (integer)
+                    long millis = Long.parseLong(lastUpdatedAfter);
+                    if (millis < 0L) {
+                        Map<String, Object> errorData = new HashMap<>();
+                        errorData.put("parameter", "lastUpdatedAfter");
+                        errorData.put("reason", "Must be a non-negative timestamp value, got: " + millis);
+                        throw new InvalidParamsError(null, "Invalid params", errorData);
+                    }
+                    paramsBuilder.lastUpdatedAfter(Instant.ofEpochMilli(millis));
+                } catch (NumberFormatException nfe) {
+                    // Fall back to ISO-8601 format
+                    try {
+                        paramsBuilder.lastUpdatedAfter(Instant.parse(lastUpdatedAfter));
+                    } catch (DateTimeParseException e) {
+                        Map<String, Object> errorData = new HashMap<>();
+                        errorData.put("parameter", "lastUpdatedAfter");
+                        errorData.put("reason", "Must be valid Unix milliseconds or ISO-8601 timestamp");
+                        throw new InvalidParamsError(null, "Invalid params", errorData);
+                    }
                 }
             }
             if (includeArtifacts != null) {
@@ -338,7 +372,8 @@ public class RestHandler {
 
     private HTTPRestResponse createSuccessResponse(int statusCode, com.google.protobuf.Message.Builder builder) {
         try {
-            String jsonBody = JsonFormat.printer().print(builder);
+            // Include default value fields to ensure empty arrays, zeros, etc. are present in JSON
+            String jsonBody = JsonFormat.printer().includingDefaultValueFields().print(builder);
             return new HTTPRestResponse(statusCode, "application/json", jsonBody);
         } catch (InvalidProtocolBufferException e) {
             return createErrorResponse(new InternalError("Failed to serialize response: " + e.getMessage()));

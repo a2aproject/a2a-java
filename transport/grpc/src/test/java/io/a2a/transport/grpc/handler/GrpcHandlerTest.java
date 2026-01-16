@@ -21,6 +21,8 @@ import io.a2a.grpc.GetTaskPushNotificationConfigRequest;
 import io.a2a.grpc.GetTaskRequest;
 import io.a2a.grpc.ListTaskPushNotificationConfigRequest;
 import io.a2a.grpc.ListTaskPushNotificationConfigResponse;
+import io.a2a.grpc.ListTasksRequest;
+import io.a2a.grpc.ListTasksResponse;
 import io.a2a.grpc.Message;
 import io.a2a.grpc.Part;
 import io.a2a.grpc.PushNotificationConfig;
@@ -1207,6 +1209,53 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertInstanceOf(StatusRuntimeException.class, streamRecorder.getError());
         Assertions.assertEquals(expectedStatusCode, ((StatusRuntimeException) streamRecorder.getError()).getStatus().getCode());
         Assertions.assertTrue(streamRecorder.getValues().isEmpty());
+    }
+
+    @Test
+    public void testListTasksNegativeTimestampReturnsInvalidArgument() {
+        TestGrpcHandler handler = new TestGrpcHandler(CARD, requestHandler, internalExecutor);
+        StreamRecorder<ListTasksResponse> responseObserver = StreamRecorder.create();
+
+        // Negative timestamp should trigger validation error
+        ListTasksRequest request = ListTasksRequest.newBuilder()
+                .setLastUpdatedAfter(-1L)
+                .setTenant("")
+                .build();
+
+        handler.listTasks(request, responseObserver);
+
+        // Should return error with INVALID_ARGUMENT status
+        Assertions.assertTrue(responseObserver.getError() != null);
+        StatusRuntimeException error = (StatusRuntimeException) responseObserver.getError();
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), error.getStatus().getCode());
+    }
+
+    @Test
+    public void testListTasksEmptyResultIncludesAllFields() throws Exception {
+        TestGrpcHandler handler = new TestGrpcHandler(CARD, requestHandler, internalExecutor);
+        StreamRecorder<ListTasksResponse> responseObserver = StreamRecorder.create();
+
+        // Query for a context that doesn't exist - should return empty result
+        ListTasksRequest request = ListTasksRequest.newBuilder()
+                .setContextId("nonexistent-context-id")
+                .setTenant("")
+                .build();
+
+        handler.listTasks(request, responseObserver);
+
+        // Should succeed with empty result
+        Assertions.assertNull(responseObserver.getError());
+        List<ListTasksResponse> responses = responseObserver.getValues();
+        assertEquals(1, responses.size());
+
+        ListTasksResponse response = responses.get(0);
+        // Verify all fields are present (even if empty/default)
+        Assertions.assertNotNull(response.getTasksList(), "tasks field should not be null");
+        assertEquals(0, response.getTasksList().size(), "tasks should be empty list");
+        assertEquals(0, response.getTotalSize(), "totalSize should be 0");
+        assertEquals(0, response.getPageSize(), "pageSize should be 0");
+        // nextPageToken will be empty string for empty results (protobuf default)
+        Assertions.assertNotNull(response.getNextPageToken());
     }
 
     private static class TestGrpcHandler extends GrpcHandler {
