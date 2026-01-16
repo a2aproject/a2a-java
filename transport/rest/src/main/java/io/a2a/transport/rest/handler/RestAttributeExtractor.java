@@ -9,10 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 
 public class RestAttributeExtractor implements Supplier<Function<InvocationContext, Map<String, String>>> {
+    private static final Logger LOGGER = Logger.getLogger(RestAttributeExtractor.class.getName());
 
     @Override
     public Function<InvocationContext, Map<String, String>> get() {
@@ -74,6 +76,7 @@ public class RestAttributeExtractor implements Supplier<Function<InvocationConte
                     return result;
                 }
                 default -> {
+                    LOGGER.warning("Unexpected method %s called.".formatted(method));
                     return Collections.emptyMap();
                 }
             }

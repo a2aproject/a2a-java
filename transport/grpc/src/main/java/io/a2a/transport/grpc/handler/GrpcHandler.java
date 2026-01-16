@@ -59,6 +59,7 @@ import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.transport.grpc.context.GrpcContextKeys;
 import io.grpc.Context;
+import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.jspecify.annotations.Nullable;
@@ -399,7 +400,11 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                     if (grpcMetadata != null) {
                         state.put("grpc_metadata", grpcMetadata);
                     }
-                    
+                    Map<String, String> headers= new HashMap<>();
+                    for(String key : grpcMetadata.keys()) {
+                        headers.put(key, grpcMetadata.get(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER)));
+                    }
+                    state.put("headers", headers);
                     String methodName = GrpcContextKeys.GRPC_METHOD_NAME_KEY.get(currentContext);
                     if (methodName != null) {
                         state.put("grpc_method_name", methodName);

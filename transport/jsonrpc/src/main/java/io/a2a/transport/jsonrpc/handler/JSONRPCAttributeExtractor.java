@@ -9,9 +9,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class JSONRPCAttributeExtractor implements Supplier<Function<InvocationContext, Map<String, String>>> {
+    private static final Logger LOGGER = Logger.getLogger(JSONRPCAttributeExtractor.class.getName());
 
     @Override
     public Function<InvocationContext, Map<String, String>> get() {
@@ -41,10 +43,10 @@ public class JSONRPCAttributeExtractor implements Supplier<Function<InvocationCo
                     if (operationName != null) {
                         attributes.put("gen_ai.agent.operation.name", operationName);
                     }
-
                     return attributes;
                 }
                 default -> {
+                    LOGGER.warning("Unexpected method %s called.".formatted(method));
                     return Collections.emptyMap();
                 }
             }

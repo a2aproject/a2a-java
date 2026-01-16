@@ -1,6 +1,6 @@
 package io.a2a.transport.grpc.handler;
 
-import io.grpc.Context;
+
 import io.a2a.server.interceptors.InvocationContext;
 import io.a2a.transport.grpc.context.GrpcContextKeys;
 import org.jspecify.annotations.NonNull;
@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 /**
  * Extracts OpenTelemetry trace attributes from gRPC invocation context.
@@ -18,6 +19,7 @@ import java.util.function.Supplier;
  * span attributes for distributed tracing.
  */
 public class GrpcAttributeExtractor implements Supplier<Function<InvocationContext, Map<String, String>>> {
+    private static final Logger LOGGER = Logger.getLogger(GrpcAttributeExtractor.class.getName());
 
     @Override
     public @NonNull Function<InvocationContext, Map<String, String>> get() {
@@ -50,6 +52,7 @@ public class GrpcAttributeExtractor implements Supplier<Function<InvocationConte
                     return extractAttributes(parameters);
                 }
                 default -> {
+                    LOGGER.warning("Unexpected method %s called.".formatted(method));
                     return Collections.emptyMap();
                 }
             }
@@ -63,7 +66,6 @@ public class GrpcAttributeExtractor implements Supplier<Function<InvocationConte
      * @return map of attribute key-value pairs for tracing
      */
     private @NonNull Map<String, String> extractAttributes(Object @NonNull [] parameters) {
-        Context currentContext = Context.current();
         Map<String, String> attributes = new HashMap<>();
 
         // Add request parameter if available
@@ -78,11 +80,10 @@ public class GrpcAttributeExtractor implements Supplier<Function<InvocationConte
         }
 
         // Add gRPC operation name if available
-        String operationName = GrpcContextKeys.GRPC_METHOD_NAME_KEY.get(currentContext);
+        String operationName = GrpcContextKeys.GRPC_METHOD_NAME_KEY.get();
         if (operationName != null) {
             attributes.put("gen_ai.agent.operation.name", operationName);
         }
-
         return attributes;
     }
 }

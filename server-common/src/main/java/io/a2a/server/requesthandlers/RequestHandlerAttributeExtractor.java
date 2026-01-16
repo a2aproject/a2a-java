@@ -7,10 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class RequestHandlerAttributeExtractor implements Supplier<Function<InvocationContext, Map<String, String>>> {
 
+    private static final Logger LOGGER = Logger.getLogger(RequestHandlerAttributeExtractor.class.getName());
+ 
     @Override
     @SuppressWarnings("NullAway") // Null checks performed inline
     public Function<InvocationContext, Map<String, String>> get() {
@@ -53,10 +56,10 @@ public class RequestHandlerAttributeExtractor implements Supplier<Function<Invoc
                     if (a2aMethod != null) {
                         attributes.put("a2a.method", a2aMethod);
                     }
-
                     return attributes;
                 }
                 default -> {
+                    LOGGER.warning("Unexpected method %s called.".formatted(method));
                     return Collections.emptyMap();
                 }
             }

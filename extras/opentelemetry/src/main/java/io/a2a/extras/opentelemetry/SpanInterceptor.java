@@ -1,18 +1,25 @@
 package io.a2a.extras.opentelemetry;
 
+import static java.util.Collections.emptyList;
+
+import io.a2a.server.ServerCallContext;
 import io.a2a.server.interceptors.Kind;
 import io.a2a.server.interceptors.NoAttributeExtractor;
 import io.a2a.server.interceptors.Trace;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
+import java.util.Collections;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,15 +44,17 @@ public class SpanInterceptor {
      * These are appended to class names when CDI creates proxies for intercepted beans.
      */
     private static final String[] CDI_PROXY_SUFFIXES = {
-        "_Subclass",        // Quarkus/Weld subclass proxies
-        "_ClientProxy",     // Weld client proxies
-        "$$_WeldSubclass",  // Weld subclass alternative
-        "_$$_javassist_",   // Javassist-based proxies
-        "$Proxy$_$$_"       // Other CDI proxy patterns
+        "_Subclass", // Quarkus/Weld subclass proxies
+        "_ClientProxy", // Weld client proxies
+        "$$_WeldSubclass", // Weld subclass alternative
+        "_$$_javassist_", // Javassist-based proxies
+        "$Proxy$_$$_" // Other CDI proxy patterns
     };
 
     @Inject
     private Tracer tracer;
+    @Inject
+    private OpenTelemetry openTelemetry;
 
     @AroundInvoke
     public Object trace(jakarta.interceptor.InvocationContext jakartaContext) throws Exception {
@@ -65,7 +74,7 @@ public class SpanInterceptor {
                 = jakartaContext.getMethod()
                         .getAnnotation(Trace.class)
                         .extractor();
-
+        Context extracted = openTelemetry.getPropagators().getTextMapPropagator().extract(Context.current(), getServerCallHeaders(jakartaContext.getParameters()), MAP_GETTER);
         // Get the actual class name, stripping CDI proxy suffixes for cleaner span names
         // CDI implementations like Weld/Quarkus add suffixes to proxied classes
         String rawClassName = jakartaContext.getTarget().getClass().getName();
@@ -73,6 +82,7 @@ public class SpanInterceptor {
         // Use raw class name as fallback if stripping returns null (shouldn't happen in practice)
         String name = (className != null ? className : rawClassName) + '#' + jakartaContext.getMethod().getName();
         SpanBuilder spanBuilder = tracer.spanBuilder(name)
+                .setParent(extracted)
                 .setSpanKind(SpanKind.valueOf(kind.toString()));
 
         if (extractorClass != null && !extractorClass.equals(NoAttributeExtractor.class)) {
@@ -105,6 +115,16 @@ public class SpanInterceptor {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private Map<String, String> getServerCallHeaders(Object[] parameters) {
+        for (Object parameter : parameters) {
+            if (parameter instanceof ServerCallContext serverCallContext && serverCallContext.getState().containsKey("headers")) {
+                return (Map<String, String>) serverCallContext.getState().get("headers");
+            }
+        }
+        return Collections.emptyMap();
+    }
+
     /**
      * Strips known CDI proxy suffixes from class names to get the original class name.
      * <p>
@@ -114,15 +134,17 @@ public class SpanInterceptor {
      * <p>
      * For example:
      * <ul>
-     *   <li>{@code com.example.MyService_Subclass} → {@code com.example.MyService}</li>
-     *   <li>{@code com.example.MyService_ClientProxy} → {@code com.example.MyService}</li>
-     *   <li>{@code com.example.MyService$$_WeldSubclass} → {@code com.example.MyService}</li>
+     * <li>{@code com.example.MyService_Subclass} → {@code com.example.MyService}</li>
+     * <li>{@code com.example.MyService_ClientProxy} → {@code com.example.MyService}</li>
+     * <li>{@code com.example.MyService$$_WeldSubclass} → {@code com.example.MyService}</li>
      * </ul>
      *
      * @param className the potentially proxied class name
-     * @return the class name with CDI proxy suffixes removed, or the original name if no suffix found, or null if input is null
+     * @return the class name with CDI proxy suffixes removed, or the original name if no suffix found, or null if input
+     * is null
      */
-    private @Nullable String stripCdiProxySuffix(@Nullable String className) {
+    private @Nullable
+    String stripCdiProxySuffix(@Nullable String className) {
         if (className == null) {
             return null;
         }
@@ -141,4 +163,22 @@ public class SpanInterceptor {
 
         return className;
     }
+
+    private static final TextMapGetter<Map<String, String>> MAP_GETTER = new TextMapGetter<>() {
+
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+            return carrier == null ? emptyList() : carrier.keySet();
+        }
+
+        @Override
+        public @Nullable
+        String get(@Nullable Map<String, String> carrier, String key) {
+            if (carrier == null) {
+                return null;
+            }
+            return carrier.get(key);
+        }
+    };
+
 }

@@ -28,14 +28,14 @@ public final class GrpcContextKeys {
      */
     public static final Context.Key<String> EXTENSIONS_HEADER_KEY =
         Context.key("x-a2a-extensions");
-    
+
     /**
      * Context key for storing the complete gRPC Metadata object.
      * Provides access to all request headers and metadata.
      */
     public static final Context.Key<io.grpc.Metadata> METADATA_KEY = 
         Context.key("grpc-metadata");
-    
+
     /**
      * Context key for storing the method name being called.
      * Equivalent to Python's context.method() functionality.

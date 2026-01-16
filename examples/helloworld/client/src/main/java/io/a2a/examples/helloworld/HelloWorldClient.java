@@ -21,6 +21,8 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
@@ -90,8 +92,10 @@ public class HelloWorldClient {
             JSONRPCTransportConfig transportConfig = new JSONRPCTransportConfig();
             if (Boolean.getBoolean("opentelemetry")) {
                 openTelemetrySdk = initOpenTelemetry();
-                transportConfig.setParameters(Map.of("io.a2a.extras.opentelemetry.Tracer",
-                        openTelemetrySdk.getTracer("helloworld-client")));
+                transportConfig.setParameters(Map.of(
+                        "io.a2a.extras.opentelemetry.Tracer", openTelemetrySdk.getTracer("helloworld-client"),
+                        "io.a2a.extras.opentelemetry.OpenTelemetry", openTelemetrySdk
+                ));
             }
             Client client = Client
                     .builder(finalAgentCard)
@@ -139,6 +143,7 @@ public class HelloWorldClient {
 
         return OpenTelemetrySdk.builder()
                 .setTracerProvider(sdkTracerProvider)
+                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
                 .build();
     }
 }

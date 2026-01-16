@@ -19,6 +19,7 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -26,6 +27,8 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +55,16 @@ class OpenTelemetryClientTransportTest {
     private ClientTransport delegate;
 
     @Mock
+    private OpenTelemetry openTelemetry;
+
+    @Mock
     private Tracer tracer;
+
+    @Mock
+    private ContextPropagators contextPropagators;
+
+    @Mock
+    private TextMapPropagator textMapPropagator;
 
     @Mock
     private SpanBuilder spanBuilder;
@@ -81,7 +93,11 @@ class OpenTelemetryClientTransportTest {
         when(span.makeCurrent()).thenReturn(scope);
         when(span.getSpanContext()).thenReturn(spanContext);
 
-        transport = new OpenTelemetryClientTransport(delegate, tracer);
+        when(openTelemetry.getPropagators()).thenReturn(contextPropagators);
+        when(contextPropagators.getTextMapPropagator()).thenReturn(textMapPropagator);
+        when(context.getHeaders()).thenReturn(new java.util.HashMap<>());
+
+        transport = new OpenTelemetryClientTransport(delegate, openTelemetry, tracer);
     }
 
     @Test
@@ -90,7 +106,7 @@ class OpenTelemetryClientTransportTest {
         EventKind expectedResult = mock(EventKind.class);
         when(request.toString()).thenReturn("request-string");
         when(expectedResult.toString()).thenReturn("response-string");
-        when(delegate.sendMessage(request, context)).thenReturn(expectedResult);
+        when(delegate.sendMessage(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
 
         EventKind result = transport.sendMessage(request, context);
 
@@ -108,7 +124,7 @@ class OpenTelemetryClientTransportTest {
     void testSendMessage_NullResponse() throws A2AClientException {
         MessageSendParams request = mock(MessageSendParams.class);
         when(request.toString()).thenReturn("request-string");
-        when(delegate.sendMessage(request, context)).thenReturn(null);
+        when(delegate.sendMessage(eq(request), any(ClientCallContext.class))).thenReturn(null);
 
         EventKind result = transport.sendMessage(request, context);
 
@@ -124,7 +140,7 @@ class OpenTelemetryClientTransportTest {
         MessageSendParams request = mock(MessageSendParams.class);
         when(request.toString()).thenReturn("request-string");
         A2AClientException expectedException = new A2AClientException("Test error");
-        when(delegate.sendMessage(request, context)).thenThrow(expectedException);
+        when(delegate.sendMessage(eq(request), any(ClientCallContext.class))).thenThrow(expectedException);
 
         A2AClientException exception = assertThrows(A2AClientException.class,
                 () -> transport.sendMessage(request, context));
@@ -153,7 +169,7 @@ class OpenTelemetryClientTransportTest {
         ArgumentCaptor<Consumer<StreamingEventKind>> eventConsumerCaptor = ArgumentCaptor.forClass(Consumer.class);
         ArgumentCaptor<Consumer<Throwable>> errorConsumerCaptor = ArgumentCaptor.forClass(Consumer.class);
         verify(delegate).sendMessageStreaming(eq(request), eventConsumerCaptor.capture(),
-                errorConsumerCaptor.capture(), eq(context));
+                errorConsumerCaptor.capture(), any(ClientCallContext.class));
 
         assertNotNull(eventConsumerCaptor.getValue());
         assertNotNull(errorConsumerCaptor.getValue());
@@ -165,7 +181,7 @@ class OpenTelemetryClientTransportTest {
         Task expectedResult = mock(Task.class);
         when(request.toString()).thenReturn("request-string");
         when(expectedResult.toString()).thenReturn("response-string");
-        when(delegate.getTask(request, context)).thenReturn(expectedResult);
+        when(delegate.getTask(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
 
         Task result = transport.getTask(request, context);
 
@@ -183,7 +199,7 @@ class OpenTelemetryClientTransportTest {
         Task expectedResult = mock(Task.class);
         when(request.toString()).thenReturn("request-string");
         when(expectedResult.toString()).thenReturn("response-string");
-        when(delegate.cancelTask(request, context)).thenReturn(expectedResult);
+        when(delegate.cancelTask(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
 
         Task result = transport.cancelTask(request, context);
 
@@ -201,7 +217,7 @@ class OpenTelemetryClientTransportTest {
         ListTasksResult expectedResult = mock(ListTasksResult.class);
         when(request.toString()).thenReturn("request-string");
         when(expectedResult.toString()).thenReturn("response-string");
-        when(delegate.listTasks(request, context)).thenReturn(expectedResult);
+        when(delegate.listTasks(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
 
         ListTasksResult result = transport.listTasks(request, context);
 
@@ -219,7 +235,7 @@ class OpenTelemetryClientTransportTest {
         TaskPushNotificationConfig expectedResult = mock(TaskPushNotificationConfig.class);
         when(request.toString()).thenReturn("request-string");
         when(expectedResult.toString()).thenReturn("response-string");
-        when(delegate.setTaskPushNotificationConfiguration(request, context)).thenReturn(expectedResult);
+        when(delegate.setTaskPushNotificationConfiguration(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
 
         TaskPushNotificationConfig result = transport.setTaskPushNotificationConfiguration(request, context);
 
@@ -237,7 +253,7 @@ class OpenTelemetryClientTransportTest {
         TaskPushNotificationConfig expectedResult = mock(TaskPushNotificationConfig.class);
         when(request.toString()).thenReturn("request-string");
         when(expectedResult.toString()).thenReturn("response-string");
-        when(delegate.getTaskPushNotificationConfiguration(request, context)).thenReturn(expectedResult);
+        when(delegate.getTaskPushNotificationConfiguration(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
 
         TaskPushNotificationConfig result = transport.getTaskPushNotificationConfiguration(request, context);
 
@@ -258,7 +274,7 @@ class OpenTelemetryClientTransportTest {
         when(config2.toString()).thenReturn("config2");
         ListTaskPushNotificationConfigResult expectedResult = new ListTaskPushNotificationConfigResult(List.of(config1, config2));
         when(request.toString()).thenReturn("request-string");
-        when(delegate.listTaskPushNotificationConfigurations(request, context)).thenReturn(expectedResult);
+        when(delegate.listTaskPushNotificationConfigurations(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
 
         ListTaskPushNotificationConfigResult result = transport.listTaskPushNotificationConfigurations(request, context);
 
@@ -275,7 +291,7 @@ class OpenTelemetryClientTransportTest {
     void testDeleteTaskPushNotificationConfigurations_Success() throws A2AClientException {
         DeleteTaskPushNotificationConfigParams request = mock(DeleteTaskPushNotificationConfigParams.class);
         when(request.toString()).thenReturn("request-string");
-        doNothing().when(delegate).deleteTaskPushNotificationConfigurations(request, context);
+        doNothing().when(delegate).deleteTaskPushNotificationConfigurations(eq(request), any(ClientCallContext.class));
 
         transport.deleteTaskPushNotificationConfigurations(request, context);
 
@@ -283,7 +299,7 @@ class OpenTelemetryClientTransportTest {
         verify(spanBuilder).setAttribute("request", "request-string");
         verify(span).setStatus(StatusCode.OK);
         verify(span).end();
-        verify(delegate).deleteTaskPushNotificationConfigurations(request, context);
+        verify(delegate).deleteTaskPushNotificationConfigurations(eq(request), any(ClientCallContext.class));
     }
 
     @Test
@@ -304,7 +320,7 @@ class OpenTelemetryClientTransportTest {
         ArgumentCaptor<Consumer<StreamingEventKind>> eventConsumerCaptor = ArgumentCaptor.forClass(Consumer.class);
         ArgumentCaptor<Consumer<Throwable>> errorConsumerCaptor = ArgumentCaptor.forClass(Consumer.class);
         verify(delegate).resubscribe(eq(request), eventConsumerCaptor.capture(),
-                errorConsumerCaptor.capture(), eq(context));
+                errorConsumerCaptor.capture(), any(ClientCallContext.class));
 
         assertNotNull(eventConsumerCaptor.getValue());
         assertNotNull(errorConsumerCaptor.getValue());
@@ -314,7 +330,7 @@ class OpenTelemetryClientTransportTest {
     void testGetAgentCard_Success() throws A2AClientException {
         AgentCard expectedResult = mock(AgentCard.class);
         when(expectedResult.toString()).thenReturn("response-string");
-        when(delegate.getAgentCard(context)).thenReturn(expectedResult);
+        when(delegate.getAgentCard(any(ClientCallContext.class))).thenReturn(expectedResult);
 
         AgentCard result = transport.getAgentCard(context);
 
@@ -328,7 +344,7 @@ class OpenTelemetryClientTransportTest {
 
     @Test
     void testGetAgentCard_NullResponse() throws A2AClientException {
-        when(delegate.getAgentCard(context)).thenReturn(null);
+        when(delegate.getAgentCard(any(ClientCallContext.class))).thenReturn(null);
 
         AgentCard result = transport.getAgentCard(context);
 
@@ -364,7 +380,7 @@ class OpenTelemetryClientTransportTest {
 
         transport.sendMessageStreaming(request, originalConsumer, mock(Consumer.class), context);
 
-        verify(delegate).sendMessageStreaming(eq(request), eventConsumerCaptor.capture(), any(Consumer.class), eq(context));
+        verify(delegate).sendMessageStreaming(eq(request), eventConsumerCaptor.capture(), any(Consumer.class), any(ClientCallContext.class));
 
         Message event = Message.builder()
                 .messageId("test-id")
@@ -398,7 +414,7 @@ class OpenTelemetryClientTransportTest {
 
         transport.sendMessageStreaming(request, mock(Consumer.class), originalConsumer, context);
 
-        verify(delegate).sendMessageStreaming(eq(request), any(Consumer.class), errorConsumerCaptor.capture(), eq(context));
+        verify(delegate).sendMessageStreaming(eq(request), any(Consumer.class), errorConsumerCaptor.capture(), any(ClientCallContext.class));
 
         Throwable error = new RuntimeException("Test error");
 
@@ -420,7 +436,7 @@ class OpenTelemetryClientTransportTest {
 
         transport.sendMessageStreaming(request, mock(Consumer.class), originalConsumer, context);
 
-        verify(delegate).sendMessageStreaming(eq(request), any(Consumer.class), errorConsumerCaptor.capture(), eq(context));
+        verify(delegate).sendMessageStreaming(eq(request), any(Consumer.class), errorConsumerCaptor.capture(), any(ClientCallContext.class));
 
         errorConsumerCaptor.getValue().accept(null);
 
@@ -432,7 +448,7 @@ class OpenTelemetryClientTransportTest {
         DeleteTaskPushNotificationConfigParams request = mock(DeleteTaskPushNotificationConfigParams.class);
         when(request.toString()).thenReturn("request-string");
         A2AClientException expectedException = new A2AClientException("Delete failed");
-        doThrow(expectedException).when(delegate).deleteTaskPushNotificationConfigurations(request, context);
+        doThrow(expectedException).when(delegate).deleteTaskPushNotificationConfigurations(eq(request), any(ClientCallContext.class));
 
         A2AClientException exception = assertThrows(A2AClientException.class,
                 () -> transport.deleteTaskPushNotificationConfigurations(request, context));
