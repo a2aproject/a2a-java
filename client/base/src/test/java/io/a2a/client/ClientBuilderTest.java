@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.a2a.client.config.ClientConfig;
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.client.transport.grpc.GrpcTransport;
 import io.a2a.client.transport.grpc.GrpcTransportConfigBuilder;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
@@ -89,7 +89,7 @@ public class ClientBuilderTest {
         Client client = Client
                 .builder(card)
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
-                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig(new JdkA2AHttpClient()))
+                .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig(A2AHttpClientFactory.create()))
                 .build();
 
         Assertions.assertNotNull(client);

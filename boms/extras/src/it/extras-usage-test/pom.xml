@@ -46,6 +46,10 @@
         </dependency>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-http-client-vertx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
         </dependency>
         <dependency>

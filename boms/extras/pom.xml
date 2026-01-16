@@ -36,6 +36,11 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-http-client-vertx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
                 <version>${project.version}</version>
             </dependency>

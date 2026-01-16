@@ -9,6 +9,8 @@ public interface A2AHttpClient {
 
     String CONTENT_TYPE= "Content-Type";
     String APPLICATION_JSON= "application/json";
+    String ACCEPT = "Accept";
+    String EVENT_STREAM = "text/event-stream";
 
     GetBuilder createGet();
 
