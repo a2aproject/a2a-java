@@ -39,13 +39,15 @@ public record ListTaskPushNotificationConfigParams(String id, int pageSize, Stri
     }
 
     /**
-     * Validates and returns the effective page size (between 1 and 100, defaults to 100).
+     * Validates and returns the effective page size.
+     * If the requested pageSize is invalid (≤ 0 or > maxPageSize), returns maxPageSize.
      *
-     * @return the effective page size
+     * @param maxPageSize the maximum allowed page size
+     * @return the effective page size (between 1 and maxPageSize)
      */
-    public int getEffectivePageSize() {
-      if (pageSize <= 0 || pageSize > 100) {
-        return 100;
+    public int getEffectivePageSize(int maxPageSize) {
+      if (pageSize <= 0 || pageSize > maxPageSize) {
+        return maxPageSize;
       }
       return pageSize;
     }
