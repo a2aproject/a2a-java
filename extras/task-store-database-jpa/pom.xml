@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.a2asdk</groupId>
         <artifactId>a2a-java-sdk-parent</artifactId>
-        <version>1.0.0.Alpha1</version>
+        <version>1.0.0.Alpha2-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
