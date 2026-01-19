@@ -41,7 +41,8 @@ public interface ListTasksParamsMapper {
     // pageSize: Check if field is set using hasPageSize() to distinguish unset (null) from explicit 0 (validation error)
     @Mapping(target = "pageSize", expression = "java(request.hasPageSize() ? request.getPageSize() : null)")
     @Mapping(target = "pageToken", source = "pageToken", qualifiedByName = "emptyToNull")
-    @Mapping(target = "historyLength", source = "historyLength", qualifiedByName = "zeroToNull")
+    // historyLength: Check if field is set using hasHistoryLength() for consistency with pageSize
+    @Mapping(target = "historyLength", expression = "java(request.hasHistoryLength() ? request.getHistoryLength() : null)")
     @Mapping(target = "lastUpdatedAfter", source = "lastUpdatedAfter", qualifiedByName = "millisToInstant")
     @Mapping(target = "includeArtifacts", source = "includeArtifacts", qualifiedByName = "falseToNull")
     io.a2a.spec.ListTasksParams fromProto(ListTasksRequest request);
