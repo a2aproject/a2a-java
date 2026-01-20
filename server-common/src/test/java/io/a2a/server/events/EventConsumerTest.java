@@ -240,14 +240,14 @@ public class EventConsumerTest {
     @Test
     public void testConsumeTaskInputRequired() {
         Task task = Task.builder()
-            .id("task-id")
-            .contextId("task-context")
+            .id(TASK_ID)
+            .contextId("session-xyz")
             .status(new TaskStatus(TaskState.INPUT_REQUIRED))
             .build();
         List<Event> events = List.of(
             task,
             TaskArtifactUpdateEvent.builder()
-                .taskId("task-123")
+                .taskId(TASK_ID)
                 .contextId("session-xyz")
                 .artifact(Artifact.builder()
                     .artifactId("11")
@@ -255,7 +255,7 @@ public class EventConsumerTest {
                     .build())
                 .build(),
             TaskStatusUpdateEvent.builder()
-                .taskId("task-123")
+                .taskId(TASK_ID)
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.WORKING))
                 .isFinal(true)
