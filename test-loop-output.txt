@@ -1,0 +1,86 @@
+Running single TCK test 20 times to check for cumulative issues...
+Test: test_send_message_request_required_fields
+Press Ctrl+C to stop
+
+=== Run 1/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 2/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 1s
+
+=== Run 3/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 4/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 5/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 6/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 1s
+
+=== Run 7/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 8/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 9/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 10/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 1s
+
+=== Run 11/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 12/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 13/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 14/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 1s
+
+=== Run 15/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 16/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 17/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 18/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 1s
+
+=== Run 19/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+=== Run 20/20 ===
+ERROR: file or directory not found: tests/required/test_send_message.py::TestMessageSendParams::test_send_message_request_required_fields
+Duration: 0s
+
+
+Loop test complete. Check if duration increased over time.

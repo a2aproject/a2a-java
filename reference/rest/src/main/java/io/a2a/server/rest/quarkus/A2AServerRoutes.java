@@ -113,7 +113,7 @@ public class A2AServerRoutes {
                 Multi<String> events = Multi.createFrom().publisher(streamingResponse.getPublisher());
                 executor.execute(() -> {
                     MultiSseSupport.subscribeObject(
-                            events.map(i -> (Object) i), rc);
+                            events.map(i -> (Object) i), rc, context);
                 });
             }
         }
@@ -246,7 +246,7 @@ public class A2AServerRoutes {
                 Multi<String> events = Multi.createFrom().publisher(streamingResponse.getPublisher());
                 executor.execute(() -> {
                     MultiSseSupport.subscribeObject(
-                            events.map(i -> (Object) i), rc);
+                            events.map(i -> (Object) i), rc, context);
                 });
             }
         }
@@ -452,6 +452,7 @@ public class A2AServerRoutes {
 
     // Port of import io.quarkus.vertx.web.runtime.MultiSseSupport, which is considered internal API
     private static class MultiSseSupport {
+        private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MultiSseSupport.class);
 
         private MultiSseSupport() {
             // Avoid direct instantiation.
@@ -467,23 +468,36 @@ public class A2AServerRoutes {
             }
         }
 
-        private static void onWriteDone(Flow.@Nullable Subscription subscription, AsyncResult<Void> ar, RoutingContext rc) {
+        private static void onWriteDone(Flow.Subscription subscription, AsyncResult<Void> ar, RoutingContext rc) {
             if (ar.failed()) {
+                // Client disconnected or write failed - cancel upstream to stop EventConsumer
+                subscription.cancel();
                 rc.fail(ar.cause());
-            } else if (subscription != null) {
+            } else {
                 subscription.request(1);
             }
         }
 
-        private static void write(Multi<Buffer> multi, RoutingContext rc) {
+        private static void write(Multi<Buffer> multi, RoutingContext rc, ServerCallContext context) {
+            logger.info("REST MultiSseSupport.write() called - about to subscribe to Multi<Buffer>");
             HttpServerResponse response = rc.response();
             multi.subscribe().withSubscriber(new Flow.Subscriber<Buffer>() {
                 Flow.@Nullable Subscription upstream;
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
+                    logger.info("REST MultiSseSupport.write.onSubscribe() called - subscribing to Multi<Buffer>");
                     this.upstream = subscription;
                     this.upstream.request(1);
+                    logger.info("REST MultiSseSupport.write.onSubscribe() - requested first buffer");
+
+                    // Detect client disconnect and call EventConsumer.cancel() directly
+                    // This stops the polling loop without relying on subscription cancellation propagation
+                    response.closeHandler(v -> {
+                        logger.info("REST SSE connection closed by client, calling EventConsumer.cancel() to stop polling loop");
+                        context.invokeEventConsumerCancelCallback();
+                        subscription.cancel();
+                    });
 
                     // Notify tests that we are subscribed
                     Runnable runnable = streamingMultiSseSupportSubscribedRunnable;
@@ -494,17 +508,24 @@ public class A2AServerRoutes {
 
                 @Override
                 public void onNext(Buffer item) {
+                    logger.info("REST MultiSseSupport.write.onNext() called - buffer size: {} bytes", item.length());
                     initialize(response);
+                    logger.info("REST MultiSseSupport.write.onNext() - calling response.write()");
                     response.write(item, new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> ar) {
-                            onWriteDone(upstream, ar, rc);
+                            logger.info("REST MultiSseSupport.write.handle() - write {}", ar.succeeded() ? "succeeded" : "failed");
+                            // NullAway: upstream is guaranteed non-null after onSubscribe
+                            onWriteDone(java.util.Objects.requireNonNull(upstream), ar, rc);
                         }
                     });
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
+                    // Cancel upstream to stop EventConsumer when error occurs
+                    // NullAway: upstream is guaranteed non-null after onSubscribe
+                    java.util.Objects.requireNonNull(upstream).cancel();
                     rc.fail(throwable);
                 }
 
@@ -515,21 +536,30 @@ public class A2AServerRoutes {
             });
         }
 
-        private static void subscribeObject(Multi<Object> multi, RoutingContext rc) {
+        private static void subscribeObject(Multi<Object> multi, RoutingContext rc, ServerCallContext context) {
+            logger.info("REST MultiSseSupport.subscribeObject called, creating map function");
             AtomicLong count = new AtomicLong();
-            write(multi.map(new Function<Object, Buffer>() {
+            Multi<Buffer> bufferMulti = multi.map(new Function<Object, Buffer>() {
                 @Override
                 public Buffer apply(Object o) {
+                    logger.info("REST MultiSseSupport.apply called with object: {}", o.getClass().getSimpleName());
                     if (o instanceof ReactiveRoutes.ServerSentEvent) {
                         ReactiveRoutes.ServerSentEvent<?> ev = (ReactiveRoutes.ServerSentEvent<?>) o;
                         long id = ev.id() != -1 ? ev.id() : count.getAndIncrement();
                         String e = ev.event() == null ? "" : "event: " + ev.event() + "\n";
-                        return Buffer.buffer(e + "data: " + ev.data() + "\nid: " + id + "\n\n");
+                        String data = e + "data: " + ev.data() + "\nid: " + id + "\n\n";
+                        logger.info("REST MultiSseSupport: Created SSE buffer ({}bytes): {}", data.length(), data.substring(0, Math.min(100, data.length())));
+                        return Buffer.buffer(data);
                     } else {
-                        return Buffer.buffer("data: " + o + "\nid: " + count.getAndIncrement() + "\n\n");
+                        String data = "data: " + o + "\nid: " + count.getAndIncrement() + "\n\n";
+                        logger.info("REST MultiSseSupport: Created SSE buffer ({}bytes): {}", data.length(), data.substring(0, Math.min(100, data.length())));
+                        return Buffer.buffer(data);
                     }
                 }
-            }), rc);
+            });
+            logger.info("REST MultiSseSupport: Calling write() with Multi<Buffer>");
+            write(bufferMulti, rc, context);
+            logger.info("REST MultiSseSupport: write() call completed");
         }
 
         private static void endOfStream(HttpServerResponse response) {

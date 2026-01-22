@@ -74,6 +74,8 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class A2AServerRoutes {
@@ -136,7 +138,7 @@ public class A2AServerRoutes {
                 final Multi<? extends A2AResponse<?>> finalStreamingResponse = streamingResponse;
                 executor.execute(() -> {
                     MultiSseSupport.subscribeObject(
-                            finalStreamingResponse.map(i -> (Object) i), rc);
+                            finalStreamingResponse.map(i -> (Object) i), rc, context);
                 });
 
             } else {
@@ -297,6 +299,7 @@ public class A2AServerRoutes {
 
     // Port of import io.quarkus.vertx.web.runtime.MultiSseSupport, which is considered internal API
     private static class MultiSseSupport {
+        private static final Logger logger = LoggerFactory.getLogger(MultiSseSupport.class);
 
         private MultiSseSupport() {
             // Avoid direct instantiation.
@@ -314,13 +317,15 @@ public class A2AServerRoutes {
 
         private static void onWriteDone(Flow.Subscription subscription, AsyncResult<Void> ar, RoutingContext rc) {
             if (ar.failed()) {
+                // Client disconnected or write failed - cancel upstream to stop EventConsumer
+                subscription.cancel();
                 rc.fail(ar.cause());
             } else {
                 subscription.request(1);
             }
         }
 
-        public static void write(Multi<Buffer> multi, RoutingContext rc) {
+        public static void write(Multi<Buffer> multi, RoutingContext rc, ServerCallContext context) {
             HttpServerResponse response = rc.response();
             multi.subscribe().withSubscriber(new Flow.Subscriber<Buffer>() {
                 Flow.Subscription upstream;
@@ -329,6 +334,14 @@ public class A2AServerRoutes {
                 public void onSubscribe(Flow.Subscription subscription) {
                     this.upstream = subscription;
                     this.upstream.request(1);
+
+                    // Detect client disconnect and call EventConsumer.cancel() directly
+                    // This stops the polling loop without relying on subscription cancellation propagation
+                    response.closeHandler(v -> {
+                        logger.info("SSE connection closed by client, calling EventConsumer.cancel() to stop polling loop");
+                        context.invokeEventConsumerCancelCallback();
+                        subscription.cancel();
+                    });
 
                     // Notify tests that we are subscribed
                     Runnable runnable = streamingMultiSseSupportSubscribedRunnable;
@@ -350,6 +363,8 @@ public class A2AServerRoutes {
 
                 @Override
                 public void onError(Throwable throwable) {
+                    // Cancel upstream to stop EventConsumer when error occurs
+                    upstream.cancel();
                     rc.fail(throwable);
                 }
 
@@ -360,7 +375,7 @@ public class A2AServerRoutes {
             });
         }
 
-        public static void subscribeObject(Multi<Object> multi, RoutingContext rc) {
+        public static void subscribeObject(Multi<Object> multi, RoutingContext rc, ServerCallContext context) {
             AtomicLong count = new AtomicLong();
             write(multi.map(new Function<Object, Buffer>() {
                 @Override
@@ -375,7 +390,7 @@ public class A2AServerRoutes {
                     String data = serializeResponse((A2AResponse<?>) o);
                     return Buffer.buffer("data: " + data + "\nid: " + count.getAndIncrement() + "\n\n");
                 }
-            }), rc);
+            }), rc, context);
         }
 
         private static void endOfStream(HttpServerResponse response) {

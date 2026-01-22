@@ -31,12 +31,14 @@ public class ResultAggregator {
 
     private final TaskManager taskManager;
     private final Executor executor;
+    private final Executor eventConsumerExecutor;
     private volatile @Nullable Message message;
 
-    public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor) {
+    public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor, Executor eventConsumerExecutor) {
         this.taskManager = taskManager;
         this.message = message;
         this.executor = executor;
+        this.eventConsumerExecutor = eventConsumerExecutor;
     }
 
     public @Nullable EventKind getCurrentResult() {
@@ -51,10 +53,21 @@ public class ResultAggregator {
 
         // Just stream events - no persistence needed
         // TaskStore update moved to MainEventBusProcessor
-        return processor(createTubeConfig(), allItems, (errorConsumer, item) -> {
+        Flow.Publisher<EventQueueItem> processed = processor(createTubeConfig(), allItems, (errorConsumer, item) -> {
             // Continue processing and emit all events
             return true;
         });
+
+        // Wrap the publisher to ensure subscription happens on eventConsumerExecutor
+        // This prevents EventConsumer polling loop from running on AgentExecutor threads
+        // which caused thread accumulation when those threads didn't timeout
+        return new Flow.Publisher<EventQueueItem>() {
+            @Override
+            public void subscribe(Flow.Subscriber<? super EventQueueItem> subscriber) {
+                // Submit subscription to eventConsumerExecutor to isolate polling work
+                eventConsumerExecutor.execute(() -> processed.subscribe(subscriber));
+            }
+        };
     }
 
     public EventKind consumeAll(EventConsumer consumer) throws A2AError {
@@ -103,13 +116,18 @@ public class ResultAggregator {
         CompletableFuture<Void> completionFuture = new CompletableFuture<>();
         // Separate future for tracking background consumption completion
         CompletableFuture<Void> consumptionCompletionFuture = new CompletableFuture<>();
+        // Latch to ensure EventConsumer starts polling before we wait on completionFuture
+        java.util.concurrent.CountDownLatch pollingStarted = new java.util.concurrent.CountDownLatch(1);
 
         // CRITICAL: The subscription itself must run on a background thread to avoid blocking
         // the Vert.x worker thread. EventConsumer.consumeAll() starts a polling loop that
         // blocks in dequeueEventItem(), so we must subscribe from a background thread.
-        // Use the @Internal executor (not ForkJoinPool.commonPool) to avoid saturation
-        // during concurrent request bursts.
+        // Use the dedicated @EventConsumerExecutor (cached thread pool) which creates threads
+        // on demand for I/O-bound polling. Using the @Internal executor caused deadlock when
+        // pool exhausted (100+ concurrent queues but maxPoolSize=50).
         CompletableFuture.runAsync(() -> {
+            // Signal that polling is about to start
+            pollingStarted.countDown();
             consumer(
                 createTubeConfig(),
                 allItems,
@@ -226,7 +244,16 @@ public class ResultAggregator {
                     }
                 }
             );
-        }, executor);
+        }, eventConsumerExecutor);
+
+        // Wait for EventConsumer to start polling before we wait for events
+        // This prevents race where agent enqueues events before EventConsumer starts
+        try {
+            pollingStarted.await(5, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new io.a2a.spec.InternalError("Interrupted waiting for EventConsumer to start");
+        }
 
         // Wait for completion or interruption
         try {

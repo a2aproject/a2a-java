@@ -282,7 +282,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnGetPushNotificationNoPushNotifierConfig() throws Exception {
         // Create request handler without a push notifier
         DefaultRequestHandler requestHandler =
-                new DefaultRequestHandler(executor, taskStore, queueManager,null, internalExecutor);
+                new DefaultRequestHandler(executor, taskStore, queueManager,null, internalExecutor, internalExecutor);
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true, false);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
@@ -293,8 +293,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnSetPushNotificationNoPushNotifierConfig() throws Exception {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true, false);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
@@ -668,8 +667,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListPushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {
@@ -741,8 +739,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testDeletePushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
         DeleteTaskPushNotificationConfigRequest request = DeleteTaskPushNotificationConfigRequest.newBuilder()

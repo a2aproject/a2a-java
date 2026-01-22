@@ -40,6 +40,7 @@ import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.server.tasks.ResultAggregator;
 import io.a2a.server.tasks.TaskManager;
 import io.a2a.server.tasks.TaskStore;
+import io.a2a.server.util.async.EventConsumerExecutorProducer.EventConsumerExecutor;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
@@ -216,6 +217,7 @@ public class DefaultRequestHandler implements RequestHandler {
     private final ConcurrentMap<String, CompletableFuture<Void>> runningAgents = new ConcurrentHashMap<>();
 
     private Executor executor;
+    private Executor eventConsumerExecutor;
 
     /**
      * No-args constructor for CDI proxy creation.
@@ -231,17 +233,20 @@ public class DefaultRequestHandler implements RequestHandler {
         this.pushConfigStore = null;
         this.requestContextBuilder = null;
         this.executor = null;
+        this.eventConsumerExecutor = null;
     }
 
     @Inject
     public DefaultRequestHandler(AgentExecutor agentExecutor, TaskStore taskStore,
                                  QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
-                                 @Internal Executor executor) {
+                                 @Internal Executor executor,
+                                 @EventConsumerExecutor Executor eventConsumerExecutor) {
         this.agentExecutor = agentExecutor;
         this.taskStore = taskStore;
         this.queueManager = queueManager;
         this.pushConfigStore = pushConfigStore;
         this.executor = executor;
+        this.eventConsumerExecutor = eventConsumerExecutor;
         // TODO In Python this is also a constructor parameter defaulting to this SimpleRequestContextBuilder
         //  implementation if the parameter is null. Skip that for now, since otherwise I get CDI errors, and
         //  I am unsure about the correct scope.
@@ -262,9 +267,9 @@ public class DefaultRequestHandler implements RequestHandler {
      */
     public static DefaultRequestHandler create(AgentExecutor agentExecutor, TaskStore taskStore,
                          QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
-                         Executor executor) {
+                         Executor executor, Executor eventConsumerExecutor) {
         DefaultRequestHandler handler =
-                new DefaultRequestHandler(agentExecutor, taskStore, queueManager, pushConfigStore, executor);
+                new DefaultRequestHandler(agentExecutor, taskStore, queueManager, pushConfigStore, executor, eventConsumerExecutor);
         handler.agentCompletionTimeoutSeconds = 5;
         handler.consumptionCompletionTimeoutSeconds = 2;
         return handler;
@@ -352,12 +357,9 @@ public class DefaultRequestHandler implements RequestHandler {
                 taskStore,
                 null);
 
-        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor);
+        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor);
 
-        EventQueue queue = queueManager.tap(task.id());
-        if (queue == null) {
-            queue = queueManager.getEventQueueBuilder(task.id()).build().tap();
-        }
+        EventQueue queue = queueManager.createOrTap(task.id());
         agentExecutor.cancel(
                 requestContextBuilder.get()
                         .setTaskId(task.id())
@@ -397,8 +399,9 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new io.a2a.spec.InternalError("Task ID is null in onMessageSend");
         }
         EventQueue queue = queueManager.createOrTap(taskId);
-        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor);
+        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
 
+        // Default to blocking=false per A2A spec (return after task creation)
         boolean blocking = params.configuration() != null && Boolean.TRUE.equals(params.configuration().blocking());
 
         // Log blocking behavior from client request
@@ -406,9 +409,9 @@ public class DefaultRequestHandler implements RequestHandler {
             LOGGER.info("DefaultRequestHandler: Client requested blocking={} for task {}",
                 params.configuration().blocking(), taskId);
         } else if (params.configuration() != null) {
-            LOGGER.info("DefaultRequestHandler: Client sent configuration but blocking=null, using default blocking=true for task {}", taskId);
+            LOGGER.info("DefaultRequestHandler: Client sent configuration but blocking=null, using default blocking={} for task {}", blocking, taskId);
         } else {
-            LOGGER.info("DefaultRequestHandler: Client sent no configuration, using default blocking=true for task {}", taskId);
+            LOGGER.info("DefaultRequestHandler: Client sent no configuration, using default blocking={} for task {}", blocking, taskId);
         }
         LOGGER.info("DefaultRequestHandler: Final blocking decision: {} for task {}", blocking, taskId);
 
@@ -516,6 +519,16 @@ public class DefaultRequestHandler implements RequestHandler {
                 throw new InternalError("Task ID mismatch in agent response");
             }
         } finally {
+            // For non-blocking calls: close ChildQueue IMMEDIATELY to free EventConsumer thread
+            // CRITICAL: Must use immediate=true to clear the local queue, otherwise EventConsumer
+            // continues polling until queue drains naturally, holding executor thread.
+            // Immediate close clears pending events and triggers EventQueueClosedException on next poll.
+            // Events continue flowing through MainQueue → MainEventBus → TaskStore.
+            if (!blocking && etai != null && etai.interrupted()) {
+                LOGGER.debug("DefaultRequestHandler: Non-blocking call in finally - closing ChildQueue IMMEDIATELY for task {} to free EventConsumer", taskId);
+                queue.close(true);  // immediate=true: clear queue and free EventConsumer
+            }
+
             // Remove agent from map immediately to prevent accumulation
             CompletableFuture<Void> agentFuture = runningAgents.remove(taskId);
             LOGGER.debug("Removed agent for task {} from runningAgents in finally block, size after: {}", taskId, runningAgents.size());
@@ -562,13 +575,17 @@ public class DefaultRequestHandler implements RequestHandler {
             pushConfigStore.setInfo(taskId.get(), params.configuration().pushNotificationConfig());
         }
 
-        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor);
+        ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
 
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(queueTaskId, mss.requestContext, queue);
 
         // Move consumer creation and callback registration outside try block
         EventConsumer consumer = new EventConsumer(queue);
         producerRunnable.addDoneCallback(consumer.createAgentRunnableDoneCallback());
+
+        // Store cancel callback in context for closeHandler to access
+        // When client disconnects, closeHandler can call this to stop EventConsumer polling loop
+        context.setEventConsumerCancelCallback(consumer::cancel);
 
         try {
             Flow.Publisher<EventQueueItem> results = resultAggregator.consumeAndEmit(consumer);
@@ -738,7 +755,7 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         TaskManager taskManager = new TaskManager(task.id(), task.contextId(), taskStore, null);
-        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor);
+        ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor);
         EventQueue queue = queueManager.tap(task.id());
         LOGGER.debug("onResubscribeToTask - tapped queue: {}", queue != null ? System.identityHashCode(queue) : "null");
 
@@ -930,8 +947,26 @@ public class DefaultRequestHandler implements RequestHandler {
         }
         int activeThreads = rootGroup.activeCount();
 
+        // Count specific thread types
+        Thread[] threads = new Thread[activeThreads * 2];
+        int count = rootGroup.enumerate(threads);
+        int eventConsumerThreads = 0;
+        int agentExecutorThreads = 0;
+        for (int i = 0; i < count; i++) {
+            if (threads[i] != null) {
+                String name = threads[i].getName();
+                if (name.startsWith("a2a-event-consumer-")) {
+                    eventConsumerThreads++;
+                } else if (name.startsWith("a2a-agent-executor-")) {
+                    agentExecutorThreads++;
+                }
+            }
+        }
+
         LOGGER.debug("=== THREAD STATS: {} ===", label);
-        LOGGER.debug("Active threads: {}", activeThreads);
+        LOGGER.debug("Total active threads: {}", activeThreads);
+        LOGGER.debug("EventConsumer threads: {}", eventConsumerThreads);
+        LOGGER.debug("AgentExecutor threads: {}", agentExecutorThreads);
         LOGGER.debug("Running agents: {}", runningAgents.size());
         LOGGER.debug("Queue manager active queues: {}", queueManager.getClass().getSimpleName());
 

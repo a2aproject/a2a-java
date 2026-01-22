@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,12 +75,14 @@ public class DefaultRequestHandlerTest {
 
         agentExecutor = new TestAgentExecutor();
 
+        ExecutorService executor = Executors.newCachedThreadPool();
         requestHandler = DefaultRequestHandler.create(
             agentExecutor,
             taskStore,
             queueManager,
             null, // pushConfigStore
-            Executors.newCachedThreadPool()
+            executor,
+            executor
         );
 
         serverCallContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of(), Set.of());
@@ -881,12 +884,14 @@ public class DefaultRequestHandlerTest {
         InMemoryPushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
 
         // Re-create request handler with pushConfigStore
+        ExecutorService pushTestExecutor = Executors.newCachedThreadPool();
         requestHandler = DefaultRequestHandler.create(
             agentExecutor,
             taskStore,
             queueManager,
             pushConfigStore, // Add push config store
-            Executors.newCachedThreadPool()
+            pushTestExecutor,
+            pushTestExecutor
         );
 
         // Create push notification config
@@ -951,12 +956,14 @@ public class DefaultRequestHandlerTest {
         InMemoryPushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
 
         // Re-create request handler with pushConfigStore
+        ExecutorService pushTestExecutor = Executors.newCachedThreadPool();
         requestHandler = DefaultRequestHandler.create(
             agentExecutor,
             taskStore,
             queueManager,
             pushConfigStore, // Add push config store
-            Executors.newCachedThreadPool()
+            pushTestExecutor,
+            pushTestExecutor
         );
 
         // Create EXISTING task in store

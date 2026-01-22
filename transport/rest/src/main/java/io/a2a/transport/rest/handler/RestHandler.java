@@ -399,32 +399,43 @@ public class RestHandler {
             Flow.Publisher<StreamingEventKind> publisher) {
         // We can't use the normal convertingProcessor since that propagates any errors as an error handled
         // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
+        log.log(Level.INFO, "REST: convertToSendStreamingMessageResponse called, creating ZeroPublisher");
         return ZeroPublisher.create(createTubeConfig(), tube -> {
+            log.log(Level.INFO, "REST: ZeroPublisher tube created, starting CompletableFuture.runAsync");
             CompletableFuture.runAsync(() -> {
+                log.log(Level.INFO, "REST: Inside CompletableFuture, subscribing to EventKind publisher");
                 publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
                     Flow.@Nullable Subscription subscription;
 
                     @Override
                     public void onSubscribe(Flow.Subscription subscription) {
+                        log.log(Level.INFO, "REST: onSubscribe called, storing subscription and requesting first event");
                         this.subscription = subscription;
                         subscription.request(1);
                     }
 
                     @Override
                     public void onNext(StreamingEventKind item) {
+                        log.log(Level.INFO, "REST: onNext called with event: {0}", item.getClass().getSimpleName());
                         try {
                             String payload = JsonFormat.printer().omittingInsignificantWhitespace().print(ProtoUtils.ToProto.taskOrMessageStream(item));
+                            log.log(Level.INFO, "REST: Converted to JSON, sending via tube: {0}", payload.substring(0, Math.min(100, payload.length())));
                             tube.send(payload);
+                            log.log(Level.INFO, "REST: tube.send() completed, requesting next event");
                             if (subscription != null) {
                                 subscription.request(1);
+                            } else {
+                                log.log(Level.WARNING, "REST: subscription is null in onNext! Cannot request next event");
                             }
                         } catch (InvalidProtocolBufferException ex) {
+                            log.log(Level.SEVERE, "REST: JSON conversion failed", ex);
                             onError(ex);
                         }
                     }
 
                     @Override
                     public void onError(Throwable throwable) {
+                        log.log(Level.SEVERE, "REST: onError called", throwable);
                         if (throwable instanceof A2AError jsonrpcError) {
                             tube.send(new HTTPRestErrorResponse(jsonrpcError).toJson());
                         } else {
@@ -435,6 +446,7 @@ public class RestHandler {
 
                     @Override
                     public void onComplete() {
+                        log.log(Level.INFO, "REST: onComplete called, calling tube.complete()");
                         tube.complete();
                     }
                 });

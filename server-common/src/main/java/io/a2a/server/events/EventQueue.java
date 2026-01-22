@@ -536,6 +536,7 @@ public abstract class EventQueue implements AutoCloseable {
     static class ChildQueue extends EventQueue {
         private final MainQueue parent;
         private final BlockingQueue<EventQueueItem> queue = new LinkedBlockingDeque<>();
+        private volatile boolean immediateClose = false;
 
         public ChildQueue(MainQueue parent) {
             this.parent = parent;
@@ -571,8 +572,13 @@ public abstract class EventQueue implements AutoCloseable {
         @Override
         @Nullable
         public EventQueueItem dequeueEventItem(int waitMilliSeconds) throws EventQueueClosedException {
-            if (isClosed() && queue.isEmpty()) {
-                LOGGER.debug("ChildQueue is closed, and empty. Sending termination message. {}", this);
+            // For immediate close: exit immediately even if queue is not empty (race with MainEventBusProcessor)
+            // For graceful close: only exit when queue is empty (wait for all events to be consumed)
+            if (isClosed() && (queue.isEmpty() || immediateClose)) {
+                LOGGER.debug("ChildQueue is closed{}, sending termination message. {} (queueSize={})",
+                        immediateClose ? " (immediate)" : " and empty",
+                        this,
+                        queue.size());
                 throw new EventQueueClosedException();
             }
             try {
@@ -630,6 +636,7 @@ public abstract class EventQueue implements AutoCloseable {
             super.doClose(immediate);  // Sets closed flag
             if (immediate) {
                 // Immediate close: clear pending events from local queue
+                this.immediateClose = true;
                 int clearedCount = queue.size();
                 queue.clear();
                 LOGGER.debug("Cleared {} events from ChildQueue for immediate close: {}", clearedCount, this);

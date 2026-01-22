@@ -1124,8 +1124,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnGetPushNotificationNoPushNotifierConfig() {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
         AgentCard card = createAgentCard(false, true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1143,8 +1142,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnSetPushNotificationNoPushNotifierConfig() {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
         AgentCard card = createAgentCard(false, true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1235,8 +1233,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageSendErrorHandling() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
         AgentCard card = createAgentCard(false, true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1415,8 +1412,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListPushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, null, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {
@@ -1508,7 +1504,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testDeletePushNotificationConfigNoPushConfigStore() {
         DefaultRequestHandler requestHandler =
-                DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor);
+                DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {

@@ -1,8 +1,8 @@
 package io.a2a.server.util.async;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +26,7 @@ public class AsyncExecutorProducer {
     private static final String A2A_EXECUTOR_CORE_POOL_SIZE = "a2a.executor.core-pool-size";
     private static final String A2A_EXECUTOR_MAX_POOL_SIZE = "a2a.executor.max-pool-size";
     private static final String A2A_EXECUTOR_KEEP_ALIVE_SECONDS = "a2a.executor.keep-alive-seconds";
+    private static final String A2A_EXECUTOR_QUEUE_CAPACITY = "a2a.executor.queue-capacity";
 
     @Inject
     A2AConfigProvider configProvider;
@@ -57,6 +58,16 @@ public class AsyncExecutorProducer {
      */
     long keepAliveSeconds;
 
+    /**
+     * Queue capacity for pending tasks.
+     * <p>
+     * Property: {@code a2a.executor.queue-capacity}<br>
+     * Default: 100<br>
+     * Note: Must be bounded to allow pool growth to maxPoolSize.
+     * When queue is full, new threads are created up to maxPoolSize.
+     */
+    int queueCapacity;
+
     private @Nullable ExecutorService executor;
 
     @PostConstruct
@@ -64,18 +75,34 @@ public class AsyncExecutorProducer {
         corePoolSize = Integer.parseInt(configProvider.getValue(A2A_EXECUTOR_CORE_POOL_SIZE));
         maxPoolSize = Integer.parseInt(configProvider.getValue(A2A_EXECUTOR_MAX_POOL_SIZE));
         keepAliveSeconds = Long.parseLong(configProvider.getValue(A2A_EXECUTOR_KEEP_ALIVE_SECONDS));
+        queueCapacity = Integer.parseInt(configProvider.getValue(A2A_EXECUTOR_QUEUE_CAPACITY));
 
-        LOGGER.info("Initializing async executor: corePoolSize={}, maxPoolSize={}, keepAliveSeconds={}",
-                corePoolSize, maxPoolSize, keepAliveSeconds);
+        LOGGER.info("Initializing async executor: corePoolSize={}, maxPoolSize={}, keepAliveSeconds={}, queueCapacity={}",
+                corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity);
 
-        executor = new ThreadPoolExecutor(
+        // CRITICAL: Use ArrayBlockingQueue (bounded) instead of LinkedBlockingQueue (unbounded).
+        // With unbounded queue, ThreadPoolExecutor NEVER grows beyond corePoolSize because the
+        // queue never fills. This causes executor pool exhaustion during concurrent requests when
+        // EventConsumer polling threads hold all core threads and agent tasks queue indefinitely.
+        // Bounded queue enables pool growth: when queue is full, new threads are created up to
+        // maxPoolSize, preventing agent execution starvation.
+        ThreadPoolExecutor tpe = new ThreadPoolExecutor(
                 corePoolSize,
                 maxPoolSize,
                 keepAliveSeconds,
                 TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(),
+                new ArrayBlockingQueue<>(queueCapacity),
                 new A2AThreadFactory()
         );
+
+        // CRITICAL: Allow core threads to timeout after keepAliveSeconds when idle.
+        // By default, ThreadPoolExecutor only times out threads above corePoolSize.
+        // Without this, core threads accumulate during testing and never clean up.
+        // This is essential for streaming scenarios where many short-lived tasks create threads
+        // for agent execution and cleanup callbacks, but those threads remain idle afterward.
+        tpe.allowCoreThreadTimeOut(true);
+
+        executor = tpe;
     }
 
     @PreDestroy
@@ -104,6 +131,22 @@ public class AsyncExecutorProducer {
             throw new IllegalStateException("Executor not initialized - @PostConstruct not called");
         }
         return executor;
+    }
+
+    /**
+     * Log current executor pool statistics for diagnostics.
+     * Useful for debugging pool exhaustion or sizing issues.
+     */
+    public void logPoolStats() {
+        if (executor instanceof ThreadPoolExecutor tpe) {
+            LOGGER.info("Executor pool stats: active={}/{}, queued={}/{}, completed={}, total={}",
+                    tpe.getActiveCount(),
+                    tpe.getPoolSize(),
+                    tpe.getQueue().size(),
+                    queueCapacity,
+                    tpe.getCompletedTaskCount(),
+                    tpe.getTaskCount());
+        }
     }
 
     private static class A2AThreadFactory implements ThreadFactory {

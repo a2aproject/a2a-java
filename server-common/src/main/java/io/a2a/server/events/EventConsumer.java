@@ -19,6 +19,7 @@ public class EventConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventConsumer.class);
     private final EventQueue queue;
     private volatile @Nullable Throwable error;
+    private volatile boolean cancelled = false;
 
     private static final String ERROR_MSG = "Agent did not return any response";
     private static final int NO_WAIT = -1;
@@ -45,6 +46,14 @@ public class EventConsumer {
             boolean completed = false;
             try {
                 while (true) {
+                    // Check if cancelled by client disconnect
+                    if (cancelled) {
+                        LOGGER.info("EventConsumer detected cancellation, exiting polling loop for queue {}", System.identityHashCode(queue));
+                        completed = true;
+                        tube.complete();
+                        return;
+                    }
+
                     if (error != null) {
                         completed = true;
                         tube.fail(error);
@@ -154,6 +163,13 @@ public class EventConsumer {
                 LOGGER.info("EventConsumer: Agent completed successfully (no error), continuing consumption");
             }
         };
+    }
+
+    public void cancel() {
+        // Set cancellation flag to stop polling loop
+        // Called when client disconnects without completing stream
+        LOGGER.info("EventConsumer cancelled (client disconnect), stopping polling for queue {}", System.identityHashCode(queue));
+        cancelled = true;
     }
 
     public void close() {

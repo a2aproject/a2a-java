@@ -242,7 +242,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             MessageSendParams params = FromProto.messageSendParams(request);
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onMessageSendStream(params, context);
-            convertToStreamResponse(publisher, responseObserver);
+            convertToStreamResponse(publisher, responseObserver, context);
         } catch (A2AError e) {
             handleError(responseObserver, e);
         } catch (SecurityException e) {
@@ -264,7 +264,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             ServerCallContext context = createCallContext(responseObserver);
             TaskIdParams params = FromProto.taskIdParams(request);
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onResubscribeToTask(params, context);
-            convertToStreamResponse(publisher, responseObserver);
+            convertToStreamResponse(publisher, responseObserver, context);
         } catch (A2AError e) {
             handleError(responseObserver, e);
         } catch (SecurityException e) {
@@ -275,7 +275,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     private void convertToStreamResponse(Flow.Publisher<StreamingEventKind> publisher,
-                                         StreamObserver<io.a2a.grpc.StreamResponse> responseObserver) {
+                                         StreamObserver<io.a2a.grpc.StreamResponse> responseObserver,
+                                         ServerCallContext context) {
         CompletableFuture.runAsync(() -> {
             publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
                 private Flow.Subscription subscription;
@@ -284,6 +285,18 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                 public void onSubscribe(Flow.Subscription subscription) {
                     this.subscription = subscription;
                     subscription.request(1);
+
+                    // Detect gRPC client disconnect and call EventConsumer.cancel() directly
+                    // This stops the polling loop without relying on subscription cancellation propagation
+                    Context grpcContext = Context.current();
+                    grpcContext.addListener(new Context.CancellationListener() {
+                        @Override
+                        public void cancelled(Context ctx) {
+                            LOGGER.fine(() -> "gRPC call cancelled by client, calling EventConsumer.cancel() to stop polling loop");
+                            context.invokeEventConsumerCancelCallback();
+                            subscription.cancel();
+                        }
+                    }, getExecutor());
 
                     // Notify tests that we are subscribed
                     Runnable runnable = streamingSubscribedRunnable;
@@ -305,6 +318,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
                 @Override
                 public void onError(Throwable throwable) {
+                    // Cancel upstream to stop EventConsumer when error occurs
+                    subscription.cancel();
                     if (throwable instanceof A2AError jsonrpcError) {
                         handleError(responseObserver, jsonrpcError);
                     } else {
