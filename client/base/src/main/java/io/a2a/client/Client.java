@@ -592,26 +592,27 @@ public class Client extends AbstractClient {
     }
 
     /**
-     * Retrieve the agent's current agent card.
+     * Retrieve the agent's extended agent card.
      * <p>
-     * This method fetches the latest agent card from the agent. The card may have changed since
+     * This method fetches the extended agent card from the agent (if the extendedAgentCard capability is supported).
+     * The card may have changed since
      * client construction (e.g., new skills added, capabilities updated). The client's internal
      * reference is updated to the newly retrieved card.
      * <p>
      * Example:
      * <pre>{@code
-     * AgentCard updatedCard = client.getAgentCard(null);
+     * AgentCard updatedCard = client.getExtendedAgentCard(null);
      * System.out.println("Agent version: " + updatedCard.version());
      * System.out.println("Skills: " + updatedCard.skills().size());
      * }</pre>
      *
      * @param context custom call context for request interceptors (optional)
-     * @return the agent's current agent card
-     * @throws A2AClientException if the agent card cannot be retrieved
+     * @return the agent's extended agent card
+     * @throws A2AClientException if the extended agent card cannot be retrieved
      * @see AgentCard
      */
     @Override
-    public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
+    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
         agentCard = clientTransport.getExtendedAgentCard(context);
         return agentCard;
     }

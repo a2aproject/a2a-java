@@ -14,6 +14,7 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
+import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.Vetoed;
 
 import com.google.protobuf.Empty;
@@ -325,8 +326,11 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void getExtendedAgentCard(io.a2a.grpc.GetExtendedAgentCardRequest request,
                            StreamObserver<io.a2a.grpc.AgentCard> responseObserver) {
         try {
-            responseObserver.onNext(ToProto.agentCard(getAgentCardInternal()));
-            responseObserver.onCompleted();
+            AgentCard extendedAgentCard = getExtendedAgentCard();
+            if (extendedAgentCard != null) {
+                responseObserver.onNext(ToProto.agentCard(extendedAgentCard));
+                responseObserver.onCompleted();
+            }
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
@@ -498,6 +502,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         handleError(responseObserver, new InternalError(t.getMessage()));
     }
 
+
     private AgentCard getAgentCardInternal() {
         AgentCard agentCard = getAgentCard();
         if (initialised.compareAndSet(false, true)) {
@@ -537,6 +542,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     protected abstract RequestHandler getRequestHandler();
 
     protected abstract AgentCard getAgentCard();
+
+    protected abstract AgentCard getExtendedAgentCard();
 
     protected abstract CallContextFactory getCallContextFactory();
 

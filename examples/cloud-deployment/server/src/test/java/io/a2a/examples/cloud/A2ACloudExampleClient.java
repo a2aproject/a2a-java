@@ -68,6 +68,8 @@ public class A2ACloudExampleClient {
     private Client nonStreamingClient;
     private ClientConfig nonStreamingConfig;
 
+    private AgentCard agentCard;
+
     public static void main(String[] args) throws Exception {
         new A2ACloudExampleClient().run();
     }
@@ -75,7 +77,7 @@ public class A2ACloudExampleClient {
     private void run() throws Exception {
         printHeader();
 
-        AgentCard agentCard = fetchAndConfigureAgentCard();
+        agentCard = fetchAndConfigureAgentCard();
         String clientTaskId = generateClientTaskId();
 
         createClients(agentCard);
@@ -273,7 +275,7 @@ public class A2ACloudExampleClient {
             final int messageNum = messageCount;
 
             // Create a new client for each request to force new HTTP connection
-            Client freshClient = Client.builder(streamingClient.getAgentCard())
+            Client freshClient = Client.builder(agentCard)
                     .clientConfig(nonStreamingConfig)
                     .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
                     .build();
@@ -318,7 +320,7 @@ public class A2ACloudExampleClient {
         System.out.println();
         System.out.println("Step 4: Sending 'complete' to finalize task...");
 
-        Client completeClient = Client.builder(streamingClient.getAgentCard())
+        Client completeClient = Client.builder(agentCard)
                 .clientConfig(nonStreamingConfig)
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder())
                 .build();

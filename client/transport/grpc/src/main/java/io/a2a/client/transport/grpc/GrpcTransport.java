@@ -2,6 +2,7 @@ package io.a2a.client.transport.grpc;
 
 import static io.a2a.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static io.a2a.spec.A2AMethods.GET_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static io.a2a.spec.A2AMethods.LIST_TASK_METHOD;
@@ -26,6 +27,7 @@ import io.a2a.common.A2AHeaders;
 import io.a2a.grpc.A2AServiceGrpc;
 import io.a2a.grpc.A2AServiceGrpc.A2AServiceBlockingV2Stub;
 import io.a2a.grpc.A2AServiceGrpc.A2AServiceStub;
+import io.a2a.grpc.GetExtendedAgentCardRequest;
 import io.a2a.grpc.utils.ProtoUtils.FromProto;
 import io.a2a.grpc.utils.ProtoUtils.ToProto;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
@@ -65,7 +67,7 @@ public class GrpcTransport implements ClientTransport {
     private final A2AServiceBlockingV2Stub blockingStub;
     private final A2AServiceStub asyncStub;
     private final @Nullable List<ClientCallInterceptor> interceptors;
-    private AgentCard agentCard;
+    private final AgentCard agentCard;
     private final String agentTenant;
 
     public GrpcTransport(Channel channel, AgentCard agentCard) {
@@ -349,8 +351,18 @@ public class GrpcTransport implements ClientTransport {
 
     @Override
     public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
-        // TODO: Determine how to handle retrieving the authenticated extended agent card
-        return agentCard;
+        GetExtendedAgentCardRequest request = GetExtendedAgentCardRequest.newBuilder()
+                .build();
+        PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_EXTENDED_AGENT_CARD_METHOD, request, agentCard, context);
+
+        try {
+            A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
+            io.a2a.grpc.AgentCard response = stubWithMetadata.getExtendedAgentCard(request);
+
+            return FromProto.agentCard(response);
+        } catch (StatusRuntimeException | StatusException e) {
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to get extended agent card: ");
+        }
     }
 
     @Override

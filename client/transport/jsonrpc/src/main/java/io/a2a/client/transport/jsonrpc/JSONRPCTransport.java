@@ -71,8 +71,7 @@ public class JSONRPCTransport implements ClientTransport {
     private final A2AHttpClient httpClient;
     private final AgentInterface agentInterface;
     private final @Nullable List<ClientCallInterceptor> interceptors;
-    private @Nullable AgentCard agentCard;
-    private boolean needsExtendedCard = false;
+    private final @Nullable AgentCard agentCard;
 
     public JSONRPCTransport(String agentUrl) {
         this(null, null, new AgentInterface("JSONRPC", agentUrl),  null);
@@ -88,7 +87,6 @@ public class JSONRPCTransport implements ClientTransport {
         this.agentCard = agentCard;
         this.agentInterface = agentInterface;
         this.interceptors = interceptors;
-        this.needsExtendedCard = agentCard == null || agentCard.capabilities().extendedAgentCard();
     }
 
     @Override
@@ -289,30 +287,14 @@ public class JSONRPCTransport implements ClientTransport {
 
     @Override
     public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
-        A2ACardResolver resolver;
         try {
-            if (agentCard == null) {
-                resolver = new A2ACardResolver(httpClient, agentInterface.url(), agentInterface.tenant(), null, getHttpHeaders(context));
-                agentCard = resolver.getAgentCard();
-                needsExtendedCard = agentCard.capabilities().extendedAgentCard();
-            }
-            if (!needsExtendedCard) {
-                return agentCard;
-            }
-
-            GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = GetAuthenticatedExtendedCardRequest.builder()
-                    .jsonrpc(A2AMessage.JSONRPC_VERSION)
-                    .build(); // id will be randomly generated
-
             PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_EXTENDED_AGENT_CARD_METHOD,
                     ProtoUtils.ToProto.extendedAgentCard(), agentCard, context);
 
             try {
                 String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, ""), payloadAndHeaders, GET_EXTENDED_AGENT_CARD_METHOD);
                 GetAuthenticatedExtendedCardResponse response = unmarshalResponse(httpResponseBody, GET_EXTENDED_AGENT_CARD_METHOD);
-                agentCard = response.getResult();
-                needsExtendedCard = false;
-                return agentCard;
+                return response.getResult();
             } catch (IOException | InterruptedException | JsonProcessingException e) {
                 throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
             }

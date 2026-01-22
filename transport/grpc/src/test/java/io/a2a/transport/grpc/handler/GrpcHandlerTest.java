@@ -12,6 +12,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import jakarta.enterprise.inject.Instance;
+
 import com.google.protobuf.Empty;
 import com.google.protobuf.Struct;
 import io.a2a.grpc.AuthenticationInfo;
@@ -1273,6 +1275,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
         @Override
         protected AgentCard getAgentCard() {
+            return card;
+        }
+
+        @Override
+        protected AgentCard getExtendedAgentCard() {
             return card;
         }
 
