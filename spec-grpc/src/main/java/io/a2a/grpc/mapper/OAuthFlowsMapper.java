@@ -2,6 +2,7 @@ package io.a2a.grpc.mapper;
 
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 /**
  * Mapper between {@link io.a2a.spec.OAuthFlows} and {@link io.a2a.grpc.OAuthFlows}.
@@ -10,9 +11,7 @@ import org.mapstruct.Mapper;
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
         uses = {
             AuthorizationCodeOAuthFlowMapper.class,
-            ClientCredentialsOAuthFlowMapper.class,
-            ImplicitOAuthFlowMapper.class,
-            PasswordOAuthFlowMapper.class
+            ClientCredentialsOAuthFlowMapper.class
         })
 public interface OAuthFlowsMapper {
 

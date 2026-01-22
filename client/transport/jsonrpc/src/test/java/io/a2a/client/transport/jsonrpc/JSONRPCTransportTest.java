@@ -368,7 +368,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        AgentCard agentCard = client.getAgentCard(null);
+        AgentCard agentCard = client.getExtendedAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent", agentCard.name());
         assertEquals("Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.", agentCard.description());
         assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard).url());
@@ -379,6 +379,7 @@ public class JSONRPCTransportTest {
         assertTrue(agentCard.capabilities().streaming());
         assertTrue(agentCard.capabilities().pushNotifications());
         assertFalse(agentCard.capabilities().stateTransitionHistory());
+        assertFalse(agentCard.capabilities().extendedAgentCard());
         Map<String, SecurityScheme> securitySchemes = agentCard.securitySchemes();
         assertNotNull(securitySchemes);
         OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
@@ -417,9 +418,8 @@ public class JSONRPCTransportTest {
         assertEquals(inputModes, skills.get(1).inputModes());
         outputModes = List.of("image/png", "image/jpeg", "application/json", "text/html");
         assertEquals(outputModes, skills.get(1).outputModes());
-        assertFalse(agentCard.supportsExtendedAgentCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals(CURRENT_PROTOCOL_VERSION, agentCard.protocolVersion());
+        assertEquals(CURRENT_PROTOCOL_VERSION, agentCard.protocolVersions().get(0));
         assertEquals("JSONRPC", agentCard.supportedInterfaces().get(0).protocolBinding());
         List<AgentInterface> additionalInterfaces = agentCard.supportedInterfaces();
         assertEquals(3, additionalInterfaces.size());
@@ -456,7 +456,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        AgentCard agentCard = client.getAgentCard(null);
+        AgentCard agentCard = client.getExtendedAgentCard(null);
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
         assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard).url());
@@ -467,6 +467,7 @@ public class JSONRPCTransportTest {
         assertTrue(agentCard.capabilities().streaming());
         assertTrue(agentCard.capabilities().pushNotifications());
         assertFalse(agentCard.capabilities().stateTransitionHistory());
+        assertTrue(agentCard.capabilities().extendedAgentCard());
         Map<String, SecurityScheme> securitySchemes = agentCard.securitySchemes();
         assertNotNull(securitySchemes);
         OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
@@ -509,9 +510,8 @@ public class JSONRPCTransportTest {
         assertEquals("Extended Skill", skills.get(2).name());
         assertEquals("This is an extended skill.", skills.get(2).description());
         assertEquals(List.of("extended"), skills.get(2).tags());
-        assertTrue(agentCard.supportsExtendedAgentCard());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals(CURRENT_PROTOCOL_VERSION, agentCard.protocolVersion());
+        assertEquals(CURRENT_PROTOCOL_VERSION, agentCard.protocolVersions().get(0));
     }
 
     @Test

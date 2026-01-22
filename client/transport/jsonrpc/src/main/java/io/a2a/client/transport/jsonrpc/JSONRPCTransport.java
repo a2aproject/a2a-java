@@ -88,7 +88,7 @@ public class JSONRPCTransport implements ClientTransport {
         this.agentCard = agentCard;
         this.agentInterface = agentInterface;
         this.interceptors = interceptors;
-        this.needsExtendedCard = agentCard == null || agentCard.supportsExtendedAgentCard();
+        this.needsExtendedCard = agentCard == null || agentCard.capabilities().extendedAgentCard();
     }
 
     @Override
@@ -288,13 +288,13 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
+    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
         A2ACardResolver resolver;
         try {
             if (agentCard == null) {
                 resolver = new A2ACardResolver(httpClient, agentInterface.url(), agentInterface.tenant(), null, getHttpHeaders(context));
                 agentCard = resolver.getAgentCard();
-                needsExtendedCard = agentCard.supportsExtendedAgentCard();
+                needsExtendedCard = agentCard.capabilities().extendedAgentCard();
             }
             if (!needsExtendedCard) {
                 return agentCard;

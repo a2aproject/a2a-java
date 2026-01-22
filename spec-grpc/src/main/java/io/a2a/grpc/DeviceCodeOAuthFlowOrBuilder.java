@@ -6,16 +6,36 @@
 package io.a2a.grpc;
 
 @com.google.protobuf.Generated
-public interface PasswordOAuthFlowOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.PasswordOAuthFlow)
+public interface DeviceCodeOAuthFlowOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:a2a.v1.DeviceCodeOAuthFlow)
     com.google.protobuf.MessageOrBuilder {
+
+  /**
+   * <pre>
+   * The device authorization endpoint URL.
+   * </pre>
+   *
+   * <code>string device_authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The deviceAuthorizationUrl.
+   */
+  java.lang.String getDeviceAuthorizationUrl();
+  /**
+   * <pre>
+   * The device authorization endpoint URL.
+   * </pre>
+   *
+   * <code>string device_authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for deviceAuthorizationUrl.
+   */
+  com.google.protobuf.ByteString
+      getDeviceAuthorizationUrlBytes();
 
   /**
    * <pre>
    * The token URL to be used for this flow.
    * </pre>
    *
-   * <code>string token_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string token_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The tokenUrl.
    */
   java.lang.String getTokenUrl();
@@ -24,7 +44,7 @@ public interface PasswordOAuthFlowOrBuilder extends
    * The token URL to be used for this flow.
    * </pre>
    *
-   * <code>string token_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string token_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for tokenUrl.
    */
   com.google.protobuf.ByteString
@@ -35,7 +55,7 @@ public interface PasswordOAuthFlowOrBuilder extends
    * The URL to be used for obtaining refresh tokens.
    * </pre>
    *
-   * <code>string refresh_url = 2;</code>
+   * <code>string refresh_url = 3;</code>
    * @return The refreshUrl.
    */
   java.lang.String getRefreshUrl();
@@ -44,7 +64,7 @@ public interface PasswordOAuthFlowOrBuilder extends
    * The URL to be used for obtaining refresh tokens.
    * </pre>
    *
-   * <code>string refresh_url = 2;</code>
+   * <code>string refresh_url = 3;</code>
    * @return The bytes for refreshUrl.
    */
   com.google.protobuf.ByteString
@@ -55,7 +75,7 @@ public interface PasswordOAuthFlowOrBuilder extends
    * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getScopesCount();
   /**
@@ -63,7 +83,7 @@ public interface PasswordOAuthFlowOrBuilder extends
    * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   boolean containsScopes(
       java.lang.String key);
@@ -78,7 +98,7 @@ public interface PasswordOAuthFlowOrBuilder extends
    * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.Map<java.lang.String, java.lang.String>
   getScopesMap();
@@ -87,7 +107,7 @@ public interface PasswordOAuthFlowOrBuilder extends
    * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   /* nullable */
 java.lang.String getScopesOrDefault(
@@ -99,7 +119,7 @@ java.lang.String defaultValue);
    * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.lang.String getScopesOrThrow(
       java.lang.String key);

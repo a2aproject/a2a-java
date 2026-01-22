@@ -10,7 +10,7 @@ public class JsonMessages {
 
     static final String AGENT_CARD = String.format("""
             {
-                 "protocolVersion": "%s",
+                 "protocolVersions": ["%s"],
                  "name": "GeoSpatial Route Planner Agent",
                  "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
                  "supportedInterfaces" : [
@@ -28,7 +28,8 @@ public class JsonMessages {
                  "capabilities": {
                    "streaming": true,
                    "pushNotifications": true,
-                   "stateTransitionHistory": false
+                   "stateTransitionHistory": false,
+                   "extendedAgentCard": false
                  },
                  "securitySchemes": {
                    "google": {
@@ -75,7 +76,6 @@ public class JsonMessages {
                      ]
                    }
                  ],
-                 "supportsExtendedAgentCard": false,
                  "signatures": [
                    {
                      "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJrZXktMSIsImprdSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWdlbnQvandrcy5qc29uIn0",
@@ -610,7 +610,8 @@ public class JsonMessages {
                     "capabilities": {
                       "streaming": true,
                       "pushNotifications": true,
-                      "stateTransitionHistory": false
+                      "stateTransitionHistory": false,
+                      "extendedAgentCard": true
                     },
                     "securitySchemes": {
                       "google": {
@@ -663,8 +664,7 @@ public class JsonMessages {
                         "tags": ["extended"]
                       }
                     ],
-                    "supportsExtendedAgentCard": true,
-                    "protocolVersion": "%s",
+                    "protocolVersions": ["%s"],
                     "signatures": [
                        {
                          "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJrZXktMSIsImprdUI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWdlbnQvandrcy5qc29uIn0",
@@ -691,7 +691,8 @@ public class JsonMessages {
                 "capabilities": {
                   "streaming": true,
                   "pushNotifications": true,
-                  "stateTransitionHistory": false
+                  "stateTransitionHistory": false,
+                  "extendedAgentCard": true
                 },
                 "securitySchemes": {
                   "google": {
@@ -738,7 +739,6 @@ public class JsonMessages {
                     ]
                   }
                 ],
-                "supportsExtendedAgentCard": true,
-                "protocolVersion": "%s"
+                "protocolVersions": ["%s"]
               }""", CURRENT_PROTOCOL_VERSION);
 }

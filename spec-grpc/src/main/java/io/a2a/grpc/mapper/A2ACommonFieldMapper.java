@@ -371,6 +371,44 @@ public interface A2ACommonFieldMapper {
     }
 
     // ========================================================================
+    // Instant ↔ Timestamp Conversions (for Timestamp timestamp fields)
+    // ========================================================================
+    /**
+     * Converts domain Instant to protobuf Timestamp.
+     * <p>
+     * Use this with {@code @Mapping(qualifiedByName = "instantToProtoTimestamp")}.
+     *
+     * @param instant the domain Instant
+     * @return protobuf Timestamp, or default instance if input is null
+     */
+    @Named("instantToProtoTimestamp")
+    default Timestamp instantToProtoTimestamp(Instant instant) {
+        if (instant == null) {
+            return Timestamp.getDefaultInstance();
+        }
+        return Timestamp.newBuilder()
+                .setSeconds(instant.getEpochSecond())
+                .setNanos(instant.getNano())
+                .build();
+    }
+
+    /**
+     * Converts protobuf Timestamp to domain Instant.
+     * <p>
+     * Use this with {@code @Mapping(qualifiedByName = "protoTimestampToInstant")}.
+     *
+     * @param timestamp the protobuf Timestamp
+     * @return Instant, or null if input is null/default
+     */
+    @Named("protoTimestampToInstant")
+    default Instant protoTimestampToInstant(Timestamp timestamp) {
+        if (timestamp == null || timestamp.equals(Timestamp.getDefaultInstance())) {
+            return null;
+        }
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+    }
+
+    // ========================================================================
     // Enum Conversions (handling UNSPECIFIED/UNKNOWN)
     // ========================================================================
     /**

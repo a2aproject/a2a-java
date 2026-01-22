@@ -25,8 +25,8 @@ public class EventStreamObserver implements StreamObserver<StreamResponse> {
     public void onNext(StreamResponse response) {
         StreamingEventKind event;
         switch (response.getPayloadCase()) {
-            case MSG:
-                event = FromProto.message(response.getMsg());
+            case MESSAGE:
+                event = FromProto.message(response.getMessage());
                 break;
             case TASK:
                 event = FromProto.task(response.getTask());

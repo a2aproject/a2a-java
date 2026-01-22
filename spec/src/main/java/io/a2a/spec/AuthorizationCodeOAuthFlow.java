@@ -19,13 +19,14 @@ import io.a2a.util.Assert;
  * @param refreshUrl URL for obtaining refresh tokens (optional)
  * @param scopes map of available OAuth scopes to their descriptions (required)
  * @param tokenUrl URL for the token endpoint where codes are exchanged for tokens (required)
+ * @param pkceRequired Indicates if PKCE (RFC 7636) is required for this flow. (required)
  * @see OAuthFlows for the container of all supported OAuth flows
  * @see OAuth2SecurityScheme for the security scheme using these flows
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc6749#section-4.1">RFC 6749 - Authorization Code Grant</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record AuthorizationCodeOAuthFlow(String authorizationUrl, String refreshUrl, Map<String, String> scopes,
-                                         String tokenUrl) {
+                                         String tokenUrl, boolean pkceRequired) {
 
     /**
      * Compact constructor that validates required fields.
@@ -34,6 +35,7 @@ public record AuthorizationCodeOAuthFlow(String authorizationUrl, String refresh
      * @param refreshUrl the refreshUrl parameter (see class-level JavaDoc)
      * @param scopes the scopes parameter (see class-level JavaDoc)
      * @param tokenUrl the tokenUrl parameter (see class-level JavaDoc)
+     * @param pkceRequired Indicates if PKCE (RFC 7636) is required for this flow. (required)
      * @throws IllegalArgumentException if authorizationUrl, scopes, or tokenUrl is null
      */
     public AuthorizationCodeOAuthFlow {

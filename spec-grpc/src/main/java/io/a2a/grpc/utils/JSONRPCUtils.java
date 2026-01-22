@@ -314,8 +314,8 @@ public class JSONRPCUtils {
             case SEND_MESSAGE_METHOD -> {
                 io.a2a.grpc.SendMessageResponse.Builder builder = io.a2a.grpc.SendMessageResponse.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                if (builder.hasMsg()) {
-                    return new SendMessageResponse(id, ProtoUtils.FromProto.message(builder.getMsg()));
+                if (builder.hasMessage()) {
+                    return new SendMessageResponse(id, ProtoUtils.FromProto.message(builder.getMessage()));
                 }
                 return new SendMessageResponse(id, ProtoUtils.FromProto.task(builder.getTask()));
             }

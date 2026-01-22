@@ -123,4 +123,15 @@ java.lang.String defaultValue);
    */
   java.lang.String getScopesOrThrow(
       java.lang.String key);
+
+  /**
+   * <pre>
+   * Indicates if PKCE (RFC 7636) is required for this flow.
+   * PKCE should always be used for public clients and is recommended for all clients.
+   * </pre>
+   *
+   * <code>bool pkce_required = 5;</code>
+   * @return The pkceRequired.
+   */
+  boolean getPkceRequired();
 }

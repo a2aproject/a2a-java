@@ -612,7 +612,7 @@ public class Client extends AbstractClient {
      */
     @Override
     public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
-        agentCard = clientTransport.getAgentCard(context);
+        agentCard = clientTransport.getExtendedAgentCard(context);
         return agentCard;
     }
 

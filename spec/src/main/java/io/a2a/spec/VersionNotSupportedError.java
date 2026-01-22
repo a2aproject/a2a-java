@@ -23,7 +23,7 @@ import static io.a2a.util.Utils.defaultIfNull;
  * }
  * }</pre>
  *
- * @see AgentCard#protocolVersion() for supported version declaration
+ * @see AgentCard#protocolVersions() for supported version declaration
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public class VersionNotSupportedError extends A2AProtocolError {

@@ -52,10 +52,10 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
                 .filter(task -> params.contextId() == null || params.contextId().equals(task.contextId()))
                 .filter(task -> params.status() == null ||
                         (task.status() != null && params.status().equals(task.status().state())))
-                .filter(task -> params.lastUpdatedAfter() == null ||
+                .filter(task -> params.statusTimestampAfter() == null ||
                         (task.status() != null &&
                          task.status().timestamp() != null &&
-                         task.status().timestamp().toInstant().isAfter(params.lastUpdatedAfter())))
+                         task.status().timestamp().toInstant().isAfter(params.statusTimestampAfter())))
                 .sorted(Comparator.comparing(
                         (Task t) -> (t.status() != null && t.status().timestamp() != null)
                                 // Truncate to milliseconds for consistency with pageToken precision

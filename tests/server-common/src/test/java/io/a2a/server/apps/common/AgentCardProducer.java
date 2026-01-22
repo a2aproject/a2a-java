@@ -45,7 +45,7 @@ public class AgentCardProducer {
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(new ArrayList<>())
-                .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, "http://localhost:" + port)));
         return builder.build();
     }

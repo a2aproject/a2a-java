@@ -104,8 +104,8 @@ public class GrpcTransport implements ClientTransport {
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             io.a2a.grpc.SendMessageResponse response = stubWithMetadata.sendMessage(sendMessageRequest);
-            if (response.hasMsg()) {
-                return FromProto.message(response.getMsg());
+            if (response.hasMessage()) {
+                return FromProto.message(response.getMessage());
             } else if (response.hasTask()) {
                 return FromProto.task(response.getTask());
             } else {
@@ -195,8 +195,12 @@ public class GrpcTransport implements ClientTransport {
         if (request.historyLength() != null) {
             requestBuilder.setHistoryLength(request.historyLength());
         }
-        if (request.lastUpdatedAfter() != null) {
-            requestBuilder.setLastUpdatedAfter(request.lastUpdatedAfter().toEpochMilli());
+        if (request.statusTimestampAfter() != null) {
+            requestBuilder.setStatusTimestampAfter(
+                    com.google.protobuf.Timestamp.newBuilder()
+                            .setSeconds(request.statusTimestampAfter().getEpochSecond())
+                            .setNanos(request.statusTimestampAfter().getNano())
+                            .build());
         }
         if (request.includeArtifacts() != null) {
             requestBuilder.setIncludeArtifacts(request.includeArtifacts());
@@ -344,7 +348,7 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
+    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
         // TODO: Determine how to handle retrieving the authenticated extended agent card
         return agentCard;
     }

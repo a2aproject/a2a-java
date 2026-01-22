@@ -42,7 +42,7 @@ public class ClientBuilderTest {
                                 .tags(Collections.singletonList("hello world"))
             .examples(List.of("hi", "hello world"))
             .build()))
-            .protocolVersion(CURRENT_PROTOCOL_VERSION)
+            .protocolVersions(CURRENT_PROTOCOL_VERSION)
             .supportedInterfaces(List.of(
                     new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
             .build();

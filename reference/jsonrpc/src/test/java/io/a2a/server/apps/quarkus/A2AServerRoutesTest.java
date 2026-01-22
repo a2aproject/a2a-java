@@ -495,7 +495,7 @@ public class A2AServerRoutesTest {
                 .name("Test Agent")
                 .description("Test agent description")
                 .version("1.0.0")
-                .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .capabilities(AgentCapabilities.builder().build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))

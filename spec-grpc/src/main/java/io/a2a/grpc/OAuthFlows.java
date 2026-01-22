@@ -56,8 +56,7 @@ private static final long serialVersionUID = 0L;
           com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     AUTHORIZATION_CODE(1),
     CLIENT_CREDENTIALS(2),
-    IMPLICIT(3),
-    PASSWORD(4),
+    DEVICE_CODE(5),
     FLOW_NOT_SET(0);
     private final int value;
     private FlowCase(int value) {
@@ -77,8 +76,7 @@ private static final long serialVersionUID = 0L;
       switch (value) {
         case 1: return AUTHORIZATION_CODE;
         case 2: return CLIENT_CREDENTIALS;
-        case 3: return IMPLICIT;
-        case 4: return PASSWORD;
+        case 5: return DEVICE_CODE;
         case 0: return FLOW_NOT_SET;
         default: return null;
       }
@@ -180,90 +178,47 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.ClientCredentialsOAuthFlow.getDefaultInstance();
   }
 
-  public static final int IMPLICIT_FIELD_NUMBER = 3;
+  public static final int DEVICE_CODE_FIELD_NUMBER = 5;
   /**
    * <pre>
-   * Configuration for the OAuth Implicit flow.
+   * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
-   * @return Whether the implicit field is set.
+   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * @return Whether the deviceCode field is set.
    */
   @java.lang.Override
-  public boolean hasImplicit() {
-    return flowCase_ == 3;
+  public boolean hasDeviceCode() {
+    return flowCase_ == 5;
   }
   /**
    * <pre>
-   * Configuration for the OAuth Implicit flow.
+   * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
-   * @return The implicit.
+   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * @return The deviceCode.
    */
   @java.lang.Override
-  public io.a2a.grpc.ImplicitOAuthFlow getImplicit() {
-    if (flowCase_ == 3) {
-       return (io.a2a.grpc.ImplicitOAuthFlow) flow_;
+  public io.a2a.grpc.DeviceCodeOAuthFlow getDeviceCode() {
+    if (flowCase_ == 5) {
+       return (io.a2a.grpc.DeviceCodeOAuthFlow) flow_;
     }
-    return io.a2a.grpc.ImplicitOAuthFlow.getDefaultInstance();
+    return io.a2a.grpc.DeviceCodeOAuthFlow.getDefaultInstance();
   }
   /**
    * <pre>
-   * Configuration for the OAuth Implicit flow.
+   * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
+   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder() {
-    if (flowCase_ == 3) {
-       return (io.a2a.grpc.ImplicitOAuthFlow) flow_;
+  public io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder getDeviceCodeOrBuilder() {
+    if (flowCase_ == 5) {
+       return (io.a2a.grpc.DeviceCodeOAuthFlow) flow_;
     }
-    return io.a2a.grpc.ImplicitOAuthFlow.getDefaultInstance();
-  }
-
-  public static final int PASSWORD_FIELD_NUMBER = 4;
-  /**
-   * <pre>
-   * Configuration for the OAuth Resource Owner Password flow.
-   * </pre>
-   *
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-   * @return Whether the password field is set.
-   */
-  @java.lang.Override
-  public boolean hasPassword() {
-    return flowCase_ == 4;
-  }
-  /**
-   * <pre>
-   * Configuration for the OAuth Resource Owner Password flow.
-   * </pre>
-   *
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-   * @return The password.
-   */
-  @java.lang.Override
-  public io.a2a.grpc.PasswordOAuthFlow getPassword() {
-    if (flowCase_ == 4) {
-       return (io.a2a.grpc.PasswordOAuthFlow) flow_;
-    }
-    return io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance();
-  }
-  /**
-   * <pre>
-   * Configuration for the OAuth Resource Owner Password flow.
-   * </pre>
-   *
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-   */
-  @java.lang.Override
-  public io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder() {
-    if (flowCase_ == 4) {
-       return (io.a2a.grpc.PasswordOAuthFlow) flow_;
-    }
-    return io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance();
+    return io.a2a.grpc.DeviceCodeOAuthFlow.getDefaultInstance();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -286,11 +241,8 @@ private static final long serialVersionUID = 0L;
     if (flowCase_ == 2) {
       output.writeMessage(2, (io.a2a.grpc.ClientCredentialsOAuthFlow) flow_);
     }
-    if (flowCase_ == 3) {
-      output.writeMessage(3, (io.a2a.grpc.ImplicitOAuthFlow) flow_);
-    }
-    if (flowCase_ == 4) {
-      output.writeMessage(4, (io.a2a.grpc.PasswordOAuthFlow) flow_);
+    if (flowCase_ == 5) {
+      output.writeMessage(5, (io.a2a.grpc.DeviceCodeOAuthFlow) flow_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -309,13 +261,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, (io.a2a.grpc.ClientCredentialsOAuthFlow) flow_);
     }
-    if (flowCase_ == 3) {
+    if (flowCase_ == 5) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, (io.a2a.grpc.ImplicitOAuthFlow) flow_);
-    }
-    if (flowCase_ == 4) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(4, (io.a2a.grpc.PasswordOAuthFlow) flow_);
+        .computeMessageSize(5, (io.a2a.grpc.DeviceCodeOAuthFlow) flow_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -342,13 +290,9 @@ private static final long serialVersionUID = 0L;
         if (!getClientCredentials()
             .equals(other.getClientCredentials())) return false;
         break;
-      case 3:
-        if (!getImplicit()
-            .equals(other.getImplicit())) return false;
-        break;
-      case 4:
-        if (!getPassword()
-            .equals(other.getPassword())) return false;
+      case 5:
+        if (!getDeviceCode()
+            .equals(other.getDeviceCode())) return false;
         break;
       case 0:
       default:
@@ -373,13 +317,9 @@ private static final long serialVersionUID = 0L;
         hash = (37 * hash) + CLIENT_CREDENTIALS_FIELD_NUMBER;
         hash = (53 * hash) + getClientCredentials().hashCode();
         break;
-      case 3:
-        hash = (37 * hash) + IMPLICIT_FIELD_NUMBER;
-        hash = (53 * hash) + getImplicit().hashCode();
-        break;
-      case 4:
-        hash = (37 * hash) + PASSWORD_FIELD_NUMBER;
-        hash = (53 * hash) + getPassword().hashCode();
+      case 5:
+        hash = (37 * hash) + DEVICE_CODE_FIELD_NUMBER;
+        hash = (53 * hash) + getDeviceCode().hashCode();
         break;
       case 0:
       default:
@@ -526,11 +466,8 @@ private static final long serialVersionUID = 0L;
       if (clientCredentialsBuilder_ != null) {
         clientCredentialsBuilder_.clear();
       }
-      if (implicitBuilder_ != null) {
-        implicitBuilder_.clear();
-      }
-      if (passwordBuilder_ != null) {
-        passwordBuilder_.clear();
+      if (deviceCodeBuilder_ != null) {
+        deviceCodeBuilder_.clear();
       }
       flowCase_ = 0;
       flow_ = null;
@@ -581,13 +518,9 @@ private static final long serialVersionUID = 0L;
           clientCredentialsBuilder_ != null) {
         result.flow_ = clientCredentialsBuilder_.build();
       }
-      if (flowCase_ == 3 &&
-          implicitBuilder_ != null) {
-        result.flow_ = implicitBuilder_.build();
-      }
-      if (flowCase_ == 4 &&
-          passwordBuilder_ != null) {
-        result.flow_ = passwordBuilder_.build();
+      if (flowCase_ == 5 &&
+          deviceCodeBuilder_ != null) {
+        result.flow_ = deviceCodeBuilder_.build();
       }
     }
 
@@ -612,12 +545,8 @@ private static final long serialVersionUID = 0L;
           mergeClientCredentials(other.getClientCredentials());
           break;
         }
-        case IMPLICIT: {
-          mergeImplicit(other.getImplicit());
-          break;
-        }
-        case PASSWORD: {
-          mergePassword(other.getPassword());
+        case DEVICE_CODE: {
+          mergeDeviceCode(other.getDeviceCode());
           break;
         }
         case FLOW_NOT_SET: {
@@ -664,20 +593,13 @@ private static final long serialVersionUID = 0L;
               flowCase_ = 2;
               break;
             } // case 18
-            case 26: {
+            case 42: {
               input.readMessage(
-                  internalGetImplicitFieldBuilder().getBuilder(),
+                  internalGetDeviceCodeFieldBuilder().getBuilder(),
                   extensionRegistry);
-              flowCase_ = 3;
+              flowCase_ = 5;
               break;
-            } // case 26
-            case 34: {
-              input.readMessage(
-                  internalGetPasswordFieldBuilder().getBuilder(),
-                  extensionRegistry);
-              flowCase_ = 4;
-              break;
-            } // case 34
+            } // case 42
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1067,359 +989,181 @@ private static final long serialVersionUID = 0L;
     }
 
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.ImplicitOAuthFlow, io.a2a.grpc.ImplicitOAuthFlow.Builder, io.a2a.grpc.ImplicitOAuthFlowOrBuilder> implicitBuilder_;
+        io.a2a.grpc.DeviceCodeOAuthFlow, io.a2a.grpc.DeviceCodeOAuthFlow.Builder, io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder> deviceCodeBuilder_;
     /**
      * <pre>
-     * Configuration for the OAuth Implicit flow.
+     * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
-     * @return Whether the implicit field is set.
+     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * @return Whether the deviceCode field is set.
      */
     @java.lang.Override
-    public boolean hasImplicit() {
-      return flowCase_ == 3;
+    public boolean hasDeviceCode() {
+      return flowCase_ == 5;
     }
     /**
      * <pre>
-     * Configuration for the OAuth Implicit flow.
+     * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
-     * @return The implicit.
+     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * @return The deviceCode.
      */
     @java.lang.Override
-    public io.a2a.grpc.ImplicitOAuthFlow getImplicit() {
-      if (implicitBuilder_ == null) {
-        if (flowCase_ == 3) {
-          return (io.a2a.grpc.ImplicitOAuthFlow) flow_;
+    public io.a2a.grpc.DeviceCodeOAuthFlow getDeviceCode() {
+      if (deviceCodeBuilder_ == null) {
+        if (flowCase_ == 5) {
+          return (io.a2a.grpc.DeviceCodeOAuthFlow) flow_;
         }
-        return io.a2a.grpc.ImplicitOAuthFlow.getDefaultInstance();
+        return io.a2a.grpc.DeviceCodeOAuthFlow.getDefaultInstance();
       } else {
-        if (flowCase_ == 3) {
-          return implicitBuilder_.getMessage();
+        if (flowCase_ == 5) {
+          return deviceCodeBuilder_.getMessage();
         }
-        return io.a2a.grpc.ImplicitOAuthFlow.getDefaultInstance();
+        return io.a2a.grpc.DeviceCodeOAuthFlow.getDefaultInstance();
       }
     }
     /**
      * <pre>
-     * Configuration for the OAuth Implicit flow.
+     * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
+     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
-    public Builder setImplicit(io.a2a.grpc.ImplicitOAuthFlow value) {
-      if (implicitBuilder_ == null) {
+    public Builder setDeviceCode(io.a2a.grpc.DeviceCodeOAuthFlow value) {
+      if (deviceCodeBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
         flow_ = value;
         onChanged();
       } else {
-        implicitBuilder_.setMessage(value);
+        deviceCodeBuilder_.setMessage(value);
       }
-      flowCase_ = 3;
+      flowCase_ = 5;
       return this;
     }
     /**
      * <pre>
-     * Configuration for the OAuth Implicit flow.
+     * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
+     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
-    public Builder setImplicit(
-        io.a2a.grpc.ImplicitOAuthFlow.Builder builderForValue) {
-      if (implicitBuilder_ == null) {
+    public Builder setDeviceCode(
+        io.a2a.grpc.DeviceCodeOAuthFlow.Builder builderForValue) {
+      if (deviceCodeBuilder_ == null) {
         flow_ = builderForValue.build();
         onChanged();
       } else {
-        implicitBuilder_.setMessage(builderForValue.build());
+        deviceCodeBuilder_.setMessage(builderForValue.build());
       }
-      flowCase_ = 3;
+      flowCase_ = 5;
       return this;
     }
     /**
      * <pre>
-     * Configuration for the OAuth Implicit flow.
+     * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
+     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
-    public Builder mergeImplicit(io.a2a.grpc.ImplicitOAuthFlow value) {
-      if (implicitBuilder_ == null) {
-        if (flowCase_ == 3 &&
-            flow_ != io.a2a.grpc.ImplicitOAuthFlow.getDefaultInstance()) {
-          flow_ = io.a2a.grpc.ImplicitOAuthFlow.newBuilder((io.a2a.grpc.ImplicitOAuthFlow) flow_)
+    public Builder mergeDeviceCode(io.a2a.grpc.DeviceCodeOAuthFlow value) {
+      if (deviceCodeBuilder_ == null) {
+        if (flowCase_ == 5 &&
+            flow_ != io.a2a.grpc.DeviceCodeOAuthFlow.getDefaultInstance()) {
+          flow_ = io.a2a.grpc.DeviceCodeOAuthFlow.newBuilder((io.a2a.grpc.DeviceCodeOAuthFlow) flow_)
               .mergeFrom(value).buildPartial();
         } else {
           flow_ = value;
         }
         onChanged();
       } else {
-        if (flowCase_ == 3) {
-          implicitBuilder_.mergeFrom(value);
+        if (flowCase_ == 5) {
+          deviceCodeBuilder_.mergeFrom(value);
         } else {
-          implicitBuilder_.setMessage(value);
+          deviceCodeBuilder_.setMessage(value);
         }
       }
-      flowCase_ = 3;
+      flowCase_ = 5;
       return this;
     }
     /**
      * <pre>
-     * Configuration for the OAuth Implicit flow.
+     * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
+     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
-    public Builder clearImplicit() {
-      if (implicitBuilder_ == null) {
-        if (flowCase_ == 3) {
+    public Builder clearDeviceCode() {
+      if (deviceCodeBuilder_ == null) {
+        if (flowCase_ == 5) {
           flowCase_ = 0;
           flow_ = null;
           onChanged();
         }
       } else {
-        if (flowCase_ == 3) {
+        if (flowCase_ == 5) {
           flowCase_ = 0;
           flow_ = null;
         }
-        implicitBuilder_.clear();
+        deviceCodeBuilder_.clear();
       }
       return this;
     }
     /**
      * <pre>
-     * Configuration for the OAuth Implicit flow.
+     * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
+     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
-    public io.a2a.grpc.ImplicitOAuthFlow.Builder getImplicitBuilder() {
-      return internalGetImplicitFieldBuilder().getBuilder();
+    public io.a2a.grpc.DeviceCodeOAuthFlow.Builder getDeviceCodeBuilder() {
+      return internalGetDeviceCodeFieldBuilder().getBuilder();
     }
     /**
      * <pre>
-     * Configuration for the OAuth Implicit flow.
+     * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
+     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     @java.lang.Override
-    public io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder() {
-      if ((flowCase_ == 3) && (implicitBuilder_ != null)) {
-        return implicitBuilder_.getMessageOrBuilder();
+    public io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder getDeviceCodeOrBuilder() {
+      if ((flowCase_ == 5) && (deviceCodeBuilder_ != null)) {
+        return deviceCodeBuilder_.getMessageOrBuilder();
       } else {
-        if (flowCase_ == 3) {
-          return (io.a2a.grpc.ImplicitOAuthFlow) flow_;
+        if (flowCase_ == 5) {
+          return (io.a2a.grpc.DeviceCodeOAuthFlow) flow_;
         }
-        return io.a2a.grpc.ImplicitOAuthFlow.getDefaultInstance();
+        return io.a2a.grpc.DeviceCodeOAuthFlow.getDefaultInstance();
       }
     }
     /**
      * <pre>
-     * Configuration for the OAuth Implicit flow.
+     * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
+     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.ImplicitOAuthFlow, io.a2a.grpc.ImplicitOAuthFlow.Builder, io.a2a.grpc.ImplicitOAuthFlowOrBuilder> 
-        internalGetImplicitFieldBuilder() {
-      if (implicitBuilder_ == null) {
-        if (!(flowCase_ == 3)) {
-          flow_ = io.a2a.grpc.ImplicitOAuthFlow.getDefaultInstance();
+        io.a2a.grpc.DeviceCodeOAuthFlow, io.a2a.grpc.DeviceCodeOAuthFlow.Builder, io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder> 
+        internalGetDeviceCodeFieldBuilder() {
+      if (deviceCodeBuilder_ == null) {
+        if (!(flowCase_ == 5)) {
+          flow_ = io.a2a.grpc.DeviceCodeOAuthFlow.getDefaultInstance();
         }
-        implicitBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-            io.a2a.grpc.ImplicitOAuthFlow, io.a2a.grpc.ImplicitOAuthFlow.Builder, io.a2a.grpc.ImplicitOAuthFlowOrBuilder>(
-                (io.a2a.grpc.ImplicitOAuthFlow) flow_,
+        deviceCodeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            io.a2a.grpc.DeviceCodeOAuthFlow, io.a2a.grpc.DeviceCodeOAuthFlow.Builder, io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder>(
+                (io.a2a.grpc.DeviceCodeOAuthFlow) flow_,
                 getParentForChildren(),
                 isClean());
         flow_ = null;
       }
-      flowCase_ = 3;
+      flowCase_ = 5;
       onChanged();
-      return implicitBuilder_;
-    }
-
-    private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.PasswordOAuthFlow, io.a2a.grpc.PasswordOAuthFlow.Builder, io.a2a.grpc.PasswordOAuthFlowOrBuilder> passwordBuilder_;
-    /**
-     * <pre>
-     * Configuration for the OAuth Resource Owner Password flow.
-     * </pre>
-     *
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-     * @return Whether the password field is set.
-     */
-    @java.lang.Override
-    public boolean hasPassword() {
-      return flowCase_ == 4;
-    }
-    /**
-     * <pre>
-     * Configuration for the OAuth Resource Owner Password flow.
-     * </pre>
-     *
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-     * @return The password.
-     */
-    @java.lang.Override
-    public io.a2a.grpc.PasswordOAuthFlow getPassword() {
-      if (passwordBuilder_ == null) {
-        if (flowCase_ == 4) {
-          return (io.a2a.grpc.PasswordOAuthFlow) flow_;
-        }
-        return io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance();
-      } else {
-        if (flowCase_ == 4) {
-          return passwordBuilder_.getMessage();
-        }
-        return io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance();
-      }
-    }
-    /**
-     * <pre>
-     * Configuration for the OAuth Resource Owner Password flow.
-     * </pre>
-     *
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-     */
-    public Builder setPassword(io.a2a.grpc.PasswordOAuthFlow value) {
-      if (passwordBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        flow_ = value;
-        onChanged();
-      } else {
-        passwordBuilder_.setMessage(value);
-      }
-      flowCase_ = 4;
-      return this;
-    }
-    /**
-     * <pre>
-     * Configuration for the OAuth Resource Owner Password flow.
-     * </pre>
-     *
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-     */
-    public Builder setPassword(
-        io.a2a.grpc.PasswordOAuthFlow.Builder builderForValue) {
-      if (passwordBuilder_ == null) {
-        flow_ = builderForValue.build();
-        onChanged();
-      } else {
-        passwordBuilder_.setMessage(builderForValue.build());
-      }
-      flowCase_ = 4;
-      return this;
-    }
-    /**
-     * <pre>
-     * Configuration for the OAuth Resource Owner Password flow.
-     * </pre>
-     *
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-     */
-    public Builder mergePassword(io.a2a.grpc.PasswordOAuthFlow value) {
-      if (passwordBuilder_ == null) {
-        if (flowCase_ == 4 &&
-            flow_ != io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance()) {
-          flow_ = io.a2a.grpc.PasswordOAuthFlow.newBuilder((io.a2a.grpc.PasswordOAuthFlow) flow_)
-              .mergeFrom(value).buildPartial();
-        } else {
-          flow_ = value;
-        }
-        onChanged();
-      } else {
-        if (flowCase_ == 4) {
-          passwordBuilder_.mergeFrom(value);
-        } else {
-          passwordBuilder_.setMessage(value);
-        }
-      }
-      flowCase_ = 4;
-      return this;
-    }
-    /**
-     * <pre>
-     * Configuration for the OAuth Resource Owner Password flow.
-     * </pre>
-     *
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-     */
-    public Builder clearPassword() {
-      if (passwordBuilder_ == null) {
-        if (flowCase_ == 4) {
-          flowCase_ = 0;
-          flow_ = null;
-          onChanged();
-        }
-      } else {
-        if (flowCase_ == 4) {
-          flowCase_ = 0;
-          flow_ = null;
-        }
-        passwordBuilder_.clear();
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * Configuration for the OAuth Resource Owner Password flow.
-     * </pre>
-     *
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-     */
-    public io.a2a.grpc.PasswordOAuthFlow.Builder getPasswordBuilder() {
-      return internalGetPasswordFieldBuilder().getBuilder();
-    }
-    /**
-     * <pre>
-     * Configuration for the OAuth Resource Owner Password flow.
-     * </pre>
-     *
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-     */
-    @java.lang.Override
-    public io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder() {
-      if ((flowCase_ == 4) && (passwordBuilder_ != null)) {
-        return passwordBuilder_.getMessageOrBuilder();
-      } else {
-        if (flowCase_ == 4) {
-          return (io.a2a.grpc.PasswordOAuthFlow) flow_;
-        }
-        return io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance();
-      }
-    }
-    /**
-     * <pre>
-     * Configuration for the OAuth Resource Owner Password flow.
-     * </pre>
-     *
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.PasswordOAuthFlow, io.a2a.grpc.PasswordOAuthFlow.Builder, io.a2a.grpc.PasswordOAuthFlowOrBuilder> 
-        internalGetPasswordFieldBuilder() {
-      if (passwordBuilder_ == null) {
-        if (!(flowCase_ == 4)) {
-          flow_ = io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance();
-        }
-        passwordBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-            io.a2a.grpc.PasswordOAuthFlow, io.a2a.grpc.PasswordOAuthFlow.Builder, io.a2a.grpc.PasswordOAuthFlowOrBuilder>(
-                (io.a2a.grpc.PasswordOAuthFlow) flow_,
-                getParentForChildren(),
-                isClean());
-        flow_ = null;
-      }
-      flowCase_ = 4;
-      onChanged();
-      return passwordBuilder_;
+      return deviceCodeBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.OAuthFlows)

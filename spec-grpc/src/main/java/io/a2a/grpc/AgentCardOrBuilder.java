@@ -12,35 +12,56 @@ public interface AgentCardOrBuilder extends
 
   /**
    * <pre>
-   * The version of the A2A protocol this agent supports.
-   * Default: "1.0"
+   * The versions of the A2A protocol this agent supports.
+   * For stable versions (1.x+), list only the latest supported minor version per major version.
+   * For legacy experimental versions (0.x), explicitly list each supported version.
+   * Default: ["1.0"]
    * </pre>
    *
-   * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return Whether the protocolVersion field is set.
+   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return A list containing the protocolVersions.
    */
-  boolean hasProtocolVersion();
+  java.util.List<java.lang.String>
+      getProtocolVersionsList();
   /**
    * <pre>
-   * The version of the A2A protocol this agent supports.
-   * Default: "1.0"
+   * The versions of the A2A protocol this agent supports.
+   * For stable versions (1.x+), list only the latest supported minor version per major version.
+   * For legacy experimental versions (0.x), explicitly list each supported version.
+   * Default: ["1.0"]
    * </pre>
    *
-   * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The protocolVersion.
+   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The count of protocolVersions.
    */
-  java.lang.String getProtocolVersion();
+  int getProtocolVersionsCount();
   /**
    * <pre>
-   * The version of the A2A protocol this agent supports.
-   * Default: "1.0"
+   * The versions of the A2A protocol this agent supports.
+   * For stable versions (1.x+), list only the latest supported minor version per major version.
+   * For legacy experimental versions (0.x), explicitly list each supported version.
+   * Default: ["1.0"]
    * </pre>
    *
-   * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The bytes for protocolVersion.
+   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @param index The index of the element to return.
+   * @return The protocolVersions at the given index.
+   */
+  java.lang.String getProtocolVersions(int index);
+  /**
+   * <pre>
+   * The versions of the A2A protocol this agent supports.
+   * For stable versions (1.x+), list only the latest supported minor version per major version.
+   * For legacy experimental versions (0.x), explicitly list each supported version.
+   * Default: ["1.0"]
+   * </pre>
+   *
+   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the protocolVersions at the given index.
    */
   com.google.protobuf.ByteString
-      getProtocolVersionBytes();
+      getProtocolVersionsBytes(int index);
 
   /**
    * <pre>
@@ -93,7 +114,7 @@ public interface AgentCardOrBuilder extends
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<io.a2a.grpc.AgentInterface> 
       getSupportedInterfacesList();
@@ -102,7 +123,7 @@ public interface AgentCardOrBuilder extends
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.AgentInterface getSupportedInterfaces(int index);
   /**
@@ -110,7 +131,7 @@ public interface AgentCardOrBuilder extends
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getSupportedInterfacesCount();
   /**
@@ -118,7 +139,7 @@ public interface AgentCardOrBuilder extends
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
       getSupportedInterfacesOrBuilderList();
@@ -127,123 +148,9 @@ public interface AgentCardOrBuilder extends
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.AgentInterfaceOrBuilder getSupportedInterfacesOrBuilder(
-      int index);
-
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string url = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.url is deprecated.
-   *     See a2a.proto;l=426
-   * @return Whether the url field is set.
-   */
-  @java.lang.Deprecated boolean hasUrl();
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string url = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.url is deprecated.
-   *     See a2a.proto;l=426
-   * @return The url.
-   */
-  @java.lang.Deprecated java.lang.String getUrl();
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string url = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.url is deprecated.
-   *     See a2a.proto;l=426
-   * @return The bytes for url.
-   */
-  @java.lang.Deprecated com.google.protobuf.ByteString
-      getUrlBytes();
-
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-   *     See a2a.proto;l=428
-   * @return Whether the preferredTransport field is set.
-   */
-  @java.lang.Deprecated boolean hasPreferredTransport();
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-   *     See a2a.proto;l=428
-   * @return The preferredTransport.
-   */
-  @java.lang.Deprecated java.lang.String getPreferredTransport();
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-   *     See a2a.proto;l=428
-   * @return The bytes for preferredTransport.
-   */
-  @java.lang.Deprecated com.google.protobuf.ByteString
-      getPreferredTransportBytes();
-
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Deprecated java.util.List<io.a2a.grpc.AgentInterface> 
-      getAdditionalInterfacesList();
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Deprecated io.a2a.grpc.AgentInterface getAdditionalInterfaces(int index);
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Deprecated int getAdditionalInterfacesCount();
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Deprecated java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
-      getAdditionalInterfacesOrBuilderList();
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Deprecated io.a2a.grpc.AgentInterfaceOrBuilder getAdditionalInterfacesOrBuilder(
       int index);
 
   /**
@@ -597,25 +504,6 @@ io.a2a.grpc.SecurityScheme defaultValue);
    */
   io.a2a.grpc.AgentSkillOrBuilder getSkillsOrBuilder(
       int index);
-
-  /**
-   * <pre>
-   * Whether the agent supports providing an extended agent card when authenticated.
-   * </pre>
-   *
-   * <code>optional bool supports_extended_agent_card = 13;</code>
-   * @return Whether the supportsExtendedAgentCard field is set.
-   */
-  boolean hasSupportsExtendedAgentCard();
-  /**
-   * <pre>
-   * Whether the agent supports providing an extended agent card when authenticated.
-   * </pre>
-   *
-   * <code>optional bool supports_extended_agent_card = 13;</code>
-   * @return The supportsExtendedAgentCard.
-   */
-  boolean getSupportsExtendedAgentCard();
 
   /**
    * <pre>

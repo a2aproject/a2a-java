@@ -47,8 +47,8 @@ public class RestSSEEventListener {
     private void handleMessage(StreamResponse response) {
         StreamingEventKind event;
         switch (response.getPayloadCase()) {
-            case MSG ->
-                event = ProtoUtils.FromProto.message(response.getMsg());
+            case MESSAGE ->
+                event = ProtoUtils.FromProto.message(response.getMessage());
             case TASK ->
                 event = ProtoUtils.FromProto.task(response.getTask());
             case STATUS_UPDATE ->

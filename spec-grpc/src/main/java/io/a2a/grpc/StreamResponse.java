@@ -55,7 +55,7 @@ private static final long serialVersionUID = 0L;
       implements com.google.protobuf.Internal.EnumLite,
           com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     TASK(1),
-    MSG(2),
+    MESSAGE(2),
     STATUS_UPDATE(3),
     ARTIFACT_UPDATE(4),
     PAYLOAD_NOT_SET(0);
@@ -76,7 +76,7 @@ private static final long serialVersionUID = 0L;
     public static PayloadCase forNumber(int value) {
       switch (value) {
         case 1: return TASK;
-        case 2: return MSG;
+        case 2: return MESSAGE;
         case 3: return STATUS_UPDATE;
         case 4: return ARTIFACT_UPDATE;
         case 0: return PAYLOAD_NOT_SET;
@@ -137,17 +137,17 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.Task.getDefaultInstance();
   }
 
-  public static final int MSG_FIELD_NUMBER = 2;
+  public static final int MESSAGE_FIELD_NUMBER = 2;
   /**
    * <pre>
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
-   * @return Whether the msg field is set.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return Whether the message field is set.
    */
   @java.lang.Override
-  public boolean hasMsg() {
+  public boolean hasMessage() {
     return payloadCase_ == 2;
   }
   /**
@@ -155,11 +155,11 @@ private static final long serialVersionUID = 0L;
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
-   * @return The msg.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return The message.
    */
   @java.lang.Override
-  public io.a2a.grpc.Message getMsg() {
+  public io.a2a.grpc.Message getMessage() {
     if (payloadCase_ == 2) {
        return (io.a2a.grpc.Message) payload_;
     }
@@ -170,10 +170,10 @@ private static final long serialVersionUID = 0L;
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+   * <code>.a2a.v1.Message message = 2;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.MessageOrBuilder getMsgOrBuilder() {
+  public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
     if (payloadCase_ == 2) {
        return (io.a2a.grpc.Message) payload_;
     }
@@ -339,8 +339,8 @@ private static final long serialVersionUID = 0L;
             .equals(other.getTask())) return false;
         break;
       case 2:
-        if (!getMsg()
-            .equals(other.getMsg())) return false;
+        if (!getMessage()
+            .equals(other.getMessage())) return false;
         break;
       case 3:
         if (!getStatusUpdate()
@@ -370,8 +370,8 @@ private static final long serialVersionUID = 0L;
         hash = (53 * hash) + getTask().hashCode();
         break;
       case 2:
-        hash = (37 * hash) + MSG_FIELD_NUMBER;
-        hash = (53 * hash) + getMsg().hashCode();
+        hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+        hash = (53 * hash) + getMessage().hashCode();
         break;
       case 3:
         hash = (37 * hash) + STATUS_UPDATE_FIELD_NUMBER;
@@ -523,8 +523,8 @@ private static final long serialVersionUID = 0L;
       if (taskBuilder_ != null) {
         taskBuilder_.clear();
       }
-      if (msgBuilder_ != null) {
-        msgBuilder_.clear();
+      if (messageBuilder_ != null) {
+        messageBuilder_.clear();
       }
       if (statusUpdateBuilder_ != null) {
         statusUpdateBuilder_.clear();
@@ -578,8 +578,8 @@ private static final long serialVersionUID = 0L;
         result.payload_ = taskBuilder_.build();
       }
       if (payloadCase_ == 2 &&
-          msgBuilder_ != null) {
-        result.payload_ = msgBuilder_.build();
+          messageBuilder_ != null) {
+        result.payload_ = messageBuilder_.build();
       }
       if (payloadCase_ == 3 &&
           statusUpdateBuilder_ != null) {
@@ -608,8 +608,8 @@ private static final long serialVersionUID = 0L;
           mergeTask(other.getTask());
           break;
         }
-        case MSG: {
-          mergeMsg(other.getMsg());
+        case MESSAGE: {
+          mergeMessage(other.getMessage());
           break;
         }
         case STATUS_UPDATE: {
@@ -659,7 +659,7 @@ private static final long serialVersionUID = 0L;
             } // case 10
             case 18: {
               input.readMessage(
-                  internalGetMsgFieldBuilder().getBuilder(),
+                  internalGetMessageFieldBuilder().getBuilder(),
                   extensionRegistry);
               payloadCase_ = 2;
               break;
@@ -889,17 +889,17 @@ private static final long serialVersionUID = 0L;
     }
 
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> msgBuilder_;
+        io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> messageBuilder_;
     /**
      * <pre>
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
-     * @return Whether the msg field is set.
+     * <code>.a2a.v1.Message message = 2;</code>
+     * @return Whether the message field is set.
      */
     @java.lang.Override
-    public boolean hasMsg() {
+    public boolean hasMessage() {
       return payloadCase_ == 2;
     }
     /**
@@ -907,19 +907,19 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
-     * @return The msg.
+     * <code>.a2a.v1.Message message = 2;</code>
+     * @return The message.
      */
     @java.lang.Override
-    public io.a2a.grpc.Message getMsg() {
-      if (msgBuilder_ == null) {
+    public io.a2a.grpc.Message getMessage() {
+      if (messageBuilder_ == null) {
         if (payloadCase_ == 2) {
           return (io.a2a.grpc.Message) payload_;
         }
         return io.a2a.grpc.Message.getDefaultInstance();
       } else {
         if (payloadCase_ == 2) {
-          return msgBuilder_.getMessage();
+          return messageBuilder_.getMessage();
         }
         return io.a2a.grpc.Message.getDefaultInstance();
       }
@@ -929,17 +929,17 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public Builder setMsg(io.a2a.grpc.Message value) {
-      if (msgBuilder_ == null) {
+    public Builder setMessage(io.a2a.grpc.Message value) {
+      if (messageBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
         payload_ = value;
         onChanged();
       } else {
-        msgBuilder_.setMessage(value);
+        messageBuilder_.setMessage(value);
       }
       payloadCase_ = 2;
       return this;
@@ -949,15 +949,15 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public Builder setMsg(
+    public Builder setMessage(
         io.a2a.grpc.Message.Builder builderForValue) {
-      if (msgBuilder_ == null) {
+      if (messageBuilder_ == null) {
         payload_ = builderForValue.build();
         onChanged();
       } else {
-        msgBuilder_.setMessage(builderForValue.build());
+        messageBuilder_.setMessage(builderForValue.build());
       }
       payloadCase_ = 2;
       return this;
@@ -967,10 +967,10 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public Builder mergeMsg(io.a2a.grpc.Message value) {
-      if (msgBuilder_ == null) {
+    public Builder mergeMessage(io.a2a.grpc.Message value) {
+      if (messageBuilder_ == null) {
         if (payloadCase_ == 2 &&
             payload_ != io.a2a.grpc.Message.getDefaultInstance()) {
           payload_ = io.a2a.grpc.Message.newBuilder((io.a2a.grpc.Message) payload_)
@@ -981,9 +981,9 @@ private static final long serialVersionUID = 0L;
         onChanged();
       } else {
         if (payloadCase_ == 2) {
-          msgBuilder_.mergeFrom(value);
+          messageBuilder_.mergeFrom(value);
         } else {
-          msgBuilder_.setMessage(value);
+          messageBuilder_.setMessage(value);
         }
       }
       payloadCase_ = 2;
@@ -994,10 +994,10 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public Builder clearMsg() {
-      if (msgBuilder_ == null) {
+    public Builder clearMessage() {
+      if (messageBuilder_ == null) {
         if (payloadCase_ == 2) {
           payloadCase_ = 0;
           payload_ = null;
@@ -1008,7 +1008,7 @@ private static final long serialVersionUID = 0L;
           payloadCase_ = 0;
           payload_ = null;
         }
-        msgBuilder_.clear();
+        messageBuilder_.clear();
       }
       return this;
     }
@@ -1017,22 +1017,22 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
-    public io.a2a.grpc.Message.Builder getMsgBuilder() {
-      return internalGetMsgFieldBuilder().getBuilder();
+    public io.a2a.grpc.Message.Builder getMessageBuilder() {
+      return internalGetMessageFieldBuilder().getBuilder();
     }
     /**
      * <pre>
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
     @java.lang.Override
-    public io.a2a.grpc.MessageOrBuilder getMsgOrBuilder() {
-      if ((payloadCase_ == 2) && (msgBuilder_ != null)) {
-        return msgBuilder_.getMessageOrBuilder();
+    public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
+      if ((payloadCase_ == 2) && (messageBuilder_ != null)) {
+        return messageBuilder_.getMessageOrBuilder();
       } else {
         if (payloadCase_ == 2) {
           return (io.a2a.grpc.Message) payload_;
@@ -1045,16 +1045,16 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+     * <code>.a2a.v1.Message message = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> 
-        internalGetMsgFieldBuilder() {
-      if (msgBuilder_ == null) {
+        internalGetMessageFieldBuilder() {
+      if (messageBuilder_ == null) {
         if (!(payloadCase_ == 2)) {
           payload_ = io.a2a.grpc.Message.getDefaultInstance();
         }
-        msgBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+        messageBuilder_ = new com.google.protobuf.SingleFieldBuilder<
             io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder>(
                 (io.a2a.grpc.Message) payload_,
                 getParentForChildren(),
@@ -1063,7 +1063,7 @@ private static final long serialVersionUID = 0L;
       }
       payloadCase_ = 2;
       onChanged();
-      return msgBuilder_;
+      return messageBuilder_;
     }
 
     private com.google.protobuf.SingleFieldBuilder<

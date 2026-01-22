@@ -8,13 +8,12 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:Message]
- * Message is one unit of communication between client and server. It is
- * associated with a context and optionally a task. Since the server is
- * responsible for the context definition, it must always provide a context_id
- * in its messages. The client can optionally provide the context_id if it
- * knows the context to associate the message to. Similarly for task_id,
- * except the server decides if a task is created and whether to include the
- * task_id.
+ * Message is one unit of communication between client and server. It can be
+ * associated with a context and/or a task. For server messages, context_id must
+ * be provided, and task_id only if a task was created. For client messages, both
+ * fields are optional, with the caveat that if both are provided, they have to
+ * match (the context_id has to be the one that is set on the task). If only
+ * task_id is provided, the server will infer context_id from it.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.Message}
@@ -702,13 +701,12 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:Message]
-   * Message is one unit of communication between client and server. It is
-   * associated with a context and optionally a task. Since the server is
-   * responsible for the context definition, it must always provide a context_id
-   * in its messages. The client can optionally provide the context_id if it
-   * knows the context to associate the message to. Similarly for task_id,
-   * except the server decides if a task is created and whether to include the
-   * task_id.
+   * Message is one unit of communication between client and server. It can be
+   * associated with a context and/or a task. For server messages, context_id must
+   * be provided, and task_id only if a task was created. For client messages, both
+   * fields are optional, with the caveat that if both are provided, they have to
+   * match (the context_id has to be the one that is set on the task). If only
+   * task_id is provided, the server will infer context_id from it.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.Message}

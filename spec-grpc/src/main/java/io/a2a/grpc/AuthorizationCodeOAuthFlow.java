@@ -299,6 +299,22 @@ java.lang.String defaultValue) {
     return map.get(key);
   }
 
+  public static final int PKCE_REQUIRED_FIELD_NUMBER = 5;
+  private boolean pkceRequired_ = false;
+  /**
+   * <pre>
+   * Indicates if PKCE (RFC 7636) is required for this flow.
+   * PKCE should always be used for public clients and is recommended for all clients.
+   * </pre>
+   *
+   * <code>bool pkce_required = 5;</code>
+   * @return The pkceRequired.
+   */
+  @java.lang.Override
+  public boolean getPkceRequired() {
+    return pkceRequired_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -328,6 +344,9 @@ java.lang.String defaultValue) {
         internalGetScopes(),
         ScopesDefaultEntryHolder.defaultEntry,
         4);
+    if (pkceRequired_ != false) {
+      output.writeBool(5, pkceRequired_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -356,6 +375,10 @@ java.lang.String defaultValue) {
       size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, scopes__);
     }
+    if (pkceRequired_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(5, pkceRequired_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -379,6 +402,8 @@ java.lang.String defaultValue) {
         .equals(other.getRefreshUrl())) return false;
     if (!internalGetScopes().equals(
         other.internalGetScopes())) return false;
+    if (getPkceRequired()
+        != other.getPkceRequired()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -400,6 +425,9 @@ java.lang.String defaultValue) {
       hash = (37 * hash) + SCOPES_FIELD_NUMBER;
       hash = (53 * hash) + internalGetScopes().hashCode();
     }
+    hash = (37 * hash) + PKCE_REQUIRED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getPkceRequired());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -562,6 +590,7 @@ java.lang.String defaultValue) {
       tokenUrl_ = "";
       refreshUrl_ = "";
       internalGetMutableScopes().clear();
+      pkceRequired_ = false;
       return this;
     }
 
@@ -608,6 +637,9 @@ java.lang.String defaultValue) {
         result.scopes_ = internalGetScopes();
         result.scopes_.makeImmutable();
       }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.pkceRequired_ = pkceRequired_;
+      }
     }
 
     @java.lang.Override
@@ -640,6 +672,9 @@ java.lang.String defaultValue) {
       internalGetMutableScopes().mergeFrom(
           other.internalGetScopes());
       bitField0_ |= 0x00000008;
+      if (other.getPkceRequired() != false) {
+        setPkceRequired(other.getPkceRequired());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -690,6 +725,11 @@ java.lang.String defaultValue) {
               bitField0_ |= 0x00000008;
               break;
             } // case 34
+            case 40: {
+              pkceRequired_ = input.readBool();
+              bitField0_ |= 0x00000010;
+              break;
+            } // case 40
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1135,6 +1175,53 @@ java.lang.String defaultValue) {
       internalGetMutableScopes().getMutableMap()
           .putAll(values);
       bitField0_ |= 0x00000008;
+      return this;
+    }
+
+    private boolean pkceRequired_ ;
+    /**
+     * <pre>
+     * Indicates if PKCE (RFC 7636) is required for this flow.
+     * PKCE should always be used for public clients and is recommended for all clients.
+     * </pre>
+     *
+     * <code>bool pkce_required = 5;</code>
+     * @return The pkceRequired.
+     */
+    @java.lang.Override
+    public boolean getPkceRequired() {
+      return pkceRequired_;
+    }
+    /**
+     * <pre>
+     * Indicates if PKCE (RFC 7636) is required for this flow.
+     * PKCE should always be used for public clients and is recommended for all clients.
+     * </pre>
+     *
+     * <code>bool pkce_required = 5;</code>
+     * @param value The pkceRequired to set.
+     * @return This builder for chaining.
+     */
+    public Builder setPkceRequired(boolean value) {
+
+      pkceRequired_ = value;
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Indicates if PKCE (RFC 7636) is required for this flow.
+     * PKCE should always be used for public clients and is recommended for all clients.
+     * </pre>
+     *
+     * <code>bool pkce_required = 5;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearPkceRequired() {
+      bitField0_ = (bitField0_ & ~0x00000010);
+      pkceRequired_ = false;
+      onChanged();
       return this;
     }
 

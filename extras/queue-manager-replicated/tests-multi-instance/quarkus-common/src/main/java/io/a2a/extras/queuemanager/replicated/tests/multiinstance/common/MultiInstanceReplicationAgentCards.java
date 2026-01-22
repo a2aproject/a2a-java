@@ -48,7 +48,7 @@ public final class MultiInstanceReplicationAgentCards {
                                 .description("Fire-and-forget agent for testing replication")
                                 .tags(Collections.singletonList("test"))
                                 .build()))
-                .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 }

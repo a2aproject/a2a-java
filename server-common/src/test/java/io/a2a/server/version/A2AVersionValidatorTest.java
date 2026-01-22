@@ -18,34 +18,34 @@ public class A2AVersionValidatorTest {
 
     @Test
     public void testIsVersionCompatible_SameMajorMinor() {
-        assertTrue(A2AVersionValidator.isVersionCompatible("1.0", "1.0"));
+        assertTrue(A2AVersionValidator.isVersionCompatible(List.of("1.0"), "1.0"));
     }
 
     @Test
     public void testIsVersionCompatible_SameMajorDifferentMinor() {
         // Major versions match, minor versions can differ
-        assertTrue(A2AVersionValidator.isVersionCompatible("1.0", "1.1"));
-        assertTrue(A2AVersionValidator.isVersionCompatible("1.1", "1.0"));
-        assertTrue(A2AVersionValidator.isVersionCompatible("1.5", "1.9"));
+        assertTrue(A2AVersionValidator.isVersionCompatible(List.of("1.0"), "1.1"));
+        assertTrue(A2AVersionValidator.isVersionCompatible(List.of("1.1"), "1.0"));
+        assertTrue(A2AVersionValidator.isVersionCompatible(List.of("1.5"), "1.9"));
     }
 
     @Test
     public void testIsVersionCompatible_DifferentMajor() {
         // Major versions must match exactly
-        assertFalse(A2AVersionValidator.isVersionCompatible("1.0", "2.0"));
-        assertFalse(A2AVersionValidator.isVersionCompatible("2.0", "1.0"));
-        assertFalse(A2AVersionValidator.isVersionCompatible("1.5", "2.5"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.0"), "2.0"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("2.0"), "1.0"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.5"), "2.5"));
     }
 
     @Test
     public void testIsVersionCompatible_InvalidFormat() {
         // Invalid version formats should return false
-        assertFalse(A2AVersionValidator.isVersionCompatible("1.0", "invalid"));
-        assertFalse(A2AVersionValidator.isVersionCompatible("invalid", "1.0"));
-        assertFalse(A2AVersionValidator.isVersionCompatible("1", "1.0"));
-        assertFalse(A2AVersionValidator.isVersionCompatible("1.0", ""));
-        assertFalse(A2AVersionValidator.isVersionCompatible("", "1.0"));
-        assertFalse(A2AVersionValidator.isVersionCompatible("1.0", null));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.0"), "invalid"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("invalid"), "1.0"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1"), "1.0"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.0"), ""));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of(""), "1.0"));
+        assertFalse(A2AVersionValidator.isVersionCompatible(List.of("1.0"), null));
         assertFalse(A2AVersionValidator.isVersionCompatible(null, "1.0"));
     }
 
@@ -153,7 +153,7 @@ public class A2AVersionValidatorTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(Collections.emptyList())
-                .protocolVersion(protocolVersion)
+                .protocolVersions(protocolVersion)
                 .build();
     }
 

@@ -7,17 +7,19 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:PasswordOAuthFlow]
- * Defines configuration details for the OAuth 2.0 Resource Owner Password flow.
+ * --8&lt;-- [start:DeviceCodeOAuthFlow]
+ * Defines configuration details for the OAuth 2.0 Device Code flow (RFC 8628).
+ * This flow is designed for input-constrained devices such as IoT devices,
+ * and CLI tools where the user authenticates on a separate device.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.PasswordOAuthFlow}
+ * Protobuf type {@code a2a.v1.DeviceCodeOAuthFlow}
  */
 @com.google.protobuf.Generated
-public final class PasswordOAuthFlow extends
+public final class DeviceCodeOAuthFlow extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.PasswordOAuthFlow)
-    PasswordOAuthFlowOrBuilder {
+    // @@protoc_insertion_point(message_implements:a2a.v1.DeviceCodeOAuthFlow)
+    DeviceCodeOAuthFlowOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -26,20 +28,21 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 33,
       /* patch= */ 1,
       /* suffix= */ "",
-      "PasswordOAuthFlow");
+      "DeviceCodeOAuthFlow");
   }
-  // Use PasswordOAuthFlow.newBuilder() to construct.
-  private PasswordOAuthFlow(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use DeviceCodeOAuthFlow.newBuilder() to construct.
+  private DeviceCodeOAuthFlow(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private PasswordOAuthFlow() {
+  private DeviceCodeOAuthFlow() {
+    deviceAuthorizationUrl_ = "";
     tokenUrl_ = "";
     refreshUrl_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_DeviceCodeOAuthFlow_descriptor;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -47,7 +50,7 @@ private static final long serialVersionUID = 0L;
   protected com.google.protobuf.MapFieldReflectionAccessor internalGetMapFieldReflection(
       int number) {
     switch (number) {
-      case 3:
+      case 4:
         return internalGetScopes();
       default:
         throw new RuntimeException(
@@ -57,12 +60,59 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_DeviceCodeOAuthFlow_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            io.a2a.grpc.PasswordOAuthFlow.class, io.a2a.grpc.PasswordOAuthFlow.Builder.class);
+            io.a2a.grpc.DeviceCodeOAuthFlow.class, io.a2a.grpc.DeviceCodeOAuthFlow.Builder.class);
   }
 
-  public static final int TOKEN_URL_FIELD_NUMBER = 1;
+  public static final int DEVICE_AUTHORIZATION_URL_FIELD_NUMBER = 1;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object deviceAuthorizationUrl_ = "";
+  /**
+   * <pre>
+   * The device authorization endpoint URL.
+   * </pre>
+   *
+   * <code>string device_authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The deviceAuthorizationUrl.
+   */
+  @java.lang.Override
+  public java.lang.String getDeviceAuthorizationUrl() {
+    java.lang.Object ref = deviceAuthorizationUrl_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      deviceAuthorizationUrl_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * The device authorization endpoint URL.
+   * </pre>
+   *
+   * <code>string device_authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for deviceAuthorizationUrl.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getDeviceAuthorizationUrlBytes() {
+    java.lang.Object ref = deviceAuthorizationUrl_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      deviceAuthorizationUrl_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int TOKEN_URL_FIELD_NUMBER = 2;
   @SuppressWarnings("serial")
   private volatile java.lang.Object tokenUrl_ = "";
   /**
@@ -70,7 +120,7 @@ private static final long serialVersionUID = 0L;
    * The token URL to be used for this flow.
    * </pre>
    *
-   * <code>string token_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string token_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The tokenUrl.
    */
   @java.lang.Override
@@ -91,7 +141,7 @@ private static final long serialVersionUID = 0L;
    * The token URL to be used for this flow.
    * </pre>
    *
-   * <code>string token_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string token_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for tokenUrl.
    */
   @java.lang.Override
@@ -109,7 +159,7 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int REFRESH_URL_FIELD_NUMBER = 2;
+  public static final int REFRESH_URL_FIELD_NUMBER = 3;
   @SuppressWarnings("serial")
   private volatile java.lang.Object refreshUrl_ = "";
   /**
@@ -117,7 +167,7 @@ private static final long serialVersionUID = 0L;
    * The URL to be used for obtaining refresh tokens.
    * </pre>
    *
-   * <code>string refresh_url = 2;</code>
+   * <code>string refresh_url = 3;</code>
    * @return The refreshUrl.
    */
   @java.lang.Override
@@ -138,7 +188,7 @@ private static final long serialVersionUID = 0L;
    * The URL to be used for obtaining refresh tokens.
    * </pre>
    *
-   * <code>string refresh_url = 2;</code>
+   * <code>string refresh_url = 3;</code>
    * @return The bytes for refreshUrl.
    */
   @java.lang.Override
@@ -156,13 +206,13 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int SCOPES_FIELD_NUMBER = 3;
+  public static final int SCOPES_FIELD_NUMBER = 4;
   private static final class ScopesDefaultEntryHolder {
     static final com.google.protobuf.MapEntry<
         java.lang.String, java.lang.String> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, java.lang.String>newDefaultInstance(
-                io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_ScopesEntry_descriptor, 
+                io.a2a.grpc.A2A.internal_static_a2a_v1_DeviceCodeOAuthFlow_ScopesEntry_descriptor, 
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.STRING,
@@ -187,7 +237,7 @@ private static final long serialVersionUID = 0L;
    * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public boolean containsScopes(
@@ -208,7 +258,7 @@ private static final long serialVersionUID = 0L;
    * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.Map<java.lang.String, java.lang.String> getScopesMap() {
@@ -219,7 +269,7 @@ private static final long serialVersionUID = 0L;
    * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public /* nullable */
@@ -237,7 +287,7 @@ java.lang.String defaultValue) {
    * The available scopes for the OAuth2 security scheme.
    * </pre>
    *
-   * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.lang.String getScopesOrThrow(
@@ -265,18 +315,21 @@ java.lang.String defaultValue) {
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(deviceAuthorizationUrl_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, deviceAuthorizationUrl_);
+    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tokenUrl_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, tokenUrl_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, tokenUrl_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(refreshUrl_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 2, refreshUrl_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, refreshUrl_);
     }
     com.google.protobuf.GeneratedMessage
       .serializeStringMapTo(
         output,
         internalGetScopes(),
         ScopesDefaultEntryHolder.defaultEntry,
-        3);
+        4);
     getUnknownFields().writeTo(output);
   }
 
@@ -286,11 +339,14 @@ java.lang.String defaultValue) {
     if (size != -1) return size;
 
     size = 0;
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(deviceAuthorizationUrl_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, deviceAuthorizationUrl_);
+    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tokenUrl_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, tokenUrl_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, tokenUrl_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(refreshUrl_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, refreshUrl_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, refreshUrl_);
     }
     for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
          : internalGetScopes().getMap().entrySet()) {
@@ -300,7 +356,7 @@ java.lang.String defaultValue) {
           .setValue(entry.getValue())
           .build();
       size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, scopes__);
+          .computeMessageSize(4, scopes__);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -312,11 +368,13 @@ java.lang.String defaultValue) {
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof io.a2a.grpc.PasswordOAuthFlow)) {
+    if (!(obj instanceof io.a2a.grpc.DeviceCodeOAuthFlow)) {
       return super.equals(obj);
     }
-    io.a2a.grpc.PasswordOAuthFlow other = (io.a2a.grpc.PasswordOAuthFlow) obj;
+    io.a2a.grpc.DeviceCodeOAuthFlow other = (io.a2a.grpc.DeviceCodeOAuthFlow) obj;
 
+    if (!getDeviceAuthorizationUrl()
+        .equals(other.getDeviceAuthorizationUrl())) return false;
     if (!getTokenUrl()
         .equals(other.getTokenUrl())) return false;
     if (!getRefreshUrl()
@@ -334,6 +392,8 @@ java.lang.String defaultValue) {
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
+    hash = (37 * hash) + DEVICE_AUTHORIZATION_URL_FIELD_NUMBER;
+    hash = (53 * hash) + getDeviceAuthorizationUrl().hashCode();
     hash = (37 * hash) + TOKEN_URL_FIELD_NUMBER;
     hash = (53 * hash) + getTokenUrl().hashCode();
     hash = (37 * hash) + REFRESH_URL_FIELD_NUMBER;
@@ -347,44 +407,44 @@ java.lang.String defaultValue) {
     return hash;
   }
 
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(byte[] data)
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(java.io.InputStream input)
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -392,26 +452,26 @@ java.lang.String defaultValue) {
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static io.a2a.grpc.PasswordOAuthFlow parseDelimitedFrom(java.io.InputStream input)
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static io.a2a.grpc.PasswordOAuthFlow parseDelimitedFrom(
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.PasswordOAuthFlow parseFrom(
+  public static io.a2a.grpc.DeviceCodeOAuthFlow parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -424,7 +484,7 @@ java.lang.String defaultValue) {
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(io.a2a.grpc.PasswordOAuthFlow prototype) {
+  public static Builder newBuilder(io.a2a.grpc.DeviceCodeOAuthFlow prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -441,26 +501,28 @@ java.lang.String defaultValue) {
   }
   /**
    * <pre>
-   * --8&lt;-- [start:PasswordOAuthFlow]
-   * Defines configuration details for the OAuth 2.0 Resource Owner Password flow.
+   * --8&lt;-- [start:DeviceCodeOAuthFlow]
+   * Defines configuration details for the OAuth 2.0 Device Code flow (RFC 8628).
+   * This flow is designed for input-constrained devices such as IoT devices,
+   * and CLI tools where the user authenticates on a separate device.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.PasswordOAuthFlow}
+   * Protobuf type {@code a2a.v1.DeviceCodeOAuthFlow}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.PasswordOAuthFlow)
-      io.a2a.grpc.PasswordOAuthFlowOrBuilder {
+      // @@protoc_insertion_point(builder_implements:a2a.v1.DeviceCodeOAuthFlow)
+      io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_DeviceCodeOAuthFlow_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
     protected com.google.protobuf.MapFieldReflectionAccessor internalGetMapFieldReflection(
         int number) {
       switch (number) {
-        case 3:
+        case 4:
           return internalGetScopes();
         default:
           throw new RuntimeException(
@@ -471,7 +533,7 @@ java.lang.String defaultValue) {
     protected com.google.protobuf.MapFieldReflectionAccessor internalGetMutableMapFieldReflection(
         int number) {
       switch (number) {
-        case 3:
+        case 4:
           return internalGetMutableScopes();
         default:
           throw new RuntimeException(
@@ -481,12 +543,12 @@ java.lang.String defaultValue) {
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_DeviceCodeOAuthFlow_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.a2a.grpc.PasswordOAuthFlow.class, io.a2a.grpc.PasswordOAuthFlow.Builder.class);
+              io.a2a.grpc.DeviceCodeOAuthFlow.class, io.a2a.grpc.DeviceCodeOAuthFlow.Builder.class);
     }
 
-    // Construct using io.a2a.grpc.PasswordOAuthFlow.newBuilder()
+    // Construct using io.a2a.grpc.DeviceCodeOAuthFlow.newBuilder()
     private Builder() {
 
     }
@@ -500,6 +562,7 @@ java.lang.String defaultValue) {
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
+      deviceAuthorizationUrl_ = "";
       tokenUrl_ = "";
       refreshUrl_ = "";
       internalGetMutableScopes().clear();
@@ -509,17 +572,17 @@ java.lang.String defaultValue) {
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_DeviceCodeOAuthFlow_descriptor;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.PasswordOAuthFlow getDefaultInstanceForType() {
-      return io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance();
+    public io.a2a.grpc.DeviceCodeOAuthFlow getDefaultInstanceForType() {
+      return io.a2a.grpc.DeviceCodeOAuthFlow.getDefaultInstance();
     }
 
     @java.lang.Override
-    public io.a2a.grpc.PasswordOAuthFlow build() {
-      io.a2a.grpc.PasswordOAuthFlow result = buildPartial();
+    public io.a2a.grpc.DeviceCodeOAuthFlow build() {
+      io.a2a.grpc.DeviceCodeOAuthFlow result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -527,22 +590,25 @@ java.lang.String defaultValue) {
     }
 
     @java.lang.Override
-    public io.a2a.grpc.PasswordOAuthFlow buildPartial() {
-      io.a2a.grpc.PasswordOAuthFlow result = new io.a2a.grpc.PasswordOAuthFlow(this);
+    public io.a2a.grpc.DeviceCodeOAuthFlow buildPartial() {
+      io.a2a.grpc.DeviceCodeOAuthFlow result = new io.a2a.grpc.DeviceCodeOAuthFlow(this);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    private void buildPartial0(io.a2a.grpc.PasswordOAuthFlow result) {
+    private void buildPartial0(io.a2a.grpc.DeviceCodeOAuthFlow result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
-        result.tokenUrl_ = tokenUrl_;
+        result.deviceAuthorizationUrl_ = deviceAuthorizationUrl_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.refreshUrl_ = refreshUrl_;
+        result.tokenUrl_ = tokenUrl_;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.refreshUrl_ = refreshUrl_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
         result.scopes_ = internalGetScopes();
         result.scopes_.makeImmutable();
       }
@@ -550,29 +616,34 @@ java.lang.String defaultValue) {
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof io.a2a.grpc.PasswordOAuthFlow) {
-        return mergeFrom((io.a2a.grpc.PasswordOAuthFlow)other);
+      if (other instanceof io.a2a.grpc.DeviceCodeOAuthFlow) {
+        return mergeFrom((io.a2a.grpc.DeviceCodeOAuthFlow)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(io.a2a.grpc.PasswordOAuthFlow other) {
-      if (other == io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance()) return this;
+    public Builder mergeFrom(io.a2a.grpc.DeviceCodeOAuthFlow other) {
+      if (other == io.a2a.grpc.DeviceCodeOAuthFlow.getDefaultInstance()) return this;
+      if (!other.getDeviceAuthorizationUrl().isEmpty()) {
+        deviceAuthorizationUrl_ = other.deviceAuthorizationUrl_;
+        bitField0_ |= 0x00000001;
+        onChanged();
+      }
       if (!other.getTokenUrl().isEmpty()) {
         tokenUrl_ = other.tokenUrl_;
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (!other.getRefreshUrl().isEmpty()) {
         refreshUrl_ = other.refreshUrl_;
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       internalGetMutableScopes().mergeFrom(
           other.internalGetScopes());
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000008;
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -600,24 +671,29 @@ java.lang.String defaultValue) {
               done = true;
               break;
             case 10: {
-              tokenUrl_ = input.readStringRequireUtf8();
+              deviceAuthorizationUrl_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000001;
               break;
             } // case 10
             case 18: {
-              refreshUrl_ = input.readStringRequireUtf8();
+              tokenUrl_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000002;
               break;
             } // case 18
             case 26: {
+              refreshUrl_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 26
+            case 34: {
               com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
               scopes__ = input.readMessage(
                   ScopesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
               internalGetMutableScopes().getMutableMap().put(
                   scopes__.getKey(), scopes__.getValue());
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000008;
               break;
-            } // case 26
+            } // case 34
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -635,13 +711,105 @@ java.lang.String defaultValue) {
     }
     private int bitField0_;
 
+    private java.lang.Object deviceAuthorizationUrl_ = "";
+    /**
+     * <pre>
+     * The device authorization endpoint URL.
+     * </pre>
+     *
+     * <code>string device_authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The deviceAuthorizationUrl.
+     */
+    public java.lang.String getDeviceAuthorizationUrl() {
+      java.lang.Object ref = deviceAuthorizationUrl_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        deviceAuthorizationUrl_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The device authorization endpoint URL.
+     * </pre>
+     *
+     * <code>string device_authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The bytes for deviceAuthorizationUrl.
+     */
+    public com.google.protobuf.ByteString
+        getDeviceAuthorizationUrlBytes() {
+      java.lang.Object ref = deviceAuthorizationUrl_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        deviceAuthorizationUrl_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The device authorization endpoint URL.
+     * </pre>
+     *
+     * <code>string device_authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The deviceAuthorizationUrl to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDeviceAuthorizationUrl(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      deviceAuthorizationUrl_ = value;
+      bitField0_ |= 0x00000001;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The device authorization endpoint URL.
+     * </pre>
+     *
+     * <code>string device_authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDeviceAuthorizationUrl() {
+      deviceAuthorizationUrl_ = getDefaultInstance().getDeviceAuthorizationUrl();
+      bitField0_ = (bitField0_ & ~0x00000001);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The device authorization endpoint URL.
+     * </pre>
+     *
+     * <code>string device_authorization_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The bytes for deviceAuthorizationUrl to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDeviceAuthorizationUrlBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      deviceAuthorizationUrl_ = value;
+      bitField0_ |= 0x00000001;
+      onChanged();
+      return this;
+    }
+
     private java.lang.Object tokenUrl_ = "";
     /**
      * <pre>
      * The token URL to be used for this flow.
      * </pre>
      *
-     * <code>string token_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string token_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The tokenUrl.
      */
     public java.lang.String getTokenUrl() {
@@ -661,7 +829,7 @@ java.lang.String defaultValue) {
      * The token URL to be used for this flow.
      * </pre>
      *
-     * <code>string token_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string token_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for tokenUrl.
      */
     public com.google.protobuf.ByteString
@@ -682,7 +850,7 @@ java.lang.String defaultValue) {
      * The token URL to be used for this flow.
      * </pre>
      *
-     * <code>string token_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string token_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The tokenUrl to set.
      * @return This builder for chaining.
      */
@@ -690,7 +858,7 @@ java.lang.String defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       tokenUrl_ = value;
-      bitField0_ |= 0x00000001;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -699,12 +867,12 @@ java.lang.String defaultValue) {
      * The token URL to be used for this flow.
      * </pre>
      *
-     * <code>string token_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string token_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearTokenUrl() {
       tokenUrl_ = getDefaultInstance().getTokenUrl();
-      bitField0_ = (bitField0_ & ~0x00000001);
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -713,7 +881,7 @@ java.lang.String defaultValue) {
      * The token URL to be used for this flow.
      * </pre>
      *
-     * <code>string token_url = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string token_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for tokenUrl to set.
      * @return This builder for chaining.
      */
@@ -722,7 +890,7 @@ java.lang.String defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       tokenUrl_ = value;
-      bitField0_ |= 0x00000001;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -733,7 +901,7 @@ java.lang.String defaultValue) {
      * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
-     * <code>string refresh_url = 2;</code>
+     * <code>string refresh_url = 3;</code>
      * @return The refreshUrl.
      */
     public java.lang.String getRefreshUrl() {
@@ -753,7 +921,7 @@ java.lang.String defaultValue) {
      * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
-     * <code>string refresh_url = 2;</code>
+     * <code>string refresh_url = 3;</code>
      * @return The bytes for refreshUrl.
      */
     public com.google.protobuf.ByteString
@@ -774,7 +942,7 @@ java.lang.String defaultValue) {
      * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
-     * <code>string refresh_url = 2;</code>
+     * <code>string refresh_url = 3;</code>
      * @param value The refreshUrl to set.
      * @return This builder for chaining.
      */
@@ -782,7 +950,7 @@ java.lang.String defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       refreshUrl_ = value;
-      bitField0_ |= 0x00000002;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -791,12 +959,12 @@ java.lang.String defaultValue) {
      * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
-     * <code>string refresh_url = 2;</code>
+     * <code>string refresh_url = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearRefreshUrl() {
       refreshUrl_ = getDefaultInstance().getRefreshUrl();
-      bitField0_ = (bitField0_ & ~0x00000002);
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -805,7 +973,7 @@ java.lang.String defaultValue) {
      * The URL to be used for obtaining refresh tokens.
      * </pre>
      *
-     * <code>string refresh_url = 2;</code>
+     * <code>string refresh_url = 3;</code>
      * @param value The bytes for refreshUrl to set.
      * @return This builder for chaining.
      */
@@ -814,7 +982,7 @@ java.lang.String defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       refreshUrl_ = value;
-      bitField0_ |= 0x00000002;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -838,7 +1006,7 @@ java.lang.String defaultValue) {
       if (!scopes_.isMutable()) {
         scopes_ = scopes_.copy();
       }
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000008;
       onChanged();
       return scopes_;
     }
@@ -850,7 +1018,7 @@ java.lang.String defaultValue) {
      * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     @java.lang.Override
     public boolean containsScopes(
@@ -871,7 +1039,7 @@ java.lang.String defaultValue) {
      * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     @java.lang.Override
     public java.util.Map<java.lang.String, java.lang.String> getScopesMap() {
@@ -882,7 +1050,7 @@ java.lang.String defaultValue) {
      * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     @java.lang.Override
     public /* nullable */
@@ -900,7 +1068,7 @@ java.lang.String defaultValue) {
      * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     @java.lang.Override
     public java.lang.String getScopesOrThrow(
@@ -914,7 +1082,7 @@ java.lang.String defaultValue) {
       return map.get(key);
     }
     public Builder clearScopes() {
-      bitField0_ = (bitField0_ & ~0x00000004);
+      bitField0_ = (bitField0_ & ~0x00000008);
       internalGetMutableScopes().getMutableMap()
           .clear();
       return this;
@@ -924,7 +1092,7 @@ java.lang.String defaultValue) {
      * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder removeScopes(
         java.lang.String key) {
@@ -939,7 +1107,7 @@ java.lang.String defaultValue) {
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.String>
         getMutableScopes() {
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000008;
       return internalGetMutableScopes().getMutableMap();
     }
     /**
@@ -947,7 +1115,7 @@ java.lang.String defaultValue) {
      * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder putScopes(
         java.lang.String key,
@@ -956,7 +1124,7 @@ java.lang.String defaultValue) {
       if (value == null) { throw new NullPointerException("map value"); }
       internalGetMutableScopes().getMutableMap()
           .put(key, value);
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000008;
       return this;
     }
     /**
@@ -964,33 +1132,33 @@ java.lang.String defaultValue) {
      * The available scopes for the OAuth2 security scheme.
      * </pre>
      *
-     * <code>map&lt;string, string&gt; scopes = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>map&lt;string, string&gt; scopes = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder putAllScopes(
         java.util.Map<java.lang.String, java.lang.String> values) {
       internalGetMutableScopes().getMutableMap()
           .putAll(values);
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000008;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.PasswordOAuthFlow)
+    // @@protoc_insertion_point(builder_scope:a2a.v1.DeviceCodeOAuthFlow)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.PasswordOAuthFlow)
-  private static final io.a2a.grpc.PasswordOAuthFlow DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:a2a.v1.DeviceCodeOAuthFlow)
+  private static final io.a2a.grpc.DeviceCodeOAuthFlow DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new io.a2a.grpc.PasswordOAuthFlow();
+    DEFAULT_INSTANCE = new io.a2a.grpc.DeviceCodeOAuthFlow();
   }
 
-  public static io.a2a.grpc.PasswordOAuthFlow getDefaultInstance() {
+  public static io.a2a.grpc.DeviceCodeOAuthFlow getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<PasswordOAuthFlow>
-      PARSER = new com.google.protobuf.AbstractParser<PasswordOAuthFlow>() {
+  private static final com.google.protobuf.Parser<DeviceCodeOAuthFlow>
+      PARSER = new com.google.protobuf.AbstractParser<DeviceCodeOAuthFlow>() {
     @java.lang.Override
-    public PasswordOAuthFlow parsePartialFrom(
+    public DeviceCodeOAuthFlow parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1009,17 +1177,17 @@ java.lang.String defaultValue) {
     }
   };
 
-  public static com.google.protobuf.Parser<PasswordOAuthFlow> parser() {
+  public static com.google.protobuf.Parser<DeviceCodeOAuthFlow> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<PasswordOAuthFlow> getParserForType() {
+  public com.google.protobuf.Parser<DeviceCodeOAuthFlow> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public io.a2a.grpc.PasswordOAuthFlow getDefaultInstanceForType() {
+  public io.a2a.grpc.DeviceCodeOAuthFlow getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

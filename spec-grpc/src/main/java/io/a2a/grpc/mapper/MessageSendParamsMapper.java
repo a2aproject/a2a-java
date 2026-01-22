@@ -18,20 +18,18 @@ public interface MessageSendParamsMapper {
 
     /**
      * Converts domain MessageSendParams to proto SendMessageRequest.
-     * Maps domain "message" field to proto "request" field.
+     * Maps domain "message" field to proto "message" field.
      */
-    @Mapping(target = "request", source = "message")
     @Mapping(target = "configuration", source = "configuration", conditionExpression = "java(domain.configuration() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
     io.a2a.grpc.SendMessageRequest toProto(MessageSendParams domain);
 
     /**
      * Converts proto SendMessageRequest to domain MessageSendParams.
-     * Maps proto "request" field to domain "message" field.
+     * Maps proto "message" field to domain "message" field.
      * Uses Builder pattern for record construction.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "message", source = "request")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
     MessageSendParams fromProto(io.a2a.grpc.SendMessageRequest proto);
 }

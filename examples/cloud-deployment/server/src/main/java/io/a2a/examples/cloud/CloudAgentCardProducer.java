@@ -58,7 +58,7 @@ public class CloudAgentCardProducer {
                                 ))
                                 .build()
                 ))
-                .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 }

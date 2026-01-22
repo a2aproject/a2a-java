@@ -192,6 +192,33 @@ private static final long serialVersionUID = 0L;
     return stateTransitionHistory_;
   }
 
+  public static final int EXTENDED_AGENT_CARD_FIELD_NUMBER = 5;
+  private boolean extendedAgentCard_ = false;
+  /**
+   * <pre>
+   * Indicates if the agent supports providing an extended agent card when authenticated.
+   * </pre>
+   *
+   * <code>optional bool extended_agent_card = 5;</code>
+   * @return Whether the extendedAgentCard field is set.
+   */
+  @java.lang.Override
+  public boolean hasExtendedAgentCard() {
+    return ((bitField0_ & 0x00000008) != 0);
+  }
+  /**
+   * <pre>
+   * Indicates if the agent supports providing an extended agent card when authenticated.
+   * </pre>
+   *
+   * <code>optional bool extended_agent_card = 5;</code>
+   * @return The extendedAgentCard.
+   */
+  @java.lang.Override
+  public boolean getExtendedAgentCard() {
+    return extendedAgentCard_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -218,6 +245,9 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000004) != 0)) {
       output.writeBool(4, stateTransitionHistory_);
     }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      output.writeBool(5, extendedAgentCard_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -242,6 +272,10 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(4, stateTransitionHistory_);
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(5, extendedAgentCard_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -275,6 +309,11 @@ private static final long serialVersionUID = 0L;
       if (getStateTransitionHistory()
           != other.getStateTransitionHistory()) return false;
     }
+    if (hasExtendedAgentCard() != other.hasExtendedAgentCard()) return false;
+    if (hasExtendedAgentCard()) {
+      if (getExtendedAgentCard()
+          != other.getExtendedAgentCard()) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -304,6 +343,11 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + STATE_TRANSITION_HISTORY_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getStateTransitionHistory());
+    }
+    if (hasExtendedAgentCard()) {
+      hash = (37 * hash) + EXTENDED_AGENT_CARD_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getExtendedAgentCard());
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -451,6 +495,7 @@ private static final long serialVersionUID = 0L;
       }
       bitField0_ = (bitField0_ & ~0x00000004);
       stateTransitionHistory_ = false;
+      extendedAgentCard_ = false;
       return this;
     }
 
@@ -510,6 +555,10 @@ private static final long serialVersionUID = 0L;
         result.stateTransitionHistory_ = stateTransitionHistory_;
         to_bitField0_ |= 0x00000004;
       }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.extendedAgentCard_ = extendedAgentCard_;
+        to_bitField0_ |= 0x00000008;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -559,6 +608,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasStateTransitionHistory()) {
         setStateTransitionHistory(other.getStateTransitionHistory());
+      }
+      if (other.hasExtendedAgentCard()) {
+        setExtendedAgentCard(other.getExtendedAgentCard());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -614,6 +666,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000008;
               break;
             } // case 32
+            case 40: {
+              extendedAgentCard_ = input.readBool();
+              bitField0_ |= 0x00000010;
+              break;
+            } // case 40
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1107,6 +1164,62 @@ private static final long serialVersionUID = 0L;
     public Builder clearStateTransitionHistory() {
       bitField0_ = (bitField0_ & ~0x00000008);
       stateTransitionHistory_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean extendedAgentCard_ ;
+    /**
+     * <pre>
+     * Indicates if the agent supports providing an extended agent card when authenticated.
+     * </pre>
+     *
+     * <code>optional bool extended_agent_card = 5;</code>
+     * @return Whether the extendedAgentCard field is set.
+     */
+    @java.lang.Override
+    public boolean hasExtendedAgentCard() {
+      return ((bitField0_ & 0x00000010) != 0);
+    }
+    /**
+     * <pre>
+     * Indicates if the agent supports providing an extended agent card when authenticated.
+     * </pre>
+     *
+     * <code>optional bool extended_agent_card = 5;</code>
+     * @return The extendedAgentCard.
+     */
+    @java.lang.Override
+    public boolean getExtendedAgentCard() {
+      return extendedAgentCard_;
+    }
+    /**
+     * <pre>
+     * Indicates if the agent supports providing an extended agent card when authenticated.
+     * </pre>
+     *
+     * <code>optional bool extended_agent_card = 5;</code>
+     * @param value The extendedAgentCard to set.
+     * @return This builder for chaining.
+     */
+    public Builder setExtendedAgentCard(boolean value) {
+
+      extendedAgentCard_ = value;
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Indicates if the agent supports providing an extended agent card when authenticated.
+     * </pre>
+     *
+     * <code>optional bool extended_agent_card = 5;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearExtendedAgentCard() {
+      bitField0_ = (bitField0_ & ~0x00000010);
+      extendedAgentCard_ = false;
       onChanged();
       return this;
     }

@@ -32,12 +32,11 @@ import io.a2a.util.Assert;
  * @param defaultInputModes list of supported input modes, e.g., "text", "audio" (required)
  * @param defaultOutputModes list of supported output modes, e.g., "text", "audio" (required)
  * @param skills list of skills that this agent can perform (required)
- * @param supportsExtendedAgentCard whether the agent supports authenticated extended card retrieval (optional, defaults to false)
  * @param securitySchemes map of security scheme names to their definitions (optional)
  * @param security list of security requirements for accessing the agent (optional)
  * @param iconUrl URL to an icon representing the agent (optional)
  * @param supportedInterfaces ordered list of protocol+URL interface combinations; first entry is preferred (required)
- * @param protocolVersion the version of the A2A Protocol this agent implements (defaults to {@link #CURRENT_PROTOCOL_VERSION})
+ * @param protocolVersions the versions of the A2A Protocol this agent implements (defaults to a singleton list of {@link #CURRENT_PROTOCOL_VERSION})
  * @param signatures digital signatures verifying the authenticity of the agent card (optional)
  * @see AgentInterface
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
@@ -52,12 +51,11 @@ public record AgentCard(
         List<String> defaultInputModes,
         List<String> defaultOutputModes,
         List<AgentSkill> skills,
-        boolean supportsExtendedAgentCard,
         Map<String, SecurityScheme> securitySchemes,
         List<Map<String, List<String>>> security,
         String iconUrl,
         List<AgentInterface> supportedInterfaces,
-        String protocolVersion,
+        List<String> protocolVersions,
         List<AgentCardSignature> signatures) {
 
     /** The default A2A Protocol version used when not explicitly specified. */
@@ -75,12 +73,11 @@ public record AgentCard(
      * @param defaultInputModes the defaultInputModes parameter (see class-level JavaDoc)
      * @param defaultOutputModes the defaultOutputModes parameter (see class-level JavaDoc)
      * @param skills the skills parameter (see class-level JavaDoc)
-     * @param supportsExtendedAgentCard the supportsExtendedAgentCard parameter (see class-level JavaDoc)
      * @param securitySchemes the securitySchemes parameter (see class-level JavaDoc)
      * @param security the security parameter (see class-level JavaDoc)
      * @param iconUrl the iconUrl parameter (see class-level JavaDoc)
      * @param supportedInterfaces the supportedInterfaces parameter (see class-level JavaDoc)
-     * @param protocolVersion the protocolVersion parameter (see class-level JavaDoc)
+     * @param protocolVersions the protocolVersions parameter (see class-level JavaDoc)
      * @param signatures the signatures parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if any required field is null
      */
@@ -94,8 +91,8 @@ public record AgentCard(
         Assert.checkNotNullParam("supportedInterfaces", supportedInterfaces);
         Assert.checkNotNullParam("version", version);
 
-        if (protocolVersion == null) {
-            protocolVersion = CURRENT_PROTOCOL_VERSION;
+        if (protocolVersions == null || protocolVersions.isEmpty()) {
+            protocolVersions = List.of(CURRENT_PROTOCOL_VERSION);
         }
     }
 
@@ -162,12 +159,11 @@ public record AgentCard(
         private List<String> defaultInputModes;
         private List<String> defaultOutputModes;
         private List<AgentSkill> skills;
-        private boolean supportsExtendedAgentCard = false;
         private Map<String, SecurityScheme> securitySchemes;
         private List<Map<String, List<String>>> security;
         private String iconUrl;
         private List<AgentInterface> supportedInterfaces;
-        private String protocolVersion;
+        private List<String> protocolVersions;
         private List<AgentCardSignature> signatures;
 
         /**
@@ -195,12 +191,11 @@ public record AgentCard(
             this.defaultInputModes = card.defaultInputModes != null ? new ArrayList<>(card.defaultInputModes) : null;
             this.defaultOutputModes = card.defaultOutputModes != null ? new ArrayList<>(card.defaultOutputModes) : null;
             this.skills = card.skills != null ? new ArrayList<>(card.skills) : null;
-            this.supportsExtendedAgentCard = card.supportsExtendedAgentCard;
             this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
             this.security = card.security != null ? new ArrayList<>(card.security) : null;
             this.iconUrl = card.iconUrl;
             this.supportedInterfaces = card.supportedInterfaces != null ? new ArrayList<>(card.supportedInterfaces) : null;
-            this.protocolVersion = card.protocolVersion;
+            this.protocolVersions = card.protocolVersions;
             this.signatures = card.signatures != null ? new ArrayList<>(card.signatures) : null;
         }
 
@@ -317,21 +312,6 @@ public record AgentCard(
         }
 
         /**
-         * Sets whether the agent supports extended card retrieval.
-         * <p>
-         * When true, the agent can provide additional information through the
-         * {@code GetAuthenticatedExtendedCard} method, which may include private
-         * or user-specific details not in the public card.
-         *
-         * @param supportsExtendedAgentCard true if supported, false otherwise
-         * @return this builder for method chaining
-         */
-        public Builder supportsExtendedAgentCard(boolean supportsExtendedAgentCard) {
-            this.supportsExtendedAgentCard = supportsExtendedAgentCard;
-            return this;
-        }
-
-        /**
          * Sets the map of security scheme definitions.
          * <p>
          * Security schemes define authentication and authorization methods supported
@@ -398,13 +378,13 @@ public record AgentCard(
         /**
          * Sets the version of the A2A Protocol this agent implements.
          * <p>
-         * If not set, defaults to {@link AgentCard#CURRENT_PROTOCOL_VERSION}.
+         * If not set, defaults to a single list of {@link AgentCard#CURRENT_PROTOCOL_VERSION}.
          *
-         * @param protocolVersion the protocol version string
+         * @param protocolVersions the protocol versions
          * @return this builder for method chaining
          */
-        public Builder protocolVersion(String protocolVersion) {
-            this.protocolVersion = protocolVersion;
+        public Builder protocolVersions(String... protocolVersions) {
+            this.protocolVersions = List.of(protocolVersions);
             return this;
         }
 
@@ -434,8 +414,8 @@ public record AgentCard(
         public AgentCard build() {
             return new AgentCard(name, description, provider, version, documentationUrl,
                     capabilities, defaultInputModes, defaultOutputModes, skills,
-                    supportsExtendedAgentCard, securitySchemes, security, iconUrl,
-                    supportedInterfaces, protocolVersion, signatures);
+                    securitySchemes, security, iconUrl,
+                    supportedInterfaces, protocolVersions, signatures);
         }
     }
 }

@@ -1,5 +1,7 @@
 package io.a2a.server.version;
 
+import java.util.List;
+
 import io.a2a.server.ServerCallContext;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.VersionNotSupportedError;
@@ -35,13 +37,13 @@ public class A2AVersionValidator {
             requestedVersion = AgentCard.CURRENT_PROTOCOL_VERSION;
         }
 
-        String supportedVersion = agentCard.protocolVersion();
+        List<String> supportedVersions = agentCard.protocolVersions();
 
-        if (!isVersionCompatible(supportedVersion, requestedVersion)) {
+        if (!isVersionCompatible(supportedVersions, requestedVersion)) {
             throw new VersionNotSupportedError(
                 null,
                 "Protocol version '" + requestedVersion + "' is not supported. " +
-                "Supported version: " + supportedVersion,
+                "Supported versions: " + supportedVersions,
                 null);
         }
     }
@@ -55,22 +57,30 @@ public class A2AVersionValidator {
      *   <li>Minor versions are compatible (any x.Y works with x.Z)</li>
      * </ul>
      *
-     * @param supported the version supported by the agent (e.g., "1.0")
-     * @param requested the version requested by the client (e.g., "1.1")
+     * @param supportedVersions the version supported by the agent (e.g., ["1.0", "1.1"])
+     * @param requestedVersion the version requested by the client (e.g., "1.1")
      * @return true if versions are compatible, false otherwise
      */
-    static boolean isVersionCompatible(String supported, String requested) {
-        try {
-            VersionParts supportedParts = parseVersion(supported);
-            VersionParts requestedParts = parseVersion(requested);
-
-            // Major versions must match exactly
-            return supportedParts.major == requestedParts.major;
-            // Minor versions are compatible - any 1.x can talk to any 1.y
-        } catch (IllegalArgumentException e) {
-            // If we can't parse the version, consider it incompatible
+    static boolean isVersionCompatible(List<String> supportedVersions, String requestedVersion) {
+        if (supportedVersions == null) {
             return false;
         }
+        for (String supportedVersion : supportedVersions) {
+            try {
+                VersionParts supportedParts = parseVersion(supportedVersion);
+                VersionParts requestedParts = parseVersion(requestedVersion);
+
+                // Major versions must match exactly
+                if (supportedParts.major == requestedParts.major) {
+                    return true;
+                }
+                // Minor versions are compatible - any 1.x can talk to any 1.y
+            } catch (IllegalArgumentException e) {
+                // If we can't parse the version, consider it incompatible
+                return false;
+            }
+        }
+        return false;
     }
 
     /**

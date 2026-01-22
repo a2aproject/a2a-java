@@ -312,17 +312,25 @@ public class DefaultRequestHandler implements RequestHandler {
 
     @Override
     public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) throws A2AError {
-        LOGGER.debug("onListTasks with contextId={}, status={}, pageSize={}, pageToken={}, lastUpdatedAfter={}",
-                params.contextId(), params.status(), params.pageSize(), params.pageToken(), params.lastUpdatedAfter());
+        LOGGER.debug("onListTasks with contextId={}, status={}, pageSize={}, pageToken={}, statusTimestampAfter={}",
+                params.contextId(), params.status(), params.pageSize(), params.pageToken(), params.statusTimestampAfter());
 
-        // Validate lastUpdatedAfter timestamp if provided
-        if (params.lastUpdatedAfter() != null) {
+        // Validate statusTimestampAfter timestamp if provided
+        if (params.statusTimestampAfter() != null) {
             // Check if timestamp is in the future (optional validation per spec)
             Instant now = Instant.now();
-            if (params.lastUpdatedAfter().isAfter(now)) {
+            if (params.statusTimestampAfter().isAfter(now)) {
                 Map<String, Object> errorData = new HashMap<>();
                 errorData.put("parameter", "lastUpdatedAfter");
                 errorData.put("reason", "Timestamp cannot be in the future");
+                throw new InvalidParamsError(null, "Invalid params", errorData);
+            }
+            // Check that timestamp is not negative
+            long millis = params.statusTimestampAfter().toEpochMilli();
+            if (millis < 0L) {
+                Map<String, Object> errorData = new HashMap<>();
+                errorData.put("parameter", "statusTimestampAfter");
+                errorData.put("reason", "Must be a non-negative timestamp value, got: " + millis);
                 throw new InvalidParamsError(null, "Invalid params", errorData);
             }
         }

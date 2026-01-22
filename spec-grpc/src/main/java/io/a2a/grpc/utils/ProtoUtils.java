@@ -149,7 +149,7 @@ public class ProtoUtils {
                         .setTask(task((Task) eventKind))
                         .build();
                 case Message.STREAMING_EVENT_ID -> io.a2a.grpc.SendMessageResponse.newBuilder()
-                        .setMsg(message((Message) eventKind))
+                        .setMessage(message((Message) eventKind))
                         .build();
                 default -> throw new IllegalArgumentException("Unsupported event type: " + eventKind);
             };
@@ -161,7 +161,7 @@ public class ProtoUtils {
                         .setTask(task((Task) eventKind))
                         .build();
                 case Message.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
-                        .setMsg(message((Message) eventKind))
+                        .setMessage(message((Message) eventKind))
                         .build();
                 case TaskStatusUpdateEvent.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
                         .setStatusUpdate(taskStatusUpdateEvent((TaskStatusUpdateEvent) eventKind))

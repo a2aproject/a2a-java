@@ -276,20 +276,45 @@ private static final long serialVersionUID = 0L;
     return historyLength_;
   }
 
-  public static final int LAST_UPDATED_AFTER_FIELD_NUMBER = 6;
-  private long lastUpdatedAfter_ = 0L;
+  public static final int STATUS_TIMESTAMP_AFTER_FIELD_NUMBER = 6;
+  private com.google.protobuf.Timestamp statusTimestampAfter_;
   /**
    * <pre>
-   * Filter tasks updated after this timestamp (milliseconds since epoch).
-   * Only tasks with a last updated time greater than or equal to this value will be returned.
+   * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+   * Only tasks with a status timestamp time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>int64 last_updated_after = 6;</code>
-   * @return The lastUpdatedAfter.
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * @return Whether the statusTimestampAfter field is set.
    */
   @java.lang.Override
-  public long getLastUpdatedAfter() {
-    return lastUpdatedAfter_;
+  public boolean hasStatusTimestampAfter() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   * <pre>
+   * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+   * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * @return The statusTimestampAfter.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getStatusTimestampAfter() {
+    return statusTimestampAfter_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : statusTimestampAfter_;
+  }
+  /**
+   * <pre>
+   * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+   * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getStatusTimestampAfterOrBuilder() {
+    return statusTimestampAfter_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : statusTimestampAfter_;
   }
 
   public static final int INCLUDE_ARTIFACTS_FIELD_NUMBER = 7;
@@ -305,7 +330,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasIncludeArtifacts() {
-    return ((bitField0_ & 0x00000004) != 0);
+    return ((bitField0_ & 0x00000008) != 0);
   }
   /**
    * <pre>
@@ -350,10 +375,10 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeInt32(5, historyLength_);
     }
-    if (lastUpdatedAfter_ != 0L) {
-      output.writeInt64(6, lastUpdatedAfter_);
-    }
     if (((bitField0_ & 0x00000004) != 0)) {
+      output.writeMessage(6, getStatusTimestampAfter());
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
       output.writeBool(7, includeArtifacts_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
@@ -386,11 +411,11 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(5, historyLength_);
     }
-    if (lastUpdatedAfter_ != 0L) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt64Size(6, lastUpdatedAfter_);
-    }
     if (((bitField0_ & 0x00000004) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(6, getStatusTimestampAfter());
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(7, includeArtifacts_);
     }
@@ -429,8 +454,11 @@ private static final long serialVersionUID = 0L;
       if (getHistoryLength()
           != other.getHistoryLength()) return false;
     }
-    if (getLastUpdatedAfter()
-        != other.getLastUpdatedAfter()) return false;
+    if (hasStatusTimestampAfter() != other.hasStatusTimestampAfter()) return false;
+    if (hasStatusTimestampAfter()) {
+      if (!getStatusTimestampAfter()
+          .equals(other.getStatusTimestampAfter())) return false;
+    }
     if (hasIncludeArtifacts() != other.hasIncludeArtifacts()) return false;
     if (hasIncludeArtifacts()) {
       if (getIncludeArtifacts()
@@ -463,9 +491,10 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
       hash = (53 * hash) + getHistoryLength();
     }
-    hash = (37 * hash) + LAST_UPDATED_AFTER_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        getLastUpdatedAfter());
+    if (hasStatusTimestampAfter()) {
+      hash = (37 * hash) + STATUS_TIMESTAMP_AFTER_FIELD_NUMBER;
+      hash = (53 * hash) + getStatusTimestampAfter().hashCode();
+    }
     if (hasIncludeArtifacts()) {
       hash = (37 * hash) + INCLUDE_ARTIFACTS_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
@@ -595,13 +624,19 @@ private static final long serialVersionUID = 0L;
 
     // Construct using io.a2a.grpc.ListTasksRequest.newBuilder()
     private Builder() {
-
+      maybeForceBuilderInitialization();
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       super(parent);
-
+      maybeForceBuilderInitialization();
+    }
+    private void maybeForceBuilderInitialization() {
+      if (com.google.protobuf.GeneratedMessage
+              .alwaysUseFieldBuilders) {
+        internalGetStatusTimestampAfterFieldBuilder();
+      }
     }
     @java.lang.Override
     public Builder clear() {
@@ -613,7 +648,11 @@ private static final long serialVersionUID = 0L;
       pageSize_ = 0;
       pageToken_ = "";
       historyLength_ = 0;
-      lastUpdatedAfter_ = 0L;
+      statusTimestampAfter_ = null;
+      if (statusTimestampAfterBuilder_ != null) {
+        statusTimestampAfterBuilder_.dispose();
+        statusTimestampAfterBuilder_ = null;
+      }
       includeArtifacts_ = false;
       return this;
     }
@@ -670,11 +709,14 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000002;
       }
       if (((from_bitField0_ & 0x00000040) != 0)) {
-        result.lastUpdatedAfter_ = lastUpdatedAfter_;
+        result.statusTimestampAfter_ = statusTimestampAfterBuilder_ == null
+            ? statusTimestampAfter_
+            : statusTimestampAfterBuilder_.build();
+        to_bitField0_ |= 0x00000004;
       }
       if (((from_bitField0_ & 0x00000080) != 0)) {
         result.includeArtifacts_ = includeArtifacts_;
-        to_bitField0_ |= 0x00000004;
+        to_bitField0_ |= 0x00000008;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -715,8 +757,8 @@ private static final long serialVersionUID = 0L;
       if (other.hasHistoryLength()) {
         setHistoryLength(other.getHistoryLength());
       }
-      if (other.getLastUpdatedAfter() != 0L) {
-        setLastUpdatedAfter(other.getLastUpdatedAfter());
+      if (other.hasStatusTimestampAfter()) {
+        mergeStatusTimestampAfter(other.getStatusTimestampAfter());
       }
       if (other.hasIncludeArtifacts()) {
         setIncludeArtifacts(other.getIncludeArtifacts());
@@ -772,11 +814,13 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000020;
               break;
             } // case 40
-            case 48: {
-              lastUpdatedAfter_ = input.readInt64();
+            case 50: {
+              input.readMessage(
+                  internalGetStatusTimestampAfterFieldBuilder().getBuilder(),
+                  extensionRegistry);
               bitField0_ |= 0x00000040;
               break;
-            } // case 48
+            } // case 50
             case 56: {
               includeArtifacts_ = input.readBool();
               bitField0_ |= 0x00000080;
@@ -1267,51 +1311,170 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private long lastUpdatedAfter_ ;
+    private com.google.protobuf.Timestamp statusTimestampAfter_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> statusTimestampAfterBuilder_;
     /**
      * <pre>
-     * Filter tasks updated after this timestamp (milliseconds since epoch).
-     * Only tasks with a last updated time greater than or equal to this value will be returned.
+     * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+     * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>int64 last_updated_after = 6;</code>
-     * @return The lastUpdatedAfter.
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * @return Whether the statusTimestampAfter field is set.
      */
-    @java.lang.Override
-    public long getLastUpdatedAfter() {
-      return lastUpdatedAfter_;
+    public boolean hasStatusTimestampAfter() {
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      * <pre>
-     * Filter tasks updated after this timestamp (milliseconds since epoch).
-     * Only tasks with a last updated time greater than or equal to this value will be returned.
+     * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+     * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>int64 last_updated_after = 6;</code>
-     * @param value The lastUpdatedAfter to set.
-     * @return This builder for chaining.
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * @return The statusTimestampAfter.
      */
-    public Builder setLastUpdatedAfter(long value) {
-
-      lastUpdatedAfter_ = value;
+    public com.google.protobuf.Timestamp getStatusTimestampAfter() {
+      if (statusTimestampAfterBuilder_ == null) {
+        return statusTimestampAfter_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : statusTimestampAfter_;
+      } else {
+        return statusTimestampAfterBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+     * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     */
+    public Builder setStatusTimestampAfter(com.google.protobuf.Timestamp value) {
+      if (statusTimestampAfterBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        statusTimestampAfter_ = value;
+      } else {
+        statusTimestampAfterBuilder_.setMessage(value);
+      }
       bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * Filter tasks updated after this timestamp (milliseconds since epoch).
-     * Only tasks with a last updated time greater than or equal to this value will be returned.
+     * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+     * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>int64 last_updated_after = 6;</code>
-     * @return This builder for chaining.
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
      */
-    public Builder clearLastUpdatedAfter() {
-      bitField0_ = (bitField0_ & ~0x00000040);
-      lastUpdatedAfter_ = 0L;
+    public Builder setStatusTimestampAfter(
+        com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (statusTimestampAfterBuilder_ == null) {
+        statusTimestampAfter_ = builderForValue.build();
+      } else {
+        statusTimestampAfterBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
+    }
+    /**
+     * <pre>
+     * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+     * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     */
+    public Builder mergeStatusTimestampAfter(com.google.protobuf.Timestamp value) {
+      if (statusTimestampAfterBuilder_ == null) {
+        if (((bitField0_ & 0x00000040) != 0) &&
+          statusTimestampAfter_ != null &&
+          statusTimestampAfter_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getStatusTimestampAfterBuilder().mergeFrom(value);
+        } else {
+          statusTimestampAfter_ = value;
+        }
+      } else {
+        statusTimestampAfterBuilder_.mergeFrom(value);
+      }
+      if (statusTimestampAfter_ != null) {
+        bitField0_ |= 0x00000040;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+     * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     */
+    public Builder clearStatusTimestampAfter() {
+      bitField0_ = (bitField0_ & ~0x00000040);
+      statusTimestampAfter_ = null;
+      if (statusTimestampAfterBuilder_ != null) {
+        statusTimestampAfterBuilder_.dispose();
+        statusTimestampAfterBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+     * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     */
+    public com.google.protobuf.Timestamp.Builder getStatusTimestampAfterBuilder() {
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return internalGetStatusTimestampAfterFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+     * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getStatusTimestampAfterOrBuilder() {
+      if (statusTimestampAfterBuilder_ != null) {
+        return statusTimestampAfterBuilder_.getMessageOrBuilder();
+      } else {
+        return statusTimestampAfter_ == null ?
+            com.google.protobuf.Timestamp.getDefaultInstance() : statusTimestampAfter_;
+      }
+    }
+    /**
+     * <pre>
+     * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+     * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 
+        internalGetStatusTimestampAfterFieldBuilder() {
+      if (statusTimestampAfterBuilder_ == null) {
+        statusTimestampAfterBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder>(
+                getStatusTimestampAfter(),
+                getParentForChildren(),
+                isClean());
+        statusTimestampAfter_ = null;
+      }
+      return statusTimestampAfterBuilder_;
     }
 
     private boolean includeArtifacts_ ;

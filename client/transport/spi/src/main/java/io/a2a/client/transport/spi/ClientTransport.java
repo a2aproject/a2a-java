@@ -137,13 +137,13 @@ public interface ClientTransport {
                      Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
-     * Retrieve the AgentCard.
+     * Retrieve the extended AgentCard.
      *
      * @param context optional client call context for the request (may be {@code null})
-     * @return the AgentCard
+     * @return the extended agent card
      * @throws A2AClientException if retrieving the agent card fails for any reason
      */
-    AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException;
+    AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Close the transport and release any associated resources.

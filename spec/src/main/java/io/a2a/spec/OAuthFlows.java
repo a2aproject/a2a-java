@@ -10,14 +10,13 @@ package io.a2a.spec;
  *
  * @param authorizationCode OAuth 2.0 authorization code flow configuration
  * @param clientCredentials OAuth 2.0 client credentials flow configuration
- * @param implicit OAuth 2.0 implicit flow configuration
- * @param password OAuth 2.0 resource owner password credentials flow configuration
+ * @param deviceCode        OAuth 2.0 device code flow configuration
  * @see OAuth2SecurityScheme for the security scheme using these flows
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#oauth-flows-object">OpenAPI OAuth Flows Object</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCredentialsOAuthFlow clientCredentials,
-                         ImplicitOAuthFlow implicit, PasswordOAuthFlow password) {
+                         DeviceCodeOAuthFlow deviceCode) {
 
     /**
      * Create a new Builder
@@ -34,8 +33,7 @@ public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCre
     public static class Builder {
         private AuthorizationCodeOAuthFlow authorizationCode;
         private ClientCredentialsOAuthFlow clientCredentials;
-        private ImplicitOAuthFlow implicit;
-        private PasswordOAuthFlow password;
+        private DeviceCodeOAuthFlow deviceCode;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -66,26 +64,16 @@ public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCre
         }
 
         /**
-         * Sets the implicit flow configuration.
+         * Sets the device code flow configuration.
          *
-         * @param implicit the implicit flow (optional)
+         * @param deviceCode the device code flow (optional)
          * @return this builder for method chaining
          */
-        public Builder implicit(ImplicitOAuthFlow implicit) {
-            this.implicit = implicit;
+        public Builder deviceCode(DeviceCodeOAuthFlow deviceCode) {
+            this.deviceCode = deviceCode;
             return this;
         }
 
-        /**
-         * Sets the password flow configuration.
-         *
-         * @param password the password flow (optional)
-         * @return this builder for method chaining
-         */
-        public Builder password(PasswordOAuthFlow password) {
-            this.password = password;
-            return this;
-        }
 
         /**
          * Builds a new immutable OAuthFlows instance.
@@ -93,7 +81,7 @@ public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCre
          * @return a new OAuthFlows instance
          */
         public OAuthFlows build() {
-            return new OAuthFlows(authorizationCode, clientCredentials, implicit, password);
+            return new OAuthFlows(authorizationCode, clientCredentials, deviceCode);
         }
     }
 }

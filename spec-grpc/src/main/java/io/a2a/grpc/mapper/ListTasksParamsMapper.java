@@ -26,7 +26,7 @@ public interface ListTasksParamsMapper {
     @Mapping(target = "pageSize", source = "pageSize", conditionExpression = "java(params.pageSize() != null)")
     @Mapping(target = "pageToken", source = "pageToken", conditionExpression = "java(params.pageToken() != null)")
     @Mapping(target = "historyLength", source = "historyLength", conditionExpression = "java(params.historyLength() != null)")
-    @Mapping(target = "lastUpdatedAfter", source = "lastUpdatedAfter", qualifiedByName = "instantToMillis")
+    @Mapping(target = "statusTimestampAfter", source = "statusTimestampAfter", qualifiedByName = "instantToProtoTimestamp")
     @Mapping(target = "includeArtifacts", source = "includeArtifacts", conditionExpression = "java(params.includeArtifacts() != null)")
     ListTasksRequest toProto(io.a2a.spec.ListTasksParams params);
 
@@ -43,7 +43,7 @@ public interface ListTasksParamsMapper {
     @Mapping(target = "pageToken", source = "pageToken", qualifiedByName = "emptyToNull")
     // historyLength: Check if field is set using hasHistoryLength() for consistency with pageSize
     @Mapping(target = "historyLength", expression = "java(request.hasHistoryLength() ? request.getHistoryLength() : null)")
-    @Mapping(target = "lastUpdatedAfter", source = "lastUpdatedAfter", qualifiedByName = "millisToInstant")
+    @Mapping(target = "statusTimestampAfter", source = "statusTimestampAfter", qualifiedByName = "protoTimestampToInstant")
     @Mapping(target = "includeArtifacts", source = "includeArtifacts", qualifiedByName = "falseToNull")
     io.a2a.spec.ListTasksParams fromProto(ListTasksRequest request);
 }

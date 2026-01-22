@@ -17,10 +17,7 @@ import org.junit.jupiter.api.Test;
 import io.a2a.spec.APIKeySecurityScheme;
 import io.a2a.spec.HTTPAuthSecurityScheme;
 import io.a2a.spec.MutualTLSSecurityScheme;
-import io.a2a.spec.OAuth2SecurityScheme;
-import io.a2a.spec.OAuthFlows;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
-import io.a2a.spec.PasswordOAuthFlow;
 import io.a2a.spec.SecurityScheme;
 
 /**
@@ -126,68 +123,6 @@ class SecuritySchemeSerializationTest {
                 Map.of("location", "query",
                         "name", "api_key",
                         "description", "API key authentication via query parameter"));
-    }
-
-    @Test
-    void testOAuth2SecuritySchemeSerialization() throws JsonProcessingException {
-        PasswordOAuthFlow passwordFlow = new PasswordOAuthFlow(
-                "https://example.com/oauth/refresh",
-                Map.of("read", "Read access", "write", "Write access"),
-                "https://example.com/oauth/token"
-        );
-
-        OAuthFlows flows = OAuthFlows.builder()
-                .password(passwordFlow)
-                .build();
-
-        SecurityScheme scheme = OAuth2SecurityScheme.builder()
-                .flows(flows)
-                .description("OAuth 2.0 password flow")
-                .oauth2MetadataUrl("https://example.com/.well-known/oauth-authorization-server")
-                .build();
-
-        // Verify serialization with nested OAuth flow fields
-        String json = JsonUtil.toJson(scheme);
-        assertNotNull(json);
-        assertTrue(json.contains(OAuth2SecurityScheme.TYPE));
-        assertTrue(json.contains("\"description\":\"OAuth 2.0 password flow\""));
-        assertTrue(json.contains("\"oauth2MetadataUrl\":\"https://example.com/.well-known/oauth-authorization-server\""));
-        assertTrue(json.contains("\"tokenUrl\":\"https://example.com/oauth/token\""));
-        assertTrue(json.contains("\"read\":\"Read access\""));
-
-        SecurityScheme deserialized = JsonUtil.fromJson(json, SecurityScheme.class);
-        assertEquals(scheme, deserialized);
-    }
-
-    @Test
-    void testOAuth2SecuritySchemeDeserialization() throws JsonProcessingException {
-        String json = """
-                {
-                  "oauth2SecurityScheme" : {
-                    "flows": {
-                      "password": {
-                        "tokenUrl": "https://example.com/oauth/token",
-                        "refreshUrl": "https://example.com/oauth/refresh",
-                        "scopes": {
-                          "read": "Read access",
-                          "write": "Write access"
-                        }
-                      }
-                    },
-                    "description": "OAuth 2.0 authentication"
-                  }
-                }""";
-
-        SecurityScheme securityScheme = JsonUtil.fromJson(json, SecurityScheme.class);
-        assertInstanceOf(OAuth2SecurityScheme.class, securityScheme);
-        OAuth2SecurityScheme scheme = (OAuth2SecurityScheme) securityScheme;
-        assertEquals("OAuth 2.0 authentication", scheme.description());
-        assertNotNull(scheme.flows());
-        assertNotNull(scheme.flows().password());
-        assertEquals("https://example.com/oauth/token", scheme.flows().password().tokenUrl());
-        assertEquals("https://example.com/oauth/refresh", scheme.flows().password().refreshUrl());
-        assertEquals(2, scheme.flows().password().scopes().size());
-        assertEquals("Read access", scheme.flows().password().scopes().get("read"));
     }
 
     @Test

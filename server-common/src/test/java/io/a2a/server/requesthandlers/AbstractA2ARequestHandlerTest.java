@@ -127,7 +127,7 @@ public class AbstractA2ARequestHandlerTest {
                 .defaultInputModes(new ArrayList<>())
                 .defaultOutputModes(new ArrayList<>())
                 .skills(new ArrayList<>())
-                .protocolVersion(CURRENT_PROTOCOL_VERSION);
+                .protocolVersions(CURRENT_PROTOCOL_VERSION);
         return builder.build();
     }
 

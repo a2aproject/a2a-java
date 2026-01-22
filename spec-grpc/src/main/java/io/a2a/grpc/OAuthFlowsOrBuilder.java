@@ -66,57 +66,30 @@ public interface OAuthFlowsOrBuilder extends
 
   /**
    * <pre>
-   * Configuration for the OAuth Implicit flow.
+   * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
-   * @return Whether the implicit field is set.
+   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * @return Whether the deviceCode field is set.
    */
-  boolean hasImplicit();
+  boolean hasDeviceCode();
   /**
    * <pre>
-   * Configuration for the OAuth Implicit flow.
+   * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
-   * @return The implicit.
+   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * @return The deviceCode.
    */
-  io.a2a.grpc.ImplicitOAuthFlow getImplicit();
+  io.a2a.grpc.DeviceCodeOAuthFlow getDeviceCode();
   /**
    * <pre>
-   * Configuration for the OAuth Implicit flow.
+   * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3;</code>
+   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
    */
-  io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder();
-
-  /**
-   * <pre>
-   * Configuration for the OAuth Resource Owner Password flow.
-   * </pre>
-   *
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-   * @return Whether the password field is set.
-   */
-  boolean hasPassword();
-  /**
-   * <pre>
-   * Configuration for the OAuth Resource Owner Password flow.
-   * </pre>
-   *
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-   * @return The password.
-   */
-  io.a2a.grpc.PasswordOAuthFlow getPassword();
-  /**
-   * <pre>
-   * Configuration for the OAuth Resource Owner Password flow.
-   * </pre>
-   *
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4;</code>
-   */
-  io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder();
+  io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder getDeviceCodeOrBuilder();
 
   io.a2a.grpc.OAuthFlows.FlowCase getFlowCase();
 }

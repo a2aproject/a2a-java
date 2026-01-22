@@ -43,7 +43,7 @@ public class AgentCardProducer {
                                 .tags(Collections.singletonList("hello world"))
                                 .examples(List.of("hi", "hello world"))
                                 .build()))
-                .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 }

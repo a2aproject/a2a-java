@@ -131,14 +131,33 @@ public interface ListTasksRequestOrBuilder extends
 
   /**
    * <pre>
-   * Filter tasks updated after this timestamp (milliseconds since epoch).
-   * Only tasks with a last updated time greater than or equal to this value will be returned.
+   * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+   * Only tasks with a status timestamp time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>int64 last_updated_after = 6;</code>
-   * @return The lastUpdatedAfter.
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * @return Whether the statusTimestampAfter field is set.
    */
-  long getLastUpdatedAfter();
+  boolean hasStatusTimestampAfter();
+  /**
+   * <pre>
+   * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+   * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * @return The statusTimestampAfter.
+   */
+  com.google.protobuf.Timestamp getStatusTimestampAfter();
+  /**
+   * <pre>
+   * Filter tasks which have a status updated after the provided timestamp in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+   * Only tasks with a status timestamp time greater than or equal to this value will be returned.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   */
+  com.google.protobuf.TimestampOrBuilder getStatusTimestampAfterOrBuilder();
 
   /**
    * <pre>

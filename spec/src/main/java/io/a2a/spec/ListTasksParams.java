@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
  * @param pageSize Maximum number of tasks to return (1-100, defaults to 50)
  * @param pageToken Token for pagination from a previous ListTasksResult
  * @param historyLength Number of recent messages to include in each task's history (defaults to 0)
- * @param lastUpdatedAfter Filter tasks updated after this timestamp
+ * @param statusTimestampAfter Filter tasks updated after this timestamp
  * @param includeArtifacts Whether to include artifacts in the returned tasks (defaults to false)
  * @param tenant optional tenant, provided as a path parameter.
  */
@@ -22,7 +22,7 @@ public record ListTasksParams(
         @Nullable Integer pageSize,
         @Nullable String pageToken,
         @Nullable Integer historyLength,
-        @Nullable Instant lastUpdatedAfter,
+        @Nullable Instant statusTimestampAfter,
         @Nullable Boolean includeArtifacts,
         String tenant
 ) {
@@ -38,7 +38,7 @@ public record ListTasksParams(
      * @param pageSize maximum number of results per page
      * @param pageToken pagination token
      * @param historyLength number of history items to include
-     * @param lastUpdatedAfter filter by last update timestamp
+     * @param statusTimestampAfter filter by status timestamp
      * @param includeArtifacts whether to include artifacts
      * @param tenant the tenant identifier
      * @throws InvalidParamsError if tenant is null or if pageSize or historyLength are out of valid range
@@ -124,7 +124,7 @@ public record ListTasksParams(
         private Integer pageSize;
         private String pageToken;
         private Integer historyLength;
-        private Instant lastUpdatedAfter;
+        private Instant statusTimestampAfter;
         private Boolean includeArtifacts;
         private String tenant;
 
@@ -190,13 +190,13 @@ public record ListTasksParams(
         }
 
         /**
-         * Sets the lastUpdatedAfter.
+         * Sets the statusTimestampAfter.
          *
-         * @param lastUpdatedAfter the lastUpdatedAfter
+         * @param statusTimestampAfter the statusTimestampAfter
          * @return this builder for method chaining
          */
-        public Builder lastUpdatedAfter(Instant lastUpdatedAfter) {
-            this.lastUpdatedAfter = lastUpdatedAfter;
+        public Builder statusTimestampAfter(Instant statusTimestampAfter) {
+            this.statusTimestampAfter = statusTimestampAfter;
             return this;
         }
 
@@ -229,7 +229,7 @@ public record ListTasksParams(
          */
         public ListTasksParams build() {
             return new ListTasksParams(contextId, status, pageSize, pageToken, historyLength,
-                    lastUpdatedAfter, includeArtifacts, tenant);
+                    statusTimestampAfter, includeArtifacts, tenant);
         }
     }
 }

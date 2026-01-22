@@ -26,12 +26,16 @@ import java.util.List;
  * @param streaming whether the agent supports streaming responses with incremental artifacts
  * @param pushNotifications whether the agent supports push notifications for state changes
  * @param stateTransitionHistory whether the agent maintains state transition history
+ * @param extendedAgentCard whether the agent supports an extended agent card
  * @param extensions list of custom extensions supported by the agent (optional)
  * @see AgentCard
  * @see AgentExtension
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentCapabilities(boolean streaming, boolean pushNotifications, boolean stateTransitionHistory,
+public record AgentCapabilities(boolean streaming,
+                                boolean pushNotifications,
+                                boolean stateTransitionHistory,
+                                boolean extendedAgentCard,
                                 List<AgentExtension> extensions) {
 
     /**
@@ -62,6 +66,7 @@ public record AgentCapabilities(boolean streaming, boolean pushNotifications, bo
         private boolean streaming;
         private boolean pushNotifications;
         private boolean stateTransitionHistory;
+        private boolean extendedAgentCard;
         private List<AgentExtension> extensions;
 
         /**
@@ -113,6 +118,18 @@ public record AgentCapabilities(boolean streaming, boolean pushNotifications, bo
         }
 
         /**
+         * Sets whether the agent supports an extended agent card.
+         * state transition history.
+         *
+         * @param extendedAgentCard true if an extended agent card is supported, false otherwise
+         * @return this builder for method chaining
+         */
+        public Builder extendedAgentCard(boolean extendedAgentCard) {
+            this.extendedAgentCard = extendedAgentCard;
+            return this;
+        }
+
+        /**
          * Sets the list of custom extensions supported by the agent.
          * <p>
          * Extensions allow agents to advertise proprietary or experimental
@@ -133,7 +150,7 @@ public record AgentCapabilities(boolean streaming, boolean pushNotifications, bo
          * @return a new AgentCapabilities instance
          */
         public AgentCapabilities build() {
-            return new AgentCapabilities(streaming, pushNotifications, stateTransitionHistory, extensions);
+            return new AgentCapabilities(streaming, pushNotifications, stateTransitionHistory, extendedAgentCard, extensions);
         }
     }
 }

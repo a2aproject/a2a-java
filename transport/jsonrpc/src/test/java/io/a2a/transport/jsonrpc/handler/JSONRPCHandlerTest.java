@@ -59,7 +59,6 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
-import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
@@ -1633,7 +1632,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -1672,7 +1671,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -1741,7 +1740,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);

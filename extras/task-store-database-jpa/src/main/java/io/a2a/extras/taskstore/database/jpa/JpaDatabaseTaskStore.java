@@ -261,10 +261,10 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             countQueryBuilder.append(" AND t.state = :state");
         }
 
-        // Apply lastUpdatedAfter filter using denormalized timestamp column
-        if (params.lastUpdatedAfter() != null) {
-            queryBuilder.append(" AND t.statusTimestamp > :lastUpdatedAfter");
-            countQueryBuilder.append(" AND t.statusTimestamp > :lastUpdatedAfter");
+        // Apply statusTimestampAfter filter using denormalized timestamp column
+        if (params.statusTimestampAfter() != null) {
+            queryBuilder.append(" AND t.statusTimestamp > :statusTimestampAfter");
+            countQueryBuilder.append(" AND t.statusTimestamp > :statusTimestampAfter");
         }
 
         // Apply pagination cursor using keyset pagination for composite sort (timestamp DESC, id ASC)
@@ -286,8 +286,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         if (params.status() != null) {
             query.setParameter("state", params.status().asString());
         }
-        if (params.lastUpdatedAfter() != null) {
-            query.setParameter("lastUpdatedAfter", params.lastUpdatedAfter());
+        if (params.statusTimestampAfter() != null) {
+            query.setParameter("statusTimestampAfter", params.statusTimestampAfter());
         }
         if (tokenTimestamp != null) {
             query.setParameter("tokenTimestamp", tokenTimestamp);
@@ -315,8 +315,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         if (params.status() != null) {
             countQuery.setParameter("state", params.status().asString());
         }
-        if (params.lastUpdatedAfter() != null) {
-            countQuery.setParameter("lastUpdatedAfter", params.lastUpdatedAfter());
+        if (params.statusTimestampAfter() != null) {
+            countQuery.setParameter("statusTimestampAfter", params.statusTimestampAfter());
         }
         int totalSize = countQuery.getSingleResult().intValue();
 

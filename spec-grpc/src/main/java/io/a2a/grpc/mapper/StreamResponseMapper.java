@@ -45,7 +45,7 @@ public interface StreamResponseMapper {
                     .setTask(TaskMapper.INSTANCE.toProto((Task) domain))
                     .build();
             case Message.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
-                    .setMsg(MessageMapper.INSTANCE.toProto((Message) domain))
+                    .setMessage(MessageMapper.INSTANCE.toProto((Message) domain))
                     .build();
             case TaskStatusUpdateEvent.STREAMING_EVENT_ID -> io.a2a.grpc.StreamResponse.newBuilder()
                     .setStatusUpdate(TaskStatusUpdateEventMapper.INSTANCE.toProto((TaskStatusUpdateEvent) domain))
@@ -74,8 +74,8 @@ public interface StreamResponseMapper {
         return switch (proto.getPayloadCase()) {
             case TASK ->
                 TaskMapper.INSTANCE.fromProto(proto.getTask());
-            case MSG ->
-                MessageMapper.INSTANCE.fromProto(proto.getMsg());
+            case MESSAGE ->
+                MessageMapper.INSTANCE.fromProto(proto.getMessage());
             case STATUS_UPDATE ->
                 TaskStatusUpdateEventMapper.INSTANCE.fromProto(proto.getStatusUpdate());
             case ARTIFACT_UPDATE ->

@@ -19,8 +19,6 @@ import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentExtension;
 import io.a2a.spec.AgentInterface;
-import io.a2a.spec.ExtensionSupportRequiredError;
-import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.spec.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -458,7 +456,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -508,7 +506,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -596,7 +594,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersion(AgentCard.CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);

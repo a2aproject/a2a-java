@@ -110,4 +110,23 @@ public interface AgentCapabilitiesOrBuilder extends
    * @return The stateTransitionHistory.
    */
   boolean getStateTransitionHistory();
+
+  /**
+   * <pre>
+   * Indicates if the agent supports providing an extended agent card when authenticated.
+   * </pre>
+   *
+   * <code>optional bool extended_agent_card = 5;</code>
+   * @return Whether the extendedAgentCard field is set.
+   */
+  boolean hasExtendedAgentCard();
+  /**
+   * <pre>
+   * Indicates if the agent supports providing an extended agent card when authenticated.
+   * </pre>
+   *
+   * <code>optional bool extended_agent_card = 5;</code>
+   * @return The extendedAgentCard.
+   */
+  boolean getExtendedAgentCard();
 }

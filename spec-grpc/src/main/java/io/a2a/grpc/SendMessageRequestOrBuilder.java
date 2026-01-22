@@ -35,27 +35,27 @@ public interface SendMessageRequestOrBuilder extends
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
-   * @return Whether the request field is set.
+   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return Whether the message field is set.
    */
-  boolean hasRequest();
+  boolean hasMessage();
   /**
    * <pre>
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
-   * @return The request.
+   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The message.
    */
-  io.a2a.grpc.Message getRequest();
+  io.a2a.grpc.Message getMessage();
   /**
    * <pre>
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  io.a2a.grpc.MessageOrBuilder getRequestOrBuilder();
+  io.a2a.grpc.MessageOrBuilder getMessageOrBuilder();
 
   /**
    * <pre>

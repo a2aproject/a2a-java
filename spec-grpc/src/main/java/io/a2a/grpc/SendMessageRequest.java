@@ -98,18 +98,18 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int REQUEST_FIELD_NUMBER = 1;
-  private io.a2a.grpc.Message request_;
+  public static final int MESSAGE_FIELD_NUMBER = 1;
+  private io.a2a.grpc.Message message_;
   /**
    * <pre>
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
-   * @return Whether the request field is set.
+   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return Whether the message field is set.
    */
   @java.lang.Override
-  public boolean hasRequest() {
+  public boolean hasMessage() {
     return ((bitField0_ & 0x00000001) != 0);
   }
   /**
@@ -117,23 +117,23 @@ private static final long serialVersionUID = 0L;
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
-   * @return The request.
+   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The message.
    */
   @java.lang.Override
-  public io.a2a.grpc.Message getRequest() {
-    return request_ == null ? io.a2a.grpc.Message.getDefaultInstance() : request_;
+  public io.a2a.grpc.Message getMessage() {
+    return message_ == null ? io.a2a.grpc.Message.getDefaultInstance() : message_;
   }
   /**
    * <pre>
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.MessageOrBuilder getRequestOrBuilder() {
-    return request_ == null ? io.a2a.grpc.Message.getDefaultInstance() : request_;
+  public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
+    return message_ == null ? io.a2a.grpc.Message.getDefaultInstance() : message_;
   }
 
   public static final int CONFIGURATION_FIELD_NUMBER = 2;
@@ -227,7 +227,7 @@ private static final long serialVersionUID = 0L;
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(1, getRequest());
+      output.writeMessage(1, getMessage());
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(2, getConfiguration());
@@ -249,7 +249,7 @@ private static final long serialVersionUID = 0L;
     size = 0;
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(1, getRequest());
+        .computeMessageSize(1, getMessage());
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
@@ -279,10 +279,10 @@ private static final long serialVersionUID = 0L;
 
     if (!getTenant()
         .equals(other.getTenant())) return false;
-    if (hasRequest() != other.hasRequest()) return false;
-    if (hasRequest()) {
-      if (!getRequest()
-          .equals(other.getRequest())) return false;
+    if (hasMessage() != other.hasMessage()) return false;
+    if (hasMessage()) {
+      if (!getMessage()
+          .equals(other.getMessage())) return false;
     }
     if (hasConfiguration() != other.hasConfiguration()) return false;
     if (hasConfiguration()) {
@@ -307,9 +307,9 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + TENANT_FIELD_NUMBER;
     hash = (53 * hash) + getTenant().hashCode();
-    if (hasRequest()) {
-      hash = (37 * hash) + REQUEST_FIELD_NUMBER;
-      hash = (53 * hash) + getRequest().hashCode();
+    if (hasMessage()) {
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
     }
     if (hasConfiguration()) {
       hash = (37 * hash) + CONFIGURATION_FIELD_NUMBER;
@@ -455,7 +455,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
-        internalGetRequestFieldBuilder();
+        internalGetMessageFieldBuilder();
         internalGetConfigurationFieldBuilder();
         internalGetMetadataFieldBuilder();
       }
@@ -465,10 +465,10 @@ private static final long serialVersionUID = 0L;
       super.clear();
       bitField0_ = 0;
       tenant_ = "";
-      request_ = null;
-      if (requestBuilder_ != null) {
-        requestBuilder_.dispose();
-        requestBuilder_ = null;
+      message_ = null;
+      if (messageBuilder_ != null) {
+        messageBuilder_.dispose();
+        messageBuilder_ = null;
       }
       configuration_ = null;
       if (configurationBuilder_ != null) {
@@ -518,9 +518,9 @@ private static final long serialVersionUID = 0L;
       }
       int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.request_ = requestBuilder_ == null
-            ? request_
-            : requestBuilder_.build();
+        result.message_ = messageBuilder_ == null
+            ? message_
+            : messageBuilder_.build();
         to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
@@ -555,8 +555,8 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000001;
         onChanged();
       }
-      if (other.hasRequest()) {
-        mergeRequest(other.getRequest());
+      if (other.hasMessage()) {
+        mergeMessage(other.getMessage());
       }
       if (other.hasConfiguration()) {
         mergeConfiguration(other.getConfiguration());
@@ -592,7 +592,7 @@ private static final long serialVersionUID = 0L;
               break;
             case 10: {
               input.readMessage(
-                  internalGetRequestFieldBuilder().getBuilder(),
+                  internalGetMessageFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000002;
               break;
@@ -725,18 +725,18 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private io.a2a.grpc.Message request_;
+    private io.a2a.grpc.Message message_;
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> requestBuilder_;
+        io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> messageBuilder_;
     /**
      * <pre>
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
-     * @return Whether the request field is set.
+     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return Whether the message field is set.
      */
-    public boolean hasRequest() {
+    public boolean hasMessage() {
       return ((bitField0_ & 0x00000002) != 0);
     }
     /**
@@ -744,14 +744,14 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
-     * @return The request.
+     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The message.
      */
-    public io.a2a.grpc.Message getRequest() {
-      if (requestBuilder_ == null) {
-        return request_ == null ? io.a2a.grpc.Message.getDefaultInstance() : request_;
+    public io.a2a.grpc.Message getMessage() {
+      if (messageBuilder_ == null) {
+        return message_ == null ? io.a2a.grpc.Message.getDefaultInstance() : message_;
       } else {
-        return requestBuilder_.getMessage();
+        return messageBuilder_.getMessage();
       }
     }
     /**
@@ -759,16 +759,16 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public Builder setRequest(io.a2a.grpc.Message value) {
-      if (requestBuilder_ == null) {
+    public Builder setMessage(io.a2a.grpc.Message value) {
+      if (messageBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        request_ = value;
+        message_ = value;
       } else {
-        requestBuilder_.setMessage(value);
+        messageBuilder_.setMessage(value);
       }
       bitField0_ |= 0x00000002;
       onChanged();
@@ -779,14 +779,14 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public Builder setRequest(
+    public Builder setMessage(
         io.a2a.grpc.Message.Builder builderForValue) {
-      if (requestBuilder_ == null) {
-        request_ = builderForValue.build();
+      if (messageBuilder_ == null) {
+        message_ = builderForValue.build();
       } else {
-        requestBuilder_.setMessage(builderForValue.build());
+        messageBuilder_.setMessage(builderForValue.build());
       }
       bitField0_ |= 0x00000002;
       onChanged();
@@ -797,21 +797,21 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public Builder mergeRequest(io.a2a.grpc.Message value) {
-      if (requestBuilder_ == null) {
+    public Builder mergeMessage(io.a2a.grpc.Message value) {
+      if (messageBuilder_ == null) {
         if (((bitField0_ & 0x00000002) != 0) &&
-          request_ != null &&
-          request_ != io.a2a.grpc.Message.getDefaultInstance()) {
-          getRequestBuilder().mergeFrom(value);
+          message_ != null &&
+          message_ != io.a2a.grpc.Message.getDefaultInstance()) {
+          getMessageBuilder().mergeFrom(value);
         } else {
-          request_ = value;
+          message_ = value;
         }
       } else {
-        requestBuilder_.mergeFrom(value);
+        messageBuilder_.mergeFrom(value);
       }
-      if (request_ != null) {
+      if (message_ != null) {
         bitField0_ |= 0x00000002;
         onChanged();
       }
@@ -822,14 +822,14 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public Builder clearRequest() {
+    public Builder clearMessage() {
       bitField0_ = (bitField0_ & ~0x00000002);
-      request_ = null;
-      if (requestBuilder_ != null) {
-        requestBuilder_.dispose();
-        requestBuilder_ = null;
+      message_ = null;
+      if (messageBuilder_ != null) {
+        messageBuilder_.dispose();
+        messageBuilder_ = null;
       }
       onChanged();
       return this;
@@ -839,26 +839,26 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public io.a2a.grpc.Message.Builder getRequestBuilder() {
+    public io.a2a.grpc.Message.Builder getMessageBuilder() {
       bitField0_ |= 0x00000002;
       onChanged();
-      return internalGetRequestFieldBuilder().getBuilder();
+      return internalGetMessageFieldBuilder().getBuilder();
     }
     /**
      * <pre>
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      */
-    public io.a2a.grpc.MessageOrBuilder getRequestOrBuilder() {
-      if (requestBuilder_ != null) {
-        return requestBuilder_.getMessageOrBuilder();
+    public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
+      if (messageBuilder_ != null) {
+        return messageBuilder_.getMessageOrBuilder();
       } else {
-        return request_ == null ?
-            io.a2a.grpc.Message.getDefaultInstance() : request_;
+        return message_ == null ?
+            io.a2a.grpc.Message.getDefaultInstance() : message_;
       }
     }
     /**
@@ -866,20 +866,20 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message request = 1 [json_name = "message", (.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> 
-        internalGetRequestFieldBuilder() {
-      if (requestBuilder_ == null) {
-        requestBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+        internalGetMessageFieldBuilder() {
+      if (messageBuilder_ == null) {
+        messageBuilder_ = new com.google.protobuf.SingleFieldBuilder<
             io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder>(
-                getRequest(),
+                getMessage(),
                 getParentForChildren(),
                 isClean());
-        request_ = null;
+        message_ = null;
       }
-      return requestBuilder_;
+      return messageBuilder_;
     }
 
     private io.a2a.grpc.SendMessageConfiguration configuration_;

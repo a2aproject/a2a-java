@@ -80,17 +80,17 @@ public class StreamResponseMapperTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(io.a2a.grpc.StreamResponse.PayloadCase.MSG, result.getPayloadCase());
-        assertEquals("msg-123", result.getMsg().getMessageId());
-        assertEquals("context-456", result.getMsg().getContextId());
-        assertEquals(io.a2a.grpc.Role.ROLE_USER, result.getMsg().getRole());
+        assertEquals(io.a2a.grpc.StreamResponse.PayloadCase.MESSAGE, result.getPayloadCase());
+        assertEquals("msg-123", result.getMessage().getMessageId());
+        assertEquals("context-456", result.getMessage().getContextId());
+        assertEquals(io.a2a.grpc.Role.ROLE_USER, result.getMessage().getRole());
     }
 
     @Test
     void testConvertMessage_FromProto() {
         // Arrange
         io.a2a.grpc.StreamResponse proto = io.a2a.grpc.StreamResponse.newBuilder()
-                .setMsg(io.a2a.grpc.Message.newBuilder()
+                .setMessage(io.a2a.grpc.Message.newBuilder()
                         .setMessageId("msg-123")
                         .setContextId("context-456")
                         .setRole(io.a2a.grpc.Role.ROLE_USER)

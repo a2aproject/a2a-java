@@ -6,6 +6,7 @@ import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -65,7 +66,7 @@ public class ToProtoTest {
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
-                .protocolVersion("123") // Weird protool version on purpose to make sure non-default takes effect
+                .protocolVersions("123") // Weird protool version on purpose to make sure non-default takes effect
                 .build();
         io.a2a.grpc.AgentCard result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
@@ -79,7 +80,8 @@ public class ToProtoTest {
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        assertEquals("123", result.getProtocolVersion());
+        // protocolVersions is now a repeated field, checking if the list contains the value
+        assertTrue(result.getProtocolVersionsList().contains("123"));
         agentCard = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
@@ -103,7 +105,7 @@ public class ToProtoTest {
                 //                .iconUrl("http://example.com/icon.svg")
                 .securitySchemes(Map.of("basic", HTTPAuthSecurityScheme.builder().scheme("basic").description("Basic Auth").build()))
                 .security(List.of(Map.of("oauth", List.of("read"))))
-                .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .build();
         result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
@@ -117,7 +119,8 @@ public class ToProtoTest {
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        assertEquals(CURRENT_PROTOCOL_VERSION, result.getProtocolVersion());
+        // protocolVersions is now a repeated field, checking if the list contains the value
+        assertTrue(result.getProtocolVersionsList().contains(CURRENT_PROTOCOL_VERSION));
         assertEquals(1, result.getSecurityCount());
         assertEquals(1, result.getSecurity(0).getSchemesMap().size());
         assertEquals(true, result.getSecurity(0).getSchemesMap().containsKey("oauth"));

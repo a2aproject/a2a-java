@@ -39,7 +39,7 @@ public class ReplicationTestAgentCardProducer {
                 .skills(List.of())
                 .supportedInterfaces(List.of(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:8081")))
-                .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 }

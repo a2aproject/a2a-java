@@ -146,7 +146,10 @@ private static final long serialVersionUID = 0L;
   private int historyLength_ = 0;
   /**
    * <pre>
-   * The maximum number of messages to include in the history.
+   * The maximum number of most recent messages from the task's history to retrieve in
+   * the response. An unset value means the client does not impose any limit. A
+   * value of zero is a request to not include any messages. The server MUST NOT
+   * return more messages than the provided value, but MAY apply a lower limit.
    * </pre>
    *
    * <code>optional int32 history_length = 3;</code>
@@ -158,7 +161,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The maximum number of messages to include in the history.
+   * The maximum number of most recent messages from the task's history to retrieve in
+   * the response. An unset value means the client does not impose any limit. A
+   * value of zero is a request to not include any messages. The server MUST NOT
+   * return more messages than the provided value, but MAY apply a lower limit.
    * </pre>
    *
    * <code>optional int32 history_length = 3;</code>
@@ -903,7 +909,10 @@ private static final long serialVersionUID = 0L;
     private int historyLength_ ;
     /**
      * <pre>
-     * The maximum number of messages to include in the history.
+     * The maximum number of most recent messages from the task's history to retrieve in
+     * the response. An unset value means the client does not impose any limit. A
+     * value of zero is a request to not include any messages. The server MUST NOT
+     * return more messages than the provided value, but MAY apply a lower limit.
      * </pre>
      *
      * <code>optional int32 history_length = 3;</code>
@@ -915,7 +924,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The maximum number of messages to include in the history.
+     * The maximum number of most recent messages from the task's history to retrieve in
+     * the response. An unset value means the client does not impose any limit. A
+     * value of zero is a request to not include any messages. The server MUST NOT
+     * return more messages than the provided value, but MAY apply a lower limit.
      * </pre>
      *
      * <code>optional int32 history_length = 3;</code>
@@ -927,7 +939,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The maximum number of messages to include in the history.
+     * The maximum number of most recent messages from the task's history to retrieve in
+     * the response. An unset value means the client does not impose any limit. A
+     * value of zero is a request to not include any messages. The server MUST NOT
+     * return more messages than the provided value, but MAY apply a lower limit.
      * </pre>
      *
      * <code>optional int32 history_length = 3;</code>
@@ -943,7 +958,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The maximum number of messages to include in the history.
+     * The maximum number of most recent messages from the task's history to retrieve in
+     * the response. An unset value means the client does not impose any limit. A
+     * value of zero is a request to not include any messages. The server MUST NOT
+     * return more messages than the provided value, but MAY apply a lower limit.
      * </pre>
      *
      * <code>optional int32 history_length = 3;</code>

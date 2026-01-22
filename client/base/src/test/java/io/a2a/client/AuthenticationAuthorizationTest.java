@@ -90,7 +90,7 @@ public class AuthenticationAuthorizationTest {
                         .description("Test skill")
                         .tags(Collections.singletonList("test"))
                         .build()))
-                .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .supportedInterfaces(java.util.Arrays.asList(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), AGENT_URL),
                         new AgentInterface(TransportProtocol.HTTP_JSON.asString(), AGENT_URL),

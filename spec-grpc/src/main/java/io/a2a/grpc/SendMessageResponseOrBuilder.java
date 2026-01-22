@@ -26,19 +26,19 @@ public interface SendMessageResponseOrBuilder extends
   io.a2a.grpc.TaskOrBuilder getTaskOrBuilder();
 
   /**
-   * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
-   * @return Whether the msg field is set.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return Whether the message field is set.
    */
-  boolean hasMsg();
+  boolean hasMessage();
   /**
-   * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
-   * @return The msg.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return The message.
    */
-  io.a2a.grpc.Message getMsg();
+  io.a2a.grpc.Message getMessage();
   /**
-   * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+   * <code>.a2a.v1.Message message = 2;</code>
    */
-  io.a2a.grpc.MessageOrBuilder getMsgOrBuilder();
+  io.a2a.grpc.MessageOrBuilder getMessageOrBuilder();
 
   io.a2a.grpc.SendMessageResponse.PayloadCase getPayloadCase();
 }

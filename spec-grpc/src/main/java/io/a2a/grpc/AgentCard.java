@@ -36,13 +36,11 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private AgentCard() {
-    protocolVersion_ = "";
+    protocolVersions_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
     name_ = "";
     description_ = "";
     supportedInterfaces_ = java.util.Collections.emptyList();
-    url_ = "";
-    preferredTransport_ = "";
-    additionalInterfaces_ = java.util.Collections.emptyList();
     version_ = "";
     documentationUrl_ = "";
     security_ = java.util.Collections.emptyList();
@@ -81,66 +79,69 @@ private static final long serialVersionUID = 0L;
   }
 
   private int bitField0_;
-  public static final int PROTOCOL_VERSION_FIELD_NUMBER = 16;
+  public static final int PROTOCOL_VERSIONS_FIELD_NUMBER = 16;
   @SuppressWarnings("serial")
-  private volatile java.lang.Object protocolVersion_ = "";
+  private com.google.protobuf.LazyStringArrayList protocolVersions_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    * <pre>
-   * The version of the A2A protocol this agent supports.
-   * Default: "1.0"
+   * The versions of the A2A protocol this agent supports.
+   * For stable versions (1.x+), list only the latest supported minor version per major version.
+   * For legacy experimental versions (0.x), explicitly list each supported version.
+   * Default: ["1.0"]
    * </pre>
    *
-   * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return Whether the protocolVersion field is set.
+   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return A list containing the protocolVersions.
    */
-  @java.lang.Override
-  public boolean hasProtocolVersion() {
-    return ((bitField0_ & 0x00000001) != 0);
+  public com.google.protobuf.ProtocolStringList
+      getProtocolVersionsList() {
+    return protocolVersions_;
   }
   /**
    * <pre>
-   * The version of the A2A protocol this agent supports.
-   * Default: "1.0"
+   * The versions of the A2A protocol this agent supports.
+   * For stable versions (1.x+), list only the latest supported minor version per major version.
+   * For legacy experimental versions (0.x), explicitly list each supported version.
+   * Default: ["1.0"]
    * </pre>
    *
-   * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The protocolVersion.
+   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The count of protocolVersions.
    */
-  @java.lang.Override
-  public java.lang.String getProtocolVersion() {
-    java.lang.Object ref = protocolVersion_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      protocolVersion_ = s;
-      return s;
-    }
+  public int getProtocolVersionsCount() {
+    return protocolVersions_.size();
   }
   /**
    * <pre>
-   * The version of the A2A protocol this agent supports.
-   * Default: "1.0"
+   * The versions of the A2A protocol this agent supports.
+   * For stable versions (1.x+), list only the latest supported minor version per major version.
+   * For legacy experimental versions (0.x), explicitly list each supported version.
+   * Default: ["1.0"]
    * </pre>
    *
-   * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The bytes for protocolVersion.
+   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @param index The index of the element to return.
+   * @return The protocolVersions at the given index.
    */
-  @java.lang.Override
+  public java.lang.String getProtocolVersions(int index) {
+    return protocolVersions_.get(index);
+  }
+  /**
+   * <pre>
+   * The versions of the A2A protocol this agent supports.
+   * For stable versions (1.x+), list only the latest supported minor version per major version.
+   * For legacy experimental versions (0.x), explicitly list each supported version.
+   * Default: ["1.0"]
+   * </pre>
+   *
+   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the protocolVersions at the given index.
+   */
   public com.google.protobuf.ByteString
-      getProtocolVersionBytes() {
-    java.lang.Object ref = protocolVersion_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      protocolVersion_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
+      getProtocolVersionsBytes(int index) {
+    return protocolVersions_.getByteString(index);
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
@@ -251,7 +252,7 @@ private static final long serialVersionUID = 0L;
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.AgentInterface> getSupportedInterfacesList() {
@@ -262,7 +263,7 @@ private static final long serialVersionUID = 0L;
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
@@ -274,7 +275,7 @@ private static final long serialVersionUID = 0L;
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public int getSupportedInterfacesCount() {
@@ -285,7 +286,7 @@ private static final long serialVersionUID = 0L;
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentInterface getSupportedInterfaces(int index) {
@@ -296,203 +297,12 @@ private static final long serialVersionUID = 0L;
    * Ordered list of supported interfaces. First entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentInterfaceOrBuilder getSupportedInterfacesOrBuilder(
       int index) {
     return supportedInterfaces_.get(index);
-  }
-
-  public static final int URL_FIELD_NUMBER = 3;
-  @SuppressWarnings("serial")
-  private volatile java.lang.Object url_ = "";
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string url = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.url is deprecated.
-   *     See a2a.proto;l=426
-   * @return Whether the url field is set.
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public boolean hasUrl() {
-    return ((bitField0_ & 0x00000002) != 0);
-  }
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string url = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.url is deprecated.
-   *     See a2a.proto;l=426
-   * @return The url.
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public java.lang.String getUrl() {
-    java.lang.Object ref = url_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      url_ = s;
-      return s;
-    }
-  }
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string url = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.url is deprecated.
-   *     See a2a.proto;l=426
-   * @return The bytes for url.
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public com.google.protobuf.ByteString
-      getUrlBytes() {
-    java.lang.Object ref = url_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      url_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int PREFERRED_TRANSPORT_FIELD_NUMBER = 14;
-  @SuppressWarnings("serial")
-  private volatile java.lang.Object preferredTransport_ = "";
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-   *     See a2a.proto;l=428
-   * @return Whether the preferredTransport field is set.
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public boolean hasPreferredTransport() {
-    return ((bitField0_ & 0x00000004) != 0);
-  }
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-   *     See a2a.proto;l=428
-   * @return The preferredTransport.
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public java.lang.String getPreferredTransport() {
-    java.lang.Object ref = preferredTransport_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      preferredTransport_ = s;
-      return s;
-    }
-  }
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-   * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-   *     See a2a.proto;l=428
-   * @return The bytes for preferredTransport.
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public com.google.protobuf.ByteString
-      getPreferredTransportBytes() {
-    java.lang.Object ref = preferredTransport_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      preferredTransport_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int ADDITIONAL_INTERFACES_FIELD_NUMBER = 15;
-  @SuppressWarnings("serial")
-  private java.util.List<io.a2a.grpc.AgentInterface> additionalInterfaces_;
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public java.util.List<io.a2a.grpc.AgentInterface> getAdditionalInterfacesList() {
-    return additionalInterfaces_;
-  }
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
-      getAdditionalInterfacesOrBuilderList() {
-    return additionalInterfaces_;
-  }
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public int getAdditionalInterfacesCount() {
-    return additionalInterfaces_.size();
-  }
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public io.a2a.grpc.AgentInterface getAdditionalInterfaces(int index) {
-    return additionalInterfaces_.get(index);
-  }
-  /**
-   * <pre>
-   * DEPRECATED: Use 'supported_interfaces' instead.
-   * </pre>
-   *
-   * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public io.a2a.grpc.AgentInterfaceOrBuilder getAdditionalInterfacesOrBuilder(
-      int index) {
-    return additionalInterfaces_.get(index);
   }
 
   public static final int PROVIDER_FIELD_NUMBER = 4;
@@ -507,7 +317,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasProvider() {
-    return ((bitField0_ & 0x00000008) != 0);
+    return ((bitField0_ & 0x00000001) != 0);
   }
   /**
    * <pre>
@@ -595,7 +405,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasDocumentationUrl() {
-    return ((bitField0_ & 0x00000010) != 0);
+    return ((bitField0_ & 0x00000002) != 0);
   }
   /**
    * <pre>
@@ -653,7 +463,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasCapabilities() {
-    return ((bitField0_ & 0x00000020) != 0);
+    return ((bitField0_ & 0x00000004) != 0);
   }
   /**
    * <pre>
@@ -1025,33 +835,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     return skills_.get(index);
   }
 
-  public static final int SUPPORTS_EXTENDED_AGENT_CARD_FIELD_NUMBER = 13;
-  private boolean supportsExtendedAgentCard_ = false;
-  /**
-   * <pre>
-   * Whether the agent supports providing an extended agent card when authenticated.
-   * </pre>
-   *
-   * <code>optional bool supports_extended_agent_card = 13;</code>
-   * @return Whether the supportsExtendedAgentCard field is set.
-   */
-  @java.lang.Override
-  public boolean hasSupportsExtendedAgentCard() {
-    return ((bitField0_ & 0x00000040) != 0);
-  }
-  /**
-   * <pre>
-   * Whether the agent supports providing an extended agent card when authenticated.
-   * </pre>
-   *
-   * <code>optional bool supports_extended_agent_card = 13;</code>
-   * @return The supportsExtendedAgentCard.
-   */
-  @java.lang.Override
-  public boolean getSupportsExtendedAgentCard() {
-    return supportsExtendedAgentCard_;
-  }
-
   public static final int SIGNATURES_FIELD_NUMBER = 17;
   @SuppressWarnings("serial")
   private java.util.List<io.a2a.grpc.AgentCardSignature> signatures_;
@@ -1126,7 +909,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    */
   @java.lang.Override
   public boolean hasIconUrl() {
-    return ((bitField0_ & 0x00000080) != 0);
+    return ((bitField0_ & 0x00000008) != 0);
   }
   /**
    * <pre>
@@ -1192,19 +975,16 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(description_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 2, description_);
     }
-    if (((bitField0_ & 0x00000002) != 0)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 3, url_);
-    }
-    if (((bitField0_ & 0x00000008) != 0)) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(4, getProvider());
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(version_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 5, version_);
     }
-    if (((bitField0_ & 0x00000010) != 0)) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 6, documentationUrl_);
     }
-    if (((bitField0_ & 0x00000020) != 0)) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       output.writeMessage(7, getCapabilities());
     }
     com.google.protobuf.GeneratedMessage
@@ -1225,22 +1005,13 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     for (int i = 0; i < skills_.size(); i++) {
       output.writeMessage(12, skills_.get(i));
     }
-    if (((bitField0_ & 0x00000040) != 0)) {
-      output.writeBool(13, supportsExtendedAgentCard_);
-    }
-    if (((bitField0_ & 0x00000004) != 0)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 14, preferredTransport_);
-    }
-    for (int i = 0; i < additionalInterfaces_.size(); i++) {
-      output.writeMessage(15, additionalInterfaces_.get(i));
-    }
-    if (((bitField0_ & 0x00000001) != 0)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 16, protocolVersion_);
+    for (int i = 0; i < protocolVersions_.size(); i++) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 16, protocolVersions_.getRaw(i));
     }
     for (int i = 0; i < signatures_.size(); i++) {
       output.writeMessage(17, signatures_.get(i));
     }
-    if (((bitField0_ & 0x00000080) != 0)) {
+    if (((bitField0_ & 0x00000008) != 0)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 18, iconUrl_);
     }
     for (int i = 0; i < supportedInterfaces_.size(); i++) {
@@ -1261,20 +1032,17 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(description_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(2, description_);
     }
-    if (((bitField0_ & 0x00000002) != 0)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, url_);
-    }
-    if (((bitField0_ & 0x00000008) != 0)) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(4, getProvider());
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(version_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(5, version_);
     }
-    if (((bitField0_ & 0x00000010) != 0)) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(6, documentationUrl_);
     }
-    if (((bitField0_ & 0x00000020) != 0)) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(7, getCapabilities());
     }
@@ -1312,25 +1080,19 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(12, skills_.get(i));
     }
-    if (((bitField0_ & 0x00000040) != 0)) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(13, supportsExtendedAgentCard_);
-    }
-    if (((bitField0_ & 0x00000004) != 0)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(14, preferredTransport_);
-    }
-    for (int i = 0; i < additionalInterfaces_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(15, additionalInterfaces_.get(i));
-    }
-    if (((bitField0_ & 0x00000001) != 0)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(16, protocolVersion_);
+    {
+      int dataSize = 0;
+      for (int i = 0; i < protocolVersions_.size(); i++) {
+        dataSize += computeStringSizeNoTag(protocolVersions_.getRaw(i));
+      }
+      size += dataSize;
+      size += 2 * getProtocolVersionsList().size();
     }
     for (int i = 0; i < signatures_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(17, signatures_.get(i));
     }
-    if (((bitField0_ & 0x00000080) != 0)) {
+    if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(18, iconUrl_);
     }
     for (int i = 0; i < supportedInterfaces_.size(); i++) {
@@ -1352,29 +1114,14 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     io.a2a.grpc.AgentCard other = (io.a2a.grpc.AgentCard) obj;
 
-    if (hasProtocolVersion() != other.hasProtocolVersion()) return false;
-    if (hasProtocolVersion()) {
-      if (!getProtocolVersion()
-          .equals(other.getProtocolVersion())) return false;
-    }
+    if (!getProtocolVersionsList()
+        .equals(other.getProtocolVersionsList())) return false;
     if (!getName()
         .equals(other.getName())) return false;
     if (!getDescription()
         .equals(other.getDescription())) return false;
     if (!getSupportedInterfacesList()
         .equals(other.getSupportedInterfacesList())) return false;
-    if (hasUrl() != other.hasUrl()) return false;
-    if (hasUrl()) {
-      if (!getUrl()
-          .equals(other.getUrl())) return false;
-    }
-    if (hasPreferredTransport() != other.hasPreferredTransport()) return false;
-    if (hasPreferredTransport()) {
-      if (!getPreferredTransport()
-          .equals(other.getPreferredTransport())) return false;
-    }
-    if (!getAdditionalInterfacesList()
-        .equals(other.getAdditionalInterfacesList())) return false;
     if (hasProvider() != other.hasProvider()) return false;
     if (hasProvider()) {
       if (!getProvider()
@@ -1402,11 +1149,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         .equals(other.getDefaultOutputModesList())) return false;
     if (!getSkillsList()
         .equals(other.getSkillsList())) return false;
-    if (hasSupportsExtendedAgentCard() != other.hasSupportsExtendedAgentCard()) return false;
-    if (hasSupportsExtendedAgentCard()) {
-      if (getSupportsExtendedAgentCard()
-          != other.getSupportsExtendedAgentCard()) return false;
-    }
     if (!getSignaturesList()
         .equals(other.getSignaturesList())) return false;
     if (hasIconUrl() != other.hasIconUrl()) return false;
@@ -1425,9 +1167,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (hasProtocolVersion()) {
-      hash = (37 * hash) + PROTOCOL_VERSION_FIELD_NUMBER;
-      hash = (53 * hash) + getProtocolVersion().hashCode();
+    if (getProtocolVersionsCount() > 0) {
+      hash = (37 * hash) + PROTOCOL_VERSIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getProtocolVersionsList().hashCode();
     }
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
@@ -1436,18 +1178,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     if (getSupportedInterfacesCount() > 0) {
       hash = (37 * hash) + SUPPORTED_INTERFACES_FIELD_NUMBER;
       hash = (53 * hash) + getSupportedInterfacesList().hashCode();
-    }
-    if (hasUrl()) {
-      hash = (37 * hash) + URL_FIELD_NUMBER;
-      hash = (53 * hash) + getUrl().hashCode();
-    }
-    if (hasPreferredTransport()) {
-      hash = (37 * hash) + PREFERRED_TRANSPORT_FIELD_NUMBER;
-      hash = (53 * hash) + getPreferredTransport().hashCode();
-    }
-    if (getAdditionalInterfacesCount() > 0) {
-      hash = (37 * hash) + ADDITIONAL_INTERFACES_FIELD_NUMBER;
-      hash = (53 * hash) + getAdditionalInterfacesList().hashCode();
     }
     if (hasProvider()) {
       hash = (37 * hash) + PROVIDER_FIELD_NUMBER;
@@ -1482,11 +1212,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     if (getSkillsCount() > 0) {
       hash = (37 * hash) + SKILLS_FIELD_NUMBER;
       hash = (53 * hash) + getSkillsList().hashCode();
-    }
-    if (hasSupportsExtendedAgentCard()) {
-      hash = (37 * hash) + SUPPORTS_EXTENDED_AGENT_CARD_FIELD_NUMBER;
-      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-          getSupportsExtendedAgentCard());
     }
     if (getSignaturesCount() > 0) {
       hash = (37 * hash) + SIGNATURES_FIELD_NUMBER;
@@ -1657,7 +1382,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
         internalGetSupportedInterfacesFieldBuilder();
-        internalGetAdditionalInterfacesFieldBuilder();
         internalGetProviderFieldBuilder();
         internalGetCapabilitiesFieldBuilder();
         internalGetSecurityFieldBuilder();
@@ -1669,7 +1393,8 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      protocolVersion_ = "";
+      protocolVersions_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
       name_ = "";
       description_ = "";
       if (supportedInterfacesBuilder_ == null) {
@@ -1679,15 +1404,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         supportedInterfacesBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000008);
-      url_ = "";
-      preferredTransport_ = "";
-      if (additionalInterfacesBuilder_ == null) {
-        additionalInterfaces_ = java.util.Collections.emptyList();
-      } else {
-        additionalInterfaces_ = null;
-        additionalInterfacesBuilder_.clear();
-      }
-      bitField0_ = (bitField0_ & ~0x00000040);
       provider_ = null;
       if (providerBuilder_ != null) {
         providerBuilder_.dispose();
@@ -1707,7 +1423,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         security_ = null;
         securityBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00001000);
+      bitField0_ = (bitField0_ & ~0x00000200);
       defaultInputModes_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
       defaultOutputModes_ =
@@ -1718,15 +1434,14 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         skills_ = null;
         skillsBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00008000);
-      supportsExtendedAgentCard_ = false;
+      bitField0_ = (bitField0_ & ~0x00001000);
       if (signaturesBuilder_ == null) {
         signatures_ = java.util.Collections.emptyList();
       } else {
         signatures_ = null;
         signaturesBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00020000);
+      bitField0_ = (bitField0_ & ~0x00002000);
       iconUrl_ = "";
       return this;
     }
@@ -1770,37 +1485,28 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       } else {
         result.supportedInterfaces_ = supportedInterfacesBuilder_.build();
       }
-      if (additionalInterfacesBuilder_ == null) {
-        if (((bitField0_ & 0x00000040) != 0)) {
-          additionalInterfaces_ = java.util.Collections.unmodifiableList(additionalInterfaces_);
-          bitField0_ = (bitField0_ & ~0x00000040);
-        }
-        result.additionalInterfaces_ = additionalInterfaces_;
-      } else {
-        result.additionalInterfaces_ = additionalInterfacesBuilder_.build();
-      }
       if (securityBuilder_ == null) {
-        if (((bitField0_ & 0x00001000) != 0)) {
+        if (((bitField0_ & 0x00000200) != 0)) {
           security_ = java.util.Collections.unmodifiableList(security_);
-          bitField0_ = (bitField0_ & ~0x00001000);
+          bitField0_ = (bitField0_ & ~0x00000200);
         }
         result.security_ = security_;
       } else {
         result.security_ = securityBuilder_.build();
       }
       if (skillsBuilder_ == null) {
-        if (((bitField0_ & 0x00008000) != 0)) {
+        if (((bitField0_ & 0x00001000) != 0)) {
           skills_ = java.util.Collections.unmodifiableList(skills_);
-          bitField0_ = (bitField0_ & ~0x00008000);
+          bitField0_ = (bitField0_ & ~0x00001000);
         }
         result.skills_ = skills_;
       } else {
         result.skills_ = skillsBuilder_.build();
       }
       if (signaturesBuilder_ == null) {
-        if (((bitField0_ & 0x00020000) != 0)) {
+        if (((bitField0_ & 0x00002000) != 0)) {
           signatures_ = java.util.Collections.unmodifiableList(signatures_);
-          bitField0_ = (bitField0_ & ~0x00020000);
+          bitField0_ = (bitField0_ & ~0x00002000);
         }
         result.signatures_ = signatures_;
       } else {
@@ -1810,10 +1516,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
 
     private void buildPartial0(io.a2a.grpc.AgentCard result) {
       int from_bitField0_ = bitField0_;
-      int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000001) != 0)) {
-        result.protocolVersion_ = protocolVersion_;
-        to_bitField0_ |= 0x00000001;
+        protocolVersions_.makeImmutable();
+        result.protocolVersions_ = protocolVersions_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.name_ = name_;
@@ -1821,51 +1526,40 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.description_ = description_;
       }
+      int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000010) != 0)) {
-        result.url_ = url_;
-        to_bitField0_ |= 0x00000002;
-      }
-      if (((from_bitField0_ & 0x00000020) != 0)) {
-        result.preferredTransport_ = preferredTransport_;
-        to_bitField0_ |= 0x00000004;
-      }
-      if (((from_bitField0_ & 0x00000080) != 0)) {
         result.provider_ = providerBuilder_ == null
             ? provider_
             : providerBuilder_.build();
-        to_bitField0_ |= 0x00000008;
+        to_bitField0_ |= 0x00000001;
       }
-      if (((from_bitField0_ & 0x00000100) != 0)) {
+      if (((from_bitField0_ & 0x00000020) != 0)) {
         result.version_ = version_;
       }
-      if (((from_bitField0_ & 0x00000200) != 0)) {
+      if (((from_bitField0_ & 0x00000040) != 0)) {
         result.documentationUrl_ = documentationUrl_;
-        to_bitField0_ |= 0x00000010;
+        to_bitField0_ |= 0x00000002;
       }
-      if (((from_bitField0_ & 0x00000400) != 0)) {
+      if (((from_bitField0_ & 0x00000080) != 0)) {
         result.capabilities_ = capabilitiesBuilder_ == null
             ? capabilities_
             : capabilitiesBuilder_.build();
-        to_bitField0_ |= 0x00000020;
+        to_bitField0_ |= 0x00000004;
       }
-      if (((from_bitField0_ & 0x00000800) != 0)) {
+      if (((from_bitField0_ & 0x00000100) != 0)) {
         result.securitySchemes_ = internalGetSecuritySchemes().build(SecuritySchemesDefaultEntryHolder.defaultEntry);
       }
-      if (((from_bitField0_ & 0x00002000) != 0)) {
+      if (((from_bitField0_ & 0x00000400) != 0)) {
         defaultInputModes_.makeImmutable();
         result.defaultInputModes_ = defaultInputModes_;
       }
-      if (((from_bitField0_ & 0x00004000) != 0)) {
+      if (((from_bitField0_ & 0x00000800) != 0)) {
         defaultOutputModes_.makeImmutable();
         result.defaultOutputModes_ = defaultOutputModes_;
       }
-      if (((from_bitField0_ & 0x00010000) != 0)) {
-        result.supportsExtendedAgentCard_ = supportsExtendedAgentCard_;
-        to_bitField0_ |= 0x00000040;
-      }
-      if (((from_bitField0_ & 0x00040000) != 0)) {
+      if (((from_bitField0_ & 0x00004000) != 0)) {
         result.iconUrl_ = iconUrl_;
-        to_bitField0_ |= 0x00000080;
+        to_bitField0_ |= 0x00000008;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1882,9 +1576,14 @@ io.a2a.grpc.SecurityScheme defaultValue) {
 
     public Builder mergeFrom(io.a2a.grpc.AgentCard other) {
       if (other == io.a2a.grpc.AgentCard.getDefaultInstance()) return this;
-      if (other.hasProtocolVersion()) {
-        protocolVersion_ = other.protocolVersion_;
-        bitField0_ |= 0x00000001;
+      if (!other.protocolVersions_.isEmpty()) {
+        if (protocolVersions_.isEmpty()) {
+          protocolVersions_ = other.protocolVersions_;
+          bitField0_ |= 0x00000001;
+        } else {
+          ensureProtocolVersionsIsMutable();
+          protocolVersions_.addAll(other.protocolVersions_);
+        }
         onChanged();
       }
       if (!other.getName().isEmpty()) {
@@ -1923,53 +1622,17 @@ io.a2a.grpc.SecurityScheme defaultValue) {
           }
         }
       }
-      if (other.hasUrl()) {
-        url_ = other.url_;
-        bitField0_ |= 0x00000010;
-        onChanged();
-      }
-      if (other.hasPreferredTransport()) {
-        preferredTransport_ = other.preferredTransport_;
-        bitField0_ |= 0x00000020;
-        onChanged();
-      }
-      if (additionalInterfacesBuilder_ == null) {
-        if (!other.additionalInterfaces_.isEmpty()) {
-          if (additionalInterfaces_.isEmpty()) {
-            additionalInterfaces_ = other.additionalInterfaces_;
-            bitField0_ = (bitField0_ & ~0x00000040);
-          } else {
-            ensureAdditionalInterfacesIsMutable();
-            additionalInterfaces_.addAll(other.additionalInterfaces_);
-          }
-          onChanged();
-        }
-      } else {
-        if (!other.additionalInterfaces_.isEmpty()) {
-          if (additionalInterfacesBuilder_.isEmpty()) {
-            additionalInterfacesBuilder_.dispose();
-            additionalInterfacesBuilder_ = null;
-            additionalInterfaces_ = other.additionalInterfaces_;
-            bitField0_ = (bitField0_ & ~0x00000040);
-            additionalInterfacesBuilder_ = 
-              com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                 internalGetAdditionalInterfacesFieldBuilder() : null;
-          } else {
-            additionalInterfacesBuilder_.addAllMessages(other.additionalInterfaces_);
-          }
-        }
-      }
       if (other.hasProvider()) {
         mergeProvider(other.getProvider());
       }
       if (!other.getVersion().isEmpty()) {
         version_ = other.version_;
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000020;
         onChanged();
       }
       if (other.hasDocumentationUrl()) {
         documentationUrl_ = other.documentationUrl_;
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00000040;
         onChanged();
       }
       if (other.hasCapabilities()) {
@@ -1977,12 +1640,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       }
       internalGetMutableSecuritySchemes().mergeFrom(
           other.internalGetSecuritySchemes());
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000100;
       if (securityBuilder_ == null) {
         if (!other.security_.isEmpty()) {
           if (security_.isEmpty()) {
             security_ = other.security_;
-            bitField0_ = (bitField0_ & ~0x00001000);
+            bitField0_ = (bitField0_ & ~0x00000200);
           } else {
             ensureSecurityIsMutable();
             security_.addAll(other.security_);
@@ -1995,7 +1658,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
             securityBuilder_.dispose();
             securityBuilder_ = null;
             security_ = other.security_;
-            bitField0_ = (bitField0_ & ~0x00001000);
+            bitField0_ = (bitField0_ & ~0x00000200);
             securityBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSecurityFieldBuilder() : null;
@@ -2007,7 +1670,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (!other.defaultInputModes_.isEmpty()) {
         if (defaultInputModes_.isEmpty()) {
           defaultInputModes_ = other.defaultInputModes_;
-          bitField0_ |= 0x00002000;
+          bitField0_ |= 0x00000400;
         } else {
           ensureDefaultInputModesIsMutable();
           defaultInputModes_.addAll(other.defaultInputModes_);
@@ -2017,7 +1680,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (!other.defaultOutputModes_.isEmpty()) {
         if (defaultOutputModes_.isEmpty()) {
           defaultOutputModes_ = other.defaultOutputModes_;
-          bitField0_ |= 0x00004000;
+          bitField0_ |= 0x00000800;
         } else {
           ensureDefaultOutputModesIsMutable();
           defaultOutputModes_.addAll(other.defaultOutputModes_);
@@ -2028,7 +1691,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         if (!other.skills_.isEmpty()) {
           if (skills_.isEmpty()) {
             skills_ = other.skills_;
-            bitField0_ = (bitField0_ & ~0x00008000);
+            bitField0_ = (bitField0_ & ~0x00001000);
           } else {
             ensureSkillsIsMutable();
             skills_.addAll(other.skills_);
@@ -2041,7 +1704,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
             skillsBuilder_.dispose();
             skillsBuilder_ = null;
             skills_ = other.skills_;
-            bitField0_ = (bitField0_ & ~0x00008000);
+            bitField0_ = (bitField0_ & ~0x00001000);
             skillsBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSkillsFieldBuilder() : null;
@@ -2050,14 +1713,11 @@ io.a2a.grpc.SecurityScheme defaultValue) {
           }
         }
       }
-      if (other.hasSupportsExtendedAgentCard()) {
-        setSupportsExtendedAgentCard(other.getSupportsExtendedAgentCard());
-      }
       if (signaturesBuilder_ == null) {
         if (!other.signatures_.isEmpty()) {
           if (signatures_.isEmpty()) {
             signatures_ = other.signatures_;
-            bitField0_ = (bitField0_ & ~0x00020000);
+            bitField0_ = (bitField0_ & ~0x00002000);
           } else {
             ensureSignaturesIsMutable();
             signatures_.addAll(other.signatures_);
@@ -2070,7 +1730,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
             signaturesBuilder_.dispose();
             signaturesBuilder_ = null;
             signatures_ = other.signatures_;
-            bitField0_ = (bitField0_ & ~0x00020000);
+            bitField0_ = (bitField0_ & ~0x00002000);
             signaturesBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSignaturesFieldBuilder() : null;
@@ -2081,7 +1741,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       }
       if (other.hasIconUrl()) {
         iconUrl_ = other.iconUrl_;
-        bitField0_ |= 0x00040000;
+        bitField0_ |= 0x00004000;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -2120,33 +1780,28 @@ io.a2a.grpc.SecurityScheme defaultValue) {
               bitField0_ |= 0x00000004;
               break;
             } // case 18
-            case 26: {
-              url_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000010;
-              break;
-            } // case 26
             case 34: {
               input.readMessage(
                   internalGetProviderFieldBuilder().getBuilder(),
                   extensionRegistry);
-              bitField0_ |= 0x00000080;
+              bitField0_ |= 0x00000010;
               break;
             } // case 34
             case 42: {
               version_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000020;
               break;
             } // case 42
             case 50: {
               documentationUrl_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000200;
+              bitField0_ |= 0x00000040;
               break;
             } // case 50
             case 58: {
               input.readMessage(
                   internalGetCapabilitiesFieldBuilder().getBuilder(),
                   extensionRegistry);
-              bitField0_ |= 0x00000400;
+              bitField0_ |= 0x00000080;
               break;
             } // case 58
             case 66: {
@@ -2155,7 +1810,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
                   SecuritySchemesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
               internalGetMutableSecuritySchemes().ensureBuilderMap().put(
                   securitySchemes__.getKey(), securitySchemes__.getValue());
-              bitField0_ |= 0x00000800;
+              bitField0_ |= 0x00000100;
               break;
             } // case 66
             case 74: {
@@ -2196,32 +1851,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
               }
               break;
             } // case 98
-            case 104: {
-              supportsExtendedAgentCard_ = input.readBool();
-              bitField0_ |= 0x00010000;
-              break;
-            } // case 104
-            case 114: {
-              preferredTransport_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000020;
-              break;
-            } // case 114
-            case 122: {
-              io.a2a.grpc.AgentInterface m =
-                  input.readMessage(
-                      io.a2a.grpc.AgentInterface.parser(),
-                      extensionRegistry);
-              if (additionalInterfacesBuilder_ == null) {
-                ensureAdditionalInterfacesIsMutable();
-                additionalInterfaces_.add(m);
-              } else {
-                additionalInterfacesBuilder_.addMessage(m);
-              }
-              break;
-            } // case 122
             case 130: {
-              protocolVersion_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000001;
+              java.lang.String s = input.readStringRequireUtf8();
+              ensureProtocolVersionsIsMutable();
+              protocolVersions_.add(s);
               break;
             } // case 130
             case 138: {
@@ -2239,7 +1872,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
             } // case 138
             case 146: {
               iconUrl_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00040000;
+              bitField0_ |= 0x00004000;
               break;
             } // case 146
             case 154: {
@@ -2272,110 +1905,175 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     private int bitField0_;
 
-    private java.lang.Object protocolVersion_ = "";
-    /**
-     * <pre>
-     * The version of the A2A protocol this agent supports.
-     * Default: "1.0"
-     * </pre>
-     *
-     * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return Whether the protocolVersion field is set.
-     */
-    public boolean hasProtocolVersion() {
-      return ((bitField0_ & 0x00000001) != 0);
-    }
-    /**
-     * <pre>
-     * The version of the A2A protocol this agent supports.
-     * Default: "1.0"
-     * </pre>
-     *
-     * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return The protocolVersion.
-     */
-    public java.lang.String getProtocolVersion() {
-      java.lang.Object ref = protocolVersion_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        protocolVersion_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
+    private com.google.protobuf.LazyStringArrayList protocolVersions_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    private void ensureProtocolVersionsIsMutable() {
+      if (!protocolVersions_.isModifiable()) {
+        protocolVersions_ = new com.google.protobuf.LazyStringArrayList(protocolVersions_);
       }
+      bitField0_ |= 0x00000001;
     }
     /**
      * <pre>
-     * The version of the A2A protocol this agent supports.
-     * Default: "1.0"
+     * The versions of the A2A protocol this agent supports.
+     * For stable versions (1.x+), list only the latest supported minor version per major version.
+     * For legacy experimental versions (0.x), explicitly list each supported version.
+     * Default: ["1.0"]
      * </pre>
      *
-     * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return The bytes for protocolVersion.
+     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return A list containing the protocolVersions.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getProtocolVersionsList() {
+      protocolVersions_.makeImmutable();
+      return protocolVersions_;
+    }
+    /**
+     * <pre>
+     * The versions of the A2A protocol this agent supports.
+     * For stable versions (1.x+), list only the latest supported minor version per major version.
+     * For legacy experimental versions (0.x), explicitly list each supported version.
+     * Default: ["1.0"]
+     * </pre>
+     *
+     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The count of protocolVersions.
+     */
+    public int getProtocolVersionsCount() {
+      return protocolVersions_.size();
+    }
+    /**
+     * <pre>
+     * The versions of the A2A protocol this agent supports.
+     * For stable versions (1.x+), list only the latest supported minor version per major version.
+     * For legacy experimental versions (0.x), explicitly list each supported version.
+     * Default: ["1.0"]
+     * </pre>
+     *
+     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param index The index of the element to return.
+     * @return The protocolVersions at the given index.
+     */
+    public java.lang.String getProtocolVersions(int index) {
+      return protocolVersions_.get(index);
+    }
+    /**
+     * <pre>
+     * The versions of the A2A protocol this agent supports.
+     * For stable versions (1.x+), list only the latest supported minor version per major version.
+     * For legacy experimental versions (0.x), explicitly list each supported version.
+     * Default: ["1.0"]
+     * </pre>
+     *
+     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the protocolVersions at the given index.
      */
     public com.google.protobuf.ByteString
-        getProtocolVersionBytes() {
-      java.lang.Object ref = protocolVersion_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        protocolVersion_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+        getProtocolVersionsBytes(int index) {
+      return protocolVersions_.getByteString(index);
     }
     /**
      * <pre>
-     * The version of the A2A protocol this agent supports.
-     * Default: "1.0"
+     * The versions of the A2A protocol this agent supports.
+     * For stable versions (1.x+), list only the latest supported minor version per major version.
+     * For legacy experimental versions (0.x), explicitly list each supported version.
+     * Default: ["1.0"]
      * </pre>
      *
-     * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param value The protocolVersion to set.
+     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param index The index to set the value at.
+     * @param value The protocolVersions to set.
      * @return This builder for chaining.
      */
-    public Builder setProtocolVersion(
-        java.lang.String value) {
+    public Builder setProtocolVersions(
+        int index, java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
-      protocolVersion_ = value;
+      ensureProtocolVersionsIsMutable();
+      protocolVersions_.set(index, value);
       bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The version of the A2A protocol this agent supports.
-     * Default: "1.0"
+     * The versions of the A2A protocol this agent supports.
+     * For stable versions (1.x+), list only the latest supported minor version per major version.
+     * For legacy experimental versions (0.x), explicitly list each supported version.
+     * Default: ["1.0"]
      * </pre>
      *
-     * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The protocolVersions to add.
      * @return This builder for chaining.
      */
-    public Builder clearProtocolVersion() {
-      protocolVersion_ = getDefaultInstance().getProtocolVersion();
-      bitField0_ = (bitField0_ & ~0x00000001);
+    public Builder addProtocolVersions(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      ensureProtocolVersionsIsMutable();
+      protocolVersions_.add(value);
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The version of the A2A protocol this agent supports.
-     * Default: "1.0"
+     * The versions of the A2A protocol this agent supports.
+     * For stable versions (1.x+), list only the latest supported minor version per major version.
+     * For legacy experimental versions (0.x), explicitly list each supported version.
+     * Default: ["1.0"]
      * </pre>
      *
-     * <code>optional string protocol_version = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param value The bytes for protocolVersion to set.
+     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param values The protocolVersions to add.
      * @return This builder for chaining.
      */
-    public Builder setProtocolVersionBytes(
+    public Builder addAllProtocolVersions(
+        java.lang.Iterable<java.lang.String> values) {
+      ensureProtocolVersionsIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, protocolVersions_);
+      bitField0_ |= 0x00000001;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The versions of the A2A protocol this agent supports.
+     * For stable versions (1.x+), list only the latest supported minor version per major version.
+     * For legacy experimental versions (0.x), explicitly list each supported version.
+     * Default: ["1.0"]
+     * </pre>
+     *
+     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearProtocolVersions() {
+      protocolVersions_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+      bitField0_ = (bitField0_ & ~0x00000001);;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The versions of the A2A protocol this agent supports.
+     * For stable versions (1.x+), list only the latest supported minor version per major version.
+     * For legacy experimental versions (0.x), explicitly list each supported version.
+     * Default: ["1.0"]
+     * </pre>
+     *
+     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The bytes of the protocolVersions to add.
+     * @return This builder for chaining.
+     */
+    public Builder addProtocolVersionsBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
-      protocolVersion_ = value;
+      ensureProtocolVersionsIsMutable();
+      protocolVersions_.add(value);
       bitField0_ |= 0x00000001;
       onChanged();
       return this;
@@ -2597,7 +2295,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.AgentInterface> getSupportedInterfacesList() {
       if (supportedInterfacesBuilder_ == null) {
@@ -2611,7 +2309,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public int getSupportedInterfacesCount() {
       if (supportedInterfacesBuilder_ == null) {
@@ -2625,7 +2323,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterface getSupportedInterfaces(int index) {
       if (supportedInterfacesBuilder_ == null) {
@@ -2639,7 +2337,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setSupportedInterfaces(
         int index, io.a2a.grpc.AgentInterface value) {
@@ -2660,7 +2358,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setSupportedInterfaces(
         int index, io.a2a.grpc.AgentInterface.Builder builderForValue) {
@@ -2678,7 +2376,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSupportedInterfaces(io.a2a.grpc.AgentInterface value) {
       if (supportedInterfacesBuilder_ == null) {
@@ -2698,7 +2396,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSupportedInterfaces(
         int index, io.a2a.grpc.AgentInterface value) {
@@ -2719,7 +2417,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSupportedInterfaces(
         io.a2a.grpc.AgentInterface.Builder builderForValue) {
@@ -2737,7 +2435,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSupportedInterfaces(
         int index, io.a2a.grpc.AgentInterface.Builder builderForValue) {
@@ -2755,7 +2453,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addAllSupportedInterfaces(
         java.lang.Iterable<? extends io.a2a.grpc.AgentInterface> values) {
@@ -2774,7 +2472,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearSupportedInterfaces() {
       if (supportedInterfacesBuilder_ == null) {
@@ -2791,7 +2489,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder removeSupportedInterfaces(int index) {
       if (supportedInterfacesBuilder_ == null) {
@@ -2808,7 +2506,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterface.Builder getSupportedInterfacesBuilder(
         int index) {
@@ -2819,7 +2517,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterfaceOrBuilder getSupportedInterfacesOrBuilder(
         int index) {
@@ -2833,7 +2531,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
          getSupportedInterfacesOrBuilderList() {
@@ -2848,7 +2546,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterface.Builder addSupportedInterfacesBuilder() {
       return internalGetSupportedInterfacesFieldBuilder().addBuilder(
@@ -2859,7 +2557,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterface.Builder addSupportedInterfacesBuilder(
         int index) {
@@ -2871,7 +2569,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Ordered list of supported interfaces. First entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19;</code>
+     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.AgentInterface.Builder> 
          getSupportedInterfacesBuilderList() {
@@ -2892,548 +2590,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       return supportedInterfacesBuilder_;
     }
 
-    private java.lang.Object url_ = "";
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string url = 3 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.url is deprecated.
-     *     See a2a.proto;l=426
-     * @return Whether the url field is set.
-     */
-    @java.lang.Deprecated public boolean hasUrl() {
-      return ((bitField0_ & 0x00000010) != 0);
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string url = 3 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.url is deprecated.
-     *     See a2a.proto;l=426
-     * @return The url.
-     */
-    @java.lang.Deprecated public java.lang.String getUrl() {
-      java.lang.Object ref = url_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        url_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string url = 3 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.url is deprecated.
-     *     See a2a.proto;l=426
-     * @return The bytes for url.
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getUrlBytes() {
-      java.lang.Object ref = url_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        url_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string url = 3 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.url is deprecated.
-     *     See a2a.proto;l=426
-     * @param value The url to set.
-     * @return This builder for chaining.
-     */
-    @java.lang.Deprecated public Builder setUrl(
-        java.lang.String value) {
-      if (value == null) { throw new NullPointerException(); }
-      url_ = value;
-      bitField0_ |= 0x00000010;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string url = 3 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.url is deprecated.
-     *     See a2a.proto;l=426
-     * @return This builder for chaining.
-     */
-    @java.lang.Deprecated public Builder clearUrl() {
-      url_ = getDefaultInstance().getUrl();
-      bitField0_ = (bitField0_ & ~0x00000010);
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string url = 3 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.url is deprecated.
-     *     See a2a.proto;l=426
-     * @param value The bytes for url to set.
-     * @return This builder for chaining.
-     */
-    @java.lang.Deprecated public Builder setUrlBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) { throw new NullPointerException(); }
-      checkByteStringIsUtf8(value);
-      url_ = value;
-      bitField0_ |= 0x00000010;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object preferredTransport_ = "";
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-     *     See a2a.proto;l=428
-     * @return Whether the preferredTransport field is set.
-     */
-    @java.lang.Deprecated public boolean hasPreferredTransport() {
-      return ((bitField0_ & 0x00000020) != 0);
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-     *     See a2a.proto;l=428
-     * @return The preferredTransport.
-     */
-    @java.lang.Deprecated public java.lang.String getPreferredTransport() {
-      java.lang.Object ref = preferredTransport_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        preferredTransport_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-     *     See a2a.proto;l=428
-     * @return The bytes for preferredTransport.
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getPreferredTransportBytes() {
-      java.lang.Object ref = preferredTransport_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        preferredTransport_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-     *     See a2a.proto;l=428
-     * @param value The preferredTransport to set.
-     * @return This builder for chaining.
-     */
-    @java.lang.Deprecated public Builder setPreferredTransport(
-        java.lang.String value) {
-      if (value == null) { throw new NullPointerException(); }
-      preferredTransport_ = value;
-      bitField0_ |= 0x00000020;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-     *     See a2a.proto;l=428
-     * @return This builder for chaining.
-     */
-    @java.lang.Deprecated public Builder clearPreferredTransport() {
-      preferredTransport_ = getDefaultInstance().getPreferredTransport();
-      bitField0_ = (bitField0_ & ~0x00000020);
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>optional string preferred_transport = 14 [deprecated = true];</code>
-     * @deprecated a2a.v1.AgentCard.preferred_transport is deprecated.
-     *     See a2a.proto;l=428
-     * @param value The bytes for preferredTransport to set.
-     * @return This builder for chaining.
-     */
-    @java.lang.Deprecated public Builder setPreferredTransportBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) { throw new NullPointerException(); }
-      checkByteStringIsUtf8(value);
-      preferredTransport_ = value;
-      bitField0_ |= 0x00000020;
-      onChanged();
-      return this;
-    }
-
-    private java.util.List<io.a2a.grpc.AgentInterface> additionalInterfaces_ =
-      java.util.Collections.emptyList();
-    private void ensureAdditionalInterfacesIsMutable() {
-      if (!((bitField0_ & 0x00000040) != 0)) {
-        additionalInterfaces_ = new java.util.ArrayList<io.a2a.grpc.AgentInterface>(additionalInterfaces_);
-        bitField0_ |= 0x00000040;
-       }
-    }
-
-    private com.google.protobuf.RepeatedFieldBuilder<
-        io.a2a.grpc.AgentInterface, io.a2a.grpc.AgentInterface.Builder, io.a2a.grpc.AgentInterfaceOrBuilder> additionalInterfacesBuilder_;
-
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.util.List<io.a2a.grpc.AgentInterface> getAdditionalInterfacesList() {
-      if (additionalInterfacesBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(additionalInterfaces_);
-      } else {
-        return additionalInterfacesBuilder_.getMessageList();
-      }
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public int getAdditionalInterfacesCount() {
-      if (additionalInterfacesBuilder_ == null) {
-        return additionalInterfaces_.size();
-      } else {
-        return additionalInterfacesBuilder_.getCount();
-      }
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public io.a2a.grpc.AgentInterface getAdditionalInterfaces(int index) {
-      if (additionalInterfacesBuilder_ == null) {
-        return additionalInterfaces_.get(index);
-      } else {
-        return additionalInterfacesBuilder_.getMessage(index);
-      }
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public Builder setAdditionalInterfaces(
-        int index, io.a2a.grpc.AgentInterface value) {
-      if (additionalInterfacesBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureAdditionalInterfacesIsMutable();
-        additionalInterfaces_.set(index, value);
-        onChanged();
-      } else {
-        additionalInterfacesBuilder_.setMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public Builder setAdditionalInterfaces(
-        int index, io.a2a.grpc.AgentInterface.Builder builderForValue) {
-      if (additionalInterfacesBuilder_ == null) {
-        ensureAdditionalInterfacesIsMutable();
-        additionalInterfaces_.set(index, builderForValue.build());
-        onChanged();
-      } else {
-        additionalInterfacesBuilder_.setMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public Builder addAdditionalInterfaces(io.a2a.grpc.AgentInterface value) {
-      if (additionalInterfacesBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureAdditionalInterfacesIsMutable();
-        additionalInterfaces_.add(value);
-        onChanged();
-      } else {
-        additionalInterfacesBuilder_.addMessage(value);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public Builder addAdditionalInterfaces(
-        int index, io.a2a.grpc.AgentInterface value) {
-      if (additionalInterfacesBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureAdditionalInterfacesIsMutable();
-        additionalInterfaces_.add(index, value);
-        onChanged();
-      } else {
-        additionalInterfacesBuilder_.addMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public Builder addAdditionalInterfaces(
-        io.a2a.grpc.AgentInterface.Builder builderForValue) {
-      if (additionalInterfacesBuilder_ == null) {
-        ensureAdditionalInterfacesIsMutable();
-        additionalInterfaces_.add(builderForValue.build());
-        onChanged();
-      } else {
-        additionalInterfacesBuilder_.addMessage(builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public Builder addAdditionalInterfaces(
-        int index, io.a2a.grpc.AgentInterface.Builder builderForValue) {
-      if (additionalInterfacesBuilder_ == null) {
-        ensureAdditionalInterfacesIsMutable();
-        additionalInterfaces_.add(index, builderForValue.build());
-        onChanged();
-      } else {
-        additionalInterfacesBuilder_.addMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public Builder addAllAdditionalInterfaces(
-        java.lang.Iterable<? extends io.a2a.grpc.AgentInterface> values) {
-      if (additionalInterfacesBuilder_ == null) {
-        ensureAdditionalInterfacesIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, additionalInterfaces_);
-        onChanged();
-      } else {
-        additionalInterfacesBuilder_.addAllMessages(values);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public Builder clearAdditionalInterfaces() {
-      if (additionalInterfacesBuilder_ == null) {
-        additionalInterfaces_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000040);
-        onChanged();
-      } else {
-        additionalInterfacesBuilder_.clear();
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public Builder removeAdditionalInterfaces(int index) {
-      if (additionalInterfacesBuilder_ == null) {
-        ensureAdditionalInterfacesIsMutable();
-        additionalInterfaces_.remove(index);
-        onChanged();
-      } else {
-        additionalInterfacesBuilder_.remove(index);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public io.a2a.grpc.AgentInterface.Builder getAdditionalInterfacesBuilder(
-        int index) {
-      return internalGetAdditionalInterfacesFieldBuilder().getBuilder(index);
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public io.a2a.grpc.AgentInterfaceOrBuilder getAdditionalInterfacesOrBuilder(
-        int index) {
-      if (additionalInterfacesBuilder_ == null) {
-        return additionalInterfaces_.get(index);  } else {
-        return additionalInterfacesBuilder_.getMessageOrBuilder(index);
-      }
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
-         getAdditionalInterfacesOrBuilderList() {
-      if (additionalInterfacesBuilder_ != null) {
-        return additionalInterfacesBuilder_.getMessageOrBuilderList();
-      } else {
-        return java.util.Collections.unmodifiableList(additionalInterfaces_);
-      }
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public io.a2a.grpc.AgentInterface.Builder addAdditionalInterfacesBuilder() {
-      return internalGetAdditionalInterfacesFieldBuilder().addBuilder(
-          io.a2a.grpc.AgentInterface.getDefaultInstance());
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public io.a2a.grpc.AgentInterface.Builder addAdditionalInterfacesBuilder(
-        int index) {
-      return internalGetAdditionalInterfacesFieldBuilder().addBuilder(
-          index, io.a2a.grpc.AgentInterface.getDefaultInstance());
-    }
-    /**
-     * <pre>
-     * DEPRECATED: Use 'supported_interfaces' instead.
-     * </pre>
-     *
-     * <code>repeated .a2a.v1.AgentInterface additional_interfaces = 15 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.util.List<io.a2a.grpc.AgentInterface.Builder> 
-         getAdditionalInterfacesBuilderList() {
-      return internalGetAdditionalInterfacesFieldBuilder().getBuilderList();
-    }
-    private com.google.protobuf.RepeatedFieldBuilder<
-        io.a2a.grpc.AgentInterface, io.a2a.grpc.AgentInterface.Builder, io.a2a.grpc.AgentInterfaceOrBuilder> 
-        internalGetAdditionalInterfacesFieldBuilder() {
-      if (additionalInterfacesBuilder_ == null) {
-        additionalInterfacesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-            io.a2a.grpc.AgentInterface, io.a2a.grpc.AgentInterface.Builder, io.a2a.grpc.AgentInterfaceOrBuilder>(
-                additionalInterfaces_,
-                ((bitField0_ & 0x00000040) != 0),
-                getParentForChildren(),
-                isClean());
-        additionalInterfaces_ = null;
-      }
-      return additionalInterfacesBuilder_;
-    }
-
     private io.a2a.grpc.AgentProvider provider_;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AgentProvider, io.a2a.grpc.AgentProvider.Builder, io.a2a.grpc.AgentProviderOrBuilder> providerBuilder_;
@@ -3446,7 +2602,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * @return Whether the provider field is set.
      */
     public boolean hasProvider() {
-      return ((bitField0_ & 0x00000080) != 0);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <pre>
@@ -3479,7 +2635,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       } else {
         providerBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -3497,7 +2653,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       } else {
         providerBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -3510,7 +2666,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder mergeProvider(io.a2a.grpc.AgentProvider value) {
       if (providerBuilder_ == null) {
-        if (((bitField0_ & 0x00000080) != 0) &&
+        if (((bitField0_ & 0x00000010) != 0) &&
           provider_ != null &&
           provider_ != io.a2a.grpc.AgentProvider.getDefaultInstance()) {
           getProviderBuilder().mergeFrom(value);
@@ -3521,7 +2677,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         providerBuilder_.mergeFrom(value);
       }
       if (provider_ != null) {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000010;
         onChanged();
       }
       return this;
@@ -3534,7 +2690,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder clearProvider() {
-      bitField0_ = (bitField0_ & ~0x00000080);
+      bitField0_ = (bitField0_ & ~0x00000010);
       provider_ = null;
       if (providerBuilder_ != null) {
         providerBuilder_.dispose();
@@ -3551,7 +2707,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public io.a2a.grpc.AgentProvider.Builder getProviderBuilder() {
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000010;
       onChanged();
       return internalGetProviderFieldBuilder().getBuilder();
     }
@@ -3649,7 +2805,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       version_ = value;
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
@@ -3664,7 +2820,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder clearVersion() {
       version_ = getDefaultInstance().getVersion();
-      bitField0_ = (bitField0_ & ~0x00000100);
+      bitField0_ = (bitField0_ & ~0x00000020);
       onChanged();
       return this;
     }
@@ -3683,7 +2839,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       version_ = value;
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
@@ -3698,7 +2854,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * @return Whether the documentationUrl field is set.
      */
     public boolean hasDocumentationUrl() {
-      return ((bitField0_ & 0x00000200) != 0);
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      * <pre>
@@ -3754,7 +2910,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       documentationUrl_ = value;
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -3768,7 +2924,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder clearDocumentationUrl() {
       documentationUrl_ = getDefaultInstance().getDocumentationUrl();
-      bitField0_ = (bitField0_ & ~0x00000200);
+      bitField0_ = (bitField0_ & ~0x00000040);
       onChanged();
       return this;
     }
@@ -3786,7 +2942,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       documentationUrl_ = value;
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -3803,7 +2959,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * @return Whether the capabilities field is set.
      */
     public boolean hasCapabilities() {
-      return ((bitField0_ & 0x00000400) != 0);
+      return ((bitField0_ & 0x00000080) != 0);
     }
     /**
      * <pre>
@@ -3836,7 +2992,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       } else {
         capabilitiesBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -3854,7 +3010,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       } else {
         capabilitiesBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -3867,7 +3023,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder mergeCapabilities(io.a2a.grpc.AgentCapabilities value) {
       if (capabilitiesBuilder_ == null) {
-        if (((bitField0_ & 0x00000400) != 0) &&
+        if (((bitField0_ & 0x00000080) != 0) &&
           capabilities_ != null &&
           capabilities_ != io.a2a.grpc.AgentCapabilities.getDefaultInstance()) {
           getCapabilitiesBuilder().mergeFrom(value);
@@ -3878,7 +3034,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         capabilitiesBuilder_.mergeFrom(value);
       }
       if (capabilities_ != null) {
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000080;
         onChanged();
       }
       return this;
@@ -3891,7 +3047,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearCapabilities() {
-      bitField0_ = (bitField0_ & ~0x00000400);
+      bitField0_ = (bitField0_ & ~0x00000080);
       capabilities_ = null;
       if (capabilitiesBuilder_ != null) {
         capabilitiesBuilder_.dispose();
@@ -3908,7 +3064,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentCapabilities.Builder getCapabilitiesBuilder() {
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000080;
       onChanged();
       return internalGetCapabilitiesFieldBuilder().getBuilder();
     }
@@ -3976,7 +3132,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (securitySchemes_ == null) {
         securitySchemes_ = new com.google.protobuf.MapFieldBuilder<>(securitySchemesConverter);
       }
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000100;
       onChanged();
       return securitySchemes_;
     }
@@ -4050,7 +3206,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       return securitySchemesConverter.build(map.get(key));
     }
     public Builder clearSecuritySchemes() {
-      bitField0_ = (bitField0_ & ~0x00000800);
+      bitField0_ = (bitField0_ & ~0x00000100);
       internalGetMutableSecuritySchemes().clear();
       return this;
     }
@@ -4074,7 +3230,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, io.a2a.grpc.SecurityScheme>
         getMutableSecuritySchemes() {
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000100;
       return internalGetMutableSecuritySchemes().ensureMessageMap();
     }
     /**
@@ -4091,7 +3247,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException("map value"); }
       internalGetMutableSecuritySchemes().ensureBuilderMap()
           .put(key, value);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000100;
       return this;
     }
     /**
@@ -4110,7 +3266,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       }
       internalGetMutableSecuritySchemes().ensureBuilderMap()
           .putAll(values);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000100;
       return this;
     }
     /**
@@ -4138,9 +3294,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     private java.util.List<io.a2a.grpc.Security> security_ =
       java.util.Collections.emptyList();
     private void ensureSecurityIsMutable() {
-      if (!((bitField0_ & 0x00001000) != 0)) {
+      if (!((bitField0_ & 0x00000200) != 0)) {
         security_ = new java.util.ArrayList<io.a2a.grpc.Security>(security_);
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00000200;
        }
     }
 
@@ -4345,7 +3501,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearSecurity() {
       if (securityBuilder_ == null) {
         security_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00001000);
+        bitField0_ = (bitField0_ & ~0x00000200);
         onChanged();
       } else {
         securityBuilder_.clear();
@@ -4457,7 +3613,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         securityBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder>(
                 security_,
-                ((bitField0_ & 0x00001000) != 0),
+                ((bitField0_ & 0x00000200) != 0),
                 getParentForChildren(),
                 isClean());
         security_ = null;
@@ -4471,7 +3627,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (!defaultInputModes_.isModifiable()) {
         defaultInputModes_ = new com.google.protobuf.LazyStringArrayList(defaultInputModes_);
       }
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00000400;
     }
     /**
      * <pre>
@@ -4547,7 +3703,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       ensureDefaultInputModesIsMutable();
       defaultInputModes_.set(index, value);
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -4567,7 +3723,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       ensureDefaultInputModesIsMutable();
       defaultInputModes_.add(value);
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -4587,7 +3743,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       ensureDefaultInputModesIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(
           values, defaultInputModes_);
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -4604,7 +3760,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearDefaultInputModes() {
       defaultInputModes_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00002000);;
+      bitField0_ = (bitField0_ & ~0x00000400);;
       onChanged();
       return this;
     }
@@ -4625,7 +3781,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       checkByteStringIsUtf8(value);
       ensureDefaultInputModesIsMutable();
       defaultInputModes_.add(value);
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -4636,7 +3792,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (!defaultOutputModes_.isModifiable()) {
         defaultOutputModes_ = new com.google.protobuf.LazyStringArrayList(defaultOutputModes_);
       }
-      bitField0_ |= 0x00004000;
+      bitField0_ |= 0x00000800;
     }
     /**
      * <pre>
@@ -4702,7 +3858,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       ensureDefaultOutputModesIsMutable();
       defaultOutputModes_.set(index, value);
-      bitField0_ |= 0x00004000;
+      bitField0_ |= 0x00000800;
       onChanged();
       return this;
     }
@@ -4720,7 +3876,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       ensureDefaultOutputModesIsMutable();
       defaultOutputModes_.add(value);
-      bitField0_ |= 0x00004000;
+      bitField0_ |= 0x00000800;
       onChanged();
       return this;
     }
@@ -4738,7 +3894,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       ensureDefaultOutputModesIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(
           values, defaultOutputModes_);
-      bitField0_ |= 0x00004000;
+      bitField0_ |= 0x00000800;
       onChanged();
       return this;
     }
@@ -4753,7 +3909,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearDefaultOutputModes() {
       defaultOutputModes_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00004000);;
+      bitField0_ = (bitField0_ & ~0x00000800);;
       onChanged();
       return this;
     }
@@ -4772,7 +3928,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       checkByteStringIsUtf8(value);
       ensureDefaultOutputModesIsMutable();
       defaultOutputModes_.add(value);
-      bitField0_ |= 0x00004000;
+      bitField0_ |= 0x00000800;
       onChanged();
       return this;
     }
@@ -4780,9 +3936,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     private java.util.List<io.a2a.grpc.AgentSkill> skills_ =
       java.util.Collections.emptyList();
     private void ensureSkillsIsMutable() {
-      if (!((bitField0_ & 0x00008000) != 0)) {
+      if (!((bitField0_ & 0x00001000) != 0)) {
         skills_ = new java.util.ArrayList<io.a2a.grpc.AgentSkill>(skills_);
-        bitField0_ |= 0x00008000;
+        bitField0_ |= 0x00001000;
        }
     }
 
@@ -4998,7 +4154,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearSkills() {
       if (skillsBuilder_ == null) {
         skills_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00008000);
+        bitField0_ = (bitField0_ & ~0x00001000);
         onChanged();
       } else {
         skillsBuilder_.clear();
@@ -5117,7 +4273,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         skillsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             io.a2a.grpc.AgentSkill, io.a2a.grpc.AgentSkill.Builder, io.a2a.grpc.AgentSkillOrBuilder>(
                 skills_,
-                ((bitField0_ & 0x00008000) != 0),
+                ((bitField0_ & 0x00001000) != 0),
                 getParentForChildren(),
                 isClean());
         skills_ = null;
@@ -5125,68 +4281,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       return skillsBuilder_;
     }
 
-    private boolean supportsExtendedAgentCard_ ;
-    /**
-     * <pre>
-     * Whether the agent supports providing an extended agent card when authenticated.
-     * </pre>
-     *
-     * <code>optional bool supports_extended_agent_card = 13;</code>
-     * @return Whether the supportsExtendedAgentCard field is set.
-     */
-    @java.lang.Override
-    public boolean hasSupportsExtendedAgentCard() {
-      return ((bitField0_ & 0x00010000) != 0);
-    }
-    /**
-     * <pre>
-     * Whether the agent supports providing an extended agent card when authenticated.
-     * </pre>
-     *
-     * <code>optional bool supports_extended_agent_card = 13;</code>
-     * @return The supportsExtendedAgentCard.
-     */
-    @java.lang.Override
-    public boolean getSupportsExtendedAgentCard() {
-      return supportsExtendedAgentCard_;
-    }
-    /**
-     * <pre>
-     * Whether the agent supports providing an extended agent card when authenticated.
-     * </pre>
-     *
-     * <code>optional bool supports_extended_agent_card = 13;</code>
-     * @param value The supportsExtendedAgentCard to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSupportsExtendedAgentCard(boolean value) {
-
-      supportsExtendedAgentCard_ = value;
-      bitField0_ |= 0x00010000;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * Whether the agent supports providing an extended agent card when authenticated.
-     * </pre>
-     *
-     * <code>optional bool supports_extended_agent_card = 13;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearSupportsExtendedAgentCard() {
-      bitField0_ = (bitField0_ & ~0x00010000);
-      supportsExtendedAgentCard_ = false;
-      onChanged();
-      return this;
-    }
-
     private java.util.List<io.a2a.grpc.AgentCardSignature> signatures_ =
       java.util.Collections.emptyList();
     private void ensureSignaturesIsMutable() {
-      if (!((bitField0_ & 0x00020000) != 0)) {
+      if (!((bitField0_ & 0x00002000) != 0)) {
         signatures_ = new java.util.ArrayList<io.a2a.grpc.AgentCardSignature>(signatures_);
-        bitField0_ |= 0x00020000;
+        bitField0_ |= 0x00002000;
        }
     }
 
@@ -5380,7 +4480,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearSignatures() {
       if (signaturesBuilder_ == null) {
         signatures_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00020000);
+        bitField0_ = (bitField0_ & ~0x00002000);
         onChanged();
       } else {
         signaturesBuilder_.clear();
@@ -5485,7 +4585,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         signaturesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             io.a2a.grpc.AgentCardSignature, io.a2a.grpc.AgentCardSignature.Builder, io.a2a.grpc.AgentCardSignatureOrBuilder>(
                 signatures_,
-                ((bitField0_ & 0x00020000) != 0),
+                ((bitField0_ & 0x00002000) != 0),
                 getParentForChildren(),
                 isClean());
         signatures_ = null;
@@ -5503,7 +4603,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * @return Whether the iconUrl field is set.
      */
     public boolean hasIconUrl() {
-      return ((bitField0_ & 0x00040000) != 0);
+      return ((bitField0_ & 0x00004000) != 0);
     }
     /**
      * <pre>
@@ -5559,7 +4659,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       iconUrl_ = value;
-      bitField0_ |= 0x00040000;
+      bitField0_ |= 0x00004000;
       onChanged();
       return this;
     }
@@ -5573,7 +4673,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder clearIconUrl() {
       iconUrl_ = getDefaultInstance().getIconUrl();
-      bitField0_ = (bitField0_ & ~0x00040000);
+      bitField0_ = (bitField0_ & ~0x00004000);
       onChanged();
       return this;
     }
@@ -5591,7 +4691,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       iconUrl_ = value;
-      bitField0_ |= 0x00040000;
+      bitField0_ |= 0x00004000;
       onChanged();
       return this;
     }

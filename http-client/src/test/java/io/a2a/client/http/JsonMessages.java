@@ -8,7 +8,7 @@ public class JsonMessages {
 
     static final String AGENT_CARD = """
             {
-                 "protocolVersion": "0.2.9",
+                 "protocolVersions": ["0.2.9"],
                  "name": "GeoSpatial Route Planner Agent",
                  "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
                  "supportedInterfaces" : [
@@ -73,7 +73,6 @@ public class JsonMessages {
                      ]
                    }
                  ],
-                 "supportsExtendedAgentCard": true,
                  "signatures": [
                    {
                      "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJrZXktMSIsImprdSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWdlbnQvandrcy5qc29uIn0",

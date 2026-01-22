@@ -619,8 +619,8 @@ public abstract class AbstractA2AServerTest {
         assertTrue(agentCard.capabilities().pushNotifications());
         assertTrue(agentCard.capabilities().streaming());
         assertTrue(agentCard.capabilities().stateTransitionHistory());
+        assertFalse(agentCard.capabilities().extendedAgentCard());
         assertTrue(agentCard.skills().isEmpty());
-        assertFalse(agentCard.supportsExtendedAgentCard());
     }
 
     @Test
@@ -1994,7 +1994,7 @@ public abstract class AbstractA2AServerTest {
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
                 .supportedInterfaces(List.of(new AgentInterface(getTransportProtocol(), getTransportUrl())))
-                .protocolVersion(CURRENT_PROTOCOL_VERSION)
+                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 

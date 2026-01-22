@@ -42,27 +42,27 @@ public interface StreamResponseOrBuilder extends
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
-   * @return Whether the msg field is set.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return Whether the message field is set.
    */
-  boolean hasMsg();
+  boolean hasMessage();
   /**
    * <pre>
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
-   * @return The msg.
+   * <code>.a2a.v1.Message message = 2;</code>
+   * @return The message.
    */
-  io.a2a.grpc.Message getMsg();
+  io.a2a.grpc.Message getMessage();
   /**
    * <pre>
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message msg = 2 [json_name = "message"];</code>
+   * <code>.a2a.v1.Message message = 2;</code>
    */
-  io.a2a.grpc.MessageOrBuilder getMsgOrBuilder();
+  io.a2a.grpc.MessageOrBuilder getMessageOrBuilder();
 
   /**
    * <pre>
