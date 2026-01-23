@@ -876,20 +876,13 @@ public class DefaultRequestHandler implements RequestHandler {
                 LOGGER.debug("Agent and consumption both completed successfully for task {}", taskId);
             }
 
-            if (isStreaming) {
-                // For streaming: Queue lifecycle managed by EventConsumer
-                // EventConsumer closes queue when it detects final event (or QueueClosedEvent from replication)
-                // For fire-and-forget tasks, MainQueue stays open per architectural principle
-                LOGGER.debug("Streaming call for task {} - queue lifecycle managed by EventConsumer", taskId);
-            } else {
-                // For non-streaming: close the ChildQueue and notify the parent MainQueue
-                // The parent will close itself when all children are closed (childClosing logic)
-                // This ensures proper cleanup and removal from QueueManager map
-                LOGGER.debug("Non-streaming call, closing ChildQueue for task {} (immediate=false, notifyParent=true)", taskId);
-
-                // Always notify parent so MainQueue can clean up when last child closes
-                queue.close(false, true);
-            }
+            // Close the ChildQueue to signal completion
+            // For streaming: EventConsumer detects queue closed/empty → calls onComplete() → stream ends gracefully
+            // For non-streaming: ChildQueue closes → MainQueue childClosing() logic handles cleanup
+            // MainQueue stays open if task is not finalized (fire-and-forget pattern support)
+            LOGGER.debug("{} call, closing ChildQueue for task {} (immediate=false, notifyParent=true)",
+                    isStreaming ? "Streaming" : "Non-streaming", taskId);
+            queue.close(false, true);
 
             // For replicated environments, the poison pill is now sent via CDI events
             // When JpaDatabaseTaskStore.save() persists a final task, it fires TaskFinalizedEvent
