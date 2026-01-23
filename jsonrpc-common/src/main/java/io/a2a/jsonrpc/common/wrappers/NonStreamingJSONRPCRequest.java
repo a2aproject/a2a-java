@@ -8,7 +8,7 @@ package io.a2a.jsonrpc.common.wrappers;
 public abstract sealed class NonStreamingJSONRPCRequest<T> extends A2ARequest<T> permits GetTaskRequest,
         CancelTaskRequest, SetTaskPushNotificationConfigRequest, GetTaskPushNotificationConfigRequest,
         SendMessageRequest, DeleteTaskPushNotificationConfigRequest, ListTaskPushNotificationConfigRequest,
-        GetAuthenticatedExtendedCardRequest, ListTasksRequest {
+        GetExtendedAgentCardRequest, ListTasksRequest {
 
     NonStreamingJSONRPCRequest(String jsonrpc, String method, Object id, T params) {
         validateAndSetJsonParameters(jsonrpc, method, id, params, true);

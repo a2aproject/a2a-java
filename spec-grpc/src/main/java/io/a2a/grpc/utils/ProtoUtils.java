@@ -181,7 +181,7 @@ public class ProtoUtils {
             return taskPushNotificationConfig(config);
         }
 
-        public static io.a2a.grpc.AgentCard getAuthenticatedExtendedCardResponse(AgentCard card) {
+        public static io.a2a.grpc.AgentCard getExtendedCardResponse(AgentCard card) {
             return agentCard(card);
         }
     }

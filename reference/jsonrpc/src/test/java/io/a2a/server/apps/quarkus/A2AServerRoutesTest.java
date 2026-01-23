@@ -24,8 +24,8 @@ import io.a2a.jsonrpc.common.wrappers.CancelTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.CancelTaskResponse;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
-import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardRequest;
-import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardResponse;
+import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
+import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
@@ -484,7 +484,7 @@ public class A2AServerRoutesTest {
     }
 
     @Test
-    public void testGetAuthenticatedExtendedCard_MethodNameSetInContext() {
+    public void testGetExtendedCard_MethodNameSetInContext() {
         // Arrange
         String jsonRpcRequest = "{\"jsonrpc\":\"2.0\",\"id\":\"5\",\"method\":\"" + GET_EXTENDED_AGENT_CARD_METHOD
                 + "\",\"id\":1}";
@@ -502,9 +502,9 @@ public class A2AServerRoutesTest {
                 .skills(Collections.emptyList())
                 .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .build();
-        GetAuthenticatedExtendedCardResponse realResponse = new GetAuthenticatedExtendedCardResponse(1, agentCard);
-        when(mockJsonRpcHandler.onGetAuthenticatedExtendedCardRequest(
-                any(GetAuthenticatedExtendedCardRequest.class), any(ServerCallContext.class)))
+        GetExtendedAgentCardResponse realResponse = new GetExtendedAgentCardResponse(1, agentCard);
+        when(mockJsonRpcHandler.onGetExtendedCardRequest(
+                any(GetExtendedAgentCardRequest.class), any(ServerCallContext.class)))
                 .thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -513,8 +513,8 @@ public class A2AServerRoutesTest {
         routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
 
         // Assert
-        verify(mockJsonRpcHandler).onGetAuthenticatedExtendedCardRequest(
-                any(GetAuthenticatedExtendedCardRequest.class), contextCaptor.capture());
+        verify(mockJsonRpcHandler).onGetExtendedCardRequest(
+                any(GetExtendedAgentCardRequest.class), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(GET_EXTENDED_AGENT_CARD_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));

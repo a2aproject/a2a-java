@@ -7,15 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.ContentTypeNotSupportedError;
-import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ExtensionSupportRequiredError;
-import io.a2a.spec.InvalidAgentResponseError;
 import io.a2a.spec.InvalidParamsError;
-import io.a2a.spec.InvalidRequestError;
-import io.a2a.spec.JSONParseError;
-import io.a2a.spec.MethodNotFoundError;
-import io.a2a.spec.PushNotificationNotSupportedError;
-import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.spec.VersionNotSupportedError;
@@ -85,9 +79,9 @@ public class GrpcErrorMapperTest {
         // Verify the result
         assertNotNull(result);
         assertNotNull(result.getCause());
-        assertInstanceOf(ExtendedCardNotConfiguredError.class, result.getCause());
+        assertInstanceOf(ExtendedAgentCardNotConfiguredError.class, result.getCause());
 
-        ExtendedCardNotConfiguredError extendedCardError = (ExtendedCardNotConfiguredError) result.getCause();
+        ExtendedAgentCardNotConfiguredError extendedCardError = (ExtendedAgentCardNotConfiguredError) result.getCause();
         assertNotNull(extendedCardError.getMessage());
         assertTrue(extendedCardError.getMessage().contains("Extended card not configured"));
     }

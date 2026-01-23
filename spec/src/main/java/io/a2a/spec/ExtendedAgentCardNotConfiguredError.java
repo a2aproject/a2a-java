@@ -1,6 +1,6 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.A2AErrorCodes.EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE;
+import static io.a2a.spec.A2AErrorCodes.EXTENDED_AGENT_CARD_NOT_CONFIGURED_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
 
@@ -19,15 +19,15 @@ import static io.a2a.util.Utils.defaultIfNull;
  * Usage example:
  * <pre>{@code
  * // In agent implementation
- * if (authenticatedExtendedCard == null) {
- *     throw new AuthenticatedExtendedCardNotConfiguredError();
+ * if (extendedAgentCard == null) {
+ *     throw new ExtendedAgentCardNotConfiguredError();
  * }
  * }</pre>
  *
  * @see AgentCard for the base agent card structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public class ExtendedCardNotConfiguredError extends A2AProtocolError {
+public class ExtendedAgentCardNotConfiguredError extends A2AProtocolError {
 
     /**
      * Constructs an error for agents that don't support authenticated extended card retrieval.
@@ -36,12 +36,12 @@ public class ExtendedCardNotConfiguredError extends A2AProtocolError {
      * @param message the error message
      * @param data additional error data
      */
-    public ExtendedCardNotConfiguredError(
+    public ExtendedAgentCardNotConfiguredError(
             Integer code,
             String message,
             Object data) {
         super(
-                defaultIfNull(code, EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE),
+                defaultIfNull(code, EXTENDED_AGENT_CARD_NOT_CONFIGURED_ERROR_CODE),
                 defaultIfNull(message, "Extended Card not configured"),
                 data,
                 "https://a2a-protocol.org/errors/extended-agent-card-not-configured");

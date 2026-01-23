@@ -35,8 +35,8 @@ import io.a2a.jsonrpc.common.wrappers.CancelTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.CancelTaskResponse;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
-import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardRequest;
-import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardResponse;
+import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
+import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
@@ -59,7 +59,6 @@ import io.a2a.server.auth.User;
 import io.a2a.server.extensions.A2AExtensions;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
-import io.a2a.spec.AgentCard;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.UnsupportedOperationError;
@@ -186,8 +185,8 @@ public class A2AServerRoutes {
         if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.deletePushNotificationConfig(req, context);
         }
-        if (request instanceof GetAuthenticatedExtendedCardRequest req) {
-            return jsonRpcHandler.onGetAuthenticatedExtendedCardRequest(req, context);
+        if (request instanceof GetExtendedAgentCardRequest req) {
+            return jsonRpcHandler.onGetExtendedCardRequest(req, context);
         }
         return generateErrorResponse(request, new UnsupportedOperationError());
     }
@@ -287,8 +286,8 @@ public class A2AServerRoutes {
         } else if (response instanceof DeleteTaskPushNotificationConfigResponse) {
             // DeleteTaskPushNotificationConfig has no result body, just return empty message
             return com.google.protobuf.Empty.getDefaultInstance();
-        } else if (response instanceof GetAuthenticatedExtendedCardResponse r) {
-            return io.a2a.grpc.utils.ProtoUtils.ToProto.getAuthenticatedExtendedCardResponse(r.getResult());
+        } else if (response instanceof GetExtendedAgentCardResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.getExtendedCardResponse(r.getResult());
         } else if (response instanceof SendStreamingMessageResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.taskOrMessageStream(r.getResult());
         } else {

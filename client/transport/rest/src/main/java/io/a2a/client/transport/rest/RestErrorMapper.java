@@ -8,7 +8,7 @@ import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.spec.A2AClientException;
-import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.InternalError;
@@ -50,8 +50,7 @@ public class RestErrorMapper {
     public static A2AClientException mapRestError(String className, String errorMessage, int code) {
         return switch (className) {
             case "io.a2a.spec.TaskNotFoundError" -> new A2AClientException(errorMessage, new TaskNotFoundError());
-            case "io.a2a.spec.AuthenticatedExtendedCardNotConfiguredError",
-                 "io.a2a.spec.ExtendedCardNotConfiguredError" -> new A2AClientException(errorMessage, new ExtendedCardNotConfiguredError(null, errorMessage, null));
+            case "io.a2a.spec.ExtendedCardNotConfiguredError" -> new A2AClientException(errorMessage, new ExtendedAgentCardNotConfiguredError(null, errorMessage, null));
             case "io.a2a.spec.ContentTypeNotSupportedError" -> new A2AClientException(errorMessage, new ContentTypeNotSupportedError(null, null, errorMessage));
             case "io.a2a.spec.InternalError" -> new A2AClientException(errorMessage, new InternalError(errorMessage));
             case "io.a2a.spec.InvalidAgentResponseError" -> new A2AClientException(errorMessage, new InvalidAgentResponseError(null, null, errorMessage));

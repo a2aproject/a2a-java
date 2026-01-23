@@ -14,8 +14,8 @@ import io.a2a.jsonrpc.common.wrappers.CancelTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.CancelTaskResponse;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
-import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardRequest;
-import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardResponse;
+import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
+import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
@@ -42,8 +42,7 @@ import io.a2a.server.util.async.Internal;
 import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.ExtendedCardNotConfiguredError;
-import io.a2a.spec.ExtensionSupportRequiredError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidRequestError;
@@ -53,7 +52,7 @@ import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
-import io.a2a.spec.VersionNotSupportedError;
+
 import mutiny.zero.ZeroPublisher;
 import org.jspecify.annotations.Nullable;
 
@@ -262,18 +261,18 @@ public class JSONRPCHandler {
     }
 
     // TODO: Add authentication (https://github.com/a2aproject/a2a-java/issues/77)
-    public GetAuthenticatedExtendedCardResponse onGetAuthenticatedExtendedCardRequest(
-            GetAuthenticatedExtendedCardRequest request, ServerCallContext context) {
+    public GetExtendedAgentCardResponse onGetExtendedCardRequest(
+            GetExtendedAgentCardRequest request, ServerCallContext context) {
         if (!agentCard.capabilities().extendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
-            return new GetAuthenticatedExtendedCardResponse(request.getId(),
-                    new ExtendedCardNotConfiguredError(null, "Extended Card not configured", null));
+            return new GetExtendedAgentCardResponse(request.getId(),
+                    new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null));
         }
         try {
-            return new GetAuthenticatedExtendedCardResponse(request.getId(), extendedAgentCard.get());
+            return new GetExtendedAgentCardResponse(request.getId(), extendedAgentCard.get());
         } catch (A2AError e) {
-            return new GetAuthenticatedExtendedCardResponse(request.getId(), e);
+            return new GetExtendedAgentCardResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new GetAuthenticatedExtendedCardResponse(request.getId(), new InternalError(t.getMessage()));
+            return new GetExtendedAgentCardResponse(request.getId(), new InternalError(t.getMessage()));
         }
     }
 

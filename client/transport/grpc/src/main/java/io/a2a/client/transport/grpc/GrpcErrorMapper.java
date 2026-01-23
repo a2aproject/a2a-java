@@ -3,7 +3,7 @@ package io.a2a.client.transport.grpc;
 import io.a2a.common.A2AErrorMessages;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.ContentTypeNotSupportedError;
-import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.InvalidAgentResponseError;
 import io.a2a.spec.InvalidParamsError;
@@ -56,7 +56,7 @@ public class GrpcErrorMapper {
             } else if (description.contains("InvalidAgentResponseError")) {
                 return new A2AClientException(errorPrefix + description, new InvalidAgentResponseError(null, description, null));
             } else if (description.contains("ExtendedCardNotConfiguredError")) {
-                return new A2AClientException(errorPrefix + description, new ExtendedCardNotConfiguredError(null, description, null));
+                return new A2AClientException(errorPrefix + description, new ExtendedAgentCardNotConfiguredError(null, description, null));
             } else if (description.contains("ExtensionSupportRequiredError")) {
                 return new A2AClientException(errorPrefix + description, new ExtensionSupportRequiredError(null, description, null));
             } else if (description.contains("VersionNotSupportedError")) {

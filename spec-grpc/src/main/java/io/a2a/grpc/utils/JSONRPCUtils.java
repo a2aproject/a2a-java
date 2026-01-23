@@ -1,7 +1,7 @@
 package io.a2a.grpc.utils;
 
 import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE;
+import static io.a2a.spec.A2AErrorCodes.EXTENDED_AGENT_CARD_NOT_CONFIGURED_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.EXTENSION_SUPPORT_REQUIRED_ERROR;
 import static io.a2a.spec.A2AErrorCodes.INTERNAL_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.INVALID_AGENT_RESPONSE_ERROR_CODE;
@@ -48,8 +48,8 @@ import io.a2a.jsonrpc.common.wrappers.CancelTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.CancelTaskResponse;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
-import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardRequest;
-import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardResponse;
+import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
+import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
@@ -66,7 +66,7 @@ import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.ContentTypeNotSupportedError;
-import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.InvalidAgentResponseError;
 import io.a2a.spec.InvalidParamsError;
@@ -245,7 +245,7 @@ public class JSONRPCUtils {
                 return new DeleteTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(builder));
             }
             case GET_EXTENDED_AGENT_CARD_METHOD -> {
-                return new GetAuthenticatedExtendedCardRequest(version, id);
+                return new GetExtendedAgentCardRequest(version, id);
             }
             case SEND_STREAMING_MESSAGE_METHOD -> {
                 io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder();
@@ -330,7 +330,7 @@ public class JSONRPCUtils {
             case GET_EXTENDED_AGENT_CARD_METHOD -> {
                 io.a2a.grpc.AgentCard.Builder builder = io.a2a.grpc.AgentCard.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                return new GetAuthenticatedExtendedCardResponse(id, ProtoUtils.FromProto.agentCard(builder));
+                return new GetExtendedAgentCardResponse(id, ProtoUtils.FromProto.agentCard(builder));
             }
             default ->
                 throw new MethodNotFoundJsonMappingException("Unsupported JSON-RPC method: '" + method + "' in response parsing.", getIdIfPossible(jsonRpc));
@@ -393,8 +393,8 @@ public class JSONRPCUtils {
                     return new ContentTypeNotSupportedError(code, message, data);
                 case INVALID_AGENT_RESPONSE_ERROR_CODE:
                     return new InvalidAgentResponseError(code, message, data);
-                case EXTENDED_CARD_NOT_CONFIGURED_ERROR_CODE:
-                    return new ExtendedCardNotConfiguredError(code, message, data);
+                case EXTENDED_AGENT_CARD_NOT_CONFIGURED_ERROR_CODE:
+                    return new ExtendedAgentCardNotConfiguredError(code, message, data);
                 case EXTENSION_SUPPORT_REQUIRED_ERROR:
                     return new ExtensionSupportRequiredError(code, message, data);
                 case VERSION_NOT_SUPPORTED_ERROR_CODE:

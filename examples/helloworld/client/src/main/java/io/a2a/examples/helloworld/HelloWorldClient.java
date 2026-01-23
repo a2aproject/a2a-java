@@ -41,10 +41,10 @@ public class HelloWorldClient {
             finalAgentCard = publicAgentCard;
 
             if (publicAgentCard.capabilities().extendedAgentCard()) {
-                System.out.println("Public card supports authenticated extended card. Attempting to fetch from: " + SERVER_URL + "/agent/authenticatedExtendedCard");
+                System.out.println("Public card supports authenticated extended card. Attempting to fetch from: " + SERVER_URL + "/ExtendedAgentCard");
                 Map<String, String> authHeaders = new HashMap<>();
                 authHeaders.put("Authorization", "Bearer dummy-token-for-extended-card");
-                AgentCard extendedAgentCard = A2A.getAgentCard(SERVER_URL, "/agent/authenticatedExtendedCard", authHeaders);
+                AgentCard extendedAgentCard = A2A.getAgentCard(SERVER_URL, "/ExtendedAgentCard", authHeaders);
                 System.out.println("Successfully fetched authenticated extended agent card:");
                 System.out.println(JsonUtil.toJson(extendedAgentCard));
                 System.out.println("Using AUTHENTICATED EXTENDED agent card for client initialization.");

@@ -2,7 +2,7 @@ package io.a2a.jsonrpc.common.wrappers;
 
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 
 /**
  * JSON-RPC response containing an agent's extended card with authenticated details.
@@ -13,14 +13,14 @@ import io.a2a.spec.ExtendedCardNotConfiguredError;
  * <p>
  * If the agent doesn't support authenticated extended cards or authentication fails,
  * the error field will contain a {@link A2AError} such as
- * {@link ExtendedCardNotConfiguredError}.
+ * {@link ExtendedAgentCardNotConfiguredError}.
  *
- * @see GetAuthenticatedExtendedCardRequest for the corresponding request
+ * @see GetExtendedAgentCardRequest for the corresponding request
  * @see AgentCard for the card structure
- * @see ExtendedCardNotConfiguredError for the error when unsupported
+ * @see ExtendedAgentCardNotConfiguredError for the error when unsupported
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class GetAuthenticatedExtendedCardResponse extends A2AResponse<AgentCard> {
+public final class GetExtendedAgentCardResponse extends A2AResponse<AgentCard> {
 
     /**
      * Constructs response with full parameters.
@@ -30,7 +30,7 @@ public final class GetAuthenticatedExtendedCardResponse extends A2AResponse<Agen
      * @param result the agent card result
      * @param error the error if any
      */
-    public GetAuthenticatedExtendedCardResponse(String jsonrpc, Object id, AgentCard result, A2AError error) {
+    public GetExtendedAgentCardResponse(String jsonrpc, Object id, AgentCard result, A2AError error) {
         super(jsonrpc, id, result, error, AgentCard.class);
     }
 
@@ -40,7 +40,7 @@ public final class GetAuthenticatedExtendedCardResponse extends A2AResponse<Agen
      * @param id the request ID
      * @param error the error
      */
-    public GetAuthenticatedExtendedCardResponse(Object id, A2AError error) {
+    public GetExtendedAgentCardResponse(Object id, A2AError error) {
         this(null, id, null, error);
     }
 
@@ -50,7 +50,7 @@ public final class GetAuthenticatedExtendedCardResponse extends A2AResponse<Agen
      * @param id the request ID
      * @param result the agent card result
      */
-    public GetAuthenticatedExtendedCardResponse(Object id, AgentCard result) {
+    public GetExtendedAgentCardResponse(Object id, AgentCard result) {
         this(null, id, result, null);
     }
 

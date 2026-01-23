@@ -14,7 +14,6 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.Vetoed;
 
 import com.google.protobuf.Empty;
@@ -34,7 +33,7 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
-import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
@@ -456,7 +455,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         } else if (error instanceof InvalidAgentResponseError) {
             status = Status.INTERNAL;
             description = "InvalidAgentResponseError: " + error.getMessage();
-        } else if (error instanceof ExtendedCardNotConfiguredError) {
+        } else if (error instanceof ExtendedAgentCardNotConfiguredError) {
             status = Status.FAILED_PRECONDITION;
             description = "ExtendedCardNotConfiguredError: " + error.getMessage();
         } else if (error instanceof ExtensionSupportRequiredError) {

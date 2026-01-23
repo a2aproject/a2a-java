@@ -36,7 +36,7 @@ import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.ExtendedCardNotConfiguredError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
@@ -466,7 +466,7 @@ public class RestHandler {
         if (error instanceof InvalidAgentResponseError) {
             return 502;
         }
-        if (error instanceof ExtendedCardNotConfiguredError
+        if (error instanceof ExtendedAgentCardNotConfiguredError
                 || error instanceof ExtensionSupportRequiredError) {
             return 400;
         }
@@ -479,7 +479,7 @@ public class RestHandler {
     public HTTPRestResponse getExtendedAgentCard(String tenant) {
         try {
             if (!agentCard.capabilities().extendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
-                throw new ExtendedCardNotConfiguredError(null, "Extended Card not configured", null);
+                throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
             }
             return new HTTPRestResponse(200, "application/json", JsonUtil.toJson(extendedAgentCard.get()));
         } catch (A2AError e) {
