@@ -1419,6 +1419,68 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
+    @Timeout(value = 1, unit = TimeUnit.MINUTES)
+    public void testInputRequiredWorkflow() throws Exception {
+        String inputRequiredTaskId = "input-required-test-" + java.util.UUID.randomUUID();
+        try {
+            // 1. Send initial message - AgentExecutor will transition task to INPUT_REQUIRED
+            Message initialMessage = Message.builder(MESSAGE)
+                    .taskId(inputRequiredTaskId)
+                    .contextId("test-context")
+                    .parts(new TextPart("Initial request"))
+                    .build();
+
+            CountDownLatch initialLatch = new CountDownLatch(1);
+            AtomicReference<TaskState> initialState = new AtomicReference<>();
+            AtomicBoolean initialUnexpectedEvent = new AtomicBoolean(false);
+
+            BiConsumer<ClientEvent, AgentCard> initialConsumer = (event, agentCard) -> {
+                if (event instanceof TaskEvent te) {
+                    initialState.set(te.getTask().status().state());
+                    initialLatch.countDown();
+                } else {
+                    initialUnexpectedEvent.set(true);
+                }
+            };
+
+            // Send initial message - task will go to INPUT_REQUIRED state
+            getNonStreamingClient().sendMessage(initialMessage, List.of(initialConsumer), null);
+            assertTrue(initialLatch.await(10, TimeUnit.SECONDS));
+            assertFalse(initialUnexpectedEvent.get());
+            assertEquals(TaskState.INPUT_REQUIRED, initialState.get());
+
+            // 2. Send input message - AgentExecutor will complete the task
+            Message inputMessage = Message.builder(MESSAGE)
+                    .taskId(inputRequiredTaskId)
+                    .contextId("test-context")
+                    .parts(new TextPart("User input"))
+                    .build();
+
+            CountDownLatch completionLatch = new CountDownLatch(1);
+            AtomicReference<TaskState> completedState = new AtomicReference<>();
+            AtomicBoolean completionUnexpectedEvent = new AtomicBoolean(false);
+
+            BiConsumer<ClientEvent, AgentCard> completionConsumer = (event, agentCard) -> {
+                if (event instanceof TaskEvent te) {
+                    completedState.set(te.getTask().status().state());
+                    completionLatch.countDown();
+                } else {
+                    completionUnexpectedEvent.set(true);
+                }
+            };
+
+            // Send input - task will be completed
+            getNonStreamingClient().sendMessage(inputMessage, List.of(completionConsumer), null);
+            assertTrue(completionLatch.await(10, TimeUnit.SECONDS));
+            assertFalse(completionUnexpectedEvent.get());
+            assertEquals(TaskState.COMPLETED, completedState.get());
+
+        } finally {
+            deleteTaskInTaskStore(inputRequiredTaskId);
+        }
+    }
+
+    @Test
     public void testMalformedJSONRPCRequest() {
         // skip this test for non-JSONRPC transports
         assumeTrue(TransportProtocol.JSONRPC.asString().equals(getTransportProtocol()),
