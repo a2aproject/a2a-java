@@ -708,6 +708,10 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
+        // Use synchronous executor for push notifications to ensure deterministic ordering
+        // Without this, async push notifications can execute out of order, causing test flakiness
+        mainEventBusProcessor.setPushNotificationExecutor(Runnable::run);
+
         try {
             JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
             taskStore.save(MINIMAL_TASK);
@@ -817,6 +821,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             assertEquals("text", ((TextPart) curr.artifacts().get(0).parts().get(0)).text());
         } finally {
             mainEventBusProcessor.setCallback(null);
+            mainEventBusProcessor.setPushNotificationExecutor(null);
         }
     }
 

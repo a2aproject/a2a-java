@@ -50,6 +50,13 @@ public class MainEventBusProcessor implements Runnable {
      */
     private volatile MainEventBusProcessorCallback callback = MainEventBusProcessorCallback.NOOP;
 
+    /**
+     * Optional executor for push notifications.
+     * If null, uses default ForkJoinPool (async).
+     * Tests can inject a synchronous executor to ensure deterministic ordering.
+     */
+    private volatile @Nullable java.util.concurrent.Executor pushNotificationExecutor = null;
+
     private final MainEventBus eventBus;
 
     private final TaskStore taskStore;
@@ -77,6 +84,27 @@ public class MainEventBusProcessor implements Runnable {
      */
     public void setCallback(MainEventBusProcessorCallback callback) {
         this.callback = callback != null ? callback : MainEventBusProcessorCallback.NOOP;
+    }
+
+    /**
+     * Set a custom executor for push notifications (primarily for testing).
+     * <p>
+     * By default, push notifications are sent asynchronously using CompletableFuture.runAsync()
+     * with the default ForkJoinPool. For tests that need deterministic ordering of push
+     * notifications, inject a synchronous executor that runs tasks immediately on the calling thread.
+     * </p>
+     * <p>
+     * Example synchronous executor for tests:
+     * <pre>{@code
+     * Executor syncExecutor = Runnable::run;
+     * mainEventBusProcessor.setPushNotificationExecutor(syncExecutor);
+     * }</pre>
+     * </p>
+     *
+     * @param executor the executor to use for push notifications, or null to use default ForkJoinPool
+     */
+    public void setPushNotificationExecutor(java.util.concurrent.Executor executor) {
+        this.pushNotificationExecutor = executor;
     }
 
     @PostConstruct
@@ -276,13 +304,16 @@ public class MainEventBusProcessor implements Runnable {
      * was processed, not whatever state might exist in TaskStore when the async
      * callback executes (subsequent events may have already updated the store).
      * </p>
+     * <p>
+     * <b>NOTE:</b> Tests can inject a synchronous executor via setPushNotificationExecutor()
+     * to ensure deterministic ordering of push notifications in the test environment.
+     * </p>
      *
      * @param taskId the task ID
      * @param task the task snapshot to send (captured immediately after persistence)
      */
     private void sendPushNotification(String taskId, Task task) {
-        // Send push notifications asynchronously to avoid blocking distribution
-        CompletableFuture.runAsync(() -> {
+        Runnable pushTask = () -> {
             try {
                 if (task != null) {
                     LOGGER.debug("Sending push notification for task {}", taskId);
@@ -294,7 +325,14 @@ public class MainEventBusProcessor implements Runnable {
                 LOGGER.error("Error sending push notification for task {}", taskId, e);
                 // Don't rethrow - push notifications are best-effort
             }
-        });
+        };
+
+        // Use custom executor if set (for tests), otherwise use default ForkJoinPool (async)
+        if (pushNotificationExecutor != null) {
+            pushNotificationExecutor.execute(pushTask);
+        } else {
+            CompletableFuture.runAsync(pushTask);
+        }
     }
 
     /**

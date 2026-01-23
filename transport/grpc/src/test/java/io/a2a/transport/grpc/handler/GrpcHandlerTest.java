@@ -423,9 +423,14 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageStreamNewMessageSendPushNotificationSuccess() throws Exception {
-        GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
-        List<Event> events = List.of(
-                AbstractA2ARequestHandlerTest.MINIMAL_TASK,
+        // Use synchronous executor for push notifications to ensure deterministic ordering
+        // Without this, async push notifications can execute out of order, causing test flakiness
+        mainEventBusProcessor.setPushNotificationExecutor(Runnable::run);
+
+        try {
+            GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
+            List<Event> events = List.of(
+                    AbstractA2ARequestHandlerTest.MINIMAL_TASK,
                 TaskArtifactUpdateEvent.builder()
                         .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                         .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId())
@@ -492,13 +497,16 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(1, curr.artifacts().get(0).parts().size());
         Assertions.assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).text());
 
-        curr = httpClient.tasks.get(2);
-        Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), curr.id());
-        Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId(), curr.contextId());
-        Assertions.assertEquals(io.a2a.spec.TaskState.COMPLETED, curr.status().state());
-        Assertions.assertEquals(1, curr.artifacts().size());
-        Assertions.assertEquals(1, curr.artifacts().get(0).parts().size());
-        Assertions.assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).text());
+            curr = httpClient.tasks.get(2);
+            Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), curr.id());
+            Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId(), curr.contextId());
+            Assertions.assertEquals(io.a2a.spec.TaskState.COMPLETED, curr.status().state());
+            Assertions.assertEquals(1, curr.artifacts().size());
+            Assertions.assertEquals(1, curr.artifacts().get(0).parts().size());
+            Assertions.assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).text());
+        } finally {
+            mainEventBusProcessor.setPushNotificationExecutor(null);
+        }
     }
 
     @Test
