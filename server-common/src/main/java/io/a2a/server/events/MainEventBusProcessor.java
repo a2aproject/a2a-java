@@ -1,5 +1,7 @@
 package io.a2a.server.events;
 
+import java.util.concurrent.CompletableFuture;
+
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -163,7 +165,15 @@ public class MainEventBusProcessor implements Runnable {
 
             // Step 2: Send push notification AFTER successful persistence
             if (eventToDistribute == event) {
-                sendPushNotification(taskId);
+                // Capture task state immediately after persistence, before going async
+                // This ensures we send the task as it existed when THIS event was processed,
+                // not whatever state might exist later when the async callback executes
+                Task taskSnapshot = taskStore.get(taskId);
+                if (taskSnapshot != null) {
+                    sendPushNotification(taskId, taskSnapshot);
+                } else {
+                    LOGGER.warn("Task {} not found in TaskStore after successful persistence, skipping push notification", taskId);
+                }
             }
 
             // Step 3: Then distribute to ChildQueues (clients see either event or error AFTER persistence attempt)
@@ -255,20 +265,36 @@ public class MainEventBusProcessor implements Runnable {
      * This is called after updateTaskStore() to ensure the notification contains
      * the latest persisted state, avoiding race conditions.
      * </p>
+     * <p>
+     * <b>CRITICAL:</b> Push notifications are sent asynchronously in the background
+     * to avoid blocking event distribution to ChildQueues. The 83ms overhead from
+     * PushNotificationSender.sendNotification() was causing streaming delays.
+     * </p>
+     * <p>
+     * <b>IMPORTANT:</b> The task parameter is a snapshot captured immediately after
+     * persistence. This ensures we send the task state as it existed when THIS event
+     * was processed, not whatever state might exist in TaskStore when the async
+     * callback executes (subsequent events may have already updated the store).
+     * </p>
+     *
+     * @param taskId the task ID
+     * @param task the task snapshot to send (captured immediately after persistence)
      */
-    private void sendPushNotification(String taskId) {
-        try {
-            Task task = taskStore.get(taskId);
-            if (task != null) {
-                LOGGER.debug("Sending push notification for task {}", taskId);
-                pushSender.sendNotification(task);
-            } else {
-                LOGGER.debug("Skipping push notification - task {} not found in TaskStore", taskId);
+    private void sendPushNotification(String taskId, Task task) {
+        // Send push notifications asynchronously to avoid blocking distribution
+        CompletableFuture.runAsync(() -> {
+            try {
+                if (task != null) {
+                    LOGGER.debug("Sending push notification for task {}", taskId);
+                    pushSender.sendNotification(task);
+                } else {
+                    LOGGER.debug("Skipping push notification - task snapshot is null for task {}", taskId);
+                }
+            } catch (Exception e) {
+                LOGGER.error("Error sending push notification for task {}", taskId, e);
+                // Don't rethrow - push notifications are best-effort
             }
-        } catch (Exception e) {
-            LOGGER.error("Error sending push notification for task {}", taskId, e);
-            // Don't rethrow - we still want to distribute to ChildQueues
-        }
+        });
     }
 
     /**

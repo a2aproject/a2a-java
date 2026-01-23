@@ -459,21 +459,39 @@ public class A2AServerRoutes {
         }
 
         private static void initialize(HttpServerResponse response) {
+            logger.info("REST MultiSseSupport.initialize() called - bytesWritten: {}", response.bytesWritten());
             if (response.bytesWritten() == 0) {
+                logger.info("REST MultiSseSupport.initialize() - setting headers and chunked mode");
                 MultiMap headers = response.headers();
                 if (headers.get(CONTENT_TYPE) == null) {
                     headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
                 }
+                // Additional SSE headers to prevent buffering
+                headers.set("Cache-Control", "no-cache");
+                headers.set("X-Accel-Buffering", "no");  // Disable nginx buffering
                 response.setChunked(true);
+
+                // CRITICAL: Disable write queue max size to prevent buffering
+                // Vert.x buffers writes by default - we need immediate flushing for SSE
+                response.setWriteQueueMaxSize(1);  // Force immediate flush
+
+                // Send initial SSE comment to kickstart the stream
+                // This forces Vert.x to send headers and start the stream immediately
+                response.write(": SSE stream started\n\n");
+                logger.info("REST MultiSseSupport.initialize() - headers set, chunked: true, writeQueueMaxSize: 1, sent initial keepalive");
+            } else {
+                logger.warn("REST MultiSseSupport.initialize() - SKIPPED (bytesWritten={} > 0)", response.bytesWritten());
             }
         }
 
         private static void onWriteDone(Flow.Subscription subscription, AsyncResult<Void> ar, RoutingContext rc) {
             if (ar.failed()) {
+                logger.error("REST MultiSseSupport.onWriteDone() - write FAILED, cancelling subscription", ar.cause());
                 // Client disconnected or write failed - cancel upstream to stop EventConsumer
                 subscription.cancel();
                 rc.fail(ar.cause());
             } else {
+                logger.info("REST MultiSseSupport.onWriteDone() - write succeeded, requesting next event");
                 subscription.request(1);
             }
         }
@@ -488,6 +506,9 @@ public class A2AServerRoutes {
                 public void onSubscribe(Flow.Subscription subscription) {
                     logger.info("REST MultiSseSupport.write.onSubscribe() called - subscribing to Multi<Buffer>");
                     this.upstream = subscription;
+
+                    // Request first event immediately (same as main branch behavior)
+                    // TCK requires immediate request() call - async keepalive write was causing timeout
                     this.upstream.request(1);
                     logger.info("REST MultiSseSupport.write.onSubscribe() - requested first buffer");
 
@@ -509,6 +530,8 @@ public class A2AServerRoutes {
                 @Override
                 public void onNext(Buffer item) {
                     logger.info("REST MultiSseSupport.write.onNext() called - buffer size: {} bytes", item.length());
+                    // Initialize response headers on first event (same as main branch)
+                    // This sets Content-Type: text/event-stream and chunked mode
                     initialize(response);
                     logger.info("REST MultiSseSupport.write.onNext() - calling response.write()");
                     response.write(item, new Handler<AsyncResult<Void>>() {

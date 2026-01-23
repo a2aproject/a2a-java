@@ -421,11 +421,14 @@ public class RestHandler {
                             String payload = JsonFormat.printer().omittingInsignificantWhitespace().print(ProtoUtils.ToProto.taskOrMessageStream(item));
                             log.log(Level.INFO, "REST: Converted to JSON, sending via tube: {0}", payload.substring(0, Math.min(100, payload.length())));
                             tube.send(payload);
-                            log.log(Level.INFO, "REST: tube.send() completed, requesting next event");
+                            log.log(Level.INFO, "REST: tube.send() completed, requesting next event from EventConsumer");
+                            // Request next event from EventConsumer (Chain 1: EventConsumer → RestHandler)
+                            // This is safe because ZeroPublisher buffers items
+                            // Chain 2 (ZeroPublisher → MultiSseSupport) controls actual delivery via request(1) in onWriteDone()
                             if (subscription != null) {
                                 subscription.request(1);
                             } else {
-                                log.log(Level.WARNING, "REST: subscription is null in onNext! Cannot request next event");
+                                log.log(Level.WARNING, "REST: subscription is null in onNext!");
                             }
                         } catch (InvalidProtocolBufferException ex) {
                             log.log(Level.SEVERE, "REST: JSON conversion failed", ex);
