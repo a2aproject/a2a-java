@@ -876,13 +876,20 @@ public class DefaultRequestHandler implements RequestHandler {
                 LOGGER.debug("Agent and consumption both completed successfully for task {}", taskId);
             }
 
-            // Close the ChildQueue to signal completion
-            // For streaming: EventConsumer detects queue closed/empty → calls onComplete() → stream ends gracefully
-            // For non-streaming: ChildQueue closes → MainQueue childClosing() logic handles cleanup
-            // MainQueue stays open if task is not finalized (fire-and-forget pattern support)
-            LOGGER.debug("{} call, closing ChildQueue for task {} (immediate=false, notifyParent=true)",
-                    isStreaming ? "Streaming" : "Non-streaming", taskId);
-            queue.close(false, true);
+            if (isStreaming) {
+                // For streaming: EventConsumer handles queue closure via agentCompleted flag
+                // When agent completes, EventConsumer.agentCompleted is set to true via agent done callback
+                // EventConsumer drains remaining events from ChildQueue (waiting for MainEventBusProcessor)
+                // After poll timeout with agentCompleted=true, EventConsumer closes queue and completes stream
+                // This avoids race condition where cleanup closes queue before MainEventBusProcessor distributes events
+                LOGGER.debug("Streaming call for task {}: queue lifecycle managed by EventConsumer (agentCompleted flag)", taskId);
+            } else {
+                // For non-streaming: close the ChildQueue directly
+                // No EventConsumer polling, so we must close explicitly
+                // This triggers MainQueue.childClosing() which handles cleanup and poison pill generation
+                LOGGER.debug("Non-streaming call, closing ChildQueue for task {} (immediate=false, notifyParent=true)", taskId);
+                queue.close(false, true);
+            }
 
             // For replicated environments, the poison pill is now sent via CDI events
             // When JpaDatabaseTaskStore.save() persists a final task, it fires TaskFinalizedEvent

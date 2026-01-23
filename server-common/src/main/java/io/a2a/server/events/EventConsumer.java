@@ -20,6 +20,7 @@ public class EventConsumer {
     private final EventQueue queue;
     private volatile @Nullable Throwable error;
     private volatile boolean cancelled = false;
+    private volatile boolean agentCompleted = false;
 
     private static final String ERROR_MSG = "Agent did not return any response";
     private static final int NO_WAIT = -1;
@@ -69,10 +70,22 @@ public class EventConsumer {
                     EventQueueItem item;
                     Event event;
                     try {
-                        LOGGER.debug("EventConsumer polling queue {} (error={})", System.identityHashCode(queue), error);
+                        LOGGER.debug("EventConsumer polling queue {} (error={}, agentCompleted={})",
+                            System.identityHashCode(queue), error, agentCompleted);
                         item = queue.dequeueEventItem(QUEUE_WAIT_MILLISECONDS);
                         if (item == null) {
-                            LOGGER.debug("EventConsumer poll timeout (null item), continuing");
+                            LOGGER.debug("EventConsumer poll timeout (null item), agentCompleted={}", agentCompleted);
+                            // If agent completed, a poll timeout means no more events are coming
+                            // MainEventBusProcessor has 500ms to distribute events from MainEventBus
+                            // If we timeout with agentCompleted=true, all events have been distributed
+                            if (agentCompleted) {
+                                LOGGER.info("Agent completed and poll timeout, closing queue for graceful completion (queue={})",
+                                    System.identityHashCode(queue));
+                                queue.close();
+                                completed = true;
+                                tube.complete();
+                                return;
+                            }
                             continue;
                         }
                         event = item.getEvent();
@@ -160,7 +173,8 @@ public class EventConsumer {
                 error = agentRunnable.getError();
                 LOGGER.info("EventConsumer: Set error field from agent callback");
             } else {
-                LOGGER.info("EventConsumer: Agent completed successfully (no error), continuing consumption");
+                agentCompleted = true;
+                LOGGER.info("EventConsumer: Agent completed successfully, set agentCompleted=true, will close queue after draining");
             }
         };
     }
