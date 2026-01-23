@@ -557,8 +557,10 @@ public abstract class EventQueue implements AutoCloseable {
             // Internal method called by MainEventBusProcessor to add to local queue
             // Note: Semaphore is managed by parent MainQueue (acquire/release), not ChildQueue
             Event event = item.getEvent();
-            if (isClosed()) {
-                LOGGER.warn("ChildQueue is closed. Event will not be enqueued. {} {}", this, event);
+            // For graceful close: still accept events so they can be drained by EventConsumer
+            // For immediate close: reject events to stop distribution quickly
+            if (isClosed() && immediateClose) {
+                LOGGER.warn("ChildQueue is immediately closed. Event will not be enqueued. {} {}", this, event);
                 return;
             }
             if (!queue.offer(item)) {
