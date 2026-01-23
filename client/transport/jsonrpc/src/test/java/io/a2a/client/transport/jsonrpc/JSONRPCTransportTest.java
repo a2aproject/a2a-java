@@ -50,6 +50,7 @@ import io.a2a.spec.FileContent;
 import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
@@ -361,7 +362,8 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        AgentCard agentCard = client.getExtendedAgentCard(null);
+        GetExtendedAgentCardParams params = new GetExtendedAgentCardParams(null);
+        AgentCard agentCard = client.getExtendedAgentCard(params, null);
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
         assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard).url());

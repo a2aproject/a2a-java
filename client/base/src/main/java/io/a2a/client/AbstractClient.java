@@ -390,7 +390,18 @@ public abstract class AbstractClient implements AutoCloseable {
      * @throws A2AClientException if retrieving the extended agent card fails for any reason
      */
     public AgentCard getExtendedAgentCard() throws A2AClientException {
-        return getExtendedAgentCard(null);
+        return getExtendedAgentCard(null, null);
+    }
+
+    /**
+     * Retrieve the extended AgentCard.
+     *
+     * @param tenant Optional tenant
+     * @return the extended AgentCard
+     * @throws A2AClientException if retrieving the extended agent card fails for any reason
+     */
+    public AgentCard getExtendedAgentCard(@Nullable String tenant) throws A2AClientException {
+        return getExtendedAgentCard(tenant, null);
     }
 
     /**
@@ -400,7 +411,20 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the extended AgentCard
      * @throws A2AClientException if retrieving the extended agent card fails for any reason
      */
-    public abstract AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException;
+    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
+        return getExtendedAgentCard(null, context);
+    }
+
+    /**
+     * Retrieve the extended AgentCard.
+     *
+     * @param tenant Optional tenant
+     * @param context optional client call context for the request (may be {@code null})
+     * @return the extended AgentCard
+     * @throws A2AClientException if retrieving the extended agent card fails for any reason
+     */
+    public abstract AgentCard getExtendedAgentCard(@Nullable String tenant,
+                                                   @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Close the transport and release any associated resources.

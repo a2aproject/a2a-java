@@ -12,6 +12,7 @@ import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
@@ -323,9 +324,10 @@ class OpenTelemetryClientTransportTest {
     void testGetAgentCard_Success() throws A2AClientException {
         AgentCard expectedResult = mock(AgentCard.class);
         when(expectedResult.toString()).thenReturn("response-string");
-        when(delegate.getExtendedAgentCard(any(ClientCallContext.class))).thenReturn(expectedResult);
+        when(delegate.getExtendedAgentCard(any(GetExtendedAgentCardParams.class), any(ClientCallContext.class))).thenReturn(expectedResult);
 
-        AgentCard result = transport.getExtendedAgentCard(context);
+       GetExtendedAgentCardParams params = mock(GetExtendedAgentCardParams.class);
+        AgentCard result = transport.getExtendedAgentCard(params, context);
 
         assertEquals(expectedResult, result);
         verify(tracer).spanBuilder(A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD);
@@ -337,9 +339,10 @@ class OpenTelemetryClientTransportTest {
 
     @Test
     void testGetAgentCard_NullResponse() throws A2AClientException {
-        when(delegate.getExtendedAgentCard(any(ClientCallContext.class))).thenReturn(null);
+        when(delegate.getExtendedAgentCard(any(GetExtendedAgentCardParams.class), any(ClientCallContext.class))).thenReturn(null);
 
-        AgentCard result = transport.getExtendedAgentCard(context);
+        GetExtendedAgentCardParams params = mock(GetExtendedAgentCardParams.class);
+        AgentCard result = transport.getExtendedAgentCard(params, context);
 
         assertNull(result);
         verify(tracer).spanBuilder(A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD);
