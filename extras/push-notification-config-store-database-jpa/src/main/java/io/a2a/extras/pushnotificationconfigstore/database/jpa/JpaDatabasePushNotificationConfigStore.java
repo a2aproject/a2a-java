@@ -1,5 +1,8 @@
 package io.a2a.extras.pushnotificationconfigstore.database.jpa;
 
+import io.a2a.server.config.A2AConfigProvider;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import jakarta.persistence.TypedQuery;
 import java.time.Instant;
 import java.util.List;
@@ -29,9 +32,35 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaDatabasePushNotificationConfigStore.class);
 
     private static final Instant NULL_TIMESTAMP_SENTINEL = Instant.EPOCH;
+    private static final String A2A_PUSH_NOTIFICATION_MAX_PAGE_SIZE_CONFIG = "a2a.push-notification-config.max-page-size";
+    private static final int A2A_PUSH_NOTIFICATION_DEFAULT_MAX_PAGE_SIZE = 100;
 
     @PersistenceContext(unitName = "a2a-java")
     EntityManager em;
+
+    @Inject
+    A2AConfigProvider configProvider;
+
+    /**
+     * Maximum page size when listing push notification configurations for a task.
+     * Requested page sizes exceeding this value will be capped to this limit.
+     * <p>
+     * Property: {@code a2a.push-notification-config.max-page-size}<br>
+     * Default: 100<br>
+     * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath.
+     */
+    int maxPageSize;
+
+    @PostConstruct
+    void initConfig() {
+      try {
+        maxPageSize = Integer.parseInt(configProvider.getValue(A2A_PUSH_NOTIFICATION_MAX_PAGE_SIZE_CONFIG));
+      } catch (IllegalArgumentException e) {
+        LOGGER.warn("Failed to read or parse '{}' configuration, falling back to default page size of {}.",
+            A2A_PUSH_NOTIFICATION_MAX_PAGE_SIZE_CONFIG, A2A_PUSH_NOTIFICATION_DEFAULT_MAX_PAGE_SIZE, e);
+        maxPageSize = A2A_PUSH_NOTIFICATION_DEFAULT_MAX_PAGE_SIZE;
+      }
+    }
 
     @Transactional
     @Override
@@ -39,8 +68,6 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
         // Ensure config has an ID - default to taskId if not provided (mirroring InMemoryPushNotificationConfigStore behavior)
         PushNotificationConfig.Builder builder = PushNotificationConfig.builder(notificationConfig);
         if (notificationConfig.id() == null || notificationConfig.id().isEmpty()) {
-            // This means the taskId and configId are same. This will not allow having multiple configs for a single Task.
-            // The configId is a required field in the spec and should not be empty
             builder.id(taskId);
         }
         notificationConfig = builder.build();
@@ -80,44 +107,48 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
         LOGGER.debug("Retrieving PushNotificationConfigs for Task '{}' with params: pageSize={}, pageToken={}",
             taskId, params.pageSize(), params.pageToken());
         try {
-            StringBuilder queryBuilder = new StringBuilder("SELECT c FROM JpaPushNotificationConfig c WHERE c.id.taskId = :taskId");
+            // Parse pageToken once upfront
+            Instant tokenTimestamp = null;
+            String tokenId = null;
 
             if (params.pageToken() != null && !params.pageToken().isEmpty()) {
-              String[] tokenParts = params.pageToken().split(":", 2);
-              if (tokenParts.length == 2) {
-                // Keyset pagination: get tasks where timestamp < tokenTimestamp OR (timestamp = tokenTimestamp AND id > tokenId)
-                // All tasks have timestamps (TaskStatus canonical constructor ensures this)
+                String[] tokenParts = params.pageToken().split(":", 2);
+                if (tokenParts.length != 2) {
+                    throw new io.a2a.spec.InvalidParamsError(null,
+                        "Invalid pageToken format: pageToken must be in 'timestamp_millis:configId' format", null);
+                }
+
+                try {
+                    long timestampMillis = Long.parseLong(tokenParts[0]);
+                    tokenTimestamp = Instant.ofEpochMilli(timestampMillis);
+                    tokenId = tokenParts[1];
+                } catch (NumberFormatException e) {
+                    throw new io.a2a.spec.InvalidParamsError(null,
+                        "Invalid pageToken format: timestamp must be numeric milliseconds", null);
+                }
+            }
+
+            // Build query using the parsed values
+            StringBuilder queryBuilder = new StringBuilder("SELECT c FROM JpaPushNotificationConfig c WHERE c.id.taskId = :taskId");
+
+            if (tokenTimestamp != null) {
+                // Keyset pagination: get notifications where timestamp < tokenTimestamp OR (timestamp = tokenTimestamp AND id > tokenId)
                 queryBuilder.append(" AND (COALESCE(c.createdAt, :nullSentinel) < :tokenTimestamp OR (COALESCE(c.createdAt, :nullSentinel) = :tokenTimestamp AND c.id.configId > :tokenId))");
-              } else {
-                // Based on the comments in the test case, if the pageToken is invalid start from the beginning.
-              }
             }
 
             queryBuilder.append(" ORDER BY  COALESCE(c.createdAt, :nullSentinel) DESC, c.id.configId ASC");
 
+            // Create query and set parameters
             TypedQuery<JpaPushNotificationConfig> query = em.createQuery(queryBuilder.toString(), JpaPushNotificationConfig.class);
             query.setParameter("taskId", taskId);
             query.setParameter("nullSentinel", NULL_TIMESTAMP_SENTINEL);
 
-            if (params.pageToken() != null && !params.pageToken().isEmpty()) {
-              String[] tokenParts = params.pageToken().split(":", 2);
-              if (tokenParts.length == 2) {
-                try {
-                  long timestampMillis = Long.parseLong(tokenParts[0]);
-                  String tokenId = tokenParts[1];
-
-                  Instant tokenTimestamp = Instant.ofEpochMilli(timestampMillis);
-                  query.setParameter("tokenTimestamp", tokenTimestamp);
-                  query.setParameter("tokenId", tokenId);
-                } catch (NumberFormatException e) {
-                  // Malformed timestamp in pageToken
-                  throw new io.a2a.spec.InvalidParamsError(null,
-                      "Invalid pageToken format: timestamp must be numeric milliseconds", null);
-                }
-              }
+            if (tokenTimestamp != null) {
+                query.setParameter("tokenTimestamp", tokenTimestamp);
+                query.setParameter("tokenId", tokenId);
             }
 
-            int pageSize = params.getEffectivePageSize();
+            int pageSize = params.getEffectivePageSize(maxPageSize);
             query.setMaxResults(pageSize + 1);
             List<JpaPushNotificationConfig> jpaConfigsPage = query.getResultList();
 

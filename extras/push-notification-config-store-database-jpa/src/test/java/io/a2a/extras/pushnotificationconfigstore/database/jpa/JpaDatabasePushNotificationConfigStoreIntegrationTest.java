@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.a2a.spec.InvalidParamsError;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
@@ -293,7 +296,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
 
         assertNotNull(result);
-        assertEquals(5, result.configs().size(), "Should return all 5 configs when pageSize=0");
+        assertEquals(5, result.configs().size(), "Should return all default capped 5 configs when pageSize=0");
         assertNull(result.nextPageToken(), "Should not have nextPageToken when returning all");
     }
 
@@ -355,12 +358,10 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         // Request with invalid pageToken - JPA implementation behavior is to start from beginning
         ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(
                 taskId, 2, "invalid_token_that_does_not_exist", "");
-        ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
 
-        assertNotNull(result);
-        // When token is not found, implementation starts from beginning
-        assertEquals(2, result.configs().size(), "Should return first page when token is not found");
-        assertNotNull(result.nextPageToken(), "Should have nextPageToken since more items exist");
+        assertThrows(InvalidParamsError.class, () ->
+          pushNotificationConfigStore.getInfo(params),
+            "Invalid pageToken format: pageToken must be in 'timestamp_millis:configId' format");
     }
 
     @Test
@@ -428,12 +429,10 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
       ListTaskPushNotificationConfigParams params =
           new ListTaskPushNotificationConfigParams(taskId, 2, "123456789cfg1", "");
-      ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
 
-      assertNotNull(result);
-      assertEquals(2, result.configs().size(),
-          "Should return first page when pageToken format is invalid (missing colon)");
-      assertNotNull(result.nextPageToken(), "Should have nextPageToken since more items exist");
+      assertThrows(InvalidParamsError.class, () ->
+              pushNotificationConfigStore.getInfo(params),
+          "Invalid pageToken format: pageToken must be in 'timestamp_millis:configId' format");
     }
 
     @Test
@@ -525,7 +524,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
       String taskId = "task_ordering_consistency_" + System.currentTimeMillis();
       createSamples(taskId, 15);
 
-      List<String> allConfigIds = new java.util.ArrayList<>();
+      List<String> allConfigIds = new ArrayList<>();
       String pageToken = "";
       int pageCount = 0;
 
@@ -544,7 +543,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
       } while (pageToken != null);
 
       assertEquals(15, allConfigIds.size(), "Should retrieve all 15 configs");
-      assertEquals(15, new java.util.HashSet<>(allConfigIds).size(),
+      assertEquals(15, new HashSet<>(allConfigIds).size(),
           "All config IDs should be unique - no duplicates");
 
       assertEquals("cfg14", allConfigIds.get(0),
@@ -552,6 +551,47 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
       assertEquals("cfg0", allConfigIds.get(14),
           "Last config should be oldest created");
     }
+
+    @Test
+    @Transactional
+    public void testPageSizeExceedingConfiguredMaxLimit() {
+      String taskId = "task_max_page_size_" + System.currentTimeMillis();
+      // Create 5 configs (more than test max page size of 5)
+      createSamples(taskId, 7);
+
+      // Request with pageSize=7 (exceeds configured max of 5 in test application.properties)
+      // Should be capped to maxPageSize (5) from config
+      ListTaskPushNotificationConfigParams params =
+          new ListTaskPushNotificationConfigParams(taskId, 7, "", "");
+      ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
+
+      assertNotNull(result);
+      // Should return 5 configs (capped to maxPageSize from test config), not 7
+      assertEquals(5, result.configs().size(),
+          "Page size should be capped to configured maxPageSize (5 in tests) when requested size exceeds limit");
+      assertNotNull(result.nextPageToken(),
+          "Should have nextPageToken since more configs remain");
+
+      // Verify we can iterate through all pages and get all 7 configs
+      List<String> allConfigIds = new ArrayList<>();
+      result.configs().forEach(c -> allConfigIds.add(c.pushNotificationConfig().id()));
+
+      String nextToken = result.nextPageToken();
+      while (nextToken != null) {
+        ListTaskPushNotificationConfigParams nextParams =
+            new ListTaskPushNotificationConfigParams(taskId, 7, nextToken, "");
+        ListTaskPushNotificationConfigResult nextResult = pushNotificationConfigStore.getInfo(nextParams);
+
+        nextResult.configs().forEach(c -> allConfigIds.add(c.pushNotificationConfig().id()));
+        nextToken = nextResult.nextPageToken();
+      }
+
+      assertEquals(7, allConfigIds.size(),
+          "Should retrieve all 7 configs across multiple pages");
+      assertEquals(7, new HashSet<>(allConfigIds).size(),
+          "All config IDs should be unique - no duplicates");
+    }
+
   private void createSamples(String taskId, int size) {
         // Create configs with slight delays to ensure unique timestamps for deterministic ordering
         for (int i = 0; i < size; i++) {

@@ -12,6 +12,7 @@ import java.util.Properties;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,9 @@ public class DefaultValuesConfigProvider implements A2AConfigProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultValuesConfigProvider.class);
     private static final String DEFAULTS_RESOURCE = "META-INF/a2a-defaults.properties";
 
+    @ConfigProperty(name = "a2a.defaults.resource", defaultValue = DEFAULTS_RESOURCE)
+    String defaultsResource = DEFAULTS_RESOURCE;
+
     private final Map<String, String> defaults = new HashMap<>();
 
     @PostConstruct
@@ -42,7 +46,7 @@ public class DefaultValuesConfigProvider implements A2AConfigProvider {
         try {
             Enumeration<URL> resources = Thread.currentThread()
                     .getContextClassLoader()
-                    .getResources(DEFAULTS_RESOURCE);
+                    .getResources(defaultsResource);
 
             Map<String, String> sourceTracker = new HashMap<>(); // Track which file each key came from
 
