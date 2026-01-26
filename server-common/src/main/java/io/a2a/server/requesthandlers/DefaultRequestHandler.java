@@ -14,8 +14,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -33,6 +35,8 @@ import io.a2a.server.events.EnhancedRunnable;
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.EventQueueItem;
+import io.a2a.server.events.MainEventBusProcessor;
+import io.a2a.server.events.MainEventBusProcessorCallback;
 import io.a2a.server.events.QueueManager;
 import io.a2a.server.events.TaskQueueExistsException;
 import io.a2a.server.tasks.PushNotificationConfigStore;
@@ -63,6 +67,7 @@ import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
+import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.UnsupportedOperationError;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -212,9 +217,16 @@ public class DefaultRequestHandler implements RequestHandler {
     private TaskStore taskStore;
     private QueueManager queueManager;
     private PushNotificationConfigStore pushConfigStore;
+    private MainEventBusProcessor mainEventBusProcessor;
     private Supplier<RequestContext.Builder> requestContextBuilder;
 
     private final ConcurrentMap<String, CompletableFuture<Void>> runningAgents = new ConcurrentHashMap<>();
+
+    /**
+     * Map of taskId → CountDownLatch for tasks waiting for finalization.
+     * Used by blocking calls to wait for MainEventBusProcessor to persist final state to TaskStore.
+     */
+    private final ConcurrentMap<String, CountDownLatch> pendingFinalizations = new ConcurrentHashMap<>();
 
     private Executor executor;
     private Executor eventConsumerExecutor;
@@ -231,6 +243,7 @@ public class DefaultRequestHandler implements RequestHandler {
         this.taskStore = null;
         this.queueManager = null;
         this.pushConfigStore = null;
+        this.mainEventBusProcessor = null;
         this.requestContextBuilder = null;
         this.executor = null;
         this.eventConsumerExecutor = null;
@@ -239,12 +252,14 @@ public class DefaultRequestHandler implements RequestHandler {
     @Inject
     public DefaultRequestHandler(AgentExecutor agentExecutor, TaskStore taskStore,
                                  QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
+                                 MainEventBusProcessor mainEventBusProcessor,
                                  @Internal Executor executor,
                                  @EventConsumerExecutor Executor eventConsumerExecutor) {
         this.agentExecutor = agentExecutor;
         this.taskStore = taskStore;
         this.queueManager = queueManager;
         this.pushConfigStore = pushConfigStore;
+        this.mainEventBusProcessor = mainEventBusProcessor;
         this.executor = executor;
         this.eventConsumerExecutor = eventConsumerExecutor;
         // TODO In Python this is also a constructor parameter defaulting to this SimpleRequestContextBuilder
@@ -260,6 +275,97 @@ public class DefaultRequestHandler implements RequestHandler {
                 configProvider.getValue(A2A_BLOCKING_AGENT_TIMEOUT_SECONDS));
         consumptionCompletionTimeoutSeconds = Integer.parseInt(
                 configProvider.getValue(A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS));
+
+        // Register permanent callback for task finalization events
+        registerFinalizationCallback();
+    }
+
+    /**
+     * Register the permanent callback for task finalization events.
+     * <p>
+     * This single callback multiplexes for all concurrent requests via the
+     * {@link #pendingFinalizations} map. Called by both {@link #initConfig()}
+     * (@PostConstruct for CDI) and {@link #create(AgentExecutor, TaskStore, QueueManager, PushNotificationConfigStore, MainEventBusProcessor, Executor, Executor)}
+     * (static factory for tests).
+     * </p>
+     */
+    private void registerFinalizationCallback() {
+        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                // Not used for task finalization wait
+            }
+
+            @Override
+            public void onTaskFinalized(String taskId) {
+                // Signal any blocking call waiting for this task to finalize
+                CountDownLatch latch = pendingFinalizations.get(taskId);
+                if (latch != null) {
+                    latch.countDown();
+                    pendingFinalizations.remove(taskId);
+                    LOGGER.debug("Task {} finalization signaled to waiting thread", taskId);
+                }
+            }
+        });
+    }
+
+    /**
+     * Wait for MainEventBusProcessor to finalize a task (reach final state and persist to TaskStore).
+     * <p>
+     * This method is used by blocking calls to ensure TaskStore is fully updated before returning
+     * to the client. It registers this task in the {@link #pendingFinalizations} map, which is
+     * monitored by the permanent callback registered in {@link #initConfig()}.
+     * </p>
+     * <p>
+     * <b>Why this is needed:</b> Events flow through MainEventBus → MainEventBusProcessor →
+     * TaskStore persistence. The consumption future completing only means ChildQueue is empty,
+     * NOT that MainEventBusProcessor has finished persisting to TaskStore. This creates a race
+     * condition where blocking calls might read stale state from TaskStore.
+     * </p>
+     * <p>
+     * <b>Concurrency:</b> Uses a single permanent callback that multiplexes for all concurrent
+     * requests via {@link #pendingFinalizations} map. This avoids callback overwrite issues
+     * when multiple requests execute simultaneously.
+     * </p>
+     * <p>
+     * <b>Race Condition Prevention:</b> Checks TaskStore FIRST before waiting. If the task is
+     * already finalized, returns immediately. This prevents waiting forever when the callback
+     * fires before the latch is registered in the map.
+     * </p>
+     *
+     * @param taskId the task ID to wait for
+     * @param timeoutSeconds maximum time to wait for finalization
+     * @throws InterruptedException if interrupted while waiting
+     * @throws TimeoutException if task doesn't finalize within timeout
+     */
+    private void waitForTaskFinalization(String taskId, int timeoutSeconds)
+            throws InterruptedException, TimeoutException {
+        // CRITICAL: Check TaskStore FIRST to avoid race condition where callback fires
+        // before latch is registered. If already finalized, return immediately.
+        Task task = taskStore.get(taskId);
+        if (task != null && task.status() != null && task.status().state() != null
+                && task.status().state().isFinal()) {
+            LOGGER.debug("Task {} already finalized in TaskStore, skipping wait", taskId);
+            return;
+        }
+
+        CountDownLatch finalizationLatch = new CountDownLatch(1);
+
+        // Register this task's latch in the map
+        // The permanent callback (registered in initConfig) will signal it
+        pendingFinalizations.put(taskId, finalizationLatch);
+
+        try {
+            // Wait for the callback to fire
+            if (!finalizationLatch.await(timeoutSeconds, SECONDS)) {
+                throw new TimeoutException(
+                    String.format("Task %s finalization timeout after %d seconds", taskId, timeoutSeconds));
+            }
+            LOGGER.debug("Task {} finalized and persisted to TaskStore", taskId);
+        } finally {
+            // Always remove from map to avoid memory leaks
+            pendingFinalizations.remove(taskId);
+        }
     }
 
     /**
@@ -267,11 +373,17 @@ public class DefaultRequestHandler implements RequestHandler {
      */
     public static DefaultRequestHandler create(AgentExecutor agentExecutor, TaskStore taskStore,
                          QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
+                         MainEventBusProcessor mainEventBusProcessor,
                          Executor executor, Executor eventConsumerExecutor) {
         DefaultRequestHandler handler =
-                new DefaultRequestHandler(agentExecutor, taskStore, queueManager, pushConfigStore, executor, eventConsumerExecutor);
+                new DefaultRequestHandler(agentExecutor, taskStore, queueManager, pushConfigStore,
+                        mainEventBusProcessor, executor, eventConsumerExecutor);
         handler.agentCompletionTimeoutSeconds = 5;
         handler.consumptionCompletionTimeoutSeconds = 2;
+
+        // Register permanent callback for task finalization (normally done in @PostConstruct)
+        handler.registerFinalizationCallback();
+
         return handler;
     }
 
@@ -455,12 +567,13 @@ public class DefaultRequestHandler implements RequestHandler {
             }
 
             if (blocking && interruptedOrNonBlocking) {
-                // For blocking calls: ensure all events are processed before returning
-                // Order of operations is critical to avoid circular dependency:
+                // For blocking calls: ensure all events are persisted to TaskStore before returning
+                // Order of operations is critical to avoid circular dependency and race conditions:
                 // 1. Wait for agent to finish enqueueing events
                 // 2. Close the queue to signal consumption can complete
                 // 3. Wait for consumption to finish processing events
-                // 4. Fetch final task state from TaskStore
+                // 4. Wait for MainEventBusProcessor to persist final state to TaskStore
+                // 5. Fetch final task state from TaskStore (now guaranteed persisted)
                 LOGGER.debug("DefaultRequestHandler: Entering blocking fire-and-forget handling for task {}", taskId);
 
                 try {
@@ -487,6 +600,20 @@ public class DefaultRequestHandler implements RequestHandler {
                         etai.consumptionFuture().get(consumptionCompletionTimeoutSeconds, SECONDS);
                         LOGGER.debug("DefaultRequestHandler: Step 3 - Consumption completed for task {}", taskId);
                     }
+
+                    // Step 4: Wait for MainEventBusProcessor to finalize task (persist to TaskStore)
+                    // ONLY if the event is a final state. For fire-and-forget tasks (non-final states),
+                    // we don't wait for finalization since it will never happen.
+                    if (isFinalEvent(kind)) {
+                        // This is CRITICAL: consumption completing only means ChildQueue is empty, NOT that
+                        // MainEventBusProcessor has finished persisting to TaskStore. The callback ensures
+                        // we wait for the final state to be persisted before reading from TaskStore.
+                        waitForTaskFinalization(taskId, consumptionCompletionTimeoutSeconds);
+                        LOGGER.debug("DefaultRequestHandler: Step 4 - Task {} finalized and persisted to TaskStore", taskId);
+                    } else {
+                        LOGGER.debug("DefaultRequestHandler: Step 4 - Skipping finalization wait for task {} (non-final event)", taskId);
+                    }
+
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     String msg = String.format("Error waiting for task %s completion", taskId);
@@ -496,23 +623,23 @@ public class DefaultRequestHandler implements RequestHandler {
                     String msg = String.format("Error during task %s execution", taskId);
                     LOGGER.warn(msg, e.getCause());
                     throw new InternalError(msg);
-                } catch (java.util.concurrent.TimeoutException e) {
-                    String msg = String.format("Timeout waiting for consumption to complete for task %s", taskId);
-                    LOGGER.warn(msg, taskId);
+                } catch (TimeoutException e) {
+                    String msg = String.format("Timeout waiting for task %s finalization", taskId);
+                    LOGGER.warn(msg, e);
                     throw new InternalError(msg);
                 }
 
-                // Step 4: Fetch the final task state from TaskStore (all events have been processed)
+                // Step 5: Fetch the final task state from TaskStore (now guaranteed persisted)
                 // taskId is guaranteed non-null here (checked earlier)
                 String nonNullTaskId = taskId;
                 Task updatedTask = taskStore.get(nonNullTaskId);
                 if (updatedTask != null) {
                     kind = updatedTask;
-                    LOGGER.debug("DefaultRequestHandler: Step 4 - Fetched final task for {} with state {} and {} artifacts",
+                    LOGGER.debug("DefaultRequestHandler: Step 5 - Fetched final task for {} with state {} and {} artifacts",
                         taskId, updatedTask.status().state(),
                         updatedTask.artifacts().size());
                 } else {
-                    LOGGER.warn("DefaultRequestHandler: Step 4 - Task {} not found in TaskStore!", taskId);
+                    LOGGER.warn("DefaultRequestHandler: Step 5 - Task {} not found in TaskStore!", taskId);
                 }
             }
             if (kind instanceof Task taskResult && !taskId.equals(taskResult.id())) {
@@ -979,6 +1106,25 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         LOGGER.debug("=== END THREAD STATS ===");
+    }
+
+    /**
+     * Check if an event represents a final task state.
+     *
+     * @param eventKind the event to check
+     * @return true if the event represents a final state (COMPLETED, FAILED, CANCELED, REJECTED, UNKNOWN)
+     */
+    private boolean isFinalEvent(EventKind eventKind) {
+        if (!(eventKind instanceof Event event)) {
+            return false;
+        }
+        if (event instanceof Task task) {
+            return task.status() != null && task.status().state() != null
+                    && task.status().state().isFinal();
+        } else if (event instanceof TaskStatusUpdateEvent statusUpdate) {
+            return statusUpdate.isFinal();
+        }
+        return false;
     }
 
     private record MessageSendSetup(TaskManager taskManager, @Nullable Task task, RequestContext requestContext) {}

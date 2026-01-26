@@ -270,11 +270,12 @@ public class ResultAggregatorTest {
         assertTrue(result.interrupted());
         // NOTE: ResultAggregator no longer calls taskManager.process()
         // That responsibility has moved to MainEventBusProcessor for centralized persistence
-        // getTask() is called at least once for the return value (line 255)
-        // May be called once more if debug logging executes in time (line 209)
-        // The async consumer may or may not execute before verification, so we accept 1-2 calls
-        verify(mockTaskManager, atLeast(1)).getTask();
-        verify(mockTaskManager, atMost(2)).getTask();
+        //
+        // NOTE: Since firstEvent is a Task, ResultAggregator captures it directly from the queue
+        // (capturedTask.get() at line 283 in ResultAggregator). Therefore, taskManager.getTask()
+        // is only called for debug logging in taskIdForLogging() (line 305), which may or may not
+        // execute depending on timing and log level. We expect 0-1 calls, not 1-2.
+        verify(mockTaskManager, atMost(1)).getTask();
 
         // Cleanup: stop the processor
         EventQueueUtil.stop(processor);

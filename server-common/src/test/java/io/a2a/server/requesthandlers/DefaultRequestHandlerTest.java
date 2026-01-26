@@ -3,6 +3,7 @@ package io.a2a.server.requesthandlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,7 @@ public class DefaultRequestHandlerTest {
             taskStore,
             queueManager,
             null, // pushConfigStore
+            mainEventBusProcessor,
             executor,
             executor
         );
@@ -91,41 +93,37 @@ public class DefaultRequestHandlerTest {
     @AfterEach
     void tearDown() {
         // Stop MainEventBusProcessor background thread
+        // Note: Don't clear callback here - DefaultRequestHandler has a permanent callback
         if (mainEventBusProcessor != null) {
-            mainEventBusProcessor.setCallback(null);  // Clear any test callbacks
             EventQueueUtil.stop(mainEventBusProcessor);
         }
     }
 
     /**
-     * Helper to wait for MainEventBusProcessor to finalize a task.
-     * Replaces polling patterns with deterministic callback-based waiting.
+     * Helper to wait for task finalization in background (for non-blocking tests).
+     * <p>
+     * Note: Does NOT set callbacks - DefaultRequestHandler has a permanent callback.
+     * Simply polls TaskStore until task reaches final state.
+     * </p>
      *
-     * @param action the action that triggers task finalization (e.g., enqueuing a final event)
+     * @param action the action that triggers task finalization (e.g., allowing agent to complete)
+     * @param taskId the task ID to wait for
      * @throws InterruptedException if waiting is interrupted
      * @throws AssertionError if finalization doesn't complete within timeout
      */
-    private void waitForTaskFinalization(Runnable action) throws InterruptedException {
-        CountDownLatch finalizationLatch = new CountDownLatch(1);
-        mainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, io.a2a.spec.Event event) {
-                // Not used for task finalization wait
-            }
+    private void waitForTaskFinalization(Runnable action, String taskId) throws InterruptedException {
+        action.run();
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-                finalizationLatch.countDown();
+        // Poll TaskStore for final state (non-blocking tests complete in background)
+        for (int i = 0; i < 50; i++) {
+            Task task = taskStore.get(taskId);
+            if (task != null && task.status() != null && task.status().state() != null
+                    && task.status().state().isFinal()) {
+                return; // Success!
             }
-        });
-
-        try {
-            action.run();
-            assertTrue(finalizationLatch.await(5, TimeUnit.SECONDS),
-                    "MainEventBusProcessor should have finalized the task within timeout");
-        } finally {
-            mainEventBusProcessor.setCallback(null);
+            Thread.sleep(100);
         }
+        fail("Task " + taskId + " should have been finalized within timeout");
     }
 
     /**
@@ -635,8 +633,8 @@ public class DefaultRequestHandlerTest {
         // At this point, the non-blocking call has returned, but the agent is still running
 
         // Assertion 2: Wait for the final task to be processed and finalized in background
-        // Use callback to wait for task finalization instead of polling
-        waitForTaskFinalization(() -> allowCompletion.countDown());
+        // Poll TaskStore for finalization (background consumption)
+        waitForTaskFinalization(() -> allowCompletion.countDown(), taskId);
 
         // Verify the task was persisted with COMPLETED state
         Task persistedTask = taskStore.get(taskId);
@@ -819,42 +817,19 @@ public class DefaultRequestHandlerTest {
             updater.complete();
         });
 
-        // Use callback to ensure task finalization is complete before checking TaskStore
-        // This ensures MainEventBusProcessor has finished persisting the final state
-        CountDownLatch finalizationLatch = new CountDownLatch(1);
-        mainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, io.a2a.spec.Event event) {
-                // Not used
-            }
+        // Call blocking onMessageSend - should wait for ALL events
+        // DefaultRequestHandler now waits internally for task finalization before returning
+        Object result = requestHandler.onMessageSend(params, serverCallContext);
 
-            @Override
-            public void onTaskFinalized(String taskId) {
-                finalizationLatch.countDown();
-            }
-        });
+        // The returned result should be a Task with ALL artifacts
+        assertTrue(result instanceof Task, "Result should be a Task");
+        Task returnedTask = (Task) result;
 
-        Task returnedTask;
-        try {
-            // Call blocking onMessageSend - should wait for ALL events
-            Object result = requestHandler.onMessageSend(params, serverCallContext);
+        // Fetch final state from TaskStore (guaranteed to be persisted after blocking call)
+        returnedTask = taskStore.get(taskId);
 
-            // Wait for finalization callback to ensure TaskStore is fully updated
-            assertTrue(finalizationLatch.await(5, TimeUnit.SECONDS),
-                    "Task should be finalized within timeout");
-
-            // The returned result should be a Task with ALL artifacts
-            assertTrue(result instanceof Task, "Result should be a Task");
-            returnedTask = (Task) result;
-
-            // Fetch final state from TaskStore (guaranteed to be persisted after callback)
-            returnedTask = taskStore.get(taskId);
-
-            assertEquals(TaskState.COMPLETED, returnedTask.status().state(),
-                "Returned task should be COMPLETED");
-        } finally {
-            mainEventBusProcessor.setCallback(null);
-        }
+        assertEquals(TaskState.COMPLETED, returnedTask.status().state(),
+            "Returned task should be COMPLETED");
 
         // Verify artifacts are included in the returned task
         assertNotNull(returnedTask.artifacts(),
@@ -890,6 +865,7 @@ public class DefaultRequestHandlerTest {
             taskStore,
             queueManager,
             pushConfigStore, // Add push config store
+            mainEventBusProcessor,
             pushTestExecutor,
             pushTestExecutor
         );
@@ -962,6 +938,7 @@ public class DefaultRequestHandlerTest {
             taskStore,
             queueManager,
             pushConfigStore, // Add push config store
+            mainEventBusProcessor,
             pushTestExecutor,
             pushTestExecutor
         );

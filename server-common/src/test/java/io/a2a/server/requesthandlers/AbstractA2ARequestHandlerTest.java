@@ -117,7 +117,7 @@ public class AbstractA2ARequestHandlerTest {
         queueManager = new InMemoryQueueManager(inMemoryTaskStore, mainEventBus);
 
         requestHandler = DefaultRequestHandler.create(
-                executor, taskStore, queueManager, pushConfigStore, internalExecutor, internalExecutor);
+                executor, taskStore, queueManager, pushConfigStore, mainEventBusProcessor, internalExecutor, internalExecutor);
     }
 
     @AfterEach

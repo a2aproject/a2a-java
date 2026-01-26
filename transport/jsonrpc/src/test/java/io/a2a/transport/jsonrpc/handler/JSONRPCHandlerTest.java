@@ -3,6 +3,7 @@ package io.a2a.transport.jsonrpc.handler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -295,22 +296,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageStreamNewMessageMultipleEventsSuccess() throws InterruptedException {
-        // Setup callback to wait for all 3 events to be processed by MainEventBusProcessor
-        CountDownLatch processingLatch = new CountDownLatch(3);
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                processingLatch.countDown();
-            }
-
-            @Override
-            public void onTaskFinalized(String taskId) {
-                // Not needed for this test
-            }
-        });
-
-        try {
-            JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        // Note: Do NOT set callback - DefaultRequestHandler has a permanent callback
+        // We'll verify persistence by checking TaskStore after streaming completes
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
 
             // Create multiple events to be sent during streaming
         Task taskEvent = Task.builder(MINIMAL_TASK)
@@ -387,40 +375,44 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-            // Wait for all events to be received (increased timeout for async processing)
-            Assertions.assertTrue(latch.await(10, TimeUnit.SECONDS),
-                    "Expected to receive 3 events within timeout");
+        // Wait for all events to be received (increased timeout for async processing)
+        Assertions.assertTrue(latch.await(10, TimeUnit.SECONDS),
+                "Expected to receive 3 events within timeout");
 
-            // Wait for MainEventBusProcessor to complete processing all 3 events
-            Assertions.assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
-                    "MainEventBusProcessor should have processed all 3 events");
+        // Assert no error occurred during streaming
+        Assertions.assertNull(error.get(), "No error should occur during streaming");
 
-            // Assert no error occurred during streaming
-            Assertions.assertNull(error.get(), "No error should occur during streaming");
+        // Verify that all 3 events were received
+        assertEquals(3, results.size(), "Should have received exactly 3 events");
 
-            // Verify that all 3 events were received
-            assertEquals(3, results.size(), "Should have received exactly 3 events");
+        // Verify the first event is the task
+        Task receivedTask = assertInstanceOf(Task.class, results.get(0), "First event should be a Task");
+        assertEquals(MINIMAL_TASK.id(), receivedTask.id());
+        assertEquals(MINIMAL_TASK.contextId(), receivedTask.contextId());
+        assertEquals(TaskState.WORKING, receivedTask.status().state());
 
-            // Verify the first event is the task
-            Task receivedTask = assertInstanceOf(Task.class, results.get(0), "First event should be a Task");
-            assertEquals(MINIMAL_TASK.id(), receivedTask.id());
-            assertEquals(MINIMAL_TASK.contextId(), receivedTask.contextId());
-            assertEquals(TaskState.WORKING, receivedTask.status().state());
+        // Verify the second event is the artifact update
+        TaskArtifactUpdateEvent receivedArtifact = assertInstanceOf(TaskArtifactUpdateEvent.class, results.get(1),
+                "Second event should be a TaskArtifactUpdateEvent");
+        assertEquals(MINIMAL_TASK.id(), receivedArtifact.taskId());
+        assertEquals("artifact-1", receivedArtifact.artifact().artifactId());
 
-            // Verify the second event is the artifact update
-            TaskArtifactUpdateEvent receivedArtifact = assertInstanceOf(TaskArtifactUpdateEvent.class, results.get(1),
-                    "Second event should be a TaskArtifactUpdateEvent");
-            assertEquals(MINIMAL_TASK.id(), receivedArtifact.taskId());
-            assertEquals("artifact-1", receivedArtifact.artifact().artifactId());
+        // Verify the third event is the status update
+        TaskStatusUpdateEvent receivedStatus = assertInstanceOf(TaskStatusUpdateEvent.class, results.get(2),
+                "Third event should be a TaskStatusUpdateEvent");
+        assertEquals(MINIMAL_TASK.id(), receivedStatus.taskId());
+        assertEquals(TaskState.COMPLETED, receivedStatus.status().state());
 
-            // Verify the third event is the status update
-            TaskStatusUpdateEvent receivedStatus = assertInstanceOf(TaskStatusUpdateEvent.class, results.get(2),
-                    "Third event should be a TaskStatusUpdateEvent");
-            assertEquals(MINIMAL_TASK.id(), receivedStatus.taskId());
-            assertEquals(TaskState.COMPLETED, receivedStatus.status().state());
-        } finally {
-            mainEventBusProcessor.setCallback(null);
+        // Verify events were persisted to TaskStore (poll for final state)
+        for (int i = 0; i < 50; i++) {
+            Task storedTask = taskStore.get(MINIMAL_TASK.id());
+            if (storedTask != null && storedTask.status() != null
+                    && TaskState.COMPLETED.equals(storedTask.status().state())) {
+                return; // Success - task finalized in TaskStore
+            }
+            Thread.sleep(100);
         }
+        fail("Task should have been finalized in TaskStore within timeout");
     }
 
     @Test
@@ -694,19 +686,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageStreamNewMessageSendPushNotificationSuccess() throws Exception {
-        // Setup callback to wait for all 3 events to be processed by MainEventBusProcessor
-        CountDownLatch processingLatch = new CountDownLatch(3);
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                processingLatch.countDown();
-            }
-
-            @Override
-            public void onTaskFinalized(String taskId) {
-                // Not needed for this test
-            }
-        });
+        // Note: Do NOT set callback - DefaultRequestHandler has a permanent callback
 
         // Use synchronous executor for push notifications to ensure deterministic ordering
         // Without this, async push notifications can execute out of order, causing test flakiness
@@ -790,10 +770,6 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
             Assertions.assertTrue(latch.await(5, TimeUnit.SECONDS));
 
-            // Wait for MainEventBusProcessor to complete processing all 3 events
-            Assertions.assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
-                    "MainEventBusProcessor should have processed all 3 events");
-
             subscriptionRef.get().cancel();
             assertEquals(3, results.size());
             assertEquals(3, httpClient.tasks.size());
@@ -820,7 +796,6 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             assertEquals(1, curr.artifacts().get(0).parts().size());
             assertEquals("text", ((TextPart) curr.artifacts().get(0).parts().get(0)).text());
         } finally {
-            mainEventBusProcessor.setCallback(null);
             mainEventBusProcessor.setPushNotificationExecutor(null);
         }
     }
@@ -1054,7 +1029,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
             assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
-            Assertions.fail("Expected a response containing an error");
+            fail("Expected a response containing an error");
         }
     }
 
@@ -1101,7 +1076,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         if (results.get(0).getError() != null && results.get(0).getError() instanceof InvalidRequestError ire) {
             assertEquals("Streaming is not supported by the agent", ire.getMessage());
         } else {
-            Assertions.fail("Expected a response containing an error");
+            fail("Expected a response containing an error");
         }
     }
 
@@ -1129,7 +1104,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnGetPushNotificationNoPushNotifierConfig() {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
         AgentCard card = createAgentCard(false, true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1147,7 +1122,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnSetPushNotificationNoPushNotifierConfig() {
         // Create request handler without a push notifier
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
         AgentCard card = createAgentCard(false, true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1238,7 +1213,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageSendErrorHandling() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
         AgentCard card = createAgentCard(false, true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
@@ -1285,22 +1260,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testOnMessageStreamTaskIdMismatch() throws InterruptedException {
-        // Setup callback to wait for the 1 event to be processed by MainEventBusProcessor
-        CountDownLatch processingLatch = new CountDownLatch(1);
-        mainEventBusProcessor.setCallback(new MainEventBusProcessorCallback() {
-            @Override
-            public void onEventProcessed(String taskId, Event event) {
-                processingLatch.countDown();
-            }
-
-            @Override
-            public void onTaskFinalized(String taskId) {
-                // Not needed for this test
-            }
-        });
-
-        try {
-            JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        // Note: Do NOT set callback - DefaultRequestHandler has a permanent callback
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
             taskStore.save(MINIMAL_TASK);
 
             agentExecutorExecute = ((context, eventQueue) -> {
@@ -1343,18 +1304,11 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             }
         });
 
-            future.join();
+        future.join();
 
-            // Wait for MainEventBusProcessor to complete processing the event
-            Assertions.assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
-                    "MainEventBusProcessor should have processed the event");
-
-            Assertions.assertNull(error.get());
-            Assertions.assertEquals(1, results.size());
-            Assertions.assertInstanceOf(InternalError.class, results.get(0).getError());
-        } finally {
-            mainEventBusProcessor.setCallback(null);
-        }
+        Assertions.assertNull(error.get());
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertInstanceOf(InternalError.class, results.get(0).getError());
     }
 
     @Test
@@ -1417,7 +1371,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListPushNotificationConfigNoPushConfigStore() {
-        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
+        DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {
@@ -1509,7 +1463,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testDeletePushNotificationConfigNoPushConfigStore() {
         DefaultRequestHandler requestHandler =
-                DefaultRequestHandler.create(executor, taskStore, queueManager, null, internalExecutor, internalExecutor);
+                DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {
