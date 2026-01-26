@@ -182,6 +182,13 @@ public class DefaultRequestHandler implements RequestHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRequestHandler.class);
 
+    /**
+     * Separate logger for thread statistics diagnostic logging.
+     * This allows independent control of verbose thread pool monitoring without affecting
+     * general request handler logging. Enable with: logging.level.io.a2a.server.diagnostics.ThreadStats=DEBUG
+     */
+    private static final Logger THREAD_STATS_LOGGER = LoggerFactory.getLogger("io.a2a.server.diagnostics.ThreadStats");
+
     private static final String A2A_BLOCKING_AGENT_TIMEOUT_SECONDS = "a2a.blocking.agent.timeout.seconds";
     private static final String A2A_BLOCKING_CONSUMPTION_TIMEOUT_SECONDS = "a2a.blocking.consumption.timeout.seconds";
 
@@ -1058,13 +1065,17 @@ public class DefaultRequestHandler implements RequestHandler {
 
     /**
      * Log current thread and resource statistics for debugging.
+     * Uses dedicated {@link #THREAD_STATS_LOGGER} for independent logging control.
      * Only logs when DEBUG level is enabled. Call this from debugger or add strategic
      * calls during investigation. In production with INFO logging, this is a no-op.
+     * <p>
+     * Enable independently with: {@code logging.level.io.a2a.server.diagnostics.ThreadStats=DEBUG}
+     * </p>
      */
     @SuppressWarnings("unused")  // Used for debugging
     private void logThreadStats(String label) {
         // Early return if debug logging is not enabled to avoid overhead
-        if (!LOGGER.isDebugEnabled()) {
+        if (!THREAD_STATS_LOGGER.isDebugEnabled()) {
             return;
         }
 
@@ -1090,22 +1101,22 @@ public class DefaultRequestHandler implements RequestHandler {
             }
         }
 
-        LOGGER.debug("=== THREAD STATS: {} ===", label);
-        LOGGER.debug("Total active threads: {}", activeThreads);
-        LOGGER.debug("EventConsumer threads: {}", eventConsumerThreads);
-        LOGGER.debug("AgentExecutor threads: {}", agentExecutorThreads);
-        LOGGER.debug("Running agents: {}", runningAgents.size());
-        LOGGER.debug("Queue manager active queues: {}", queueManager.getClass().getSimpleName());
+        THREAD_STATS_LOGGER.debug("=== THREAD STATS: {} ===", label);
+        THREAD_STATS_LOGGER.debug("Total active threads: {}", activeThreads);
+        THREAD_STATS_LOGGER.debug("EventConsumer threads: {}", eventConsumerThreads);
+        THREAD_STATS_LOGGER.debug("AgentExecutor threads: {}", agentExecutorThreads);
+        THREAD_STATS_LOGGER.debug("Running agents: {}", runningAgents.size());
+        THREAD_STATS_LOGGER.debug("Queue manager active queues: {}", queueManager.getClass().getSimpleName());
 
         // List running agents
         if (!runningAgents.isEmpty()) {
-            LOGGER.debug("Running agent tasks:");
+            THREAD_STATS_LOGGER.debug("Running agent tasks:");
             runningAgents.forEach((taskId, future) ->
-                LOGGER.debug("  - Task {}: {}", taskId, future.isDone() ? "DONE" : "RUNNING")
+                THREAD_STATS_LOGGER.debug("  - Task {}: {}", taskId, future.isDone() ? "DONE" : "RUNNING")
             );
         }
 
-        LOGGER.debug("=== END THREAD STATS ===");
+        THREAD_STATS_LOGGER.debug("=== END THREAD STATS ===");
     }
 
     /**
