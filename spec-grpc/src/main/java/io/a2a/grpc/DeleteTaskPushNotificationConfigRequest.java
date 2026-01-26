@@ -8,7 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:DeleteTaskPushNotificationConfigRequest]
- * Represents a request for the `tasks/pushNotificationConfig/delete` method.
+ * Represents a request for the `DeleteTaskPushNotificationConfig` method.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.DeleteTaskPushNotificationConfigRequest}
@@ -315,7 +315,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:DeleteTaskPushNotificationConfigRequest]
-   * Represents a request for the `tasks/pushNotificationConfig/delete` method.
+   * Represents a request for the `DeleteTaskPushNotificationConfig` method.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.DeleteTaskPushNotificationConfigRequest}

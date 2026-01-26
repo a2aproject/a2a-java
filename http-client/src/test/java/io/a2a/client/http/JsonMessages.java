@@ -25,8 +25,7 @@ public class JsonMessages {
                  "documentationUrl": "https://docs.examplegeoservices.com/georoute-agent/api",
                  "capabilities": {
                    "streaming": true,
-                   "pushNotifications": true,
-                   "stateTransitionHistory": false
+                   "pushNotifications": true
                  },
                  "securitySchemes": {
                    "google": {

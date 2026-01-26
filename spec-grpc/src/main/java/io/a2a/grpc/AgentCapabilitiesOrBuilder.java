@@ -94,25 +94,6 @@ public interface AgentCapabilitiesOrBuilder extends
 
   /**
    * <pre>
-   * Indicates if the agent provides a history of state transitions for a task.
-   * </pre>
-   *
-   * <code>optional bool state_transition_history = 4;</code>
-   * @return Whether the stateTransitionHistory field is set.
-   */
-  boolean hasStateTransitionHistory();
-  /**
-   * <pre>
-   * Indicates if the agent provides a history of state transitions for a task.
-   * </pre>
-   *
-   * <code>optional bool state_transition_history = 4;</code>
-   * @return The stateTransitionHistory.
-   */
-  boolean getStateTransitionHistory();
-
-  /**
-   * <pre>
    * Indicates if the agent supports providing an extended agent card when authenticated.
    * </pre>
    *

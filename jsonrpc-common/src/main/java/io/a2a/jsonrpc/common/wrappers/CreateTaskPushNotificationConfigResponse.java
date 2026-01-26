@@ -14,12 +14,12 @@ import io.a2a.spec.TaskPushNotificationConfig;
  * If push notifications are not supported or an error occurs, the error field will contain
  * a {@link A2AError} (e.g., {@link PushNotificationNotSupportedError}).
  *
- * @see SetTaskPushNotificationConfigRequest for the corresponding request
+ * @see CreateTaskPushNotificationConfigRequest for the corresponding request
  * @see TaskPushNotificationConfig for the configuration structure
  * @see PushNotificationNotSupportedError for the error when unsupported
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class SetTaskPushNotificationConfigResponse extends A2AResponse<TaskPushNotificationConfig> {
+public final class CreateTaskPushNotificationConfigResponse extends A2AResponse<TaskPushNotificationConfig> {
 
     /**
      * Constructs response with all parameters.
@@ -29,7 +29,7 @@ public final class SetTaskPushNotificationConfigResponse extends A2AResponse<Tas
      * @param result the push notification configuration
      * @param error the error (if any)
      */
-    public SetTaskPushNotificationConfigResponse(String jsonrpc, Object id, TaskPushNotificationConfig result, A2AError error) {
+    public CreateTaskPushNotificationConfigResponse(String jsonrpc, Object id, TaskPushNotificationConfig result, A2AError error) {
         super(jsonrpc, id, result, error, TaskPushNotificationConfig.class);
     }
 
@@ -39,7 +39,7 @@ public final class SetTaskPushNotificationConfigResponse extends A2AResponse<Tas
      * @param id the request ID
      * @param error the error
      */
-    public SetTaskPushNotificationConfigResponse(Object id, A2AError error) {
+    public CreateTaskPushNotificationConfigResponse(Object id, A2AError error) {
         this(null, id, null, error);
     }
 
@@ -49,7 +49,7 @@ public final class SetTaskPushNotificationConfigResponse extends A2AResponse<Tas
      * @param id the request ID
      * @param result the push notification configuration
      */
-    public SetTaskPushNotificationConfigResponse(Object id, TaskPushNotificationConfig result) {
+    public CreateTaskPushNotificationConfigResponse(Object id, TaskPushNotificationConfig result) {
         this(null, id, result, null);
     }
 }

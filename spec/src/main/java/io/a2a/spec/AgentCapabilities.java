@@ -16,25 +16,21 @@ import java.util.List;
  *       waiting for task completion</li>
  *   <li><b>pushNotifications:</b> Agent can send proactive notifications to clients
  *       when task state changes, eliminating the need for polling</li>
- *   <li><b>stateTransitionHistory:</b> Agent maintains and provides a complete history
- *       of all state transitions for tasks, useful for debugging and auditing</li>
  * </ul>
  * <p>
  * Capabilities are declared in the {@link AgentCard} and are immutable for the lifetime
  * of the agent instance. This class uses the Builder pattern for construction.
  *
- * @param streaming whether the agent supports streaming responses with incremental artifacts
+ * @param streaming         whether the agent supports streaming responses with incremental artifacts
  * @param pushNotifications whether the agent supports push notifications for state changes
- * @param stateTransitionHistory whether the agent maintains state transition history
  * @param extendedAgentCard whether the agent supports an extended agent card
- * @param extensions list of custom extensions supported by the agent (optional)
+ * @param extensions        list of custom extensions supported by the agent (optional)
  * @see AgentCard
  * @see AgentExtension
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record AgentCapabilities(boolean streaming,
                                 boolean pushNotifications,
-                                boolean stateTransitionHistory,
                                 boolean extendedAgentCard,
                                 List<AgentExtension> extensions) {
 
@@ -57,7 +53,6 @@ public record AgentCapabilities(boolean streaming,
      * AgentCapabilities capabilities = AgentCapabilities.builder()
      *     .streaming(true)
      *     .pushNotifications(false)
-     *     .stateTransitionHistory(false)
      *     .build();
      * }</pre>
      */
@@ -65,7 +60,6 @@ public record AgentCapabilities(boolean streaming,
 
         private boolean streaming;
         private boolean pushNotifications;
-        private boolean stateTransitionHistory;
         private boolean extendedAgentCard;
         private List<AgentExtension> extensions;
 
@@ -104,20 +98,6 @@ public record AgentCapabilities(boolean streaming,
         }
 
         /**
-         * Sets whether the agent maintains state transition history.
-         * <p>
-         * When enabled, the agent tracks and provides a complete history
-         * of all state transitions for each task.
-         *
-         * @param stateTransitionHistory true if state history is maintained, false otherwise
-         * @return this builder for method chaining
-         */
-        public Builder stateTransitionHistory(boolean stateTransitionHistory) {
-            this.stateTransitionHistory = stateTransitionHistory;
-            return this;
-        }
-
-        /**
          * Sets whether the agent supports an extended agent card.
          * state transition history.
          *
@@ -150,7 +130,7 @@ public record AgentCapabilities(boolean streaming,
          * @return a new AgentCapabilities instance
          */
         public AgentCapabilities build() {
-            return new AgentCapabilities(streaming, pushNotifications, stateTransitionHistory, extendedAgentCard, extensions);
+            return new AgentCapabilities(streaming, pushNotifications, extendedAgentCard, extensions);
         }
     }
 }

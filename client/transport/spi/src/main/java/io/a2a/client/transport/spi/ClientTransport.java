@@ -79,15 +79,15 @@ public interface ClientTransport {
     ListTasksResult listTasks(ListTasksParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
-     * Set or update the push notification configuration for a specific task.
+     * Create or update the push notification configuration for a specific task.
      *
      * @param request the push notification configuration to set for the task
      * @param context optional client call context for the request (may be {@code null})
      * @return the configured TaskPushNotificationConfig
-     * @throws A2AClientException if setting the task push notification configuration fails for any reason
+     * @throws A2AClientException if creating or updating the task push notification configuration fails for any reason
      */
-    TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
-                                                                    @Nullable ClientCallContext context) throws A2AClientException;
+    TaskPushNotificationConfig createTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
+                                                                       @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Retrieve the push notification configuration for a specific task.

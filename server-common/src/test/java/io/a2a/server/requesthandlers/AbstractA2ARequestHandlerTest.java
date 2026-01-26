@@ -50,7 +50,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 public class AbstractA2ARequestHandlerTest {
 
-    protected static final AgentCard CARD = createAgentCard(true, true, true);
+    protected static final AgentCard CARD = createAgentCard(true, true);
 
     protected static final Task MINIMAL_TASK = Task.builder()
             .id("task-123")
@@ -111,7 +111,7 @@ public class AbstractA2ARequestHandlerTest {
         agentExecutorCancel = null;
     }
 
-    protected static AgentCard createAgentCard(boolean streaming, boolean pushNotifications, boolean stateTransitionHistory) {
+    protected static AgentCard createAgentCard(boolean streaming, boolean pushNotifications) {
         String preferredTransport = loadPreferredTransportFromProperties();
         AgentCard.Builder builder = AgentCard.builder()
                 .name("test-card")
@@ -122,7 +122,6 @@ public class AbstractA2ARequestHandlerTest {
                 .capabilities(AgentCapabilities.builder()
                         .streaming(streaming)
                         .pushNotifications(pushNotifications)
-                        .stateTransitionHistory(stateTransitionHistory)
                         .build())
                 .defaultInputModes(new ArrayList<>())
                 .defaultOutputModes(new ArrayList<>())
