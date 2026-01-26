@@ -17,6 +17,7 @@ import io.a2a.spec.A2AClientInvalidStateError;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
@@ -601,19 +602,21 @@ public class Client extends AbstractClient {
      * <p>
      * Example:
      * <pre>{@code
-     * AgentCard updatedCard = client.getExtendedAgentCard(null);
+     * AgentCard updatedCard = client.getExtendedAgentCard();
      * System.out.println("Agent version: " + updatedCard.version());
      * System.out.println("Skills: " + updatedCard.skills().size());
      * }</pre>
      *
+     * @param tenant Optional tenant
      * @param context custom call context for request interceptors (optional)
      * @return the agent's extended agent card
      * @throws A2AClientException if the extended agent card cannot be retrieved
      * @see AgentCard
      */
     @Override
-    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
-        agentCard = clientTransport.getExtendedAgentCard(context);
+    public AgentCard getExtendedAgentCard(@Nullable String tenant, @Nullable ClientCallContext context) throws A2AClientException {
+        GetExtendedAgentCardParams params = new GetExtendedAgentCardParams(tenant);
+        agentCard = clientTransport.getExtendedAgentCard(params, context);
         return agentCard;
     }
 

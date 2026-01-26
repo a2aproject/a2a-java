@@ -1,7 +1,5 @@
 package io.a2a.client.transport.jsonrpc;
 
-import static io.a2a.client.transport.jsonrpc.JsonMessages.AGENT_CARD;
-import static io.a2a.client.transport.jsonrpc.JsonMessages.AGENT_CARD_SUPPORTS_EXTENDED;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.CANCEL_TASK_TEST_REQUEST;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.CANCEL_TASK_TEST_RESPONSE;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.GET_AUTHENTICATED_EXTENDED_AGENT_CARD_REQUEST;
@@ -43,7 +41,6 @@ import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.VersionNotSupportedError;
-import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.AuthenticationInfo;
@@ -53,6 +50,7 @@ import io.a2a.spec.FileContent;
 import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
@@ -67,7 +65,6 @@ import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TextPart;
-import io.a2a.spec.TransportProtocol;
 import io.a2a.util.Utils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -368,7 +365,8 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        AgentCard agentCard = client.getExtendedAgentCard(null);
+        GetExtendedAgentCardParams params = new GetExtendedAgentCardParams(null);
+        AgentCard agentCard = client.getExtendedAgentCard(params, null);
         assertEquals("GeoSpatial Route Planner Agent Extended", agentCard.name());
         assertEquals("Extended description", agentCard.description());
         assertEquals("https://georoute-agent.example.com/a2a/v1", Utils.getFavoriteInterface(agentCard).url());
