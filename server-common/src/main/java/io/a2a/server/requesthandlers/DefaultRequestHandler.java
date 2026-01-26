@@ -348,11 +348,11 @@ public class DefaultRequestHandler implements RequestHandler {
     private void waitForTaskFinalization(String taskId, int timeoutSeconds)
             throws InterruptedException, TimeoutException {
         // CRITICAL: Check TaskStore FIRST to avoid race condition where callback fires
-        // before latch is registered. If already finalized, return immediately.
+        // before latch is registered. If task is finalized, return immediately.
         Task task = taskStore.get(taskId);
         if (task != null && task.status() != null && task.status().state() != null
                 && task.status().state().isFinal()) {
-            LOGGER.debug("Task {} already finalized in TaskStore, skipping wait", taskId);
+            LOGGER.debug("Task {} is finalized in TaskStore, skipping wait", taskId);
             return;
         }
 
@@ -700,7 +700,7 @@ public class DefaultRequestHandler implements RequestHandler {
 
         // Store push notification config SYNCHRONOUSLY for new tasks before agent starts
         // This ensures config is available when MainEventBusProcessor sends push notifications
-        // For existing tasks, config was already stored in initMessageSend()
+        // For existing tasks, config is stored in initMessageSend()
         if (mss.task() == null && shouldAddPushInfo(params)) {
             // Satisfy Nullaway
             Objects.requireNonNull(taskId.get(), "taskId was null");
@@ -962,8 +962,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 LOGGER.debug("Agent execution starting for task {}", taskId);
                 agentExecutor.execute(requestContext, queue);
                 LOGGER.debug("Agent execution completed for task {}", taskId);
-                // No longer wait for queue poller to start - the consumer (which is guaranteed
-                // to be running on the Vert.x worker thread) will handle queue lifecycle.
+                // The consumer (running on the Vert.x worker thread) handles queue lifecycle.
                 // This avoids blocking agent-executor threads waiting for worker threads.
             }
         };
@@ -976,8 +975,8 @@ public class DefaultRequestHandler implements RequestHandler {
                         // Don't close queue here - let the consumer handle it via error callback
                         // This ensures the consumer (which may not have started polling yet) gets the error
                     }
-                    // Queue lifecycle is now managed entirely by EventConsumer.consumeAll()
-                    // which closes the queue on final events. No need to close here.
+                    // Queue lifecycle is managed by EventConsumer.consumeAll()
+                    // which closes the queue on final events.
                     logThreadStats("AGENT COMPLETE END");
                     runnable.invokeDoneCallbacks();
                 });

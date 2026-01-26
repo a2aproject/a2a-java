@@ -163,7 +163,7 @@ public abstract class EventQueue implements AutoCloseable {
          * @return a new MainQueue instance
          */
         public EventQueue build() {
-            // MainEventBus is now REQUIRED - enforce single architectural path
+            // MainEventBus is REQUIRED - enforce single architectural path
             if (mainEventBus == null) {
                 throw new IllegalStateException("MainEventBus is required for EventQueue creation");
             }
