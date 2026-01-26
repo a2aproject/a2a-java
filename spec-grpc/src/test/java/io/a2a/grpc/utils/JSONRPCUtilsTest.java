@@ -49,7 +49,7 @@ public class JSONRPCUtilsTest {
             }
             """;
 
-        A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest);
+        A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest, null);
 
         assertNotNull(request);
         assertInstanceOf(SetTaskPushNotificationConfigRequest.class, request);
@@ -78,7 +78,7 @@ public class JSONRPCUtilsTest {
             }
             """;
 
-        A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest);
+        A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest, null);
 
         assertNotNull(request);
         assertInstanceOf(GetTaskPushNotificationConfigRequest.class, request);
@@ -101,7 +101,7 @@ public class JSONRPCUtilsTest {
             """; // Missing closing braces
 
         JsonSyntaxException exception = assertThrows(JsonSyntaxException.class, () -> {
-            JSONRPCUtils.parseRequestBody(malformedRequest);
+            JSONRPCUtils.parseRequestBody(malformedRequest, null);
         });
         assertEquals("java.io.EOFException: End of input at line 6 column 1 path $.params.parent", exception.getMessage());
     }
@@ -119,7 +119,7 @@ public class JSONRPCUtilsTest {
 
         InvalidParamsJsonMappingException exception = assertThrows(
             InvalidParamsJsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(invalidParamsRequest)
+            () -> JSONRPCUtils.parseRequestBody(invalidParamsRequest, null)
         );
         assertEquals(3, exception.getId());
     }
@@ -139,7 +139,7 @@ public class JSONRPCUtilsTest {
 
         InvalidParamsJsonMappingException exception = assertThrows(
             InvalidParamsJsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(invalidStructure)
+            () -> JSONRPCUtils.parseRequestBody(invalidStructure, null)
         );
         assertEquals(4, exception.getId());
         assertEquals(ERROR_MESSAGE.formatted("invalid_field in message a2a.v1.SetTaskPushNotificationConfigRequest"), exception.getMessage());
@@ -169,7 +169,7 @@ public class JSONRPCUtilsTest {
             }""";
         InvalidParamsJsonMappingException exception = assertThrows(
             InvalidParamsJsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(missingRoleMessage)
+            () -> JSONRPCUtils.parseRequestBody(missingRoleMessage, null)
         );
         assertEquals(18, exception.getId());
     }
@@ -199,7 +199,7 @@ public class JSONRPCUtilsTest {
             }""";
         JsonMappingException exception = assertThrows(
             JsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(unkownFieldMessage)
+            () -> JSONRPCUtils.parseRequestBody(unkownFieldMessage, null)
         );
         assertEquals(ERROR_MESSAGE.formatted("unknown in message a2a.v1.Message"), exception.getMessage());
     }

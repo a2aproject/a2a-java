@@ -183,7 +183,7 @@ public class JSONRPCUtils {
     private static final Pattern EXTRACT_WRONG_TYPE = Pattern.compile("Expected (.*) but found \".*\"");
     static final String ERROR_MESSAGE = "Invalid request content: %s. Please verify the request matches the expected schema for this method.";
 
-    public static A2ARequest<?> parseRequestBody(String body) throws JsonMappingException, JsonProcessingException {
+    public static A2ARequest<?> parseRequestBody(String body, @Nullable String tenant) throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         if (!jsonRpc.has("method")) {
@@ -196,52 +196,76 @@ public class JSONRPCUtils {
         String method = jsonRpc.get("method").getAsString();
         JsonElement paramsNode = jsonRpc.get("params");
         try {
-            return parseMethodRequest(version, id, method, paramsNode);
+            return parseMethodRequest(version, id, method, paramsNode, tenant);
         } catch (InvalidParamsError e) {
             throw new InvalidParamsJsonMappingException(Utils.defaultIfNull(e.getMessage(), "Invalid parameters"), id);
         }
     }
 
-    private static A2ARequest<?> parseMethodRequest(String version, Object id, String method, JsonElement paramsNode) throws InvalidParamsError, MethodNotFoundJsonMappingException, JsonProcessingException {
+    private static A2ARequest<?> parseMethodRequest(String version, Object id, String method, JsonElement paramsNode, @Nullable String tenant) throws InvalidParamsError, MethodNotFoundJsonMappingException, JsonProcessingException {
         switch (method) {
             case GET_TASK_METHOD -> {
                 io.a2a.grpc.GetTaskRequest.Builder builder = io.a2a.grpc.GetTaskRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new GetTaskRequest(version, id, ProtoUtils.FromProto.taskQueryParams(builder));
             }
             case CANCEL_TASK_METHOD -> {
                 io.a2a.grpc.CancelTaskRequest.Builder builder = io.a2a.grpc.CancelTaskRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new CancelTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
             }
             case LIST_TASK_METHOD -> {
                 io.a2a.grpc.ListTasksRequest.Builder builder = io.a2a.grpc.ListTasksRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new ListTasksRequest(version, id, ProtoUtils.FromProto.listTasksParams(builder));
             }
             case SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new SetTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.setTaskPushNotificationConfig(builder));
             }
             case GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new GetTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.getTaskPushNotificationConfigParams(builder));
             }
             case SEND_MESSAGE_METHOD -> {
                 io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new SendMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new ListTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigParams(builder));
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new DeleteTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(builder));
             }
             case GET_EXTENDED_AGENT_CARD_METHOD -> {
@@ -250,11 +274,17 @@ public class JSONRPCUtils {
             case SEND_STREAMING_MESSAGE_METHOD -> {
                 io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new SendStreamingMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case SUBSCRIBE_TO_TASK_METHOD -> {
                 io.a2a.grpc.SubscribeToTaskRequest.Builder builder = io.a2a.grpc.SubscribeToTaskRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
+                if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
+                    builder.setTenant(tenant);
+                }
                 return new SubscribeToTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
             }
             default ->

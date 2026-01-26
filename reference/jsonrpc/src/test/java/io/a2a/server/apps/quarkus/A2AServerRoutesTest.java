@@ -5,6 +5,7 @@ import static io.a2a.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static io.a2a.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
+import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -108,6 +109,7 @@ public class A2AServerRoutesTest {
         when(mockRoutingContext.user()).thenReturn(null);
         when(mockRequest.headers()).thenReturn(mockHeaders);
         when(mockRoutingContext.body()).thenReturn(mockRequestBody);
+        when(mockRoutingContext.normalizedPath()).thenReturn("/");
 
         // Chain the response methods properly
         when(mockHttpResponse.setStatusCode(any(Integer.class))).thenReturn(mockHttpResponse);
@@ -518,6 +520,202 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(GET_EXTENDED_AGENT_CARD_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+    }
+
+    @Test
+    public void testTenantExtraction_MultiSegmentPath() {
+        // Arrange - simulate request to /test/titi
+        when(mockRoutingContext.normalizedPath()).thenReturn("/test/titi");
+        String jsonRpcRequest = """
+            {
+             "jsonrpc": "2.0",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "GetTask",
+             "params": {
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "historyLength": 10
+             }
+            }""";
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+
+        Task responseTask = Task.builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .contextId("context-1234")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
+        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+                .thenReturn(realResponse);
+
+        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        // Assert
+        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        ServerCallContext capturedContext = contextCaptor.getValue();
+        assertNotNull(capturedContext);
+        assertEquals("test/titi", capturedContext.getState().get(TENANT_KEY));
+    }
+
+    @Test
+    public void testTenantExtraction_RootPath() {
+        // Arrange - simulate request to /
+        when(mockRoutingContext.normalizedPath()).thenReturn("/");
+        String jsonRpcRequest = """
+            {
+             "jsonrpc": "2.0",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "GetTask",
+             "params": {
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "historyLength": 10
+             }
+            }""";
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+
+        Task responseTask = Task.builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .contextId("context-1234")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
+        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+                .thenReturn(realResponse);
+
+        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        // Assert
+        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        ServerCallContext capturedContext = contextCaptor.getValue();
+        assertNotNull(capturedContext);
+        assertEquals("", capturedContext.getState().get(TENANT_KEY));
+    }
+
+    @Test
+    public void testTenantExtraction_SingleSegmentPath() {
+        // Arrange - simulate request to /tenant1
+        when(mockRoutingContext.normalizedPath()).thenReturn("/tenant1");
+        String jsonRpcRequest = """
+            {
+             "jsonrpc": "2.0",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "GetTask",
+             "params": {
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "historyLength": 10
+             }
+            }""";
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+
+        Task responseTask = Task.builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .contextId("context-1234")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
+        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+                .thenReturn(realResponse);
+
+        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        // Assert
+        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        ServerCallContext capturedContext = contextCaptor.getValue();
+        assertNotNull(capturedContext);
+        assertEquals("tenant1", capturedContext.getState().get(TENANT_KEY));
+    }
+
+    @Test
+    public void testTenantExtraction_ThreeSegmentPath() {
+        // Arrange - simulate request to /tenant1/api/v1
+        when(mockRoutingContext.normalizedPath()).thenReturn("/tenant1/api/v1");
+        String jsonRpcRequest = """
+            {
+             "jsonrpc": "2.0",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "GetTask",
+             "params": {
+              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "historyLength": 10
+             }
+            }""";
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+
+        Task responseTask = Task.builder()
+                .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .contextId("context-1234")
+                .status(new TaskStatus(TaskState.SUBMITTED))
+                .build();
+        GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
+        when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
+                .thenReturn(realResponse);
+
+        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        // Assert
+        verify(mockJsonRpcHandler).onGetTask(any(GetTaskRequest.class), contextCaptor.capture());
+        ServerCallContext capturedContext = contextCaptor.getValue();
+        assertNotNull(capturedContext);
+        assertEquals("tenant1/api/v1", capturedContext.getState().get(TENANT_KEY));
+    }
+
+    @Test
+    public void testTenantExtraction_StreamingRequest() {
+        // Arrange - simulate streaming request to /myTenant/api
+        when(mockRoutingContext.normalizedPath()).thenReturn("/myTenant/api");
+        String jsonRpcRequest = """
+            {
+             "jsonrpc": "2.0",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "SendStreamingMessage",
+             "params": {
+              "message": {
+               "messageId": "message-1234",
+               "contextId": "context-1234",
+               "role": "ROLE_USER",
+               "parts": [
+                {
+                 "text": "tell me a joke"
+                }
+               ],
+               "metadata": {}
+              },
+              "configuration": {
+                "acceptedOutputModes": ["text"],
+                "blocking": true
+              },
+              "metadata": {}
+             }
+            }""";
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+
+        @SuppressWarnings("unchecked")
+        Flow.Publisher<SendStreamingMessageResponse> mockPublisher = mock(Flow.Publisher.class);
+        when(mockJsonRpcHandler.onMessageSendStream(any(SendStreamingMessageRequest.class),
+                any(ServerCallContext.class))).thenReturn(mockPublisher);
+
+        ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        // Assert
+        verify(mockJsonRpcHandler).onMessageSendStream(any(SendStreamingMessageRequest.class),
+                contextCaptor.capture());
+        ServerCallContext capturedContext = contextCaptor.getValue();
+        assertNotNull(capturedContext);
+        assertEquals("myTenant/api", capturedContext.getState().get(TENANT_KEY));
     }
 
     /**
