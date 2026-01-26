@@ -58,6 +58,8 @@ import static io.a2a.spec.A2AMethods.SEND_MESSAGE_METHOD;
 import static io.a2a.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static io.a2a.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 
+import static io.a2a.transport.rest.context.RestContextKeys.TENANT_KEY;
+
 @Singleton
 @Authenticated
 public class A2AServerRoutes {
@@ -435,6 +437,7 @@ public class A2AServerRoutes {
             headerNames.forEach(name -> headers.put(name, rc.request().getHeader(name)));
             state.put(HEADERS_KEY, headers);
             state.put(METHOD_NAME_KEY, jsonRpcMethodName);
+            state.put(TENANT_KEY, extractTenant(rc));
 
             // Extract requested protocol version from X-A2A-Version header
             String requestedVersion = rc.request().getHeader(A2AHeaders.X_A2A_VERSION);

@@ -17,6 +17,10 @@ public final class RestContextKeys {
      * Context key for storing the method name being called.
      */
     public static final String METHOD_NAME_KEY = "method";
+    /**
+     * Context key for storing the tenant identifier extracted from the request path.
+     */
+    public static final String TENANT_KEY = "tenant";
 
     private RestContextKeys() {
         // Utility class

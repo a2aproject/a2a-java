@@ -2,6 +2,7 @@ package io.a2a.server.apps.quarkus;
 
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
+import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.SERVER_SENT_EVENTS;
@@ -101,7 +102,7 @@ public class A2AServerRoutes {
         Multi<? extends A2AResponse<?>> streamingResponse = null;
         A2AErrorResponse error = null;
         try {
-            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(body);
+            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(body, extractTenant(rc));
             context.getState().put(METHOD_NAME_KEY, request.getMethod());
             if (request instanceof NonStreamingJSONRPCRequest nonStreamingRequest) {
                 nonStreamingResponse = processNonStreamingRequest(nonStreamingRequest, context);
@@ -213,7 +214,6 @@ public class A2AServerRoutes {
     }
 
     private ServerCallContext createCallContext(RoutingContext rc) {
-
         if (callContextFactory.isUnsatisfied()) {
             User user;
             if (rc.user() == null) {
@@ -240,6 +240,7 @@ public class A2AServerRoutes {
             Set<String> headerNames = rc.request().headers().names();
             headerNames.forEach(name -> headers.put(name, rc.request().getHeader(name)));
             state.put(HEADERS_KEY, headers);
+            state.put(TENANT_KEY, extractTenant(rc));
 
             // Extract requested protocol version from X-A2A-Version header
             String requestedVersion = rc.request().getHeader(A2AHeaders.X_A2A_VERSION);
@@ -253,6 +254,20 @@ public class A2AServerRoutes {
             CallContextFactory builder = callContextFactory.get();
             return builder.build(rc);
         }
+    }
+
+    private String extractTenant(RoutingContext rc) {
+        String tenantPath = rc.normalizedPath();
+        if (tenantPath == null || tenantPath.isBlank()) {
+            return "";
+        }
+        if (tenantPath.startsWith("/")) {
+            tenantPath = tenantPath.substring(1);
+        }
+        if(tenantPath.endsWith("/")) {
+            tenantPath = tenantPath.substring(0, tenantPath.length() -1);
+        }
+        return tenantPath;
     }
 
     private static String serializeResponse(A2AResponse<?> response) {

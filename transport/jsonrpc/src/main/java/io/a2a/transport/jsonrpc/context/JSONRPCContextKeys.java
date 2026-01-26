@@ -18,6 +18,11 @@ public final class JSONRPCContextKeys {
      */
     public static final String METHOD_NAME_KEY = "method";
 
+    /**
+     * Context key for storing the tenant identifier extracted from the normalized path.
+     */
+    public static final String TENANT_KEY = "tenant";
+
     private JSONRPCContextKeys() {
         // Utility class
     }
