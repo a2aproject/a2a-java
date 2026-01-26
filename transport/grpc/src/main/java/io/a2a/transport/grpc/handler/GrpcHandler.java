@@ -344,6 +344,9 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             if (extendedAgentCard != null) {
                 responseObserver.onNext(ToProto.agentCard(extendedAgentCard));
                 responseObserver.onCompleted();
+            } else {
+                // Extended agent card not configured - return error instead of hanging
+                handleError(responseObserver, new ExtendedAgentCardNotConfiguredError(null, "Extended agent card not configured", null));
             }
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
