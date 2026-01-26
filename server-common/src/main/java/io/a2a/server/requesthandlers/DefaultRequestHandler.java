@@ -518,14 +518,14 @@ public class DefaultRequestHandler implements RequestHandler {
 
         // Log blocking behavior from client request
         if (params.configuration() != null && params.configuration().blocking() != null) {
-            LOGGER.info("DefaultRequestHandler: Client requested blocking={} for task {}",
+            LOGGER.debug("DefaultRequestHandler: Client requested blocking={} for task {}",
                 params.configuration().blocking(), taskId);
         } else if (params.configuration() != null) {
-            LOGGER.info("DefaultRequestHandler: Client sent configuration but blocking=null, using default blocking={} for task {}", blocking, taskId);
+            LOGGER.debug("DefaultRequestHandler: Client sent configuration but blocking=null, using default blocking={} for task {}", blocking, taskId);
         } else {
-            LOGGER.info("DefaultRequestHandler: Client sent no configuration, using default blocking={} for task {}", blocking, taskId);
+            LOGGER.debug("DefaultRequestHandler: Client sent no configuration, using default blocking={} for task {}", blocking, taskId);
         }
-        LOGGER.info("DefaultRequestHandler: Final blocking decision: {} for task {}", blocking, taskId);
+        LOGGER.debug("DefaultRequestHandler: Final blocking decision: {} for task {}", blocking, taskId);
 
         boolean interruptedOrNonBlocking = false;
 
@@ -548,7 +548,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 throw new InternalError("No result");
             }
             interruptedOrNonBlocking = etai.interrupted();
-            LOGGER.info("DefaultRequestHandler: interruptedOrNonBlocking={} (blocking={}, eventType={})",
+            LOGGER.debug("DefaultRequestHandler: interruptedOrNonBlocking={} (blocking={}, eventType={})",
                 interruptedOrNonBlocking, blocking, kind != null ? kind.getClass().getSimpleName() : null);
 
             // For blocking calls that were interrupted (returned on first event),

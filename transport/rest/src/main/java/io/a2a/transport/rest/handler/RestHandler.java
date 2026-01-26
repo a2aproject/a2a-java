@@ -399,29 +399,29 @@ public class RestHandler {
             Flow.Publisher<StreamingEventKind> publisher) {
         // We can't use the normal convertingProcessor since that propagates any errors as an error handled
         // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
-        log.log(Level.INFO, "REST: convertToSendStreamingMessageResponse called, creating ZeroPublisher");
+        log.log(Level.FINE, "REST: convertToSendStreamingMessageResponse called, creating ZeroPublisher");
         return ZeroPublisher.create(createTubeConfig(), tube -> {
-            log.log(Level.INFO, "REST: ZeroPublisher tube created, starting CompletableFuture.runAsync");
+            log.log(Level.FINE, "REST: ZeroPublisher tube created, starting CompletableFuture.runAsync");
             CompletableFuture.runAsync(() -> {
-                log.log(Level.INFO, "REST: Inside CompletableFuture, subscribing to EventKind publisher");
+                log.log(Level.FINE, "REST: Inside CompletableFuture, subscribing to EventKind publisher");
                 publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
                     Flow.@Nullable Subscription subscription;
 
                     @Override
                     public void onSubscribe(Flow.Subscription subscription) {
-                        log.log(Level.INFO, "REST: onSubscribe called, storing subscription and requesting first event");
+                        log.log(Level.FINE, "REST: onSubscribe called, storing subscription and requesting first event");
                         this.subscription = subscription;
                         subscription.request(1);
                     }
 
                     @Override
                     public void onNext(StreamingEventKind item) {
-                        log.log(Level.INFO, "REST: onNext called with event: {0}", item.getClass().getSimpleName());
+                        log.log(Level.FINE, "REST: onNext called with event: {0}", item.getClass().getSimpleName());
                         try {
                             String payload = JsonFormat.printer().omittingInsignificantWhitespace().print(ProtoUtils.ToProto.taskOrMessageStream(item));
-                            log.log(Level.INFO, "REST: Converted to JSON, sending via tube: {0}", payload.substring(0, Math.min(100, payload.length())));
+                            log.log(Level.FINE, "REST: Converted to JSON, sending via tube: {0}", payload.substring(0, Math.min(100, payload.length())));
                             tube.send(payload);
-                            log.log(Level.INFO, "REST: tube.send() completed, requesting next event from EventConsumer");
+                            log.log(Level.FINE, "REST: tube.send() completed, requesting next event from EventConsumer");
                             // Request next event from EventConsumer (Chain 1: EventConsumer → RestHandler)
                             // This is safe because ZeroPublisher buffers items
                             // Chain 2 (ZeroPublisher → MultiSseSupport) controls actual delivery via request(1) in onWriteDone()
@@ -449,7 +449,7 @@ public class RestHandler {
 
                     @Override
                     public void onComplete() {
-                        log.log(Level.INFO, "REST: onComplete called, calling tube.complete()");
+                        log.log(Level.FINE, "REST: onComplete called, calling tube.complete()");
                         tube.complete();
                     }
                 });

@@ -491,7 +491,7 @@ public class A2AServerRoutes {
 
                     // Detect client disconnect and call EventConsumer.cancel() directly
                     response.closeHandler(v -> {
-                        logger.info("REST SSE connection closed by client, calling EventConsumer.cancel() to stop polling loop");
+                        logger.debug("REST SSE connection closed by client, calling EventConsumer.cancel() to stop polling loop");
                         context.invokeEventConsumerCancelCallback();
                         subscription.cancel();
                     });
