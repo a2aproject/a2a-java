@@ -32,7 +32,6 @@ public class ReplicationTestAgentCardProducer {
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
-                        .stateTransitionHistory(true)
                         .build())
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))

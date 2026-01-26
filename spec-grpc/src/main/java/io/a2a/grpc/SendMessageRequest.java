@@ -9,7 +9,7 @@ package io.a2a.grpc;
  * <pre>
  * &#47;////////// Request Messages ///////////
  * --8&lt;-- [start:SendMessageRequest]
- * Represents a request for the `message/send` method.
+ * Represents a request for the `SendMessage` method.
  * </pre>
  *
  * Protobuf type {@code a2a.v1.SendMessageRequest}
@@ -420,7 +420,7 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * &#47;////////// Request Messages ///////////
    * --8&lt;-- [start:SendMessageRequest]
-   * Represents a request for the `message/send` method.
+   * Represents a request for the `SendMessage` method.
    * </pre>
    *
    * Protobuf type {@code a2a.v1.SendMessageRequest}

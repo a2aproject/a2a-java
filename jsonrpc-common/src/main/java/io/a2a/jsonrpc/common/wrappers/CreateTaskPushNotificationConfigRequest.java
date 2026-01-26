@@ -16,12 +16,12 @@ import io.a2a.spec.TaskPushNotificationConfig;
  * <p>
  * This class implements the JSON-RPC {@code tasks/pushNotificationConfig/set} method.
  *
- * @see SetTaskPushNotificationConfigResponse for the response
+ * @see CreateTaskPushNotificationConfigResponse for the response
  * @see TaskPushNotificationConfig for the parameter structure
  * @see PushNotificationConfig for notification endpoint details
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {
+public final class CreateTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {
 
     /**
      * Constructs request with all parameters.
@@ -30,7 +30,7 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
      * @param id the request ID
      * @param params the request parameters
      */
-    public SetTaskPushNotificationConfigRequest(String jsonrpc, Object id, TaskPushNotificationConfig params) {
+    public CreateTaskPushNotificationConfigRequest(String jsonrpc, Object id, TaskPushNotificationConfig params) {
         super(jsonrpc, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, id, params);
     }
 
@@ -40,7 +40,7 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
      * @param id the request ID
      * @param taskPushConfig the task push notification configuration
      */
-    public SetTaskPushNotificationConfigRequest(String id, TaskPushNotificationConfig taskPushConfig) {
+    public CreateTaskPushNotificationConfigRequest(String id, TaskPushNotificationConfig taskPushConfig) {
         this(null, id, taskPushConfig);
     }
 
@@ -73,7 +73,7 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
          * @param jsonrpc the JSON-RPC version
          * @return this builder for method chaining
          */
-        public SetTaskPushNotificationConfigRequest.Builder jsonrpc(String jsonrpc) {
+        public CreateTaskPushNotificationConfigRequest.Builder jsonrpc(String jsonrpc) {
             this.jsonrpc = jsonrpc;
             return this;
         }
@@ -84,7 +84,7 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
          * @param id the request ID
          * @return this builder for method chaining
          */
-        public SetTaskPushNotificationConfigRequest.Builder id(Object id) {
+        public CreateTaskPushNotificationConfigRequest.Builder id(Object id) {
             this.id = id;
             return this;
         }
@@ -95,7 +95,7 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
          * @param params the request parameters
          * @return this builder for method chaining
          */
-        public SetTaskPushNotificationConfigRequest.Builder params(TaskPushNotificationConfig params) {
+        public CreateTaskPushNotificationConfigRequest.Builder params(TaskPushNotificationConfig params) {
             this.params = params;
             return this;
         }
@@ -105,11 +105,11 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
          *
          * @return a new instance
          */
-        public SetTaskPushNotificationConfigRequest build() {
+        public CreateTaskPushNotificationConfigRequest build() {
             if (id == null) {
                 id = UUID.randomUUID().toString();
             }
-            return new SetTaskPushNotificationConfigRequest(jsonrpc, id, params);
+            return new CreateTaskPushNotificationConfigRequest(jsonrpc, id, params);
         }
     }
 }

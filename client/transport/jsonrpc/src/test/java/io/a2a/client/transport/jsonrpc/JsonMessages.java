@@ -28,7 +28,6 @@ public class JsonMessages {
                  "capabilities": {
                    "streaming": true,
                    "pushNotifications": true,
-                   "stateTransitionHistory": false,
                    "extendedAgentCard": false
                  },
                  "securitySchemes": {
@@ -340,7 +339,7 @@ public class JsonMessages {
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
            {
               "jsonrpc":"2.0",
-              "method":"SetTaskPushNotificationConfig",
+              "method":"CreateTaskPushNotificationConfig",
               "params":{
                 "parent":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
                 "configId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
@@ -610,7 +609,6 @@ public class JsonMessages {
                     "capabilities": {
                       "streaming": true,
                       "pushNotifications": true,
-                      "stateTransitionHistory": false,
                       "extendedAgentCard": true
                     },
                     "securitySchemes": {
@@ -691,7 +689,6 @@ public class JsonMessages {
                 "capabilities": {
                   "streaming": true,
                   "pushNotifications": true,
-                  "stateTransitionHistory": false,
                   "extendedAgentCard": true
                 },
                 "securitySchemes": {

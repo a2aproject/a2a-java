@@ -37,8 +37,8 @@ import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageResponse;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import io.a2a.server.ServerCallContext;
 import io.a2a.spec.AgentCapabilities;
@@ -323,13 +323,13 @@ public class A2AServerRoutesTest {
     }
 
     @Test
-    public void testSetTaskPushNotificationConfig_MethodNameSetInContext() {
+    public void testCreateTaskPushNotificationConfig_MethodNameSetInContext() {
         // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
              "jsonrpc": "2.0",
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
-             "method": "SetTaskPushNotificationConfig",
+             "method": "CreateTaskPushNotificationConfig",
              "params": {
               "parent": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
               "configId": "config-123",
@@ -356,8 +356,8 @@ public class A2AServerRoutesTest {
                         .build(),
                 "tenant");
 
-        SetTaskPushNotificationConfigResponse realResponse = new SetTaskPushNotificationConfigResponse("1", responseConfig);
-        when(mockJsonRpcHandler.setPushNotificationConfig(any(SetTaskPushNotificationConfigRequest.class),
+        CreateTaskPushNotificationConfigResponse realResponse = new CreateTaskPushNotificationConfigResponse("1", responseConfig);
+        when(mockJsonRpcHandler.setPushNotificationConfig(any(CreateTaskPushNotificationConfigRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -366,7 +366,7 @@ public class A2AServerRoutesTest {
         routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
 
         // Assert
-        verify(mockJsonRpcHandler).setPushNotificationConfig(any(SetTaskPushNotificationConfigRequest.class),
+        verify(mockJsonRpcHandler).setPushNotificationConfig(any(CreateTaskPushNotificationConfigRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);

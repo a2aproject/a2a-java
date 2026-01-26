@@ -80,7 +80,7 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.TransportProtocol;
 import io.a2a.spec.UnsupportedOperationError;
-import io.a2a.util.Utils;
+
 import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.specification.RequestSpecification;
@@ -553,7 +553,7 @@ public abstract class AbstractA2AServerTest {
             TaskPushNotificationConfig taskPushConfig
                     = new TaskPushNotificationConfig(
                             MINIMAL_TASK.id(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "");
-            TaskPushNotificationConfig config = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
+            TaskPushNotificationConfig config = getClient().createTaskPushNotificationConfiguration(taskPushConfig);
             assertEquals(MINIMAL_TASK.id(), config.taskId());
             assertEquals("http://example.com", config.pushNotificationConfig().url());
             assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", config.pushNotificationConfig().id());
@@ -573,7 +573,7 @@ public abstract class AbstractA2AServerTest {
                     = new TaskPushNotificationConfig(
                             MINIMAL_TASK.id(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "");
 
-            TaskPushNotificationConfig setResult = getClient().setTaskPushNotificationConfiguration(taskPushConfig);
+            TaskPushNotificationConfig setResult = getClient().createTaskPushNotificationConfiguration(taskPushConfig);
             assertNotNull(setResult);
 
             TaskPushNotificationConfig config = getClient().getTaskPushNotificationConfiguration(
@@ -624,7 +624,6 @@ public abstract class AbstractA2AServerTest {
         assertEquals("http://example.com/docs", agentCard.documentationUrl());
         assertTrue(agentCard.capabilities().pushNotifications());
         assertTrue(agentCard.capabilities().streaming());
-        assertTrue(agentCard.capabilities().stateTransitionHistory());
         assertTrue(agentCard.capabilities().extendedAgentCard());
         assertTrue(agentCard.skills().isEmpty());
     }
@@ -2119,7 +2118,6 @@ public abstract class AbstractA2AServerTest {
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
-                        .stateTransitionHistory(true)
                         .build())
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))

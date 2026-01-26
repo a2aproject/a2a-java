@@ -226,7 +226,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendStreamingMessageNotSupported() {
-        AgentCard card = createAgentCard(false, true, true);
+        AgentCard card = createAgentCard(false, true);
         RestHandler handler = new RestHandler(card, requestHandler, internalExecutor);
 
         String requestBody = """
@@ -265,7 +265,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
               }
             }""".formatted(MINIMAL_TASK.id(), MINIMAL_TASK.id());
 
-        RestHandler.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration( MINIMAL_TASK.id(), requestBody, "", callContext);
+        RestHandler.HTTPRestResponse response = handler.CreateTaskPushNotificationConfiguration( MINIMAL_TASK.id(), requestBody, "", callContext);
 
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -274,7 +274,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testPushNotificationConfigNotSupported() {
-        AgentCard card = createAgentCard(true, false, true);
+        AgentCard card = createAgentCard(true, false);
         RestHandler handler = new RestHandler(card, requestHandler, internalExecutor);
 
         String requestBody = """
@@ -286,7 +286,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             }
             """.formatted(MINIMAL_TASK.id());
 
-        RestHandler.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration(MINIMAL_TASK.id(), requestBody, "", callContext);
+        RestHandler.HTTPRestResponse response = handler.CreateTaskPushNotificationConfiguration(MINIMAL_TASK.id(), requestBody, "", callContext);
 
         Assertions.assertEquals(501, response.getStatusCode());
         Assertions.assertTrue(response.getBody().contains("PushNotificationNotSupportedError"));
@@ -312,7 +312,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 }
               }
             }""".formatted(MINIMAL_TASK.id(), MINIMAL_TASK.id());
-        RestHandler.HTTPRestResponse response = handler.setTaskPushNotificationConfiguration(MINIMAL_TASK.id(), createRequestBody, "", callContext);
+        RestHandler.HTTPRestResponse response = handler.CreateTaskPushNotificationConfiguration(MINIMAL_TASK.id(), createRequestBody, "", callContext);
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
         Assertions.assertEquals("application/json", response.getContentType());
         // Now get it

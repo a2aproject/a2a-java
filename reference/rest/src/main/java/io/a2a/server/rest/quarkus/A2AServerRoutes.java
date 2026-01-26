@@ -263,7 +263,7 @@ public class A2AServerRoutes {
     }
 
     @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
-    public void setTaskPushNotificationConfiguration(@Body String body, RoutingContext rc) {
+    public void CreateTaskPushNotificationConfiguration(@Body String body, RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
@@ -271,7 +271,7 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, extractTenant(rc), context);
+                response = jsonRestHandler.CreateTaskPushNotificationConfiguration(taskId, body, extractTenant(rc), context);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));

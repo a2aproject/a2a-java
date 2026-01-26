@@ -229,12 +229,12 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
-            @Nullable ClientCallContext context) throws A2AClientException {
+    public TaskPushNotificationConfig createTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
+                                                                              @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         String configId = request.pushNotificationConfig().id();
-        io.a2a.grpc.SetTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder()
+        io.a2a.grpc.CreateTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder()
                 .setParent("tasks/" + request.taskId())
                 .setConfig(ToProto.taskPushNotificationConfig(request))
                 .setConfigId(configId != null ? configId : request.taskId())
@@ -244,7 +244,7 @@ public class GrpcTransport implements ClientTransport {
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            return FromProto.taskPushNotificationConfig(stubWithMetadata.setTaskPushNotificationConfig(grpcRequest));
+            return FromProto.taskPushNotificationConfig(stubWithMetadata.createTaskPushNotificationConfig(grpcRequest));
         } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to create task push notification config: ");
         }

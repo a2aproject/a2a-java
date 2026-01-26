@@ -39,7 +39,6 @@ public class AgentCardProducer {
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
-                        .stateTransitionHistory(true)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))

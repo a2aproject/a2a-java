@@ -80,7 +80,6 @@ public class RestTransportTest {
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(true)
-                        .stateTransitionHistory(true)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
@@ -287,11 +286,11 @@ public class RestTransportTest {
     }
 
     /**
-     * Test of setTaskPushNotificationConfiguration method, of class JSONRestTransport.
+     * Test of CreateTaskPushNotificationConfiguration method, of class JSONRestTransport.
      */
     @Test
-    public void testSetTaskPushNotificationConfiguration() throws Exception {
-        log.info("Testing setTaskPushNotificationConfiguration");
+    public void testCreateTaskPushNotificationConfiguration() throws Exception {
+        log.info("Testing CreateTaskPushNotificationConfiguration");
         this.server.when(
                 request()
                         .withMethod("POST")
@@ -312,7 +311,7 @@ public class RestTransportTest {
                         .authentication(
                                 new AuthenticationInfo(Collections.singletonList("jwt"), null))
                         .build(), "tenant");
-        TaskPushNotificationConfig taskPushNotificationConfig = client.setTaskPushNotificationConfiguration(pushedConfig, null);
+        TaskPushNotificationConfig taskPushNotificationConfig = client.createTaskPushNotificationConfiguration(pushedConfig, null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());

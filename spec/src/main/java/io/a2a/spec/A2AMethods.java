@@ -24,7 +24,7 @@ public interface A2AMethods {
     /** Method name for sending a streaming message. */
     String SEND_STREAMING_MESSAGE_METHOD = "SendStreamingMessage";
     /** Method name for setting task push notification configuration. */
-    String SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD = "SetTaskPushNotificationConfig";
+    String SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD = "CreateTaskPushNotificationConfig";
     /** Method name for subscribing to task events. */
     String SUBSCRIBE_TO_TASK_METHOD = "SubscribeToTask";
 

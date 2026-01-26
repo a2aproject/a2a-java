@@ -15,8 +15,8 @@ import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.wrappers.A2ARequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.PushNotificationConfig;
@@ -26,11 +26,11 @@ import org.junit.jupiter.api.Test;
 public class JSONRPCUtilsTest {
 
     @Test
-    public void testParseSetTaskPushNotificationConfigRequest_ValidProtoFormat() throws JsonProcessingException {
+    public void testParseCreateTaskPushNotificationConfigRequest_ValidProtoFormat() throws JsonProcessingException {
         String validRequest = """
             {
               "jsonrpc": "2.0",
-              "method": "SetTaskPushNotificationConfig",
+              "method": "CreateTaskPushNotificationConfig",
               "id": "1",
               "params": {
                 "parent": "tasks/task-123",
@@ -52,11 +52,11 @@ public class JSONRPCUtilsTest {
         A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest, null);
 
         assertNotNull(request);
-        assertInstanceOf(SetTaskPushNotificationConfigRequest.class, request);
-        SetTaskPushNotificationConfigRequest setRequest = (SetTaskPushNotificationConfigRequest) request;
+        assertInstanceOf(CreateTaskPushNotificationConfigRequest.class, request);
+        CreateTaskPushNotificationConfigRequest setRequest = (CreateTaskPushNotificationConfigRequest) request;
         assertEquals("2.0", setRequest.getJsonrpc());
         assertEquals(1, setRequest.getId());
-        assertEquals("SetTaskPushNotificationConfig", setRequest.getMethod());
+        assertEquals("CreateTaskPushNotificationConfig", setRequest.getMethod());
 
         TaskPushNotificationConfig config = setRequest.getParams();
         assertNotNull(config);
@@ -95,7 +95,7 @@ public class JSONRPCUtilsTest {
         String malformedRequest = """
             {
               "jsonrpc": "2.0",
-              "method": "SetTaskPushNotificationConfig",
+              "method": "CreateTaskPushNotificationConfig",
               "params": {
                 "parent": "tasks/task-123"
             """; // Missing closing braces
@@ -111,7 +111,7 @@ public class JSONRPCUtilsTest {
         String invalidParamsRequest = """
             {
               "jsonrpc": "2.0",
-              "method": "SetTaskPushNotificationConfig",
+              "method": "CreateTaskPushNotificationConfig",
               "id": "3",
               "params": "not_a_dict"
             }
@@ -129,7 +129,7 @@ public class JSONRPCUtilsTest {
         String invalidStructure = """
             {
               "jsonrpc": "2.0",
-              "method": "SetTaskPushNotificationConfig",
+              "method": "CreateTaskPushNotificationConfig",
               "id": "4",
               "params": {
                 "invalid_field": "value"
@@ -142,7 +142,7 @@ public class JSONRPCUtilsTest {
             () -> JSONRPCUtils.parseRequestBody(invalidStructure, null)
         );
         assertEquals(4, exception.getId());
-        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message a2a.v1.SetTaskPushNotificationConfigRequest"), exception.getMessage());
+        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message a2a.v1.CreateTaskPushNotificationConfigRequest"), exception.getMessage());
     }
 
     @Test
@@ -262,7 +262,7 @@ public class JSONRPCUtilsTest {
     }
 
     @Test
-    public void testGenerateSetTaskPushNotificationConfigResponse_Success() throws Exception {
+    public void testGenerateCreateTaskPushNotificationConfigResponse_Success() throws Exception {
         TaskPushNotificationConfig config = new TaskPushNotificationConfig(
             "task-123",
             PushNotificationConfig.builder()
@@ -286,8 +286,8 @@ public class JSONRPCUtilsTest {
             }
             """;
 
-        SetTaskPushNotificationConfigResponse response =
-            (SetTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(responseJson, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+        CreateTaskPushNotificationConfigResponse response =
+            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(responseJson, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertEquals(1, response.getId());
@@ -335,8 +335,8 @@ public class JSONRPCUtilsTest {
             }
             """;
 
-        SetTaskPushNotificationConfigResponse response =
-            (SetTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+        CreateTaskPushNotificationConfigResponse response =
+            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertEquals(5, response.getId());
@@ -359,8 +359,8 @@ public class JSONRPCUtilsTest {
             }
             """;
 
-        SetTaskPushNotificationConfigResponse response =
-            (SetTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+        CreateTaskPushNotificationConfigResponse response =
+            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
         assertNotNull(response);
         assertEquals(6, response.getId());

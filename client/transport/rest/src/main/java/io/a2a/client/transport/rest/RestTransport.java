@@ -269,10 +269,10 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
+    public TaskPushNotificationConfig createTaskPushNotificationConfiguration(TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
-        io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder builder
-                = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder();
+        io.a2a.grpc.CreateTaskPushNotificationConfigRequest.Builder builder
+                = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
         builder.setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(request))
                 .setParent("tasks/" + request.taskId());
         if (request.pushNotificationConfig().id() != null) {

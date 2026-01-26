@@ -4,6 +4,7 @@ import io.a2a.grpc.utils.JSONRPCUtils;
 import io.a2a.jsonrpc.common.wrappers.A2AErrorResponse;
 import io.a2a.jsonrpc.common.wrappers.A2AResponse;
 import io.a2a.jsonrpc.common.wrappers.CancelTaskResponse;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
@@ -12,7 +13,6 @@ import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageResponse;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
 
 /**
  * Framework-agnostic utility for formatting A2A responses as Server-Sent Events (SSE).
@@ -116,8 +116,8 @@ public class SseFormatter {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.taskOrMessage(r.getResult());
         } else if (response instanceof ListTasksResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.listTasksResult(r.getResult());
-        } else if (response instanceof SetTaskPushNotificationConfigResponse r) {
-            return io.a2a.grpc.utils.ProtoUtils.ToProto.setTaskPushNotificationConfigResponse(r.getResult());
+        } else if (response instanceof CreateTaskPushNotificationConfigResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.createTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof GetTaskPushNotificationConfigResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof ListTaskPushNotificationConfigResponse r) {

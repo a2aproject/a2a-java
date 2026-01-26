@@ -10,7 +10,7 @@ import io.a2a.util.Assert;
  *
  * @param <T> the type of the result value returned in successful responses
  */
-public abstract sealed class A2AResponse<T> implements A2AMessage permits CancelTaskResponse, DeleteTaskPushNotificationConfigResponse, GetExtendedAgentCardResponse, GetTaskPushNotificationConfigResponse, GetTaskResponse, A2AErrorResponse, ListTaskPushNotificationConfigResponse, ListTasksResponse, SendMessageResponse, SendStreamingMessageResponse, SetTaskPushNotificationConfigResponse {
+public abstract sealed class A2AResponse<T> implements A2AMessage permits CancelTaskResponse, DeleteTaskPushNotificationConfigResponse, GetExtendedAgentCardResponse, GetTaskPushNotificationConfigResponse, GetTaskResponse, A2AErrorResponse, ListTaskPushNotificationConfigResponse, ListTasksResponse, SendMessageResponse, SendStreamingMessageResponse, CreateTaskPushNotificationConfigResponse {
 
     /** The JSON-RPC protocol version. */
     protected String jsonrpc;

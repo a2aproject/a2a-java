@@ -198,23 +198,23 @@ public class A2AServerRoutesTest {
     }
 
     @Test
-    public void testSetTaskPushNotificationConfiguration_MethodNameSetInContext() {
+    public void testCreateTaskPushNotificationConfiguration_MethodNameSetInContext() {
         // Arrange
         when(mockRoutingContext.pathParam("taskId")).thenReturn("task123");
         HTTPRestResponse mockHttpResponse = mock(HTTPRestResponse.class);
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.setTaskPushNotificationConfiguration(anyString(), anyString(), anyString(),
+        when(mockRestHandler.CreateTaskPushNotificationConfiguration(anyString(), anyString(), anyString(),
                 any(ServerCallContext.class))).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.setTaskPushNotificationConfiguration("{}", mockRoutingContext);
+        routes.CreateTaskPushNotificationConfiguration("{}", mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).setTaskPushNotificationConfiguration(eq("task123"), eq("{}"), anyString(), contextCaptor.capture());
+        verify(mockRestHandler).CreateTaskPushNotificationConfiguration(eq("task123"), eq("{}"), anyString(), contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));

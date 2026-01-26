@@ -739,7 +739,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
-    public TaskPushNotificationConfig onSetTaskPushNotificationConfig(
+    public TaskPushNotificationConfig onCreateTaskPushNotificationConfig(
             TaskPushNotificationConfig params, ServerCallContext context) throws A2AError {
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();

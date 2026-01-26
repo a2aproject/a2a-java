@@ -43,7 +43,7 @@ import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.A2AError;
@@ -182,15 +182,15 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
-                                                                           @Nullable ClientCallContext context) throws A2AClientException {
+    public TaskPushNotificationConfig createTaskPushNotificationConfiguration(TaskPushNotificationConfig request,
+                                                                              @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-                ProtoUtils.ToProto.setTaskPushNotificationConfigRequest(request), agentCard, context);
+                ProtoUtils.ToProto.createTaskPushNotificationConfigRequest(request), agentCard, context);
 
         try {
             String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
-            SetTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+            CreateTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;

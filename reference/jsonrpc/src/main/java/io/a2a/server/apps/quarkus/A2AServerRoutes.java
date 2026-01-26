@@ -51,8 +51,8 @@ import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageResponse;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
@@ -176,7 +176,7 @@ public class A2AServerRoutes {
         if (request instanceof ListTasksRequest req) {
             return jsonRpcHandler.onListTasks(req, context);
         }
-        if (request instanceof SetTaskPushNotificationConfigRequest req) {
+        if (request instanceof CreateTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.setPushNotificationConfig(req, context);
         }
         if (request instanceof GetTaskPushNotificationConfigRequest req) {
@@ -297,8 +297,8 @@ public class A2AServerRoutes {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.taskOrMessage(r.getResult());
         } else if (response instanceof ListTasksResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.listTasksResult(r.getResult());
-        } else if (response instanceof SetTaskPushNotificationConfigResponse r) {
-            return io.a2a.grpc.utils.ProtoUtils.ToProto.setTaskPushNotificationConfigResponse(r.getResult());
+        } else if (response instanceof CreateTaskPushNotificationConfigResponse r) {
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.createTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof GetTaskPushNotificationConfigResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof ListTaskPushNotificationConfigResponse r) {
