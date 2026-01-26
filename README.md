@@ -121,7 +121,6 @@ public class WeatherAgentCardProducer {
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
                         .pushNotifications(false)
-                        .stateTransitionHistory(false)
                         .build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
@@ -575,10 +574,10 @@ TaskPushNotificationConfig taskConfig = TaskPushNotificationConfig.builder()
         .pushNotificationConfig(pushNotificationConfig)
         .build();
 
-TaskPushNotificationConfig result = client.setTaskPushNotificationConfiguration(taskConfig);
+TaskPushNotificationConfig result = client.createTaskPushNotificationConfiguration(taskConfig);
 
 // You can also optionally specify a ClientCallContext with call-specific config to use
-TaskPushNotificationConfig result = client.setTaskPushNotificationConfiguration(taskConfig, clientCallContext);
+TaskPushNotificationConfig result = client.createTaskPushNotificationConfiguration(taskConfig, clientCallContext);
 ```
 
 #### List the push notification configurations for a task

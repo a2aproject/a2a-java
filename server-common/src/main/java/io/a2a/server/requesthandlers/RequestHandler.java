@@ -39,7 +39,7 @@ public interface RequestHandler {
             MessageSendParams params,
             ServerCallContext context) throws A2AError;
 
-    TaskPushNotificationConfig onSetTaskPushNotificationConfig(
+    TaskPushNotificationConfig onCreateTaskPushNotificationConfig(
             TaskPushNotificationConfig params,
             ServerCallContext context) throws A2AError;
 

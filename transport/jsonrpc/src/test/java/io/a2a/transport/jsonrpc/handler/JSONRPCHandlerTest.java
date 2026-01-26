@@ -35,8 +35,8 @@ import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageResponse;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.SubscribeToTaskRequest;
@@ -690,8 +690,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         PushNotificationConfig.builder().url("http://example.com")
                                 .id("c295ea44-7543-4f78-b524-7a38915ad6e4").build(), 
                         "tenant");
-        SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
-        SetTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
+        CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
+        CreateTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
         TaskPushNotificationConfig taskPushConfigResult
                 = new TaskPushNotificationConfig( MINIMAL_TASK.id(), 
                         PushNotificationConfig.builder().url("http://example.com")
@@ -714,7 +714,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         MINIMAL_TASK.id(), PushNotificationConfig.builder()
                         .id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
 
-        SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
+        CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
         GetTaskPushNotificationConfigRequest getRequest
@@ -759,8 +759,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 MINIMAL_TASK.id(),
                 PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
 
-        SetTaskPushNotificationConfigRequest stpnRequest = new SetTaskPushNotificationConfigRequest("1", config);
-        SetTaskPushNotificationConfigResponse stpnResponse = handler.setPushNotificationConfig(stpnRequest, callContext);
+        CreateTaskPushNotificationConfigRequest stpnRequest = new CreateTaskPushNotificationConfigRequest("1", config);
+        CreateTaskPushNotificationConfigResponse stpnResponse = handler.setPushNotificationConfig(stpnRequest, callContext);
         assertNull(stpnResponse.getError());
 
         Message msg = Message.builder(MESSAGE)
@@ -1015,7 +1015,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testStreamingNotSupportedError() {
-        AgentCard card = createAgentCard(false, true, true);
+        AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
         SendStreamingMessageRequest request = SendStreamingMessageRequest.builder()
@@ -1067,7 +1067,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testStreamingNotSupportedErrorOnResubscribeToTask() {
         // This test does not exist in the Python implementation
-        AgentCard card = createAgentCard(false, true, true);
+        AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
         SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));
@@ -1113,7 +1113,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testPushNotificationsNotSupportedError() {
-        AgentCard card = createAgentCard(true, false, true);
+        AgentCard card = createAgentCard(true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
 
@@ -1125,10 +1125,10 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                                 .url("http://example.com")
                                 .build(), "tenant");
 
-        SetTaskPushNotificationConfigRequest request = SetTaskPushNotificationConfigRequest.builder()
+        CreateTaskPushNotificationConfigRequest request = CreateTaskPushNotificationConfigRequest.builder()
                 .params(config)
                 .build();
-        SetTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
+        CreateTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
         assertInstanceOf(PushNotificationNotSupportedError.class, response.getError());
     }
 
@@ -1137,7 +1137,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         // Create request handler without a push notifier
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
                 executor, taskStore, queueManager, null, null, internalExecutor);
-        AgentCard card = createAgentCard(false, true, false);
+        AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
         taskStore.save(MINIMAL_TASK);
@@ -1156,7 +1156,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         // Create request handler without a push notifier
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
                 executor, taskStore, queueManager, null, null, internalExecutor);
-        AgentCard card = createAgentCard(false, true, false);
+        AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
         taskStore.save(MINIMAL_TASK);
@@ -1169,10 +1169,10 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                                 .url("http://example.com")
                                 .build(), "tenant");
 
-        SetTaskPushNotificationConfigRequest request = SetTaskPushNotificationConfigRequest.builder()
+        CreateTaskPushNotificationConfigRequest request = CreateTaskPushNotificationConfigRequest.builder()
                 .params(config)
                 .build();
-        SetTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
+        CreateTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
 
         assertInstanceOf(UnsupportedOperationError.class, response.getError());
         assertEquals("This operation is not supported", response.getError().getMessage());
@@ -1248,7 +1248,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageSendErrorHandling() {
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(
                 executor, taskStore, queueManager, null, null, internalExecutor);
-        AgentCard card = createAgentCard(false, true, false);
+        AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
 
         taskStore.save(MINIMAL_TASK);
@@ -1358,7 +1358,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .url("http://example.com")
                         .id(MINIMAL_TASK.id())
                         .build(), "tenant");
-        SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
+        CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
         TaskPushNotificationConfig result = new TaskPushNotificationConfig(
                         MINIMAL_TASK.id(), PushNotificationConfig.builder()
@@ -1376,7 +1376,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListPushNotificationConfigNotSupported() {
-        AgentCard card = createAgentCard(true, false, true);
+        AgentCard card = createAgentCard(true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {
@@ -1389,7 +1389,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .url("http://example.com")
                         .id(MINIMAL_TASK.id())
                         .build(), "tenant");
-        SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
+        CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
         ListTaskPushNotificationConfigRequest listRequest
@@ -1453,7 +1453,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .url("http://example.com")
                         .id(MINIMAL_TASK.id())
                         .build(), "tenant");
-        SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
+        CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
         DeleteTaskPushNotificationConfigRequest deleteRequest
@@ -1468,7 +1468,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testDeletePushNotificationConfigNotSupported() {
-        AgentCard card = createAgentCard(true, false, true);
+        AgentCard card = createAgentCard(true, false);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK);
         agentExecutorExecute = (context, eventQueue) -> {
@@ -1481,7 +1481,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .url("http://example.com")
                         .id(MINIMAL_TASK.id())
                         .build(), "tenant");
-        SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
+        CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
         DeleteTaskPushNotificationConfigRequest deleteRequest
@@ -1510,7 +1510,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .url("http://example.com")
                         .id(MINIMAL_TASK.id())
                         .build(), "tenant");
-        SetTaskPushNotificationConfigRequest request = new SetTaskPushNotificationConfigRequest("1", taskPushConfig);
+        CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
         DeleteTaskPushNotificationConfigRequest deleteRequest

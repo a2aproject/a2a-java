@@ -165,33 +165,6 @@ private static final long serialVersionUID = 0L;
     return extensions_.get(index);
   }
 
-  public static final int STATE_TRANSITION_HISTORY_FIELD_NUMBER = 4;
-  private boolean stateTransitionHistory_ = false;
-  /**
-   * <pre>
-   * Indicates if the agent provides a history of state transitions for a task.
-   * </pre>
-   *
-   * <code>optional bool state_transition_history = 4;</code>
-   * @return Whether the stateTransitionHistory field is set.
-   */
-  @java.lang.Override
-  public boolean hasStateTransitionHistory() {
-    return ((bitField0_ & 0x00000004) != 0);
-  }
-  /**
-   * <pre>
-   * Indicates if the agent provides a history of state transitions for a task.
-   * </pre>
-   *
-   * <code>optional bool state_transition_history = 4;</code>
-   * @return The stateTransitionHistory.
-   */
-  @java.lang.Override
-  public boolean getStateTransitionHistory() {
-    return stateTransitionHistory_;
-  }
-
   public static final int EXTENDED_AGENT_CARD_FIELD_NUMBER = 5;
   private boolean extendedAgentCard_ = false;
   /**
@@ -204,7 +177,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasExtendedAgentCard() {
-    return ((bitField0_ & 0x00000008) != 0);
+    return ((bitField0_ & 0x00000004) != 0);
   }
   /**
    * <pre>
@@ -243,9 +216,6 @@ private static final long serialVersionUID = 0L;
       output.writeMessage(3, extensions_.get(i));
     }
     if (((bitField0_ & 0x00000004) != 0)) {
-      output.writeBool(4, stateTransitionHistory_);
-    }
-    if (((bitField0_ & 0x00000008) != 0)) {
       output.writeBool(5, extendedAgentCard_);
     }
     getUnknownFields().writeTo(output);
@@ -270,10 +240,6 @@ private static final long serialVersionUID = 0L;
         .computeMessageSize(3, extensions_.get(i));
     }
     if (((bitField0_ & 0x00000004) != 0)) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(4, stateTransitionHistory_);
-    }
-    if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(5, extendedAgentCard_);
     }
@@ -304,11 +270,6 @@ private static final long serialVersionUID = 0L;
     }
     if (!getExtensionsList()
         .equals(other.getExtensionsList())) return false;
-    if (hasStateTransitionHistory() != other.hasStateTransitionHistory()) return false;
-    if (hasStateTransitionHistory()) {
-      if (getStateTransitionHistory()
-          != other.getStateTransitionHistory()) return false;
-    }
     if (hasExtendedAgentCard() != other.hasExtendedAgentCard()) return false;
     if (hasExtendedAgentCard()) {
       if (getExtendedAgentCard()
@@ -338,11 +299,6 @@ private static final long serialVersionUID = 0L;
     if (getExtensionsCount() > 0) {
       hash = (37 * hash) + EXTENSIONS_FIELD_NUMBER;
       hash = (53 * hash) + getExtensionsList().hashCode();
-    }
-    if (hasStateTransitionHistory()) {
-      hash = (37 * hash) + STATE_TRANSITION_HISTORY_FIELD_NUMBER;
-      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-          getStateTransitionHistory());
     }
     if (hasExtendedAgentCard()) {
       hash = (37 * hash) + EXTENDED_AGENT_CARD_FIELD_NUMBER;
@@ -494,7 +450,6 @@ private static final long serialVersionUID = 0L;
         extensionsBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000004);
-      stateTransitionHistory_ = false;
       extendedAgentCard_ = false;
       return this;
     }
@@ -552,12 +507,8 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000002;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
-        result.stateTransitionHistory_ = stateTransitionHistory_;
-        to_bitField0_ |= 0x00000004;
-      }
-      if (((from_bitField0_ & 0x00000010) != 0)) {
         result.extendedAgentCard_ = extendedAgentCard_;
-        to_bitField0_ |= 0x00000008;
+        to_bitField0_ |= 0x00000004;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -605,9 +556,6 @@ private static final long serialVersionUID = 0L;
             extensionsBuilder_.addAllMessages(other.extensions_);
           }
         }
-      }
-      if (other.hasStateTransitionHistory()) {
-        setStateTransitionHistory(other.getStateTransitionHistory());
       }
       if (other.hasExtendedAgentCard()) {
         setExtendedAgentCard(other.getExtendedAgentCard());
@@ -661,14 +609,9 @@ private static final long serialVersionUID = 0L;
               }
               break;
             } // case 26
-            case 32: {
-              stateTransitionHistory_ = input.readBool();
-              bitField0_ |= 0x00000008;
-              break;
-            } // case 32
             case 40: {
               extendedAgentCard_ = input.readBool();
-              bitField0_ |= 0x00000010;
+              bitField0_ |= 0x00000008;
               break;
             } // case 40
             default: {
@@ -1112,62 +1055,6 @@ private static final long serialVersionUID = 0L;
       return extensionsBuilder_;
     }
 
-    private boolean stateTransitionHistory_ ;
-    /**
-     * <pre>
-     * Indicates if the agent provides a history of state transitions for a task.
-     * </pre>
-     *
-     * <code>optional bool state_transition_history = 4;</code>
-     * @return Whether the stateTransitionHistory field is set.
-     */
-    @java.lang.Override
-    public boolean hasStateTransitionHistory() {
-      return ((bitField0_ & 0x00000008) != 0);
-    }
-    /**
-     * <pre>
-     * Indicates if the agent provides a history of state transitions for a task.
-     * </pre>
-     *
-     * <code>optional bool state_transition_history = 4;</code>
-     * @return The stateTransitionHistory.
-     */
-    @java.lang.Override
-    public boolean getStateTransitionHistory() {
-      return stateTransitionHistory_;
-    }
-    /**
-     * <pre>
-     * Indicates if the agent provides a history of state transitions for a task.
-     * </pre>
-     *
-     * <code>optional bool state_transition_history = 4;</code>
-     * @param value The stateTransitionHistory to set.
-     * @return This builder for chaining.
-     */
-    public Builder setStateTransitionHistory(boolean value) {
-
-      stateTransitionHistory_ = value;
-      bitField0_ |= 0x00000008;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * Indicates if the agent provides a history of state transitions for a task.
-     * </pre>
-     *
-     * <code>optional bool state_transition_history = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearStateTransitionHistory() {
-      bitField0_ = (bitField0_ & ~0x00000008);
-      stateTransitionHistory_ = false;
-      onChanged();
-      return this;
-    }
-
     private boolean extendedAgentCard_ ;
     /**
      * <pre>
@@ -1179,7 +1066,7 @@ private static final long serialVersionUID = 0L;
      */
     @java.lang.Override
     public boolean hasExtendedAgentCard() {
-      return ((bitField0_ & 0x00000010) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -1205,7 +1092,7 @@ private static final long serialVersionUID = 0L;
     public Builder setExtendedAgentCard(boolean value) {
 
       extendedAgentCard_ = value;
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1218,7 +1105,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearExtendedAgentCard() {
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000008);
       extendedAgentCard_ = false;
       onChanged();
       return this;

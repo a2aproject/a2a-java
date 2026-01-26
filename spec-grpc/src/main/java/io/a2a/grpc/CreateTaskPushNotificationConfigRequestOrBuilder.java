@@ -6,8 +6,8 @@
 package io.a2a.grpc;
 
 @com.google.protobuf.Generated
-public interface SetTaskPushNotificationConfigRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.SetTaskPushNotificationConfigRequest)
+public interface CreateTaskPushNotificationConfigRequestOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:a2a.v1.CreateTaskPushNotificationConfigRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**

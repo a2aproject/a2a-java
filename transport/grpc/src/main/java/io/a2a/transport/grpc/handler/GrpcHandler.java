@@ -159,7 +159,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     @Override
-    public void setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequest request,
+    public void createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request,
                                                StreamObserver<io.a2a.grpc.TaskPushNotificationConfig> responseObserver) {
         if (!getAgentCardInternal().capabilities().pushNotifications()) {
             handleError(responseObserver, new PushNotificationNotSupportedError());
@@ -168,8 +168,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
-            TaskPushNotificationConfig config = FromProto.setTaskPushNotificationConfig(request);
-            TaskPushNotificationConfig responseConfig = getRequestHandler().onSetTaskPushNotificationConfig(config, context);
+            TaskPushNotificationConfig config = FromProto.CreateTaskPushNotificationConfig(request);
+            TaskPushNotificationConfig responseConfig = getRequestHandler().onCreateTaskPushNotificationConfig(config, context);
             responseObserver.onNext(ToProto.taskPushNotificationConfig(responseConfig));
             responseObserver.onCompleted();
         } catch (A2AError e) {

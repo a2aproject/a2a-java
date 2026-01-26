@@ -224,26 +224,26 @@ public abstract class AbstractClient implements AutoCloseable {
     public abstract Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
-     * Set or update the push notification configuration for a specific task.
+     * Create or update the push notification configuration for a specific task.
      *
      * @param request the push notification configuration to set for the task
      * @return the configured TaskPushNotificationConfig
      * @throws A2AClientException if setting the task push notification configuration fails for any reason
      */
-    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(
+    public TaskPushNotificationConfig createTaskPushNotificationConfiguration(
             TaskPushNotificationConfig request) throws A2AClientException {
-        return setTaskPushNotificationConfiguration(request, null);
+        return createTaskPushNotificationConfiguration(request, null);
     }
 
     /**
-     * Set or update the push notification configuration for a specific task.
+     * Create or update the push notification configuration for a specific task.
      *
      * @param request the push notification configuration to set for the task
      * @param context optional client call context for the request (may be {@code null})
      * @return the configured TaskPushNotificationConfig
      * @throws A2AClientException if setting the task push notification configuration fails for any reason
      */
-    public abstract TaskPushNotificationConfig setTaskPushNotificationConfiguration(
+    public abstract TaskPushNotificationConfig createTaskPushNotificationConfiguration(
             TaskPushNotificationConfig request,
             @Nullable ClientCallContext context) throws A2AClientException;
 

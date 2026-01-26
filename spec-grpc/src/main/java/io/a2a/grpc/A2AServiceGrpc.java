@@ -201,35 +201,35 @@ public final class A2AServiceGrpc {
     return getSubscribeToTaskMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<io.a2a.grpc.SetTaskPushNotificationConfigRequest,
-      io.a2a.grpc.TaskPushNotificationConfig> getSetTaskPushNotificationConfigMethod;
+  private static volatile io.grpc.MethodDescriptor<io.a2a.grpc.CreateTaskPushNotificationConfigRequest,
+      io.a2a.grpc.TaskPushNotificationConfig> getCreateTaskPushNotificationConfigMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "SetTaskPushNotificationConfig",
-      requestType = io.a2a.grpc.SetTaskPushNotificationConfigRequest.class,
+      fullMethodName = SERVICE_NAME + '/' + "CreateTaskPushNotificationConfig",
+      requestType = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.class,
       responseType = io.a2a.grpc.TaskPushNotificationConfig.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<io.a2a.grpc.SetTaskPushNotificationConfigRequest,
-      io.a2a.grpc.TaskPushNotificationConfig> getSetTaskPushNotificationConfigMethod() {
-    io.grpc.MethodDescriptor<io.a2a.grpc.SetTaskPushNotificationConfigRequest, io.a2a.grpc.TaskPushNotificationConfig> getSetTaskPushNotificationConfigMethod;
-    if ((getSetTaskPushNotificationConfigMethod = A2AServiceGrpc.getSetTaskPushNotificationConfigMethod) == null) {
+  public static io.grpc.MethodDescriptor<io.a2a.grpc.CreateTaskPushNotificationConfigRequest,
+      io.a2a.grpc.TaskPushNotificationConfig> getCreateTaskPushNotificationConfigMethod() {
+    io.grpc.MethodDescriptor<io.a2a.grpc.CreateTaskPushNotificationConfigRequest, io.a2a.grpc.TaskPushNotificationConfig> getCreateTaskPushNotificationConfigMethod;
+    if ((getCreateTaskPushNotificationConfigMethod = A2AServiceGrpc.getCreateTaskPushNotificationConfigMethod) == null) {
       synchronized (A2AServiceGrpc.class) {
-        if ((getSetTaskPushNotificationConfigMethod = A2AServiceGrpc.getSetTaskPushNotificationConfigMethod) == null) {
-          A2AServiceGrpc.getSetTaskPushNotificationConfigMethod = getSetTaskPushNotificationConfigMethod =
-              io.grpc.MethodDescriptor.<io.a2a.grpc.SetTaskPushNotificationConfigRequest, io.a2a.grpc.TaskPushNotificationConfig>newBuilder()
+        if ((getCreateTaskPushNotificationConfigMethod = A2AServiceGrpc.getCreateTaskPushNotificationConfigMethod) == null) {
+          A2AServiceGrpc.getCreateTaskPushNotificationConfigMethod = getCreateTaskPushNotificationConfigMethod =
+              io.grpc.MethodDescriptor.<io.a2a.grpc.CreateTaskPushNotificationConfigRequest, io.a2a.grpc.TaskPushNotificationConfig>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "SetTaskPushNotificationConfig"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "CreateTaskPushNotificationConfig"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  io.a2a.grpc.SetTaskPushNotificationConfigRequest.getDefaultInstance()))
+                  io.a2a.grpc.CreateTaskPushNotificationConfigRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance()))
-              .setSchemaDescriptor(new A2AServiceMethodDescriptorSupplier("SetTaskPushNotificationConfig"))
+              .setSchemaDescriptor(new A2AServiceMethodDescriptorSupplier("CreateTaskPushNotificationConfig"))
               .build();
         }
       }
     }
-    return getSetTaskPushNotificationConfigMethod;
+    return getCreateTaskPushNotificationConfigMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<io.a2a.grpc.GetTaskPushNotificationConfigRequest,
@@ -485,12 +485,12 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Set a push notification config for a task.
+     * Create a push notification config for a task.
      * </pre>
      */
-    default void setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequest request,
+    default void createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request,
         io.grpc.stub.StreamObserver<io.a2a.grpc.TaskPushNotificationConfig> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSetTaskPushNotificationConfigMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getCreateTaskPushNotificationConfigMethod(), responseObserver);
     }
 
     /**
@@ -636,13 +636,13 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Set a push notification config for a task.
+     * Create a push notification config for a task.
      * </pre>
      */
-    public void setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequest request,
+    public void createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request,
         io.grpc.stub.StreamObserver<io.a2a.grpc.TaskPushNotificationConfig> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getSetTaskPushNotificationConfigMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getCreateTaskPushNotificationConfigMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -776,12 +776,12 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Set a push notification config for a task.
+     * Create a push notification config for a task.
      * </pre>
      */
-    public io.a2a.grpc.TaskPushNotificationConfig setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequest request) throws io.grpc.StatusException {
+    public io.a2a.grpc.TaskPushNotificationConfig createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request) throws io.grpc.StatusException {
       return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
-          getChannel(), getSetTaskPushNotificationConfigMethod(), getCallOptions(), request);
+          getChannel(), getCreateTaskPushNotificationConfigMethod(), getCallOptions(), request);
     }
 
     /**
@@ -909,12 +909,12 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Set a push notification config for a task.
+     * Create a push notification config for a task.
      * </pre>
      */
-    public io.a2a.grpc.TaskPushNotificationConfig setTaskPushNotificationConfig(io.a2a.grpc.SetTaskPushNotificationConfigRequest request) {
+    public io.a2a.grpc.TaskPushNotificationConfig createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getSetTaskPushNotificationConfigMethod(), getCallOptions(), request);
+          getChannel(), getCreateTaskPushNotificationConfigMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1023,13 +1023,13 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Set a push notification config for a task.
+     * Create a push notification config for a task.
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.TaskPushNotificationConfig> setTaskPushNotificationConfig(
-        io.a2a.grpc.SetTaskPushNotificationConfigRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.TaskPushNotificationConfig> createTaskPushNotificationConfig(
+        io.a2a.grpc.CreateTaskPushNotificationConfigRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getSetTaskPushNotificationConfigMethod(), getCallOptions()), request);
+          getChannel().newCall(getCreateTaskPushNotificationConfigMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1083,7 +1083,7 @@ public final class A2AServiceGrpc {
   private static final int METHODID_LIST_TASKS = 3;
   private static final int METHODID_CANCEL_TASK = 4;
   private static final int METHODID_SUBSCRIBE_TO_TASK = 5;
-  private static final int METHODID_SET_TASK_PUSH_NOTIFICATION_CONFIG = 6;
+  private static final int METHODID_CREATE_TASK_PUSH_NOTIFICATION_CONFIG = 6;
   private static final int METHODID_GET_TASK_PUSH_NOTIFICATION_CONFIG = 7;
   private static final int METHODID_LIST_TASK_PUSH_NOTIFICATION_CONFIG = 8;
   private static final int METHODID_GET_EXTENDED_AGENT_CARD = 9;
@@ -1130,8 +1130,8 @@ public final class A2AServiceGrpc {
           serviceImpl.subscribeToTask((io.a2a.grpc.SubscribeToTaskRequest) request,
               (io.grpc.stub.StreamObserver<io.a2a.grpc.StreamResponse>) responseObserver);
           break;
-        case METHODID_SET_TASK_PUSH_NOTIFICATION_CONFIG:
-          serviceImpl.setTaskPushNotificationConfig((io.a2a.grpc.SetTaskPushNotificationConfigRequest) request,
+        case METHODID_CREATE_TASK_PUSH_NOTIFICATION_CONFIG:
+          serviceImpl.createTaskPushNotificationConfig((io.a2a.grpc.CreateTaskPushNotificationConfigRequest) request,
               (io.grpc.stub.StreamObserver<io.a2a.grpc.TaskPushNotificationConfig>) responseObserver);
           break;
         case METHODID_GET_TASK_PUSH_NOTIFICATION_CONFIG:
@@ -1211,12 +1211,12 @@ public final class A2AServiceGrpc {
               io.a2a.grpc.StreamResponse>(
                 service, METHODID_SUBSCRIBE_TO_TASK)))
         .addMethod(
-          getSetTaskPushNotificationConfigMethod(),
+          getCreateTaskPushNotificationConfigMethod(),
           io.grpc.stub.ServerCalls.asyncUnaryCall(
             new MethodHandlers<
-              io.a2a.grpc.SetTaskPushNotificationConfigRequest,
+              io.a2a.grpc.CreateTaskPushNotificationConfigRequest,
               io.a2a.grpc.TaskPushNotificationConfig>(
-                service, METHODID_SET_TASK_PUSH_NOTIFICATION_CONFIG)))
+                service, METHODID_CREATE_TASK_PUSH_NOTIFICATION_CONFIG)))
         .addMethod(
           getGetTaskPushNotificationConfigMethod(),
           io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -1299,7 +1299,7 @@ public final class A2AServiceGrpc {
               .addMethod(getListTasksMethod())
               .addMethod(getCancelTaskMethod())
               .addMethod(getSubscribeToTaskMethod())
-              .addMethod(getSetTaskPushNotificationConfigMethod())
+              .addMethod(getCreateTaskPushNotificationConfigMethod())
               .addMethod(getGetTaskPushNotificationConfigMethod())
               .addMethod(getListTaskPushNotificationConfigMethod())
               .addMethod(getGetExtendedAgentCardMethod())

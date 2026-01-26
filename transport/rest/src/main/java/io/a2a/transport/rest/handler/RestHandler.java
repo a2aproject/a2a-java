@@ -161,15 +161,15 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse setTaskPushNotificationConfiguration(String taskId, String body, String tenant, ServerCallContext context) {
+    public HTTPRestResponse CreateTaskPushNotificationConfiguration(String taskId, String body, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
-            io.a2a.grpc.SetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.SetTaskPushNotificationConfigRequest.newBuilder();
+            io.a2a.grpc.CreateTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
             parseRequestBody(body, builder);
             builder.setTenant(tenant);
-            TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils.FromProto.setTaskPushNotificationConfig(builder), context);
+            TaskPushNotificationConfig result = requestHandler.onCreateTaskPushNotificationConfig(ProtoUtils.FromProto.CreateTaskPushNotificationConfig(builder), context);
             return createSuccessResponse(201, io.a2a.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);

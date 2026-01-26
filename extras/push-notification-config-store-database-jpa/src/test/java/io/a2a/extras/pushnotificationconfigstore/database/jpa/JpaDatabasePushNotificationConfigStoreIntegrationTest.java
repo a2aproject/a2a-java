@@ -124,7 +124,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
             .build();
 
         TaskPushNotificationConfig taskPushConfig = new TaskPushNotificationConfig(taskId, pushConfig, "");
-        TaskPushNotificationConfig setResult = client.setTaskPushNotificationConfiguration(taskPushConfig);
+        TaskPushNotificationConfig setResult = client.createTaskPushNotificationConfiguration(taskPushConfig);
         assertNotNull(setResult);
 
         // Step 3: Verify the configuration was stored using client API

@@ -431,7 +431,7 @@ public class Client extends AbstractClient {
      *         )
      *     )
      * );
-     * client.setTaskPushNotificationConfiguration(config);
+     * client.createTaskPushNotificationConfiguration(config);
      * }</pre>
      *
      * @param request the push notification configuration for the task
@@ -442,9 +442,9 @@ public class Client extends AbstractClient {
      * @see PushNotificationConfig
      */
     @Override
-    public TaskPushNotificationConfig setTaskPushNotificationConfiguration(
+    public TaskPushNotificationConfig createTaskPushNotificationConfiguration(
             TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
-        return clientTransport.setTaskPushNotificationConfiguration(request, context);
+        return clientTransport.createTaskPushNotificationConfiguration(request, context);
     }
 
     /**

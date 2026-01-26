@@ -247,10 +247,10 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_a2a_v1_DeleteTaskPushNotificationConfigRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_descriptor;
+    internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_fieldAccessorTable;
+      internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_a2a_v1_SubscribeToTaskRequest_descriptor;
   static final 
@@ -361,172 +361,171 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
       ".a2a.v1.SecurityScheme:\0028\001B\024\n\022_documenta" +
       "tion_urlB\013\n\t_icon_urlJ\004\010\003\020\004J\004\010\016\020\017J\004\010\017\020\020\"" +
       "<\n\rAgentProvider\022\020\n\003url\030\001 \001(\tB\003\340A\002\022\031\n\014or" +
-      "ganization\030\002 \001(\tB\003\340A\002\"\233\002\n\021AgentCapabilit" +
+      "ganization\030\002 \001(\tB\003\340A\002\"\335\001\n\021AgentCapabilit" +
       "ies\022\026\n\tstreaming\030\001 \001(\010H\000\210\001\001\022\037\n\022push_noti" +
       "fications\030\002 \001(\010H\001\210\001\001\022*\n\nextensions\030\003 \003(\013" +
-      "2\026.a2a.v1.AgentExtension\022%\n\030state_transi" +
-      "tion_history\030\004 \001(\010H\002\210\001\001\022 \n\023extended_agen" +
-      "t_card\030\005 \001(\010H\003\210\001\001B\014\n\n_streamingB\025\n\023_push" +
-      "_notificationsB\033\n\031_state_transition_hist" +
-      "oryB\026\n\024_extended_agent_card\"m\n\016AgentExte" +
-      "nsion\022\013\n\003uri\030\001 \001(\t\022\023\n\013description\030\002 \001(\t\022" +
-      "\020\n\010required\030\003 \001(\010\022\'\n\006params\030\004 \001(\0132\027.goog" +
-      "le.protobuf.Struct\"\276\001\n\nAgentSkill\022\017\n\002id\030" +
-      "\001 \001(\tB\003\340A\002\022\021\n\004name\030\002 \001(\tB\003\340A\002\022\030\n\013descrip" +
-      "tion\030\003 \001(\tB\003\340A\002\022\021\n\004tags\030\004 \003(\tB\003\340A\002\022\020\n\010ex" +
-      "amples\030\005 \003(\t\022\023\n\013input_modes\030\006 \003(\t\022\024\n\014out" +
-      "put_modes\030\007 \003(\t\022\"\n\010security\030\010 \003(\0132\020.a2a." +
-      "v1.Security\"m\n\022AgentCardSignature\022\026\n\tpro" +
-      "tected\030\001 \001(\tB\003\340A\002\022\026\n\tsignature\030\002 \001(\tB\003\340A" +
-      "\002\022\'\n\006header\030\003 \001(\0132\027.google.protobuf.Stru" +
-      "ct\"v\n\032TaskPushNotificationConfig\022\021\n\004name" +
-      "\030\001 \001(\tB\003\340A\002\022E\n\030push_notification_config\030" +
-      "\002 \001(\0132\036.a2a.v1.PushNotificationConfigB\003\340" +
-      "A\002\"\032\n\nStringList\022\014\n\004list\030\001 \003(\t\"~\n\010Securi" +
-      "ty\022.\n\007schemes\030\001 \003(\0132\035.a2a.v1.Security.Sc" +
-      "hemesEntry\032B\n\014SchemesEntry\022\013\n\003key\030\001 \001(\t\022" +
-      "!\n\005value\030\002 \001(\0132\022.a2a.v1.StringList:\0028\001\"\361" +
-      "\002\n\016SecurityScheme\022?\n\027api_key_security_sc" +
-      "heme\030\001 \001(\0132\034.a2a.v1.APIKeySecurityScheme" +
-      "H\000\022C\n\031http_auth_security_scheme\030\002 \001(\0132\036." +
-      "a2a.v1.HTTPAuthSecuritySchemeH\000\022>\n\026oauth" +
-      "2_security_scheme\030\003 \001(\0132\034.a2a.v1.OAuth2S" +
-      "ecuritySchemeH\000\022N\n\037open_id_connect_secur" +
-      "ity_scheme\030\004 \001(\0132#.a2a.v1.OpenIdConnectS" +
-      "ecuritySchemeH\000\022?\n\024mtls_security_scheme\030" +
-      "\005 \001(\0132\037.a2a.v1.MutualTlsSecuritySchemeH\000" +
-      "B\010\n\006scheme\"U\n\024APIKeySecurityScheme\022\023\n\013de" +
-      "scription\030\001 \001(\t\022\025\n\010location\030\002 \001(\tB\003\340A\002\022\021" +
-      "\n\004name\030\003 \001(\tB\003\340A\002\"Y\n\026HTTPAuthSecuritySch" +
-      "eme\022\023\n\013description\030\001 \001(\t\022\023\n\006scheme\030\002 \001(\t" +
-      "B\003\340A\002\022\025\n\rbearer_format\030\003 \001(\t\"p\n\024OAuth2Se" +
-      "curityScheme\022\023\n\013description\030\001 \001(\t\022&\n\005flo" +
-      "ws\030\002 \001(\0132\022.a2a.v1.OAuthFlowsB\003\340A\002\022\033\n\023oau" +
-      "th2_metadata_url\030\003 \001(\t\"T\n\033OpenIdConnectS" +
-      "ecurityScheme\022\023\n\013description\030\001 \001(\t\022 \n\023op" +
-      "en_id_connect_url\030\002 \001(\tB\003\340A\002\".\n\027MutualTl" +
-      "sSecurityScheme\022\023\n\013description\030\001 \001(\t\"\330\001\n" +
-      "\nOAuthFlows\022@\n\022authorization_code\030\001 \001(\0132" +
-      "\".a2a.v1.AuthorizationCodeOAuthFlowH\000\022@\n" +
-      "\022client_credentials\030\002 \001(\0132\".a2a.v1.Clien" +
-      "tCredentialsOAuthFlowH\000\0222\n\013device_code\030\005" +
-      " \001(\0132\033.a2a.v1.DeviceCodeOAuthFlowH\000B\006\n\004f" +
-      "lowJ\004\010\003\020\004J\004\010\004\020\005\"\364\001\n\032AuthorizationCodeOAu" +
-      "thFlow\022\036\n\021authorization_url\030\001 \001(\tB\003\340A\002\022\026" +
-      "\n\ttoken_url\030\002 \001(\tB\003\340A\002\022\023\n\013refresh_url\030\003 " +
-      "\001(\t\022C\n\006scopes\030\004 \003(\0132..a2a.v1.Authorizati" +
-      "onCodeOAuthFlow.ScopesEntryB\003\340A\002\022\025\n\rpkce" +
-      "_required\030\005 \001(\010\032-\n\013ScopesEntry\022\013\n\003key\030\001 " +
-      "\001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\275\001\n\032ClientCredent" +
-      "ialsOAuthFlow\022\026\n\ttoken_url\030\001 \001(\tB\003\340A\002\022\023\n" +
-      "\013refresh_url\030\002 \001(\t\022C\n\006scopes\030\003 \003(\0132..a2a" +
-      ".v1.ClientCredentialsOAuthFlow.ScopesEnt" +
-      "ryB\003\340A\002\032-\n\013ScopesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005v" +
-      "alue\030\002 \001(\t:\0028\001\"\326\001\n\023DeviceCodeOAuthFlow\022%" +
-      "\n\030device_authorization_url\030\001 \001(\tB\003\340A\002\022\026\n" +
-      "\ttoken_url\030\002 \001(\tB\003\340A\002\022\023\n\013refresh_url\030\003 \001" +
-      "(\t\022<\n\006scopes\030\004 \003(\0132\'.a2a.v1.DeviceCodeOA" +
-      "uthFlow.ScopesEntryB\003\340A\002\032-\n\013ScopesEntry\022" +
-      "\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\257\001\n\022Send" +
-      "MessageRequest\022\016\n\006tenant\030\004 \001(\t\022%\n\007messag" +
-      "e\030\001 \001(\0132\017.a2a.v1.MessageB\003\340A\002\0227\n\rconfigu" +
-      "ration\030\002 \001(\0132 .a2a.v1.SendMessageConfigu" +
-      "ration\022)\n\010metadata\030\003 \001(\0132\027.google.protob" +
-      "uf.Struct\"c\n\016GetTaskRequest\022\016\n\006tenant\030\003 " +
-      "\001(\t\022\021\n\004name\030\001 \001(\tB\003\340A\002\022\033\n\016history_length" +
-      "\030\002 \001(\005H\000\210\001\001B\021\n\017_history_length\"\265\002\n\020ListT" +
-      "asksRequest\022\016\n\006tenant\030\t \001(\t\022\022\n\ncontext_i" +
-      "d\030\001 \001(\t\022!\n\006status\030\002 \001(\0162\021.a2a.v1.TaskSta" +
-      "te\022\026\n\tpage_size\030\003 \001(\005H\000\210\001\001\022\022\n\npage_token" +
-      "\030\004 \001(\t\022\033\n\016history_length\030\005 \001(\005H\001\210\001\001\022:\n\026s" +
-      "tatus_timestamp_after\030\006 \001(\0132\032.google.pro" +
-      "tobuf.Timestamp\022\036\n\021include_artifacts\030\007 \001" +
-      "(\010H\002\210\001\001B\014\n\n_page_sizeB\021\n\017_history_length" +
-      "B\024\n\022_include_artifacts\"\204\001\n\021ListTasksResp" +
-      "onse\022 \n\005tasks\030\001 \003(\0132\014.a2a.v1.TaskB\003\340A\002\022\034" +
-      "\n\017next_page_token\030\002 \001(\tB\003\340A\002\022\026\n\tpage_siz" +
-      "e\030\003 \001(\005B\003\340A\002\022\027\n\ntotal_size\030\004 \001(\005B\003\340A\002\"1\n" +
-      "\021CancelTaskRequest\022\016\n\006tenant\030\002 \001(\t\022\014\n\004na" +
-      "me\030\001 \001(\t\"D\n$GetTaskPushNotificationConfi" +
-      "gRequest\022\016\n\006tenant\030\002 \001(\t\022\014\n\004name\030\001 \001(\t\"G" +
-      "\n\'DeleteTaskPushNotificationConfigReques" +
-      "t\022\016\n\006tenant\030\002 \001(\t\022\014\n\004name\030\001 \001(\t\"\234\001\n$SetT" +
-      "askPushNotificationConfigRequest\022\016\n\006tena" +
-      "nt\030\004 \001(\t\022\023\n\006parent\030\001 \001(\tB\003\340A\002\022\026\n\tconfig_" +
-      "id\030\002 \001(\tB\003\340A\002\0227\n\006config\030\003 \001(\0132\".a2a.v1.T" +
-      "askPushNotificationConfigB\003\340A\002\"6\n\026Subscr" +
-      "ibeToTaskRequest\022\016\n\006tenant\030\002 \001(\t\022\014\n\004name" +
-      "\030\001 \001(\t\"n\n%ListTaskPushNotificationConfig" +
-      "Request\022\016\n\006tenant\030\004 \001(\t\022\016\n\006parent\030\001 \001(\t\022" +
-      "\021\n\tpage_size\030\002 \001(\005\022\022\n\npage_token\030\003 \001(\t\"-" +
-      "\n\033GetExtendedAgentCardRequest\022\016\n\006tenant\030" +
-      "\001 \001(\t\"b\n\023SendMessageResponse\022\034\n\004task\030\001 \001" +
-      "(\0132\014.a2a.v1.TaskH\000\022\"\n\007message\030\002 \001(\0132\017.a2" +
-      "a.v1.MessageH\000B\t\n\007payload\"\321\001\n\016StreamResp" +
-      "onse\022\034\n\004task\030\001 \001(\0132\014.a2a.v1.TaskH\000\022\"\n\007me" +
-      "ssage\030\002 \001(\0132\017.a2a.v1.MessageH\000\0226\n\rstatus" +
-      "_update\030\003 \001(\0132\035.a2a.v1.TaskStatusUpdateE" +
-      "ventH\000\022:\n\017artifact_update\030\004 \001(\0132\037.a2a.v1" +
-      ".TaskArtifactUpdateEventH\000B\t\n\007payload\"v\n" +
-      "&ListTaskPushNotificationConfigResponse\022" +
-      "3\n\007configs\030\001 \003(\0132\".a2a.v1.TaskPushNotifi" +
-      "cationConfig\022\027\n\017next_page_token\030\002 \001(\t*\372\001" +
-      "\n\tTaskState\022\032\n\026TASK_STATE_UNSPECIFIED\020\000\022" +
-      "\030\n\024TASK_STATE_SUBMITTED\020\001\022\026\n\022TASK_STATE_" +
-      "WORKING\020\002\022\030\n\024TASK_STATE_COMPLETED\020\003\022\025\n\021T" +
-      "ASK_STATE_FAILED\020\004\022\030\n\024TASK_STATE_CANCELL" +
-      "ED\020\005\022\035\n\031TASK_STATE_INPUT_REQUIRED\020\006\022\027\n\023T" +
-      "ASK_STATE_REJECTED\020\007\022\034\n\030TASK_STATE_AUTH_" +
-      "REQUIRED\020\010*;\n\004Role\022\024\n\020ROLE_UNSPECIFIED\020\000" +
-      "\022\r\n\tROLE_USER\020\001\022\016\n\nROLE_AGENT\020\0022\276\016\n\nA2AS" +
-      "ervice\022}\n\013SendMessage\022\032.a2a.v1.SendMessa" +
-      "geRequest\032\033.a2a.v1.SendMessageResponse\"5" +
-      "\202\323\344\223\002/\"\r/message:send:\001*Z\033\"\026/{tenant}/me" +
-      "ssage:send:\001*\022\207\001\n\024SendStreamingMessage\022\032" +
-      ".a2a.v1.SendMessageRequest\032\026.a2a.v1.Stre" +
-      "amResponse\"9\202\323\344\223\0023\"\017/message:stream:\001*Z\035" +
-      "\"\030/{tenant}/message:stream:\001*0\001\022k\n\007GetTa" +
-      "sk\022\026.a2a.v1.GetTaskRequest\032\014.a2a.v1.Task" +
-      "\":\332A\004name\202\323\344\223\002-\022\017/{name=tasks/*}Z\032\022\030/{te" +
-      "nant}/{name=tasks/*}\022c\n\tListTasks\022\030.a2a." +
-      "v1.ListTasksRequest\032\031.a2a.v1.ListTasksRe" +
-      "sponse\"!\202\323\344\223\002\033\022\006/tasksZ\021\022\017/{tenant}/task" +
-      "s\022~\n\nCancelTask\022\031.a2a.v1.CancelTaskReque" +
-      "st\032\014.a2a.v1.Task\"G\202\323\344\223\002A\"\026/{name=tasks/*" +
-      "}:cancel:\001*Z$\"\037/{tenant}/{name=tasks/*}:" +
-      "cancel:\001*\022\224\001\n\017SubscribeToTask\022\036.a2a.v1.S" +
-      "ubscribeToTaskRequest\032\026.a2a.v1.StreamRes" +
-      "ponse\"G\202\323\344\223\002A\022\031/{name=tasks/*}:subscribe" +
-      "Z$\022\"/{tenant}/{name=tasks/*}:subscribe0\001" +
-      "\022\373\001\n\035SetTaskPushNotificationConfig\022,.a2a" +
-      ".v1.SetTaskPushNotificationConfigRequest" +
-      "\032\".a2a.v1.TaskPushNotificationConfig\"\207\001\332" +
-      "A\rparent,config\202\323\344\223\002q\")/{parent=tasks/*/" +
-      "pushNotificationConfigs}:\006configZ<\"2/{te" +
-      "nant}/{parent=tasks/*/pushNotificationCo" +
-      "nfigs}:\006config\022\341\001\n\035GetTaskPushNotificati" +
-      "onConfig\022,.a2a.v1.GetTaskPushNotificatio" +
-      "nConfigRequest\032\".a2a.v1.TaskPushNotifica" +
-      "tionConfig\"n\332A\004name\202\323\344\223\002a\022)/{name=tasks/" +
-      "*/pushNotificationConfigs/*}Z4\0222/{tenant" +
-      "}/{name=tasks/*/pushNotificationConfigs/" +
-      "*}\022\361\001\n\036ListTaskPushNotificationConfig\022-." +
-      "a2a.v1.ListTaskPushNotificationConfigReq" +
-      "uest\032..a2a.v1.ListTaskPushNotificationCo" +
-      "nfigResponse\"p\332A\006parent\202\323\344\223\002a\022)/{parent=" +
-      "tasks/*}/pushNotificationConfigsZ4\0222/{te" +
-      "nant}/{parent=tasks/*}/pushNotificationC" +
-      "onfigs\022\211\001\n\024GetExtendedAgentCard\022#.a2a.v1" +
-      ".GetExtendedAgentCardRequest\032\021.a2a.v1.Ag" +
-      "entCard\"9\202\323\344\223\0023\022\022/extendedAgentCardZ\035\022\033/" +
-      "{tenant}/extendedAgentCard\022\333\001\n DeleteTas" +
-      "kPushNotificationConfig\022/.a2a.v1.DeleteT" +
-      "askPushNotificationConfigRequest\032\026.googl" +
-      "e.protobuf.Empty\"n\332A\004name\202\323\344\223\002a*)/{name=" +
-      "tasks/*/pushNotificationConfigs/*}Z4*2/{" +
-      "tenant}/{name=tasks/*/pushNotificationCo" +
-      "nfigs/*}B7\n\013io.a2a.grpcB\003A2AP\001Z\030google.g" +
-      "olang.org/a2a/v1\252\002\006A2a.V1b\006proto3"
+      "2\026.a2a.v1.AgentExtension\022 \n\023extended_age" +
+      "nt_card\030\005 \001(\010H\002\210\001\001B\014\n\n_streamingB\025\n\023_pus" +
+      "h_notificationsB\026\n\024_extended_agent_cardJ" +
+      "\004\010\004\020\005\"m\n\016AgentExtension\022\013\n\003uri\030\001 \001(\t\022\023\n\013" +
+      "description\030\002 \001(\t\022\020\n\010required\030\003 \001(\010\022\'\n\006p" +
+      "arams\030\004 \001(\0132\027.google.protobuf.Struct\"\276\001\n" +
+      "\nAgentSkill\022\017\n\002id\030\001 \001(\tB\003\340A\002\022\021\n\004name\030\002 \001" +
+      "(\tB\003\340A\002\022\030\n\013description\030\003 \001(\tB\003\340A\002\022\021\n\004tag" +
+      "s\030\004 \003(\tB\003\340A\002\022\020\n\010examples\030\005 \003(\t\022\023\n\013input_" +
+      "modes\030\006 \003(\t\022\024\n\014output_modes\030\007 \003(\t\022\"\n\010sec" +
+      "urity\030\010 \003(\0132\020.a2a.v1.Security\"m\n\022AgentCa" +
+      "rdSignature\022\026\n\tprotected\030\001 \001(\tB\003\340A\002\022\026\n\ts" +
+      "ignature\030\002 \001(\tB\003\340A\002\022\'\n\006header\030\003 \001(\0132\027.go" +
+      "ogle.protobuf.Struct\"v\n\032TaskPushNotifica" +
+      "tionConfig\022\021\n\004name\030\001 \001(\tB\003\340A\002\022E\n\030push_no" +
+      "tification_config\030\002 \001(\0132\036.a2a.v1.PushNot" +
+      "ificationConfigB\003\340A\002\"\032\n\nStringList\022\014\n\004li" +
+      "st\030\001 \003(\t\"~\n\010Security\022.\n\007schemes\030\001 \003(\0132\035." +
+      "a2a.v1.Security.SchemesEntry\032B\n\014SchemesE" +
+      "ntry\022\013\n\003key\030\001 \001(\t\022!\n\005value\030\002 \001(\0132\022.a2a.v" +
+      "1.StringList:\0028\001\"\361\002\n\016SecurityScheme\022?\n\027a" +
+      "pi_key_security_scheme\030\001 \001(\0132\034.a2a.v1.AP" +
+      "IKeySecuritySchemeH\000\022C\n\031http_auth_securi" +
+      "ty_scheme\030\002 \001(\0132\036.a2a.v1.HTTPAuthSecurit" +
+      "ySchemeH\000\022>\n\026oauth2_security_scheme\030\003 \001(" +
+      "\0132\034.a2a.v1.OAuth2SecuritySchemeH\000\022N\n\037ope" +
+      "n_id_connect_security_scheme\030\004 \001(\0132#.a2a" +
+      ".v1.OpenIdConnectSecuritySchemeH\000\022?\n\024mtl" +
+      "s_security_scheme\030\005 \001(\0132\037.a2a.v1.MutualT" +
+      "lsSecuritySchemeH\000B\010\n\006scheme\"U\n\024APIKeySe" +
+      "curityScheme\022\023\n\013description\030\001 \001(\t\022\025\n\010loc" +
+      "ation\030\002 \001(\tB\003\340A\002\022\021\n\004name\030\003 \001(\tB\003\340A\002\"Y\n\026H" +
+      "TTPAuthSecurityScheme\022\023\n\013description\030\001 \001" +
+      "(\t\022\023\n\006scheme\030\002 \001(\tB\003\340A\002\022\025\n\rbearer_format" +
+      "\030\003 \001(\t\"p\n\024OAuth2SecurityScheme\022\023\n\013descri" +
+      "ption\030\001 \001(\t\022&\n\005flows\030\002 \001(\0132\022.a2a.v1.OAut" +
+      "hFlowsB\003\340A\002\022\033\n\023oauth2_metadata_url\030\003 \001(\t" +
+      "\"T\n\033OpenIdConnectSecurityScheme\022\023\n\013descr" +
+      "iption\030\001 \001(\t\022 \n\023open_id_connect_url\030\002 \001(" +
+      "\tB\003\340A\002\".\n\027MutualTlsSecurityScheme\022\023\n\013des" +
+      "cription\030\001 \001(\t\"\330\001\n\nOAuthFlows\022@\n\022authori" +
+      "zation_code\030\001 \001(\0132\".a2a.v1.Authorization" +
+      "CodeOAuthFlowH\000\022@\n\022client_credentials\030\002 " +
+      "\001(\0132\".a2a.v1.ClientCredentialsOAuthFlowH" +
+      "\000\0222\n\013device_code\030\005 \001(\0132\033.a2a.v1.DeviceCo" +
+      "deOAuthFlowH\000B\006\n\004flowJ\004\010\003\020\004J\004\010\004\020\005\"\364\001\n\032Au" +
+      "thorizationCodeOAuthFlow\022\036\n\021authorizatio" +
+      "n_url\030\001 \001(\tB\003\340A\002\022\026\n\ttoken_url\030\002 \001(\tB\003\340A\002" +
+      "\022\023\n\013refresh_url\030\003 \001(\t\022C\n\006scopes\030\004 \003(\0132.." +
+      "a2a.v1.AuthorizationCodeOAuthFlow.Scopes" +
+      "EntryB\003\340A\002\022\025\n\rpkce_required\030\005 \001(\010\032-\n\013Sco" +
+      "pesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001" +
+      "\"\275\001\n\032ClientCredentialsOAuthFlow\022\026\n\ttoken" +
+      "_url\030\001 \001(\tB\003\340A\002\022\023\n\013refresh_url\030\002 \001(\t\022C\n\006" +
+      "scopes\030\003 \003(\0132..a2a.v1.ClientCredentialsO" +
+      "AuthFlow.ScopesEntryB\003\340A\002\032-\n\013ScopesEntry" +
+      "\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\326\001\n\023Dev" +
+      "iceCodeOAuthFlow\022%\n\030device_authorization" +
+      "_url\030\001 \001(\tB\003\340A\002\022\026\n\ttoken_url\030\002 \001(\tB\003\340A\002\022" +
+      "\023\n\013refresh_url\030\003 \001(\t\022<\n\006scopes\030\004 \003(\0132\'.a" +
+      "2a.v1.DeviceCodeOAuthFlow.ScopesEntryB\003\340" +
+      "A\002\032-\n\013ScopesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030" +
+      "\002 \001(\t:\0028\001\"\257\001\n\022SendMessageRequest\022\016\n\006tena" +
+      "nt\030\004 \001(\t\022%\n\007message\030\001 \001(\0132\017.a2a.v1.Messa" +
+      "geB\003\340A\002\0227\n\rconfiguration\030\002 \001(\0132 .a2a.v1." +
+      "SendMessageConfiguration\022)\n\010metadata\030\003 \001" +
+      "(\0132\027.google.protobuf.Struct\"c\n\016GetTaskRe" +
+      "quest\022\016\n\006tenant\030\003 \001(\t\022\021\n\004name\030\001 \001(\tB\003\340A\002" +
+      "\022\033\n\016history_length\030\002 \001(\005H\000\210\001\001B\021\n\017_histor" +
+      "y_length\"\265\002\n\020ListTasksRequest\022\016\n\006tenant\030" +
+      "\t \001(\t\022\022\n\ncontext_id\030\001 \001(\t\022!\n\006status\030\002 \001(" +
+      "\0162\021.a2a.v1.TaskState\022\026\n\tpage_size\030\003 \001(\005H" +
+      "\000\210\001\001\022\022\n\npage_token\030\004 \001(\t\022\033\n\016history_leng" +
+      "th\030\005 \001(\005H\001\210\001\001\022:\n\026status_timestamp_after\030" +
+      "\006 \001(\0132\032.google.protobuf.Timestamp\022\036\n\021inc" +
+      "lude_artifacts\030\007 \001(\010H\002\210\001\001B\014\n\n_page_sizeB" +
+      "\021\n\017_history_lengthB\024\n\022_include_artifacts" +
+      "\"\204\001\n\021ListTasksResponse\022 \n\005tasks\030\001 \003(\0132\014." +
+      "a2a.v1.TaskB\003\340A\002\022\034\n\017next_page_token\030\002 \001(" +
+      "\tB\003\340A\002\022\026\n\tpage_size\030\003 \001(\005B\003\340A\002\022\027\n\ntotal_" +
+      "size\030\004 \001(\005B\003\340A\002\"1\n\021CancelTaskRequest\022\016\n\006" +
+      "tenant\030\002 \001(\t\022\014\n\004name\030\001 \001(\t\"D\n$GetTaskPus" +
+      "hNotificationConfigRequest\022\016\n\006tenant\030\002 \001" +
+      "(\t\022\014\n\004name\030\001 \001(\t\"G\n\'DeleteTaskPushNotifi" +
+      "cationConfigRequest\022\016\n\006tenant\030\002 \001(\t\022\014\n\004n" +
+      "ame\030\001 \001(\t\"\237\001\n\'CreateTaskPushNotification" +
+      "ConfigRequest\022\016\n\006tenant\030\004 \001(\t\022\023\n\006parent\030" +
+      "\001 \001(\tB\003\340A\002\022\026\n\tconfig_id\030\002 \001(\tB\003\340A\002\0227\n\006co" +
+      "nfig\030\003 \001(\0132\".a2a.v1.TaskPushNotification" +
+      "ConfigB\003\340A\002\"6\n\026SubscribeToTaskRequest\022\016\n" +
+      "\006tenant\030\002 \001(\t\022\014\n\004name\030\001 \001(\t\"n\n%ListTaskP" +
+      "ushNotificationConfigRequest\022\016\n\006tenant\030\004" +
+      " \001(\t\022\016\n\006parent\030\001 \001(\t\022\021\n\tpage_size\030\002 \001(\005\022" +
+      "\022\n\npage_token\030\003 \001(\t\"-\n\033GetExtendedAgentC" +
+      "ardRequest\022\016\n\006tenant\030\001 \001(\t\"b\n\023SendMessag" +
+      "eResponse\022\034\n\004task\030\001 \001(\0132\014.a2a.v1.TaskH\000\022" +
+      "\"\n\007message\030\002 \001(\0132\017.a2a.v1.MessageH\000B\t\n\007p" +
+      "ayload\"\321\001\n\016StreamResponse\022\034\n\004task\030\001 \001(\0132" +
+      "\014.a2a.v1.TaskH\000\022\"\n\007message\030\002 \001(\0132\017.a2a.v" +
+      "1.MessageH\000\0226\n\rstatus_update\030\003 \001(\0132\035.a2a" +
+      ".v1.TaskStatusUpdateEventH\000\022:\n\017artifact_" +
+      "update\030\004 \001(\0132\037.a2a.v1.TaskArtifactUpdate" +
+      "EventH\000B\t\n\007payload\"v\n&ListTaskPushNotifi" +
+      "cationConfigResponse\0223\n\007configs\030\001 \003(\0132\"." +
+      "a2a.v1.TaskPushNotificationConfig\022\027\n\017nex" +
+      "t_page_token\030\002 \001(\t*\372\001\n\tTaskState\022\032\n\026TASK" +
+      "_STATE_UNSPECIFIED\020\000\022\030\n\024TASK_STATE_SUBMI" +
+      "TTED\020\001\022\026\n\022TASK_STATE_WORKING\020\002\022\030\n\024TASK_S" +
+      "TATE_COMPLETED\020\003\022\025\n\021TASK_STATE_FAILED\020\004\022" +
+      "\030\n\024TASK_STATE_CANCELLED\020\005\022\035\n\031TASK_STATE_" +
+      "INPUT_REQUIRED\020\006\022\027\n\023TASK_STATE_REJECTED\020" +
+      "\007\022\034\n\030TASK_STATE_AUTH_REQUIRED\020\010*;\n\004Role\022" +
+      "\024\n\020ROLE_UNSPECIFIED\020\000\022\r\n\tROLE_USER\020\001\022\016\n\n" +
+      "ROLE_AGENT\020\0022\304\016\n\nA2AService\022}\n\013SendMessa" +
+      "ge\022\032.a2a.v1.SendMessageRequest\032\033.a2a.v1." +
+      "SendMessageResponse\"5\202\323\344\223\002/\"\r/message:se" +
+      "nd:\001*Z\033\"\026/{tenant}/message:send:\001*\022\207\001\n\024S" +
+      "endStreamingMessage\022\032.a2a.v1.SendMessage" +
+      "Request\032\026.a2a.v1.StreamResponse\"9\202\323\344\223\0023\"" +
+      "\017/message:stream:\001*Z\035\"\030/{tenant}/message" +
+      ":stream:\001*0\001\022k\n\007GetTask\022\026.a2a.v1.GetTask" +
+      "Request\032\014.a2a.v1.Task\":\332A\004name\202\323\344\223\002-\022\017/{" +
+      "name=tasks/*}Z\032\022\030/{tenant}/{name=tasks/*" +
+      "}\022c\n\tListTasks\022\030.a2a.v1.ListTasksRequest" +
+      "\032\031.a2a.v1.ListTasksResponse\"!\202\323\344\223\002\033\022\006/ta" +
+      "sksZ\021\022\017/{tenant}/tasks\022~\n\nCancelTask\022\031.a" +
+      "2a.v1.CancelTaskRequest\032\014.a2a.v1.Task\"G\202" +
+      "\323\344\223\002A\"\026/{name=tasks/*}:cancel:\001*Z$\"\037/{te" +
+      "nant}/{name=tasks/*}:cancel:\001*\022\224\001\n\017Subsc" +
+      "ribeToTask\022\036.a2a.v1.SubscribeToTaskReque" +
+      "st\032\026.a2a.v1.StreamResponse\"G\202\323\344\223\002A\022\031/{na" +
+      "me=tasks/*}:subscribeZ$\022\"/{tenant}/{name" +
+      "=tasks/*}:subscribe0\001\022\201\002\n CreateTaskPush" +
+      "NotificationConfig\022/.a2a.v1.CreateTaskPu" +
+      "shNotificationConfigRequest\032\".a2a.v1.Tas" +
+      "kPushNotificationConfig\"\207\001\332A\rparent,conf" +
+      "ig\202\323\344\223\002q\")/{parent=tasks/*/pushNotificat" +
+      "ionConfigs}:\006configZ<\"2/{tenant}/{parent" +
+      "=tasks/*/pushNotificationConfigs}:\006confi" +
+      "g\022\341\001\n\035GetTaskPushNotificationConfig\022,.a2" +
+      "a.v1.GetTaskPushNotificationConfigReques" +
+      "t\032\".a2a.v1.TaskPushNotificationConfig\"n\332" +
+      "A\004name\202\323\344\223\002a\022)/{name=tasks/*/pushNotific" +
+      "ationConfigs/*}Z4\0222/{tenant}/{name=tasks" +
+      "/*/pushNotificationConfigs/*}\022\361\001\n\036ListTa" +
+      "skPushNotificationConfig\022-.a2a.v1.ListTa" +
+      "skPushNotificationConfigRequest\032..a2a.v1" +
+      ".ListTaskPushNotificationConfigResponse\"" +
+      "p\332A\006parent\202\323\344\223\002a\022)/{parent=tasks/*}/push" +
+      "NotificationConfigsZ4\0222/{tenant}/{parent" +
+      "=tasks/*}/pushNotificationConfigs\022\211\001\n\024Ge" +
+      "tExtendedAgentCard\022#.a2a.v1.GetExtendedA" +
+      "gentCardRequest\032\021.a2a.v1.AgentCard\"9\202\323\344\223" +
+      "\0023\022\022/extendedAgentCardZ\035\022\033/{tenant}/exte" +
+      "ndedAgentCard\022\333\001\n DeleteTaskPushNotifica" +
+      "tionConfig\022/.a2a.v1.DeleteTaskPushNotifi" +
+      "cationConfigRequest\032\026.google.protobuf.Em" +
+      "pty\"n\332A\004name\202\323\344\223\002a*)/{name=tasks/*/pushN" +
+      "otificationConfigs/*}Z4*2/{tenant}/{name" +
+      "=tasks/*/pushNotificationConfigs/*}B7\n\013i" +
+      "o.a2a.grpcB\003A2AP\001Z\030google.golang.org/a2a" +
+      "/v1\252\002\006A2a.V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -639,7 +638,7 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
     internal_static_a2a_v1_AgentCapabilities_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_a2a_v1_AgentCapabilities_descriptor,
-        new java.lang.String[] { "Streaming", "PushNotifications", "Extensions", "StateTransitionHistory", "ExtendedAgentCard", });
+        new java.lang.String[] { "Streaming", "PushNotifications", "Extensions", "ExtendedAgentCard", });
     internal_static_a2a_v1_AgentExtension_descriptor =
       getDescriptor().getMessageType(16);
     internal_static_a2a_v1_AgentExtension_fieldAccessorTable = new
@@ -802,11 +801,11 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_a2a_v1_DeleteTaskPushNotificationConfigRequest_descriptor,
         new java.lang.String[] { "Tenant", "Name", });
-    internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_descriptor =
+    internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_descriptor =
       getDescriptor().getMessageType(39);
-    internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_fieldAccessorTable = new
+    internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_a2a_v1_SetTaskPushNotificationConfigRequest_descriptor,
+        internal_static_a2a_v1_CreateTaskPushNotificationConfigRequest_descriptor,
         new java.lang.String[] { "Tenant", "Parent", "ConfigId", "Config", });
     internal_static_a2a_v1_SubscribeToTaskRequest_descriptor =
       getDescriptor().getMessageType(40);
