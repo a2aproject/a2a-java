@@ -7,6 +7,9 @@ release.properties
 .flattened-pom.xml
 *.args
 
+#Claude
+CLAUDE.md
+
 # Eclipse
 .project
 .classpath
@@ -21,6 +24,7 @@ bin/
 
 # NetBeans
 nb-configuration.xml
+nbactions.xml
 
 # Visual Studio Code
 .vscode
@@ -53,3 +57,4 @@ nbactions.xml
 .claude/
 .serena/
 claudedocs
+.bob/

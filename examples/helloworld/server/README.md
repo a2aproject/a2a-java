@@ -18,6 +18,35 @@ cd examples/helloworld/server
 mvn quarkus:dev
 ```
 
+### Transport Protocol Selection
+
+The server supports multiple transport protocols. You can select which protocol to use via the `quarkus.agentcard.protocol` property:
+
+**Using JSONRPC (default)**:
+```bash
+mvn quarkus:dev
+```
+
+**Using GRPC**:
+```bash
+mvn quarkus:dev -Dquarkus.agentcard.protocol=GRPC
+```
+
+**Using HTTP+JSON**:
+```bash
+mvn quarkus:dev -Dquarkus.agentcard.protocol=HTTP+JSON
+```
+
+You can also change the default protocol by editing `src/main/resources/application.properties` and setting:
+```properties
+quarkus.agentcard.protocol=HTTP+JSON
+```
+
+Available protocols:
+- `JSONRPC` - Uses JSON-RPC for communication (default)
+- `GRPC` - Uses gRPC for communication
+- `HTTP+JSON` - Uses HTTP with JSON payloads
+
 ## Setup and Run the Python A2A Client
 
 The Python A2A client is part of the [a2a-samples](https://github.com/google-a2a/a2a-samples) project. To set it up and run it:
@@ -60,6 +89,36 @@ The Python A2A client (`test_client.py`) performs the following actions:
 5. Prints the server's response.
 6. Sends the same message as a streaming request.
 7. Prints each chunk of the server's streaming response as it arrives.
+
+## Enable OpenTelemetry (Optional)
+
+The server includes support for distributed tracing with OpenTelemetry. To enable it:
+
+1. **Run with the OpenTelemetry profile**:
+   ```bash
+   mvn quarkus:dev -Popentelemetry
+   ```
+
+2. **Access Grafana dashboard**:
+   - Quarkus Dev Services will automatically start a Grafana observability stack
+   - Open Grafana at `http://localhost:3001` (default credentials: admin/admin)
+   - View traces in the "Explore" section using the Tempo data source
+
+3. **What gets traced**:
+   - All A2A protocol operations (send message, get task, cancel task, etc.)
+   - Streaming message responses
+   - Task lifecycle events
+   - Custom operations in your `AgentExecutor` implementation (using `@Trace` annotation)
+
+4. **Configuration**:
+   - OpenTelemetry settings are in `application.properties`
+   - OTLP exporters run on ports 5317 (gRPC) and 5318 (HTTP)
+   - To use a custom OTLP endpoint, uncomment and modify:
+     ```properties
+     quarkus.otel.exporter.otlp.endpoint=http://localhost:4317
+     ```
+
+For more information, see the [OpenTelemetry extras module documentation](../../../extras/opentelemetry/README.md).
 
 ## Notes
 

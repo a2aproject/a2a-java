@@ -50,6 +50,7 @@ import io.vertx.ext.web.RoutingContext;
 import org.jspecify.annotations.Nullable;
 
 import static io.a2a.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static io.a2a.spec.A2AMethods.GET_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static io.a2a.spec.A2AMethods.LIST_TASK_METHOD;
@@ -387,7 +388,7 @@ public class A2AServerRoutes {
 
     @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$", order = 1, methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
     public void getExtendedAgentCard(RoutingContext rc) {
-        HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(extractTenant(rc));
+        HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(extractTenant(rc), createCallContext(rc, GET_EXTENDED_AGENT_CARD_METHOD));
         sendResponse(rc, response);
     }
 
