@@ -1,9 +1,13 @@
 package io.a2a.client.transport.spi;
 
 import java.util.ArrayList;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
+import java.util.Collections;
 
 /**
  * Base configuration class for A2A client transport protocols.
@@ -34,7 +38,8 @@ import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
  */
 public abstract class ClientTransportConfig<T extends ClientTransport> {
 
-    protected List<ClientCallInterceptor> interceptors = new ArrayList<>();
+    protected List<ClientCallInterceptor> interceptors = Collections.emptyList();
+    protected Map<String, ? extends Object> parameters = Collections.emptyMap();
 
     /**
      * Set the list of request/response interceptors.
@@ -62,5 +67,29 @@ public abstract class ClientTransportConfig<T extends ClientTransport> {
      */
     public List<ClientCallInterceptor> getInterceptors() {
         return java.util.Collections.unmodifiableList(interceptors);
+    }
+
+    /**
+     * Set the Map of config parameters.
+     * The provided map is copied to prevent external modifications from affecting
+     * this configuration.
+     *
+     * @param parameters the map of parameters to use (will be copied)
+     */
+    public void setParameters(Map<String, ? extends Object > parameters) {
+        this.parameters = new HashMap<>(parameters);
+    }
+
+
+    /**
+     * Get the list of configured parameters.
+     * <p>
+     * Returns an unmodifiable view of the parameters map. Attempting to modify
+     * the returned map will throw {@link UnsupportedOperationException}.
+     *
+     * @return an unmodifiable map of configured parameters (never null, but may be empty)
+     */
+    public Map<String, ? extends Object > getParameters() {
+        return java.util.Collections.unmodifiableMap(parameters);
     }
 }

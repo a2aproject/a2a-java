@@ -1,5 +1,6 @@
 package io.a2a.transport.rest.handler;
 
+import static io.a2a.server.interceptors.Kind.SERVER;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
 
@@ -31,6 +32,7 @@ import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.extensions.A2AExtensions;
+import io.a2a.server.interceptors.Trace;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.server.util.async.Internal;
@@ -108,7 +110,9 @@ public class RestHandler {
         this.executor = executor;
     }
 
-    public HTTPRestResponse sendMessage(String body, String tenant, ServerCallContext context) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse sendMessage(ServerCallContext context, String tenant, String body) {
+
         try {
             A2AVersionValidator.validateProtocolVersion(agentCard, context);
             A2AExtensions.validateRequiredExtensions(agentCard, context);
@@ -124,7 +128,8 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse sendStreamingMessage(String body, String tenant, ServerCallContext context) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse sendStreamingMessage(ServerCallContext context, String tenant, String body) {
         try {
             if (!agentCard.capabilities().streaming()) {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
@@ -143,7 +148,8 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse cancelTask(String taskId, String tenant, ServerCallContext context) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String taskId) {
         try {
             if (taskId == null || taskId.isEmpty()) {
                 throw new InvalidParamsError();
@@ -161,7 +167,8 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse setTaskPushNotificationConfiguration(String taskId, String body, String tenant, ServerCallContext context) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse setTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String body, String taskId) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
@@ -178,7 +185,8 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse subscribeToTask(String taskId, String tenant, ServerCallContext context) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse subscribeToTask(ServerCallContext context, String tenant, String taskId) {
         try {
             if (!agentCard.capabilities().streaming()) {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
@@ -193,7 +201,8 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse getTask(String taskId, @Nullable Integer historyLength, String tenant, ServerCallContext context) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse getTask(ServerCallContext context, String tenant, String taskId, @Nullable Integer historyLength) {
         try {
             TaskQueryParams params = new TaskQueryParams(taskId, historyLength, tenant);
             Task task = requestHandler.onGetTask(params, context);
@@ -208,11 +217,12 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse listTasks(@Nullable String contextId, @Nullable String status,
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse listTasks(ServerCallContext context, String tenant,
+                                       @Nullable String contextId, @Nullable String status,
                                        @Nullable Integer pageSize, @Nullable String pageToken,
                                        @Nullable Integer historyLength, @Nullable String statusTimestampAfter,
-                                       @Nullable Boolean includeArtifacts, String tenant,
-                                       ServerCallContext context) {
+                                       @Nullable Boolean includeArtifacts) {
         try {
             // Build params
             ListTasksParams.Builder paramsBuilder = ListTasksParams.builder();
@@ -303,7 +313,8 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, String tenant, ServerCallContext context) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse getTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, @Nullable String configId) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
@@ -318,7 +329,8 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse listTaskPushNotificationConfigurations(String taskId, int pageSize, String pageToken, String tenant, ServerCallContext context) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse listTaskPushNotificationConfigurations(ServerCallContext context, String tenant, String taskId, int pageSize, String pageToken) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
@@ -333,7 +345,8 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse deleteTaskPushNotificationConfiguration(String taskId, String configId, String tenant, ServerCallContext context) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse deleteTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, String configId) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
@@ -476,7 +489,8 @@ public class RestHandler {
         return 500;
     }
 
-    public HTTPRestResponse getExtendedAgentCard(String tenant) {
+    @Trace(extractor = RestAttributeExtractor.class, kind = SERVER)
+    public HTTPRestResponse getExtendedAgentCard(ServerCallContext context, String tenant) {
         try {
             if (!agentCard.capabilities().extendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
                 throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
