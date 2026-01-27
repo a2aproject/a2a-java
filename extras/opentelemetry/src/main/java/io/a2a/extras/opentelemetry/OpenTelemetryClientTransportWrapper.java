@@ -15,7 +15,9 @@ import io.opentelemetry.api.trace.Tracer;
  * ClientTransportConfig config = new JSONRPCTransportConfig();
  * config.setParameters(Map.of(
  *     OpenTelemetryClientTransportFactory.OTEL_TRACER_KEY,
- *     openTelemetry.getTracer("my-service")
+ *     openTelemetry.getTracer("my-service"),
+ *     OpenTelemetryClientTransportFactory.OTEL_OPEN_TELEMETRY_KEY,
+ *     openTelemetry
  * ));
  * }</pre>
  */

@@ -87,7 +87,7 @@ public class A2AServerRoutes {
         ServerCallContext context = createCallContext(rc, SEND_MESSAGE_METHOD);
         HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.sendMessage(body, extractTenant(rc), context);
+            response = jsonRestHandler.sendMessage(context, extractTenant(rc), body);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {
@@ -101,7 +101,7 @@ public class A2AServerRoutes {
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
         try {
-            HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(body, extractTenant(rc), context);
+            HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(context, extractTenant(rc), body);
             if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
                 streamingResponse = hTTPRestStreamingResponse;
             } else {
@@ -153,8 +153,8 @@ public class A2AServerRoutes {
                 includeArtifacts = Boolean.valueOf(includeArtifactsStr);
             }
 
-            response = jsonRestHandler.listTasks(contextId, statusStr, pageSize, pageToken,
-                    historyLength, lastUpdatedAfter, includeArtifacts, extractTenant(rc), context);
+            response = jsonRestHandler.listTasks(context, extractTenant(rc), contextId, statusStr, pageSize, pageToken,
+                    historyLength, lastUpdatedAfter, includeArtifacts);
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
         } catch (IllegalArgumentException e) {
@@ -179,7 +179,7 @@ public class A2AServerRoutes {
                 if (rc.request().params().contains(HISTORY_LENGTH_PARAM)) {
                     historyLength = Integer.valueOf(rc.request().params().get(HISTORY_LENGTH_PARAM));
                 }
-                response = jsonRestHandler.getTask(taskId, historyLength, extractTenant(rc), context);
+                response = jsonRestHandler.getTask(context, extractTenant(rc), taskId, historyLength);
             }
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad historyLength"));
@@ -199,7 +199,7 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.cancelTask(taskId, extractTenant(rc), context);
+                response = jsonRestHandler.cancelTask(context, extractTenant(rc), taskId);
             }
         } catch (Throwable t) {
             if (t instanceof A2AError error) {
@@ -233,7 +233,7 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 error = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                HTTPRestResponse response = jsonRestHandler.subscribeToTask(taskId, extractTenant(rc), context);
+                HTTPRestResponse response = jsonRestHandler.subscribeToTask(context, extractTenant(rc), taskId);
                 if (response instanceof HTTPRestStreamingResponse hTTPRestStreamingResponse) {
                     streamingResponse = hTTPRestStreamingResponse;
                 } else {
@@ -262,7 +262,7 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, extractTenant(rc), context);
+                response = jsonRestHandler.setTaskPushNotificationConfiguration(context, extractTenant(rc), body, taskId);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
@@ -281,7 +281,7 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, extractTenant(rc), context);
+                response = jsonRestHandler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
@@ -300,7 +300,7 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
                 // Call get with null configId - trailing slash distinguishes this from list
-                response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, null, extractTenant(rc), context);
+                response = jsonRestHandler.getTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, null);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
@@ -326,7 +326,7 @@ public class A2AServerRoutes {
                 if (rc.request().params().contains(PAGE_TOKEN_PARAM)) {
                     pageToken = Utils.defaultIfNull(rc.request().params().get(PAGE_TOKEN_PARAM), "");
                 }
-                response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, pageSize, pageToken, extractTenant(rc), context);
+                response = jsonRestHandler.listTaskPushNotificationConfigurations(context, extractTenant(rc), taskId, pageSize, pageToken);
             }
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
@@ -349,7 +349,7 @@ public class A2AServerRoutes {
             } else if (configId == null || configId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad config id"));
             } else {
-                response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, extractTenant(rc), context);
+                response = jsonRestHandler.deleteTaskPushNotificationConfiguration(context, extractTenant(rc), taskId, configId);
             }
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
@@ -388,7 +388,7 @@ public class A2AServerRoutes {
 
     @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$", order = 1, methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
     public void getExtendedAgentCard(RoutingContext rc) {
-        HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(extractTenant(rc), createCallContext(rc, GET_EXTENDED_AGENT_CARD_METHOD));
+        HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(createCallContext(rc, GET_EXTENDED_AGENT_CARD_METHOD), extractTenant(rc));
         sendResponse(rc, response);
     }
 

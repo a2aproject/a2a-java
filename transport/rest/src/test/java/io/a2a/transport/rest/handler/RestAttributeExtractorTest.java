@@ -44,10 +44,10 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_SendMessage_Success() throws Exception {
-        Method method = TestService.class.getMethod("sendMessage", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("sendMessage", ServerCallContext.class, String.class, String.class);
 
         ServerCallContext context = createContext("POST /messages", "ext1,ext2");
-        Object[] parameters = new Object[]{"test-request", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "test-request"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -62,10 +62,10 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_SendStreamingMessage_Success() throws Exception {
-        Method method = TestService.class.getMethod("sendStreamingMessage", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("sendStreamingMessage", ServerCallContext.class, String.class, String.class);
 
         ServerCallContext context = createContext("POST /messages/stream", "ext1");
-        Object[] parameters = new Object[]{"streaming-request", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "streaming-request"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -81,10 +81,10 @@ class RestAttributeExtractorTest {
     @Test
     void testExtractAttributes_SetTaskPushNotificationConfiguration_Success() throws Exception {
         Method method = TestService.class.getMethod("setTaskPushNotificationConfiguration",
-            String.class, String.class, String.class, ServerCallContext.class);
+            ServerCallContext.class, String.class, String.class, String.class);
 
         ServerCallContext context = createContext("PUT /tasks/task123/notifications", "ext1");
-        Object[] parameters = new Object[]{"task123", "config-request", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "config-request", "task123"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -100,10 +100,10 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_CancelTask_Success() throws Exception {
-        Method method = TestService.class.getMethod("cancelTask", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("cancelTask", ServerCallContext.class, String.class, String.class);
 
         ServerCallContext context = createContext("DELETE /tasks/task456", "ext1,ext2");
-        Object[] parameters = new Object[]{"task456", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "task456"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -119,10 +119,10 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_SubscribeToTask_Success() throws Exception {
-        Method method = TestService.class.getMethod("subscribeToTask", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("subscribeToTask", ServerCallContext.class, String.class, String.class);
 
         ServerCallContext context = createContext("POST /tasks/task789/subscribe", "");
-        Object[] parameters = new Object[]{"task789", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "task789"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -137,10 +137,10 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_GetTask_Success() throws Exception {
-        Method method = TestService.class.getMethod("getTask", String.class, int.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("getTask", ServerCallContext.class, String.class, String.class, int.class);
 
         ServerCallContext context = createContext("GET /tasks/task101", "ext1");
-        Object[] parameters = new Object[]{"task101", 10, "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "task101", 10};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -157,10 +157,10 @@ class RestAttributeExtractorTest {
     @Test
     void testExtractAttributes_GetTaskPushNotificationConfiguration_Success() throws Exception {
         Method method = TestService.class.getMethod("getTaskPushNotificationConfiguration",
-            String.class, String.class, String.class, ServerCallContext.class);
+            ServerCallContext.class, String.class, String.class, String.class);
 
         ServerCallContext context = createContext("GET /tasks/task202/notifications/config1", "ext1,ext2");
-        Object[] parameters = new Object[]{"task202", "config1", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "task202", "config1"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -177,10 +177,10 @@ class RestAttributeExtractorTest {
     @Test
     void testExtractAttributes_DeleteTaskPushNotificationConfiguration_Success() throws Exception {
         Method method = TestService.class.getMethod("deleteTaskPushNotificationConfiguration",
-            String.class, String.class, String.class, ServerCallContext.class);
+            ServerCallContext.class, String.class, String.class, String.class);
 
         ServerCallContext context = createContext("DELETE /tasks/task303/notifications/config2", "");
-        Object[] parameters = new Object[]{"task303", "config2", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "task303", "config2"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -197,10 +197,10 @@ class RestAttributeExtractorTest {
     @Test
     void testExtractAttributes_ListTaskPushNotificationConfigurations_Success() throws Exception {
         Method method = TestService.class.getMethod("listTaskPushNotificationConfigurations",
-            String.class, String.class, ServerCallContext.class);
+            ServerCallContext.class, String.class, String.class, int.class, String.class);
 
         ServerCallContext context = createContext("GET /tasks/task404/notifications", "ext1");
-        Object[] parameters = new Object[]{"task404", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "task404", 0, ""};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -216,10 +216,10 @@ class RestAttributeExtractorTest {
     @Test
     void testExtractAttributes_ListTasks_Success() throws Exception {
         Method method = TestService.class.getMethod("listTasks",
-            String.class, String.class, String.class, String.class, String.class, String.class, String.class, ServerCallContext.class);
+            ServerCallContext.class, String.class, String.class, String.class, String.class, String.class, String.class, String.class, String.class);
 
         ServerCallContext context = createContext("GET /tasks", "ext1,ext2,ext3");
-        Object[] parameters = new Object[]{"context1", "active", "p1", "p2", "p3", "p4", "p5", context};
+        Object[] parameters = new Object[]{context, "p1", "context1", "active", "p2", "p3", "p4", "p5", "p6"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -241,7 +241,7 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_NullParameters() throws Exception {
-        Method method = TestService.class.getMethod("sendMessage", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("sendMessage", ServerCallContext.class, String.class, String.class);
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, null);
 
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -250,7 +250,7 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_EmptyParameters() throws Exception {
-        Method method = TestService.class.getMethod("sendMessage", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("sendMessage", ServerCallContext.class, String.class, String.class);
         Object[] parameters = new Object[]{};
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
 
@@ -260,9 +260,9 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_UnknownMethod() throws Exception {
-        Method method = TestService.class.getMethod("unknownMethod", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("unknownMethod", ServerCallContext.class, String.class, String.class);
         ServerCallContext context = createContext("UNKNOWN", "ext1");
-        Object[] parameters = new Object[]{"param1", "param2", context};
+        Object[] parameters = new Object[]{context, "param1", "param2"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -274,10 +274,10 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_NullTaskId() throws Exception {
-        Method method = TestService.class.getMethod("cancelTask", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("cancelTask", ServerCallContext.class, String.class, String.class);
 
         ServerCallContext context = createContext("DELETE /tasks/null", "ext1");
-        Object[] parameters = new Object[]{null, "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", null};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -292,10 +292,10 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_NoExtensions() throws Exception {
-        Method method = TestService.class.getMethod("sendMessage", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("sendMessage", ServerCallContext.class, String.class, String.class);
 
         ServerCallContext context = createContext("POST /messages", null);
-        Object[] parameters = new Object[]{"test-request", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "test-request"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -310,10 +310,10 @@ class RestAttributeExtractorTest {
 
     @Test
     void testExtractAttributes_NoOperationName() throws Exception {
-        Method method = TestService.class.getMethod("sendMessage", String.class, String.class, ServerCallContext.class);
+        Method method = TestService.class.getMethod("sendMessage", ServerCallContext.class, String.class, String.class);
 
         ServerCallContext context = createContext(null, "ext1");
-        Object[] parameters = new Object[]{"test-request", "extra-param", context};
+        Object[] parameters = new Object[]{context, "extra-param", "test-request"};
 
         InvocationContext invocationCtx = new InvocationContext(new TestService(), method, parameters);
         Function<InvocationContext, Map<String, String>> function = extractor.get();
@@ -380,16 +380,16 @@ class RestAttributeExtractorTest {
 
     // Test service class with all supported methods
     public static class TestService {
-        public void sendMessage(String request, String extra, ServerCallContext context) {}
-        public void sendStreamingMessage(String request, String extra, ServerCallContext context) {}
-        public void setTaskPushNotificationConfiguration(String taskId, String request, String extra, ServerCallContext context) {}
-        public void cancelTask(String taskId, String extra, ServerCallContext context) {}
-        public void subscribeToTask(String taskId, String extra, ServerCallContext context) {}
-        public void listTaskPushNotificationConfigurations(String taskId, String extra, ServerCallContext context) {}
-        public void getTask(String taskId, int historyLength, String extra, ServerCallContext context) {}
-        public void getTaskPushNotificationConfiguration(String taskId, String configId, String extra, ServerCallContext context) {}
-        public void deleteTaskPushNotificationConfiguration(String taskId, String configId, String extra, ServerCallContext context) {}
-        public void listTasks(String contextId, String status, String p1, String p2, String p3, String p4, String p5, ServerCallContext context) {}
-        public void unknownMethod(String param1, String param2, ServerCallContext context) {}
+        public void sendMessage(ServerCallContext context, String tenant, String request) {}
+        public void sendStreamingMessage(ServerCallContext context, String tenant, String request) {}
+        public void setTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String request, String taskId) {}
+        public void cancelTask(ServerCallContext context, String tenant, String taskId) {}
+        public void subscribeToTask(ServerCallContext context, String tenant, String taskId) {}
+        public void listTaskPushNotificationConfigurations(ServerCallContext context, String tenant, String taskId, int pageSize, String pageToken) {}
+        public void getTask(ServerCallContext context, String tenant, String taskId, int historyLength) {}
+        public void getTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, String configId) {}
+        public void deleteTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, String configId) {}
+        public void listTasks(ServerCallContext context, String tenant, String contextId, String status, String p1, String p2, String p3, String p4, String p5) {}
+        public void unknownMethod(ServerCallContext context, String param1, String param2) {}
     }
 }

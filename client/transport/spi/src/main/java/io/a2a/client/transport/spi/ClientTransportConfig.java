@@ -39,7 +39,7 @@ import java.util.Collections;
 public abstract class ClientTransportConfig<T extends ClientTransport> {
 
     protected List<ClientCallInterceptor> interceptors = Collections.emptyList();
-    protected Map<String, ? extends Object > parameters = Collections.emptyMap();
+    protected Map<String, ? extends Object> parameters = Collections.emptyMap();
 
     /**
      * Set the list of request/response interceptors.

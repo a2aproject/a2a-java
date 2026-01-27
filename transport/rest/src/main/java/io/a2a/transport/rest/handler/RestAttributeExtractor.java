@@ -32,64 +32,59 @@ public class RestAttributeExtractor implements AttributeExtractor {
             if( ctx.parameters() == null || ctx.parameters().length < 2) {
                 throw new IllegalArgumentException("wrong parameters passed");
             }
+            ServerCallContext context = (ServerCallContext) parameters[0];
+            String tenant = (String) parameters[1];
             switch (method) {
                 case "getExtendedAgentCard" -> {
-                    ServerCallContext context = (ServerCallContext) parameters[1];
                     Map<String, String> result = new HashMap<>();
                     result.putAll(processServerCallContext(context));
                     return result;
                 }
                 case "sendMessage",
                      "sendStreamingMessage"-> {
-                    ServerCallContext context = (ServerCallContext) parameters[2];
                     Map<String, String> result = new HashMap<>();
                     if(extractRequest()) {
-                        putIfNotNull(result, GENAI_REQUEST, (String) parameters[0]);
+                        putIfNotNull(result, GENAI_REQUEST, (String) parameters[2]);
                     }
                     result.putAll(processServerCallContext(context));
                     return result;
                 }
                 case "setTaskPushNotificationConfiguration" -> {
-                    ServerCallContext context = (ServerCallContext) parameters[3];
                     Map<String, String> result = new HashMap<>();
-                    putIfNotNull(result, GENAI_TASK_ID, (String) parameters[0]);
                     if(extractRequest()) {
-                        putIfNotNull(result, GENAI_REQUEST, (String) parameters[1]);
+                        putIfNotNull(result, GENAI_REQUEST, (String) parameters[2]);
                     }
+                    putIfNotNull(result, GENAI_TASK_ID, (String) parameters[3]);
                     result.putAll(processServerCallContext(context));
                     return result;
                 }
                 case "cancelTask",
                      "subscribeToTask",
                      "listTaskPushNotificationConfigurations" -> {
-                    ServerCallContext context = (ServerCallContext) parameters[2];
                     Map<String, String> result = new HashMap<>();
-                    putIfNotNull(result, GENAI_TASK_ID, (String) parameters[0]);
+                    putIfNotNull(result, GENAI_TASK_ID, (String) parameters[2]);
                     result.putAll(processServerCallContext(context));
                     return result;
                 }
                 case "getTask" -> {
-                    ServerCallContext context = (ServerCallContext) parameters[3];
                     Map<String, String> result = new HashMap<>();
-                    putIfNotNull(result, GENAI_TASK_ID, (String) parameters[0]);
-                    putIfNotNull(result, "gen_ai.agent.a2a.historyLength", "" + (int) parameters[1]);
+                    putIfNotNull(result, GENAI_TASK_ID, (String) parameters[2]);
+                    putIfNotNull(result, "gen_ai.agent.a2a.historyLength", "" + (int) parameters[3]);
                     result.putAll(processServerCallContext(context));
                     return result;
                 }
                 case "getTaskPushNotificationConfiguration",
                      "deleteTaskPushNotificationConfiguration" -> {
-                    ServerCallContext context = (ServerCallContext) parameters[3];
                     Map<String, String> result = new HashMap<>();
-                    putIfNotNull(result, GENAI_TASK_ID, (String) parameters[0]);
-                    putIfNotNull(result, GENAI_CONFIG_ID, (String) parameters[1]);
+                    putIfNotNull(result, GENAI_TASK_ID, (String) parameters[2]);
+                    putIfNotNull(result, GENAI_CONFIG_ID, (String) parameters[3]);
                     result.putAll(processServerCallContext(context));
                     return result;
                 }
                 case "listTasks" -> {
-                    ServerCallContext context = (ServerCallContext) parameters[7];
                     Map<String, String> result = new HashMap<>();
-                    putIfNotNull(result,GENAI_CONTEXT_ID, (String) parameters[0]);
-                    putIfNotNull(result, GENAI_STATUS, (String) parameters[1]);
+                    putIfNotNull(result,GENAI_CONTEXT_ID, (String) parameters[2]);
+                    putIfNotNull(result, GENAI_STATUS, (String) parameters[3]);
                     result.putAll(processServerCallContext(context));
                     return result;
                 }
