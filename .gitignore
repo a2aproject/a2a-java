@@ -42,6 +42,7 @@ nb-configuration.xml
 
 # Plugin directory
 /.quarkus/cli/plugins/
+
 # TLS Certificates
 .certs/
 
@@ -50,6 +51,7 @@ nbproject/
 nbactions.xml
 
 # Private Claude config
+.bob
 .claude/
 .serena/
 claudedocs
