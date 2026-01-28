@@ -212,6 +212,22 @@ echo ""
 echo "Deploying PostgreSQL..."
 kubectl apply -f ../k8s/01-postgres.yaml
 echo "Waiting for PostgreSQL to be ready..."
+
+# Wait for pod to be created (StatefulSet takes time to create pod)
+for i in {1..30}; do
+    if kubectl get pod -l app=postgres -n a2a-demo 2>/dev/null | grep -q postgres; then
+        echo "PostgreSQL pod found, waiting for ready state..."
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        echo -e "${RED}ERROR: PostgreSQL pod not created after 30 seconds${NC}"
+        kubectl get statefulset -n a2a-demo
+        exit 1
+    fi
+    sleep 1
+done
+
+# Now wait for pod to be ready
 kubectl wait --for=condition=Ready pod -l app=postgres -n a2a-demo --timeout=120s
 echo -e "${GREEN}✓ PostgreSQL deployed${NC}"
 

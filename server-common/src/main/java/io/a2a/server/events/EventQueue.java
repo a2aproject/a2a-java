@@ -1,6 +1,7 @@
 package io.a2a.server.events;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * and hierarchical queue structures via MainQueue and ChildQueue implementations.
  * </p>
  * <p>
- * Use {@link #builder()} to create configured instances or extend MainQueue/ChildQueue directly.
+ * Use {@link #builder(MainEventBus)} to create configured instances or extend MainQueue/ChildQueue directly.
  * </p>
  */
 public abstract class EventQueue implements AutoCloseable {
@@ -36,14 +37,6 @@ public abstract class EventQueue implements AutoCloseable {
     public static final int DEFAULT_QUEUE_SIZE = 1000;
 
     private final int queueSize;
-    /**
-     * Internal blocking queue for storing event queue items.
-     */
-    protected final BlockingQueue<EventQueueItem> queue = new LinkedBlockingDeque<>();
-    /**
-     * Semaphore for backpressure control, limiting the number of pending events.
-     */
-    protected final Semaphore semaphore;
     private volatile boolean closed = false;
 
     /**
@@ -64,7 +57,6 @@ public abstract class EventQueue implements AutoCloseable {
             throw new IllegalArgumentException("Queue size must be greater than 0");
         }
         this.queueSize = queueSize;
-        this.semaphore = new Semaphore(queueSize, true);
         LOGGER.trace("Creating {} with queue size: {}", this, queueSize);
     }
 
@@ -78,8 +70,8 @@ public abstract class EventQueue implements AutoCloseable {
         LOGGER.trace("Creating {}, parent: {}", this, parent);
     }
 
-    static EventQueueBuilder builder() {
-        return new EventQueueBuilder();
+    static EventQueueBuilder builder(MainEventBus mainEventBus) {
+        return new EventQueueBuilder().mainEventBus(mainEventBus);
     }
 
     /**
@@ -93,8 +85,10 @@ public abstract class EventQueue implements AutoCloseable {
         private int queueSize = DEFAULT_QUEUE_SIZE;
         private @Nullable EventEnqueueHook hook;
         private @Nullable String taskId;
+        private @Nullable String tempId = null;
         private List<Runnable> onCloseCallbacks = new java.util.ArrayList<>();
         private @Nullable TaskStateProvider taskStateProvider;
+        private @Nullable MainEventBus mainEventBus;
 
         /**
          * Sets the maximum queue size.
@@ -130,6 +124,17 @@ public abstract class EventQueue implements AutoCloseable {
         }
 
         /**
+         * Sets the temporary task ID if this queue is for a temporary task.
+         *
+         * @param tempId the temporary task ID, or null if not temporary
+         * @return this builder
+         */
+        public EventQueueBuilder tempId(@Nullable String tempId) {
+            this.tempId = tempId;
+            return this;
+        }
+
+        /**
          * Adds a callback to be executed when the queue is closed.
          *
          * @param onCloseCallback the callback to execute on close
@@ -154,16 +159,30 @@ public abstract class EventQueue implements AutoCloseable {
         }
 
         /**
+         * Sets the main event bus
+         *
+         * @param mainEventBus the main event bus
+         * @return this builder
+         */
+        public EventQueueBuilder mainEventBus(MainEventBus mainEventBus) {
+            this.mainEventBus = mainEventBus;
+            return this;
+        }
+
+        /**
          * Builds and returns the configured EventQueue.
          *
          * @return a new MainQueue instance
          */
         public EventQueue build() {
-            if (hook != null || !onCloseCallbacks.isEmpty() || taskStateProvider != null) {
-                return new MainQueue(queueSize, hook, taskId, onCloseCallbacks, taskStateProvider);
-            } else {
-                return new MainQueue(queueSize);
+            // MainEventBus is REQUIRED - enforce single architectural path
+            if (mainEventBus == null) {
+                throw new IllegalStateException("MainEventBus is required for EventQueue creation");
             }
+            if (taskId == null) {
+                throw new IllegalStateException("taskId is required for EventQueue creation");
+            }
+            return new MainQueue(queueSize, hook, taskId, tempId, onCloseCallbacks, taskStateProvider, mainEventBus);
         }
     }
 
@@ -209,22 +228,7 @@ public abstract class EventQueue implements AutoCloseable {
      * @param item the event queue item to enqueue
      * @throws RuntimeException if interrupted while waiting to acquire the semaphore
      */
-    public void enqueueItem(EventQueueItem item) {
-        Event event = item.getEvent();
-        if (closed) {
-            LOGGER.warn("Queue is closed. Event will not be enqueued. {} {}", this, event);
-            return;
-        }
-        // Call toString() since for errors we don't really want the full stacktrace
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Unable to acquire the semaphore to enqueue the event", e);
-        }
-        queue.add(item);
-        LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
-    }
+    public abstract void enqueueItem(EventQueueItem item);
 
     /**
      * Creates a child queue that shares events with this queue.
@@ -244,48 +248,17 @@ public abstract class EventQueue implements AutoCloseable {
      * This method returns the full EventQueueItem wrapper, allowing callers to check
      * metadata like whether the event is replicated via {@link EventQueueItem#isReplicated()}.
      * </p>
+     * <p>
+     * Note: MainQueue does not support dequeue operations - only ChildQueues can be consumed.
+     * </p>
      *
      * @param waitMilliSeconds the maximum time to wait in milliseconds
      * @return the EventQueueItem, or null if timeout occurs
      * @throws EventQueueClosedException if the queue is closed and empty
+     * @throws UnsupportedOperationException if called on MainQueue
      */
-    public @Nullable EventQueueItem dequeueEventItem(int waitMilliSeconds) throws EventQueueClosedException {
-        if (closed && queue.isEmpty()) {
-            LOGGER.debug("Queue is closed, and empty. Sending termination message. {}", this);
-            throw new EventQueueClosedException();
-        }
-        try {
-            if (waitMilliSeconds <= 0) {
-                EventQueueItem item = queue.poll();
-                if (item != null) {
-                    Event event = item.getEvent();
-                    // Call toString() since for errors we don't really want the full stacktrace
-                    LOGGER.debug("Dequeued event item (no wait) {} {}", this, event instanceof Throwable ? event.toString() : event);
-                    semaphore.release();
-                }
-                return item;
-            }
-            try {
-                LOGGER.trace("Polling queue {} (wait={}ms)", System.identityHashCode(this), waitMilliSeconds);
-                EventQueueItem item = queue.poll(waitMilliSeconds, TimeUnit.MILLISECONDS);
-                if (item != null) {
-                    Event event = item.getEvent();
-                    // Call toString() since for errors we don't really want the full stacktrace
-                    LOGGER.debug("Dequeued event item (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
-                    semaphore.release();
-                } else {
-                    LOGGER.trace("Dequeue timeout (null) from queue {}", System.identityHashCode(this));
-                }
-                return item;
-            } catch (InterruptedException e) {
-                LOGGER.debug("Interrupted dequeue (waiting) {}", this);
-                Thread.currentThread().interrupt();
-                return null;
-            }
-        } finally {
-            signalQueuePollerStarted();
-        }
-    }
+    @Nullable
+    public abstract EventQueueItem dequeueEventItem(int waitMilliSeconds) throws EventQueueClosedException;
 
     /**
      * Placeholder method for task completion notification.
@@ -294,6 +267,18 @@ public abstract class EventQueue implements AutoCloseable {
     public void taskDone() {
         // TODO Not sure if needed yet. BlockingQueue.poll()/.take() remove the events.
     }
+
+    /**
+     * Returns the current size of the queue.
+     * <p>
+     * For MainQueue: returns the number of events in-flight (in MainEventBus queue + currently being processed).
+     * This reflects actual capacity usage tracked by the semaphore.
+     * For ChildQueue: returns the size of the local consumption queue.
+     * </p>
+     *
+     * @return the number of events currently in the queue
+     */
+    public abstract int size();
 
     /**
      * Closes this event queue gracefully, allowing pending events to be consumed.
@@ -348,70 +333,89 @@ public abstract class EventQueue implements AutoCloseable {
             LOGGER.debug("Closing {} (immediate={})", this, immediate);
             closed = true;
         }
-
-        if (immediate) {
-            // Immediate close: clear pending events
-            queue.clear();
-            LOGGER.debug("Cleared queue for immediate close: {}", this);
-        }
-        // For graceful close, let the queue drain naturally through normal consumption
+        // Subclasses handle immediate close logic (e.g., ChildQueue clears its local queue)
     }
 
     static class MainQueue extends EventQueue {
         private final List<ChildQueue> children = new CopyOnWriteArrayList<>();
+        protected final Semaphore semaphore;
         private final CountDownLatch pollingStartedLatch = new CountDownLatch(1);
         private final AtomicBoolean pollingStarted = new AtomicBoolean(false);
         private final @Nullable EventEnqueueHook enqueueHook;
-        private final @Nullable String taskId;
+        private volatile String taskId;  // Volatile to allow switching from temp to real ID across threads
         private final List<Runnable> onCloseCallbacks;
         private final @Nullable TaskStateProvider taskStateProvider;
+        private final MainEventBus mainEventBus;
+        private final @Nullable String tempId;
 
-        MainQueue() {
-            super();
-            this.enqueueHook = null;
-            this.taskId = null;
-            this.onCloseCallbacks = List.of();
-            this.taskStateProvider = null;
-        }
-
-        MainQueue(int queueSize) {
+        MainQueue(int queueSize,
+                  @Nullable EventEnqueueHook hook,
+                  String taskId,
+                  @Nullable String tempId,
+                  List<Runnable> onCloseCallbacks,
+                  @Nullable TaskStateProvider taskStateProvider,
+                  @Nullable MainEventBus mainEventBus) {
             super(queueSize);
-            this.enqueueHook = null;
-            this.taskId = null;
-            this.onCloseCallbacks = List.of();
-            this.taskStateProvider = null;
-        }
-
-        MainQueue(EventEnqueueHook hook) {
-            super();
-            this.enqueueHook = hook;
-            this.taskId = null;
-            this.onCloseCallbacks = List.of();
-            this.taskStateProvider = null;
-        }
-
-        MainQueue(int queueSize, EventEnqueueHook hook) {
-            super(queueSize);
-            this.enqueueHook = hook;
-            this.taskId = null;
-            this.onCloseCallbacks = List.of();
-            this.taskStateProvider = null;
-        }
-
-        MainQueue(int queueSize, @Nullable EventEnqueueHook hook, @Nullable String taskId, List<Runnable> onCloseCallbacks, @Nullable TaskStateProvider taskStateProvider) {
-            super(queueSize);
+            this.semaphore = new Semaphore(queueSize, true);
             this.enqueueHook = hook;
             this.taskId = taskId;
+            this.tempId = tempId;
             this.onCloseCallbacks = List.copyOf(onCloseCallbacks);  // Defensive copy
             this.taskStateProvider = taskStateProvider;
-            LOGGER.debug("Created MainQueue for task {} with {} onClose callbacks and TaskStateProvider: {}",
-                    taskId, onCloseCallbacks.size(), taskStateProvider != null);
+            this.mainEventBus = Objects.requireNonNull(mainEventBus, "MainEventBus is required");
+            LOGGER.debug("Created MainQueue for task {} (tempId={}) with {} onClose callbacks, TaskStateProvider: {}, MainEventBus configured",
+                    taskId, tempId, onCloseCallbacks.size(), taskStateProvider != null);
         }
+
 
         public EventQueue tap() {
             ChildQueue child = new ChildQueue(this);
             children.add(child);
             return child;
+        }
+
+        /**
+         * Returns the current number of child queues.
+         * Useful for debugging and logging event distribution.
+         */
+        public int getChildCount() {
+            return children.size();
+        }
+
+        /**
+         * Returns the enqueue hook for replication (package-protected for MainEventBusProcessor).
+         */
+        @Nullable EventEnqueueHook getEnqueueHook() {
+            return enqueueHook;
+        }
+
+        /**
+         * Returns the temporary task ID if this queue was created with one, null otherwise.
+         * Package-protected for MainEventBusProcessor access.
+         */
+        @Nullable String getTempId() {
+            return tempId;
+        }
+
+        /**
+         * Updates the task ID when switching from temporary to real ID.
+         * Package-protected for MainEventBusProcessor access.
+         * @param newTaskId the real task ID to use
+         */
+        void setTaskId(String newTaskId) {
+            this.taskId = newTaskId;
+        }
+
+        @Override
+        public EventQueueItem dequeueEventItem(int waitMilliSeconds) throws EventQueueClosedException {
+            throw new UnsupportedOperationException("MainQueue cannot be consumed directly - use tap() to create a ChildQueue for consumption");
+        }
+
+        @Override
+        public int size() {
+            // Return total in-flight events (in MainEventBus + being processed)
+            // This aligns with semaphore's capacity tracking
+            return getQueueSize() - semaphore.availablePermits();
         }
 
         @Override
@@ -432,17 +436,48 @@ public abstract class EventQueue implements AutoCloseable {
                 throw new RuntimeException("Unable to acquire the semaphore to enqueue the event", e);
             }
 
-            // Add to this MainQueue's internal queue
-            queue.add(item);
             LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
 
-            // Distribute to all ChildQueues (they will receive the event even if MainQueue is closed)
-            children.forEach(eq -> eq.internalEnqueueItem(item));
+            // Submit to MainEventBus for centralized persistence + distribution
+            // MainEventBus is guaranteed non-null by constructor requirement
+            // Note: Replication now happens in MainEventBusProcessor AFTER persistence
 
-            // Trigger replication hook if configured
-            if (enqueueHook != null) {
-                enqueueHook.onEnqueue(item);
+            // For temp ID scenarios: if event contains a real task ID different from our temp ID,
+            // use the real ID when submitting to MainEventBus. This ensures subsequent events
+            // are submitted with the correct ID even before MainEventBusProcessor updates our taskId field.
+            // IMPORTANT: We don't update our taskId here - that happens in MainEventBusProcessor
+            // AFTER TaskManager validates the ID (e.g., checking for duplicate task IDs).
+            String submissionId = taskId;
+            if (tempId != null && taskId.equals(tempId)) {
+                // Not yet switched - try to extract real ID from first event
+                String eventTaskId = extractTaskId(event);
+                if (eventTaskId != null && !eventTaskId.equals(taskId)) {
+                    // Event has a different (real) ID - use it for submission
+                    // but keep our taskId as temp-UUID for now (until MainEventBusProcessor switches it)
+                    submissionId = eventTaskId;
+                    LOGGER.debug("MainQueue submitting event with real ID {} (current taskId: {})", eventTaskId, taskId);
+                }
             }
+            // If already switched (tempId != null but taskId != tempId), submissionId stays as taskId (the real ID)
+            // This ensures subsequent events with stale temp IDs still get submitted with the correct real ID
+            mainEventBus.submit(submissionId, this, item);
+        }
+
+        /**
+         * Extracts taskId from an event (package-private helper).
+         */
+        @Nullable
+        private String extractTaskId(Event event) {
+            if (event instanceof io.a2a.spec.Task task) {
+                return task.id();
+            } else if (event instanceof io.a2a.spec.TaskStatusUpdateEvent statusUpdate) {
+                return statusUpdate.taskId();
+            } else if (event instanceof io.a2a.spec.TaskArtifactUpdateEvent artifactUpdate) {
+                return artifactUpdate.taskId();
+            } else if (event instanceof io.a2a.spec.Message message) {
+                return message.taskId();
+            }
+            return null;
         }
 
         @Override
@@ -465,20 +500,15 @@ public abstract class EventQueue implements AutoCloseable {
         void childClosing(ChildQueue child, boolean immediate) {
             children.remove(child);  // Remove the closing child
 
-            // Close immediately if requested
-            if (immediate) {
-                LOGGER.debug("MainQueue closing immediately (immediate=true)");
-                this.doClose(immediate);
-                return;
-            }
-
             // If there are still children, keep queue open
             if (!children.isEmpty()) {
                 LOGGER.debug("MainQueue staying open: {} children remaining", children.size());
                 return;
             }
 
-            // No children left - check if task is finalized before auto-closing
+            // No children left - check if task is finalized before closing
+            // IMPORTANT: This check must happen BEFORE the immediate flag check
+            // to prevent closing queues for non-final tasks (fire-and-forget, resubscription support)
             if (taskStateProvider != null && taskId != null) {
                 boolean isFinalized = taskStateProvider.isTaskFinalized(taskId);
                 if (!isFinalized) {
@@ -491,6 +521,36 @@ public abstract class EventQueue implements AutoCloseable {
             }
 
             this.doClose(immediate);
+        }
+
+        /**
+         * Distribute event to all ChildQueues.
+         * Called by MainEventBusProcessor after TaskStore persistence.
+         */
+        void distributeToChildren(EventQueueItem item) {
+            int childCount = children.size();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("MainQueue[{}]: Distributing event {} to {} children",
+                        taskId, item.getEvent().getClass().getSimpleName(), childCount);
+            }
+            children.forEach(child -> {
+                LOGGER.debug("MainQueue[{}]: Enqueueing event {} to child queue",
+                        taskId, item.getEvent().getClass().getSimpleName());
+                child.internalEnqueueItem(item);
+            });
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("MainQueue[{}]: Completed distribution of {} to {} children",
+                        taskId, item.getEvent().getClass().getSimpleName(), childCount);
+            }
+        }
+
+        /**
+         * Release the semaphore after event processing is complete.
+         * Called by MainEventBusProcessor in finally block to ensure release even on exceptions.
+         * Balances the acquire() in enqueueEvent() - protects MainEventBus throughput.
+         */
+        void releaseSemaphore() {
+            semaphore.release();
         }
 
         /**
@@ -539,10 +599,16 @@ public abstract class EventQueue implements AutoCloseable {
         public void close(boolean immediate, boolean notifyParent) {
             throw new UnsupportedOperationException("MainQueue does not support notifyParent parameter - use close(boolean) instead");
         }
+
+        String getTaskId() {
+            return taskId;
+        }
     }
 
     static class ChildQueue extends EventQueue {
         private final MainQueue parent;
+        private final BlockingQueue<EventQueueItem> queue = new LinkedBlockingDeque<>();
+        private volatile boolean immediateClose = false;
 
         public ChildQueue(MainQueue parent) {
             this.parent = parent;
@@ -553,13 +619,80 @@ public abstract class EventQueue implements AutoCloseable {
             parent.enqueueEvent(event);
         }
 
+        @Override
+        public void enqueueItem(EventQueueItem item) {
+            // ChildQueue delegates writes to parent MainQueue
+            parent.enqueueItem(item);
+        }
+
         private void internalEnqueueItem(EventQueueItem item) {
-            super.enqueueItem(item);
+            // Internal method called by MainEventBusProcessor to add to local queue
+            // Note: Semaphore is managed by parent MainQueue (acquire/release), not ChildQueue
+            Event event = item.getEvent();
+            // For graceful close: still accept events so they can be drained by EventConsumer
+            // For immediate close: reject events to stop distribution quickly
+            if (isClosed() && immediateClose) {
+                LOGGER.warn("ChildQueue is immediately closed. Event will not be enqueued. {} {}", this, event);
+                return;
+            }
+            if (!queue.offer(item)) {
+                  LOGGER.warn("ChildQueue {} is full. Closing immediately.", this);
+                  close(true); // immediate close
+            } else {
+                LOGGER.debug("Enqueued event {} {}", event instanceof Throwable ? event.toString() : event, this);
+            }
+        }
+
+        @Override
+        @Nullable
+        public EventQueueItem dequeueEventItem(int waitMilliSeconds) throws EventQueueClosedException {
+            // For immediate close: exit immediately even if queue is not empty (race with MainEventBusProcessor)
+            // For graceful close: only exit when queue is empty (wait for all events to be consumed)
+            if (isClosed() && (queue.isEmpty() || immediateClose)) {
+                LOGGER.debug("ChildQueue is closed{}, sending termination message. {} (queueSize={})",
+                        immediateClose ? " (immediate)" : " and empty",
+                        this,
+                        queue.size());
+                throw new EventQueueClosedException();
+            }
+            try {
+                if (waitMilliSeconds <= 0) {
+                    EventQueueItem item = queue.poll();
+                    if (item != null) {
+                        Event event = item.getEvent();
+                        LOGGER.debug("Dequeued event item (no wait) {} {}", this, event instanceof Throwable ? event.toString() : event);
+                    }
+                    return item;
+                }
+                try {
+                    LOGGER.trace("Polling ChildQueue {} (wait={}ms)", System.identityHashCode(this), waitMilliSeconds);
+                    EventQueueItem item = queue.poll(waitMilliSeconds, TimeUnit.MILLISECONDS);
+                    if (item != null) {
+                        Event event = item.getEvent();
+                        LOGGER.debug("Dequeued event item (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
+                    } else {
+                        LOGGER.trace("Dequeue timeout (null) from ChildQueue {}", System.identityHashCode(this));
+                    }
+                    return item;
+                } catch (InterruptedException e) {
+                    LOGGER.debug("Interrupted dequeue (waiting) {}", this);
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+            } finally {
+                signalQueuePollerStarted();
+            }
         }
 
         @Override
         public EventQueue tap() {
             throw new IllegalStateException("Can only tap the main queue");
+        }
+
+        @Override
+        public int size() {
+            // Return size of local consumption queue
+            return queue.size();
         }
 
         @Override
@@ -570,6 +703,19 @@ public abstract class EventQueue implements AutoCloseable {
         @Override
         public void signalQueuePollerStarted() {
             parent.signalQueuePollerStarted();
+        }
+
+        @Override
+        protected void doClose(boolean immediate) {
+            super.doClose(immediate);  // Sets closed flag
+            if (immediate) {
+                // Immediate close: clear pending events from local queue
+                this.immediateClose = true;
+                int clearedCount = queue.size();
+                queue.clear();
+                LOGGER.debug("Cleared {} events from ChildQueue for immediate close: {}", clearedCount, this);
+            }
+            // For graceful close, let the queue drain naturally through normal consumption
         }
 
         @Override

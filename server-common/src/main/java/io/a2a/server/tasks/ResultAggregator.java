@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.spec.A2AError;
-import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.InternalError;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
@@ -31,12 +31,14 @@ public class ResultAggregator {
 
     private final TaskManager taskManager;
     private final Executor executor;
+    private final Executor eventConsumerExecutor;
     private volatile @Nullable Message message;
 
-    public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor) {
+    public ResultAggregator(TaskManager taskManager, @Nullable Message message, Executor executor, Executor eventConsumerExecutor) {
         this.taskManager = taskManager;
         this.message = message;
         this.executor = executor;
+        this.eventConsumerExecutor = eventConsumerExecutor;
     }
 
     public @Nullable EventKind getCurrentResult() {
@@ -49,20 +51,23 @@ public class ResultAggregator {
     public Flow.Publisher<EventQueueItem> consumeAndEmit(EventConsumer consumer) {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
 
-        // Process items conditionally - only save non-replicated events to database
-        return processor(createTubeConfig(), allItems, (errorConsumer, item) -> {
-            // Only process non-replicated events to avoid duplicate database writes
-            if (!item.isReplicated()) {
-                try {
-                    callTaskManagerProcess(item.getEvent());
-                } catch (A2AServerException e) {
-                    errorConsumer.accept(e);
-                    return false;
-                }
-            }
-            // Continue processing and emit (both replicated and non-replicated)
+        // Just stream events - no persistence needed
+        // TaskStore update moved to MainEventBusProcessor
+        Flow.Publisher<EventQueueItem> processed = processor(createTubeConfig(), allItems, (errorConsumer, item) -> {
+            // Continue processing and emit all events
             return true;
         });
+
+        // Wrap the publisher to ensure subscription happens on eventConsumerExecutor
+        // This prevents EventConsumer polling loop from running on AgentExecutor threads
+        // which caused thread accumulation when those threads didn't timeout
+        return new Flow.Publisher<EventQueueItem>() {
+            @Override
+            public void subscribe(Flow.Subscriber<? super EventQueueItem> subscriber) {
+                // Submit subscription to eventConsumerExecutor to isolate polling work
+                eventConsumerExecutor.execute(() -> processed.subscribe(subscriber));
+            }
+        };
     }
 
     public EventKind consumeAll(EventConsumer consumer) throws A2AError {
@@ -81,15 +86,7 @@ public class ResultAggregator {
                             return false;
                         }
                     }
-                    // Only process non-replicated events to avoid duplicate database writes
-                    if (!item.isReplicated()) {
-                        try {
-                            callTaskManagerProcess(event);
-                        } catch (A2AServerException e) {
-                            error.set(e);
-                            return false;
-                        }
-                    }
+                    // TaskStore update moved to MainEventBusProcessor
                     return true;
                 },
                 error::set);
@@ -113,18 +110,24 @@ public class ResultAggregator {
     public EventTypeAndInterrupt consumeAndBreakOnInterrupt(EventConsumer consumer, boolean blocking) throws A2AError {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
         AtomicReference<Message> message = new AtomicReference<>();
+        AtomicReference<Task> capturedTask = new AtomicReference<>();  // Capture Task events
         AtomicBoolean interrupted = new AtomicBoolean(false);
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
         CompletableFuture<Void> completionFuture = new CompletableFuture<>();
         // Separate future for tracking background consumption completion
         CompletableFuture<Void> consumptionCompletionFuture = new CompletableFuture<>();
+        // Latch to ensure EventConsumer starts polling before we wait on completionFuture
+        java.util.concurrent.CountDownLatch pollingStarted = new java.util.concurrent.CountDownLatch(1);
 
         // CRITICAL: The subscription itself must run on a background thread to avoid blocking
         // the Vert.x worker thread. EventConsumer.consumeAll() starts a polling loop that
         // blocks in dequeueEventItem(), so we must subscribe from a background thread.
-        // Use the @Internal executor (not ForkJoinPool.commonPool) to avoid saturation
-        // during concurrent request bursts.
+        // Use the dedicated @EventConsumerExecutor (cached thread pool) which creates threads
+        // on demand for I/O-bound polling. Using the @Internal executor caused deadlock when
+        // pool exhausted (100+ concurrent queues but maxPoolSize=50).
         CompletableFuture.runAsync(() -> {
+            // Signal that polling is about to start
+            pollingStarted.countDown();
             consumer(
                 createTubeConfig(),
                 allItems,
@@ -146,24 +149,29 @@ public class ResultAggregator {
                         return false;
                     }
 
-                    // Process event through TaskManager - only for non-replicated events
-                    if (!item.isReplicated()) {
-                        try {
-                            callTaskManagerProcess(event);
-                        } catch (A2AServerException e) {
-                            errorRef.set(e);
-                            completionFuture.completeExceptionally(e);
-                            return false;
+                    // Capture Task events (especially for new tasks where taskManager.getTask() would return null)
+                    // We capture the LATEST task to ensure we get the most up-to-date state
+                    if (event instanceof Task t) {
+                        Task previousTask = capturedTask.get();
+                        capturedTask.set(t);
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Captured Task event: id={}, state={} (previous: {})",
+                                    t.id(), t.status().state(),
+                                    previousTask != null ? previousTask.id() + "/" + previousTask.status().state() : "none");
                         }
                     }
 
+                    // TaskStore update moved to MainEventBusProcessor
+
                     // Determine interrupt behavior
                     boolean shouldInterrupt = false;
-                    boolean continueInBackground = false;
                     boolean isFinalEvent = (event instanceof Task task && task.status().state().isFinal())
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.isFinal());
                     boolean isAuthRequired = (event instanceof Task task && task.status().state() == TaskState.AUTH_REQUIRED)
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.status().state() == TaskState.AUTH_REQUIRED);
+
+                    LOGGER.debug("ResultAggregator: Evaluating interrupt (blocking={}, isFinal={}, isAuth={}, eventType={})",
+                        blocking, isFinalEvent, isAuthRequired, event.getClass().getSimpleName());
 
                     // Always interrupt on auth_required, as it needs external action.
                     if (isAuthRequired) {
@@ -174,20 +182,19 @@ public class ResultAggregator {
                         // new request is expected in order for the agent to make progress,
                         // so the agent should exit.
                         shouldInterrupt = true;
-                        continueInBackground = true;
+                        LOGGER.debug("ResultAggregator: Setting shouldInterrupt=true (AUTH_REQUIRED)");
                     }
                     else if (!blocking) {
                         // For non-blocking calls, interrupt as soon as a task is available.
                         shouldInterrupt = true;
-                        continueInBackground = true;
+                        LOGGER.debug("ResultAggregator: Setting shouldInterrupt=true (non-blocking)");
                     }
                     else if (blocking) {
                         // For blocking calls: Interrupt to free Vert.x thread, but continue in background
                         // Python's async consumption doesn't block threads, but Java's does
                         // So we interrupt to return quickly, then rely on background consumption
-                        // DefaultRequestHandler will fetch the final state from TaskStore
                         shouldInterrupt = true;
-                        continueInBackground = true;
+                        LOGGER.debug("ResultAggregator: Setting shouldInterrupt=true (blocking, isFinal={})", isFinalEvent);
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug("Blocking call for task {}: {} event, returning with background consumption",
                                 taskIdForLogging(), isFinalEvent ? "final" : "non-final");
@@ -195,14 +202,14 @@ public class ResultAggregator {
                     }
 
                     if (shouldInterrupt) {
+                        LOGGER.debug("ResultAggregator: Interrupting consumption (setting interrupted=true)");
                         // Complete the future to unblock the main thread
                         interrupted.set(true);
                         completionFuture.complete(null);
 
                         // For blocking calls, DON'T complete consumptionCompletionFuture here.
                         // Let it complete naturally when subscription finishes (onComplete callback below).
-                        // This ensures all events are processed and persisted to TaskStore before
-                        // DefaultRequestHandler.cleanupProducer() proceeds with cleanup.
+                        // This ensures all events are fully processed before cleanup.
                         //
                         // For non-blocking and auth-required calls, complete immediately to allow
                         // cleanup to proceed while consumption continues in background.
@@ -237,7 +244,16 @@ public class ResultAggregator {
                     }
                 }
             );
-        }, executor);
+        }, eventConsumerExecutor);
+
+        // Wait for EventConsumer to start polling before we wait for events
+        // This prevents race where agent enqueues events before EventConsumer starts
+        try {
+            pollingStarted.await(5, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new io.a2a.spec.InternalError("Interrupted waiting for EventConsumer to start");
+        }
 
         // Wait for completion or interruption
         try {
@@ -261,26 +277,28 @@ public class ResultAggregator {
             Utils.rethrow(error);
         }
 
-        EventKind eventType;
-        Message msg = message.get();
-        if (msg != null) {
-            eventType = msg;
-        } else {
-            Task task = taskManager.getTask();
-            if (task == null) {
-                throw new io.a2a.spec.InternalError("No task or message available after consuming events");
+        // Return Message if captured, otherwise Task if captured, otherwise fetch from TaskStore
+        EventKind eventKind = message.get();
+        if (eventKind == null) {
+            eventKind = capturedTask.get();
+            if (LOGGER.isDebugEnabled() && eventKind instanceof Task t) {
+                LOGGER.debug("Returning capturedTask: id={}, state={}", t.id(), t.status().state());
             }
-            eventType = task;
+        }
+        if (eventKind == null) {
+            eventKind = taskManager.getTask();
+            if (LOGGER.isDebugEnabled() && eventKind instanceof Task t) {
+                LOGGER.debug("Returning task from TaskStore: id={}, state={}", t.id(), t.status().state());
+            }
+        }
+        if (eventKind == null) {
+            throw new InternalError("Could not find a Task/Message for " + taskManager.getTaskId());
         }
 
         return new EventTypeAndInterrupt(
-                eventType,
+                eventKind,
                 interrupted.get(),
                 consumptionCompletionFuture);
-    }
-
-    private void callTaskManagerProcess(Event event) throws A2AServerException {
-        taskManager.process(event);
     }
 
     private String taskIdForLogging() {

@@ -42,7 +42,7 @@ public class TaskManagerTest {
     public void init() throws Exception {
         minimalTask = fromJson(TASK_JSON, Task.class);
         taskStore = new InMemoryTaskStore();
-        taskManager = new TaskManager(minimalTask.id(), minimalTask.contextId(), taskStore, null);
+        taskManager = new TaskManager(minimalTask.id(), minimalTask.contextId(), taskStore, null, false);
     }
 
     @Test
@@ -136,7 +136,7 @@ public class TaskManagerTest {
     @Test
     public void testEnsureTaskNonExistentForStatusUpdate() throws A2AServerException {
         // Tests that an update event instantiates a new task and that
-        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
+        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null, false);
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task")
                 .contextId("some-context")
@@ -157,7 +157,7 @@ public class TaskManagerTest {
 
     @Test
     public void testSaveTaskEventNewTaskNoTaskId() throws A2AServerException {
-        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
+        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null, false);
         Task task = Task.builder()
                 .id("new-task-id")
                 .contextId("some-context")
@@ -175,7 +175,7 @@ public class TaskManagerTest {
 
     @Test
     public void testGetTaskNoTaskId() {
-        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
+        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null, false);
         Task retrieved = taskManagerWithoutId.getTask();
         assertNull(retrieved);
     }
@@ -321,7 +321,7 @@ public class TaskManagerTest {
     @Test
     public void testAddingTaskWithDifferentIdFails() {
         // Test that adding a task with a different id from the taskmanager's taskId fails
-        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
+        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null, false);
         
         Task differentTask = Task.builder()
                 .id("different-task-id")
@@ -337,7 +337,7 @@ public class TaskManagerTest {
     @Test
     public void testAddingTaskWithDifferentIdViaStatusUpdateFails() {
         // Test that adding a status update with different taskId fails
-        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
+        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null, false);
         
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("different-task-id")
@@ -354,7 +354,7 @@ public class TaskManagerTest {
     @Test
     public void testAddingTaskWithDifferentIdViaArtifactUpdateFails() {
         // Test that adding an artifact update with different taskId fails
-        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null);
+        TaskManager taskManagerWithId = new TaskManager("task-abc", "session-xyz", taskStore, null, false);
         
         Artifact artifact = Artifact.builder()
                 .artifactId("artifact-id")
@@ -382,7 +382,7 @@ public class TaskManagerTest {
                 .messageId("initial-msg-id")
                 .build();
         
-        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
+        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage, false);
         
         // Use a status update event instead of a Task to trigger createTask
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
@@ -413,7 +413,7 @@ public class TaskManagerTest {
                 .messageId("initial-msg-id")
                 .build();
         
-        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
+        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage, false);
         
         Message taskMessage = Message.builder()
                 .role(Message.Role.AGENT)
@@ -533,11 +533,11 @@ public class TaskManagerTest {
     @Test
     public void testInvalidTaskIdValidation() {
         // Test that creating TaskManager with null taskId is allowed (Python allows None)
-        TaskManager taskManagerWithNullId = new TaskManager(null, "context", taskStore, null);
+        TaskManager taskManagerWithNullId = new TaskManager(null, "context", taskStore, null, false);
         assertNull(taskManagerWithNullId.getTaskId());
 
         // Test that empty string task ID is handled (Java doesn't have explicit validation like Python)
-        TaskManager taskManagerWithEmptyId = new TaskManager("", "context", taskStore, null);
+        TaskManager taskManagerWithEmptyId = new TaskManager("", "context", taskStore, null, false);
         assertEquals("", taskManagerWithEmptyId.getTaskId());
     }
 
@@ -625,7 +625,7 @@ public class TaskManagerTest {
                 .messageId("initial-msg-id")
                 .build();
 
-        TaskManager taskManagerWithMessage = new TaskManager(null, null, taskStore, initialMessage);
+        TaskManager taskManagerWithMessage = new TaskManager(null, null, taskStore, initialMessage, false);
 
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
@@ -653,7 +653,7 @@ public class TaskManagerTest {
     @Test
     public void testCreateTaskWithoutInitialMessage() throws A2AServerException {
         // Test task creation without initial message
-        TaskManager taskManagerWithoutMessage = new TaskManager(null, null, taskStore, null);
+        TaskManager taskManagerWithoutMessage = new TaskManager(null, null, taskStore, null, false);
 
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
@@ -677,7 +677,7 @@ public class TaskManagerTest {
     @Test
     public void testSaveTaskInternal() throws A2AServerException {
         // Test equivalent of _save_task functionality through saveTaskEvent
-        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null);
+        TaskManager taskManagerWithoutId = new TaskManager(null, null, taskStore, null, false);
         
         Task newTask = Task.builder()
                 .id("test-task-id")
@@ -701,7 +701,7 @@ public class TaskManagerTest {
                 .messageId("initial-msg-id")
                 .build();
 
-        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
+        TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage, false);
 
         Message taskMessage = Message.builder()
                 .role(Message.Role.AGENT)

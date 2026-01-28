@@ -14,7 +14,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
+import io.a2a.server.tasks.InMemoryTaskStore;
 import io.a2a.server.tasks.MockTaskStateProvider;
+import io.a2a.server.tasks.PushNotificationSender;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,17 +25,30 @@ public class InMemoryQueueManagerTest {
 
     private InMemoryQueueManager queueManager;
     private MockTaskStateProvider taskStateProvider;
+    private InMemoryTaskStore taskStore;
+    private MainEventBus mainEventBus;
+    private MainEventBusProcessor mainEventBusProcessor;
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
 
     @BeforeEach
     public void setUp() {
         taskStateProvider = new MockTaskStateProvider();
-        queueManager = new InMemoryQueueManager(taskStateProvider);
+        taskStore = new InMemoryTaskStore();
+        mainEventBus = new MainEventBus();
+        queueManager = new InMemoryQueueManager(taskStateProvider, mainEventBus);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        EventQueueUtil.start(mainEventBusProcessor);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        EventQueueUtil.stop(mainEventBusProcessor);
     }
 
     @Test
     public void testAddNewQueue() {
         String taskId = "test_task_id";
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue);
 
@@ -43,8 +59,8 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testAddExistingQueueThrowsException() {
         String taskId = "test_task_id";
-        EventQueue queue1 = EventQueue.builder().build();
-        EventQueue queue2 = EventQueue.builder().build();
+        EventQueue queue1 = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
+        EventQueue queue2 = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue1);
 
@@ -56,7 +72,7 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testGetExistingQueue() {
         String taskId = "test_task_id";
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue);
         EventQueue result = queueManager.get(taskId);
@@ -73,7 +89,7 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testTapExistingQueue() {
         String taskId = "test_task_id";
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue);
         EventQueue tappedQueue = queueManager.tap(taskId);
@@ -94,7 +110,7 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testCloseExistingQueue() {
         String taskId = "test_task_id";
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, queue);
         queueManager.close(taskId);
@@ -129,7 +145,7 @@ public class InMemoryQueueManagerTest {
     @Test
     public void testCreateOrTapExistingQueue() {
         String taskId = "test_task_id";
-        EventQueue originalQueue = EventQueue.builder().build();
+        EventQueue originalQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
 
         queueManager.add(taskId, originalQueue);
         EventQueue result = queueManager.createOrTap(taskId);
@@ -151,7 +167,7 @@ public class InMemoryQueueManagerTest {
         // Add tasks concurrently
         List<CompletableFuture<String>> addFutures = taskIds.stream()
                 .map(taskId -> CompletableFuture.supplyAsync(() -> {
-                    EventQueue queue = EventQueue.builder().build();
+                    EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
                     queueManager.add(taskId, queue);
                     return taskId;
                 }))

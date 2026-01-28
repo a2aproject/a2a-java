@@ -3,11 +3,13 @@ package io.a2a.server.requesthandlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,11 +19,16 @@ import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.events.EventQueue;
+import io.a2a.server.events.EventQueueUtil;
 import io.a2a.server.events.InMemoryQueueManager;
+import io.a2a.server.events.MainEventBus;
+import io.a2a.server.events.MainEventBusProcessor;
 import io.a2a.server.tasks.InMemoryPushNotificationConfigStore;
 import io.a2a.server.tasks.InMemoryTaskStore;
+import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.server.tasks.TaskUpdater;
 import io.a2a.spec.A2AError;
+import io.a2a.spec.Event;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.Message;
@@ -31,7 +38,9 @@ import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
+import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -50,24 +59,72 @@ public class DefaultRequestHandlerTest {
     private InMemoryQueueManager queueManager;
     private TestAgentExecutor agentExecutor;
     private ServerCallContext serverCallContext;
+    private MainEventBus mainEventBus;
+    private MainEventBusProcessor mainEventBusProcessor;
+
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
 
     @BeforeEach
     void setUp() {
         taskStore = new InMemoryTaskStore();
+
+        // Create MainEventBus and MainEventBusProcessor (production code path)
+        mainEventBus = new MainEventBus();
         // Pass taskStore as TaskStateProvider to queueManager for task-aware queue management
-        queueManager = new InMemoryQueueManager(taskStore);
+        queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        EventQueueUtil.start(mainEventBusProcessor);
+
         agentExecutor = new TestAgentExecutor();
 
+        ExecutorService executor = Executors.newCachedThreadPool();
         requestHandler = DefaultRequestHandler.create(
             agentExecutor,
             taskStore,
             queueManager,
             null, // pushConfigStore
-            null, // pushSender
-            Executors.newCachedThreadPool()
+            mainEventBusProcessor,
+            executor,
+            executor
         );
 
         serverCallContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of(), Set.of());
+    }
+
+    @AfterEach
+    void tearDown() {
+        // Stop MainEventBusProcessor background thread
+        // Note: Don't clear callback here - DefaultRequestHandler has a permanent callback
+        if (mainEventBusProcessor != null) {
+            EventQueueUtil.stop(mainEventBusProcessor);
+        }
+    }
+
+    /**
+     * Helper to wait for task finalization in background (for non-blocking tests).
+     * <p>
+     * Note: Does NOT set callbacks - DefaultRequestHandler has a permanent callback.
+     * Simply polls TaskStore until task reaches final state.
+     * </p>
+     *
+     * @param action the action that triggers task finalization (e.g., allowing agent to complete)
+     * @param taskId the task ID to wait for
+     * @throws InterruptedException if waiting is interrupted
+     * @throws AssertionError if finalization doesn't complete within timeout
+     */
+    private void waitForTaskFinalization(Runnable action, String taskId) throws InterruptedException {
+        action.run();
+
+        // Poll TaskStore for final state (non-blocking tests complete in background)
+        for (int i = 0; i < 50; i++) {
+            Task task = taskStore.get(taskId);
+            if (task != null && task.status() != null && task.status().state() != null
+                    && task.status().state().isFinal()) {
+                return; // Success!
+            }
+            Thread.sleep(100);
+        }
+        fail("Task " + taskId + " should have been finalized within timeout");
     }
 
     /**
@@ -576,32 +633,15 @@ public class DefaultRequestHandlerTest {
 
         // At this point, the non-blocking call has returned, but the agent is still running
 
-        // Allow the agent to emit the final COMPLETED event
-        allowCompletion.countDown();
+        // Assertion 2: Wait for the final task to be processed and finalized in background
+        // Poll TaskStore for finalization (background consumption)
+        waitForTaskFinalization(() -> allowCompletion.countDown(), taskId);
 
-        // Assertion 2: Poll for the final task state to be persisted in background
-        // Use polling loop instead of fixed sleep for faster and more reliable test
-        long timeoutMs = 5000;
-        long startTime = System.currentTimeMillis();
-        Task persistedTask = null;
-        boolean completedStateFound = false;
-
-        while (System.currentTimeMillis() - startTime < timeoutMs) {
-            persistedTask = taskStore.get(taskId);
-            if (persistedTask != null && persistedTask.status().state() == TaskState.COMPLETED) {
-                completedStateFound = true;
-                break;
-            }
-            Thread.sleep(100);  // Poll every 100ms
-        }
-
-        assertTrue(persistedTask != null, "Task should be persisted to store");
-        assertTrue(
-            completedStateFound,
-            "Final task state should be COMPLETED (background consumption should have processed it), got: " +
-            (persistedTask != null ? persistedTask.status().state() : "null") +
-            " after " + (System.currentTimeMillis() - startTime) + "ms"
-        );
+        // Verify the task was persisted with COMPLETED state
+        Task persistedTask = taskStore.get(taskId);
+        assertNotNull(persistedTask, "Task should be persisted to store");
+        assertEquals(TaskState.COMPLETED, persistedTask.status().state(),
+            "Final task state should be COMPLETED (background consumption should have processed it)");
     }
 
     /**
@@ -779,13 +819,16 @@ public class DefaultRequestHandlerTest {
         });
 
         // Call blocking onMessageSend - should wait for ALL events
+        // DefaultRequestHandler now waits internally for task finalization before returning
         Object result = requestHandler.onMessageSend(params, serverCallContext);
 
         // The returned result should be a Task with ALL artifacts
         assertTrue(result instanceof Task, "Result should be a Task");
         Task returnedTask = (Task) result;
 
-        // Verify task is completed
+        // Fetch final state from TaskStore (guaranteed to be persisted after blocking call)
+        returnedTask = taskStore.get(taskId);
+
         assertEquals(TaskState.COMPLETED, returnedTask.status().state(),
             "Returned task should be COMPLETED");
 
@@ -817,13 +860,15 @@ public class DefaultRequestHandlerTest {
         InMemoryPushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
 
         // Re-create request handler with pushConfigStore
+        ExecutorService pushTestExecutor = Executors.newCachedThreadPool();
         requestHandler = DefaultRequestHandler.create(
             agentExecutor,
             taskStore,
             queueManager,
             pushConfigStore, // Add push config store
-            null, // pushSender
-            Executors.newCachedThreadPool()
+            mainEventBusProcessor,
+            pushTestExecutor,
+            pushTestExecutor
         );
 
         // Create push notification config
@@ -888,13 +933,15 @@ public class DefaultRequestHandlerTest {
         InMemoryPushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
 
         // Re-create request handler with pushConfigStore
+        ExecutorService pushTestExecutor = Executors.newCachedThreadPool();
         requestHandler = DefaultRequestHandler.create(
             agentExecutor,
             taskStore,
             queueManager,
             pushConfigStore, // Add push config store
-            null, // pushSender
-            Executors.newCachedThreadPool()
+            mainEventBusProcessor,
+            pushTestExecutor,
+            pushTestExecutor
         );
 
         // Create EXISTING task in store
@@ -949,6 +996,187 @@ public class DefaultRequestHandlerTest {
         PushNotificationConfig storedConfig = storedConfigs.configs().get(0).pushNotificationConfig();
         assertEquals("config-existing-1", storedConfig.id());
         assertEquals("https://example.com/existing-webhook", storedConfig.url());
+    }
+
+    /**
+     * Test that sending a message WITHOUT taskId works correctly (like TCK).
+     * Agent emits Task with the same ID it receives from context.getTaskId().
+     */
+    @Test
+    @Timeout(10)
+    void testMessageSendWithoutTaskIdCreatesTask() throws Exception {
+        String contextId = "temp-id-ctx";
+
+        // Agent does same as TCK: emit SUBMITTED task with received taskId, then WORKING (fire-and-forget)
+        agentExecutor.setExecuteCallback((context, queue) -> {
+            Task task = context.getTask();
+            if (task == null) {
+                // First message: create SUBMITTED task using context's taskId
+                // (RequestContext generates a real UUID when message.taskId is null)
+                task = Task.builder()
+                    .id(context.getTaskId())
+                    .contextId(context.getContextId())
+                    .status(new TaskStatus(TaskState.SUBMITTED))
+                    .history(List.of(context.getMessage()))
+                    .build();
+                queue.enqueueEvent(task);
+            }
+            // Set to WORKING (fire-and-forget like TCK)
+            TaskUpdater updater = new TaskUpdater(context, queue);
+            updater.startWork();
+            // Don't complete - just return (fire-and-forget)
+        });
+
+        // Send message WITHOUT taskId (null) in blocking mode
+        Message message = Message.builder()
+            .messageId("msg-no-taskid")
+            .role(Message.Role.USER)
+            .parts(new TextPart("message without taskId"))
+            .taskId(null)  // No taskId!
+            .contextId(contextId)
+            .build();
+
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
+            .blocking(true)
+            .build();
+
+        MessageSendParams params = new MessageSendParams(message, config, null, "");
+
+        // Call blocking onMessageSend
+        Object result = requestHandler.onMessageSend(params, serverCallContext);
+
+        // Verify result is a Task
+        assertTrue(result instanceof Task, "Result should be a Task");
+        Task resultTask = (Task) result;
+
+        // Task should have an ID (auto-generated)
+        assertNotNull(resultTask.id(), "Task should have an ID");
+
+        // ID should NOT start with "temp-" (that's just the queue key, not the task.id)
+        assertTrue(!resultTask.id().startsWith("temp-"),
+            "Task ID should not start with 'temp-', got: " + resultTask.id());
+
+        assertEquals(contextId, resultTask.contextId());
+        assertEquals(TaskState.WORKING, resultTask.status().state());
+
+        // Verify task is persisted in TaskStore
+        Task storedTask = taskStore.get(resultTask.id());
+        assertNotNull(storedTask, "Task should be stored");
+        assertEquals(resultTask.id(), storedTask.id());
+    }
+
+    /**
+     * Test message send without taskId using streaming.
+     * This tests the same scenario as testMessageSendWithoutTaskIdCreatesTask but with streaming.
+     * TCK streaming tests were failing with similar temp-to-real ID switching issues.
+     */
+    @Test
+    @Timeout(10)
+    void testMessageSendStreamWithoutTaskIdCreatesTask() throws Exception {
+        String contextId = "temp-id-ctx-stream";
+
+        // Agent does same as TCK: emit SUBMITTED task with received taskId, then WORKING (fire-and-forget)
+        agentExecutor.setExecuteCallback((context, queue) -> {
+            Task task = context.getTask();
+            if (task == null) {
+                // First message: create SUBMITTED task using context's taskId
+                // (RequestContext generates a real UUID when message.taskId is null)
+                task = Task.builder()
+                    .id(context.getTaskId())
+                    .contextId(context.getContextId())
+                    .status(new TaskStatus(TaskState.SUBMITTED))
+                    .history(List.of(context.getMessage()))
+                    .build();
+                queue.enqueueEvent(task);
+            }
+            // Set to WORKING (fire-and-forget like TCK)
+            TaskUpdater updater = new TaskUpdater(context, queue);
+            updater.startWork();
+            // Don't complete - just return (fire-and-forget)
+        });
+
+        // Send message WITHOUT taskId (null) in streaming mode
+        Message message = Message.builder()
+            .messageId("msg-no-taskid-stream")
+            .role(Message.Role.USER)
+            .parts(new TextPart("message without taskId streaming"))
+            .taskId(null)  // No taskId!
+            .contextId(contextId)
+            .build();
+
+        MessageSendParams params = new MessageSendParams(message, null, null, "");
+
+        // Call streaming onMessageSendStream
+        var publisher = requestHandler.onMessageSendStream(params, serverCallContext);
+
+        // Collect events from stream
+        List<Event> events = new java.util.ArrayList<>();
+        CountDownLatch completionLatch = new CountDownLatch(1);
+        AtomicBoolean hasError = new AtomicBoolean(false);
+        final Throwable[] error = new Throwable[1];
+
+        publisher.subscribe(new java.util.concurrent.Flow.Subscriber<Event>() {
+            private java.util.concurrent.Flow.Subscription subscription;
+
+            @Override
+            public void onSubscribe(java.util.concurrent.Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(Long.MAX_VALUE); // Request all events
+            }
+
+            @Override
+            public void onNext(Event event) {
+                events.add(event);
+                subscription.request(1);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                hasError.set(true);
+                error[0] = throwable;
+                throwable.printStackTrace();
+                completionLatch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                completionLatch.countDown();
+            }
+        });
+
+        // Wait for stream to complete
+        assertTrue(completionLatch.await(5, TimeUnit.SECONDS), "Stream should complete");
+        if (hasError.get()) {
+            fail("Stream had error: " + error[0], error[0]);
+        }
+
+        // Should have received at least 2 events: Task (SUBMITTED) and TaskStatusUpdateEvent (WORKING)
+        assertTrue(events.size() >= 2, "Should have at least 2 events, got: " + events.size());
+
+        // First event should be Task with SUBMITTED state
+        Event firstEvent = events.get(0);
+        assertTrue(firstEvent instanceof Task, "First event should be Task");
+        Task firstTask = (Task) firstEvent;
+
+        assertNotNull(firstTask.id(), "Task should have an ID");
+        assertTrue(!firstTask.id().startsWith("temp-"),
+            "Task ID should not start with 'temp-', got: " + firstTask.id());
+        assertEquals(contextId, firstTask.contextId());
+        assertEquals(TaskState.SUBMITTED, firstTask.status().state());
+
+        // Second event should be TaskStatusUpdateEvent with WORKING state
+        Event secondEvent = events.get(1);
+        assertTrue(secondEvent instanceof TaskStatusUpdateEvent,
+            "Second event should be TaskStatusUpdateEvent, got: " + secondEvent.getClass().getSimpleName());
+        TaskStatusUpdateEvent statusUpdate = (TaskStatusUpdateEvent) secondEvent;
+        assertEquals(firstTask.id(), statusUpdate.taskId(), "Status update should have same task ID");
+        assertEquals(TaskState.WORKING, statusUpdate.status().state());
+
+        // Verify task is persisted in TaskStore with WORKING state
+        Task storedTask = taskStore.get(firstTask.id());
+        assertNotNull(storedTask, "Task should be stored");
+        assertEquals(firstTask.id(), storedTask.id());
+        assertEquals(TaskState.WORKING, storedTask.status().state(), "Stored task should have WORKING state");
     }
 
     /**

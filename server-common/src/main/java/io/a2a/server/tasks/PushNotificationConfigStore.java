@@ -120,4 +120,20 @@ public interface PushNotificationConfigStore {
      */
     void deleteInfo(String taskId, String configId);
 
+    /**
+     * Switches push notification configuration from an old task ID to a new task ID.
+     * <p>
+     * Used when transitioning from a temporary task ID (e.g., "temp-UUID") to the real task ID
+     * when the Task event arrives with the actual task.id. Moves all push notification configs
+     * associated with the old task ID to the new task ID.
+     * </p>
+     * <p>
+     * If no configs exist for the old task ID, this method returns normally (no-op).
+     * </p>
+     *
+     * @param oldTaskId the temporary/old task identifier
+     * @param newTaskId the real/new task identifier
+     */
+    void switchKey(String oldTaskId, String newTaskId);
+
 }

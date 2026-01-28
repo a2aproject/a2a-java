@@ -118,4 +118,12 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
             pushNotificationInfos.remove(taskId);
         }
     }
+
+    @Override
+    public void switchKey(String oldTaskId, String newTaskId) {
+        List<PushNotificationConfig> configs = pushNotificationInfos.remove(oldTaskId);
+        if (configs != null && !configs.isEmpty()) {
+            pushNotificationInfos.put(newTaskId, configs);
+        }
+    }
 }

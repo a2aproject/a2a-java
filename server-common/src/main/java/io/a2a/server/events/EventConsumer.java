@@ -19,6 +19,8 @@ public class EventConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventConsumer.class);
     private final EventQueue queue;
     private volatile @Nullable Throwable error;
+    private volatile boolean cancelled = false;
+    private volatile boolean agentCompleted = false;
 
     private static final String ERROR_MSG = "Agent did not return any response";
     private static final int NO_WAIT = -1;
@@ -45,6 +47,14 @@ public class EventConsumer {
             boolean completed = false;
             try {
                 while (true) {
+                    // Check if cancelled by client disconnect
+                    if (cancelled) {
+                        LOGGER.debug("EventConsumer detected cancellation, exiting polling loop for queue {}", System.identityHashCode(queue));
+                        completed = true;
+                        tube.complete();
+                        return;
+                    }
+
                     if (error != null) {
                         completed = true;
                         tube.fail(error);
@@ -60,13 +70,32 @@ public class EventConsumer {
                     EventQueueItem item;
                     Event event;
                     try {
+                        LOGGER.debug("EventConsumer polling queue {} (error={}, agentCompleted={})",
+                            System.identityHashCode(queue), error, agentCompleted);
                         item = queue.dequeueEventItem(QUEUE_WAIT_MILLISECONDS);
                         if (item == null) {
+                            LOGGER.debug("EventConsumer poll timeout (null item), agentCompleted={}", agentCompleted);
+                            // If agent completed, a poll timeout means no more events are coming
+                            // MainEventBusProcessor has 500ms to distribute events from MainEventBus
+                            // If we timeout with agentCompleted=true, all events have been distributed
+                            if (agentCompleted) {
+                                LOGGER.debug("Agent completed and poll timeout, closing queue for graceful completion (queue={})",
+                                    System.identityHashCode(queue));
+                                queue.close();
+                                completed = true;
+                                tube.complete();
+                                return;
+                            }
                             continue;
                         }
                         event = item.getEvent();
+                        LOGGER.debug("EventConsumer received event: {} (queue={})",
+                            event.getClass().getSimpleName(), System.identityHashCode(queue));
 
+                        // Defensive logging for error handling
                         if (event instanceof Throwable thr) {
+                            LOGGER.debug("EventConsumer detected Throwable event: {} - triggering tube.fail()",
+                                    thr.getClass().getSimpleName());
                             tube.fail(thr);
                             return;
                         }
@@ -138,10 +167,23 @@ public class EventConsumer {
 
     public EnhancedRunnable.DoneCallback createAgentRunnableDoneCallback() {
         return agentRunnable -> {
+            LOGGER.debug("EventConsumer: Agent done callback invoked (hasError={}, queue={})",
+                agentRunnable.getError() != null, System.identityHashCode(queue));
             if (agentRunnable.getError() != null) {
                 error = agentRunnable.getError();
+                LOGGER.debug("EventConsumer: Set error field from agent callback");
+            } else {
+                agentCompleted = true;
+                LOGGER.debug("EventConsumer: Agent completed successfully, set agentCompleted=true, will close queue after draining");
             }
         };
+    }
+
+    public void cancel() {
+        // Set cancellation flag to stop polling loop
+        // Called when client disconnects without completing stream
+        LOGGER.debug("EventConsumer cancelled (client disconnect), stopping polling for queue {}", System.identityHashCode(queue));
+        cancelled = true;
     }
 
     public void close() {

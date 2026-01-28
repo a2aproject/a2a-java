@@ -13,8 +13,10 @@ import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.EventQueueFactory;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.InMemoryQueueManager;
+import io.a2a.server.events.MainEventBus;
 import io.a2a.server.events.QueueManager;
 import io.a2a.server.tasks.TaskStateProvider;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,16 +47,23 @@ public class ReplicatedQueueManager implements QueueManager {
     }
 
     @Inject
-    public ReplicatedQueueManager(ReplicationStrategy replicationStrategy, TaskStateProvider taskStateProvider) {
+    public ReplicatedQueueManager(ReplicationStrategy replicationStrategy,
+                                    TaskStateProvider taskStateProvider,
+                                    MainEventBus mainEventBus) {
         this.replicationStrategy = replicationStrategy;
         this.taskStateProvider = taskStateProvider;
-        this.delegate = new InMemoryQueueManager(new ReplicatingEventQueueFactory(), taskStateProvider);
+        this.delegate = new InMemoryQueueManager(new ReplicatingEventQueueFactory(), taskStateProvider, mainEventBus);
     }
 
 
     @Override
     public void add(String taskId, EventQueue queue) {
         delegate.add(taskId, queue);
+    }
+
+    @Override
+    public void switchKey(String oldId, String newId) {
+        delegate.switchKey(oldId, newId);
     }
 
     @Override
@@ -77,7 +86,12 @@ public class ReplicatedQueueManager implements QueueManager {
 
     @Override
     public EventQueue createOrTap(String taskId) {
-        EventQueue queue = delegate.createOrTap(taskId);
+        return createOrTap(taskId, null);
+    }
+
+    @Override
+    public EventQueue createOrTap(String taskId, @Nullable String tempId) {
+        EventQueue queue = delegate.createOrTap(taskId, tempId);
         return queue;
     }
 
@@ -98,7 +112,9 @@ public class ReplicatedQueueManager implements QueueManager {
         }
 
         // Get or create a ChildQueue for this task (creates MainQueue if it doesn't exist)
-        EventQueue childQueue = delegate.createOrTap(replicatedEvent.getTaskId());
+        // Replicated events should always have real task IDs (not temp IDs) because
+        // replication now happens AFTER TaskStore persistence in MainEventBusProcessor
+        EventQueue childQueue = delegate.createOrTap(replicatedEvent.getTaskId(), null);
 
         try {
             // Get the MainQueue to enqueue the replicated event item
@@ -152,12 +168,11 @@ public class ReplicatedQueueManager implements QueueManager {
             // which sends the QueueClosedEvent after the database transaction commits.
             // This ensures proper ordering and transactional guarantees.
 
-            // Return the builder with callbacks
-            return delegate.getEventQueueBuilder(taskId)
-                    .taskId(taskId)
-                    .hook(new ReplicationHook(taskId))
-                    .addOnCloseCallback(delegate.getCleanupCallback(taskId))
-                    .taskStateProvider(taskStateProvider);
+            // Call createBaseEventQueueBuilder() directly to avoid infinite recursion
+            // (getEventQueueBuilder() would delegate back to this factory, creating a loop)
+            // The base builder already includes: taskId, cleanup callback, taskStateProvider, mainEventBus
+            return delegate.createBaseEventQueueBuilder(taskId)
+                    .hook(new ReplicationHook(taskId));
         }
     }
 

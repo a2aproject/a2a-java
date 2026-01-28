@@ -12,7 +12,7 @@ import java.util.Map;
 
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.Event;
-import io.a2a.spec.InvalidParamsError;
+import io.a2a.spec.InternalError;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
@@ -31,13 +31,29 @@ public class TaskManager {
     private final TaskStore taskStore;
     private final @Nullable Message initialMessage;
     private volatile @Nullable Task currentTask;
+    private volatile boolean isTempId;
 
-    public TaskManager(@Nullable String taskId, @Nullable String contextId, TaskStore taskStore, @Nullable Message initialMessage) {
+    public TaskManager(@Nullable String taskId, @Nullable String contextId, TaskStore taskStore, @Nullable Message initialMessage, boolean isTempId) {
         checkNotNullParam("taskStore", taskStore);
         this.taskId = taskId;
         this.contextId = contextId;
         this.taskStore = taskStore;
         this.initialMessage = initialMessage;
+        this.isTempId = isTempId;
+    }
+
+    /**
+     * Updates the taskId from a temporary ID to the real task ID.
+     * Only allowed when this TaskManager was created with isTempId=true.
+     * Called by DefaultRequestHandler when switching from temp-UUID to real task.id.
+     */
+    public void setTaskId(String newTaskId) {
+        if (!isTempId) {
+            throw new IllegalStateException("Cannot change taskId - not created with temporary ID");
+        }
+        LOGGER.debug("TaskManager switching taskId from {} to {}", this.taskId, newTaskId);
+        this.taskId = newTaskId;
+        this.isTempId = false; // No longer temporary after switch
     }
 
     @Nullable String getTaskId() {
@@ -131,9 +147,25 @@ public class TaskManager {
 
     private void checkIdsAndUpdateIfNecessary(String eventTaskId, String eventContextId) throws A2AServerException {
         if (taskId != null && !eventTaskId.equals(taskId)) {
-            throw new A2AServerException(
-                    "Invalid task id",
-                    new InvalidParamsError(String.format("Task in event doesn't match TaskManager ")));
+            // Allow switching from temporary ID to real task ID
+            // This happens when client sends message without taskId and agent creates Task with real ID
+            if (isTempId) {
+                // Verify the new task ID doesn't already exist in the store
+                // If it does, the agent is trying to return an existing task when it should create a new one
+                Task existingTask = taskStore.get(eventTaskId);
+                if (existingTask != null) {
+                    throw new A2AServerException(
+                            "Invalid task id",
+                            new InternalError(String.format("Agent returned existing task ID %s when expecting new task", eventTaskId)));
+                }
+                LOGGER.debug("TaskManager allowing taskId switch from temp {} to real {}", taskId, eventTaskId);
+                taskId = eventTaskId;
+                isTempId = false; // No longer temporary after switch
+            } else {
+                throw new A2AServerException(
+                        "Invalid task id",
+                        new InternalError(String.format("Task in event doesn't match TaskManager ")));
+            }
         }
         if (taskId == null) {
             taskId = eventTaskId;

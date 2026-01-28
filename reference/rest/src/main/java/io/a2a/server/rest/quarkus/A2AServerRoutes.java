@@ -15,7 +15,8 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
+
+import io.a2a.server.util.sse.SseFormatter;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.inject.Instance;
@@ -38,7 +39,6 @@ import io.a2a.transport.rest.handler.RestHandler.HTTPRestStreamingResponse;
 import io.a2a.util.Utils;
 import io.quarkus.security.Authenticated;
 import io.quarkus.vertx.web.Body;
-import io.quarkus.vertx.web.ReactiveRoutes;
 import io.quarkus.vertx.web.Route;
 import io.smallrye.mutiny.Multi;
 import io.vertx.core.AsyncResult;
@@ -110,10 +110,14 @@ public class A2AServerRoutes {
             if (error != null) {
                 sendResponse(rc, error);
             } else if (streamingResponse != null) {
-                Multi<String> events = Multi.createFrom().publisher(streamingResponse.getPublisher());
+                final HTTPRestStreamingResponse finalStreamingResponse = streamingResponse;
                 executor.execute(() -> {
-                    MultiSseSupport.subscribeObject(
-                            events.map(i -> (Object) i), rc);
+                    // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
+                    AtomicLong eventIdCounter = new AtomicLong(0);
+                    Multi<String> sseEvents = Multi.createFrom().publisher(finalStreamingResponse.getPublisher())
+                            .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
+                    // Write SSE-formatted strings to HTTP response
+                    MultiSseSupport.writeSseStrings(sseEvents, rc, context);
                 });
             }
         }
@@ -243,10 +247,14 @@ public class A2AServerRoutes {
             if (error != null) {
                 sendResponse(rc, error);
             } else if (streamingResponse != null) {
-                Multi<String> events = Multi.createFrom().publisher(streamingResponse.getPublisher());
+                final HTTPRestStreamingResponse finalStreamingResponse = streamingResponse;
                 executor.execute(() -> {
-                    MultiSseSupport.subscribeObject(
-                            events.map(i -> (Object) i), rc);
+                    // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
+                    AtomicLong eventIdCounter = new AtomicLong(0);
+                    Multi<String> sseEvents = Multi.createFrom().publisher(finalStreamingResponse.getPublisher())
+                            .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
+                    // Write SSE-formatted strings to HTTP response
+                    MultiSseSupport.writeSseStrings(sseEvents, rc, context);
                 });
             }
         }
@@ -450,40 +458,43 @@ public class A2AServerRoutes {
         }
     }
 
-    // Port of import io.quarkus.vertx.web.runtime.MultiSseSupport, which is considered internal API
+    /**
+     * Simplified SSE support for Vert.x/Quarkus.
+     * <p>
+     * This class only handles HTTP-specific concerns (writing to response, backpressure, disconnect).
+     * SSE formatting and JSON serialization are handled by {@link SseFormatter}.
+     */
     private static class MultiSseSupport {
+        private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MultiSseSupport.class);
 
         private MultiSseSupport() {
             // Avoid direct instantiation.
         }
 
-        private static void initialize(HttpServerResponse response) {
-            if (response.bytesWritten() == 0) {
-                MultiMap headers = response.headers();
-                if (headers.get(CONTENT_TYPE) == null) {
-                    headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
-                }
-                response.setChunked(true);
-            }
-        }
-
-        private static void onWriteDone(Flow.@Nullable Subscription subscription, AsyncResult<Void> ar, RoutingContext rc) {
-            if (ar.failed()) {
-                rc.fail(ar.cause());
-            } else if (subscription != null) {
-                subscription.request(1);
-            }
-        }
-
-        private static void write(Multi<Buffer> multi, RoutingContext rc) {
+        /**
+         * Write SSE-formatted strings to HTTP response.
+         *
+         * @param sseStrings Multi stream of SSE-formatted strings (from SseFormatter)
+         * @param rc         Vert.x routing context
+         * @param context    A2A server call context (for EventConsumer cancellation)
+         */
+        public static void writeSseStrings(Multi<String> sseStrings, RoutingContext rc, ServerCallContext context) {
             HttpServerResponse response = rc.response();
-            multi.subscribe().withSubscriber(new Flow.Subscriber<Buffer>() {
+
+            sseStrings.subscribe().withSubscriber(new Flow.Subscriber<String>() {
                 Flow.@Nullable Subscription upstream;
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
                     this.upstream = subscription;
                     this.upstream.request(1);
+
+                    // Detect client disconnect and call EventConsumer.cancel() directly
+                    response.closeHandler(v -> {
+                        logger.debug("REST SSE connection closed by client, calling EventConsumer.cancel() to stop polling loop");
+                        context.invokeEventConsumerCancelCallback();
+                        subscription.cancel();
+                    });
 
                     // Notify tests that we are subscribed
                     Runnable runnable = streamingMultiSseSupportSubscribedRunnable;
@@ -493,53 +504,64 @@ public class A2AServerRoutes {
                 }
 
                 @Override
-                public void onNext(Buffer item) {
-                    initialize(response);
-                    response.write(item, new Handler<AsyncResult<Void>>() {
+                public void onNext(String sseEvent) {
+                    // Set SSE headers on first event
+                    if (response.bytesWritten() == 0) {
+                        MultiMap headers = response.headers();
+                        if (headers.get(CONTENT_TYPE) == null) {
+                            headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
+                        }
+                        // Additional SSE headers to prevent buffering
+                        headers.set("Cache-Control", "no-cache");
+                        headers.set("X-Accel-Buffering", "no");  // Disable nginx buffering
+                        response.setChunked(true);
+
+                        // CRITICAL: Disable write queue max size to prevent buffering
+                        // Vert.x buffers writes by default - we need immediate flushing for SSE
+                        response.setWriteQueueMaxSize(1);  // Force immediate flush
+
+                        // Send initial SSE comment to kickstart the stream
+                        // This forces Vert.x to send headers and start the stream immediately
+                        response.write(": SSE stream started\n\n");
+                    }
+
+                    // Write SSE-formatted string to response
+                    response.write(Buffer.buffer(sseEvent), new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> ar) {
-                            onWriteDone(upstream, ar, rc);
+                            if (ar.failed()) {
+                                // Client disconnected or write failed - cancel upstream to stop EventConsumer
+                                // NullAway: upstream is guaranteed non-null after onSubscribe
+                                java.util.Objects.requireNonNull(upstream).cancel();
+                                rc.fail(ar.cause());
+                            } else {
+                                // NullAway: upstream is guaranteed non-null after onSubscribe
+                                java.util.Objects.requireNonNull(upstream).request(1);
+                            }
                         }
                     });
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
+                    // Cancel upstream to stop EventConsumer when error occurs
+                    // NullAway: upstream is guaranteed non-null after onSubscribe
+                    java.util.Objects.requireNonNull(upstream).cancel();
                     rc.fail(throwable);
                 }
 
                 @Override
                 public void onComplete() {
-                    endOfStream(response);
+                    if (response.bytesWritten() == 0) {
+                        // No events written - still set SSE content type
+                        MultiMap headers = response.headers();
+                        if (headers.get(CONTENT_TYPE) == null) {
+                            headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
+                        }
+                    }
+                    response.end();
                 }
             });
-        }
-
-        private static void subscribeObject(Multi<Object> multi, RoutingContext rc) {
-            AtomicLong count = new AtomicLong();
-            write(multi.map(new Function<Object, Buffer>() {
-                @Override
-                public Buffer apply(Object o) {
-                    if (o instanceof ReactiveRoutes.ServerSentEvent) {
-                        ReactiveRoutes.ServerSentEvent<?> ev = (ReactiveRoutes.ServerSentEvent<?>) o;
-                        long id = ev.id() != -1 ? ev.id() : count.getAndIncrement();
-                        String e = ev.event() == null ? "" : "event: " + ev.event() + "\n";
-                        return Buffer.buffer(e + "data: " + ev.data() + "\nid: " + id + "\n\n");
-                    } else {
-                        return Buffer.buffer("data: " + o + "\nid: " + count.getAndIncrement() + "\n\n");
-                    }
-                }
-            }), rc);
-        }
-
-        private static void endOfStream(HttpServerResponse response) {
-            if (response.bytesWritten() == 0) { // No item
-                MultiMap headers = response.headers();
-                if (headers.get(CONTENT_TYPE) == null) {
-                    headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
-                }
-            }
-            response.end();
         }
     }
 

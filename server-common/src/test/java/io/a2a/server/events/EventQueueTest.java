@@ -11,7 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import io.a2a.server.tasks.InMemoryTaskStore;
+import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Event;
@@ -23,12 +27,17 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class EventQueueTest {
 
     private EventQueue eventQueue;
+    private MainEventBus mainEventBus;
+    private MainEventBusProcessor mainEventBusProcessor;
+
+    private static final String TASK_ID = "123";  // Must match MINIMAL_TASK id
 
     private static final String MINIMAL_TASK = """
             {
@@ -46,38 +55,96 @@ public class EventQueueTest {
             }
             """;
 
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
 
     @BeforeEach
     public void init() {
-        eventQueue = EventQueue.builder().build();
+        // Set up MainEventBus and processor for production-like test environment
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        mainEventBus = new MainEventBus();
+        InMemoryQueueManager queueManager = new InMemoryQueueManager(taskStore, mainEventBus);
+        mainEventBusProcessor = new MainEventBusProcessor(mainEventBus, taskStore, NOOP_PUSHNOTIFICATION_SENDER, queueManager);
+        EventQueueUtil.start(mainEventBusProcessor);
 
+        eventQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(TASK_ID)
+                .mainEventBus(mainEventBus)
+                .build().tap();
+    }
+
+    @AfterEach
+    public void cleanup() {
+        if (mainEventBusProcessor != null) {
+            mainEventBusProcessor.setCallback(null);  // Clear any test callbacks
+            EventQueueUtil.stop(mainEventBusProcessor);
+        }
+    }
+
+    /**
+     * Helper to create a queue with MainEventBus configured (for tests that need event distribution).
+     */
+    private EventQueue createQueueWithEventBus(String taskId) {
+        return EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(taskId)
+                .build();
+    }
+
+    /**
+     * Helper to wait for MainEventBusProcessor to process an event.
+     * Replaces polling patterns with deterministic callback-based waiting.
+     *
+     * @param action the action that triggers event processing
+     * @throws InterruptedException if waiting is interrupted
+     * @throws AssertionError if processing doesn't complete within timeout
+     */
+    private void waitForEventProcessing(Runnable action) throws InterruptedException {
+        CountDownLatch processingLatch = new CountDownLatch(1);
+        mainEventBusProcessor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, io.a2a.spec.Event event) {
+                processingLatch.countDown();
+            }
+
+            @Override
+            public void onTaskFinalized(String taskId) {
+                // Not needed for basic event processing wait
+            }
+        });
+
+        try {
+            action.run();
+            assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+                    "MainEventBusProcessor should have processed the event within timeout");
+        } finally {
+            mainEventBusProcessor.setCallback(null);
+        }
     }
 
     @Test
     public void testConstructorDefaultQueueSize() {
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
         assertEquals(EventQueue.DEFAULT_QUEUE_SIZE, queue.getQueueSize());
     }
 
     @Test
     public void testConstructorCustomQueueSize() {
         int customSize = 500;
-        EventQueue queue = EventQueue.builder().queueSize(customSize).build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(customSize).build();
         assertEquals(customSize, queue.getQueueSize());
     }
 
     @Test
     public void testConstructorInvalidQueueSize() {
         // Test zero queue size
-        assertThrows(IllegalArgumentException.class, () -> EventQueue.builder().queueSize(0).build());
+        assertThrows(IllegalArgumentException.class, () -> EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(0).build());
 
         // Test negative queue size
-        assertThrows(IllegalArgumentException.class, () -> EventQueue.builder().queueSize(-10).build());
+        assertThrows(IllegalArgumentException.class, () -> EventQueueUtil.getEventQueueBuilder(mainEventBus).queueSize(-10).build());
     }
 
     @Test
     public void testTapCreatesChildQueue() {
-        EventQueue parentQueue = EventQueue.builder().build();
+        EventQueue parentQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
         EventQueue childQueue = parentQueue.tap();
 
         assertNotNull(childQueue);
@@ -87,7 +154,7 @@ public class EventQueueTest {
 
     @Test
     public void testTapOnChildQueueThrowsException() {
-        EventQueue parentQueue = EventQueue.builder().build();
+        EventQueue parentQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
         EventQueue childQueue = parentQueue.tap();
 
         assertThrows(IllegalStateException.class, () -> childQueue.tap());
@@ -95,69 +162,74 @@ public class EventQueueTest {
 
     @Test
     public void testEnqueueEventPropagagesToChildren() throws Exception {
-        EventQueue parentQueue = EventQueue.builder().build();
-        EventQueue childQueue = parentQueue.tap();
+        EventQueue mainQueue = createQueueWithEventBus(TASK_ID);
+        EventQueue childQueue1 = mainQueue.tap();
+        EventQueue childQueue2 = mainQueue.tap();
 
         Event event = fromJson(MINIMAL_TASK, Task.class);
-        parentQueue.enqueueEvent(event);
+        mainQueue.enqueueEvent(event);
 
-        // Event should be available in both parent and child queues
-        Event parentEvent = parentQueue.dequeueEventItem(-1).getEvent();
-        Event childEvent = childQueue.dequeueEventItem(-1).getEvent();
+        // Event should be available in all child queues
+        // Note: MainEventBusProcessor runs async, so we use dequeueEventItem with timeout
+        Event child1Event = childQueue1.dequeueEventItem(5000).getEvent();
+        Event child2Event = childQueue2.dequeueEventItem(5000).getEvent();
 
-        assertSame(event, parentEvent);
-        assertSame(event, childEvent);
+        assertSame(event, child1Event);
+        assertSame(event, child2Event);
     }
 
     @Test
     public void testMultipleChildQueuesReceiveEvents() throws Exception {
-        EventQueue parentQueue = EventQueue.builder().build();
-        EventQueue childQueue1 = parentQueue.tap();
-        EventQueue childQueue2 = parentQueue.tap();
+        EventQueue mainQueue = createQueueWithEventBus(TASK_ID);
+        EventQueue childQueue1 = mainQueue.tap();
+        EventQueue childQueue2 = mainQueue.tap();
+        EventQueue childQueue3 = mainQueue.tap();
 
         Event event1 = fromJson(MINIMAL_TASK, Task.class);
         Event event2 = fromJson(MESSAGE_PAYLOAD, Message.class);
 
-        parentQueue.enqueueEvent(event1);
-        parentQueue.enqueueEvent(event2);
+        mainQueue.enqueueEvent(event1);
+        mainQueue.enqueueEvent(event2);
 
-        // All queues should receive both events
-        assertSame(event1, parentQueue.dequeueEventItem(-1).getEvent());
-        assertSame(event2, parentQueue.dequeueEventItem(-1).getEvent());
+        // All child queues should receive both events
+        // Note: Use timeout for async processing
+        assertSame(event1, childQueue1.dequeueEventItem(5000).getEvent());
+        assertSame(event2, childQueue1.dequeueEventItem(5000).getEvent());
 
-        assertSame(event1, childQueue1.dequeueEventItem(-1).getEvent());
-        assertSame(event2, childQueue1.dequeueEventItem(-1).getEvent());
+        assertSame(event1, childQueue2.dequeueEventItem(5000).getEvent());
+        assertSame(event2, childQueue2.dequeueEventItem(5000).getEvent());
 
-        assertSame(event1, childQueue2.dequeueEventItem(-1).getEvent());
-        assertSame(event2, childQueue2.dequeueEventItem(-1).getEvent());
+        assertSame(event1, childQueue3.dequeueEventItem(5000).getEvent());
+        assertSame(event2, childQueue3.dequeueEventItem(5000).getEvent());
     }
 
     @Test
     public void testChildQueueDequeueIndependently() throws Exception {
-        EventQueue parentQueue = EventQueue.builder().build();
-        EventQueue childQueue1 = parentQueue.tap();
-        EventQueue childQueue2 = parentQueue.tap();
+        EventQueue mainQueue = createQueueWithEventBus(TASK_ID);
+        EventQueue childQueue1 = mainQueue.tap();
+        EventQueue childQueue2 = mainQueue.tap();
+        EventQueue childQueue3 = mainQueue.tap();
 
         Event event = fromJson(MINIMAL_TASK, Task.class);
-        parentQueue.enqueueEvent(event);
+        mainQueue.enqueueEvent(event);
 
-        // Dequeue from child1 first
-        Event child1Event = childQueue1.dequeueEventItem(-1).getEvent();
+        // Dequeue from child1 first (use timeout for async processing)
+        Event child1Event = childQueue1.dequeueEventItem(5000).getEvent();
         assertSame(event, child1Event);
 
         // child2 should still have the event available
-        Event child2Event = childQueue2.dequeueEventItem(-1).getEvent();
+        Event child2Event = childQueue2.dequeueEventItem(5000).getEvent();
         assertSame(event, child2Event);
 
-        // Parent should still have the event available
-        Event parentEvent = parentQueue.dequeueEventItem(-1).getEvent();
-        assertSame(event, parentEvent);
+        // child3 should still have the event available
+        Event child3Event = childQueue3.dequeueEventItem(5000).getEvent();
+        assertSame(event, child3Event);
     }
 
 
     @Test
     public void testCloseImmediatePropagationToChildren() throws Exception {
-        EventQueue parentQueue = EventQueue.builder().build();
+        EventQueue parentQueue = createQueueWithEventBus(TASK_ID);
         EventQueue childQueue = parentQueue.tap();
 
         // Add events to both parent and child
@@ -166,7 +238,7 @@ public class EventQueueTest {
 
         assertFalse(childQueue.isClosed());
         try {
-            assertNotNull(childQueue.dequeueEventItem(-1)); // Child has the event
+            assertNotNull(childQueue.dequeueEventItem(5000)); // Child has the event (use timeout)
         } catch (EventQueueClosedException e) {
             // This is fine if queue closed before dequeue
         }
@@ -187,27 +259,37 @@ public class EventQueueTest {
 
     @Test
     public void testEnqueueEventWhenClosed() throws Exception {
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(TASK_ID)
+                .build();
+        EventQueue childQueue = mainQueue.tap();
         Event event = fromJson(MINIMAL_TASK, Task.class);
 
-        queue.close(); // Close the queue first
-        assertTrue(queue.isClosed());
+        childQueue.close(); // Close the child queue first (removes from children list)
+        assertTrue(childQueue.isClosed());
+
+        // Create a new child queue BEFORE enqueuing (ensures it's in children list for distribution)
+        EventQueue newChildQueue = mainQueue.tap();
 
         // MainQueue accepts events even when closed (for replication support)
         // This ensures late-arriving replicated events can be enqueued to closed queues
-        queue.enqueueEvent(event);
+        // Note: MainEventBusProcessor runs asynchronously, so we use dequeueEventItem with timeout
+        mainQueue.enqueueEvent(event);
 
-        // Event should be available for dequeuing
-        Event dequeuedEvent = queue.dequeueEventItem(-1).getEvent();
+        // New child queue should receive the event (old closed child was removed from children list)
+        EventQueueItem item = newChildQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event dequeuedEvent = item.getEvent();
         assertSame(event, dequeuedEvent);
 
-        // Now queue is closed and empty, should throw exception
-        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEventItem(-1));
+        // Now new child queue is closed and empty, should throw exception
+        newChildQueue.close();
+        assertThrows(EventQueueClosedException.class, () -> newChildQueue.dequeueEventItem(-1));
     }
 
     @Test
     public void testDequeueEventWhenClosedAndEmpty() throws Exception {
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build().tap();
         queue.close();
         assertTrue(queue.isClosed());
 
@@ -217,19 +299,27 @@ public class EventQueueTest {
 
     @Test
     public void testDequeueEventWhenClosedButHasEvents() throws Exception {
-        EventQueue queue = EventQueue.builder().build();
+        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
+                .taskId(TASK_ID)
+                .build();
+        EventQueue childQueue = mainQueue.tap();
         Event event = fromJson(MINIMAL_TASK, Task.class);
-        queue.enqueueEvent(event);
 
-        queue.close(); // Graceful close - events should remain
-        assertTrue(queue.isClosed());
+        // Use callback to wait for event processing instead of polling
+        waitForEventProcessing(() -> mainQueue.enqueueEvent(event));
 
-        // Should still be able to dequeue existing events
-        Event dequeuedEvent = queue.dequeueEventItem(-1).getEvent();
+        // At this point, event has been processed and distributed to childQueue
+        childQueue.close(); // Graceful close - events should remain
+        assertTrue(childQueue.isClosed());
+
+        // Should still be able to dequeue existing events from closed queue
+        EventQueueItem item = childQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event dequeuedEvent = item.getEvent();
         assertSame(event, dequeuedEvent);
 
         // Now queue is closed and empty, should throw exception
-        assertThrows(EventQueueClosedException.class, () -> queue.dequeueEventItem(-1));
+        assertThrows(EventQueueClosedException.class, () -> childQueue.dequeueEventItem(-1));
     }
 
     @Test
@@ -244,7 +334,9 @@ public class EventQueueTest {
     public void testDequeueEventNoWait() throws Exception {
         Event event = fromJson(MINIMAL_TASK, Task.class);
         eventQueue.enqueueEvent(event);
-        Event dequeuedEvent = eventQueue.dequeueEventItem(-1).getEvent();
+        EventQueueItem item = eventQueue.dequeueEventItem(5000);
+        assertNotNull(item);
+        Event dequeuedEvent = item.getEvent();
         assertSame(event, dequeuedEvent);
     }
 
@@ -257,7 +349,7 @@ public class EventQueueTest {
     @Test
     public void testDequeueEventWait() throws Exception {
         Event event = TaskStatusUpdateEvent.builder()
-                .taskId("task-123")
+                .taskId(TASK_ID)
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.WORKING))
                 .isFinal(true)
@@ -271,7 +363,7 @@ public class EventQueueTest {
     @Test
     public void testTaskDone() throws Exception {
         Event event = TaskArtifactUpdateEvent.builder()
-                .taskId("task-123")
+                .taskId(TASK_ID)
                 .contextId("session-xyz")
                 .artifact(Artifact.builder()
                         .artifactId("11")
@@ -347,7 +439,7 @@ public class EventQueueTest {
         assertTrue(eventQueue.isClosed());
 
         // Test with immediate close as well
-        EventQueue eventQueue2 = EventQueue.builder().build();
+        EventQueue eventQueue2 = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
         eventQueue2.close(true);
         assertTrue(eventQueue2.isClosed());
 
@@ -361,19 +453,20 @@ public class EventQueueTest {
      */
     @Test
     public void testCloseChildQueues() throws Exception {
-        EventQueue childQueue = eventQueue.tap();
+        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
+        EventQueue childQueue = mainQueue.tap();
         assertTrue(childQueue != null);
 
         // Graceful close - parent closes but children remain open
-        eventQueue.close();
-        assertTrue(eventQueue.isClosed());
+        mainQueue.close();
+        assertTrue(mainQueue.isClosed());
         assertFalse(childQueue.isClosed());  // Child NOT closed on graceful parent close
 
         // Immediate close - parent force-closes all children
-        EventQueue parentQueue2 = EventQueue.builder().build();
-        EventQueue childQueue2 = parentQueue2.tap();
-        parentQueue2.close(true);  // immediate=true
-        assertTrue(parentQueue2.isClosed());
+        EventQueue mainQueue2 = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
+        EventQueue childQueue2 = mainQueue2.tap();
+        mainQueue2.close(true);  // immediate=true
+        assertTrue(mainQueue2.isClosed());
         assertTrue(childQueue2.isClosed());  // Child IS closed on immediate parent close
     }
 
@@ -383,7 +476,7 @@ public class EventQueueTest {
      */
     @Test
     public void testMainQueueReferenceCountingStaysOpenWithActiveChildren() throws Exception {
-        EventQueue mainQueue = EventQueue.builder().build();
+        EventQueue mainQueue = EventQueueUtil.getEventQueueBuilder(mainEventBus).build();
         EventQueue child1 = mainQueue.tap();
         EventQueue child2 = mainQueue.tap();
 

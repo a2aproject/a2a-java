@@ -164,4 +164,45 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
                     taskId, configId);
         }
     }
+
+    @Transactional
+    @Override
+    public void switchKey(String oldTaskId, String newTaskId) {
+        LOGGER.debug("Switching PushNotificationConfigs from Task '{}' to Task '{}'", oldTaskId, newTaskId);
+
+        // Find all configs for the old task ID
+        TypedQuery<JpaPushNotificationConfig> query = em.createQuery(
+                "SELECT c FROM JpaPushNotificationConfig c WHERE c.id.taskId = :taskId",
+                JpaPushNotificationConfig.class);
+        query.setParameter("taskId", oldTaskId);
+        List<JpaPushNotificationConfig> configs = query.getResultList();
+
+        if (configs.isEmpty()) {
+            LOGGER.debug("No PushNotificationConfigs found for Task '{}', nothing to switch", oldTaskId);
+            return;
+        }
+
+        // For each config, create a new entity with the new task ID and remove the old one
+        for (JpaPushNotificationConfig oldConfig : configs) {
+            try {
+                // Create new config with new task ID
+                JpaPushNotificationConfig newConfig = JpaPushNotificationConfig.createFromConfig(
+                        newTaskId, oldConfig.getConfig());
+
+                // Remove old config and persist new one
+                em.remove(oldConfig);
+                em.persist(newConfig);
+
+                LOGGER.debug("Switched PushNotificationConfig ID '{}' from Task '{}' to Task '{}'",
+                        oldConfig.getId().getConfigId(), oldTaskId, newTaskId);
+            } catch (JsonProcessingException e) {
+                LOGGER.error("Failed to switch PushNotificationConfig ID '{}' from Task '{}' to Task '{}'",
+                        oldConfig.getId().getConfigId(), oldTaskId, newTaskId, e);
+                throw new RuntimeException("Failed to switch PushNotificationConfig", e);
+            }
+        }
+
+        LOGGER.debug("Successfully switched {} PushNotificationConfigs from Task '{}' to Task '{}'",
+                configs.size(), oldTaskId, newTaskId);
+    }
 }

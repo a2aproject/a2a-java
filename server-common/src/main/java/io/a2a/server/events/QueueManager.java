@@ -97,6 +97,25 @@ public interface QueueManager {
     void add(String taskId, EventQueue queue);
 
     /**
+     * Switches a queue from an old key to a new key atomically.
+     * <p>
+     * Used when transitioning from a temporary task ID (e.g., "temp-UUID") to the real task ID
+     * when the Task event arrives with the actual task.id. This prevents duplicate map entries
+     * and ensures clean queue lifecycle management.
+     * </p>
+     * <p>
+     * The operation is atomic: removes the old key and adds the new key. If the new key already
+     * exists, the operation is rolled back by restoring the old key.
+     * </p>
+     *
+     * @param oldId the temporary/old task identifier to remove
+     * @param newId the real/new task identifier to add
+     * @throws IllegalStateException if no queue exists for oldId
+     * @throws TaskQueueExistsException if a queue already exists for newId
+     */
+    void switchKey(String oldId, String newId);
+
+    /**
      * Retrieves the MainQueue for a task, if it exists.
      * <p>
      * Returns the primary queue for the task. Does not create a new queue if none exists.
@@ -148,7 +167,24 @@ public interface QueueManager {
      * @param taskId the task identifier
      * @return a MainQueue (if new task) or ChildQueue (if tapping existing)
      */
-    EventQueue createOrTap(String taskId);
+    default EventQueue createOrTap(String taskId) {
+        return createOrTap(taskId, null);
+    }
+
+    /**
+     * Creates a MainQueue if none exists, or taps the existing queue to create a ChildQueue.
+     * <p>
+     * This is the primary method used by {@link io.a2a.server.requesthandlers.DefaultRequestHandler}:
+     * <ul>
+     *   <li><b>New task:</b> Creates and returns a MainQueue with tempId</li>
+     *   <li><b>Resubscription:</b> Taps existing MainQueue and returns a ChildQueue</li>
+     * </ul>
+     *
+     * @param taskId the task identifier (may be temporary)
+     * @param tempId the temporary task ID if taskId is temporary, null otherwise
+     * @return a MainQueue (if new task) or ChildQueue (if tapping existing)
+     */
+    EventQueue createOrTap(String taskId, @Nullable String tempId);
 
     /**
      * Waits for the queue's consumer polling to start.
@@ -177,7 +213,31 @@ public interface QueueManager {
      * @return a builder for creating event queues
      */
     default EventQueue.EventQueueBuilder getEventQueueBuilder(String taskId) {
-        return EventQueue.builder();
+        throw new UnsupportedOperationException(
+            "QueueManager implementations must override getEventQueueBuilder() to provide MainEventBus"
+        );
+    }
+
+    /**
+     * Creates a base EventQueueBuilder with standard configuration for this QueueManager.
+     * This method provides the foundation for creating event queues with proper configuration
+     * (MainEventBus, TaskStateProvider, cleanup callbacks, etc.).
+     * <p>
+     * QueueManager implementations that use custom factories can call this method directly
+     * to get the base builder without going through the factory (which could cause infinite
+     * recursion if the factory delegates back to getEventQueueBuilder()).
+     * </p>
+     * <p>
+     * Callers can then add additional configuration (hooks, callbacks) before building the queue.
+     * </p>
+     *
+     * @param taskId the task ID for the queue
+     * @return a builder with base configuration specific to this QueueManager implementation
+     */
+    default EventQueue.EventQueueBuilder createBaseEventQueueBuilder(String taskId) {
+        throw new UnsupportedOperationException(
+            "QueueManager implementations must override createBaseEventQueueBuilder() to provide MainEventBus"
+        );
     }
 
     /**

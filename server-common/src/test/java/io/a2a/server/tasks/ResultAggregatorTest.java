@@ -11,18 +11,25 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueue;
+import io.a2a.server.events.EventQueueUtil;
 import io.a2a.server.events.InMemoryQueueManager;
+import io.a2a.server.events.MainEventBus;
+import io.a2a.server.events.MainEventBusProcessor;
+import io.a2a.spec.Event;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TextPart;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -49,7 +56,7 @@ public class ResultAggregatorTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        aggregator = new ResultAggregator(mockTaskManager, null, testExecutor);
+        aggregator = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor);
     }
 
     // Helper methods for creating sample data
@@ -69,13 +76,45 @@ public class ResultAggregatorTest {
                 .build();
     }
 
+    /**
+     * Helper to wait for MainEventBusProcessor to process an event.
+     * Replaces polling patterns with deterministic callback-based waiting.
+     *
+     * @param processor the processor to set callback on
+     * @param action the action that triggers event processing
+     * @throws InterruptedException if waiting is interrupted
+     * @throws AssertionError if processing doesn't complete within timeout
+     */
+    private void waitForEventProcessing(MainEventBusProcessor processor, Runnable action) throws InterruptedException {
+        CountDownLatch processingLatch = new CountDownLatch(1);
+        processor.setCallback(new io.a2a.server.events.MainEventBusProcessorCallback() {
+            @Override
+            public void onEventProcessed(String taskId, Event event) {
+                processingLatch.countDown();
+            }
+
+            @Override
+            public void onTaskFinalized(String taskId) {
+                // Not needed for basic event processing wait
+            }
+        });
+
+        try {
+            action.run();
+            assertTrue(processingLatch.await(5, TimeUnit.SECONDS),
+                    "MainEventBusProcessor should have processed the event within timeout");
+        } finally {
+            processor.setCallback(null);
+        }
+    }
+
 
     // Basic functionality tests
 
     @Test
     void testConstructorWithMessage() {
         Message initialMessage = createSampleMessage("initial", "msg1", Message.Role.USER);
-        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, initialMessage, testExecutor);
+        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, initialMessage, testExecutor, testExecutor);
 
         // Test that the message is properly stored by checking getCurrentResult
         assertEquals(initialMessage, aggregatorWithMessage.getCurrentResult());
@@ -86,7 +125,7 @@ public class ResultAggregatorTest {
     @Test
     void testGetCurrentResultWithMessageSet() {
         Message sampleMessage = createSampleMessage("hola", "msg1", Message.Role.USER);
-        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, sampleMessage, testExecutor);
+        ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, sampleMessage, testExecutor, testExecutor);
 
         EventKind result = aggregatorWithMessage.getCurrentResult();
 
@@ -121,7 +160,7 @@ public class ResultAggregatorTest {
 
     @Test
     void testConstructorWithNullMessage() {
-        ResultAggregator aggregatorWithNullMessage = new ResultAggregator(mockTaskManager, null, testExecutor);
+        ResultAggregator aggregatorWithNullMessage = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor);
         Task expectedTask = createSampleTask("null_msg_task", TaskState.WORKING, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
@@ -181,7 +220,7 @@ public class ResultAggregatorTest {
     void testGetCurrentResultWithMessageTakesPrecedence() {
         // Test that when both message and task are available, message takes precedence
         Message message = createSampleMessage("priority message", "pri1", Message.Role.USER);
-        ResultAggregator messageAggregator = new ResultAggregator(mockTaskManager, message, testExecutor);
+        ResultAggregator messageAggregator = new ResultAggregator(mockTaskManager, message, testExecutor, testExecutor);
 
         // Even if we set up the task manager to return something, message should take precedence
         Task task = createSampleTask("should_not_be_returned", TaskState.WORKING, "ctx1");
@@ -197,17 +236,24 @@ public class ResultAggregatorTest {
     @Test
     void testConsumeAndBreakNonBlocking() throws Exception {
         // Test that with blocking=false, the method returns after the first event
-        Task firstEvent = createSampleTask("non_blocking_task", TaskState.WORKING, "ctx1");
+        String taskId = "test-task";
+        Task firstEvent = createSampleTask(taskId, TaskState.WORKING, "ctx1");
 
         // After processing firstEvent, the current result will be that task
         when(mockTaskManager.getTask()).thenReturn(firstEvent);
 
         // Create an event queue using QueueManager (which has access to builder)
+        MainEventBus mainEventBus = new MainEventBus();
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
-            new InMemoryQueueManager(new MockTaskStateProvider());
+            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        EventQueueUtil.start(processor);
 
-        EventQueue queue = queueManager.getEventQueueBuilder("test-task").build();
-        queue.enqueueEvent(firstEvent);
+        EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
+
+        // Use callback to wait for event processing (replaces polling)
+        waitForEventProcessing(processor, () -> queue.enqueueEvent(firstEvent));
 
         // Create real EventConsumer with the queue
         EventConsumer eventConsumer =
@@ -221,11 +267,16 @@ public class ResultAggregatorTest {
 
         assertEquals(firstEvent, result.eventType());
         assertTrue(result.interrupted());
-        verify(mockTaskManager).process(firstEvent);
-        // getTask() is called at least once for the return value (line 255)
-        // May be called once more if debug logging executes in time (line 209)
-        // The async consumer may or may not execute before verification, so we accept 1-2 calls
-        verify(mockTaskManager, atLeast(1)).getTask();
-        verify(mockTaskManager, atMost(2)).getTask();
+        // NOTE: ResultAggregator no longer calls taskManager.process()
+        // That responsibility has moved to MainEventBusProcessor for centralized persistence
+        //
+        // NOTE: Since firstEvent is a Task, ResultAggregator captures it directly from the queue
+        // (capturedTask.get() at line 283 in ResultAggregator). Therefore, taskManager.getTask()
+        // is only called for debug logging in taskIdForLogging() (line 305), which may or may not
+        // execute depending on timing and log level. We expect 0-1 calls, not 1-2.
+        verify(mockTaskManager, atMost(1)).getTask();
+
+        // Cleanup: stop the processor
+        EventQueueUtil.stop(processor);
     }
 }
