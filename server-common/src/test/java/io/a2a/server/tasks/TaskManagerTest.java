@@ -190,6 +190,7 @@ public class TaskManagerTest {
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("existing content")))
+                .metadata(Map.of("key1", "value1"))
                 .build();
         Task taskWithArtifact = Task.builder(initialTask)
                 .artifacts(Collections.singletonList(existingArtifact))
@@ -201,6 +202,7 @@ public class TaskManagerTest {
                 .artifactId("artifact-id")
                 .name("artifact-1")
                 .parts(Collections.singletonList(new TextPart("new content")))
+                .metadata(Map.of("key2", "value2"))
                 .build();
         TaskArtifactUpdateEvent event = TaskArtifactUpdateEvent.builder()
                 .taskId(minimalTask.id())
@@ -217,6 +219,9 @@ public class TaskManagerTest {
         assertEquals(2, updatedArtifact.parts().size());
         assertEquals("existing content", ((TextPart) updatedArtifact.parts().get(0)).text());
         assertEquals("new content", ((TextPart) updatedArtifact.parts().get(1)).text());
+
+        assertEquals("value1", updatedArtifact.metadata().get("key1"));
+        assertEquals("value2", updatedArtifact.metadata().get("key2"));
     }
 
     @Test
