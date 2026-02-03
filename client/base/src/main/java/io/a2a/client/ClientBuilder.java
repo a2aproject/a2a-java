@@ -98,7 +98,7 @@ public class ClientBuilder {
     private static final Map<Class<? extends ClientTransport>, String> transportProtocolMapping = new HashMap<>();
 
     static {
-        ServiceLoader<ClientTransportProvider> loader = ServiceLoader.load(ClientTransportProvider.class);
+        ServiceLoader<ClientTransportProvider> loader = ServiceLoader.load(ClientTransportProvider.class, ClientBuilder.class.getClassLoader());
         for (ClientTransportProvider<?, ?> transport : loader) {
             transportProviderRegistry.put(transport.getTransportProtocol(), transport);
             transportProtocolMapping.put(transport.getTransportProtocolClass(), transport.getTransportProtocol());
