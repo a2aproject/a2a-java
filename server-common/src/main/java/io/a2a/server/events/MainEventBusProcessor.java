@@ -176,12 +176,12 @@ public class MainEventBusProcessor implements Runnable {
                     taskId, event.getClass().getSimpleName());
 
         Event eventToDistribute = null;
+        boolean isReplicated = context.eventQueueItem().isReplicated();
         try {
             // Step 1: Update TaskStore FIRST (persistence before clients see it)
             // If this throws, we distribute an error to ensure "persist before client visibility"
 
             try {
-                boolean isReplicated = context.eventQueueItem().isReplicated();
                 boolean isFinal = updateTaskStore(taskId, event, isReplicated);
 
                 eventToDistribute = event; // Success - distribute original event
@@ -209,8 +209,9 @@ public class MainEventBusProcessor implements Runnable {
                 eventToDistribute = new InternalError(errorMessage);
             }
 
-            // Step 2: Send push notification AFTER successful persistence
-            if (eventToDistribute == event) {
+            // Step 2: Send push notification AFTER successful persistence (only from active node)
+            // Skip push notifications for replicated events to avoid duplicate notifications in multi-instance deployments
+            if (eventToDistribute == event && !isReplicated) {
                 // Capture task state immediately after persistence, before going async
                 // This ensures we send the task as it existed when THIS event was processed,
                 // not whatever state might exist later when the async callback executes
