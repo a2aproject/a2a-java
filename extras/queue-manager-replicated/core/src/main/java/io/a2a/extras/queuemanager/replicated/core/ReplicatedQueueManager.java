@@ -131,7 +131,14 @@ public class ReplicatedQueueManager implements QueueManager {
             }
         } finally {
             if (childQueue != null) {
-                childQueue.close();  // Close the ChildQueue we created (not MainQueue!)
+                try {
+                    childQueue.close();  // Close the ChildQueue we created (not MainQueue!)
+                } catch (Exception ignore) {
+                    // The close is safe, but print a stacktrace just in case
+                    if (LOGGER.isDebugEnabled()) {
+                        ignore.printStackTrace();
+                    }
+                }
             }
         }
     }
