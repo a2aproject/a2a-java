@@ -1426,8 +1426,17 @@ public abstract class AbstractA2AServerTest {
             }
         };
 
+        // Wait for streaming subscription to be established before sending message
+        CountDownLatch streamSubscriptionLatch = new CountDownLatch(1);
+        awaitStreamingSubscription()
+                .whenComplete((unused, throwable) -> streamSubscriptionLatch.countDown());
+
         // Streaming message adds artifact-2 and completes task
         getClient().sendMessage(message2, List.of(streamConsumer), null);
+
+        // Ensure subscription is established before agent sends events
+        assertTrue(streamSubscriptionLatch.await(15, TimeUnit.SECONDS),
+                "Stream subscription should be established");
 
         // 4. Verify both consumers received artifact-2 and completion
         assertTrue(resubEventLatch.await(10, TimeUnit.SECONDS));
