@@ -1512,9 +1512,17 @@ public abstract class AbstractA2AServerTest {
             AtomicBoolean initialUnexpectedEvent = new AtomicBoolean(false);
 
             BiConsumer<ClientEvent, AgentCard> initialConsumer = (event, agentCard) -> {
+                // Idempotency guard: prevent late events from modifying state after latch countdown
+                if (initialLatch.getCount() == 0) {
+                    return;
+                }
                 if (event instanceof TaskEvent te) {
-                    initialState.set(te.getTask().status().state());
-                    initialLatch.countDown();
+                    TaskState state = te.getTask().status().state();
+                    initialState.set(state);
+                    // Only count down when we receive INPUT_REQUIRED, not intermediate states like WORKING
+                    if (state == TaskState.INPUT_REQUIRED) {
+                        initialLatch.countDown();
+                    }
                 } else {
                     initialUnexpectedEvent.set(true);
                 }
@@ -1538,9 +1546,17 @@ public abstract class AbstractA2AServerTest {
             AtomicBoolean completionUnexpectedEvent = new AtomicBoolean(false);
 
             BiConsumer<ClientEvent, AgentCard> completionConsumer = (event, agentCard) -> {
+                // Idempotency guard: prevent late events from modifying state after latch countdown
+                if (completionLatch.getCount() == 0) {
+                    return;
+                }
                 if (event instanceof TaskEvent te) {
-                    completedState.set(te.getTask().status().state());
-                    completionLatch.countDown();
+                    TaskState state = te.getTask().status().state();
+                    completedState.set(state);
+                    // Only count down when we receive COMPLETED, not intermediate states like WORKING
+                    if (state == TaskState.COMPLETED) {
+                        completionLatch.countDown();
+                    }
                 } else {
                     completionUnexpectedEvent.set(true);
                 }
