@@ -52,4 +52,5 @@ nbactions.xml
 # Private Claude config
 .claude/
 .serena/
+.bob/
 claudedocs

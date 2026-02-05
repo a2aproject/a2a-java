@@ -31,7 +31,7 @@ import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.client.http.A2AHttpResponse;
-import io.a2a.client.transport.rest.sse.RestSSEEventListener;
+import io.a2a.client.transport.rest.sse.SSEEventListener;
 import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
@@ -110,7 +110,7 @@ public class RestTransport implements ClientTransport {
         io.a2a.grpc.SendMessageRequest.Builder builder = io.a2a.grpc.SendMessageRequest.newBuilder(ProtoUtils.ToProto.sendMessageRequest(messageSendParams));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SEND_STREAMING_MESSAGE_METHOD, builder, agentCard, context);
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
-        RestSSEEventListener sseEventListener = new RestSSEEventListener(eventConsumer, errorConsumer);
+        SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
         try {
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(Utils.buildBaseUrl(agentInterface, messageSendParams.tenant()) + "/message:stream", payloadAndHeaders);
             ref.set(postBuilder.postAsyncSSE(
@@ -395,7 +395,7 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SUBSCRIBE_TO_TASK_METHOD, builder,
                 agentCard, context);
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();
-        RestSSEEventListener sseEventListener = new RestSSEEventListener(eventConsumer, errorConsumer);
+        SSEEventListener sseEventListener = new SSEEventListener(eventConsumer, errorConsumer);
         try {
             String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s:subscribe", request.id());
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders);
