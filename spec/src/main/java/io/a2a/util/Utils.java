@@ -132,17 +132,20 @@ public class Utils {
             List<Part<?>> parts = new ArrayList<>(existingArtifact.parts());
             parts.addAll(newArtifact.parts());
 
-            Map<String, Object> metadata = new HashMap<>();
-            if (existingArtifact.metadata() != null) {
-                metadata.putAll(existingArtifact.metadata());
-            }
-            if (newArtifact.metadata() != null) {
-                metadata.putAll(newArtifact.metadata());
+            Map<String, Object> mergedMetadata = null;
+            if (existingArtifact.metadata() != null || newArtifact.metadata() != null) {
+                mergedMetadata = new HashMap<>();
+                if (existingArtifact.metadata() != null) {
+                    mergedMetadata.putAll(existingArtifact.metadata());
+                }
+                if (newArtifact.metadata() != null) {
+                    mergedMetadata.putAll(newArtifact.metadata());
+                }
             }
 
             Artifact updated = Artifact.builder(existingArtifact)
                     .parts(parts)
-                    .metadata(metadata)
+                    .metadata(mergedMetadata)
                     .build();
             artifacts.set(existingArtifactIndex, updated);
         } else {
