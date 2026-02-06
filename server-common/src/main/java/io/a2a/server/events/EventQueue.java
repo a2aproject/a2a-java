@@ -662,6 +662,10 @@ public abstract class EventQueue implements AutoCloseable {
         @Override
         @Nullable
         public EventQueueItem dequeueEventItem(int waitMilliSeconds) throws EventQueueClosedException {
+            // CRITICAL: Signal polling started BEFORE any early returns
+            // This ensures awaitQueuePollerStart() unblocks even if queue is already closed
+            signalQueuePollerStarted();
+
             // For immediate close: exit immediately even if queue is not empty (race with MainEventBusProcessor)
             // For graceful close: only exit when queue is empty (wait for all events to be consumed)
             // BUT: if awaiting final event, keep polling even if closed and empty
@@ -672,32 +676,28 @@ public abstract class EventQueue implements AutoCloseable {
                         queue.size());
                 throw new EventQueueClosedException();
             }
+            if (waitMilliSeconds <= 0) {
+                EventQueueItem item = queue.poll();
+                if (item != null) {
+                    Event event = item.getEvent();
+                    LOGGER.debug("Dequeued event item (no wait) {} {}", this, event instanceof Throwable ? event.toString() : event);
+                }
+                return item;
+            }
             try {
-                if (waitMilliSeconds <= 0) {
-                    EventQueueItem item = queue.poll();
-                    if (item != null) {
-                        Event event = item.getEvent();
-                        LOGGER.debug("Dequeued event item (no wait) {} {}", this, event instanceof Throwable ? event.toString() : event);
-                    }
-                    return item;
+                LOGGER.trace("Polling ChildQueue {} (wait={}ms)", System.identityHashCode(this), waitMilliSeconds);
+                EventQueueItem item = queue.poll(waitMilliSeconds, TimeUnit.MILLISECONDS);
+                if (item != null) {
+                    Event event = item.getEvent();
+                    LOGGER.debug("Dequeued event item (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
+                } else {
+                    LOGGER.trace("Dequeue timeout (null) from ChildQueue {}", System.identityHashCode(this));
                 }
-                try {
-                    LOGGER.trace("Polling ChildQueue {} (wait={}ms)", System.identityHashCode(this), waitMilliSeconds);
-                    EventQueueItem item = queue.poll(waitMilliSeconds, TimeUnit.MILLISECONDS);
-                    if (item != null) {
-                        Event event = item.getEvent();
-                        LOGGER.debug("Dequeued event item (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
-                    } else {
-                        LOGGER.trace("Dequeue timeout (null) from ChildQueue {}", System.identityHashCode(this));
-                    }
-                    return item;
-                } catch (InterruptedException e) {
-                    LOGGER.debug("Interrupted dequeue (waiting) {}", this);
-                    Thread.currentThread().interrupt();
-                    return null;
-                }
-            } finally {
-                signalQueuePollerStarted();
+                return item;
+            } catch (InterruptedException e) {
+                LOGGER.debug("Interrupted dequeue (waiting) {}", this);
+                Thread.currentThread().interrupt();
+                return null;
             }
         }
 

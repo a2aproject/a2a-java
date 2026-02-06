@@ -30,7 +30,9 @@ import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
 import io.a2a.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.server.PublicAgentCard;
+import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.QueueClosedEvent;
+import io.a2a.server.events.QueueManager;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.Message;
@@ -46,6 +48,8 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Integration test for Kafka replication functionality.
@@ -53,6 +57,8 @@ import org.junit.jupiter.api.Test;
  */
 @QuarkusTest
 public class KafkaReplicationIntegrationTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaReplicationIntegrationTest.class);
 
     @Inject
     @PublicAgentCard
@@ -64,6 +70,9 @@ public class KafkaReplicationIntegrationTest {
     @Inject
     @Channel("replicated-events-out")
     Emitter<String> testEmitter;
+
+    @Inject
+    QueueManager queueManager;
 
     private Client streamingClient;
     private Client nonStreamingClient;
@@ -367,8 +376,11 @@ public class KafkaReplicationIntegrationTest {
         // Resubscribe to the task - this creates a streaming subscription
         streamingClient.resubscribe(new TaskIdParams(taskId), List.of(consumer), errorHandler);
 
-        // Wait a moment to ensure the streaming subscription is fully established
-        Thread.sleep(2000);
+        // Wait for the EventConsumer to start polling (replaces unreliable Thread.sleep)
+        // This ensures the consumer is ready to receive the QueueClosedEvent
+        EventQueue queue = queueManager.get(taskId);
+        assertNotNull(queue, "Queue should exist for task " + taskId);
+        queueManager.awaitQueuePollerStart(queue);
 
         // Now manually send a QueueClosedEvent to Kafka to simulate queue closure on another node
         QueueClosedEvent closedEvent = new QueueClosedEvent(taskId);
@@ -384,6 +396,10 @@ public class KafkaReplicationIntegrationTest {
                 "Streaming subscription should complete when QueueClosedEvent is received");
 
         // Verify the stream completed normally (not with an error)
+        if (!streamCompleted.get()) {
+            LOGGER.error("Stream did not complete normally! streamErrored={}, errorRef={}",
+                    streamErrored.get(), errorRef.get(), errorRef.get());
+        }
         assertTrue(streamCompleted.get(), "Stream should complete normally when QueueClosedEvent is received");
         assertFalse(streamErrored.get(), "Stream should not error on QueueClosedEvent");
         assertNull(errorRef.get(), "Should not receive error when stream completes gracefully");
