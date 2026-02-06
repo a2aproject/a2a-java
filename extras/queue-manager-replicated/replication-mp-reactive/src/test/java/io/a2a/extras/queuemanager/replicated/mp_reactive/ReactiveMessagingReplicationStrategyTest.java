@@ -44,7 +44,6 @@ class ReactiveMessagingReplicationStrategyTest {
                 .taskId("test-task")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
-                .isFinal(false)
                 .build();
     }
 
@@ -54,7 +53,6 @@ class ReactiveMessagingReplicationStrategyTest {
                 .taskId(taskId)
                 .contextId(contextId)
                 .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(false)
                 .build();
         ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
         return JsonUtil.toJson(replicatedEvent);

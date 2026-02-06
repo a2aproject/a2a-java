@@ -25,13 +25,13 @@ public sealed interface SecurityScheme permits APIKeySecurityScheme, HTTPAuthSec
 
     /**
      * Returns the human-readable description of this security scheme.
-     *
      * @return the description, or null if not provided
      */
     String description();
 
     /**
      * Returns the type of the security scheme.
+     * @return  the type of the security scheme.
      */
     String type();
 }

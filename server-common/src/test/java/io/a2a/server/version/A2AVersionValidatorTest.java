@@ -144,7 +144,7 @@ public class A2AVersionValidatorTest {
         return AgentCard.builder()
                 .name("test-card")
                 .description("Test card")
-                .supportedInterfaces(List.of(new AgentInterface("GRPC", "http://localhost:9999")))
+                .supportedInterfaces(List.of(new AgentInterface("GRPC", "http://localhost:9999", "", protocolVersion)))
                 .version("1.0.0")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(false)
@@ -153,7 +153,6 @@ public class A2AVersionValidatorTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(Collections.emptyList())
-                .protocolVersions(protocolVersion)
                 .build();
     }
 

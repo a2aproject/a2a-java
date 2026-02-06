@@ -32,25 +32,23 @@ public interface CreateTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * The parent task resource for this config.
-   * Format: tasks/{task_id}
+   * The parent task resource id.
    * </pre>
    *
-   * <code>string parent = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The parent.
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The taskId.
    */
-  java.lang.String getParent();
+  java.lang.String getTaskId();
   /**
    * <pre>
-   * The parent task resource for this config.
-   * Format: tasks/{task_id}
+   * The parent task resource id.
    * </pre>
    *
-   * <code>string parent = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The bytes for parent.
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
-      getParentBytes();
+      getTaskIdBytes();
 
   /**
    * <pre>
@@ -77,7 +75,7 @@ public interface CreateTaskPushNotificationConfigRequestOrBuilder extends
    * The configuration to create.
    * </pre>
    *
-   * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.PushNotificationConfig config = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the config field is set.
    */
   boolean hasConfig();
@@ -86,16 +84,16 @@ public interface CreateTaskPushNotificationConfigRequestOrBuilder extends
    * The configuration to create.
    * </pre>
    *
-   * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.PushNotificationConfig config = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The config.
    */
-  io.a2a.grpc.TaskPushNotificationConfig getConfig();
+  io.a2a.grpc.PushNotificationConfig getConfig();
   /**
    * <pre>
    * The configuration to create.
    * </pre>
    *
-   * <code>.a2a.v1.TaskPushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.a2a.v1.PushNotificationConfig config = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
-  io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigOrBuilder();
+  io.a2a.grpc.PushNotificationConfigOrBuilder getConfigOrBuilder();
 }

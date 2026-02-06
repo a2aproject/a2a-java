@@ -21,7 +21,7 @@ public interface TaskIdParamsMapper {
      * Extracts task ID from the resource name.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "id", expression = "java(ResourceNameParser.extractTaskId(proto.getName()))")
+    @Mapping(target = "id", source = "id")
     TaskIdParams fromProtoCancelTaskRequest(io.a2a.grpc.CancelTaskRequest proto);
     
      /**
@@ -29,7 +29,7 @@ public interface TaskIdParamsMapper {
      * Extracts task ID from the resource name.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "name", expression = "java(ResourceNameParser.defineTaskName(domain.id()))")
+    @Mapping(target = "id", source = "id")
     io.a2a.grpc.CancelTaskRequest toProtoCancelTaskRequest(TaskIdParams domain);
 
 
@@ -38,7 +38,7 @@ public interface TaskIdParamsMapper {
      * Extracts task ID from the resource name.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "id", expression = "java(ResourceNameParser.extractTaskId(proto.getName()))")
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "tenant", source = "tenant")
     TaskIdParams fromProtoSubscribeToTaskRequest(io.a2a.grpc.SubscribeToTaskRequest proto);
 
@@ -47,6 +47,6 @@ public interface TaskIdParamsMapper {
      * Creates resource name from task ID.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "name", expression = "java(ResourceNameParser.defineTaskName(domain.id()))")
+    @Mapping(target = "id", source = "id")
     io.a2a.grpc.SubscribeToTaskRequest toProtoSubscribeToTaskRequest(TaskIdParams domain);
 }

@@ -52,7 +52,6 @@ public class TaskUpdater {
             TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                     .taskId(taskId)
                     .contextId(contextId)
-                    .isFinal(isFinal)
                     .status(new TaskStatus(state, message, null))
                     .build();
             eventQueue.enqueueEvent(event);

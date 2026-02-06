@@ -236,50 +236,45 @@ public interface AgentSkillOrBuilder extends
 
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
-  java.util.List<io.a2a.grpc.Security> 
-      getSecurityList();
+  java.util.List<io.a2a.grpc.SecurityRequirement> 
+      getSecurityRequirementsList();
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
-  io.a2a.grpc.Security getSecurity(int index);
+  io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index);
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
-  int getSecurityCount();
+  int getSecurityRequirementsCount();
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
-  java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
-      getSecurityOrBuilderList();
+  java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
+      getSecurityRequirementsOrBuilderList();
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
-  io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
+  io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
       int index);
 }

@@ -186,13 +186,13 @@ public class TaskUpdaterTest {
     @Test
     public void testRequiresInputWithFinalTrue() throws Exception {
         taskUpdater.requiresInput(true);
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.INPUT_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.INPUT_REQUIRED, null);
     }
 
     @Test
     public void testRequiresInputWithMessageAndFinalTrue() throws Exception {
         taskUpdater.requiresInput(SAMPLE_MESSAGE, true);
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.INPUT_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.INPUT_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @Test
@@ -210,13 +210,13 @@ public class TaskUpdaterTest {
     @Test
     public void testRequiresAuthWithFinalTrue() throws Exception {
         taskUpdater.requiresAuth(true);
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.AUTH_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.AUTH_REQUIRED, null);
     }
 
     @Test
     public void testRequiresAuthWithMessageAndFinalTrue() throws Exception {
         taskUpdater.requiresAuth(SAMPLE_MESSAGE, true);
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.AUTH_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.AUTH_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @Test

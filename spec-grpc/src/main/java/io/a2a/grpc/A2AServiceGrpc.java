@@ -475,7 +475,7 @@ public final class A2AServiceGrpc {
     /**
      * <pre>
      * SubscribeToTask allows subscribing to task updates for tasks not in terminal state.
-     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, cancelled, rejected).
+     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, canceled, rejected).
      * </pre>
      */
     default void subscribeToTask(io.a2a.grpc.SubscribeToTaskRequest request,
@@ -625,7 +625,7 @@ public final class A2AServiceGrpc {
     /**
      * <pre>
      * SubscribeToTask allows subscribing to task updates for tasks not in terminal state.
-     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, cancelled, rejected).
+     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, canceled, rejected).
      * </pre>
      */
     public void subscribeToTask(io.a2a.grpc.SubscribeToTaskRequest request,
@@ -764,7 +764,7 @@ public final class A2AServiceGrpc {
     /**
      * <pre>
      * SubscribeToTask allows subscribing to task updates for tasks not in terminal state.
-     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, cancelled, rejected).
+     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, canceled, rejected).
      * </pre>
      */
     @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/10918")
@@ -898,7 +898,7 @@ public final class A2AServiceGrpc {
     /**
      * <pre>
      * SubscribeToTask allows subscribing to task updates for tasks not in terminal state.
-     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, cancelled, rejected).
+     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, canceled, rejected).
      * </pre>
      */
     public java.util.Iterator<io.a2a.grpc.StreamResponse> subscribeToTask(

@@ -33,8 +33,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private AuthenticationInfo() {
-    schemes_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
+    scheme_ = "";
     credentials_ = "";
   }
 
@@ -51,57 +50,53 @@ private static final long serialVersionUID = 0L;
             io.a2a.grpc.AuthenticationInfo.class, io.a2a.grpc.AuthenticationInfo.Builder.class);
   }
 
-  public static final int SCHEMES_FIELD_NUMBER = 1;
+  public static final int SCHEME_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringArrayList schemes_ =
-      com.google.protobuf.LazyStringArrayList.emptyList();
+  private volatile java.lang.Object scheme_ = "";
   /**
    * <pre>
-   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
+   * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
+   * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
    * </pre>
    *
-   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return A list containing the schemes.
+   * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The scheme.
    */
-  public com.google.protobuf.ProtocolStringList
-      getSchemesList() {
-    return schemes_;
+  @java.lang.Override
+  public java.lang.String getScheme() {
+    java.lang.Object ref = scheme_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      scheme_ = s;
+      return s;
+    }
   }
   /**
    * <pre>
-   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
+   * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
+   * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
    * </pre>
    *
-   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The count of schemes.
+   * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for scheme.
    */
-  public int getSchemesCount() {
-    return schemes_.size();
-  }
-  /**
-   * <pre>
-   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
-   * </pre>
-   *
-   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @param index The index of the element to return.
-   * @return The schemes at the given index.
-   */
-  public java.lang.String getSchemes(int index) {
-    return schemes_.get(index);
-  }
-  /**
-   * <pre>
-   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
-   * </pre>
-   *
-   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @param index The index of the value to return.
-   * @return The bytes of the schemes at the given index.
-   */
+  @java.lang.Override
   public com.google.protobuf.ByteString
-      getSchemesBytes(int index) {
-    return schemes_.getByteString(index);
+      getSchemeBytes() {
+    java.lang.Object ref = scheme_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      scheme_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
   }
 
   public static final int CREDENTIALS_FIELD_NUMBER = 2;
@@ -109,7 +104,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object credentials_ = "";
   /**
    * <pre>
-   * Optional credentials
+   * Push Notification credentials. Format depends on the scheme (e.g., token for Bearer).
    * </pre>
    *
    * <code>string credentials = 2;</code>
@@ -130,7 +125,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional credentials
+   * Push Notification credentials. Format depends on the scheme (e.g., token for Bearer).
    * </pre>
    *
    * <code>string credentials = 2;</code>
@@ -165,8 +160,8 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    for (int i = 0; i < schemes_.size(); i++) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, schemes_.getRaw(i));
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(scheme_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, scheme_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(credentials_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 2, credentials_);
@@ -180,13 +175,8 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    {
-      int dataSize = 0;
-      for (int i = 0; i < schemes_.size(); i++) {
-        dataSize += computeStringSizeNoTag(schemes_.getRaw(i));
-      }
-      size += dataSize;
-      size += 1 * getSchemesList().size();
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(scheme_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, scheme_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(credentials_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(2, credentials_);
@@ -206,8 +196,8 @@ private static final long serialVersionUID = 0L;
     }
     io.a2a.grpc.AuthenticationInfo other = (io.a2a.grpc.AuthenticationInfo) obj;
 
-    if (!getSchemesList()
-        .equals(other.getSchemesList())) return false;
+    if (!getScheme()
+        .equals(other.getScheme())) return false;
     if (!getCredentials()
         .equals(other.getCredentials())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
@@ -221,10 +211,8 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (getSchemesCount() > 0) {
-      hash = (37 * hash) + SCHEMES_FIELD_NUMBER;
-      hash = (53 * hash) + getSchemesList().hashCode();
-    }
+    hash = (37 * hash) + SCHEME_FIELD_NUMBER;
+    hash = (53 * hash) + getScheme().hashCode();
     hash = (37 * hash) + CREDENTIALS_FIELD_NUMBER;
     hash = (53 * hash) + getCredentials().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
@@ -363,8 +351,7 @@ private static final long serialVersionUID = 0L;
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      schemes_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
+      scheme_ = "";
       credentials_ = "";
       return this;
     }
@@ -400,8 +387,7 @@ private static final long serialVersionUID = 0L;
     private void buildPartial0(io.a2a.grpc.AuthenticationInfo result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
-        schemes_.makeImmutable();
-        result.schemes_ = schemes_;
+        result.scheme_ = scheme_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.credentials_ = credentials_;
@@ -420,14 +406,9 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(io.a2a.grpc.AuthenticationInfo other) {
       if (other == io.a2a.grpc.AuthenticationInfo.getDefaultInstance()) return this;
-      if (!other.schemes_.isEmpty()) {
-        if (schemes_.isEmpty()) {
-          schemes_ = other.schemes_;
-          bitField0_ |= 0x00000001;
-        } else {
-          ensureSchemesIsMutable();
-          schemes_.addAll(other.schemes_);
-        }
+      if (!other.getScheme().isEmpty()) {
+        scheme_ = other.scheme_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getCredentials().isEmpty()) {
@@ -462,9 +443,8 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-              ensureSchemesIsMutable();
-              schemes_.add(s);
+              scheme_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000001;
               break;
             } // case 10
             case 18: {
@@ -489,148 +469,98 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private com.google.protobuf.LazyStringArrayList schemes_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
-    private void ensureSchemesIsMutable() {
-      if (!schemes_.isModifiable()) {
-        schemes_ = new com.google.protobuf.LazyStringArrayList(schemes_);
+    private java.lang.Object scheme_ = "";
+    /**
+     * <pre>
+     * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
+     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+     * </pre>
+     *
+     * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The scheme.
+     */
+    public java.lang.String getScheme() {
+      java.lang.Object ref = scheme_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        scheme_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
       }
-      bitField0_ |= 0x00000001;
     }
     /**
      * <pre>
-     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
+     * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
+     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
      * </pre>
      *
-     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return A list containing the schemes.
-     */
-    public com.google.protobuf.ProtocolStringList
-        getSchemesList() {
-      schemes_.makeImmutable();
-      return schemes_;
-    }
-    /**
-     * <pre>
-     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
-     * </pre>
-     *
-     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return The count of schemes.
-     */
-    public int getSchemesCount() {
-      return schemes_.size();
-    }
-    /**
-     * <pre>
-     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
-     * </pre>
-     *
-     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param index The index of the element to return.
-     * @return The schemes at the given index.
-     */
-    public java.lang.String getSchemes(int index) {
-      return schemes_.get(index);
-    }
-    /**
-     * <pre>
-     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
-     * </pre>
-     *
-     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the schemes at the given index.
+     * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The bytes for scheme.
      */
     public com.google.protobuf.ByteString
-        getSchemesBytes(int index) {
-      return schemes_.getByteString(index);
+        getSchemeBytes() {
+      java.lang.Object ref = scheme_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        scheme_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
     /**
      * <pre>
-     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
+     * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
+     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
      * </pre>
      *
-     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param index The index to set the value at.
-     * @param value The schemes to set.
+     * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The scheme to set.
      * @return This builder for chaining.
      */
-    public Builder setSchemes(
-        int index, java.lang.String value) {
-      if (value == null) { throw new NullPointerException(); }
-      ensureSchemesIsMutable();
-      schemes_.set(index, value);
-      bitField0_ |= 0x00000001;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
-     * </pre>
-     *
-     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param value The schemes to add.
-     * @return This builder for chaining.
-     */
-    public Builder addSchemes(
+    public Builder setScheme(
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
-      ensureSchemesIsMutable();
-      schemes_.add(value);
+      scheme_ = value;
       bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
+     * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
+     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
      * </pre>
      *
-     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param values The schemes to add.
+     * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
-    public Builder addAllSchemes(
-        java.lang.Iterable<java.lang.String> values) {
-      ensureSchemesIsMutable();
-      com.google.protobuf.AbstractMessageLite.Builder.addAll(
-          values, schemes_);
-      bitField0_ |= 0x00000001;
+    public Builder clearScheme() {
+      scheme_ = getDefaultInstance().getScheme();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
+     * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
+     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
      * </pre>
      *
-     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The bytes for scheme to set.
      * @return This builder for chaining.
      */
-    public Builder clearSchemes() {
-      schemes_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000001);;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
-     * </pre>
-     *
-     * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param value The bytes of the schemes to add.
-     * @return This builder for chaining.
-     */
-    public Builder addSchemesBytes(
+    public Builder setSchemeBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
-      ensureSchemesIsMutable();
-      schemes_.add(value);
+      scheme_ = value;
       bitField0_ |= 0x00000001;
       onChanged();
       return this;
@@ -639,7 +569,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object credentials_ = "";
     /**
      * <pre>
-     * Optional credentials
+     * Push Notification credentials. Format depends on the scheme (e.g., token for Bearer).
      * </pre>
      *
      * <code>string credentials = 2;</code>
@@ -659,7 +589,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional credentials
+     * Push Notification credentials. Format depends on the scheme (e.g., token for Bearer).
      * </pre>
      *
      * <code>string credentials = 2;</code>
@@ -680,7 +610,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional credentials
+     * Push Notification credentials. Format depends on the scheme (e.g., token for Bearer).
      * </pre>
      *
      * <code>string credentials = 2;</code>
@@ -697,7 +627,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional credentials
+     * Push Notification credentials. Format depends on the scheme (e.g., token for Bearer).
      * </pre>
      *
      * <code>string credentials = 2;</code>
@@ -711,7 +641,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional credentials
+     * Push Notification credentials. Format depends on the scheme (e.g., token for Bearer).
      * </pre>
      *
      * <code>string credentials = 2;</code>

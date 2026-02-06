@@ -78,13 +78,15 @@ public final class ArtifactUtils {
 
     /**
      * Creates a new Artifact object containing only a single DataPart.
+     * <p>
+     * Supports any JSON value type: objects (Map), arrays (List), primitives (String, Number, Boolean), or null.
      *
      * @param name The human-readable name of the artifact.
-     * @param data The structured data content of the artifact.
+     * @param data The structured data content of the artifact (JSON object, array, primitive, or null).
      * @param description An optional description of the artifact.
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
-    public static Artifact newDataArtifact(String name, Map<String, Object> data, @Nullable String description) {
+    public static Artifact newDataArtifact(String name, Object data, @Nullable String description) {
         return newArtifact(
             name,
             List.of(new DataPart(data)),
@@ -94,12 +96,14 @@ public final class ArtifactUtils {
 
     /**
      * Creates a new Artifact object containing only a single DataPart with empty description.
+     * <p>
+     * Supports any JSON value type: objects (Map), arrays (List), primitives (String, Number, Boolean), or null.
      *
      * @param name The human-readable name of the artifact.
-     * @param data The structured data content of the artifact.
+     * @param data The structured data content of the artifact (JSON object, array, primitive, or null).
      * @return A new {@code Artifact} object with a generated artifact_id.
      */
-    public static Artifact newDataArtifact(String name, Map<String, Object> data) {
+    public static Artifact newDataArtifact(String name, Object data) {
         return newDataArtifact(name, data, null);
     }
 }

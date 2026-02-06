@@ -16,7 +16,6 @@ import io.a2a.server.events.InMemoryQueueManager;
 import io.a2a.server.events.MainEventBus;
 import io.a2a.server.events.QueueManager;
 import io.a2a.server.tasks.TaskStateProvider;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,7 +169,6 @@ public class ReplicatedQueueManager implements QueueManager {
                 .taskId(taskId)
                 .contextId(finalTask.contextId())
                 .status(finalTask.status())
-                .isFinal(true)
                 .build();
 
         // Send TaskStatusUpdateEvent FIRST to ensure it arrives before poison pill

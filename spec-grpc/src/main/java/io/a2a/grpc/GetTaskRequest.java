@@ -34,7 +34,7 @@ private static final long serialVersionUID = 0L;
   }
   private GetTaskRequest() {
     tenant_ = "";
-    name_ = "";
+    id_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -98,49 +98,47 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int NAME_FIELD_NUMBER = 1;
+  public static final int ID_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
-  private volatile java.lang.Object name_ = "";
+  private volatile java.lang.Object id_ = "";
   /**
    * <pre>
-   * The resource name of the task.
-   * Format: tasks/{task_id}
+   * The resource id of the task.
    * </pre>
    *
-   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The name.
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The id.
    */
   @java.lang.Override
-  public java.lang.String getName() {
-    java.lang.Object ref = name_;
+  public java.lang.String getId() {
+    java.lang.Object ref = id_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      name_ = s;
+      id_ = s;
       return s;
     }
   }
   /**
    * <pre>
-   * The resource name of the task.
-   * Format: tasks/{task_id}
+   * The resource id of the task.
    * </pre>
    *
-   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The bytes for name.
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for id.
    */
   @java.lang.Override
   public com.google.protobuf.ByteString
-      getNameBytes() {
-    java.lang.Object ref = name_;
+      getIdBytes() {
+    java.lang.Object ref = id_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      name_ = b;
+      id_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -194,8 +192,8 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, name_);
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, id_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeInt32(2, historyLength_);
@@ -212,8 +210,8 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, name_);
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, id_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
@@ -239,8 +237,8 @@ private static final long serialVersionUID = 0L;
 
     if (!getTenant()
         .equals(other.getTenant())) return false;
-    if (!getName()
-        .equals(other.getName())) return false;
+    if (!getId()
+        .equals(other.getId())) return false;
     if (hasHistoryLength() != other.hasHistoryLength()) return false;
     if (hasHistoryLength()) {
       if (getHistoryLength()
@@ -259,8 +257,8 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + TENANT_FIELD_NUMBER;
     hash = (53 * hash) + getTenant().hashCode();
-    hash = (37 * hash) + NAME_FIELD_NUMBER;
-    hash = (53 * hash) + getName().hashCode();
+    hash = (37 * hash) + ID_FIELD_NUMBER;
+    hash = (53 * hash) + getId().hashCode();
     if (hasHistoryLength()) {
       hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
       hash = (53 * hash) + getHistoryLength();
@@ -402,7 +400,7 @@ private static final long serialVersionUID = 0L;
       super.clear();
       bitField0_ = 0;
       tenant_ = "";
-      name_ = "";
+      id_ = "";
       historyLength_ = 0;
       return this;
     }
@@ -441,7 +439,7 @@ private static final long serialVersionUID = 0L;
         result.tenant_ = tenant_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.name_ = name_;
+        result.id_ = id_;
       }
       int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000004) != 0)) {
@@ -468,8 +466,8 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000001;
         onChanged();
       }
-      if (!other.getName().isEmpty()) {
-        name_ = other.name_;
+      if (!other.getId().isEmpty()) {
+        id_ = other.id_;
         bitField0_ |= 0x00000002;
         onChanged();
       }
@@ -503,7 +501,7 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
-              name_ = input.readStringRequireUtf8();
+              id_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000002;
               break;
             } // case 10
@@ -626,23 +624,22 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object name_ = "";
+    private java.lang.Object id_ = "";
     /**
      * <pre>
-     * The resource name of the task.
-     * Format: tasks/{task_id}
+     * The resource id of the task.
      * </pre>
      *
-     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return The name.
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The id.
      */
-    public java.lang.String getName() {
-      java.lang.Object ref = name_;
+    public java.lang.String getId() {
+      java.lang.Object ref = id_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        name_ = s;
+        id_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
@@ -650,21 +647,20 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource name of the task.
-     * Format: tasks/{task_id}
+     * The resource id of the task.
      * </pre>
      *
-     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return The bytes for name.
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The bytes for id.
      */
     public com.google.protobuf.ByteString
-        getNameBytes() {
-      java.lang.Object ref = name_;
+        getIdBytes() {
+      java.lang.Object ref = id_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        name_ = b;
+        id_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -672,52 +668,49 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource name of the task.
-     * Format: tasks/{task_id}
+     * The resource id of the task.
      * </pre>
      *
-     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param value The name to set.
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The id to set.
      * @return This builder for chaining.
      */
-    public Builder setName(
+    public Builder setId(
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
-      name_ = value;
+      id_ = value;
       bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The resource name of the task.
-     * Format: tasks/{task_id}
+     * The resource id of the task.
      * </pre>
      *
-     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
-    public Builder clearName() {
-      name_ = getDefaultInstance().getName();
+    public Builder clearId() {
+      id_ = getDefaultInstance().getId();
       bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The resource name of the task.
-     * Format: tasks/{task_id}
+     * The resource id of the task.
      * </pre>
      *
-     * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param value The bytes for name to set.
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The bytes for id to set.
      * @return This builder for chaining.
      */
-    public Builder setNameBytes(
+    public Builder setIdBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
-      name_ = value;
+      id_ = value;
       bitField0_ |= 0x00000002;
       onChanged();
       return this;

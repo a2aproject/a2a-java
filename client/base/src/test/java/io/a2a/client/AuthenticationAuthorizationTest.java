@@ -1,6 +1,5 @@
 package io.a2a.client;
 
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
@@ -90,7 +89,6 @@ public class AuthenticationAuthorizationTest {
                         .description("Test skill")
                         .tags(Collections.singletonList("test"))
                         .build()))
-                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .supportedInterfaces(java.util.Arrays.asList(
                         new AgentInterface(TransportProtocol.JSONRPC.asString(), AGENT_URL),
                         new AgentInterface(TransportProtocol.HTTP_JSON.asString(), AGENT_URL),

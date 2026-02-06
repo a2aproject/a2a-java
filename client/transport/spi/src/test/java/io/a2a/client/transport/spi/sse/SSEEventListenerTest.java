@@ -118,12 +118,14 @@ public class SSEEventListenerTest {
     }
 
     private static TaskStatusUpdateEvent createTaskStatusUpdateEvent(TaskState state, boolean isFinal) {
-        return TaskStatusUpdateEvent.builder()
-                .taskId(TEST_TASK_ID)
-                .contextId(TEST_CONTEXT_ID)
-                .status(new TaskStatus(state))
-                .isFinal(isFinal)
-                .build();
+        // Use constructor since Builder doesn't have isFinal method
+        return new TaskStatusUpdateEvent(
+                TEST_TASK_ID,
+                new TaskStatus(state),
+                TEST_CONTEXT_ID,
+                isFinal,
+                null
+        );
     }
 
     private static TestSSEEventListener createListenerWithEventCapture(AtomicReference<StreamingEventKind> eventCapture) {

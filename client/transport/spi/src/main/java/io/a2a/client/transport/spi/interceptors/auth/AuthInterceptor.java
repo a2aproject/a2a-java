@@ -35,10 +35,10 @@ public class AuthInterceptor extends ClientCallInterceptor {
     public PayloadAndHeaders intercept(String methodName, @Nullable Object payload, Map<String, String> headers,
                                        @Nullable AgentCard agentCard, @Nullable ClientCallContext clientCallContext) {
         Map<String, String> updatedHeaders = new HashMap<>(headers == null ? new HashMap<>() : headers);
-        if (agentCard == null || agentCard.security() == null || agentCard.securitySchemes() == null) {
+        if (agentCard == null || agentCard.securityRequirements()== null || agentCard.securitySchemes() == null) {
             return new PayloadAndHeaders(payload, updatedHeaders);
         }
-        for (Map<String, List<String>> requirement : agentCard.security()) {
+        for (Map<String, List<String>> requirement : agentCard.securityRequirements()) {
             for (String securitySchemeName : requirement.keySet()) {
                 String credential = credentialService.getCredential(securitySchemeName, clientCallContext);
                 if (credential != null && agentCard.securitySchemes().containsKey(securitySchemeName)) {

@@ -48,7 +48,7 @@ public class JsonRestMessages {
 
     static final String CANCEL_TASK_TEST_REQUEST = """
             {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
+              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64"
             }""";
 
     static final String CANCEL_TASK_TEST_RESPONSE = """
@@ -56,7 +56,7 @@ public class JsonRestMessages {
                 "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
                 "contextId": "c295ea44-7543-4f78-b524-7a38915ad6e4",
                 "status": {
-                  "state": "TASK_STATE_CANCELLED"
+                  "state": "TASK_STATE_CANCELED"
                 },
                 "metadata": {}
             }""";
@@ -86,16 +86,12 @@ public class JsonRestMessages {
                   "text": "tell me a joke"
                  },
                  {
-                  "file": {
-                     "file_with_uri": "file:///path/to/file.txt",
-                     "mediaType": "text/plain"
-                  }
+                  "url": "file:///path/to/file.txt",
+                  "mediaType": "text/plain"
                  },
                  {
-                  "file": {
-                     "file_with_bytes": "aGVsbG8=",
-                     "mediaType": "text/plain"
-                  }
+                  "raw": "aGVsbG8=",
+                  "mediaType": "text/plain"
                  }
                 ],
                 "messageId": "message-123"
@@ -129,7 +125,7 @@ public class JsonRestMessages {
                     "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
                   }
                 },
-                "security": [{ "google": ["openid", "profile", "email"] }],
+                "securityRequirements": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
                 "defaultInputModes": ["application/json", "text/plain"],
                 "defaultOutputModes": ["application/json", "image/png"],
                 "skills": [
@@ -195,7 +191,7 @@ public class JsonRestMessages {
                     "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
                   }
                 },
-                "security": [{ "google": ["openid", "profile", "email"] }],
+                "securityRequirements": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
                 "defaultInputModes": ["application/json", "text/plain"],
                 "defaultOutputModes": ["application/json", "image/png"],
                 "skills": [
@@ -261,7 +257,7 @@ public class JsonRestMessages {
                     "openIdConnectUrl": "https://accounts.google.com/.well-known/openid-configuration"
                   }
                 },
-                "security": [{ "google": ["openid", "profile", "email"] }],
+                "securityRequirements": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
                 "defaultInputModes": ["application/json", "text/plain"],
                 "defaultOutputModes": ["application/json", "image/png"],
                 "skills": [
@@ -311,11 +307,12 @@ public class JsonRestMessages {
 
     static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
+              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "10",
               "pushNotificationConfig": {
                 "url": "https://example.com/callback",
                 "authentication": {
-                  "schemes": ["jwt"]
+                  "scheme": "jwt"
                 }
               }
             }""";
@@ -323,16 +320,18 @@ public class JsonRestMessages {
             {
               "configs":[
                 {
-                  "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
+                  "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+                  "id": "10",
                   "pushNotificationConfig": {
                     "url": "https://example.com/callback",
                     "authentication": {
-                      "schemes": ["jwt"]
+                      "scheme": "jwt"
                     }
                   }
                 },
                 {
-                  "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/5",
+                  "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+                  "id": "5",
                   "pushNotificationConfig": {
                     "url": "https://test.com/callback"
                   }
@@ -343,26 +342,24 @@ public class JsonRestMessages {
 
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
             {
-              "parent": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "configId": "default-config-id",
               "config": {
-                "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/default-config-id",
-                "pushNotificationConfig": {
-                  "url": "https://example.com/callback",
-                  "authentication": {
-                    "schemes": [ "jwt" ]
-                  }
+                "url": "https://example.com/callback",
+                "authentication": {
+                  "scheme": "jwt"
                 }
               }
             }""";
 
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/10",
+              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "10",
               "pushNotificationConfig": {
                 "url": "https://example.com/callback",
                 "authentication": {
-                  "schemes": ["jwt"]
+                  "scheme": "jwt"
                 }
               }
             }""";

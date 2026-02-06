@@ -35,7 +35,7 @@ public interface TaskStateMapper {
             case INPUT_REQUIRED -> io.a2a.grpc.TaskState.TASK_STATE_INPUT_REQUIRED;
             case AUTH_REQUIRED -> io.a2a.grpc.TaskState.TASK_STATE_AUTH_REQUIRED;
             case COMPLETED -> io.a2a.grpc.TaskState.TASK_STATE_COMPLETED;
-            case CANCELED -> io.a2a.grpc.TaskState.TASK_STATE_CANCELLED; // Note spelling difference
+            case CANCELED -> io.a2a.grpc.TaskState.TASK_STATE_CANCELED;
             case FAILED -> io.a2a.grpc.TaskState.TASK_STATE_FAILED;
             case REJECTED -> io.a2a.grpc.TaskState.TASK_STATE_REJECTED;
             case UNKNOWN -> io.a2a.grpc.TaskState.UNRECOGNIZED;
@@ -59,7 +59,7 @@ public interface TaskStateMapper {
             case TASK_STATE_INPUT_REQUIRED -> io.a2a.spec.TaskState.INPUT_REQUIRED;
             case TASK_STATE_AUTH_REQUIRED -> io.a2a.spec.TaskState.AUTH_REQUIRED;
             case TASK_STATE_COMPLETED -> io.a2a.spec.TaskState.COMPLETED;
-            case TASK_STATE_CANCELLED -> io.a2a.spec.TaskState.CANCELED; // Note spelling difference
+            case TASK_STATE_CANCELED -> io.a2a.spec.TaskState.CANCELED;
             case TASK_STATE_FAILED -> io.a2a.spec.TaskState.FAILED;
             case TASK_STATE_REJECTED -> io.a2a.spec.TaskState.REJECTED;
             case TASK_STATE_UNSPECIFIED, UNRECOGNIZED -> io.a2a.spec.TaskState.UNKNOWN;

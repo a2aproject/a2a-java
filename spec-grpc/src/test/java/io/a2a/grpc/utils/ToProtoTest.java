@@ -2,11 +2,10 @@ package io.a2a.grpc.utils;
 
 import static io.a2a.grpc.Role.ROLE_AGENT;
 import static io.a2a.grpc.Role.ROLE_USER;
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+import static io.a2a.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -49,7 +48,7 @@ public class ToProtoTest {
         AgentCard agentCard = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999", "")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999", "", "123")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(AgentCapabilities.builder()
@@ -65,7 +64,6 @@ public class ToProtoTest {
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
-                .protocolVersions("123") // Weird protool version on purpose to make sure non-default takes effect
                 .build();
         io.a2a.grpc.AgentCard result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
@@ -73,18 +71,18 @@ public class ToProtoTest {
         assertEquals(1, result.getSupportedInterfacesList().size());
         assertEquals("http://localhost:9999", result.getSupportedInterfacesList().get(0).getUrl());
         assertEquals("jsonrpc", result.getSupportedInterfacesList().get(0).getProtocolBinding());
+        assertEquals("123", result.getSupportedInterfacesList().get(0).getProtocolVersion());
         assertEquals("1.0.0", result.getVersion());
         assertEquals("http://example.com/docs", result.getDocumentationUrl());
         assertEquals(1, result.getDefaultInputModesCount());
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        // protocolVersions is now a repeated field, checking if the list contains the value
-        assertTrue(result.getProtocolVersionsList().contains("123"));
+        // protocolVersion is now in AgentInterface
         agentCard = AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999", "")))
+                .supportedInterfaces(Collections.singletonList(new AgentInterface("jsonrpc", "http://localhost:9999")))
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
                 .capabilities(AgentCapabilities.builder()
@@ -102,8 +100,7 @@ public class ToProtoTest {
                         .build()))
                 //                .iconUrl("http://example.com/icon.svg")
                 .securitySchemes(Map.of("basic", HTTPAuthSecurityScheme.builder().scheme("basic").description("Basic Auth").build()))
-                .security(List.of(Map.of("oauth", List.of("read"))))
-                .protocolVersions(CURRENT_PROTOCOL_VERSION)
+                .securityRequirements(List.of(Map.of("oauth", List.of("read"))))
                 .build();
         result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
@@ -111,19 +108,19 @@ public class ToProtoTest {
         assertEquals(1, result.getSupportedInterfacesList().size());
         assertEquals("http://localhost:9999", result.getSupportedInterfacesList().get(0).getUrl());
         assertEquals("jsonrpc", result.getSupportedInterfacesList().get(0).getProtocolBinding());
+        assertEquals(CURRENT_PROTOCOL_VERSION, result.getSupportedInterfacesList().get(0).getProtocolVersion());
         assertEquals("1.0.0", result.getVersion());
         assertEquals("http://example.com/docs", result.getDocumentationUrl());
         assertEquals(1, result.getDefaultInputModesCount());
         assertEquals("text", result.getDefaultInputModes(0));
         assertEquals(1, result.getDefaultOutputModesCount());
         assertEquals("text", result.getDefaultOutputModes(0));
-        // protocolVersions is now a repeated field, checking if the list contains the value
-        assertTrue(result.getProtocolVersionsList().contains(CURRENT_PROTOCOL_VERSION));
-        assertEquals(1, result.getSecurityCount());
-        assertEquals(1, result.getSecurity(0).getSchemesMap().size());
-        assertEquals(true, result.getSecurity(0).getSchemesMap().containsKey("oauth"));
-        assertEquals(1, result.getSecurity(0).getSchemesMap().get("oauth").getListCount());
-        assertEquals("read", result.getSecurity(0).getSchemesMap().get("oauth").getList(0));
+        // protocolVersions field has been removed from the proto
+        assertEquals(1, result.getSecurityRequirementsCount());
+        assertEquals(1, result.getSecurityRequirements(0).getSchemesMap().size());
+        assertEquals(true, result.getSecurityRequirements(0).getSchemesMap().containsKey("oauth"));
+        assertEquals(1, result.getSecurityRequirements(0).getSchemesMap().get("oauth").getListCount());
+        assertEquals("read", result.getSecurityRequirements(0).getSchemesMap().get("oauth").getList(0));
         assertEquals(1, result.getSecuritySchemesMap().size());
         assertEquals(true, result.getSecuritySchemesMap().containsKey("basic"));
         assertEquals(result.getSecuritySchemesMap().get("basic").getApiKeySecurityScheme().getDefaultInstanceForType(), result.getSecuritySchemesMap().get("basic").getApiKeySecurityScheme());
@@ -164,7 +161,8 @@ public class ToProtoTest {
         assertEquals("artefact", result.getArtifacts(0).getName());
         assertEquals(1, result.getArtifacts(0).getPartsCount());
         assertEquals(true, result.getArtifacts(0).getParts(0).hasText());
-        assertEquals(false, result.getArtifacts(0).getParts(0).hasFile());
+        assertEquals(false, result.getArtifacts(0).getParts(0).hasRaw());
+        assertEquals(false, result.getArtifacts(0).getParts(0).hasUrl());
         assertEquals(false, result.getArtifacts(0).getParts(0).hasData());
         assertEquals("text", result.getArtifacts(0).getParts(0).getText());
         assertEquals(1, result.getHistoryCount());
@@ -173,8 +171,9 @@ public class ToProtoTest {
         assertEquals(ROLE_USER, result.getHistory(0).getRole());
         assertEquals(1, result.getHistory(0).getPartsCount());
         assertEquals("tell me a joke", result.getHistory(0).getParts(0).getText());
-        assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getHistory(0).getParts(0).getFile());
-        assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getHistory(0).getParts(0).getData());
+        assertEquals(false, result.getHistory(0).getParts(0).hasRaw());
+        assertEquals(false, result.getHistory(0).getParts(0).hasUrl());
+        assertEquals(false, result.getHistory(0).getParts(0).hasData());
     }
 
     @Test
@@ -185,8 +184,9 @@ public class ToProtoTest {
         assertEquals(ROLE_USER, result.getRole());
         assertEquals(1, result.getPartsCount());
         assertEquals("tell me a joke", result.getParts(0).getText());
-        assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getParts(0).getFile());
-        assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getParts(0).getData());
+        assertEquals(false, result.getParts(0).hasRaw());
+        assertEquals(false, result.getParts(0).hasUrl());
+        assertEquals(false, result.getParts(0).hasData());
         Message message = Message.builder()
                 .role(Message.Role.AGENT)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
@@ -198,8 +198,9 @@ public class ToProtoTest {
         assertEquals(ROLE_AGENT, result.getRole());
         assertEquals(1, result.getPartsCount());
         assertEquals("tell me a joke", result.getParts(0).getText());
-        assertEquals(io.a2a.grpc.FilePart.getDefaultInstance(), result.getParts(0).getFile());
-        assertEquals(io.a2a.grpc.DataPart.getDefaultInstance(), result.getParts(0).getData());
+        assertEquals(false, result.getParts(0).hasRaw());
+        assertEquals(false, result.getParts(0).hasUrl());
+        assertEquals(false, result.getParts(0).hasData());
     }
 
     @Test
@@ -210,7 +211,8 @@ public class ToProtoTest {
                         .id("xyz")
                         .build(), null);
         io.a2a.grpc.TaskPushNotificationConfig result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
-        assertEquals("tasks/push-task-123/pushNotificationConfigs/xyz", result.getName());
+        assertEquals("push-task-123", result.getTaskId());
+        assertEquals("xyz", result.getId());
         assertNotNull(result.getPushNotificationConfig());
         assertEquals("http://example.com", result.getPushNotificationConfig().getUrl());
         assertEquals("xyz", result.getPushNotificationConfig().getId());
@@ -219,20 +221,20 @@ public class ToProtoTest {
                 = new TaskPushNotificationConfig("push-task-123",
                         PushNotificationConfig.builder()
                                 .token("AAAAAA")
-                                .authentication(new AuthenticationInfo(Collections.singletonList("jwt"), "credentials"))
+                                .authentication(new AuthenticationInfo("jwt", "credentials"))
                                 .url("http://example.com")
                                 .id("xyz")
                                 .build(), null);
         result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
-        assertEquals("tasks/push-task-123/pushNotificationConfigs/xyz", result.getName());
+        assertEquals("push-task-123", result.getTaskId());
+        assertEquals("xyz", result.getId());
         assertNotNull(result.getPushNotificationConfig());
         assertEquals("http://example.com", result.getPushNotificationConfig().getUrl());
         assertEquals("xyz", result.getPushNotificationConfig().getId());
         assertEquals("AAAAAA", result.getPushNotificationConfig().getToken());
         assertEquals(true, result.getPushNotificationConfig().hasAuthentication());
         assertEquals("credentials", result.getPushNotificationConfig().getAuthentication().getCredentials());
-        assertEquals(1, result.getPushNotificationConfig().getAuthentication().getSchemesCount());
-        assertEquals("jwt", result.getPushNotificationConfig().getAuthentication().getSchemes(0));
+        assertEquals("jwt", result.getPushNotificationConfig().getAuthentication().getScheme());
     }
 
     @Test
@@ -255,16 +257,20 @@ public class ToProtoTest {
 
     @Test
     public void convertTaskStatusUpdateEvent() {
-        TaskStatusUpdateEvent tsue = TaskStatusUpdateEvent.builder()
-                .taskId("1234")
-                .contextId("xyz")
-                .status(new TaskStatus(TaskState.COMPLETED))
-                .isFinal(true)
-                .build();
+        TaskStatus completedStatus = new TaskStatus(TaskState.COMPLETED);
+        // Use constructor since Builder doesn't have isFinal method
+        TaskStatusUpdateEvent tsue = new TaskStatusUpdateEvent(
+                "1234",
+                completedStatus,
+                "xyz",
+                completedStatus.state().isFinal(),  // Derive from state
+                null
+        );
         io.a2a.grpc.TaskStatusUpdateEvent result = ProtoUtils.ToProto.taskStatusUpdateEvent(tsue);
         assertEquals("1234", result.getTaskId());
         assertEquals("xyz", result.getContextId());
-        assertEquals(true, result.getFinal());
+        // Note: isFinal field has been removed from the proto (field 4 is reserved)
+        // It is now derived from status.state().isFinal()
         assertEquals(io.a2a.grpc.TaskState.TASK_STATE_COMPLETED, result.getStatus().getState());
     }
 
@@ -307,7 +313,8 @@ public class ToProtoTest {
         io.a2a.grpc.DeleteTaskPushNotificationConfigRequest result =
                 ProtoUtils.ToProto.deleteTaskPushNotificationConfigRequest(params);
 
-        assertEquals("tasks/task-123/pushNotificationConfigs/config-456", result.getName());
+        assertEquals("task-123", result.getTaskId());
+        assertEquals("config-456", result.getId());
 
         // Test round-trip conversion
         DeleteTaskPushNotificationConfigParams convertedBack =
@@ -323,7 +330,7 @@ public class ToProtoTest {
         io.a2a.grpc.ListTaskPushNotificationConfigRequest result =
                 ProtoUtils.ToProto.listTaskPushNotificationConfigRequest(params);
 
-        assertEquals("tasks/task-789", result.getParent());
+        assertEquals("task-789", result.getTaskId());
 
         // Test round-trip conversion
         ListTaskPushNotificationConfigParams convertedBack =

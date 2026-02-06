@@ -12,25 +12,63 @@ public interface TaskPushNotificationConfigOrBuilder extends
 
   /**
    * <pre>
-   * The resource name of the config.
-   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+   * Optional tenant
    * </pre>
    *
-   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The name.
+   * <code>string tenant = 4;</code>
+   * @return The tenant.
    */
-  java.lang.String getName();
+  java.lang.String getTenant();
   /**
    * <pre>
-   * The resource name of the config.
-   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+   * Optional tenant
    * </pre>
    *
-   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The bytes for name.
+   * <code>string tenant = 4;</code>
+   * @return The bytes for tenant.
    */
   com.google.protobuf.ByteString
-      getNameBytes();
+      getTenantBytes();
+
+  /**
+   * <pre>
+   * The id of the config.
+   * </pre>
+   *
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The id.
+   */
+  java.lang.String getId();
+  /**
+   * <pre>
+   * The id of the config.
+   * </pre>
+   *
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for id.
+   */
+  com.google.protobuf.ByteString
+      getIdBytes();
+
+  /**
+   * <pre>
+   * The id of the task this config is associated with.
+   * </pre>
+   *
+   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The taskId.
+   */
+  java.lang.String getTaskId();
+  /**
+   * <pre>
+   * The id of the task this config is associated with.
+   * </pre>
+   *
+   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for taskId.
+   */
+  com.google.protobuf.ByteString
+      getTaskIdBytes();
 
   /**
    * <pre>

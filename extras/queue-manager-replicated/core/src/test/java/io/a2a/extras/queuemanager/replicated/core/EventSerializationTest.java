@@ -110,7 +110,6 @@ public class EventSerializationTest {
                 .taskId("test-task-abc")
                 .contextId("test-context-def")
                 .status(status)
-                .isFinal(true)
                 .build();
 
         // Test serialization as Event
@@ -206,7 +205,6 @@ public class EventSerializationTest {
                 .taskId("replicated-test-task")
                 .contextId("replicated-test-context")
                 .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(false)
                 .build();
 
         // Create ReplicatedEventQueueItem with StreamingEventKind
@@ -280,7 +278,6 @@ public class EventSerializationTest {
                 .taskId("backward-compat-task")
                 .contextId("backward-compat-context")
                 .status(new TaskStatus(TaskState.COMPLETED))
-                .isFinal(true)
                 .build();
 
         // Use the backward compatibility constructor

@@ -36,14 +36,12 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private AgentCard() {
-    protocolVersions_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
     name_ = "";
     description_ = "";
     supportedInterfaces_ = java.util.Collections.emptyList();
     version_ = "";
     documentationUrl_ = "";
-    security_ = java.util.Collections.emptyList();
+    securityRequirements_ = java.util.Collections.emptyList();
     defaultInputModes_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
     defaultOutputModes_ =
@@ -79,71 +77,6 @@ private static final long serialVersionUID = 0L;
   }
 
   private int bitField0_;
-  public static final int PROTOCOL_VERSIONS_FIELD_NUMBER = 16;
-  @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringArrayList protocolVersions_ =
-      com.google.protobuf.LazyStringArrayList.emptyList();
-  /**
-   * <pre>
-   * The versions of the A2A protocol this agent supports.
-   * For stable versions (1.x+), list only the latest supported minor version per major version.
-   * For legacy experimental versions (0.x), explicitly list each supported version.
-   * Default: ["1.0"]
-   * </pre>
-   *
-   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return A list containing the protocolVersions.
-   */
-  public com.google.protobuf.ProtocolStringList
-      getProtocolVersionsList() {
-    return protocolVersions_;
-  }
-  /**
-   * <pre>
-   * The versions of the A2A protocol this agent supports.
-   * For stable versions (1.x+), list only the latest supported minor version per major version.
-   * For legacy experimental versions (0.x), explicitly list each supported version.
-   * Default: ["1.0"]
-   * </pre>
-   *
-   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The count of protocolVersions.
-   */
-  public int getProtocolVersionsCount() {
-    return protocolVersions_.size();
-  }
-  /**
-   * <pre>
-   * The versions of the A2A protocol this agent supports.
-   * For stable versions (1.x+), list only the latest supported minor version per major version.
-   * For legacy experimental versions (0.x), explicitly list each supported version.
-   * Default: ["1.0"]
-   * </pre>
-   *
-   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @param index The index of the element to return.
-   * @return The protocolVersions at the given index.
-   */
-  public java.lang.String getProtocolVersions(int index) {
-    return protocolVersions_.get(index);
-  }
-  /**
-   * <pre>
-   * The versions of the A2A protocol this agent supports.
-   * For stable versions (1.x+), list only the latest supported minor version per major version.
-   * For legacy experimental versions (0.x), explicitly list each supported version.
-   * Default: ["1.0"]
-   * </pre>
-   *
-   * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @param index The index of the value to return.
-   * @return The bytes of the protocolVersions at the given index.
-   */
-  public com.google.protobuf.ByteString
-      getProtocolVersionsBytes(int index) {
-    return protocolVersions_.getByteString(index);
-  }
-
   public static final int NAME_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object name_ = "";
@@ -584,70 +517,65 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     return map.get(key);
   }
 
-  public static final int SECURITY_FIELD_NUMBER = 9;
+  public static final int SECURITY_REQUIREMENTS_FIELD_NUMBER = 13;
   @SuppressWarnings("serial")
-  private java.util.List<io.a2a.grpc.Security> security_;
+  private java.util.List<io.a2a.grpc.SecurityRequirement> securityRequirements_;
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
    */
   @java.lang.Override
-  public java.util.List<io.a2a.grpc.Security> getSecurityList() {
-    return security_;
+  public java.util.List<io.a2a.grpc.SecurityRequirement> getSecurityRequirementsList() {
+    return securityRequirements_;
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
-      getSecurityOrBuilderList() {
-    return security_;
+  public java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
+      getSecurityRequirementsOrBuilderList() {
+    return securityRequirements_;
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
    */
   @java.lang.Override
-  public int getSecurityCount() {
-    return security_.size();
+  public int getSecurityRequirementsCount() {
+    return securityRequirements_.size();
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.Security getSecurity(int index) {
-    return security_.get(index);
+  public io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index) {
+    return securityRequirements_.get(index);
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 9;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
+  public io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
       int index) {
-    return security_.get(index);
+    return securityRequirements_.get(index);
   }
 
   public static final int DEFAULT_INPUT_MODES_FIELD_NUMBER = 10;
@@ -993,9 +921,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         internalGetSecuritySchemes(),
         SecuritySchemesDefaultEntryHolder.defaultEntry,
         8);
-    for (int i = 0; i < security_.size(); i++) {
-      output.writeMessage(9, security_.get(i));
-    }
     for (int i = 0; i < defaultInputModes_.size(); i++) {
       com.google.protobuf.GeneratedMessage.writeString(output, 10, defaultInputModes_.getRaw(i));
     }
@@ -1005,8 +930,8 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     for (int i = 0; i < skills_.size(); i++) {
       output.writeMessage(12, skills_.get(i));
     }
-    for (int i = 0; i < protocolVersions_.size(); i++) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 16, protocolVersions_.getRaw(i));
+    for (int i = 0; i < securityRequirements_.size(); i++) {
+      output.writeMessage(13, securityRequirements_.get(i));
     }
     for (int i = 0; i < signatures_.size(); i++) {
       output.writeMessage(17, signatures_.get(i));
@@ -1056,10 +981,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, securitySchemes__);
     }
-    for (int i = 0; i < security_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(9, security_.get(i));
-    }
     {
       int dataSize = 0;
       for (int i = 0; i < defaultInputModes_.size(); i++) {
@@ -1080,13 +1001,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(12, skills_.get(i));
     }
-    {
-      int dataSize = 0;
-      for (int i = 0; i < protocolVersions_.size(); i++) {
-        dataSize += computeStringSizeNoTag(protocolVersions_.getRaw(i));
-      }
-      size += dataSize;
-      size += 2 * getProtocolVersionsList().size();
+    for (int i = 0; i < securityRequirements_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(13, securityRequirements_.get(i));
     }
     for (int i = 0; i < signatures_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
@@ -1114,8 +1031,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     io.a2a.grpc.AgentCard other = (io.a2a.grpc.AgentCard) obj;
 
-    if (!getProtocolVersionsList()
-        .equals(other.getProtocolVersionsList())) return false;
     if (!getName()
         .equals(other.getName())) return false;
     if (!getDescription()
@@ -1141,8 +1056,8 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     if (!internalGetSecuritySchemes().equals(
         other.internalGetSecuritySchemes())) return false;
-    if (!getSecurityList()
-        .equals(other.getSecurityList())) return false;
+    if (!getSecurityRequirementsList()
+        .equals(other.getSecurityRequirementsList())) return false;
     if (!getDefaultInputModesList()
         .equals(other.getDefaultInputModesList())) return false;
     if (!getDefaultOutputModesList()
@@ -1167,10 +1082,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (getProtocolVersionsCount() > 0) {
-      hash = (37 * hash) + PROTOCOL_VERSIONS_FIELD_NUMBER;
-      hash = (53 * hash) + getProtocolVersionsList().hashCode();
-    }
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
     hash = (37 * hash) + DESCRIPTION_FIELD_NUMBER;
@@ -1197,9 +1108,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       hash = (37 * hash) + SECURITY_SCHEMES_FIELD_NUMBER;
       hash = (53 * hash) + internalGetSecuritySchemes().hashCode();
     }
-    if (getSecurityCount() > 0) {
-      hash = (37 * hash) + SECURITY_FIELD_NUMBER;
-      hash = (53 * hash) + getSecurityList().hashCode();
+    if (getSecurityRequirementsCount() > 0) {
+      hash = (37 * hash) + SECURITY_REQUIREMENTS_FIELD_NUMBER;
+      hash = (53 * hash) + getSecurityRequirementsList().hashCode();
     }
     if (getDefaultInputModesCount() > 0) {
       hash = (37 * hash) + DEFAULT_INPUT_MODES_FIELD_NUMBER;
@@ -1384,7 +1295,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         internalGetSupportedInterfacesFieldBuilder();
         internalGetProviderFieldBuilder();
         internalGetCapabilitiesFieldBuilder();
-        internalGetSecurityFieldBuilder();
+        internalGetSecurityRequirementsFieldBuilder();
         internalGetSkillsFieldBuilder();
         internalGetSignaturesFieldBuilder();
       }
@@ -1393,8 +1304,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      protocolVersions_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
       name_ = "";
       description_ = "";
       if (supportedInterfacesBuilder_ == null) {
@@ -1403,7 +1312,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         supportedInterfaces_ = null;
         supportedInterfacesBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000008);
+      bitField0_ = (bitField0_ & ~0x00000004);
       provider_ = null;
       if (providerBuilder_ != null) {
         providerBuilder_.dispose();
@@ -1417,13 +1326,13 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         capabilitiesBuilder_ = null;
       }
       internalGetMutableSecuritySchemes().clear();
-      if (securityBuilder_ == null) {
-        security_ = java.util.Collections.emptyList();
+      if (securityRequirementsBuilder_ == null) {
+        securityRequirements_ = java.util.Collections.emptyList();
       } else {
-        security_ = null;
-        securityBuilder_.clear();
+        securityRequirements_ = null;
+        securityRequirementsBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000200);
+      bitField0_ = (bitField0_ & ~0x00000100);
       defaultInputModes_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
       defaultOutputModes_ =
@@ -1434,14 +1343,14 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         skills_ = null;
         skillsBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00001000);
+      bitField0_ = (bitField0_ & ~0x00000800);
       if (signaturesBuilder_ == null) {
         signatures_ = java.util.Collections.emptyList();
       } else {
         signatures_ = null;
         signaturesBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00002000);
+      bitField0_ = (bitField0_ & ~0x00001000);
       iconUrl_ = "";
       return this;
     }
@@ -1477,36 +1386,36 @@ io.a2a.grpc.SecurityScheme defaultValue) {
 
     private void buildPartialRepeatedFields(io.a2a.grpc.AgentCard result) {
       if (supportedInterfacesBuilder_ == null) {
-        if (((bitField0_ & 0x00000008) != 0)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           supportedInterfaces_ = java.util.Collections.unmodifiableList(supportedInterfaces_);
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000004);
         }
         result.supportedInterfaces_ = supportedInterfaces_;
       } else {
         result.supportedInterfaces_ = supportedInterfacesBuilder_.build();
       }
-      if (securityBuilder_ == null) {
-        if (((bitField0_ & 0x00000200) != 0)) {
-          security_ = java.util.Collections.unmodifiableList(security_);
-          bitField0_ = (bitField0_ & ~0x00000200);
+      if (securityRequirementsBuilder_ == null) {
+        if (((bitField0_ & 0x00000100) != 0)) {
+          securityRequirements_ = java.util.Collections.unmodifiableList(securityRequirements_);
+          bitField0_ = (bitField0_ & ~0x00000100);
         }
-        result.security_ = security_;
+        result.securityRequirements_ = securityRequirements_;
       } else {
-        result.security_ = securityBuilder_.build();
+        result.securityRequirements_ = securityRequirementsBuilder_.build();
       }
       if (skillsBuilder_ == null) {
-        if (((bitField0_ & 0x00001000) != 0)) {
+        if (((bitField0_ & 0x00000800) != 0)) {
           skills_ = java.util.Collections.unmodifiableList(skills_);
-          bitField0_ = (bitField0_ & ~0x00001000);
+          bitField0_ = (bitField0_ & ~0x00000800);
         }
         result.skills_ = skills_;
       } else {
         result.skills_ = skillsBuilder_.build();
       }
       if (signaturesBuilder_ == null) {
-        if (((bitField0_ & 0x00002000) != 0)) {
+        if (((bitField0_ & 0x00001000) != 0)) {
           signatures_ = java.util.Collections.unmodifiableList(signatures_);
-          bitField0_ = (bitField0_ & ~0x00002000);
+          bitField0_ = (bitField0_ & ~0x00001000);
         }
         result.signatures_ = signatures_;
       } else {
@@ -1517,47 +1426,43 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     private void buildPartial0(io.a2a.grpc.AgentCard result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
-        protocolVersions_.makeImmutable();
-        result.protocolVersions_ = protocolVersions_;
-      }
-      if (((from_bitField0_ & 0x00000002) != 0)) {
         result.name_ = name_;
       }
-      if (((from_bitField0_ & 0x00000004) != 0)) {
+      if (((from_bitField0_ & 0x00000002) != 0)) {
         result.description_ = description_;
       }
       int to_bitField0_ = 0;
-      if (((from_bitField0_ & 0x00000010) != 0)) {
+      if (((from_bitField0_ & 0x00000008) != 0)) {
         result.provider_ = providerBuilder_ == null
             ? provider_
             : providerBuilder_.build();
         to_bitField0_ |= 0x00000001;
       }
-      if (((from_bitField0_ & 0x00000020) != 0)) {
+      if (((from_bitField0_ & 0x00000010) != 0)) {
         result.version_ = version_;
       }
-      if (((from_bitField0_ & 0x00000040) != 0)) {
+      if (((from_bitField0_ & 0x00000020) != 0)) {
         result.documentationUrl_ = documentationUrl_;
         to_bitField0_ |= 0x00000002;
       }
-      if (((from_bitField0_ & 0x00000080) != 0)) {
+      if (((from_bitField0_ & 0x00000040) != 0)) {
         result.capabilities_ = capabilitiesBuilder_ == null
             ? capabilities_
             : capabilitiesBuilder_.build();
         to_bitField0_ |= 0x00000004;
       }
-      if (((from_bitField0_ & 0x00000100) != 0)) {
+      if (((from_bitField0_ & 0x00000080) != 0)) {
         result.securitySchemes_ = internalGetSecuritySchemes().build(SecuritySchemesDefaultEntryHolder.defaultEntry);
       }
-      if (((from_bitField0_ & 0x00000400) != 0)) {
+      if (((from_bitField0_ & 0x00000200) != 0)) {
         defaultInputModes_.makeImmutable();
         result.defaultInputModes_ = defaultInputModes_;
       }
-      if (((from_bitField0_ & 0x00000800) != 0)) {
+      if (((from_bitField0_ & 0x00000400) != 0)) {
         defaultOutputModes_.makeImmutable();
         result.defaultOutputModes_ = defaultOutputModes_;
       }
-      if (((from_bitField0_ & 0x00004000) != 0)) {
+      if (((from_bitField0_ & 0x00002000) != 0)) {
         result.iconUrl_ = iconUrl_;
         to_bitField0_ |= 0x00000008;
       }
@@ -1576,31 +1481,21 @@ io.a2a.grpc.SecurityScheme defaultValue) {
 
     public Builder mergeFrom(io.a2a.grpc.AgentCard other) {
       if (other == io.a2a.grpc.AgentCard.getDefaultInstance()) return this;
-      if (!other.protocolVersions_.isEmpty()) {
-        if (protocolVersions_.isEmpty()) {
-          protocolVersions_ = other.protocolVersions_;
-          bitField0_ |= 0x00000001;
-        } else {
-          ensureProtocolVersionsIsMutable();
-          protocolVersions_.addAll(other.protocolVersions_);
-        }
-        onChanged();
-      }
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getDescription().isEmpty()) {
         description_ = other.description_;
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (supportedInterfacesBuilder_ == null) {
         if (!other.supportedInterfaces_.isEmpty()) {
           if (supportedInterfaces_.isEmpty()) {
             supportedInterfaces_ = other.supportedInterfaces_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000004);
           } else {
             ensureSupportedInterfacesIsMutable();
             supportedInterfaces_.addAll(other.supportedInterfaces_);
@@ -1613,7 +1508,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
             supportedInterfacesBuilder_.dispose();
             supportedInterfacesBuilder_ = null;
             supportedInterfaces_ = other.supportedInterfaces_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000004);
             supportedInterfacesBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSupportedInterfacesFieldBuilder() : null;
@@ -1627,12 +1522,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       }
       if (!other.getVersion().isEmpty()) {
         version_ = other.version_;
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000010;
         onChanged();
       }
       if (other.hasDocumentationUrl()) {
         documentationUrl_ = other.documentationUrl_;
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000020;
         onChanged();
       }
       if (other.hasCapabilities()) {
@@ -1640,37 +1535,37 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       }
       internalGetMutableSecuritySchemes().mergeFrom(
           other.internalGetSecuritySchemes());
-      bitField0_ |= 0x00000100;
-      if (securityBuilder_ == null) {
-        if (!other.security_.isEmpty()) {
-          if (security_.isEmpty()) {
-            security_ = other.security_;
-            bitField0_ = (bitField0_ & ~0x00000200);
+      bitField0_ |= 0x00000080;
+      if (securityRequirementsBuilder_ == null) {
+        if (!other.securityRequirements_.isEmpty()) {
+          if (securityRequirements_.isEmpty()) {
+            securityRequirements_ = other.securityRequirements_;
+            bitField0_ = (bitField0_ & ~0x00000100);
           } else {
-            ensureSecurityIsMutable();
-            security_.addAll(other.security_);
+            ensureSecurityRequirementsIsMutable();
+            securityRequirements_.addAll(other.securityRequirements_);
           }
           onChanged();
         }
       } else {
-        if (!other.security_.isEmpty()) {
-          if (securityBuilder_.isEmpty()) {
-            securityBuilder_.dispose();
-            securityBuilder_ = null;
-            security_ = other.security_;
-            bitField0_ = (bitField0_ & ~0x00000200);
-            securityBuilder_ = 
+        if (!other.securityRequirements_.isEmpty()) {
+          if (securityRequirementsBuilder_.isEmpty()) {
+            securityRequirementsBuilder_.dispose();
+            securityRequirementsBuilder_ = null;
+            securityRequirements_ = other.securityRequirements_;
+            bitField0_ = (bitField0_ & ~0x00000100);
+            securityRequirementsBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                 internalGetSecurityFieldBuilder() : null;
+                 internalGetSecurityRequirementsFieldBuilder() : null;
           } else {
-            securityBuilder_.addAllMessages(other.security_);
+            securityRequirementsBuilder_.addAllMessages(other.securityRequirements_);
           }
         }
       }
       if (!other.defaultInputModes_.isEmpty()) {
         if (defaultInputModes_.isEmpty()) {
           defaultInputModes_ = other.defaultInputModes_;
-          bitField0_ |= 0x00000400;
+          bitField0_ |= 0x00000200;
         } else {
           ensureDefaultInputModesIsMutable();
           defaultInputModes_.addAll(other.defaultInputModes_);
@@ -1680,7 +1575,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (!other.defaultOutputModes_.isEmpty()) {
         if (defaultOutputModes_.isEmpty()) {
           defaultOutputModes_ = other.defaultOutputModes_;
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00000400;
         } else {
           ensureDefaultOutputModesIsMutable();
           defaultOutputModes_.addAll(other.defaultOutputModes_);
@@ -1691,7 +1586,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         if (!other.skills_.isEmpty()) {
           if (skills_.isEmpty()) {
             skills_ = other.skills_;
-            bitField0_ = (bitField0_ & ~0x00001000);
+            bitField0_ = (bitField0_ & ~0x00000800);
           } else {
             ensureSkillsIsMutable();
             skills_.addAll(other.skills_);
@@ -1704,7 +1599,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
             skillsBuilder_.dispose();
             skillsBuilder_ = null;
             skills_ = other.skills_;
-            bitField0_ = (bitField0_ & ~0x00001000);
+            bitField0_ = (bitField0_ & ~0x00000800);
             skillsBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSkillsFieldBuilder() : null;
@@ -1717,7 +1612,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         if (!other.signatures_.isEmpty()) {
           if (signatures_.isEmpty()) {
             signatures_ = other.signatures_;
-            bitField0_ = (bitField0_ & ~0x00002000);
+            bitField0_ = (bitField0_ & ~0x00001000);
           } else {
             ensureSignaturesIsMutable();
             signatures_.addAll(other.signatures_);
@@ -1730,7 +1625,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
             signaturesBuilder_.dispose();
             signaturesBuilder_ = null;
             signatures_ = other.signatures_;
-            bitField0_ = (bitField0_ & ~0x00002000);
+            bitField0_ = (bitField0_ & ~0x00001000);
             signaturesBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  internalGetSignaturesFieldBuilder() : null;
@@ -1741,7 +1636,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       }
       if (other.hasIconUrl()) {
         iconUrl_ = other.iconUrl_;
-        bitField0_ |= 0x00004000;
+        bitField0_ |= 0x00002000;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -1772,36 +1667,36 @@ io.a2a.grpc.SecurityScheme defaultValue) {
               break;
             case 10: {
               name_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000002;
+              bitField0_ |= 0x00000001;
               break;
             } // case 10
             case 18: {
               description_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000002;
               break;
             } // case 18
             case 34: {
               input.readMessage(
                   internalGetProviderFieldBuilder().getBuilder(),
                   extensionRegistry);
-              bitField0_ |= 0x00000010;
+              bitField0_ |= 0x00000008;
               break;
             } // case 34
             case 42: {
               version_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000020;
+              bitField0_ |= 0x00000010;
               break;
             } // case 42
             case 50: {
               documentationUrl_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000040;
+              bitField0_ |= 0x00000020;
               break;
             } // case 50
             case 58: {
               input.readMessage(
                   internalGetCapabilitiesFieldBuilder().getBuilder(),
                   extensionRegistry);
-              bitField0_ |= 0x00000080;
+              bitField0_ |= 0x00000040;
               break;
             } // case 58
             case 66: {
@@ -1810,22 +1705,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
                   SecuritySchemesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
               internalGetMutableSecuritySchemes().ensureBuilderMap().put(
                   securitySchemes__.getKey(), securitySchemes__.getValue());
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000080;
               break;
             } // case 66
-            case 74: {
-              io.a2a.grpc.Security m =
-                  input.readMessage(
-                      io.a2a.grpc.Security.parser(),
-                      extensionRegistry);
-              if (securityBuilder_ == null) {
-                ensureSecurityIsMutable();
-                security_.add(m);
-              } else {
-                securityBuilder_.addMessage(m);
-              }
-              break;
-            } // case 74
             case 82: {
               java.lang.String s = input.readStringRequireUtf8();
               ensureDefaultInputModesIsMutable();
@@ -1851,12 +1733,19 @@ io.a2a.grpc.SecurityScheme defaultValue) {
               }
               break;
             } // case 98
-            case 130: {
-              java.lang.String s = input.readStringRequireUtf8();
-              ensureProtocolVersionsIsMutable();
-              protocolVersions_.add(s);
+            case 106: {
+              io.a2a.grpc.SecurityRequirement m =
+                  input.readMessage(
+                      io.a2a.grpc.SecurityRequirement.parser(),
+                      extensionRegistry);
+              if (securityRequirementsBuilder_ == null) {
+                ensureSecurityRequirementsIsMutable();
+                securityRequirements_.add(m);
+              } else {
+                securityRequirementsBuilder_.addMessage(m);
+              }
               break;
-            } // case 130
+            } // case 106
             case 138: {
               io.a2a.grpc.AgentCardSignature m =
                   input.readMessage(
@@ -1872,7 +1761,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
             } // case 138
             case 146: {
               iconUrl_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00004000;
+              bitField0_ |= 0x00002000;
               break;
             } // case 146
             case 154: {
@@ -1904,180 +1793,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       return this;
     }
     private int bitField0_;
-
-    private com.google.protobuf.LazyStringArrayList protocolVersions_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
-    private void ensureProtocolVersionsIsMutable() {
-      if (!protocolVersions_.isModifiable()) {
-        protocolVersions_ = new com.google.protobuf.LazyStringArrayList(protocolVersions_);
-      }
-      bitField0_ |= 0x00000001;
-    }
-    /**
-     * <pre>
-     * The versions of the A2A protocol this agent supports.
-     * For stable versions (1.x+), list only the latest supported minor version per major version.
-     * For legacy experimental versions (0.x), explicitly list each supported version.
-     * Default: ["1.0"]
-     * </pre>
-     *
-     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return A list containing the protocolVersions.
-     */
-    public com.google.protobuf.ProtocolStringList
-        getProtocolVersionsList() {
-      protocolVersions_.makeImmutable();
-      return protocolVersions_;
-    }
-    /**
-     * <pre>
-     * The versions of the A2A protocol this agent supports.
-     * For stable versions (1.x+), list only the latest supported minor version per major version.
-     * For legacy experimental versions (0.x), explicitly list each supported version.
-     * Default: ["1.0"]
-     * </pre>
-     *
-     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return The count of protocolVersions.
-     */
-    public int getProtocolVersionsCount() {
-      return protocolVersions_.size();
-    }
-    /**
-     * <pre>
-     * The versions of the A2A protocol this agent supports.
-     * For stable versions (1.x+), list only the latest supported minor version per major version.
-     * For legacy experimental versions (0.x), explicitly list each supported version.
-     * Default: ["1.0"]
-     * </pre>
-     *
-     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param index The index of the element to return.
-     * @return The protocolVersions at the given index.
-     */
-    public java.lang.String getProtocolVersions(int index) {
-      return protocolVersions_.get(index);
-    }
-    /**
-     * <pre>
-     * The versions of the A2A protocol this agent supports.
-     * For stable versions (1.x+), list only the latest supported minor version per major version.
-     * For legacy experimental versions (0.x), explicitly list each supported version.
-     * Default: ["1.0"]
-     * </pre>
-     *
-     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the protocolVersions at the given index.
-     */
-    public com.google.protobuf.ByteString
-        getProtocolVersionsBytes(int index) {
-      return protocolVersions_.getByteString(index);
-    }
-    /**
-     * <pre>
-     * The versions of the A2A protocol this agent supports.
-     * For stable versions (1.x+), list only the latest supported minor version per major version.
-     * For legacy experimental versions (0.x), explicitly list each supported version.
-     * Default: ["1.0"]
-     * </pre>
-     *
-     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param index The index to set the value at.
-     * @param value The protocolVersions to set.
-     * @return This builder for chaining.
-     */
-    public Builder setProtocolVersions(
-        int index, java.lang.String value) {
-      if (value == null) { throw new NullPointerException(); }
-      ensureProtocolVersionsIsMutable();
-      protocolVersions_.set(index, value);
-      bitField0_ |= 0x00000001;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * The versions of the A2A protocol this agent supports.
-     * For stable versions (1.x+), list only the latest supported minor version per major version.
-     * For legacy experimental versions (0.x), explicitly list each supported version.
-     * Default: ["1.0"]
-     * </pre>
-     *
-     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param value The protocolVersions to add.
-     * @return This builder for chaining.
-     */
-    public Builder addProtocolVersions(
-        java.lang.String value) {
-      if (value == null) { throw new NullPointerException(); }
-      ensureProtocolVersionsIsMutable();
-      protocolVersions_.add(value);
-      bitField0_ |= 0x00000001;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * The versions of the A2A protocol this agent supports.
-     * For stable versions (1.x+), list only the latest supported minor version per major version.
-     * For legacy experimental versions (0.x), explicitly list each supported version.
-     * Default: ["1.0"]
-     * </pre>
-     *
-     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param values The protocolVersions to add.
-     * @return This builder for chaining.
-     */
-    public Builder addAllProtocolVersions(
-        java.lang.Iterable<java.lang.String> values) {
-      ensureProtocolVersionsIsMutable();
-      com.google.protobuf.AbstractMessageLite.Builder.addAll(
-          values, protocolVersions_);
-      bitField0_ |= 0x00000001;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * The versions of the A2A protocol this agent supports.
-     * For stable versions (1.x+), list only the latest supported minor version per major version.
-     * For legacy experimental versions (0.x), explicitly list each supported version.
-     * Default: ["1.0"]
-     * </pre>
-     *
-     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearProtocolVersions() {
-      protocolVersions_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000001);;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * The versions of the A2A protocol this agent supports.
-     * For stable versions (1.x+), list only the latest supported minor version per major version.
-     * For legacy experimental versions (0.x), explicitly list each supported version.
-     * Default: ["1.0"]
-     * </pre>
-     *
-     * <code>repeated string protocol_versions = 16 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param value The bytes of the protocolVersions to add.
-     * @return This builder for chaining.
-     */
-    public Builder addProtocolVersionsBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) { throw new NullPointerException(); }
-      checkByteStringIsUtf8(value);
-      ensureProtocolVersionsIsMutable();
-      protocolVersions_.add(value);
-      bitField0_ |= 0x00000001;
-      onChanged();
-      return this;
-    }
 
     private java.lang.Object name_ = "";
     /**
@@ -2137,7 +1852,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       name_ = value;
-      bitField0_ |= 0x00000002;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -2152,7 +1867,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder clearName() {
       name_ = getDefaultInstance().getName();
-      bitField0_ = (bitField0_ & ~0x00000002);
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -2171,7 +1886,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       name_ = value;
-      bitField0_ |= 0x00000002;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -2237,7 +1952,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       description_ = value;
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -2253,7 +1968,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder clearDescription() {
       description_ = getDefaultInstance().getDescription();
-      bitField0_ = (bitField0_ & ~0x00000004);
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -2273,7 +1988,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       description_ = value;
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -2281,9 +1996,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     private java.util.List<io.a2a.grpc.AgentInterface> supportedInterfaces_ =
       java.util.Collections.emptyList();
     private void ensureSupportedInterfacesIsMutable() {
-      if (!((bitField0_ & 0x00000008) != 0)) {
+      if (!((bitField0_ & 0x00000004) != 0)) {
         supportedInterfaces_ = new java.util.ArrayList<io.a2a.grpc.AgentInterface>(supportedInterfaces_);
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000004;
        }
     }
 
@@ -2477,7 +2192,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearSupportedInterfaces() {
       if (supportedInterfacesBuilder_ == null) {
         supportedInterfaces_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
       } else {
         supportedInterfacesBuilder_.clear();
@@ -2582,7 +2297,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         supportedInterfacesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             io.a2a.grpc.AgentInterface, io.a2a.grpc.AgentInterface.Builder, io.a2a.grpc.AgentInterfaceOrBuilder>(
                 supportedInterfaces_,
-                ((bitField0_ & 0x00000008) != 0),
+                ((bitField0_ & 0x00000004) != 0),
                 getParentForChildren(),
                 isClean());
         supportedInterfaces_ = null;
@@ -2602,7 +2317,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * @return Whether the provider field is set.
      */
     public boolean hasProvider() {
-      return ((bitField0_ & 0x00000010) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -2635,7 +2350,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       } else {
         providerBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -2653,7 +2368,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       } else {
         providerBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -2666,7 +2381,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder mergeProvider(io.a2a.grpc.AgentProvider value) {
       if (providerBuilder_ == null) {
-        if (((bitField0_ & 0x00000010) != 0) &&
+        if (((bitField0_ & 0x00000008) != 0) &&
           provider_ != null &&
           provider_ != io.a2a.grpc.AgentProvider.getDefaultInstance()) {
           getProviderBuilder().mergeFrom(value);
@@ -2677,7 +2392,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         providerBuilder_.mergeFrom(value);
       }
       if (provider_ != null) {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000008;
         onChanged();
       }
       return this;
@@ -2690,7 +2405,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder clearProvider() {
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000008);
       provider_ = null;
       if (providerBuilder_ != null) {
         providerBuilder_.dispose();
@@ -2707,7 +2422,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * <code>.a2a.v1.AgentProvider provider = 4;</code>
      */
     public io.a2a.grpc.AgentProvider.Builder getProviderBuilder() {
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000008;
       onChanged();
       return internalGetProviderFieldBuilder().getBuilder();
     }
@@ -2805,7 +2520,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       version_ = value;
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -2820,7 +2535,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder clearVersion() {
       version_ = getDefaultInstance().getVersion();
-      bitField0_ = (bitField0_ & ~0x00000020);
+      bitField0_ = (bitField0_ & ~0x00000010);
       onChanged();
       return this;
     }
@@ -2839,7 +2554,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       version_ = value;
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -2854,7 +2569,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * @return Whether the documentationUrl field is set.
      */
     public boolean hasDocumentationUrl() {
-      return ((bitField0_ & 0x00000040) != 0);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      * <pre>
@@ -2910,7 +2625,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       documentationUrl_ = value;
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
@@ -2924,7 +2639,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder clearDocumentationUrl() {
       documentationUrl_ = getDefaultInstance().getDocumentationUrl();
-      bitField0_ = (bitField0_ & ~0x00000040);
+      bitField0_ = (bitField0_ & ~0x00000020);
       onChanged();
       return this;
     }
@@ -2942,7 +2657,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       documentationUrl_ = value;
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
@@ -2959,7 +2674,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * @return Whether the capabilities field is set.
      */
     public boolean hasCapabilities() {
-      return ((bitField0_ & 0x00000080) != 0);
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      * <pre>
@@ -2992,7 +2707,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       } else {
         capabilitiesBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -3010,7 +2725,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       } else {
         capabilitiesBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -3023,7 +2738,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder mergeCapabilities(io.a2a.grpc.AgentCapabilities value) {
       if (capabilitiesBuilder_ == null) {
-        if (((bitField0_ & 0x00000080) != 0) &&
+        if (((bitField0_ & 0x00000040) != 0) &&
           capabilities_ != null &&
           capabilities_ != io.a2a.grpc.AgentCapabilities.getDefaultInstance()) {
           getCapabilitiesBuilder().mergeFrom(value);
@@ -3034,7 +2749,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         capabilitiesBuilder_.mergeFrom(value);
       }
       if (capabilities_ != null) {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000040;
         onChanged();
       }
       return this;
@@ -3047,7 +2762,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearCapabilities() {
-      bitField0_ = (bitField0_ & ~0x00000080);
+      bitField0_ = (bitField0_ & ~0x00000040);
       capabilities_ = null;
       if (capabilitiesBuilder_ != null) {
         capabilitiesBuilder_.dispose();
@@ -3064,7 +2779,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentCapabilities.Builder getCapabilitiesBuilder() {
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000040;
       onChanged();
       return internalGetCapabilitiesFieldBuilder().getBuilder();
     }
@@ -3132,7 +2847,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (securitySchemes_ == null) {
         securitySchemes_ = new com.google.protobuf.MapFieldBuilder<>(securitySchemesConverter);
       }
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000080;
       onChanged();
       return securitySchemes_;
     }
@@ -3206,7 +2921,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       return securitySchemesConverter.build(map.get(key));
     }
     public Builder clearSecuritySchemes() {
-      bitField0_ = (bitField0_ & ~0x00000100);
+      bitField0_ = (bitField0_ & ~0x00000080);
       internalGetMutableSecuritySchemes().clear();
       return this;
     }
@@ -3230,7 +2945,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, io.a2a.grpc.SecurityScheme>
         getMutableSecuritySchemes() {
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000080;
       return internalGetMutableSecuritySchemes().ensureMessageMap();
     }
     /**
@@ -3247,7 +2962,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException("map value"); }
       internalGetMutableSecuritySchemes().ensureBuilderMap()
           .put(key, value);
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000080;
       return this;
     }
     /**
@@ -3266,7 +2981,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       }
       internalGetMutableSecuritySchemes().ensureBuilderMap()
           .putAll(values);
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000080;
       return this;
     }
     /**
@@ -3291,334 +3006,316 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       return (io.a2a.grpc.SecurityScheme.Builder) entry;
     }
 
-    private java.util.List<io.a2a.grpc.Security> security_ =
+    private java.util.List<io.a2a.grpc.SecurityRequirement> securityRequirements_ =
       java.util.Collections.emptyList();
-    private void ensureSecurityIsMutable() {
-      if (!((bitField0_ & 0x00000200) != 0)) {
-        security_ = new java.util.ArrayList<io.a2a.grpc.Security>(security_);
-        bitField0_ |= 0x00000200;
+    private void ensureSecurityRequirementsIsMutable() {
+      if (!((bitField0_ & 0x00000100) != 0)) {
+        securityRequirements_ = new java.util.ArrayList<io.a2a.grpc.SecurityRequirement>(securityRequirements_);
+        bitField0_ |= 0x00000100;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilder<
-        io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder> securityBuilder_;
+        io.a2a.grpc.SecurityRequirement, io.a2a.grpc.SecurityRequirement.Builder, io.a2a.grpc.SecurityRequirementOrBuilder> securityRequirementsBuilder_;
 
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public java.util.List<io.a2a.grpc.Security> getSecurityList() {
-      if (securityBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(security_);
+    public java.util.List<io.a2a.grpc.SecurityRequirement> getSecurityRequirementsList() {
+      if (securityRequirementsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(securityRequirements_);
       } else {
-        return securityBuilder_.getMessageList();
+        return securityRequirementsBuilder_.getMessageList();
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public int getSecurityCount() {
-      if (securityBuilder_ == null) {
-        return security_.size();
+    public int getSecurityRequirementsCount() {
+      if (securityRequirementsBuilder_ == null) {
+        return securityRequirements_.size();
       } else {
-        return securityBuilder_.getCount();
+        return securityRequirementsBuilder_.getCount();
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public io.a2a.grpc.Security getSecurity(int index) {
-      if (securityBuilder_ == null) {
-        return security_.get(index);
+    public io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index) {
+      if (securityRequirementsBuilder_ == null) {
+        return securityRequirements_.get(index);
       } else {
-        return securityBuilder_.getMessage(index);
+        return securityRequirementsBuilder_.getMessage(index);
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public Builder setSecurity(
-        int index, io.a2a.grpc.Security value) {
-      if (securityBuilder_ == null) {
+    public Builder setSecurityRequirements(
+        int index, io.a2a.grpc.SecurityRequirement value) {
+      if (securityRequirementsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureSecurityIsMutable();
-        security_.set(index, value);
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.set(index, value);
         onChanged();
       } else {
-        securityBuilder_.setMessage(index, value);
+        securityRequirementsBuilder_.setMessage(index, value);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public Builder setSecurity(
-        int index, io.a2a.grpc.Security.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.set(index, builderForValue.build());
+    public Builder setSecurityRequirements(
+        int index, io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.set(index, builderForValue.build());
         onChanged();
       } else {
-        securityBuilder_.setMessage(index, builderForValue.build());
+        securityRequirementsBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public Builder addSecurity(io.a2a.grpc.Security value) {
-      if (securityBuilder_ == null) {
+    public Builder addSecurityRequirements(io.a2a.grpc.SecurityRequirement value) {
+      if (securityRequirementsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureSecurityIsMutable();
-        security_.add(value);
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.add(value);
         onChanged();
       } else {
-        securityBuilder_.addMessage(value);
+        securityRequirementsBuilder_.addMessage(value);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public Builder addSecurity(
-        int index, io.a2a.grpc.Security value) {
-      if (securityBuilder_ == null) {
+    public Builder addSecurityRequirements(
+        int index, io.a2a.grpc.SecurityRequirement value) {
+      if (securityRequirementsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureSecurityIsMutable();
-        security_.add(index, value);
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.add(index, value);
         onChanged();
       } else {
-        securityBuilder_.addMessage(index, value);
+        securityRequirementsBuilder_.addMessage(index, value);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public Builder addSecurity(
-        io.a2a.grpc.Security.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.add(builderForValue.build());
+    public Builder addSecurityRequirements(
+        io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.add(builderForValue.build());
         onChanged();
       } else {
-        securityBuilder_.addMessage(builderForValue.build());
+        securityRequirementsBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public Builder addSecurity(
-        int index, io.a2a.grpc.Security.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.add(index, builderForValue.build());
+    public Builder addSecurityRequirements(
+        int index, io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.add(index, builderForValue.build());
         onChanged();
       } else {
-        securityBuilder_.addMessage(index, builderForValue.build());
+        securityRequirementsBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public Builder addAllSecurity(
-        java.lang.Iterable<? extends io.a2a.grpc.Security> values) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
+    public Builder addAllSecurityRequirements(
+        java.lang.Iterable<? extends io.a2a.grpc.SecurityRequirement> values) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, security_);
+            values, securityRequirements_);
         onChanged();
       } else {
-        securityBuilder_.addAllMessages(values);
+        securityRequirementsBuilder_.addAllMessages(values);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public Builder clearSecurity() {
-      if (securityBuilder_ == null) {
-        security_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000200);
+    public Builder clearSecurityRequirements() {
+      if (securityRequirementsBuilder_ == null) {
+        securityRequirements_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000100);
         onChanged();
       } else {
-        securityBuilder_.clear();
+        securityRequirementsBuilder_.clear();
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public Builder removeSecurity(int index) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.remove(index);
+    public Builder removeSecurityRequirements(int index) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.remove(index);
         onChanged();
       } else {
-        securityBuilder_.remove(index);
+        securityRequirementsBuilder_.remove(index);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public io.a2a.grpc.Security.Builder getSecurityBuilder(
+    public io.a2a.grpc.SecurityRequirement.Builder getSecurityRequirementsBuilder(
         int index) {
-      return internalGetSecurityFieldBuilder().getBuilder(index);
+      return internalGetSecurityRequirementsFieldBuilder().getBuilder(index);
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
+    public io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
         int index) {
-      if (securityBuilder_ == null) {
-        return security_.get(index);  } else {
-        return securityBuilder_.getMessageOrBuilder(index);
+      if (securityRequirementsBuilder_ == null) {
+        return securityRequirements_.get(index);  } else {
+        return securityRequirementsBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
-         getSecurityOrBuilderList() {
-      if (securityBuilder_ != null) {
-        return securityBuilder_.getMessageOrBuilderList();
+    public java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
+         getSecurityRequirementsOrBuilderList() {
+      if (securityRequirementsBuilder_ != null) {
+        return securityRequirementsBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(security_);
+        return java.util.Collections.unmodifiableList(securityRequirements_);
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public io.a2a.grpc.Security.Builder addSecurityBuilder() {
-      return internalGetSecurityFieldBuilder().addBuilder(
-          io.a2a.grpc.Security.getDefaultInstance());
+    public io.a2a.grpc.SecurityRequirement.Builder addSecurityRequirementsBuilder() {
+      return internalGetSecurityRequirementsFieldBuilder().addBuilder(
+          io.a2a.grpc.SecurityRequirement.getDefaultInstance());
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public io.a2a.grpc.Security.Builder addSecurityBuilder(
+    public io.a2a.grpc.SecurityRequirement.Builder addSecurityRequirementsBuilder(
         int index) {
-      return internalGetSecurityFieldBuilder().addBuilder(
-          index, io.a2a.grpc.Security.getDefaultInstance());
+      return internalGetSecurityRequirementsFieldBuilder().addBuilder(
+          index, io.a2a.grpc.SecurityRequirement.getDefaultInstance());
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 9;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
      */
-    public java.util.List<io.a2a.grpc.Security.Builder> 
-         getSecurityBuilderList() {
-      return internalGetSecurityFieldBuilder().getBuilderList();
+    public java.util.List<io.a2a.grpc.SecurityRequirement.Builder> 
+         getSecurityRequirementsBuilderList() {
+      return internalGetSecurityRequirementsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder> 
-        internalGetSecurityFieldBuilder() {
-      if (securityBuilder_ == null) {
-        securityBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-            io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder>(
-                security_,
-                ((bitField0_ & 0x00000200) != 0),
+        io.a2a.grpc.SecurityRequirement, io.a2a.grpc.SecurityRequirement.Builder, io.a2a.grpc.SecurityRequirementOrBuilder> 
+        internalGetSecurityRequirementsFieldBuilder() {
+      if (securityRequirementsBuilder_ == null) {
+        securityRequirementsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+            io.a2a.grpc.SecurityRequirement, io.a2a.grpc.SecurityRequirement.Builder, io.a2a.grpc.SecurityRequirementOrBuilder>(
+                securityRequirements_,
+                ((bitField0_ & 0x00000100) != 0),
                 getParentForChildren(),
                 isClean());
-        security_ = null;
+        securityRequirements_ = null;
       }
-      return securityBuilder_;
+      return securityRequirementsBuilder_;
     }
 
     private com.google.protobuf.LazyStringArrayList defaultInputModes_ =
@@ -3627,7 +3324,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (!defaultInputModes_.isModifiable()) {
         defaultInputModes_ = new com.google.protobuf.LazyStringArrayList(defaultInputModes_);
       }
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000200;
     }
     /**
      * <pre>
@@ -3703,7 +3400,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       ensureDefaultInputModesIsMutable();
       defaultInputModes_.set(index, value);
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3723,7 +3420,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       ensureDefaultInputModesIsMutable();
       defaultInputModes_.add(value);
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3743,7 +3440,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       ensureDefaultInputModesIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(
           values, defaultInputModes_);
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3760,7 +3457,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearDefaultInputModes() {
       defaultInputModes_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000400);;
+      bitField0_ = (bitField0_ & ~0x00000200);;
       onChanged();
       return this;
     }
@@ -3781,7 +3478,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       checkByteStringIsUtf8(value);
       ensureDefaultInputModesIsMutable();
       defaultInputModes_.add(value);
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3792,7 +3489,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (!defaultOutputModes_.isModifiable()) {
         defaultOutputModes_ = new com.google.protobuf.LazyStringArrayList(defaultOutputModes_);
       }
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000400;
     }
     /**
      * <pre>
@@ -3858,7 +3555,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       ensureDefaultOutputModesIsMutable();
       defaultOutputModes_.set(index, value);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3876,7 +3573,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       ensureDefaultOutputModesIsMutable();
       defaultOutputModes_.add(value);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3894,7 +3591,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       ensureDefaultOutputModesIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(
           values, defaultOutputModes_);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3909,7 +3606,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearDefaultOutputModes() {
       defaultOutputModes_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000800);;
+      bitField0_ = (bitField0_ & ~0x00000400);;
       onChanged();
       return this;
     }
@@ -3928,7 +3625,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       checkByteStringIsUtf8(value);
       ensureDefaultOutputModesIsMutable();
       defaultOutputModes_.add(value);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3936,9 +3633,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     private java.util.List<io.a2a.grpc.AgentSkill> skills_ =
       java.util.Collections.emptyList();
     private void ensureSkillsIsMutable() {
-      if (!((bitField0_ & 0x00001000) != 0)) {
+      if (!((bitField0_ & 0x00000800) != 0)) {
         skills_ = new java.util.ArrayList<io.a2a.grpc.AgentSkill>(skills_);
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00000800;
        }
     }
 
@@ -4154,7 +3851,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearSkills() {
       if (skillsBuilder_ == null) {
         skills_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00001000);
+        bitField0_ = (bitField0_ & ~0x00000800);
         onChanged();
       } else {
         skillsBuilder_.clear();
@@ -4273,7 +3970,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         skillsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             io.a2a.grpc.AgentSkill, io.a2a.grpc.AgentSkill.Builder, io.a2a.grpc.AgentSkillOrBuilder>(
                 skills_,
-                ((bitField0_ & 0x00001000) != 0),
+                ((bitField0_ & 0x00000800) != 0),
                 getParentForChildren(),
                 isClean());
         skills_ = null;
@@ -4284,9 +3981,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     private java.util.List<io.a2a.grpc.AgentCardSignature> signatures_ =
       java.util.Collections.emptyList();
     private void ensureSignaturesIsMutable() {
-      if (!((bitField0_ & 0x00002000) != 0)) {
+      if (!((bitField0_ & 0x00001000) != 0)) {
         signatures_ = new java.util.ArrayList<io.a2a.grpc.AgentCardSignature>(signatures_);
-        bitField0_ |= 0x00002000;
+        bitField0_ |= 0x00001000;
        }
     }
 
@@ -4480,7 +4177,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     public Builder clearSignatures() {
       if (signaturesBuilder_ == null) {
         signatures_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00002000);
+        bitField0_ = (bitField0_ & ~0x00001000);
         onChanged();
       } else {
         signaturesBuilder_.clear();
@@ -4585,7 +4282,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         signaturesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             io.a2a.grpc.AgentCardSignature, io.a2a.grpc.AgentCardSignature.Builder, io.a2a.grpc.AgentCardSignatureOrBuilder>(
                 signatures_,
-                ((bitField0_ & 0x00002000) != 0),
+                ((bitField0_ & 0x00001000) != 0),
                 getParentForChildren(),
                 isClean());
         signatures_ = null;
@@ -4603,7 +4300,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * @return Whether the iconUrl field is set.
      */
     public boolean hasIconUrl() {
-      return ((bitField0_ & 0x00004000) != 0);
+      return ((bitField0_ & 0x00002000) != 0);
     }
     /**
      * <pre>
@@ -4659,7 +4356,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       iconUrl_ = value;
-      bitField0_ |= 0x00004000;
+      bitField0_ |= 0x00002000;
       onChanged();
       return this;
     }
@@ -4673,7 +4370,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      */
     public Builder clearIconUrl() {
       iconUrl_ = getDefaultInstance().getIconUrl();
-      bitField0_ = (bitField0_ & ~0x00004000);
+      bitField0_ = (bitField0_ & ~0x00002000);
       onChanged();
       return this;
     }
@@ -4691,7 +4388,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       iconUrl_ = value;
-      bitField0_ |= 0x00004000;
+      bitField0_ |= 0x00002000;
       onChanged();
       return this;
     }

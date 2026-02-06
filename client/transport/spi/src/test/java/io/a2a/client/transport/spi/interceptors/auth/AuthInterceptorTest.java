@@ -235,7 +235,7 @@ public class AuthInterceptorTest {
             .defaultInputModes(List.of("text"))
             .defaultOutputModes(List.of("text"))
             .skills(List.of())
-            .security(List.of(Map.of(schemeName, List.of())))
+            .securityRequirements(List.of(Map.of(schemeName, List.of())))
             .securitySchemes(Map.of()) // no security schemes
             .build();
             
@@ -289,7 +289,7 @@ public class AuthInterceptorTest {
             .defaultInputModes(List.of("text"))
             .defaultOutputModes(List.of("text"))
             .skills(List.of())
-            .security(null) // no security info
+            .securityRequirements(null) // no security info
             .build();
             
         Map<String, Object> requestPayload = Map.of("test", "payload");
@@ -321,7 +321,7 @@ public class AuthInterceptorTest {
             .defaultInputModes(List.of("text"))
             .defaultOutputModes(List.of("text"))
             .skills(List.of())
-            .security(List.of(Map.of(schemeName, List.of())))
+            .securityRequirements(List.of(Map.of(schemeName, List.of())))
             .securitySchemes(Map.of(schemeName, securityScheme))
             .build();
     }

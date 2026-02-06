@@ -184,21 +184,6 @@ private static final long serialVersionUID = 0L;
     return status_ == null ? io.a2a.grpc.TaskStatus.getDefaultInstance() : status_;
   }
 
-  public static final int FINAL_FIELD_NUMBER = 4;
-  private boolean final_ = false;
-  /**
-   * <pre>
-   * If true, this is the final event in the stream for this interaction.
-   * </pre>
-   *
-   * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The final.
-   */
-  @java.lang.Override
-  public boolean getFinal() {
-    return final_;
-  }
-
   public static final int METADATA_FIELD_NUMBER = 5;
   private com.google.protobuf.Struct metadata_;
   /**
@@ -260,9 +245,6 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(3, getStatus());
     }
-    if (final_ != false) {
-      output.writeBool(4, final_);
-    }
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(5, getMetadata());
     }
@@ -284,10 +266,6 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, getStatus());
-    }
-    if (final_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(4, final_);
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
@@ -317,8 +295,6 @@ private static final long serialVersionUID = 0L;
       if (!getStatus()
           .equals(other.getStatus())) return false;
     }
-    if (getFinal()
-        != other.getFinal()) return false;
     if (hasMetadata() != other.hasMetadata()) return false;
     if (hasMetadata()) {
       if (!getMetadata()
@@ -343,9 +319,6 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + getStatus().hashCode();
     }
-    hash = (37 * hash) + FINAL_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getFinal());
     if (hasMetadata()) {
       hash = (37 * hash) + METADATA_FIELD_NUMBER;
       hash = (53 * hash) + getMetadata().hashCode();
@@ -501,7 +474,6 @@ private static final long serialVersionUID = 0L;
         statusBuilder_.dispose();
         statusBuilder_ = null;
       }
-      final_ = false;
       metadata_ = null;
       if (metadataBuilder_ != null) {
         metadataBuilder_.dispose();
@@ -554,9 +526,6 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
-        result.final_ = final_;
-      }
-      if (((from_bitField0_ & 0x00000010) != 0)) {
         result.metadata_ = metadataBuilder_ == null
             ? metadata_
             : metadataBuilder_.build();
@@ -589,9 +558,6 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasStatus()) {
         mergeStatus(other.getStatus());
-      }
-      if (other.getFinal() != false) {
-        setFinal(other.getFinal());
       }
       if (other.hasMetadata()) {
         mergeMetadata(other.getMetadata());
@@ -639,16 +605,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000004;
               break;
             } // case 26
-            case 32: {
-              final_ = input.readBool();
-              bitField0_ |= 0x00000008;
-              break;
-            } // case 32
             case 42: {
               input.readMessage(
                   internalGetMetadataFieldBuilder().getBuilder(),
                   extensionRegistry);
-              bitField0_ |= 0x00000010;
+              bitField0_ |= 0x00000008;
               break;
             } // case 42
             default: {
@@ -1009,50 +970,6 @@ private static final long serialVersionUID = 0L;
       return statusBuilder_;
     }
 
-    private boolean final_ ;
-    /**
-     * <pre>
-     * If true, this is the final event in the stream for this interaction.
-     * </pre>
-     *
-     * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return The final.
-     */
-    @java.lang.Override
-    public boolean getFinal() {
-      return final_;
-    }
-    /**
-     * <pre>
-     * If true, this is the final event in the stream for this interaction.
-     * </pre>
-     *
-     * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @param value The final to set.
-     * @return This builder for chaining.
-     */
-    public Builder setFinal(boolean value) {
-
-      final_ = value;
-      bitField0_ |= 0x00000008;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * If true, this is the final event in the stream for this interaction.
-     * </pre>
-     *
-     * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearFinal() {
-      bitField0_ = (bitField0_ & ~0x00000008);
-      final_ = false;
-      onChanged();
-      return this;
-    }
-
     private com.google.protobuf.Struct metadata_;
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
@@ -1065,7 +982,7 @@ private static final long serialVersionUID = 0L;
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
-      return ((bitField0_ & 0x00000010) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -1098,7 +1015,7 @@ private static final long serialVersionUID = 0L;
       } else {
         metadataBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1116,7 +1033,7 @@ private static final long serialVersionUID = 0L;
       } else {
         metadataBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1129,7 +1046,7 @@ private static final long serialVersionUID = 0L;
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
-        if (((bitField0_ & 0x00000010) != 0) &&
+        if (((bitField0_ & 0x00000008) != 0) &&
           metadata_ != null &&
           metadata_ != com.google.protobuf.Struct.getDefaultInstance()) {
           getMetadataBuilder().mergeFrom(value);
@@ -1140,7 +1057,7 @@ private static final long serialVersionUID = 0L;
         metadataBuilder_.mergeFrom(value);
       }
       if (metadata_ != null) {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000008;
         onChanged();
       }
       return this;
@@ -1153,7 +1070,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder clearMetadata() {
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000008);
       metadata_ = null;
       if (metadataBuilder_ != null) {
         metadataBuilder_.dispose();
@@ -1170,7 +1087,7 @@ private static final long serialVersionUID = 0L;
      * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000008;
       onChanged();
       return internalGetMetadataFieldBuilder().getBuilder();
     }

@@ -79,16 +79,6 @@ public interface TaskStatusUpdateEventOrBuilder extends
 
   /**
    * <pre>
-   * If true, this is the final event in the stream for this interaction.
-   * </pre>
-   *
-   * <code>bool final = 4 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The final.
-   */
-  boolean getFinal();
-
-  /**
-   * <pre>
    * Optional metadata to associate with the task update.
    * </pre>
    *

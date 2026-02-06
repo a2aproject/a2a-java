@@ -1,6 +1,6 @@
 package io.a2a.client.transport.jsonrpc;
 
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+import static io.a2a.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
 
 /**
  * Request and response messages used by the tests. These have been created following examples from
@@ -8,9 +8,8 @@ import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
  */
 public class JsonMessages {
 
-    static final String AGENT_CARD = String.format("""
+    static final String AGENT_CARD = """
             {
-                 "protocolVersions": ["%s"],
                  "name": "GeoSpatial Route Planner Agent",
                  "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
                  "supportedInterfaces" : [
@@ -37,7 +36,7 @@ public class JsonMessages {
                      }
                    }
                  },
-                 "security": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
+                 "securityRequirements": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
                  "defaultInputModes": ["application/json", "text/plain"],
                  "defaultOutputModes": ["application/json", "image/png"],
                  "skills": [
@@ -81,7 +80,7 @@ public class JsonMessages {
                      "signature": "QFdkNLNszlGj3z3u0YQGt_T9LixY3qtdQpZmsTdDHDe3fXV9y9-B3m2-XgCpzuhiLt8E0tV6HXoZKHv4GtHgKQ"
                    }
                  ]
-               }""", CURRENT_PROTOCOL_VERSION);
+               }""";
 
     static final String SEND_MESSAGE_TEST_REQUEST = """
            {
@@ -228,7 +227,7 @@ public class JsonMessages {
               "jsonrpc":"2.0",
               "method":"GetTask",
               "params":{
-                "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+                "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
                 "historyLength":10
               }
             }
@@ -262,16 +261,12 @@ public class JsonMessages {
                         "text":"tell me a joke"
                       },
                       {
-                        "file":{
-                          "file_with_uri":"file:///path/to/file.txt",
-                          "mediaType":"text/plain"
-                        }
+                        "url":"file:///path/to/file.txt",
+                        "mediaType":"text/plain"
                       },
                       {
-                        "file":{
-                          "file_with_bytes":"aGVsbG8=",
-                          "name":"hello.txt"
-                        }
+                        "raw":"aGVsbG8=",
+                        "filename":"hello.txt"
                       }
                     ],
                     "messageId":"message-123"
@@ -289,7 +284,7 @@ public class JsonMessages {
               "jsonrpc":"2.0",
               "method":"CancelTask",
               "params":{
-                "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
+                "id":"de38c76d-d54c-436c-8b9f-4c2703648d64"
               }
             }
             """;
@@ -302,7 +297,7 @@ public class JsonMessages {
                   "id":"de38c76d-d54c-436c-8b9f-4c2703648d64",
                   "contextId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
                   "status":{
-                    "state":"TASK_STATE_CANCELLED"
+                    "state":"TASK_STATE_CANCELED"
                   },
                   "metadata":{
                     
@@ -316,7 +311,8 @@ public class JsonMessages {
               "jsonrpc":"2.0",
               "method":"GetTaskPushNotificationConfig",
               "params":{
-                "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/c295ea44-7543-4f78-b524-7a38915ad6e4"
+                "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+                "id":"c295ea44-7543-4f78-b524-7a38915ad6e4"
               }
             }""";
 
@@ -325,11 +321,12 @@ public class JsonMessages {
              "jsonrpc": "2.0",
               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "result": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/c295ea44-7543-4f78-b524-7a38915ad6e4",
+              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "c295ea44-7543-4f78-b524-7a38915ad6e4",
               "pushNotificationConfig": {
                "url": "https://example.com/callback",
                "authentication": {
-                "schemes": ["jwt"]
+                "scheme": "jwt"
                }
               }
              }
@@ -341,17 +338,12 @@ public class JsonMessages {
               "jsonrpc":"2.0",
               "method":"CreateTaskPushNotificationConfig",
               "params":{
-                "parent":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+                "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
                 "configId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
                 "config":{
-                  "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/c295ea44-7543-4f78-b524-7a38915ad6e4",
-                  "pushNotificationConfig":{
-                    "url":"https://example.com/callback",
-                    "authentication":{
-                      "schemes":[
-                        "jwt"
-                      ]
-                    }
+                  "url":"https://example.com/callback",
+                  "authentication":{
+                    "scheme":"jwt"
                   }
                 }
               }
@@ -362,11 +354,12 @@ public class JsonMessages {
              "jsonrpc": "2.0",
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "result": {
-              "name":"tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/c295ea44-7543-4f78-b524-7a38915ad6e4",
+              "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
               "pushNotificationConfig": {
                "url": "https://example.com/callback",
                "authentication": {
-                "schemes": ["jwt"]
+                "scheme": "jwt"
                }
               }
              }
@@ -387,10 +380,8 @@ public class JsonMessages {
                        "text":"analyze this image"
                      },
                      {
-                       "file":{
-                         "fileWithUri":"file:///path/to/image.jpg",
-                         "mediaType":"image/jpeg"
-                       }
+                       "url":"file:///path/to/image.jpg",
+                       "mediaType":"image/jpeg"
                      }
                    ],
                    "metadata":{
@@ -453,12 +444,10 @@ public class JsonMessages {
                     },
                     {
                       "data":{
-                        "data":{
-                          "temperature":25.5,
-                          "humidity":60.2,
-                          "location":"San Francisco",
-                          "timestamp":"2024-01-15T10:30:00Z"
-                        }
+                        "temperature":25.5,
+                        "humidity":60.2,
+                        "location":"San Francisco",
+                        "timestamp":"2024-01-15T10:30:00Z"
                       }
                     }
                   ],
@@ -521,19 +510,15 @@ public class JsonMessages {
                       "text":"analyze this data and image"
                     },
                     {
-                      "file":{
-                        "fileWithBytes":"aGVsbG8=",
-                        "mediaType":"image/png",
-                        "name":"chart.png"
-                      }
+                      "raw":"aGVsbG8=",
+                      "mediaType":"image/png",
+                      "filename":"chart.png"
                     },
                     {
                       "data":{
-                        "data":{
-                          "chartType":"bar",
-                          "dataPoints":[10.0, 20.0, 30.0, 40.0],
-                          "labels":["Q1", "Q2", "Q3", "Q4"]
-                        }
+                        "chartType":"bar",
+                        "dataPoints":[10.0, 20.0, 30.0, 40.0],
+                        "labels":["Q1", "Q2", "Q3", "Q4"]
                       }
                     }
                   ],
@@ -589,7 +574,7 @@ public class JsonMessages {
             }
             """;
 
-    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE = String.format("""
+    static final String GET_AUTHENTICATED_EXTENDED_AGENT_CARD_RESPONSE = """
             {
                 "jsonrpc": "2.0",
                 "id": "1",
@@ -618,7 +603,7 @@ public class JsonMessages {
                         }
                       }
                     },
-                    "security": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
+                    "securityRequirements": [{ "schemes": { "google": { "list": ["openid", "profile", "email"] } } }],
                     "defaultInputModes": ["application/json", "text/plain"],
                     "defaultOutputModes": ["application/json", "image/png"],
                     "skills": [
@@ -662,7 +647,6 @@ public class JsonMessages {
                         "tags": ["extended"]
                       }
                     ],
-                    "protocolVersions": ["%s"],
                     "signatures": [
                        {
                          "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJrZXktMSIsImprdUI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWdlbnQvandrcy5qc29uIn0",
@@ -670,9 +654,9 @@ public class JsonMessages {
                        }
                      ]
                 }
-            }""", CURRENT_PROTOCOL_VERSION);
+            }""";
 
-    static final String AGENT_CARD_SUPPORTS_EXTENDED = String.format("""
+    static final String AGENT_CARD_SUPPORTS_EXTENDED = """
             {
                 "name": "GeoSpatial Route Planner Agent",
                 "description": "Provides advanced route planning, traffic analysis, and custom map generation services. This agent can calculate optimal routes, estimate travel times considering real-time traffic, and create personalized maps with points of interest.",
@@ -735,7 +719,6 @@ public class JsonMessages {
                       "text/html"
                     ]
                   }
-                ],
-                "protocolVersions": ["%s"]
-              }""", CURRENT_PROTOCOL_VERSION);
+                ]
+              }""";
 }

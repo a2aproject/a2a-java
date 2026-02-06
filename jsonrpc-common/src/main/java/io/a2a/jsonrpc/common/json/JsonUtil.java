@@ -567,9 +567,9 @@ public class JsonUtil {
                 out.name(FILE);
                 delegateGson.toJson(filePart.file(), FileContent.class, out);
             } else if (value instanceof DataPart dataPart) {
-                // DataPart: { "data": {...} }
+                // DataPart: { "data": <any JSON value> }
                 out.name(DATA);
-                delegateGson.toJson(dataPart.data(), Map.class, out);
+                delegateGson.toJson(dataPart.data(), Object.class, out);
             } else {
                 throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
             }
@@ -605,12 +605,12 @@ public class JsonUtil {
                 case TEXT -> new TextPart(jsonObject.get(TEXT).getAsString());
                 case FILE -> new FilePart(delegateGson.fromJson(jsonObject.get(FILE), FileContent.class));
                 case DATA -> {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> dataMap = delegateGson.fromJson(
+                    // DataPart supports any JSON value: object, array, primitive, or null
+                    Object data = delegateGson.fromJson(
                             jsonObject.get(DATA),
-                            new TypeToken<Map<String, Object>>(){}.getType()
+                            Object.class
                     );
-                    yield new DataPart(dataMap);
+                    yield new DataPart(data);
                 }
                 default ->
                         throw new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, discriminator));

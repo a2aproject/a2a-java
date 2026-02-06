@@ -3,7 +3,6 @@ package io.a2a.server.apps.quarkus;
 import static io.a2a.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static io.a2a.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
 import static java.util.Collections.singletonList;
@@ -226,7 +225,7 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "GetTask",
              "params": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "historyLength": 10
              }
             }""";
@@ -263,7 +262,7 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "CancelTask",
              "params": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
+              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64"
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
@@ -299,7 +298,7 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "SubscribeToTask",
              "params": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
+              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64"
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
@@ -331,16 +330,13 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "CreateTaskPushNotificationConfig",
              "params": {
-              "parent": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "configId": "config-123",
               "config": {
-               "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/config-123",
-               "pushNotificationConfig": {
                 "url": "https://example.com/callback",
                 "authentication": {
-                 "schemes": ["jwt"]
+                 "scheme": "jwt"
                 }
-               }
               }
              }
             }""";
@@ -352,7 +348,7 @@ public class A2AServerRoutesTest {
                 PushNotificationConfig.builder()
                         .id("config-123")
                         .url("https://example.com/callback")
-                        .authentication(new AuthenticationInfo(Collections.singletonList("jwt"), null))
+                        .authentication(new AuthenticationInfo("jwt", null))
                         .build(),
                 "tenant");
 
@@ -382,7 +378,8 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "GetTaskPushNotificationConfig",
              "params": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/config-456"
+              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "config-456"
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
@@ -422,7 +419,9 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "ListTaskPushNotificationConfig",
              "params": {
-              "parent": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64"
+              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "pageSize": 0,
+              "pageToken": ""
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
@@ -462,7 +461,8 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "DeleteTaskPushNotificationConfig",
              "params": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64/pushNotificationConfigs/config-456"
+              "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "config-456"
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
@@ -497,7 +497,6 @@ public class A2AServerRoutesTest {
                 .name("Test Agent")
                 .description("Test agent description")
                 .version("1.0.0")
-                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .capabilities(AgentCapabilities.builder().build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
@@ -532,7 +531,7 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "GetTask",
              "params": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "historyLength": 10
              }
             }""";
@@ -569,7 +568,7 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "GetTask",
              "params": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "historyLength": 10
              }
             }""";
@@ -606,7 +605,7 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "GetTask",
              "params": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "historyLength": 10
              }
             }""";
@@ -643,7 +642,7 @@ public class A2AServerRoutesTest {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "method": "GetTask",
              "params": {
-              "name": "tasks/de38c76d-d54c-436c-8b9f-4c2703648d64",
+              "id": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "historyLength": 10
              }
             }""";

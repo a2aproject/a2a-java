@@ -33,7 +33,7 @@ public interface SubscribeToTaskRequestMapper {
             return null;
         }
         return io.a2a.grpc.SubscribeToTaskRequest.newBuilder()
-                .setName(ResourceNameParser.defineTaskName(domain.getParams().id()))
+                .setId(domain.getParams().id())
                 .build();
     }
 
@@ -45,11 +45,11 @@ public interface SubscribeToTaskRequestMapper {
      * @return the domain SubscribeToTaskRequest
      */
     default SubscribeToTaskRequest fromProto(io.a2a.grpc.SubscribeToTaskRequest proto) {
-        if (proto == null || proto.getName() == null) {
+        if (proto == null || proto.getId()== null) {
             return null;
         }
         return SubscribeToTaskRequest.builder()
-                .params(new io.a2a.spec.TaskIdParams(ResourceNameParser.extractTaskId(proto.getName())))
+                .params(new io.a2a.spec.TaskIdParams(proto.getId()))
                 .build();
     }
 }

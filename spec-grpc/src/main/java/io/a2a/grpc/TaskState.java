@@ -58,13 +58,13 @@ public enum TaskState
   TASK_STATE_FAILED(4),
   /**
    * <pre>
-   * Represents the status a task was cancelled before it finished.
+   * Represents the status a task was canceled before it finished.
    * This is a terminal state.
    * </pre>
    *
-   * <code>TASK_STATE_CANCELLED = 5;</code>
+   * <code>TASK_STATE_CANCELED = 5;</code>
    */
-  TASK_STATE_CANCELLED(5),
+  TASK_STATE_CANCELED(5),
   /**
    * <pre>
    * Represents the status that the task requires information to complete.
@@ -87,8 +87,7 @@ public enum TaskState
   /**
    * <pre>
    * Represents the state that some authentication is needed from the upstream
-   * client. Authentication is expected to come out-of-band thus this is not
-   * an interrupted or terminal state.
+   * client. This is an interrupted state. Authentication is expected to come out-of-band.
    * </pre>
    *
    * <code>TASK_STATE_AUTH_REQUIRED = 8;</code>
@@ -148,13 +147,13 @@ public enum TaskState
   public static final int TASK_STATE_FAILED_VALUE = 4;
   /**
    * <pre>
-   * Represents the status a task was cancelled before it finished.
+   * Represents the status a task was canceled before it finished.
    * This is a terminal state.
    * </pre>
    *
-   * <code>TASK_STATE_CANCELLED = 5;</code>
+   * <code>TASK_STATE_CANCELED = 5;</code>
    */
-  public static final int TASK_STATE_CANCELLED_VALUE = 5;
+  public static final int TASK_STATE_CANCELED_VALUE = 5;
   /**
    * <pre>
    * Represents the status that the task requires information to complete.
@@ -177,8 +176,7 @@ public enum TaskState
   /**
    * <pre>
    * Represents the state that some authentication is needed from the upstream
-   * client. Authentication is expected to come out-of-band thus this is not
-   * an interrupted or terminal state.
+   * client. This is an interrupted state. Authentication is expected to come out-of-band.
    * </pre>
    *
    * <code>TASK_STATE_AUTH_REQUIRED = 8;</code>
@@ -215,7 +213,7 @@ public enum TaskState
       case 2: return TASK_STATE_WORKING;
       case 3: return TASK_STATE_COMPLETED;
       case 4: return TASK_STATE_FAILED;
-      case 5: return TASK_STATE_CANCELLED;
+      case 5: return TASK_STATE_CANCELED;
       case 6: return TASK_STATE_INPUT_REQUIRED;
       case 7: return TASK_STATE_REJECTED;
       case 8: return TASK_STATE_AUTH_REQUIRED;

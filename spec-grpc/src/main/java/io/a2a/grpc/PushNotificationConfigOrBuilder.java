@@ -72,7 +72,7 @@ public interface PushNotificationConfigOrBuilder extends
 
   /**
    * <pre>
-   * Information about the authentication to sent with the notification
+   * Authentication information required to send the notification
    * </pre>
    *
    * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -81,7 +81,7 @@ public interface PushNotificationConfigOrBuilder extends
   boolean hasAuthentication();
   /**
    * <pre>
-   * Information about the authentication to sent with the notification
+   * Authentication information required to send the notification
    * </pre>
    *
    * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -90,7 +90,7 @@ public interface PushNotificationConfigOrBuilder extends
   io.a2a.grpc.AuthenticationInfo getAuthentication();
   /**
    * <pre>
-   * Information about the authentication to sent with the notification
+   * Authentication information required to send the notification
    * </pre>
    *
    * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>

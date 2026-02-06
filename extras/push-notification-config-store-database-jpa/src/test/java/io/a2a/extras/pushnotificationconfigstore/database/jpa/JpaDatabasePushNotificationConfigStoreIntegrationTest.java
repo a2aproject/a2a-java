@@ -129,7 +129,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         // Step 3: Verify the configuration was stored using client API
         TaskPushNotificationConfig storedConfig = client.getTaskPushNotificationConfiguration(
-            new GetTaskPushNotificationConfigParams(taskId));
+            new GetTaskPushNotificationConfigParams(taskId, "test-config-1"));
 
         assertNotNull(storedConfig);
         assertEquals(taskId, storedConfig.taskId());
@@ -183,7 +183,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         // Verify deletion by asserting that getting the config now throws an exception
         assertThrows(A2AClientException.class, () -> {
-            client.getTaskPushNotificationConfiguration(new GetTaskPushNotificationConfigParams(taskId));
+            client.getTaskPushNotificationConfiguration(new GetTaskPushNotificationConfigParams(taskId, "test-config-1"));
         }, "Getting a deleted config should throw an A2AClientException");
     }
 

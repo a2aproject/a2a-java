@@ -1,9 +1,11 @@
 package io.a2a.server.version;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import io.a2a.server.ServerCallContext;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.VersionNotSupportedError;
 
 /**
@@ -16,15 +18,15 @@ import io.a2a.spec.VersionNotSupportedError;
  * </ul>
  *
  * <p>If the client does not specify a version, the current protocol version
- * ({@link AgentCard#CURRENT_PROTOCOL_VERSION}) is assumed as the default.
+ * ({@link AgentInterface#CURRENT_PROTOCOL_VERSION}) is assumed as the default.
  */
 public class A2AVersionValidator {
 
     /**
      * Validates that the client's requested protocol version is compatible with the agent's
-     * supported version.
+     * supported versions across all interfaces.
      *
-     * @param agentCard the agent card containing the supported protocol version
+     * @param agentCard the agent card containing the supported interfaces with their protocol versions
      * @param context the server call context containing the requested protocol version
      * @throws VersionNotSupportedError if the versions are incompatible
      */
@@ -34,10 +36,14 @@ public class A2AVersionValidator {
 
         // If client didn't specify a version, default to current version
         if (requestedVersion == null || requestedVersion.trim().isEmpty()) {
-            requestedVersion = AgentCard.CURRENT_PROTOCOL_VERSION;
+            requestedVersion = AgentInterface.CURRENT_PROTOCOL_VERSION;
         }
 
-        List<String> supportedVersions = agentCard.protocolVersions();
+        // Collect all unique protocol versions from all supported interfaces
+        List<String> supportedVersions = agentCard.supportedInterfaces().stream()
+                .map(AgentInterface::protocolVersion)
+                .distinct()
+                .collect(Collectors.toList());
 
         if (!isVersionCompatible(supportedVersions, requestedVersion)) {
             throw new VersionNotSupportedError(

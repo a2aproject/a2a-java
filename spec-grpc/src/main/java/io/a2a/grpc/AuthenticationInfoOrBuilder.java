@@ -12,48 +12,29 @@ public interface AuthenticationInfoOrBuilder extends
 
   /**
    * <pre>
-   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
+   * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
+   * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
    * </pre>
    *
-   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return A list containing the schemes.
+   * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The scheme.
    */
-  java.util.List<java.lang.String>
-      getSchemesList();
+  java.lang.String getScheme();
   /**
    * <pre>
-   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
+   * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
+   * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
    * </pre>
    *
-   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The count of schemes.
-   */
-  int getSchemesCount();
-  /**
-   * <pre>
-   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
-   * </pre>
-   *
-   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @param index The index of the element to return.
-   * @return The schemes at the given index.
-   */
-  java.lang.String getSchemes(int index);
-  /**
-   * <pre>
-   * A list of supported authentication schemes (e.g., 'Basic', 'Bearer').
-   * </pre>
-   *
-   * <code>repeated string schemes = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @param index The index of the value to return.
-   * @return The bytes of the schemes at the given index.
+   * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for scheme.
    */
   com.google.protobuf.ByteString
-      getSchemesBytes(int index);
+      getSchemeBytes();
 
   /**
    * <pre>
-   * Optional credentials
+   * Push Notification credentials. Format depends on the scheme (e.g., token for Bearer).
    * </pre>
    *
    * <code>string credentials = 2;</code>
@@ -62,7 +43,7 @@ public interface AuthenticationInfoOrBuilder extends
   java.lang.String getCredentials();
   /**
    * <pre>
-   * Optional credentials
+   * Push Notification credentials. Format depends on the scheme (e.g., token for Bearer).
    * </pre>
    *
    * <code>string credentials = 2;</code>

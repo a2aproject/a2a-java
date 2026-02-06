@@ -8,35 +8,40 @@ import io.a2a.util.Assert;
 /**
  * Represents a structured data content part within a {@link Message} or {@link Artifact}.
  * <p>
- * DataPart contains structured data (typically JSON objects) for machine-to-machine communication.
+ * DataPart contains arbitrary JSON data for machine-to-machine communication.
  * It is used when content needs to be processed programmatically rather than displayed as text,
  * such as API responses, configuration data, analysis results, or structured metadata.
  * <p>
- * The data is represented as a Map of key-value pairs, which can contain nested structures
- * including lists, maps, and primitive values.
+ * The data can be any valid JSON value:
+ * <ul>
+ *   <li>JSON objects: {@code Map<String, Object>}</li>
+ *   <li>JSON arrays: {@code List<Object>}</li>
+ *   <li>Primitives: {@code String}, {@code Number}, {@code Boolean}</li>
+ *   <li>Null values: {@code null}</li>
+ * </ul>
  * <p>
  * Example usage:
  * <pre>{@code
- * // Simple structured data
- * DataPart result = new DataPart(Map.of(
+ * // JSON object
+ * DataPart obj = new DataPart(Map.of(
  *     "status", "success",
  *     "count", 42,
  *     "items", List.of("item1", "item2")
  * ));
  *
- * // With metadata
- * DataPart withMeta = new DataPart(
- *     Map.of("temperature", 72.5, "unit", "F"),
- *     Map.of("source", "weather-api", "timestamp", "2024-01-20T12:00:00Z")
- * );
+ * // JSON array
+ * DataPart array = new DataPart(List.of("item1", "item2", "item3"));
+ *
+ * // Primitive value
+ * DataPart primitive = new DataPart(42);
  * }</pre>
  *
- * @param data the structured data map (required, defensively copied for immutability)
+ * @param data the structured data (required, supports JSON objects, arrays, primitives, and null)
  * @see Part
  * @see Message
  * @see Artifact
  */
-public record DataPart(Map<String, Object> data) implements Part<Map<String, Object>> {
+public record DataPart(Object data) implements Part<Object> {
 
     /**
      * The JSON member name discriminator for data parts: "data".
@@ -47,14 +52,16 @@ public record DataPart(Map<String, Object> data) implements Part<Map<String, Obj
     public static final String DATA = "data";
 
     /**
-     * Compact constructor with validation and defensive copying.
+     * Compact constructor with validation.
+     * <p>
+     * Note: For mutable data types (Map, List), callers should ensure immutability
+     * by using {@code Map.copyOf()} or {@code List.copyOf()} before passing to this constructor.
      *
-     * @param data the structured data map (required, defensively copied for immutability)
+     * @param data the structured data (supports JSON objects, arrays, primitives, and null)
      * @throws IllegalArgumentException if data is null
      */
     public DataPart {
         Assert.checkNotNullParam("data", data);
-        data = Map.copyOf(data);
     }
 
     /**
@@ -67,10 +74,10 @@ public record DataPart(Map<String, Object> data) implements Part<Map<String, Obj
     }
 
     /**
-     * Builder for constructing immutable {@link DataPart} instances.
+     * Builder for constructing {@link DataPart} instances.
      */
     public static class Builder {
-        private Map<String, Object> data;
+        private Object data;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -79,18 +86,18 @@ public record DataPart(Map<String, Object> data) implements Part<Map<String, Obj
         }
 
         /**
-         * Sets the structured data map.
+         * Sets the structured data.
          *
-         * @param data the structured data (required)
+         * @param data the structured data (required, supports JSON objects, arrays, primitives, and null)
          * @return this builder for method chaining
          */
-        public Builder data(Map<String, Object> data) {
+        public Builder data(Object data) {
             this.data = data;
             return this;
         }
 
         /**
-         * Builds a new immutable {@link DataPart} from the current builder state.
+         * Builds a new {@link DataPart} from the current builder state.
          *
          * @return a new DataPart instance
          * @throws IllegalArgumentException if data is null

@@ -75,4 +75,28 @@ public interface AgentInterfaceOrBuilder extends
    */
   com.google.protobuf.ByteString
       getTenantBytes();
+
+  /**
+   * <pre>
+   * The version of the A2A protocol this interface exposes.
+   * Use the latest supported minor version per major version.
+   * Examples: "0.3", "1.0"
+   * </pre>
+   *
+   * <code>string protocol_version = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The protocolVersion.
+   */
+  java.lang.String getProtocolVersion();
+  /**
+   * <pre>
+   * The version of the A2A protocol this interface exposes.
+   * Use the latest supported minor version per major version.
+   * Examples: "0.3", "1.0"
+   * </pre>
+   *
+   * <code>string protocol_version = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for protocolVersion.
+   */
+  com.google.protobuf.ByteString
+      getProtocolVersionBytes();
 }

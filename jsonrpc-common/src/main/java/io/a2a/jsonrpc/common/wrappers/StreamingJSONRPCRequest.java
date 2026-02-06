@@ -13,7 +13,7 @@ import io.a2a.spec.StreamingEventKind;
  * The A2A Protocol defines two primary streaming operations:
  * <ul>
  *   <li>{@link SendStreamingMessageRequest} - Stream task execution events in real-time</li>
- *   <li>{@link SubscribeToTaskRequest} - Resubscribe to events from an existing task</li>
+ *   <li>{@link SubscribeToTaskRequest} - Subscribe to events from an existing task</li>
  * </ul>
  * <p>
  * Streaming requests follow the JSON-RPC 2.0 specification structure but the response

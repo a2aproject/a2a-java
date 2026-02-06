@@ -318,7 +318,7 @@ public abstract class AbstractClient implements AutoCloseable {
             @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
-     * Resubscribe to a task's event stream.
+     * Subscribe to a task's event stream.
      * This is only available if both the client and server support streaming.
      * The configured client consumers will be used to handle messages, tasks,
      * and update events received from the remote agent. The configured streaming
@@ -327,12 +327,12 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param request the parameters specifying which task's notification configs to delete
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public void resubscribe(@NonNull TaskIdParams request) throws A2AClientException {
-        resubscribe(request, consumers, streamingErrorHandler, null);
+    public void subscribeToTask(@NonNull TaskIdParams request) throws A2AClientException {
+        subscribeToTask(request, consumers, streamingErrorHandler, null);
     }
 
     /**
-     * Resubscribe to a task's event stream.
+     * Subscribe to a task's event stream.
      * This is only available if both the client and server support streaming.
      * The configured client consumers will be used to handle messages, tasks,
      * and update events received from the remote agent. The configured streaming
@@ -342,13 +342,13 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param context optional client call context for the request
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public void resubscribe(@NonNull TaskIdParams request,
+    public void subscribeToTask(@NonNull TaskIdParams request,
                             @Nullable ClientCallContext context) throws A2AClientException {
-        resubscribe(request, consumers, streamingErrorHandler, context);
+        subscribeToTask(request, consumers, streamingErrorHandler, context);
     }
 
     /**
-     * Resubscribe to a task's event stream.
+     * Subscribe to a task's event stream.
      * This is only available if both the client and server support streaming.
      * The specified client consumers will be used to handle messages, tasks, and
      * update events received from the remote agent. The specified streaming error
@@ -359,14 +359,14 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public void resubscribe(@NonNull TaskIdParams request,
+    public void subscribeToTask(@NonNull TaskIdParams request,
                             @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
                             @Nullable Consumer<Throwable> streamingErrorHandler) throws A2AClientException {
-        resubscribe(request, consumers, streamingErrorHandler, null);
+        subscribeToTask(request, consumers, streamingErrorHandler, null);
     }
 
     /**
-     * Resubscribe to a task's event stream.
+     * Subscribe to a task's event stream.
      * This is only available if both the client and server support streaming.
      * The specified client consumers will be used to handle messages, tasks, and
      * update events received from the remote agent. The specified streaming error
@@ -378,7 +378,7 @@ public abstract class AbstractClient implements AutoCloseable {
      * @param context optional client call context for the request
      * @throws A2AClientException if resubscribing fails for any reason
      */
-    public abstract void resubscribe(@NonNull TaskIdParams request,
+    public abstract void subscribeToTask(@NonNull TaskIdParams request,
                                      @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
                                      @Nullable Consumer<Throwable> streamingErrorHandler,
                                      @Nullable ClientCallContext context) throws A2AClientException;

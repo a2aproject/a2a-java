@@ -199,7 +199,7 @@ public class A2ACloudExampleClient {
                     Thread.sleep(1000);  // Wait for Kafka events to propagate
                 }
 
-                streamingClient.resubscribe(
+                streamingClient.subscribeToTask(
                         new TaskIdParams(serverTaskId),
                         List.of(this::handleSubscriptionEvent),
                         this::handleSubscriptionError

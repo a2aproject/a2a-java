@@ -33,10 +33,9 @@ import io.a2a.util.Assert;
  * @param defaultOutputModes list of supported output modes, e.g., "text", "audio" (required)
  * @param skills list of skills that this agent can perform (required)
  * @param securitySchemes map of security scheme names to their definitions (optional)
- * @param security list of security requirements for accessing the agent (optional)
+ * @param securityRequirements list of security requirements for accessing the agent (optional)
  * @param iconUrl URL to an icon representing the agent (optional)
  * @param supportedInterfaces ordered list of protocol+URL interface combinations; first entry is preferred (required)
- * @param protocolVersions the versions of the A2A Protocol this agent implements (defaults to a singleton list of {@link #CURRENT_PROTOCOL_VERSION})
  * @param signatures digital signatures verifying the authenticity of the agent card (optional)
  * @see AgentInterface
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
@@ -52,17 +51,13 @@ public record AgentCard(
         List<String> defaultOutputModes,
         List<AgentSkill> skills,
         Map<String, SecurityScheme> securitySchemes,
-        List<Map<String, List<String>>> security,
+        List<Map<String, List<String>>> securityRequirements,
         String iconUrl,
         List<AgentInterface> supportedInterfaces,
-        List<String> protocolVersions,
         List<AgentCardSignature> signatures) {
 
-    /** The default A2A Protocol version used when not explicitly specified. */
-    public static final String CURRENT_PROTOCOL_VERSION = "1.0";
-
     /**
-     * Compact constructor that validates required fields and sets defaults.
+     * Compact constructor that validates required fields.
      *
      * @param name the name parameter (see class-level JavaDoc)
      * @param description the description parameter (see class-level JavaDoc)
@@ -74,10 +69,9 @@ public record AgentCard(
      * @param defaultOutputModes the defaultOutputModes parameter (see class-level JavaDoc)
      * @param skills the skills parameter (see class-level JavaDoc)
      * @param securitySchemes the securitySchemes parameter (see class-level JavaDoc)
-     * @param security the security parameter (see class-level JavaDoc)
+     * @param securityRequirements the security parameter (see class-level JavaDoc)
      * @param iconUrl the iconUrl parameter (see class-level JavaDoc)
      * @param supportedInterfaces the supportedInterfaces parameter (see class-level JavaDoc)
-     * @param protocolVersions the protocolVersions parameter (see class-level JavaDoc)
      * @param signatures the signatures parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if any required field is null
      */
@@ -90,10 +84,6 @@ public record AgentCard(
         Assert.checkNotNullParam("skills", skills);
         Assert.checkNotNullParam("supportedInterfaces", supportedInterfaces);
         Assert.checkNotNullParam("version", version);
-
-        if (protocolVersions == null || protocolVersions.isEmpty()) {
-            protocolVersions = List.of(CURRENT_PROTOCOL_VERSION);
-        }
     }
 
     /**
@@ -160,10 +150,9 @@ public record AgentCard(
         private List<String> defaultOutputModes;
         private List<AgentSkill> skills;
         private Map<String, SecurityScheme> securitySchemes;
-        private List<Map<String, List<String>>> security;
+        private List<Map<String, List<String>>> securityRequirements;
         private String iconUrl;
         private List<AgentInterface> supportedInterfaces;
-        private List<String> protocolVersions;
         private List<AgentCardSignature> signatures;
 
         /**
@@ -192,10 +181,9 @@ public record AgentCard(
             this.defaultOutputModes = card.defaultOutputModes != null ? new ArrayList<>(card.defaultOutputModes) : null;
             this.skills = card.skills != null ? new ArrayList<>(card.skills) : null;
             this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
-            this.security = card.security != null ? new ArrayList<>(card.security) : null;
+            this.securityRequirements = card.securityRequirements != null ? new ArrayList<>(card.securityRequirements) : null;
             this.iconUrl = card.iconUrl;
             this.supportedInterfaces = card.supportedInterfaces != null ? new ArrayList<>(card.supportedInterfaces) : null;
-            this.protocolVersions = card.protocolVersions;
             this.signatures = card.signatures != null ? new ArrayList<>(card.signatures) : null;
         }
 
@@ -332,11 +320,11 @@ public record AgentCard(
          * Each entry in the list represents an alternative security requirement,
          * where each map contains scheme names and their required scopes.
          *
-         * @param security the list of security requirements (optional)
+         * @param securityRequirements the list of security requirements (optional)
          * @return this builder for method chaining
          */
-        public Builder security(List<Map<String, List<String>>> security) {
-            this.security = security;
+        public Builder securityRequirements(List<Map<String, List<String>>> securityRequirements) {
+            this.securityRequirements = securityRequirements;
             return this;
         }
 
@@ -376,19 +364,6 @@ public record AgentCard(
         }
 
         /**
-         * Sets the version of the A2A Protocol this agent implements.
-         * <p>
-         * If not set, defaults to a single list of {@link AgentCard#CURRENT_PROTOCOL_VERSION}.
-         *
-         * @param protocolVersions the protocol versions
-         * @return this builder for method chaining
-         */
-        public Builder protocolVersions(String... protocolVersions) {
-            this.protocolVersions = List.of(protocolVersions);
-            return this;
-        }
-
-        /**
          * Sets the digital signatures verifying the authenticity of the agent card.
          * <p>
          * Signatures provide cryptographic proof that the agent card was issued by
@@ -414,8 +389,8 @@ public record AgentCard(
         public AgentCard build() {
             return new AgentCard(name, description, provider, version, documentationUrl,
                     capabilities, defaultInputModes, defaultOutputModes, skills,
-                    securitySchemes, security, iconUrl,
-                    supportedInterfaces, protocolVersions, signatures);
+                    securitySchemes, securityRequirements, iconUrl,
+                    supportedInterfaces, signatures);
         }
     }
 }

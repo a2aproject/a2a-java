@@ -151,8 +151,7 @@ public class SSEEventListenerTest {
                 "contextId": "2",
                 "status": {
                   "state": "TASK_STATE_SUBMITTED"
-                },
-                "final": false
+                }
               }
             }
             """;
@@ -187,8 +186,7 @@ public class SSEEventListenerTest {
                 "contextId": "2",
                 "status": {
                   "state": "TASK_STATE_COMPLETED"
-                },
-                "final": true
+                }
               }
             }
             """;

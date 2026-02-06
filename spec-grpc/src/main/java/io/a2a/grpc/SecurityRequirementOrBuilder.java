@@ -6,8 +6,8 @@
 package io.a2a.grpc;
 
 @com.google.protobuf.Generated
-public interface SecurityOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.Security)
+public interface SecurityRequirementOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:a2a.v1.SecurityRequirement)
     com.google.protobuf.MessageOrBuilder {
 
   /**

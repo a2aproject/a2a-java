@@ -33,7 +33,8 @@ private static final long serialVersionUID = 0L;
   }
   private GetTaskPushNotificationConfigRequest() {
     tenant_ = "";
-    name_ = "";
+    taskId_ = "";
+    id_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -96,49 +97,94 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int NAME_FIELD_NUMBER = 1;
+  public static final int TASK_ID_FIELD_NUMBER = 3;
   @SuppressWarnings("serial")
-  private volatile java.lang.Object name_ = "";
+  private volatile java.lang.Object taskId_ = "";
   /**
    * <pre>
-   * The resource name of the config to retrieve.
-   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+   * The parent task resource id.
    * </pre>
    *
-   * <code>string name = 1;</code>
-   * @return The name.
+   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The taskId.
    */
   @java.lang.Override
-  public java.lang.String getName() {
-    java.lang.Object ref = name_;
+  public java.lang.String getTaskId() {
+    java.lang.Object ref = taskId_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      name_ = s;
+      taskId_ = s;
       return s;
     }
   }
   /**
    * <pre>
-   * The resource name of the config to retrieve.
-   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+   * The parent task resource id.
    * </pre>
    *
-   * <code>string name = 1;</code>
-   * @return The bytes for name.
+   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for taskId.
    */
   @java.lang.Override
   public com.google.protobuf.ByteString
-      getNameBytes() {
-    java.lang.Object ref = name_;
+      getTaskIdBytes() {
+    java.lang.Object ref = taskId_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      name_ = b;
+      taskId_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int ID_FIELD_NUMBER = 1;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object id_ = "";
+  /**
+   * <pre>
+   * The resource id of the config to retrieve.
+   * </pre>
+   *
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The id.
+   */
+  @java.lang.Override
+  public java.lang.String getId() {
+    java.lang.Object ref = id_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      id_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * The resource id of the config to retrieve.
+   * </pre>
+   *
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for id.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getIdBytes() {
+    java.lang.Object ref = id_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      id_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -159,11 +205,14 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, name_);
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, id_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 2, tenant_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(taskId_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, taskId_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -174,11 +223,14 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, name_);
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, id_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(2, tenant_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(taskId_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, taskId_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -197,8 +249,10 @@ private static final long serialVersionUID = 0L;
 
     if (!getTenant()
         .equals(other.getTenant())) return false;
-    if (!getName()
-        .equals(other.getName())) return false;
+    if (!getTaskId()
+        .equals(other.getTaskId())) return false;
+    if (!getId()
+        .equals(other.getId())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -212,8 +266,10 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + TENANT_FIELD_NUMBER;
     hash = (53 * hash) + getTenant().hashCode();
-    hash = (37 * hash) + NAME_FIELD_NUMBER;
-    hash = (53 * hash) + getName().hashCode();
+    hash = (37 * hash) + TASK_ID_FIELD_NUMBER;
+    hash = (53 * hash) + getTaskId().hashCode();
+    hash = (37 * hash) + ID_FIELD_NUMBER;
+    hash = (53 * hash) + getId().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -350,7 +406,8 @@ private static final long serialVersionUID = 0L;
       super.clear();
       bitField0_ = 0;
       tenant_ = "";
-      name_ = "";
+      taskId_ = "";
+      id_ = "";
       return this;
     }
 
@@ -388,7 +445,10 @@ private static final long serialVersionUID = 0L;
         result.tenant_ = tenant_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.name_ = name_;
+        result.taskId_ = taskId_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.id_ = id_;
       }
     }
 
@@ -409,9 +469,14 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000001;
         onChanged();
       }
-      if (!other.getName().isEmpty()) {
-        name_ = other.name_;
+      if (!other.getTaskId().isEmpty()) {
+        taskId_ = other.taskId_;
         bitField0_ |= 0x00000002;
+        onChanged();
+      }
+      if (!other.getId().isEmpty()) {
+        id_ = other.id_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -441,8 +506,8 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
-              name_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000002;
+              id_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000004;
               break;
             } // case 10
             case 18: {
@@ -450,6 +515,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000001;
               break;
             } // case 18
+            case 26: {
+              taskId_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000002;
+              break;
+            } // case 26
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -559,23 +629,22 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object name_ = "";
+    private java.lang.Object taskId_ = "";
     /**
      * <pre>
-     * The resource name of the config to retrieve.
-     * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+     * The parent task resource id.
      * </pre>
      *
-     * <code>string name = 1;</code>
-     * @return The name.
+     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The taskId.
      */
-    public java.lang.String getName() {
-      java.lang.Object ref = name_;
+    public java.lang.String getTaskId() {
+      java.lang.Object ref = taskId_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        name_ = s;
+        taskId_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
@@ -583,21 +652,20 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource name of the config to retrieve.
-     * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+     * The parent task resource id.
      * </pre>
      *
-     * <code>string name = 1;</code>
-     * @return The bytes for name.
+     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The bytes for taskId.
      */
     public com.google.protobuf.ByteString
-        getNameBytes() {
-      java.lang.Object ref = name_;
+        getTaskIdBytes() {
+      java.lang.Object ref = taskId_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        name_ = b;
+        taskId_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -605,53 +673,142 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource name of the config to retrieve.
-     * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+     * The parent task resource id.
      * </pre>
      *
-     * <code>string name = 1;</code>
-     * @param value The name to set.
+     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The taskId to set.
      * @return This builder for chaining.
      */
-    public Builder setName(
+    public Builder setTaskId(
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
-      name_ = value;
+      taskId_ = value;
       bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The resource name of the config to retrieve.
-     * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+     * The parent task resource id.
      * </pre>
      *
-     * <code>string name = 1;</code>
+     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
-    public Builder clearName() {
-      name_ = getDefaultInstance().getName();
+    public Builder clearTaskId() {
+      taskId_ = getDefaultInstance().getTaskId();
       bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The resource name of the config to retrieve.
-     * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+     * The parent task resource id.
      * </pre>
      *
-     * <code>string name = 1;</code>
-     * @param value The bytes for name to set.
+     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The bytes for taskId to set.
      * @return This builder for chaining.
      */
-    public Builder setNameBytes(
+    public Builder setTaskIdBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
-      name_ = value;
+      taskId_ = value;
       bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object id_ = "";
+    /**
+     * <pre>
+     * The resource id of the config to retrieve.
+     * </pre>
+     *
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The id.
+     */
+    public java.lang.String getId() {
+      java.lang.Object ref = id_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        id_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The resource id of the config to retrieve.
+     * </pre>
+     *
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The bytes for id.
+     */
+    public com.google.protobuf.ByteString
+        getIdBytes() {
+      java.lang.Object ref = id_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        id_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The resource id of the config to retrieve.
+     * </pre>
+     *
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The id to set.
+     * @return This builder for chaining.
+     */
+    public Builder setId(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      id_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The resource id of the config to retrieve.
+     * </pre>
+     *
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearId() {
+      id_ = getDefaultInstance().getId();
+      bitField0_ = (bitField0_ & ~0x00000004);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The resource id of the config to retrieve.
+     * </pre>
+     *
+     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The bytes for id to set.
+     * @return This builder for chaining.
+     */
+    public Builder setIdBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      id_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }

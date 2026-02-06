@@ -13,7 +13,6 @@ import static io.a2a.client.transport.rest.JsonRestMessages.SEND_MESSAGE_TEST_RE
 import static io.a2a.client.transport.rest.JsonRestMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST;
 import static io.a2a.client.transport.rest.JsonRestMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
 import static io.a2a.client.transport.rest.JsonRestMessages.TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE;
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -90,7 +89,6 @@ public class RestTransportTest {
                                 .tags(Collections.singletonList("hello world"))
                                 .examples(List.of("hi", "hello world"))
                                 .build()))
-                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .build();
 
     @BeforeEach
@@ -309,15 +307,14 @@ public class RestTransportTest {
                         .id("default-config-id")
                         .url("https://example.com/callback")
                         .authentication(
-                                new AuthenticationInfo(Collections.singletonList("jwt"), null))
+                                new AuthenticationInfo("jwt", null))
                         .build(), "tenant");
         TaskPushNotificationConfig taskPushNotificationConfig = client.createTaskPushNotificationConfiguration(pushedConfig, null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertEquals(1, authenticationInfo.schemes().size());
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
+        assertEquals("jwt", authenticationInfo.scheme());
     }
 
     /**
@@ -343,8 +340,7 @@ public class RestTransportTest {
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertTrue(authenticationInfo.schemes().size() == 1);
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
+        assertEquals("jwt", authenticationInfo.scheme());
     }
 
     /**
@@ -372,8 +368,7 @@ public class RestTransportTest {
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         assertEquals("10", pushNotificationConfig.id());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertTrue(authenticationInfo.schemes().size() == 1);
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
+        assertEquals("jwt", authenticationInfo.scheme());
         assertEquals("", authenticationInfo.credentials());
         pushNotificationConfig = result.configs().get(1).pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
@@ -404,11 +399,11 @@ public class RestTransportTest {
     }
 
     /**
-     * Test of resubscribe method, of class JSONRestTransport.
+     * Test of subscribe method, of class JSONRestTransport.
      */
     @Test
-    public void testResubscribe() throws Exception {
-        log.info("Testing resubscribe");
+    public void testSubscribe() throws Exception {
+        log.info("Testing subscribeToTask");
 
         this.server.when(
                         request()
@@ -432,7 +427,7 @@ public class RestTransportTest {
             latch.countDown();
         };
         Consumer<Throwable> errorHandler = error -> {};
-        client.resubscribe(taskIdParams, eventHandler, errorHandler, null);
+        client.subscribeToTask(taskIdParams, eventHandler, errorHandler, null);
 
         boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
         assertTrue(eventReceived);

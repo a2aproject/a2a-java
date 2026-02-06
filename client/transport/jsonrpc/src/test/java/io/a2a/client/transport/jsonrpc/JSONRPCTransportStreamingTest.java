@@ -2,8 +2,8 @@ package io.a2a.client.transport.jsonrpc;
 
 import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.SEND_MESSAGE_STREAMING_TEST_REQUEST;
 import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.SEND_MESSAGE_STREAMING_TEST_RESPONSE;
-import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE;
-import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.TASK_RESUBSCRIPTION_TEST_REQUEST;
+import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.TASK_SUBSCRIPTION_TEST_REQUEST;
+import static io.a2a.client.transport.jsonrpc.JsonStreamingMessages.TASK_SUBSCRIPTION_REQUEST_TEST_RESPONSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -124,19 +124,17 @@ public class JSONRPCTransportStreamingTest {
     }
 
     @Test
-    public void testA2AClientResubscribeToTask() throws Exception {
-        this.server.when(
-                        request()
+    public void testA2AClientSubscribeToTask() throws Exception {
+        this.server.when(request()
                                 .withMethod("POST")
                                 .withPath("/")
-                                .withBody(JsonBody.json(TASK_RESUBSCRIPTION_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
+                                .withBody(JsonBody.json(TASK_SUBSCRIPTION_TEST_REQUEST, MatchType.ONLY_MATCHING_FIELDS))
 
                 )
-                .respond(
-                        response()
+                .respond(response()
                                 .withStatusCode(200)
                                 .withHeader("Content-Type", "text/event-stream")
-                                .withBody(TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE)
+                                .withBody(TASK_SUBSCRIPTION_REQUEST_TEST_RESPONSE)
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
@@ -149,7 +147,7 @@ public class JSONRPCTransportStreamingTest {
             latch.countDown();
         };
         Consumer<Throwable> errorHandler = error -> {};
-        client.resubscribe(taskIdParams, eventHandler, errorHandler, null);
+        client.subscribeToTask(taskIdParams, eventHandler, errorHandler, null);
 
         boolean eventReceived = latch.await(10, TimeUnit.SECONDS);
         assertTrue(eventReceived);

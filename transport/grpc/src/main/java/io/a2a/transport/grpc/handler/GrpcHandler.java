@@ -263,7 +263,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         try {
             ServerCallContext context = createCallContext(responseObserver);
             TaskIdParams params = FromProto.taskIdParams(request);
-            Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onResubscribeToTask(params, context);
+            Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onSubscribeToTask(params, context);
             convertToStreamResponse(publisher, responseObserver, context);
         } catch (A2AError e) {
             handleError(responseObserver, e);
@@ -309,8 +309,17 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                 public void onNext(StreamingEventKind event) {
                     StreamResponse response = ToProto.streamResponse(event);
                     responseObserver.onNext(response);
-                    if (response.hasStatusUpdate() && response.getStatusUpdate().getFinal()) {
-                        responseObserver.onCompleted();
+                    if (response.hasStatusUpdate()) {
+                        io.a2a.grpc.TaskState state = response.getStatusUpdate().getStatus().getState();
+                        boolean isFinal = state == io.a2a.grpc.TaskState.TASK_STATE_CANCELED
+                                || state == io.a2a.grpc.TaskState.TASK_STATE_COMPLETED
+                                || state == io.a2a.grpc.TaskState.TASK_STATE_FAILED
+                                || state == io.a2a.grpc.TaskState.TASK_STATE_REJECTED;
+                        if (isFinal) {
+                            responseObserver.onCompleted();
+                        } else {
+                            subscription.request(1);
+                        }
                     } else {
                         subscription.request(1);
                     }

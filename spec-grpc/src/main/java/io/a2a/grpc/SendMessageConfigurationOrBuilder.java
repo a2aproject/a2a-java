@@ -105,7 +105,7 @@ public interface SendMessageConfigurationOrBuilder extends
 
   /**
    * <pre>
-   * If true, the operation waits until the task reaches a terminal state before returning. Default is false.
+   * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
    * </pre>
    *
    * <code>bool blocking = 4;</code>

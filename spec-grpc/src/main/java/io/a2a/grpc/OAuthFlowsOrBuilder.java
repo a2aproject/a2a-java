@@ -65,6 +65,44 @@ public interface OAuthFlowsOrBuilder extends
   io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder getClientCredentialsOrBuilder();
 
   /**
+   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+   * @deprecated a2a.v1.OAuthFlows.implicit is deprecated.
+   *     See a2a.proto;l=633
+   * @return Whether the implicit field is set.
+   */
+  @java.lang.Deprecated boolean hasImplicit();
+  /**
+   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+   * @deprecated a2a.v1.OAuthFlows.implicit is deprecated.
+   *     See a2a.proto;l=633
+   * @return The implicit.
+   */
+  @java.lang.Deprecated io.a2a.grpc.ImplicitOAuthFlow getImplicit();
+  /**
+   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+   */
+  @java.lang.Deprecated io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder();
+
+  /**
+   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+   * @deprecated a2a.v1.OAuthFlows.password is deprecated.
+   *     See a2a.proto;l=634
+   * @return Whether the password field is set.
+   */
+  @java.lang.Deprecated boolean hasPassword();
+  /**
+   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+   * @deprecated a2a.v1.OAuthFlows.password is deprecated.
+   *     See a2a.proto;l=634
+   * @return The password.
+   */
+  @java.lang.Deprecated io.a2a.grpc.PasswordOAuthFlow getPassword();
+  /**
+   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+   */
+  @java.lang.Deprecated io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder();
+
+  /**
    * <pre>
    * Configuration for the OAuth Device Code flow.
    * </pre>

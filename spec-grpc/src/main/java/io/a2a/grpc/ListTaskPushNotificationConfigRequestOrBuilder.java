@@ -32,25 +32,23 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * The parent task resource.
-   * Format: tasks/{task_id}
+   * The parent task resource id.
    * </pre>
    *
-   * <code>string parent = 1;</code>
-   * @return The parent.
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The taskId.
    */
-  java.lang.String getParent();
+  java.lang.String getTaskId();
   /**
    * <pre>
-   * The parent task resource.
-   * Format: tasks/{task_id}
+   * The parent task resource id.
    * </pre>
    *
-   * <code>string parent = 1;</code>
-   * @return The bytes for parent.
+   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
-      getParentBytes();
+      getTaskIdBytes();
 
   /**
    * <pre>

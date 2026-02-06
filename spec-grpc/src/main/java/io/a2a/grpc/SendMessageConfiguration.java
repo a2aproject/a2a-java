@@ -179,7 +179,7 @@ private static final long serialVersionUID = 0L;
   private boolean blocking_ = false;
   /**
    * <pre>
-   * If true, the operation waits until the task reaches a terminal state before returning. Default is false.
+   * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
    * </pre>
    *
    * <code>bool blocking = 4;</code>
@@ -977,7 +977,7 @@ private static final long serialVersionUID = 0L;
     private boolean blocking_ ;
     /**
      * <pre>
-     * If true, the operation waits until the task reaches a terminal state before returning. Default is false.
+     * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
      * </pre>
      *
      * <code>bool blocking = 4;</code>
@@ -989,7 +989,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If true, the operation waits until the task reaches a terminal state before returning. Default is false.
+     * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
      * </pre>
      *
      * <code>bool blocking = 4;</code>
@@ -1005,7 +1005,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If true, the operation waits until the task reaches a terminal state before returning. Default is false.
+     * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
      * </pre>
      *
      * <code>bool blocking = 4;</code>

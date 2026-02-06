@@ -352,7 +352,6 @@ public class EventQueueTest {
                 .taskId(TASK_ID)
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(true)
                 .build();
 
         eventQueue.enqueueEvent(event);

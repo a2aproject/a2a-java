@@ -8,7 +8,7 @@ package io.a2a.grpc;
 /**
  * <pre>
  * --8&lt;-- [start:AgentInterface]
- * Declares a combination of a target URL and a transport protocol for interacting with the agent.
+ * Declares a combination of a target URL, transport and protocol version for interacting with the agent.
  * This allows agents to expose the same functionality over multiple protocol binding mechanisms.
  * </pre>
  *
@@ -37,6 +37,7 @@ private static final long serialVersionUID = 0L;
     url_ = "";
     protocolBinding_ = "";
     tenant_ = "";
+    protocolVersion_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -199,6 +200,57 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int PROTOCOL_VERSION_FIELD_NUMBER = 4;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object protocolVersion_ = "";
+  /**
+   * <pre>
+   * The version of the A2A protocol this interface exposes.
+   * Use the latest supported minor version per major version.
+   * Examples: "0.3", "1.0"
+   * </pre>
+   *
+   * <code>string protocol_version = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The protocolVersion.
+   */
+  @java.lang.Override
+  public java.lang.String getProtocolVersion() {
+    java.lang.Object ref = protocolVersion_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      protocolVersion_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * The version of the A2A protocol this interface exposes.
+   * Use the latest supported minor version per major version.
+   * Examples: "0.3", "1.0"
+   * </pre>
+   *
+   * <code>string protocol_version = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for protocolVersion.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getProtocolVersionBytes() {
+    java.lang.Object ref = protocolVersion_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      protocolVersion_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -222,6 +274,9 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 3, tenant_);
     }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(protocolVersion_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 4, protocolVersion_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -239,6 +294,9 @@ private static final long serialVersionUID = 0L;
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(3, tenant_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(protocolVersion_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(4, protocolVersion_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -261,6 +319,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getProtocolBinding())) return false;
     if (!getTenant()
         .equals(other.getTenant())) return false;
+    if (!getProtocolVersion()
+        .equals(other.getProtocolVersion())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -278,6 +338,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getProtocolBinding().hashCode();
     hash = (37 * hash) + TENANT_FIELD_NUMBER;
     hash = (53 * hash) + getTenant().hashCode();
+    hash = (37 * hash) + PROTOCOL_VERSION_FIELD_NUMBER;
+    hash = (53 * hash) + getProtocolVersion().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -378,7 +440,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * --8&lt;-- [start:AgentInterface]
-   * Declares a combination of a target URL and a transport protocol for interacting with the agent.
+   * Declares a combination of a target URL, transport and protocol version for interacting with the agent.
    * This allows agents to expose the same functionality over multiple protocol binding mechanisms.
    * </pre>
    *
@@ -418,6 +480,7 @@ private static final long serialVersionUID = 0L;
       url_ = "";
       protocolBinding_ = "";
       tenant_ = "";
+      protocolVersion_ = "";
       return this;
     }
 
@@ -460,6 +523,9 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.tenant_ = tenant_;
       }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.protocolVersion_ = protocolVersion_;
+      }
     }
 
     @java.lang.Override
@@ -487,6 +553,11 @@ private static final long serialVersionUID = 0L;
       if (!other.getTenant().isEmpty()) {
         tenant_ = other.tenant_;
         bitField0_ |= 0x00000004;
+        onChanged();
+      }
+      if (!other.getProtocolVersion().isEmpty()) {
+        protocolVersion_ = other.protocolVersion_;
+        bitField0_ |= 0x00000008;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -530,6 +601,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000004;
               break;
             } // case 26
+            case 34: {
+              protocolVersion_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000008;
+              break;
+            } // case 34
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -834,6 +910,108 @@ private static final long serialVersionUID = 0L;
       checkByteStringIsUtf8(value);
       tenant_ = value;
       bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object protocolVersion_ = "";
+    /**
+     * <pre>
+     * The version of the A2A protocol this interface exposes.
+     * Use the latest supported minor version per major version.
+     * Examples: "0.3", "1.0"
+     * </pre>
+     *
+     * <code>string protocol_version = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The protocolVersion.
+     */
+    public java.lang.String getProtocolVersion() {
+      java.lang.Object ref = protocolVersion_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        protocolVersion_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The version of the A2A protocol this interface exposes.
+     * Use the latest supported minor version per major version.
+     * Examples: "0.3", "1.0"
+     * </pre>
+     *
+     * <code>string protocol_version = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The bytes for protocolVersion.
+     */
+    public com.google.protobuf.ByteString
+        getProtocolVersionBytes() {
+      java.lang.Object ref = protocolVersion_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        protocolVersion_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The version of the A2A protocol this interface exposes.
+     * Use the latest supported minor version per major version.
+     * Examples: "0.3", "1.0"
+     * </pre>
+     *
+     * <code>string protocol_version = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The protocolVersion to set.
+     * @return This builder for chaining.
+     */
+    public Builder setProtocolVersion(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      protocolVersion_ = value;
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The version of the A2A protocol this interface exposes.
+     * Use the latest supported minor version per major version.
+     * Examples: "0.3", "1.0"
+     * </pre>
+     *
+     * <code>string protocol_version = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearProtocolVersion() {
+      protocolVersion_ = getDefaultInstance().getProtocolVersion();
+      bitField0_ = (bitField0_ & ~0x00000008);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The version of the A2A protocol this interface exposes.
+     * Use the latest supported minor version per major version.
+     * Examples: "0.3", "1.0"
+     * </pre>
+     *
+     * <code>string protocol_version = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The bytes for protocolVersion to set.
+     * @return This builder for chaining.
+     */
+    public Builder setProtocolVersionBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      protocolVersion_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }

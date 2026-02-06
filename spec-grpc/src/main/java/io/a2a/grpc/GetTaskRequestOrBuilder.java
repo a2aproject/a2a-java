@@ -32,25 +32,23 @@ public interface GetTaskRequestOrBuilder extends
 
   /**
    * <pre>
-   * The resource name of the task.
-   * Format: tasks/{task_id}
+   * The resource id of the task.
    * </pre>
    *
-   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The name.
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The id.
    */
-  java.lang.String getName();
+  java.lang.String getId();
   /**
    * <pre>
-   * The resource name of the task.
-   * Format: tasks/{task_id}
+   * The resource id of the task.
    * </pre>
    *
-   * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The bytes for name.
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for id.
    */
   com.google.protobuf.ByteString
-      getNameBytes();
+      getIdBytes();
 
   /**
    * <pre>

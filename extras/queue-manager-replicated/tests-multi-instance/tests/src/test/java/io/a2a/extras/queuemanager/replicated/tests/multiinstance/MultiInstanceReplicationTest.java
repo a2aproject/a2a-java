@@ -244,7 +244,7 @@ public class MultiInstanceReplicationTest {
     /**
      * Main multi-instance replication test following architect's guidance:
      * 1. Send initial message on app1 (creates task in non-final state)
-     * 2. Resubscribe to that task from both app1 and app2
+     * 2. Subscribe to that task from both app1 and app2
      * 3. Send message on app1, verify both subscribers receive it
      * 4. Send message on app2, verify both subscribers receive it
      * 5. Send final message to transition task to COMPLETED
@@ -328,7 +328,7 @@ public class MultiInstanceReplicationTest {
             }
             System.out.println("APP1 received event: " + eventDetail);
 
-            // Per A2A spec 3.1.6: Handle initial TaskEvent on resubscribe
+            // Per A2A spec 3.1.6: Handle initial TaskEvent on subscribe
             if (!app1ReceivedInitialTask.get() && event instanceof io.a2a.client.TaskEvent) {
                 app1ReceivedInitialTask.set(true);
                 System.out.println("APP1 filtered initial TaskEvent");
@@ -360,7 +360,7 @@ public class MultiInstanceReplicationTest {
             }
             System.out.println("APP2 received event: " + eventDetail);
 
-            // Per A2A spec 3.1.6: Handle initial TaskEvent on resubscribe
+            // Per A2A spec 3.1.6: Handle initial TaskEvent on subscribe
             if (!app2ReceivedInitialTask.get() && event instanceof io.a2a.client.TaskEvent) {
                 app2ReceivedInitialTask.set(true);
                 System.out.println("APP2 filtered initial TaskEvent");
@@ -378,9 +378,9 @@ public class MultiInstanceReplicationTest {
             }
         };
 
-        // Start subscriptions (resubscribe returns void)
-        getClient1().resubscribe(new TaskIdParams(taskId), List.of(app1Subscriber), app1ErrorHandler);
-        getClient2().resubscribe(new TaskIdParams(taskId), List.of(app2Subscriber), app2ErrorHandler);
+        // Start subscriptions (subscribe returns void)
+        getClient1().subscribeToTask(new TaskIdParams(taskId), List.of(app1Subscriber), app1ErrorHandler);
+        getClient2().subscribeToTask(new TaskIdParams(taskId), List.of(app2Subscriber), app2ErrorHandler);
 
         // Wait for subscriptions to be established - at least one event should arrive on each
         await()

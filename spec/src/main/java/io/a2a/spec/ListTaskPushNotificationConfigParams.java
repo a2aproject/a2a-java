@@ -10,6 +10,8 @@ import io.a2a.util.Assert;
  *
  * @param id the task identifier (required)
  * @param tenant optional tenant, provided as a path parameter.
+ * @param pageSize the maximum number of items to return per page
+ * @param pageToken the pagination token for the next page
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */

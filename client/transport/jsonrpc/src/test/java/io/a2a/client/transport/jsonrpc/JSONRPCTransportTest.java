@@ -22,7 +22,7 @@ import static io.a2a.client.transport.jsonrpc.JsonMessages.SEND_MESSAGE_WITH_MIX
 import static io.a2a.client.transport.jsonrpc.JsonMessages.SEND_MESSAGE_WITH_MIXED_PARTS_TEST_RESPONSE;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST;
 import static io.a2a.client.transport.jsonrpc.JsonMessages.SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE;
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
+import static io.a2a.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -313,8 +313,7 @@ public class JSONRPCTransportTest {
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertTrue(authenticationInfo.schemes().size() == 1);
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
+        assertEquals("jwt", authenticationInfo.scheme());
     }
 
     @Test
@@ -338,15 +337,13 @@ public class JSONRPCTransportTest {
                         PushNotificationConfig.builder()
                                 .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
                                 .url("https://example.com/callback")
-                                .authentication(new AuthenticationInfo(Collections.singletonList("jwt"),
-                                        null))
+                                .authentication(new AuthenticationInfo("jwt", null))
                                 .build(), ""), null);
         PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
-        assertEquals(1, authenticationInfo.schemes().size());
-        assertEquals("jwt", authenticationInfo.schemes().get(0));
+        assertEquals("jwt", authenticationInfo.scheme());
     }
 
     @Test
@@ -379,7 +376,7 @@ public class JSONRPCTransportTest {
         assertNotNull(securitySchemes);
         OpenIdConnectSecurityScheme google = (OpenIdConnectSecurityScheme) securitySchemes.get("google");
         assertEquals("https://accounts.google.com/.well-known/openid-configuration", google.openIdConnectUrl());
-        List<Map<String, List<String>>> security = agentCard.security();
+        List<Map<String, List<String>>> security = agentCard.securityRequirements();
         assertEquals(1, security.size());
         Map<String, List<String>> securityMap = security.get(0);
         List<String> scopes = securityMap.get("google");
@@ -418,7 +415,7 @@ public class JSONRPCTransportTest {
         assertEquals("This is an extended skill.", skills.get(2).description());
         assertEquals(List.of("extended"), skills.get(2).tags());
         assertEquals("https://georoute-agent.example.com/icon.png", agentCard.iconUrl());
-        assertEquals(CURRENT_PROTOCOL_VERSION, agentCard.protocolVersions().get(0));
+        assertEquals(CURRENT_PROTOCOL_VERSION, agentCard.supportedInterfaces().get(0).protocolVersion());
     }
 
     @Test

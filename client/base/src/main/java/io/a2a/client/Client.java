@@ -152,7 +152,7 @@ import org.jspecify.annotations.Nullable;
  *
  * // Later, reconnect and resume receiving events
  * String taskId = "task-123";  // From original request
- * client.resubscribe(
+ * client.subscribeToTask(
  *     new TaskIdParams(taskId),
  *     List.of((event, card) -> {
  *         // Process events from where we left off
@@ -529,7 +529,7 @@ public class Client extends AbstractClient {
     }
 
     /**
-     * Resubscribe to an existing task to receive remaining events.
+     * Subscribe to an existing task to receive remaining events.
      * <p>
      * This method is useful when a client disconnects during a long-running task and wants to
      * resume receiving events without starting a new task. The agent will deliver any events
@@ -551,7 +551,7 @@ public class Client extends AbstractClient {
      * // ... client1 disconnects ...
      *
      * // Later, reconnect (client2)
-     * client2.resubscribe(
+     * client2.subscribeToTask(
      *     new TaskIdParams(taskId),
      *     List.of((event, card) -> {
      *         if (event instanceof TaskUpdateEvent tue) {
@@ -559,19 +559,19 @@ public class Client extends AbstractClient {
      *                 tue.getTask().status().state());
      *         }
      *     }),
-     *     throwable -> System.err.println("Resubscribe error: " + throwable),
+     *     throwable -> System.err.println("Subscribe error: " + throwable),
      *     null
      * );
      * }</pre>
      *
-     * @param request the task ID to resubscribe to
+     * @param request the task ID to subscribe to
      * @param consumers the event consumers for processing events (required)
      * @param streamingErrorHandler error handler for streaming errors (optional)
      * @param context custom call context for request interceptors (optional)
-     * @throws A2AClientException if resubscription is not supported or if the task cannot be found
+     * @throws A2AClientException if subscription is not supported or if the task cannot be found
      */
     @Override
-    public void resubscribe(@NonNull TaskIdParams request,
+    public void subscribeToTask(@NonNull TaskIdParams request,
                             @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
                             @Nullable Consumer<Throwable> streamingErrorHandler,
                             @Nullable ClientCallContext context) throws A2AClientException {
@@ -588,7 +588,7 @@ public class Client extends AbstractClient {
                 overriddenErrorHandler.accept(e);
             }
         };
-        clientTransport.resubscribe(request, eventHandler, overriddenErrorHandler, context);
+        clientTransport.subscribeToTask(request, eventHandler, overriddenErrorHandler, context);
     }
 
     /**

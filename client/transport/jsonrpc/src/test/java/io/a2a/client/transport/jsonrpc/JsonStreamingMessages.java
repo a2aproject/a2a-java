@@ -50,8 +50,7 @@ public class JsonStreamingMessages {
                       "contextId": "2",
                       "status": {
                         "state": "TASK_STATE_SUBMITTED"
-                      },
-                      "final": false
+                      }
                     }
                   }
             }""";
@@ -66,8 +65,7 @@ public class JsonStreamingMessages {
                       "contextId": "2",
                       "status": {
                         "state": "TASK_STATE_COMPLETED"
-                      },
-                      "final": true
+                      }
                     }
                   }
             }""";
@@ -141,19 +139,19 @@ public class JsonStreamingMessages {
             
             """;
 
-    static final String TASK_RESUBSCRIPTION_REQUEST_TEST_RESPONSE =
+    static final String TASK_SUBSCRIPTION_REQUEST_TEST_RESPONSE =
             """
             event: message
             data: {"jsonrpc":"2.0","id":1,"result":{"task":{"id":"2","contextId":"context-1234","status":{"state":"TASK_STATE_COMPLETED"},"artifacts":[{"artifactId":"artifact-1","name":"joke","parts":[{"text":"Why did the chicken cross the road? To get to the other side!"}]}],"metadata":{}}}}
             
             """;
 
-    public static final String TASK_RESUBSCRIPTION_TEST_REQUEST = """
+    public static final String TASK_SUBSCRIPTION_TEST_REQUEST = """
             {
               "jsonrpc":"2.0",
               "method":"SubscribeToTask",
               "params":{
-                "name":"tasks/task-1234"
+                "id":"task-1234"
               }
             }""";
 }

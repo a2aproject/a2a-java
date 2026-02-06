@@ -158,8 +158,7 @@ public class EventConsumerTest {
                 TaskStatusUpdateEvent.builder()
                         .taskId(TASK_ID)
                         .contextId("session-xyz")
-                        .status(new TaskStatus(TaskState.WORKING))
-                        .isFinal(true)
+                        .status(new TaskStatus(TaskState.COMPLETED))
                         .build());
 
         for (Event event : events) {
@@ -194,8 +193,7 @@ public class EventConsumerTest {
                 TaskStatusUpdateEvent.builder()
                         .taskId(TASK_ID)
                         .contextId("session-xyz")
-                        .status(new TaskStatus(TaskState.WORKING))
-                        .isFinal(true)
+                        .status(new TaskStatus(TaskState.COMPLETED))
                         .build());
 
         for (Event event : events) {
@@ -258,8 +256,7 @@ public class EventConsumerTest {
             TaskStatusUpdateEvent.builder()
                 .taskId(TASK_ID)
                 .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(true)
+                .status(new TaskStatus(TaskState.COMPLETED))
                 .build());
         for (Event event : events) {
             eventQueue.enqueueEvent(event);

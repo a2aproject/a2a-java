@@ -1,5 +1,6 @@
 package io.a2a.transport.rest.handler;
 
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -252,18 +253,15 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         String requestBody = """
             {
-              "parent": "tasks/%s",
+              "taskId": "%s",
+              "configId": "default-config-id",
               "config": {
-                "name": "tasks/%s/pushNotificationConfigs/default-config-id",
-                "pushNotificationConfig": {
-                  "id":"default-config-id",
-                  "url": "https://example.com/callback",
-                  "authentication": {
-                    "schemes": ["jwt"]
-                  }
+                "url": "https://example.com/callback",
+                "authentication": {
+                  "scheme": "jwt"
                 }
               }
-            }""".formatted(MINIMAL_TASK.id(), MINIMAL_TASK.id());
+            }""".formatted(MINIMAL_TASK.id());
 
         RestHandler.HTTPRestResponse response = handler.CreateTaskPushNotificationConfiguration( MINIMAL_TASK.id(), requestBody, "", callContext);
 
@@ -300,18 +298,15 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         // First, create a push notification config
         String createRequestBody = """
             {
-              "parent": "tasks/%s",
+              "taskId": "%s",
+              "configId": "default-config-id",
               "config": {
-                "name": "tasks/%s/pushNotificationConfigs/default-config-id",
-                "pushNotificationConfig": {
-                  "id":"default-config-id",
-                  "url": "https://example.com/callback",
-                  "authentication": {
-                    "schemes": ["jwt"]
-                  }
+                "url": "https://example.com/callback",
+                "authentication": {
+                  "scheme": "jwt"
                 }
               }
-            }""".formatted(MINIMAL_TASK.id(), MINIMAL_TASK.id());
+            }""".formatted(MINIMAL_TASK.id());
         RestHandler.HTTPRestResponse response = handler.CreateTaskPushNotificationConfiguration(MINIMAL_TASK.id(), createRequestBody, "", callContext);
         Assertions.assertEquals(201, response.getStatusCode(), response.toString());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -458,7 +453,6 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -508,7 +502,6 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -596,7 +589,6 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);

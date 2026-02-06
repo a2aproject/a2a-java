@@ -612,24 +612,24 @@ client.deleteTaskPushNotificationConfigurations(
     new DeleteTaskPushNotificationConfigParams("task-1234", "config-4567", clientCallContext);
 ```
 
-#### Resubscribe to a task
+#### Subscribe to a task
 
 ```java
-// Resubscribe to an ongoing task with id "task-1234" using configured consumers
+// Subscribe to an ongoing task with id "task-1234" using configured consumers
 TaskIdParams taskIdParams = new TaskIdParams("task-1234");
-client.resubscribe(taskIdParams);
+client.subscribeToTask(taskIdParams);
 
-// Or resubscribe with custom consumers and error handler
+// Or subscribe with custom consumers and error handler
 List<BiConsumer<ClientEvent, AgentCard>> customConsumers = List.of(
-    (event, card) -> System.out.println("Resubscribe event: " + event)
+    (event, card) -> System.out.println("Subscribe event: " + event)
 );
 Consumer<Throwable> customErrorHandler = error -> 
-    System.err.println("Resubscribe error: " + error.getMessage());
+    System.err.println("Subscribe error: " + error.getMessage());
 
-client.resubscribe(taskIdParams, customConsumers, customErrorHandler);
+client.subscribeToTask(taskIdParams, customConsumers, customErrorHandler);
 
 // You can also optionally specify a ClientCallContext with call-specific config to use
-client.resubscribe(taskIdParams, clientCallContext);
+client.subscribeToTask(taskIdParams, clientCallContext);
 ```
 
 #### Retrieve details about the server agent that this client agent is communicating with

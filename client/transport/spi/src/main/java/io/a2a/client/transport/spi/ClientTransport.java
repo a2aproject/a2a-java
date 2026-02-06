@@ -127,13 +127,13 @@ public interface ClientTransport {
     /**
      * Reconnect to get task updates for an existing task.
      *
-     * @param request       the task ID parameters specifying which task to resubscribe to
+     * @param request       the task ID parameters specifying which task to subscribe to
      * @param eventConsumer consumer that will receive streaming events as they arrive
      * @param errorConsumer consumer that will be called if an error occurs during streaming
      * @param context       optional client call context for the request (may be {@code null})
-     * @throws A2AClientException if resubscribing to the task fails for any reason
+     * @throws A2AClientException if subscribing to the task fails for any reason
      */
-    void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
+    void subscribeToTask(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
                      Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**

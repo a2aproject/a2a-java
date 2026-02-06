@@ -35,13 +35,13 @@ import io.a2a.util.Assert;
  * @param examples example queries or use cases demonstrating the skill (optional)
  * @param inputModes supported input formats for this skill (optional, inherits from AgentCard if not set)
  * @param outputModes supported output formats for this skill (optional, inherits from AgentCard if not set)
- * @param security security requirements specific to this skill (optional)
+ * @param securityRequirements security requirements specific to this skill (optional)
  * @see AgentCard
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record AgentSkill(String id, String name, String description, List<String> tags,
                          List<String> examples, List<String> inputModes, List<String> outputModes,
-                         List<Map<String, List<String>>> security) {
+                         List<Map<String, List<String>>> securityRequirements) {
 
     /**
      * Compact constructor that validates required fields.
@@ -53,7 +53,7 @@ public record AgentSkill(String id, String name, String description, List<String
      * @param examples the examples parameter (see class-level JavaDoc)
      * @param inputModes the inputModes parameter (see class-level JavaDoc)
      * @param outputModes the outputModes parameter (see class-level JavaDoc)
-     * @param security the security parameter (see class-level JavaDoc)
+     * @param securityRequirements the security parameter (see class-level JavaDoc)
      * @throws IllegalArgumentException if id, name, description, or tags is null
      */
     public AgentSkill {
@@ -104,7 +104,7 @@ public record AgentSkill(String id, String name, String description, List<String
         private List<String> examples;
         private List<String> inputModes;
         private List<String> outputModes;
-        private List<Map<String, List<String>>> security;
+        private List<Map<String, List<String>>> securityRequirements;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -216,11 +216,11 @@ public record AgentSkill(String id, String name, String description, List<String
          * defined in the AgentCard. Each entry represents an alternative security
          * requirement, where each map contains scheme names and their required scopes.
          *
-         * @param security list of security requirements (optional)
+         * @param securityRequirements list of security requirements (optional)
          * @return this builder for method chaining
          */
-        public Builder security(List<Map<String, List<String>>> security) {
-            this.security = security;
+        public Builder securityRequirements(List<Map<String, List<String>>> securityRequirements) {
+            this.securityRequirements = securityRequirements;
             return this;
         }
 
@@ -231,7 +231,7 @@ public record AgentSkill(String id, String name, String description, List<String
          * @throws IllegalArgumentException if any required field (id, name, description, tags) is null
          */
         public AgentSkill build() {
-            return new AgentSkill(id, name, description, tags, examples, inputModes, outputModes, security);
+            return new AgentSkill(id, name, description, tags, examples, inputModes, outputModes, securityRequirements);
         }
     }
 }

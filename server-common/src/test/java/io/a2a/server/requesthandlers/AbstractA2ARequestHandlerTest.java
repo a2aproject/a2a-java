@@ -1,6 +1,5 @@
 package io.a2a.server.requesthandlers;
 
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -144,8 +143,7 @@ public class AbstractA2ARequestHandlerTest {
                         .build())
                 .defaultInputModes(new ArrayList<>())
                 .defaultOutputModes(new ArrayList<>())
-                .skills(new ArrayList<>())
-                .protocolVersions(CURRENT_PROTOCOL_VERSION);
+                .skills(new ArrayList<>());
         return builder.build();
     }
 

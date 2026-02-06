@@ -173,13 +173,14 @@ public interface A2ACommonFieldMapper {
     /**
      * Converts a Java Object to protobuf Value.
      * <p>
-     * Supports String, Number, Boolean, Map, and List types.
-     * Used internally for struct conversion.
+     * Supports String, Number, Boolean, Map, List types, and null.
+     * Used for struct conversion and arbitrary JSON data.
      *
      * @param value the Java object
      * @return protobuf Value
      */
-    private Value objectToValue(Object value) {
+    @SuppressWarnings("unchecked")
+    default Value objectToValue(Object value) {
         Value.Builder valueBuilder = Value.newBuilder();
         if (value instanceof String) {
             valueBuilder.setStringValue((String) value);
@@ -198,13 +199,21 @@ public interface A2ACommonFieldMapper {
     /**
      * Converts protobuf Value to Java Object.
      * <p>
-     * Returns appropriate Java type based on Value's kind.
-     * Used internally for struct conversion.
+     * Returns appropriate Java type based on Value's kind:
+     * <ul>
+     *   <li>STRUCT_VALUE -> {@code Map<String, Object>}</li>
+     *   <li>LIST_VALUE -> {@code List<Object>}</li>
+     *   <li>BOOL_VALUE -> {@code Boolean}</li>
+     *   <li>NUMBER_VALUE -> {@code Double}</li>
+     *   <li>STRING_VALUE -> {@code String}</li>
+     *   <li>NULL_VALUE -> {@code null}</li>
+     * </ul>
+     * Used for struct conversion and arbitrary JSON data.
      *
      * @param value the protobuf Value
      * @return Java object (String, Double, Boolean, Map, List, or null)
      */
-    private Object valueToObject(Value value) {
+    default Object valueToObject(Value value) {
         switch (value.getKindCase()) {
             case STRUCT_VALUE:
                 return structToMap(value.getStructValue());
@@ -227,12 +236,12 @@ public interface A2ACommonFieldMapper {
     /**
      * Converts Java List to protobuf ListValue.
      * <p>
-     * Used internally for struct conversion.
+     * Used for struct conversion and arbitrary JSON data.
      *
      * @param list the Java list
      * @return protobuf ListValue
      */
-    private com.google.protobuf.ListValue listToListValue(List<Object> list) {
+    default com.google.protobuf.ListValue listToListValue(List<Object> list) {
         com.google.protobuf.ListValue.Builder listValueBuilder = com.google.protobuf.ListValue.newBuilder();
         if (list != null) {
             list.forEach(o -> listValueBuilder.addValues(objectToValue(o)));

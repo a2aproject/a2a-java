@@ -8,8 +8,6 @@ import org.mapstruct.Mapping;
 
 /**
  * Mapper between {@link io.a2a.grpc.DeleteTaskPushNotificationConfigRequest} and {@link io.a2a.spec.DeleteTaskPushNotificationConfigParams}.
- * <p>
- * Extracts task ID and config ID from resource name format "tasks/{taskId}/pushNotificationConfigs/{configId}" using {@link ResourceNameParser}.
  */
 @Mapper(config = A2AProtoMapperConfig.class)
 public interface DeleteTaskPushNotificationConfigParamsMapper {
@@ -18,18 +16,18 @@ public interface DeleteTaskPushNotificationConfigParamsMapper {
 
     /**
      * Converts proto DeleteTaskPushNotificationConfigRequest to domain DeleteTaskPushNotificationConfigParams.
-     * Parses the name field to extract both task ID and config ID.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "id", expression = "java(ResourceNameParser.parseTaskPushNotificationConfigName(proto.getName())[0])")
-    @Mapping(target = "pushNotificationConfigId", expression = "java(ResourceNameParser.parseTaskPushNotificationConfigName(proto.getName())[1])")
+    @Mapping(target = "id", source = "taskId")
+    @Mapping(target = "pushNotificationConfigId", source = "id")
     @Mapping(target = "tenant", source = "tenant")
     DeleteTaskPushNotificationConfigParams fromProto(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest proto);
 
     /**
      * Converts domain DeleteTaskPushNotificationConfigParams to proto DeleteTaskPushNotificationConfigRequest.
-     * Constructs the name field from task ID and config ID.
      */
-    @Mapping(target = "name", expression = "java(ResourceNameParser.defineTaskPushNotificationConfigName(domain.id(), domain.pushNotificationConfigId()))")
+    @Mapping(target = "taskId", source = "id")
+    @Mapping(target = "id", source = "pushNotificationConfigId")
+    @Mapping(target = "tenant", source = "tenant")
     io.a2a.grpc.DeleteTaskPushNotificationConfigRequest toProto(DeleteTaskPushNotificationConfigParams domain);
 }

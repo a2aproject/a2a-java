@@ -44,7 +44,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.LazyStringArrayList.emptyList();
     outputModes_ =
         com.google.protobuf.LazyStringArrayList.emptyList();
-    security_ = java.util.Collections.emptyList();
+    securityRequirements_ = java.util.Collections.emptyList();
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -413,70 +413,65 @@ private static final long serialVersionUID = 0L;
     return outputModes_.getByteString(index);
   }
 
-  public static final int SECURITY_FIELD_NUMBER = 8;
+  public static final int SECURITY_REQUIREMENTS_FIELD_NUMBER = 8;
   @SuppressWarnings("serial")
-  private java.util.List<io.a2a.grpc.Security> security_;
+  private java.util.List<io.a2a.grpc.SecurityRequirement> securityRequirements_;
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
-  public java.util.List<io.a2a.grpc.Security> getSecurityList() {
-    return security_;
+  public java.util.List<io.a2a.grpc.SecurityRequirement> getSecurityRequirementsList() {
+    return securityRequirements_;
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
-      getSecurityOrBuilderList() {
-    return security_;
+  public java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
+      getSecurityRequirementsOrBuilderList() {
+    return securityRequirements_;
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
-  public int getSecurityCount() {
-    return security_.size();
+  public int getSecurityRequirementsCount() {
+    return securityRequirements_.size();
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.Security getSecurity(int index) {
-    return security_.get(index);
+  public io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index) {
+    return securityRequirements_.get(index);
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Security security = 8;</code>
+   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
+  public io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
       int index) {
-    return security_.get(index);
+    return securityRequirements_.get(index);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -514,8 +509,8 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < outputModes_.size(); i++) {
       com.google.protobuf.GeneratedMessage.writeString(output, 7, outputModes_.getRaw(i));
     }
-    for (int i = 0; i < security_.size(); i++) {
-      output.writeMessage(8, security_.get(i));
+    for (int i = 0; i < securityRequirements_.size(); i++) {
+      output.writeMessage(8, securityRequirements_.get(i));
     }
     getUnknownFields().writeTo(output);
   }
@@ -567,9 +562,9 @@ private static final long serialVersionUID = 0L;
       size += dataSize;
       size += 1 * getOutputModesList().size();
     }
-    for (int i = 0; i < security_.size(); i++) {
+    for (int i = 0; i < securityRequirements_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(8, security_.get(i));
+        .computeMessageSize(8, securityRequirements_.get(i));
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -600,8 +595,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getInputModesList())) return false;
     if (!getOutputModesList()
         .equals(other.getOutputModesList())) return false;
-    if (!getSecurityList()
-        .equals(other.getSecurityList())) return false;
+    if (!getSecurityRequirementsList()
+        .equals(other.getSecurityRequirementsList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -635,9 +630,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + OUTPUT_MODES_FIELD_NUMBER;
       hash = (53 * hash) + getOutputModesList().hashCode();
     }
-    if (getSecurityCount() > 0) {
-      hash = (37 * hash) + SECURITY_FIELD_NUMBER;
-      hash = (53 * hash) + getSecurityList().hashCode();
+    if (getSecurityRequirementsCount() > 0) {
+      hash = (37 * hash) + SECURITY_REQUIREMENTS_FIELD_NUMBER;
+      hash = (53 * hash) + getSecurityRequirementsList().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -786,11 +781,11 @@ private static final long serialVersionUID = 0L;
           com.google.protobuf.LazyStringArrayList.emptyList();
       outputModes_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
-      if (securityBuilder_ == null) {
-        security_ = java.util.Collections.emptyList();
+      if (securityRequirementsBuilder_ == null) {
+        securityRequirements_ = java.util.Collections.emptyList();
       } else {
-        security_ = null;
-        securityBuilder_.clear();
+        securityRequirements_ = null;
+        securityRequirementsBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000080);
       return this;
@@ -826,14 +821,14 @@ private static final long serialVersionUID = 0L;
     }
 
     private void buildPartialRepeatedFields(io.a2a.grpc.AgentSkill result) {
-      if (securityBuilder_ == null) {
+      if (securityRequirementsBuilder_ == null) {
         if (((bitField0_ & 0x00000080) != 0)) {
-          security_ = java.util.Collections.unmodifiableList(security_);
+          securityRequirements_ = java.util.Collections.unmodifiableList(securityRequirements_);
           bitField0_ = (bitField0_ & ~0x00000080);
         }
-        result.security_ = security_;
+        result.securityRequirements_ = securityRequirements_;
       } else {
-        result.security_ = securityBuilder_.build();
+        result.securityRequirements_ = securityRequirementsBuilder_.build();
       }
     }
 
@@ -933,29 +928,29 @@ private static final long serialVersionUID = 0L;
         }
         onChanged();
       }
-      if (securityBuilder_ == null) {
-        if (!other.security_.isEmpty()) {
-          if (security_.isEmpty()) {
-            security_ = other.security_;
+      if (securityRequirementsBuilder_ == null) {
+        if (!other.securityRequirements_.isEmpty()) {
+          if (securityRequirements_.isEmpty()) {
+            securityRequirements_ = other.securityRequirements_;
             bitField0_ = (bitField0_ & ~0x00000080);
           } else {
-            ensureSecurityIsMutable();
-            security_.addAll(other.security_);
+            ensureSecurityRequirementsIsMutable();
+            securityRequirements_.addAll(other.securityRequirements_);
           }
           onChanged();
         }
       } else {
-        if (!other.security_.isEmpty()) {
-          if (securityBuilder_.isEmpty()) {
-            securityBuilder_.dispose();
-            securityBuilder_ = null;
-            security_ = other.security_;
+        if (!other.securityRequirements_.isEmpty()) {
+          if (securityRequirementsBuilder_.isEmpty()) {
+            securityRequirementsBuilder_.dispose();
+            securityRequirementsBuilder_ = null;
+            securityRequirements_ = other.securityRequirements_;
             bitField0_ = (bitField0_ & ~0x00000080);
-            securityBuilder_ = 
+            securityRequirementsBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                 internalGetSecurityFieldBuilder() : null;
+                 internalGetSecurityRequirementsFieldBuilder() : null;
           } else {
-            securityBuilder_.addAllMessages(other.security_);
+            securityRequirementsBuilder_.addAllMessages(other.securityRequirements_);
           }
         }
       }
@@ -1025,15 +1020,15 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 58
             case 66: {
-              io.a2a.grpc.Security m =
+              io.a2a.grpc.SecurityRequirement m =
                   input.readMessage(
-                      io.a2a.grpc.Security.parser(),
+                      io.a2a.grpc.SecurityRequirement.parser(),
                       extensionRegistry);
-              if (securityBuilder_ == null) {
-                ensureSecurityIsMutable();
-                security_.add(m);
+              if (securityRequirementsBuilder_ == null) {
+                ensureSecurityRequirementsIsMutable();
+                securityRequirements_.add(m);
               } else {
-                securityBuilder_.addMessage(m);
+                securityRequirementsBuilder_.addMessage(m);
               }
               break;
             } // case 66
@@ -1918,334 +1913,316 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.util.List<io.a2a.grpc.Security> security_ =
+    private java.util.List<io.a2a.grpc.SecurityRequirement> securityRequirements_ =
       java.util.Collections.emptyList();
-    private void ensureSecurityIsMutable() {
+    private void ensureSecurityRequirementsIsMutable() {
       if (!((bitField0_ & 0x00000080) != 0)) {
-        security_ = new java.util.ArrayList<io.a2a.grpc.Security>(security_);
+        securityRequirements_ = new java.util.ArrayList<io.a2a.grpc.SecurityRequirement>(securityRequirements_);
         bitField0_ |= 0x00000080;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilder<
-        io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder> securityBuilder_;
+        io.a2a.grpc.SecurityRequirement, io.a2a.grpc.SecurityRequirement.Builder, io.a2a.grpc.SecurityRequirementOrBuilder> securityRequirementsBuilder_;
 
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public java.util.List<io.a2a.grpc.Security> getSecurityList() {
-      if (securityBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(security_);
+    public java.util.List<io.a2a.grpc.SecurityRequirement> getSecurityRequirementsList() {
+      if (securityRequirementsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(securityRequirements_);
       } else {
-        return securityBuilder_.getMessageList();
+        return securityRequirementsBuilder_.getMessageList();
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public int getSecurityCount() {
-      if (securityBuilder_ == null) {
-        return security_.size();
+    public int getSecurityRequirementsCount() {
+      if (securityRequirementsBuilder_ == null) {
+        return securityRequirements_.size();
       } else {
-        return securityBuilder_.getCount();
+        return securityRequirementsBuilder_.getCount();
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public io.a2a.grpc.Security getSecurity(int index) {
-      if (securityBuilder_ == null) {
-        return security_.get(index);
+    public io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index) {
+      if (securityRequirementsBuilder_ == null) {
+        return securityRequirements_.get(index);
       } else {
-        return securityBuilder_.getMessage(index);
+        return securityRequirementsBuilder_.getMessage(index);
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public Builder setSecurity(
-        int index, io.a2a.grpc.Security value) {
-      if (securityBuilder_ == null) {
+    public Builder setSecurityRequirements(
+        int index, io.a2a.grpc.SecurityRequirement value) {
+      if (securityRequirementsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureSecurityIsMutable();
-        security_.set(index, value);
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.set(index, value);
         onChanged();
       } else {
-        securityBuilder_.setMessage(index, value);
+        securityRequirementsBuilder_.setMessage(index, value);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public Builder setSecurity(
-        int index, io.a2a.grpc.Security.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.set(index, builderForValue.build());
+    public Builder setSecurityRequirements(
+        int index, io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.set(index, builderForValue.build());
         onChanged();
       } else {
-        securityBuilder_.setMessage(index, builderForValue.build());
+        securityRequirementsBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public Builder addSecurity(io.a2a.grpc.Security value) {
-      if (securityBuilder_ == null) {
+    public Builder addSecurityRequirements(io.a2a.grpc.SecurityRequirement value) {
+      if (securityRequirementsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureSecurityIsMutable();
-        security_.add(value);
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.add(value);
         onChanged();
       } else {
-        securityBuilder_.addMessage(value);
+        securityRequirementsBuilder_.addMessage(value);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public Builder addSecurity(
-        int index, io.a2a.grpc.Security value) {
-      if (securityBuilder_ == null) {
+    public Builder addSecurityRequirements(
+        int index, io.a2a.grpc.SecurityRequirement value) {
+      if (securityRequirementsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureSecurityIsMutable();
-        security_.add(index, value);
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.add(index, value);
         onChanged();
       } else {
-        securityBuilder_.addMessage(index, value);
+        securityRequirementsBuilder_.addMessage(index, value);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public Builder addSecurity(
-        io.a2a.grpc.Security.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.add(builderForValue.build());
+    public Builder addSecurityRequirements(
+        io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.add(builderForValue.build());
         onChanged();
       } else {
-        securityBuilder_.addMessage(builderForValue.build());
+        securityRequirementsBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public Builder addSecurity(
-        int index, io.a2a.grpc.Security.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.add(index, builderForValue.build());
+    public Builder addSecurityRequirements(
+        int index, io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.add(index, builderForValue.build());
         onChanged();
       } else {
-        securityBuilder_.addMessage(index, builderForValue.build());
+        securityRequirementsBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public Builder addAllSecurity(
-        java.lang.Iterable<? extends io.a2a.grpc.Security> values) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
+    public Builder addAllSecurityRequirements(
+        java.lang.Iterable<? extends io.a2a.grpc.SecurityRequirement> values) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, security_);
+            values, securityRequirements_);
         onChanged();
       } else {
-        securityBuilder_.addAllMessages(values);
+        securityRequirementsBuilder_.addAllMessages(values);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public Builder clearSecurity() {
-      if (securityBuilder_ == null) {
-        security_ = java.util.Collections.emptyList();
+    public Builder clearSecurityRequirements() {
+      if (securityRequirementsBuilder_ == null) {
+        securityRequirements_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000080);
         onChanged();
       } else {
-        securityBuilder_.clear();
+        securityRequirementsBuilder_.clear();
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public Builder removeSecurity(int index) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.remove(index);
+    public Builder removeSecurityRequirements(int index) {
+      if (securityRequirementsBuilder_ == null) {
+        ensureSecurityRequirementsIsMutable();
+        securityRequirements_.remove(index);
         onChanged();
       } else {
-        securityBuilder_.remove(index);
+        securityRequirementsBuilder_.remove(index);
       }
       return this;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public io.a2a.grpc.Security.Builder getSecurityBuilder(
+    public io.a2a.grpc.SecurityRequirement.Builder getSecurityRequirementsBuilder(
         int index) {
-      return internalGetSecurityFieldBuilder().getBuilder(index);
+      return internalGetSecurityRequirementsFieldBuilder().getBuilder(index);
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public io.a2a.grpc.SecurityOrBuilder getSecurityOrBuilder(
+    public io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
         int index) {
-      if (securityBuilder_ == null) {
-        return security_.get(index);  } else {
-        return securityBuilder_.getMessageOrBuilder(index);
+      if (securityRequirementsBuilder_ == null) {
+        return securityRequirements_.get(index);  } else {
+        return securityRequirementsBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public java.util.List<? extends io.a2a.grpc.SecurityOrBuilder> 
-         getSecurityOrBuilderList() {
-      if (securityBuilder_ != null) {
-        return securityBuilder_.getMessageOrBuilderList();
+    public java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
+         getSecurityRequirementsOrBuilderList() {
+      if (securityRequirementsBuilder_ != null) {
+        return securityRequirementsBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(security_);
+        return java.util.Collections.unmodifiableList(securityRequirements_);
       }
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public io.a2a.grpc.Security.Builder addSecurityBuilder() {
-      return internalGetSecurityFieldBuilder().addBuilder(
-          io.a2a.grpc.Security.getDefaultInstance());
+    public io.a2a.grpc.SecurityRequirement.Builder addSecurityRequirementsBuilder() {
+      return internalGetSecurityRequirementsFieldBuilder().addBuilder(
+          io.a2a.grpc.SecurityRequirement.getDefaultInstance());
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public io.a2a.grpc.Security.Builder addSecurityBuilder(
+    public io.a2a.grpc.SecurityRequirement.Builder addSecurityRequirementsBuilder(
         int index) {
-      return internalGetSecurityFieldBuilder().addBuilder(
-          index, io.a2a.grpc.Security.getDefaultInstance());
+      return internalGetSecurityRequirementsFieldBuilder().addBuilder(
+          index, io.a2a.grpc.SecurityRequirement.getDefaultInstance());
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Security security = 8;</code>
+     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
-    public java.util.List<io.a2a.grpc.Security.Builder> 
-         getSecurityBuilderList() {
-      return internalGetSecurityFieldBuilder().getBuilderList();
+    public java.util.List<io.a2a.grpc.SecurityRequirement.Builder> 
+         getSecurityRequirementsBuilderList() {
+      return internalGetSecurityRequirementsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
-        io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder> 
-        internalGetSecurityFieldBuilder() {
-      if (securityBuilder_ == null) {
-        securityBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-            io.a2a.grpc.Security, io.a2a.grpc.Security.Builder, io.a2a.grpc.SecurityOrBuilder>(
-                security_,
+        io.a2a.grpc.SecurityRequirement, io.a2a.grpc.SecurityRequirement.Builder, io.a2a.grpc.SecurityRequirementOrBuilder> 
+        internalGetSecurityRequirementsFieldBuilder() {
+      if (securityRequirementsBuilder_ == null) {
+        securityRequirementsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+            io.a2a.grpc.SecurityRequirement, io.a2a.grpc.SecurityRequirement.Builder, io.a2a.grpc.SecurityRequirementOrBuilder>(
+                securityRequirements_,
                 ((bitField0_ & 0x00000080) != 0),
                 getParentForChildren(),
                 isClean());
-        security_ = null;
+        securityRequirements_ = null;
       }
-      return securityBuilder_;
+      return securityRequirementsBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.AgentSkill)

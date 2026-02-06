@@ -184,7 +184,7 @@ public class RestHandler {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
             }
             TaskIdParams params = new TaskIdParams(taskId, tenant);
-            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onResubscribeToTask(params, context);
+            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onSubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));

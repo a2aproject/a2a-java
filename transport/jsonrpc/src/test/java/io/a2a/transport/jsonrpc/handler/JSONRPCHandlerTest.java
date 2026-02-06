@@ -677,7 +677,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         handler.setPushNotificationConfig(request, callContext);
 
         GetTaskPushNotificationConfigRequest getRequest
-                = new GetTaskPushNotificationConfigRequest("111", new GetTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+                = new GetTaskPushNotificationConfigRequest("111", new GetTaskPushNotificationConfigParams(
+                        MINIMAL_TASK.id(),
+                        "c295ea44-7543-4f78-b524-7a38915ad6e4"));
         GetTaskPushNotificationConfigResponse getResponse = handler.getPushNotificationConfig(getRequest, callContext);
 
         TaskPushNotificationConfig expectedConfig = new TaskPushNotificationConfig(MINIMAL_TASK.id(),
@@ -802,7 +804,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testOnResubscribeExistingTaskSuccess() {
+    public void testOnSubscribeExistingTaskSuccess() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
         queueManager.createOrTap(MINIMAL_TASK.id());
@@ -850,7 +852,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 // Per A2A Protocol Spec 3.1.6: ENFORCE that first event is Task
                 if (!receivedInitialTask.get()) {
                     assertTrue(event instanceof Task,
-                        "First event on resubscribe MUST be Task (current state), but was: " + event.getClass().getSimpleName());
+                        "First event on subscribe MUST be Task (current state), but was: " + event.getClass().getSimpleName());
                     receivedInitialTask.set(true);
                 } else {
                     // Subsequent events should be the expected type (Message in this case)
@@ -882,7 +884,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testOnResubscribeExistingTaskSuccessMocks() throws Exception {
+    public void testOnSubscribeExistingTaskSuccessMocks() throws Exception {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
         queueManager.createOrTap(MINIMAL_TASK.id());
@@ -915,7 +917,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         CompletableFuture<Void> future = new CompletableFuture<>();
         List<StreamingEventKind> results = new ArrayList<>();
 
-        // Unlike testOnResubscribeExistingTaskSuccess() the ZeroPublisher.fromIterable()
+        // Unlike testOnSubscribeExistingTaskSuccess() the ZeroPublisher.fromIterable()
         // used to mock the events completes once it has sent all the items. So no special thread
         // handling is needed.
         response.subscribe(new Flow.Subscriber<>() {
@@ -955,7 +957,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testOnResubscribeNoExistingTaskError() {
+    public void testOnSubscribeNoExistingTaskError() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
 
         SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));
@@ -1048,7 +1050,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testStreamingNotSupportedErrorOnResubscribeToTask() {
+    public void testStreamingNotSupportedErrorOnSubscribeToTask() {
         // This test does not exist in the Python implementation
         AgentCard card = createAgentCard(false, true);
         JSONRPCHandler handler = new JSONRPCHandler(card, requestHandler, internalExecutor);
@@ -1125,7 +1127,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         taskStore.save(MINIMAL_TASK, false);
 
         GetTaskPushNotificationConfigRequest request
-                = new GetTaskPushNotificationConfigRequest("id", new GetTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+                = new GetTaskPushNotificationConfigRequest("id", new GetTaskPushNotificationConfigParams(
+                        MINIMAL_TASK.id(),"c295ea44-7543-4f78-b524-7a38915ad6e4"));
         GetTaskPushNotificationConfigResponse response = handler.getPushNotificationConfig(request, callContext);
 
         Assertions.assertNotNull(response.getError());
@@ -1612,7 +1615,6 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -1651,7 +1653,6 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -1720,7 +1721,6 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);

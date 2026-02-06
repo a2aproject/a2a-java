@@ -1,6 +1,5 @@
 package io.a2a.server.apps.common;
 
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 import static io.a2a.spec.TransportProtocol.GRPC;
 
 import java.io.IOException;
@@ -18,7 +17,6 @@ import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
-import io.a2a.spec.TransportProtocol;
 
 import io.quarkus.arc.profile.IfBuildProfile;
 import org.junit.jupiter.api.Assertions;
@@ -51,7 +49,6 @@ public class AgentCardProducer {
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(new ArrayList<>())
-                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, transportUrl)));
         return builder.build();
     }

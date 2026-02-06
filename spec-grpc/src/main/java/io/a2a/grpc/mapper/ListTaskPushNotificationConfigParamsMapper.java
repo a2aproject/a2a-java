@@ -8,8 +8,6 @@ import org.mapstruct.Mapping;
 
 /**
  * Mapper between {@link io.a2a.grpc.ListTaskPushNotificationConfigRequest} and {@link io.a2a.spec.ListTaskPushNotificationConfigParams}.
- * <p>
- * Extracts task ID from parent resource name format "tasks/{id}" using {@link ResourceNameParser}.
  */
 @Mapper(config = A2AProtoMapperConfig.class)
 public interface ListTaskPushNotificationConfigParamsMapper {
@@ -18,16 +16,16 @@ public interface ListTaskPushNotificationConfigParamsMapper {
 
     /**
      * Converts proto ListTaskPushNotificationConfigRequest to domain ListTaskPushNotificationConfigParams.
-     * Extracts task ID from the parent field and maps pagination parameters.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "id", expression = "java(ResourceNameParser.extractParentId(proto.getParent()))")
+    @Mapping(target = "id", source = "taskId")
+    @Mapping(target = "tenant", source = "tenant")
     ListTaskPushNotificationConfigParams fromProto(io.a2a.grpc.ListTaskPushNotificationConfigRequest proto);
 
     /**
      * Converts domain ListTaskPushNotificationConfigParams to proto ListTaskPushNotificationConfigRequest.
-     * Constructs the parent field from task ID.
      */
-    @Mapping(target = "parent", expression = "java(ResourceNameParser.defineTaskName(domain.id()))")
+    @Mapping(target = "taskId", source = "id")
+    @Mapping(target = "tenant", source = "tenant")
     io.a2a.grpc.ListTaskPushNotificationConfigRequest toProto(ListTaskPushNotificationConfigParams domain);
 }

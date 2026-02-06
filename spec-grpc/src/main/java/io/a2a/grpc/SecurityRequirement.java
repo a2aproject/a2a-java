@@ -6,13 +6,13 @@
 package io.a2a.grpc;
 
 /**
- * Protobuf type {@code a2a.v1.Security}
+ * Protobuf type {@code a2a.v1.SecurityRequirement}
  */
 @com.google.protobuf.Generated
-public final class Security extends
+public final class SecurityRequirement extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.Security)
-    SecurityOrBuilder {
+    // @@protoc_insertion_point(message_implements:a2a.v1.SecurityRequirement)
+    SecurityRequirementOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -21,18 +21,18 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 33,
       /* patch= */ 1,
       /* suffix= */ "",
-      "Security");
+      "SecurityRequirement");
   }
-  // Use Security.newBuilder() to construct.
-  private Security(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use SecurityRequirement.newBuilder() to construct.
+  private SecurityRequirement(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private Security() {
+  private SecurityRequirement() {
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Security_descriptor;
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_descriptor;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -50,9 +50,9 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Security_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            io.a2a.grpc.Security.class, io.a2a.grpc.Security.Builder.class);
+            io.a2a.grpc.SecurityRequirement.class, io.a2a.grpc.SecurityRequirement.Builder.class);
   }
 
   public static final int SCHEMES_FIELD_NUMBER = 1;
@@ -61,7 +61,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String, io.a2a.grpc.StringList> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, io.a2a.grpc.StringList>newDefaultInstance(
-                io.a2a.grpc.A2A.internal_static_a2a_v1_Security_SchemesEntry_descriptor, 
+                io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_SchemesEntry_descriptor, 
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.MESSAGE,
@@ -183,10 +183,10 @@ io.a2a.grpc.StringList defaultValue) {
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof io.a2a.grpc.Security)) {
+    if (!(obj instanceof io.a2a.grpc.SecurityRequirement)) {
       return super.equals(obj);
     }
-    io.a2a.grpc.Security other = (io.a2a.grpc.Security) obj;
+    io.a2a.grpc.SecurityRequirement other = (io.a2a.grpc.SecurityRequirement) obj;
 
     if (!internalGetSchemes().equals(
         other.internalGetSchemes())) return false;
@@ -210,44 +210,44 @@ io.a2a.grpc.StringList defaultValue) {
     return hash;
   }
 
-  public static io.a2a.grpc.Security parseFrom(
+  public static io.a2a.grpc.SecurityRequirement parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.Security parseFrom(
+  public static io.a2a.grpc.SecurityRequirement parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.Security parseFrom(
+  public static io.a2a.grpc.SecurityRequirement parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.Security parseFrom(
+  public static io.a2a.grpc.SecurityRequirement parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.Security parseFrom(byte[] data)
+  public static io.a2a.grpc.SecurityRequirement parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.Security parseFrom(
+  public static io.a2a.grpc.SecurityRequirement parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.Security parseFrom(java.io.InputStream input)
+  public static io.a2a.grpc.SecurityRequirement parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.Security parseFrom(
+  public static io.a2a.grpc.SecurityRequirement parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -255,26 +255,26 @@ io.a2a.grpc.StringList defaultValue) {
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static io.a2a.grpc.Security parseDelimitedFrom(java.io.InputStream input)
+  public static io.a2a.grpc.SecurityRequirement parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static io.a2a.grpc.Security parseDelimitedFrom(
+  public static io.a2a.grpc.SecurityRequirement parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static io.a2a.grpc.Security parseFrom(
+  public static io.a2a.grpc.SecurityRequirement parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.Security parseFrom(
+  public static io.a2a.grpc.SecurityRequirement parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -287,7 +287,7 @@ io.a2a.grpc.StringList defaultValue) {
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(io.a2a.grpc.Security prototype) {
+  public static Builder newBuilder(io.a2a.grpc.SecurityRequirement prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -303,15 +303,15 @@ io.a2a.grpc.StringList defaultValue) {
     return builder;
   }
   /**
-   * Protobuf type {@code a2a.v1.Security}
+   * Protobuf type {@code a2a.v1.SecurityRequirement}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.Security)
-      io.a2a.grpc.SecurityOrBuilder {
+      // @@protoc_insertion_point(builder_implements:a2a.v1.SecurityRequirement)
+      io.a2a.grpc.SecurityRequirementOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Security_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -339,12 +339,12 @@ io.a2a.grpc.StringList defaultValue) {
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Security_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.a2a.grpc.Security.class, io.a2a.grpc.Security.Builder.class);
+              io.a2a.grpc.SecurityRequirement.class, io.a2a.grpc.SecurityRequirement.Builder.class);
     }
 
-    // Construct using io.a2a.grpc.Security.newBuilder()
+    // Construct using io.a2a.grpc.SecurityRequirement.newBuilder()
     private Builder() {
 
     }
@@ -365,17 +365,17 @@ io.a2a.grpc.StringList defaultValue) {
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Security_descriptor;
+      return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_descriptor;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.Security getDefaultInstanceForType() {
-      return io.a2a.grpc.Security.getDefaultInstance();
+    public io.a2a.grpc.SecurityRequirement getDefaultInstanceForType() {
+      return io.a2a.grpc.SecurityRequirement.getDefaultInstance();
     }
 
     @java.lang.Override
-    public io.a2a.grpc.Security build() {
-      io.a2a.grpc.Security result = buildPartial();
+    public io.a2a.grpc.SecurityRequirement build() {
+      io.a2a.grpc.SecurityRequirement result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -383,14 +383,14 @@ io.a2a.grpc.StringList defaultValue) {
     }
 
     @java.lang.Override
-    public io.a2a.grpc.Security buildPartial() {
-      io.a2a.grpc.Security result = new io.a2a.grpc.Security(this);
+    public io.a2a.grpc.SecurityRequirement buildPartial() {
+      io.a2a.grpc.SecurityRequirement result = new io.a2a.grpc.SecurityRequirement(this);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    private void buildPartial0(io.a2a.grpc.Security result) {
+    private void buildPartial0(io.a2a.grpc.SecurityRequirement result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.schemes_ = internalGetSchemes().build(SchemesDefaultEntryHolder.defaultEntry);
@@ -399,16 +399,16 @@ io.a2a.grpc.StringList defaultValue) {
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof io.a2a.grpc.Security) {
-        return mergeFrom((io.a2a.grpc.Security)other);
+      if (other instanceof io.a2a.grpc.SecurityRequirement) {
+        return mergeFrom((io.a2a.grpc.SecurityRequirement)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(io.a2a.grpc.Security other) {
-      if (other == io.a2a.grpc.Security.getDefaultInstance()) return this;
+    public Builder mergeFrom(io.a2a.grpc.SecurityRequirement other) {
+      if (other == io.a2a.grpc.SecurityRequirement.getDefaultInstance()) return this;
       internalGetMutableSchemes().mergeFrom(
           other.internalGetSchemes());
       bitField0_ |= 0x00000001;
@@ -619,23 +619,23 @@ io.a2a.grpc.StringList defaultValue) {
       return (io.a2a.grpc.StringList.Builder) entry;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.Security)
+    // @@protoc_insertion_point(builder_scope:a2a.v1.SecurityRequirement)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.Security)
-  private static final io.a2a.grpc.Security DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:a2a.v1.SecurityRequirement)
+  private static final io.a2a.grpc.SecurityRequirement DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new io.a2a.grpc.Security();
+    DEFAULT_INSTANCE = new io.a2a.grpc.SecurityRequirement();
   }
 
-  public static io.a2a.grpc.Security getDefaultInstance() {
+  public static io.a2a.grpc.SecurityRequirement getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<Security>
-      PARSER = new com.google.protobuf.AbstractParser<Security>() {
+  private static final com.google.protobuf.Parser<SecurityRequirement>
+      PARSER = new com.google.protobuf.AbstractParser<SecurityRequirement>() {
     @java.lang.Override
-    public Security parsePartialFrom(
+    public SecurityRequirement parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -654,17 +654,17 @@ io.a2a.grpc.StringList defaultValue) {
     }
   };
 
-  public static com.google.protobuf.Parser<Security> parser() {
+  public static com.google.protobuf.Parser<SecurityRequirement> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<Security> getParserForType() {
+  public com.google.protobuf.Parser<SecurityRequirement> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public io.a2a.grpc.Security getDefaultInstanceForType() {
+  public io.a2a.grpc.SecurityRequirement getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

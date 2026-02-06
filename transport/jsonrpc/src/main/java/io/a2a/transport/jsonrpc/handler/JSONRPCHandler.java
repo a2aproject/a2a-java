@@ -160,7 +160,7 @@ public class JSONRPCHandler {
 
         try {
             Flow.Publisher<StreamingEventKind> publisher =
-                    requestHandler.onResubscribeToTask(request.getParams(), context);
+                    requestHandler.onSubscribeToTask(request.getParams(), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
             // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
             return convertToSendStreamingMessageResponse(request.getId(), publisher);

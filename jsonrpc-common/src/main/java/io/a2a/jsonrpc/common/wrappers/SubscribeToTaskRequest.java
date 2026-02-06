@@ -8,7 +8,7 @@ import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.TaskIdParams;
 
 /**
- * JSON-RPC request to resubscribe to an ongoing or completed task's event stream.
+ * JSON-RPC request to subscribe to an ongoing or completed task's event stream.
  * <p>
  * This request allows clients to reconnect to a task and receive its events, enabling
  * recovery from disconnections or retrieval of missed updates. The agent will stream

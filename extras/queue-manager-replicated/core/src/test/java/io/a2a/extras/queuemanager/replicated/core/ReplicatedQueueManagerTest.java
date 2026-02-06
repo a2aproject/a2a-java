@@ -67,7 +67,6 @@ class ReplicatedQueueManagerTest {
                 .taskId("test-task")
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
-                .isFinal(false)
                 .build();
     }
 
@@ -80,7 +79,6 @@ class ReplicatedQueueManagerTest {
                 .taskId(taskId)
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
-                .isFinal(false)
                 .build();
     }
 
@@ -277,7 +275,6 @@ class ReplicatedQueueManagerTest {
                 .taskId("json-test-task")
                 .contextId("json-test-context")
                 .status(new TaskStatus(TaskState.COMPLETED))
-                .isFinal(true)
                 .build();
         ReplicatedEventQueueItem original = new ReplicatedEventQueueItem("json-test-task", originalEvent);
 
@@ -350,7 +347,6 @@ class ReplicatedQueueManagerTest {
                                 .taskId(taskId)  // Use same taskId as queue
                                 .contextId("test-context")
                                 .status(new TaskStatus(TaskState.WORKING))
-                                .isFinal(false)
                                 .build();
                         queue.enqueueEvent(event);
                     }
@@ -376,7 +372,6 @@ class ReplicatedQueueManagerTest {
                                 .taskId(taskId)  // Use same taskId as queue
                                 .contextId("test-context")
                                 .status(new TaskStatus(TaskState.COMPLETED))
-                                .isFinal(true)
                                 .build();
                         ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
                         queueManager.onReplicatedEvent(replicatedEvent);
@@ -505,7 +500,6 @@ class ReplicatedQueueManagerTest {
                 .taskId(taskId)
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.COMPLETED))
-                .isFinal(true)
                 .build();
         ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, newEvent);
         queueManager.onReplicatedEvent(replicatedEvent);

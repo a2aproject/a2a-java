@@ -197,7 +197,7 @@ private static final long serialVersionUID = 0L;
   private io.a2a.grpc.AuthenticationInfo authentication_;
   /**
    * <pre>
-   * Information about the authentication to sent with the notification
+   * Authentication information required to send the notification
    * </pre>
    *
    * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -209,7 +209,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Information about the authentication to sent with the notification
+   * Authentication information required to send the notification
    * </pre>
    *
    * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -221,7 +221,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Information about the authentication to sent with the notification
+   * Authentication information required to send the notification
    * </pre>
    *
    * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -904,7 +904,7 @@ private static final long serialVersionUID = 0L;
         io.a2a.grpc.AuthenticationInfo, io.a2a.grpc.AuthenticationInfo.Builder, io.a2a.grpc.AuthenticationInfoOrBuilder> authenticationBuilder_;
     /**
      * <pre>
-     * Information about the authentication to sent with the notification
+     * Authentication information required to send the notification
      * </pre>
      *
      * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -915,7 +915,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Information about the authentication to sent with the notification
+     * Authentication information required to send the notification
      * </pre>
      *
      * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -930,7 +930,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Information about the authentication to sent with the notification
+     * Authentication information required to send the notification
      * </pre>
      *
      * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -950,7 +950,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Information about the authentication to sent with the notification
+     * Authentication information required to send the notification
      * </pre>
      *
      * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -968,7 +968,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Information about the authentication to sent with the notification
+     * Authentication information required to send the notification
      * </pre>
      *
      * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -993,7 +993,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Information about the authentication to sent with the notification
+     * Authentication information required to send the notification
      * </pre>
      *
      * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -1010,7 +1010,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Information about the authentication to sent with the notification
+     * Authentication information required to send the notification
      * </pre>
      *
      * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -1022,7 +1022,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Information about the authentication to sent with the notification
+     * Authentication information required to send the notification
      * </pre>
      *
      * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
@@ -1037,7 +1037,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Information about the authentication to sent with the notification
+     * Authentication information required to send the notification
      * </pre>
      *
      * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>

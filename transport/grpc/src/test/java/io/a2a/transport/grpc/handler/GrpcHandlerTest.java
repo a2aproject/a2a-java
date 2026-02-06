@@ -1,5 +1,6 @@
 package io.a2a.transport.grpc.handler;
 
+import static io.a2a.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -60,13 +61,12 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             .setMetadata(Struct.newBuilder().build())
             .build();
 
-
     @Test
     public void testOnGetTaskSuccess() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
         GetTaskRequest request = GetTaskRequest.newBuilder()
-                .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
 
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
@@ -87,7 +87,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnGetTaskNotFound() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         GetTaskRequest request = GetTaskRequest.newBuilder()
-                .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
 
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
@@ -112,7 +112,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         CancelTaskRequest request = CancelTaskRequest.newBuilder()
-                .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
         handler.cancelTask(request, streamRecorder);
@@ -125,7 +125,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Task task = result.get(0);
         assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), task.getId());
         assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId(), task.getContextId());
-        assertEquals(TaskState.TASK_STATE_CANCELLED, task.getStatus().getState());
+        assertEquals(TaskState.TASK_STATE_CANCELED, task.getStatus().getState());
     }
 
     @Test
@@ -138,7 +138,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         CancelTaskRequest request = CancelTaskRequest.newBuilder()
-                .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
         handler.cancelTask(request, streamRecorder);
@@ -151,7 +151,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnCancelTaskNotFound() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         CancelTaskRequest request = CancelTaskRequest.newBuilder()
-                .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         StreamRecorder<Task> streamRecorder = StreamRecorder.create();
         handler.cancelTask(request, streamRecorder);
@@ -205,17 +205,18 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testSetPushNotificationConfigSuccess() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + "config456";
-        StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler, NAME);
+        StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler,
+                AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), "config456");
 
         Assertions.assertNull(streamRecorder.getError());
         List<TaskPushNotificationConfig> result = streamRecorder.getValues();
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1, result.size());
         TaskPushNotificationConfig response = result.get(0);
-        assertEquals(NAME, response.getName());
+        assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), response.getTaskId());
         PushNotificationConfig responseConfig = response.getPushNotificationConfig();
         assertEquals("config456", responseConfig.getId());
+        assertEquals("config456", response.getId());
         assertEquals("http://example.com", responseConfig.getUrl());
         assertEquals(AuthenticationInfo.getDefaultInstance(), responseConfig.getAuthentication());
         Assertions.assertTrue(responseConfig.getToken().isEmpty());
@@ -228,20 +229,20 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             eventQueue.enqueueEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + "config456";
-
         // first set the task push notification config
-        StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler, NAME);
+        StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler,
+                AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), "config456");
         Assertions.assertNull(streamRecorder.getError());
 
         // then get the task push notification config
-        streamRecorder = getTaskPushNotificationConfigRequest(handler, NAME);
+        streamRecorder = getTaskPushNotificationConfigRequest(handler, AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), "config456");
         Assertions.assertNull(streamRecorder.getError());
         List<TaskPushNotificationConfig> result = streamRecorder.getValues();
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1, result.size());
         TaskPushNotificationConfig response = result.get(0);
-        assertEquals(NAME, response.getName());
+        assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), response.getTaskId());
+        assertEquals("config456", response.getId());
         PushNotificationConfig responseConfig = response.getPushNotificationConfig();
         assertEquals("config456", responseConfig.getId());
         assertEquals("http://example.com", responseConfig.getUrl());
@@ -253,8 +254,8 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testPushNotificationsNotSupportedError() throws Exception {
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(true, false);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
-        StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler, NAME);
+        StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler,
+                AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
@@ -264,8 +265,8 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
-        StreamRecorder<TaskPushNotificationConfig> streamRecorder = getTaskPushNotificationConfigRequest(handler, NAME);
+        StreamRecorder<TaskPushNotificationConfig> streamRecorder = getTaskPushNotificationConfigRequest(handler,
+                AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
@@ -275,8 +276,8 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
-        StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler, NAME);
+        StreamRecorder<TaskPushNotificationConfig> streamRecorder = createTaskPushNotificationConfigRequest(handler,
+                AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
@@ -379,7 +380,8 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();})){
+                    Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();
+                })) {
             streamRecorder = sendStreamingMessageRequest(handler);
         }
         Assertions.assertNull(streamRecorder.getError());
@@ -410,71 +412,70 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
             List<Event> events = List.of(
                     AbstractA2ARequestHandlerTest.MINIMAL_TASK,
-                TaskArtifactUpdateEvent.builder()
-                        .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
-                        .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId())
-                        .artifact(Artifact.builder()
-                                .artifactId("11")
-                                .parts(new TextPart("text"))
-                                .build())
-                        .build(),
-                TaskStatusUpdateEvent.builder()
-                        .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
-                        .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId())
-                        .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.COMPLETED))
-                        .build());
+                    TaskArtifactUpdateEvent.builder()
+                            .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                            .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId())
+                            .artifact(Artifact.builder()
+                                    .artifactId("11")
+                                    .parts(new TextPart("text"))
+                                    .build())
+                            .build(),
+                    TaskStatusUpdateEvent.builder()
+                            .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                            .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId())
+                            .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.COMPLETED))
+                            .build());
 
+            agentExecutorExecute = (context, eventQueue) -> {
+                // Hardcode the events to send here
+                for (Event event : events) {
+                    eventQueue.enqueueEvent(event);
+                }
+            };
 
-        agentExecutorExecute = (context, eventQueue) -> {
-            // Hardcode the events to send here
-            for (Event event : events) {
-                eventQueue.enqueueEvent(event);
-            }
-        };
+            StreamRecorder<TaskPushNotificationConfig> pushStreamRecorder = createTaskPushNotificationConfigRequest(
+                    handler, AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
+            Assertions.assertNull(pushStreamRecorder.getError());
 
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
-        StreamRecorder<TaskPushNotificationConfig> pushStreamRecorder = createTaskPushNotificationConfigRequest(handler, NAME);
-        Assertions.assertNull(pushStreamRecorder.getError());
+            List<StreamResponse> results = new ArrayList<>();
+            List<Throwable> errors = new ArrayList<>();
+            final CountDownLatch latch = new CountDownLatch(6);
+            httpClient.latch = latch;
+            StreamObserver<StreamResponse> streamObserver = new StreamObserver<>() {
+                @Override
+                public void onNext(StreamResponse streamResponse) {
+                    results.add(streamResponse);
+                    latch.countDown();
+                }
 
-        List<StreamResponse> results = new ArrayList<>();
-        List<Throwable> errors = new ArrayList<>();
-        final CountDownLatch latch = new CountDownLatch(6);
-        httpClient.latch = latch;
-        StreamObserver<StreamResponse> streamObserver = new StreamObserver<>() {
-            @Override
-            public void onNext(StreamResponse streamResponse) {
-                results.add(streamResponse);
-                latch.countDown();
-            }
+                @Override
+                public void onError(Throwable throwable) {
+                    errors.add(throwable);
+                }
 
-            @Override
-            public void onError(Throwable throwable) {
-                errors.add(throwable);
-            }
+                @Override
+                public void onCompleted() {
+                }
+            };
+            sendStreamingMessageRequest(handler, streamObserver);
+            Assertions.assertTrue(latch.await(5, TimeUnit.SECONDS));
+            Assertions.assertTrue(errors.isEmpty());
+            Assertions.assertEquals(3, results.size());
+            Assertions.assertEquals(3, httpClient.tasks.size());
 
-            @Override
-            public void onCompleted() {
-            }
-        };
-        sendStreamingMessageRequest(handler, streamObserver);
-        Assertions.assertTrue(latch.await(5, TimeUnit.SECONDS));
-        Assertions.assertTrue(errors.isEmpty());
-        Assertions.assertEquals(3, results.size());
-        Assertions.assertEquals(3, httpClient.tasks.size());
+            io.a2a.spec.Task curr = httpClient.tasks.get(0);
+            Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), curr.id());
+            Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId(), curr.contextId());
+            Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.status().state(), curr.status().state());
+            Assertions.assertEquals(0, curr.artifacts() == null ? 0 : curr.artifacts().size());
 
-        io.a2a.spec.Task curr = httpClient.tasks.get(0);
-        Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), curr.id());
-        Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId(), curr.contextId());
-        Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.status().state(), curr.status().state());
-        Assertions.assertEquals(0, curr.artifacts() == null ? 0 : curr.artifacts().size());
-
-        curr = httpClient.tasks.get(1);
-        Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), curr.id());
-        Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId(), curr.contextId());
-        Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.status().state(), curr.status().state());
-        Assertions.assertEquals(1, curr.artifacts().size());
-        Assertions.assertEquals(1, curr.artifacts().get(0).parts().size());
-        Assertions.assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).text());
+            curr = httpClient.tasks.get(1);
+            Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), curr.id());
+            Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId(), curr.contextId());
+            Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.status().state(), curr.status().state());
+            Assertions.assertEquals(1, curr.artifacts().size());
+            Assertions.assertEquals(1, curr.artifacts().get(0).parts().size());
+            Assertions.assertEquals("text", ((TextPart) curr.artifacts().get(0).parts().get(0)).text());
 
             curr = httpClient.tasks.get(2);
             Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), curr.id());
@@ -482,17 +483,17 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             Assertions.assertEquals(io.a2a.spec.TaskState.COMPLETED, curr.status().state());
             Assertions.assertEquals(1, curr.artifacts().size());
             Assertions.assertEquals(1, curr.artifacts().get(0).parts().size());
-            Assertions.assertEquals("text", ((TextPart)curr.artifacts().get(0).parts().get(0)).text());
+            Assertions.assertEquals("text", ((TextPart) curr.artifacts().get(0).parts().get(0)).text());
         } finally {
             mainEventBusProcessor.setPushNotificationExecutor(null);
         }
     }
 
     @Test
-    public void testOnResubscribeNoExistingTaskError() throws Exception {
+    public void testOnSubscribeNoExistingTaskError() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         SubscribeToTaskRequest request = SubscribeToTaskRequest.newBuilder()
-                .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         handler.subscribeToTask(request, streamRecorder);
@@ -501,7 +502,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testOnResubscribeExistingTaskSuccess() throws Exception {
+    public void testOnSubscribeExistingTaskSuccess() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
         queueManager.createOrTap(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
@@ -512,7 +513,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         SubscribeToTaskRequest request = SubscribeToTaskRequest.newBuilder()
-                .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         handler.subscribeToTask(request, streamRecorder);
 
@@ -528,24 +529,24 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         List<StreamResponse> result = streamRecorder.getValues();
         Assertions.assertNotNull(result);
-        // Per A2A Protocol Spec 3.1.6, resubscribe sends current Task as first event,
+        // Per A2A Protocol Spec 3.1.6, subscribe sends current Task as first event,
         // followed by the Message from the agent executor
         Assertions.assertEquals(2, result.size());
 
         // ENFORCE that first event is Task
         Assertions.assertTrue(result.get(0).hasTask(),
-            "First event on resubscribe MUST be Task (current state)");
+                "First event on subscribe MUST be Task (current state)");
 
         // Second event should be Message from agent executor
         StreamResponse response = result.get(1);
         Assertions.assertTrue(response.hasMessage(),
-            "Expected Message after initial Task");
+                "Expected Message after initial Task");
         assertEquals(GRPC_MESSAGE, response.getMessage());
         Assertions.assertNull(streamRecorder.getError());
     }
 
     @Test
-    public void testOnResubscribeExistingTaskSuccessMocks() throws Exception {
+    public void testOnSubscribeExistingTaskSuccessMocks() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
         queueManager.createOrTap(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
@@ -567,12 +568,13 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         SubscribeToTaskRequest request = SubscribeToTaskRequest.newBuilder()
-                .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         try (MockedConstruction<EventConsumer> mocked = Mockito.mockConstruction(
                 EventConsumer.class,
                 (mock, context) -> {
-                    Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();})){
+                    Mockito.doReturn(ZeroPublisher.fromIterable(events.stream().map(AbstractA2ARequestHandlerTest::wrapEvent).toList())).when(mock).consumeAll();
+                })) {
             handler.subscribeToTask(request, streamRecorder);
             streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         }
@@ -597,12 +599,12 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
-    public void testStreamingNotSupportedErrorOnResubscribeToTask() throws Exception {
+    public void testStreamingNotSupportedErrorOnSubscribeToTask() throws Exception {
         // This test does not exist in the Python implementation
         AgentCard card = AbstractA2ARequestHandlerTest.createAgentCard(false, true);
         GrpcHandler handler = new TestGrpcHandler(card, requestHandler, internalExecutor);
         SubscribeToTaskRequest request = SubscribeToTaskRequest.newBuilder()
-                .setName("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
         handler.subscribeToTask(request, streamRecorder);
@@ -627,14 +629,14 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             eventQueue.enqueueEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
-        StreamRecorder<TaskPushNotificationConfig> pushRecorder = createTaskPushNotificationConfigRequest(handler, NAME);
+        StreamRecorder<TaskPushNotificationConfig> pushRecorder = createTaskPushNotificationConfigRequest(handler, 
+                AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
         Assertions.assertNull(pushRecorder.getError());
 
         ListTaskPushNotificationConfigRequest request = ListTaskPushNotificationConfigRequest.newBuilder()
-                .setParent("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
-        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder =  StreamRecorder.create();
+        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder = StreamRecorder.create();
         handler.listTaskPushNotificationConfig(request, streamRecorder);
         Assertions.assertNull(streamRecorder.getError());
         List<ListTaskPushNotificationConfigResponse> result = streamRecorder.getValues();
@@ -654,9 +656,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         ListTaskPushNotificationConfigRequest request = ListTaskPushNotificationConfigRequest.newBuilder()
-                .setParent("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
-        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder =  StreamRecorder.create();
+        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder = StreamRecorder.create();
         handler.listTaskPushNotificationConfig(request, streamRecorder);
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
@@ -671,9 +673,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         ListTaskPushNotificationConfigRequest request = ListTaskPushNotificationConfigRequest.newBuilder()
-                .setParent("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
-        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder =  StreamRecorder.create();
+        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder = StreamRecorder.create();
         handler.listTaskPushNotificationConfig(request, streamRecorder);
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
@@ -686,9 +688,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         ListTaskPushNotificationConfigRequest request = ListTaskPushNotificationConfigRequest.newBuilder()
-                .setParent("tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
-        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder =  StreamRecorder.create();
+        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder = StreamRecorder.create();
         handler.listTaskPushNotificationConfig(request, streamRecorder);
         assertGrpcError(streamRecorder, Status.Code.NOT_FOUND);
     }
@@ -700,13 +702,13 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         agentExecutorExecute = (context, eventQueue) -> {
             eventQueue.enqueueEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
-
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
-        StreamRecorder<TaskPushNotificationConfig> pushRecorder = createTaskPushNotificationConfigRequest(handler, NAME);
+        StreamRecorder<TaskPushNotificationConfig> pushRecorder = createTaskPushNotificationConfigRequest(handler, AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(),
+                AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
         Assertions.assertNull(pushRecorder.getError());
 
         DeleteTaskPushNotificationConfigRequest request = DeleteTaskPushNotificationConfigRequest.newBuilder()
-                .setName(NAME)
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         StreamRecorder<Empty> streamRecorder = StreamRecorder.create();
         handler.deleteTaskPushNotificationConfig(request, streamRecorder);
@@ -723,10 +725,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         agentExecutorExecute = (context, eventQueue) -> {
             eventQueue.enqueueEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
-
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
         DeleteTaskPushNotificationConfigRequest request = DeleteTaskPushNotificationConfigRequest.newBuilder()
-                .setName(NAME)
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         StreamRecorder<Empty> streamRecorder = StreamRecorder.create();
         handler.deleteTaskPushNotificationConfig(request, streamRecorder);
@@ -737,9 +738,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testDeletePushNotificationConfigNoPushConfigStore() {
         DefaultRequestHandler requestHandler = DefaultRequestHandler.create(executor, taskStore, queueManager, null, mainEventBusProcessor, internalExecutor, internalExecutor);
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
-        String NAME = "tasks/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id() + "/pushNotificationConfigs/" + AbstractA2ARequestHandlerTest.MINIMAL_TASK.id();
         DeleteTaskPushNotificationConfigRequest request = DeleteTaskPushNotificationConfigRequest.newBuilder()
-                .setName(NAME)
+                .setId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
         StreamRecorder<Empty> streamRecorder = StreamRecorder.create();
         handler.deleteTaskPushNotificationConfig(request, streamRecorder);
@@ -754,13 +755,13 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testStreamingDoesNotBlockMainThread() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
-        
+
         // Track if the main thread gets blocked during streaming
         AtomicBoolean eventReceived = new AtomicBoolean(false);
         CountDownLatch streamStarted = new CountDownLatch(1);
         GrpcHandler.setStreamingSubscribedRunnable(streamStarted::countDown);
         CountDownLatch eventProcessed = new CountDownLatch(1);
-        
+
         agentExecutorExecute = (context, eventQueue) -> {
             // Wait a bit to ensure the main thread continues
             try {
@@ -797,16 +798,16 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         sendStreamingMessageRequest(handler, streamObserver);
 
         // The main thread should not be blocked - we should be able to continue immediately
-        Assertions.assertTrue(streamStarted.await(100, TimeUnit.MILLISECONDS), 
-            "Streaming subscription should start quickly without blocking main thread");
+        Assertions.assertTrue(streamStarted.await(100, TimeUnit.MILLISECONDS),
+                "Streaming subscription should start quickly without blocking main thread");
 
         // This proves the main thread is not blocked - we can do other work
         // Simulate main thread doing other work
         Thread.sleep(50);
 
         // Wait for the actual event processing to complete
-        Assertions.assertTrue(eventProcessed.await(2, TimeUnit.SECONDS), 
-            "Event should be processed within reasonable time");
+        Assertions.assertTrue(eventProcessed.await(2, TimeUnit.SECONDS),
+                "Event should be processed within reasonable time");
 
         // Verify we received the event and no errors occurred
         Assertions.assertTrue(eventReceived.get(), "Should have received streaming event");
@@ -835,7 +836,6 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         GrpcHandler handler = new TestGrpcHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -871,7 +871,6 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         GrpcHandler handler = new TestGrpcHandler(cardWithExtension, requestHandler, internalExecutor);
@@ -907,7 +906,6 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .defaultInputModes(List.of("text"))
                 .defaultOutputModes(List.of("text"))
                 .skills(List.of())
-                .protocolVersions(AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
 
         // Create a TestGrpcHandler that provides the required extension in the context
@@ -973,7 +971,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                                 UnauthenticatedUser.INSTANCE,
                                 Map.of("grpc_response_observer", streamObserver),
                                 new HashSet<>(),
-                                "2.0"  // Incompatible version
+                                "2.0" // Incompatible version
                         );
                     }
                 };
@@ -1018,7 +1016,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                                 UnauthenticatedUser.INSTANCE,
                                 Map.of("grpc_response_observer", streamObserver),
                                 new HashSet<>(),
-                                "2.0"  // Incompatible version
+                                "2.0" // Incompatible version
                         );
                     }
                 };
@@ -1063,7 +1061,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                                 UnauthenticatedUser.INSTANCE,
                                 Map.of("grpc_response_observer", streamObserver),
                                 new HashSet<>(),
-                                "1.1"  // Compatible version (same major version)
+                                "1.1" // Compatible version (same major version)
                         );
                     }
                 };
@@ -1114,7 +1112,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                                 UnauthenticatedUser.INSTANCE,
                                 Map.of("grpc_response_observer", streamObserver),
                                 new HashSet<>(),
-                                null  // No version - should default to 1.0
+                                null // No version - should default to 1.0
                         );
                     }
                 };
@@ -1147,20 +1145,16 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         return streamRecorder;
     }
 
-    private StreamRecorder<TaskPushNotificationConfig> createTaskPushNotificationConfigRequest(GrpcHandler handler, String name) throws Exception {
+    private StreamRecorder<TaskPushNotificationConfig> createTaskPushNotificationConfigRequest(GrpcHandler handler, String taskId, String id) throws Exception {
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
         PushNotificationConfig config = PushNotificationConfig.newBuilder()
                 .setUrl("http://example.com")
                 .setId("config456")
                 .build();
-        TaskPushNotificationConfig taskPushNotificationConfig = TaskPushNotificationConfig.newBuilder()
-                .setName(name)
-                .setPushNotificationConfig(config)
-                .build();
         CreateTaskPushNotificationConfigRequest setRequest = CreateTaskPushNotificationConfigRequest.newBuilder()
-                .setConfig(taskPushNotificationConfig)
+                .setConfig(config)
                 .setConfigId("config456")
-                .setParent("tasks/" + MINIMAL_TASK.id())
+                .setTaskId(MINIMAL_TASK.id())
                 .build();
 
         StreamRecorder<TaskPushNotificationConfig> streamRecorder = StreamRecorder.create();
@@ -1169,9 +1163,10 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         return streamRecorder;
     }
 
-    private StreamRecorder<TaskPushNotificationConfig> getTaskPushNotificationConfigRequest(GrpcHandler handler, String name) throws Exception {
+    private StreamRecorder<TaskPushNotificationConfig> getTaskPushNotificationConfigRequest(GrpcHandler handler, String taskId, String id) throws Exception {
         GetTaskPushNotificationConfigRequest request = GetTaskPushNotificationConfigRequest.newBuilder()
-                .setName(name)
+                .setTaskId(taskId)
+                .setId(id)
                 .build();
         StreamRecorder<TaskPushNotificationConfig> streamRecorder = StreamRecorder.create();
         handler.getTaskPushNotificationConfig(request, streamRecorder);
@@ -1251,6 +1246,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     private static class TestGrpcHandler extends GrpcHandler {
+
         private final AgentCard card;
         private final RequestHandler handler;
         private final java.util.concurrent.Executor executor;

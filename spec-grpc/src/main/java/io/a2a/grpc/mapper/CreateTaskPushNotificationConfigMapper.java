@@ -8,17 +8,6 @@ import org.mapstruct.Mapping;
 
 /**
  * MapStruct mapper for CreateTaskPushNotificationConfigRequest → TaskPushNotificationConfig.
- * <p>
- * Handles resource name parsing and ID override logic for creating push notification configs.
- * <p>
- * <b>Resource Name Handling:</b>
- * <ul>
- * <li>Extracts taskId from parent resource name (format: "tasks/{task_id}")</li>
- * <li>Fallback: Extracts from config.name if parent is blank</li>
- * <li>Overrides PushNotificationConfig.id with config_id from request</li>
- * </ul>
- * <p>
- * <b>Compile-Time Safety:</b> If the proto changes fields, MapStruct will fail to compile.
  */
 @Mapper(config = A2AProtoMapperConfig.class, uses = {PushNotificationConfigMapper.class})
 public interface CreateTaskPushNotificationConfigMapper {
@@ -27,87 +16,50 @@ public interface CreateTaskPushNotificationConfigMapper {
 
     /**
      * Converts CreateTaskPushNotificationConfigRequest to domain TaskPushNotificationConfig.
-     * <p>
-     * Extracts taskId from parent resource name and maps PushNotificationConfig with
-     * ID override from config_id field.
-     * The tenant field is set to null as it's not present in the protobuf definition.
      *
      * @param request the protobuf CreateTaskPushNotificationConfigRequest
      * @return domain TaskPushNotificationConfig
      */
-    @Mapping(target = "taskId", expression = "java(extractTaskId(request))")
+    @Mapping(target = "taskId", source = "taskId")
     @Mapping(target = "pushNotificationConfig", expression = "java(mapPushNotificationConfigWithId(request))")
+    @Mapping(target = "tenant", source = "tenant")
     TaskPushNotificationConfig fromProto(CreateTaskPushNotificationConfigRequest request);
 
     /**
-     * Converts CreateTaskPushNotificationConfigRequest to domain TaskPushNotificationConfig.
-     * <p>
-     * Extracts taskId from parent resource name and maps PushNotificationConfig with
-     * ID override from config_id field.
+     * Converts domain TaskPushNotificationConfig to CreateTaskPushNotificationConfigRequest.
      *
-     * @param config the domainTaskPushNotificationConfig
+     * @param config the domain TaskPushNotificationConfig
      * @return proto CreateTaskPushNotificationConfigRequest
      */
-    @Mapping(target = "parent", expression = "java(ResourceNameParser.defineTaskName(config.taskId()))")
+    @Mapping(target = "taskId", source = "taskId")
     @Mapping(target = "configId", expression = "java(extractConfigId(config))")
-    @Mapping(target = "config", expression = "java(mapPushNotificationConfig(config))")
+    @Mapping(target = "config", source = "pushNotificationConfig")
+    @Mapping(target = "tenant", source = "tenant")
     CreateTaskPushNotificationConfigRequest toProto(TaskPushNotificationConfig config);
 
     /**
-     * Extracts the task ID from the parent resource name.
-     * <p>
-     * Format: "tasks/{task_id}"
-     * Fallback: If parent is blank, extracts from config.name instead.
-     *
-     * @param request the protobuf CreateTaskPushNotificationConfigRequest
-     * @return the extracted task ID
-     */
-    default String extractTaskId(CreateTaskPushNotificationConfigRequest request) {
-        String parent = request.getParent();
-
-        if (parent == null || parent.isBlank()) {
-            // Fallback: extract from config.name
-            return ResourceNameParser.extractTaskId(request.getConfig().getName());
-        }
-
-        // Extract from parent resource name
-        return ResourceNameParser.extractParentId(parent);
-    }
-
-    /**
-     * Extracts the config ID from the configuration. If it is not defined, the task ID is used.
+     * Extracts the config ID from the configuration.
      *
      * @param config the TaskPushNotificationConfig
      * @return the extracted config ID
      */
     default String extractConfigId(TaskPushNotificationConfig config) {
-        if (config.pushNotificationConfig() != null && config.pushNotificationConfig().id() != null && !config.pushNotificationConfig().id().isBlank()) {
-            return config.pushNotificationConfig().id();
-        }
-        return config.taskId();
+        return config.pushNotificationConfig() != null ? config.pushNotificationConfig().id() : null;
     }
 
     /**
      * Maps the protobuf PushNotificationConfig to domain, injecting config_id from request.
-     * <p>
-     * The config_id from the request overrides the ID in the proto's PushNotificationConfig.
      *
      * @param request the protobuf CreateTaskPushNotificationConfigRequest
      * @return domain PushNotificationConfig with config_id injected
      */
     default PushNotificationConfig mapPushNotificationConfigWithId(CreateTaskPushNotificationConfigRequest request) {
-        // Check if config and push_notification_config exist
-        if (!request.hasConfig()
-                || !request.getConfig().hasPushNotificationConfig()
-                || request.getConfig().getPushNotificationConfig()
-                        .equals(io.a2a.grpc.PushNotificationConfig.getDefaultInstance())) {
+        if (!request.hasConfig()) {
             return null;
         }
 
         // Map the proto PushNotificationConfig
-        PushNotificationConfig result = PushNotificationConfigMapper.INSTANCE.fromProto(
-                request.getConfig().getPushNotificationConfig()
-        );
+        PushNotificationConfig result = PushNotificationConfigMapper.INSTANCE.fromProto(request.getConfig());
 
         // Override ID with config_id from request
         String configId = request.getConfigId();
@@ -121,17 +73,5 @@ public interface CreateTaskPushNotificationConfigMapper {
         }
 
         return result;
-    }
-
-    /**
-     * Maps the protobuf PushNotificationConfig to domain, injecting config_id from request.
-     * <p>
-     * The config_id from the request overrides the ID in the proto's PushNotificationConfig.
-     *
-     * @param domain the protobuf CreateTaskPushNotificationConfigRequest
-     * @return domain PushNotificationConfig with config_id injected
-     */
-    default io.a2a.grpc.TaskPushNotificationConfig mapPushNotificationConfig(TaskPushNotificationConfig domain) {
-        return TaskPushNotificationConfigMapper.INSTANCE.toProto(domain);
     }
 }

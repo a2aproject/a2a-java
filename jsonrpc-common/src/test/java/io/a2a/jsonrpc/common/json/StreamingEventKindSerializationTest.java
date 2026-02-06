@@ -97,7 +97,6 @@ class StreamingEventKindSerializationTest {
                 .taskId("task-abc")
                 .contextId("context-def")
                 .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(false)
                 .build();
 
         // Serialize as StreamingEventKind

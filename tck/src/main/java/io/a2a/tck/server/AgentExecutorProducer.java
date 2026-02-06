@@ -49,10 +49,10 @@ public class AgentExecutorProducer {
                 eventQueue.enqueueEvent(task);
             }
 
-            // Sleep to allow task state persistence before TCK resubscribe test
-            if (context.getMessage() != null && context.getMessage().messageId().startsWith("test-resubscribe-message-id")) {
+            // Sleep to allow task state persistence before TCK subscribe test
+            if (context.getMessage() != null && context.getMessage().messageId().startsWith("test-subscribe-message-id")) {
                 int timeoutMs = Integer.parseInt(System.getenv().getOrDefault("RESUBSCRIBE_TIMEOUT_MS", "3000"));
-                System.out.println("====> task id starts with test-resubscribe-message-id, sleeping for " + timeoutMs + " ms");
+                System.out.println("====> task id starts with test-subscribe-message-id, sleeping for " + timeoutMs + " ms");
                 try {
                     Thread.sleep(timeoutMs);
                 } catch (InterruptedException e) {
@@ -89,12 +89,12 @@ public class AgentExecutorProducer {
 
             TaskUpdater updater = new TaskUpdater(context, eventQueue);
             updater.cancel();
-            eventQueue.enqueueEvent(TaskStatusUpdateEvent.builder()
-                    .taskId(task.id())
-                    .contextId(task.contextId())
-                    .status(new TaskStatus(TaskState.CANCELED))
-                    .isFinal(true)
-                    .build());
+            eventQueue.enqueueEvent(new TaskStatusUpdateEvent(
+                    task.id(),
+                    new TaskStatus(TaskState.CANCELED),
+                    task.contextId(),
+                    true,  // isFinal - TaskState.CANCELED is a final state
+                    null));
 
             System.out.println("====> task canceled");
         }

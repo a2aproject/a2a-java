@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeoutException;
@@ -36,7 +35,6 @@ import io.a2a.server.events.EventConsumer;
 import io.a2a.server.events.EventQueue;
 import io.a2a.server.events.EventQueueItem;
 import io.a2a.server.events.MainEventBusProcessor;
-import io.a2a.server.events.MainEventBusProcessorCallback;
 import io.a2a.server.events.QueueManager;
 import io.a2a.server.tasks.PushNotificationConfigStore;
 import io.a2a.server.tasks.PushNotificationSender;
@@ -786,9 +784,9 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
-    public Flow.Publisher<StreamingEventKind> onResubscribeToTask(
+    public Flow.Publisher<StreamingEventKind> onSubscribeToTask(
             TaskIdParams params, ServerCallContext context) throws A2AError {
-        LOGGER.debug("onResubscribeToTask - taskId: {}", params.id());
+        LOGGER.debug("onSubscribeToTask - taskId: {}", params.id());
         Task task = taskStore.get(params.id());
         if (task == null) {
             throw new TaskNotFoundError();
@@ -797,7 +795,7 @@ public class DefaultRequestHandler implements RequestHandler {
         TaskManager taskManager = new TaskManager(task.id(), task.contextId(), taskStore, null);
         ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor);
         EventQueue queue = queueManager.tap(task.id());
-        LOGGER.debug("onResubscribeToTask - tapped queue: {}", queue != null ? System.identityHashCode(queue) : "null");
+        LOGGER.debug("onSubscribeToTask - tapped queue: {}", queue != null ? System.identityHashCode(queue) : "null");
 
         if (queue == null) {
             // If task is in final state, queue legitimately doesn't exist anymore
@@ -815,11 +813,11 @@ public class DefaultRequestHandler implements RequestHandler {
         // representing the current state of the task at the time of subscription."
         // Enqueue the current task state directly to this ChildQueue only (already persisted, no need for MainEventBus)
         queue.enqueueEventLocalOnly(task);
-        LOGGER.debug("onResubscribeToTask - enqueued current task state as first event for taskId: {}", params.id());
+        LOGGER.debug("onSubscribeToTask - enqueued current task state as first event for taskId: {}", params.id());
 
         EventConsumer consumer = new EventConsumer(queue);
         Flow.Publisher<EventQueueItem> results = resultAggregator.consumeAndEmit(consumer);
-        LOGGER.debug("onResubscribeToTask - returning publisher for taskId: {}", params.id());
+        LOGGER.debug("onSubscribeToTask - returning publisher for taskId: {}", params.id());
         return convertingProcessor(results, item -> (StreamingEventKind) item.getEvent());
     }
 

@@ -1,6 +1,5 @@
 package io.a2a.client;
 
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +40,6 @@ public class ClientBuilderTest {
                                 .tags(Collections.singletonList("hello world"))
             .examples(List.of("hi", "hello world"))
             .build()))
-            .protocolVersions(CURRENT_PROTOCOL_VERSION)
             .supportedInterfaces(List.of(
                     new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
             .build();

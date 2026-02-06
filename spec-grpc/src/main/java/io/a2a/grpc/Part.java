@@ -35,6 +35,8 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private Part() {
+    filename_ = "";
+    mediaType_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -51,18 +53,19 @@ private static final long serialVersionUID = 0L;
   }
 
   private int bitField0_;
-  private int partCase_ = 0;
+  private int contentCase_ = 0;
   @SuppressWarnings("serial")
-  private java.lang.Object part_;
-  public enum PartCase
+  private java.lang.Object content_;
+  public enum ContentCase
       implements com.google.protobuf.Internal.EnumLite,
           com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     TEXT(1),
-    FILE(2),
-    DATA(3),
-    PART_NOT_SET(0);
+    RAW(2),
+    URL(3),
+    DATA(4),
+    CONTENT_NOT_SET(0);
     private final int value;
-    private PartCase(int value) {
+    private ContentCase(int value) {
       this.value = value;
     }
     /**
@@ -71,16 +74,17 @@ private static final long serialVersionUID = 0L;
      * @deprecated Use {@link #forNumber(int)} instead.
      */
     @java.lang.Deprecated
-    public static PartCase valueOf(int value) {
+    public static ContentCase valueOf(int value) {
       return forNumber(value);
     }
 
-    public static PartCase forNumber(int value) {
+    public static ContentCase forNumber(int value) {
       switch (value) {
         case 1: return TEXT;
-        case 2: return FILE;
-        case 3: return DATA;
-        case 0: return PART_NOT_SET;
+        case 2: return RAW;
+        case 3: return URL;
+        case 4: return DATA;
+        case 0: return CONTENT_NOT_SET;
         default: return null;
       }
     }
@@ -89,10 +93,10 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public PartCase
-  getPartCase() {
-    return PartCase.forNumber(
-        partCase_);
+  public ContentCase
+  getContentCase() {
+    return ContentCase.forNumber(
+        contentCase_);
   }
 
   public static final int TEXT_FIELD_NUMBER = 1;
@@ -105,7 +109,7 @@ private static final long serialVersionUID = 0L;
    * @return Whether the text field is set.
    */
   public boolean hasText() {
-    return partCase_ == 1;
+    return contentCase_ == 1;
   }
   /**
    * <pre>
@@ -117,8 +121,8 @@ private static final long serialVersionUID = 0L;
    */
   public java.lang.String getText() {
     java.lang.Object ref = "";
-    if (partCase_ == 1) {
-      ref = part_;
+    if (contentCase_ == 1) {
+      ref = content_;
     }
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
@@ -126,8 +130,8 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      if (partCase_ == 1) {
-        part_ = s;
+      if (contentCase_ == 1) {
+        content_ = s;
       }
       return s;
     }
@@ -143,15 +147,15 @@ private static final long serialVersionUID = 0L;
   public com.google.protobuf.ByteString
       getTextBytes() {
     java.lang.Object ref = "";
-    if (partCase_ == 1) {
-      ref = part_;
+    if (contentCase_ == 1) {
+      ref = content_;
     }
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      if (partCase_ == 1) {
-        part_ = b;
+      if (contentCase_ == 1) {
+        content_ = b;
       }
       return b;
     } else {
@@ -159,100 +163,150 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int FILE_FIELD_NUMBER = 2;
+  public static final int RAW_FIELD_NUMBER = 2;
   /**
    * <pre>
-   * The file content, represented as either a URI or as base64-encoded bytes.
+   * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
    * </pre>
    *
-   * <code>.a2a.v1.FilePart file = 2;</code>
-   * @return Whether the file field is set.
+   * <code>bytes raw = 2;</code>
+   * @return Whether the raw field is set.
    */
   @java.lang.Override
-  public boolean hasFile() {
-    return partCase_ == 2;
+  public boolean hasRaw() {
+    return contentCase_ == 2;
   }
   /**
    * <pre>
-   * The file content, represented as either a URI or as base64-encoded bytes.
+   * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
    * </pre>
    *
-   * <code>.a2a.v1.FilePart file = 2;</code>
-   * @return The file.
+   * <code>bytes raw = 2;</code>
+   * @return The raw.
    */
   @java.lang.Override
-  public io.a2a.grpc.FilePart getFile() {
-    if (partCase_ == 2) {
-       return (io.a2a.grpc.FilePart) part_;
+  public com.google.protobuf.ByteString getRaw() {
+    if (contentCase_ == 2) {
+      return (com.google.protobuf.ByteString) content_;
     }
-    return io.a2a.grpc.FilePart.getDefaultInstance();
-  }
-  /**
-   * <pre>
-   * The file content, represented as either a URI or as base64-encoded bytes.
-   * </pre>
-   *
-   * <code>.a2a.v1.FilePart file = 2;</code>
-   */
-  @java.lang.Override
-  public io.a2a.grpc.FilePartOrBuilder getFileOrBuilder() {
-    if (partCase_ == 2) {
-       return (io.a2a.grpc.FilePart) part_;
-    }
-    return io.a2a.grpc.FilePart.getDefaultInstance();
+    return com.google.protobuf.ByteString.EMPTY;
   }
 
-  public static final int DATA_FIELD_NUMBER = 3;
+  public static final int URL_FIELD_NUMBER = 3;
   /**
    * <pre>
-   * The structured data content.
+   * A URL pointing to the file's content.
    * </pre>
    *
-   * <code>.a2a.v1.DataPart data = 3;</code>
+   * <code>string url = 3;</code>
+   * @return Whether the url field is set.
+   */
+  public boolean hasUrl() {
+    return contentCase_ == 3;
+  }
+  /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
+   * <code>string url = 3;</code>
+   * @return The url.
+   */
+  public java.lang.String getUrl() {
+    java.lang.Object ref = "";
+    if (contentCase_ == 3) {
+      ref = content_;
+    }
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      if (contentCase_ == 3) {
+        content_ = s;
+      }
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
+   * <code>string url = 3;</code>
+   * @return The bytes for url.
+   */
+  public com.google.protobuf.ByteString
+      getUrlBytes() {
+    java.lang.Object ref = "";
+    if (contentCase_ == 3) {
+      ref = content_;
+    }
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      if (contentCase_ == 3) {
+        content_ = b;
+      }
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int DATA_FIELD_NUMBER = 4;
+  /**
+   * <pre>
+   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+   * </pre>
+   *
+   * <code>.google.protobuf.Value data = 4;</code>
    * @return Whether the data field is set.
    */
   @java.lang.Override
   public boolean hasData() {
-    return partCase_ == 3;
+    return contentCase_ == 4;
   }
   /**
    * <pre>
-   * The structured data content.
+   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
-   * <code>.a2a.v1.DataPart data = 3;</code>
+   * <code>.google.protobuf.Value data = 4;</code>
    * @return The data.
    */
   @java.lang.Override
-  public io.a2a.grpc.DataPart getData() {
-    if (partCase_ == 3) {
-       return (io.a2a.grpc.DataPart) part_;
+  public com.google.protobuf.Value getData() {
+    if (contentCase_ == 4) {
+       return (com.google.protobuf.Value) content_;
     }
-    return io.a2a.grpc.DataPart.getDefaultInstance();
+    return com.google.protobuf.Value.getDefaultInstance();
   }
   /**
    * <pre>
-   * The structured data content.
+   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
-   * <code>.a2a.v1.DataPart data = 3;</code>
+   * <code>.google.protobuf.Value data = 4;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.DataPartOrBuilder getDataOrBuilder() {
-    if (partCase_ == 3) {
-       return (io.a2a.grpc.DataPart) part_;
+  public com.google.protobuf.ValueOrBuilder getDataOrBuilder() {
+    if (contentCase_ == 4) {
+       return (com.google.protobuf.Value) content_;
     }
-    return io.a2a.grpc.DataPart.getDefaultInstance();
+    return com.google.protobuf.Value.getDefaultInstance();
   }
 
-  public static final int METADATA_FIELD_NUMBER = 4;
+  public static final int METADATA_FIELD_NUMBER = 5;
   private com.google.protobuf.Struct metadata_;
   /**
    * <pre>
    * Optional metadata associated with this part.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return Whether the metadata field is set.
    */
   @java.lang.Override
@@ -264,7 +318,7 @@ private static final long serialVersionUID = 0L;
    * Optional metadata associated with this part.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return The metadata.
    */
   @java.lang.Override
@@ -276,11 +330,107 @@ private static final long serialVersionUID = 0L;
    * Optional metadata associated with this part.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
     return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+  }
+
+  public static final int FILENAME_FIELD_NUMBER = 6;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object filename_ = "";
+  /**
+   * <pre>
+   * An optional name for the file (e.g., "document.pdf").
+   * </pre>
+   *
+   * <code>string filename = 6;</code>
+   * @return The filename.
+   */
+  @java.lang.Override
+  public java.lang.String getFilename() {
+    java.lang.Object ref = filename_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      filename_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * An optional name for the file (e.g., "document.pdf").
+   * </pre>
+   *
+   * <code>string filename = 6;</code>
+   * @return The bytes for filename.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getFilenameBytes() {
+    java.lang.Object ref = filename_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      filename_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int MEDIA_TYPE_FIELD_NUMBER = 7;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object mediaType_ = "";
+  /**
+   * <pre>
+   * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+   * This field is available for all part types.
+   * </pre>
+   *
+   * <code>string media_type = 7;</code>
+   * @return The mediaType.
+   */
+  @java.lang.Override
+  public java.lang.String getMediaType() {
+    java.lang.Object ref = mediaType_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      mediaType_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+   * This field is available for all part types.
+   * </pre>
+   *
+   * <code>string media_type = 7;</code>
+   * @return The bytes for mediaType.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getMediaTypeBytes() {
+    java.lang.Object ref = mediaType_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      mediaType_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
   }
 
   private byte memoizedIsInitialized = -1;
@@ -297,17 +447,27 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (partCase_ == 1) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, part_);
+    if (contentCase_ == 1) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, content_);
     }
-    if (partCase_ == 2) {
-      output.writeMessage(2, (io.a2a.grpc.FilePart) part_);
+    if (contentCase_ == 2) {
+      output.writeBytes(
+          2, (com.google.protobuf.ByteString) content_);
     }
-    if (partCase_ == 3) {
-      output.writeMessage(3, (io.a2a.grpc.DataPart) part_);
+    if (contentCase_ == 3) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, content_);
+    }
+    if (contentCase_ == 4) {
+      output.writeMessage(4, (com.google.protobuf.Value) content_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(4, getMetadata());
+      output.writeMessage(5, getMetadata());
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(filename_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 6, filename_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(mediaType_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 7, mediaType_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -318,20 +478,30 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (partCase_ == 1) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, part_);
+    if (contentCase_ == 1) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, content_);
     }
-    if (partCase_ == 2) {
+    if (contentCase_ == 2) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, (io.a2a.grpc.FilePart) part_);
+        .computeBytesSize(
+            2, (com.google.protobuf.ByteString) content_);
     }
-    if (partCase_ == 3) {
+    if (contentCase_ == 3) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, content_);
+    }
+    if (contentCase_ == 4) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, (io.a2a.grpc.DataPart) part_);
+        .computeMessageSize(4, (com.google.protobuf.Value) content_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(4, getMetadata());
+        .computeMessageSize(5, getMetadata());
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(filename_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(6, filename_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(mediaType_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(7, mediaType_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -353,17 +523,25 @@ private static final long serialVersionUID = 0L;
       if (!getMetadata()
           .equals(other.getMetadata())) return false;
     }
-    if (!getPartCase().equals(other.getPartCase())) return false;
-    switch (partCase_) {
+    if (!getFilename()
+        .equals(other.getFilename())) return false;
+    if (!getMediaType()
+        .equals(other.getMediaType())) return false;
+    if (!getContentCase().equals(other.getContentCase())) return false;
+    switch (contentCase_) {
       case 1:
         if (!getText()
             .equals(other.getText())) return false;
         break;
       case 2:
-        if (!getFile()
-            .equals(other.getFile())) return false;
+        if (!getRaw()
+            .equals(other.getRaw())) return false;
         break;
       case 3:
+        if (!getUrl()
+            .equals(other.getUrl())) return false;
+        break;
+      case 4:
         if (!getData()
             .equals(other.getData())) return false;
         break;
@@ -385,16 +563,24 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + METADATA_FIELD_NUMBER;
       hash = (53 * hash) + getMetadata().hashCode();
     }
-    switch (partCase_) {
+    hash = (37 * hash) + FILENAME_FIELD_NUMBER;
+    hash = (53 * hash) + getFilename().hashCode();
+    hash = (37 * hash) + MEDIA_TYPE_FIELD_NUMBER;
+    hash = (53 * hash) + getMediaType().hashCode();
+    switch (contentCase_) {
       case 1:
         hash = (37 * hash) + TEXT_FIELD_NUMBER;
         hash = (53 * hash) + getText().hashCode();
         break;
       case 2:
-        hash = (37 * hash) + FILE_FIELD_NUMBER;
-        hash = (53 * hash) + getFile().hashCode();
+        hash = (37 * hash) + RAW_FIELD_NUMBER;
+        hash = (53 * hash) + getRaw().hashCode();
         break;
       case 3:
+        hash = (37 * hash) + URL_FIELD_NUMBER;
+        hash = (53 * hash) + getUrl().hashCode();
+        break;
+      case 4:
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
         break;
@@ -545,9 +731,6 @@ private static final long serialVersionUID = 0L;
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      if (fileBuilder_ != null) {
-        fileBuilder_.clear();
-      }
       if (dataBuilder_ != null) {
         dataBuilder_.clear();
       }
@@ -556,8 +739,10 @@ private static final long serialVersionUID = 0L;
         metadataBuilder_.dispose();
         metadataBuilder_ = null;
       }
-      partCase_ = 0;
-      part_ = null;
+      filename_ = "";
+      mediaType_ = "";
+      contentCase_ = 0;
+      content_ = null;
       return this;
     }
 
@@ -593,25 +778,27 @@ private static final long serialVersionUID = 0L;
     private void buildPartial0(io.a2a.grpc.Part result) {
       int from_bitField0_ = bitField0_;
       int to_bitField0_ = 0;
-      if (((from_bitField0_ & 0x00000008) != 0)) {
+      if (((from_bitField0_ & 0x00000010) != 0)) {
         result.metadata_ = metadataBuilder_ == null
             ? metadata_
             : metadataBuilder_.build();
         to_bitField0_ |= 0x00000001;
       }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.filename_ = filename_;
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.mediaType_ = mediaType_;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
     private void buildPartialOneofs(io.a2a.grpc.Part result) {
-      result.partCase_ = partCase_;
-      result.part_ = this.part_;
-      if (partCase_ == 2 &&
-          fileBuilder_ != null) {
-        result.part_ = fileBuilder_.build();
-      }
-      if (partCase_ == 3 &&
+      result.contentCase_ = contentCase_;
+      result.content_ = this.content_;
+      if (contentCase_ == 4 &&
           dataBuilder_ != null) {
-        result.part_ = dataBuilder_.build();
+        result.content_ = dataBuilder_.build();
       }
     }
 
@@ -630,22 +817,38 @@ private static final long serialVersionUID = 0L;
       if (other.hasMetadata()) {
         mergeMetadata(other.getMetadata());
       }
-      switch (other.getPartCase()) {
+      if (!other.getFilename().isEmpty()) {
+        filename_ = other.filename_;
+        bitField0_ |= 0x00000020;
+        onChanged();
+      }
+      if (!other.getMediaType().isEmpty()) {
+        mediaType_ = other.mediaType_;
+        bitField0_ |= 0x00000040;
+        onChanged();
+      }
+      switch (other.getContentCase()) {
         case TEXT: {
-          partCase_ = 1;
-          part_ = other.part_;
+          contentCase_ = 1;
+          content_ = other.content_;
           onChanged();
           break;
         }
-        case FILE: {
-          mergeFile(other.getFile());
+        case RAW: {
+          setRaw(other.getRaw());
+          break;
+        }
+        case URL: {
+          contentCase_ = 3;
+          content_ = other.content_;
+          onChanged();
           break;
         }
         case DATA: {
           mergeData(other.getData());
           break;
         }
-        case PART_NOT_SET: {
+        case CONTENT_NOT_SET: {
           break;
         }
       }
@@ -677,31 +880,45 @@ private static final long serialVersionUID = 0L;
               break;
             case 10: {
               java.lang.String s = input.readStringRequireUtf8();
-              partCase_ = 1;
-              part_ = s;
+              contentCase_ = 1;
+              content_ = s;
               break;
             } // case 10
             case 18: {
-              input.readMessage(
-                  internalGetFileFieldBuilder().getBuilder(),
-                  extensionRegistry);
-              partCase_ = 2;
+              content_ = input.readBytes();
+              contentCase_ = 2;
               break;
             } // case 18
             case 26: {
-              input.readMessage(
-                  internalGetDataFieldBuilder().getBuilder(),
-                  extensionRegistry);
-              partCase_ = 3;
+              java.lang.String s = input.readStringRequireUtf8();
+              contentCase_ = 3;
+              content_ = s;
               break;
             } // case 26
             case 34: {
               input.readMessage(
-                  internalGetMetadataFieldBuilder().getBuilder(),
+                  internalGetDataFieldBuilder().getBuilder(),
                   extensionRegistry);
-              bitField0_ |= 0x00000008;
+              contentCase_ = 4;
               break;
             } // case 34
+            case 42: {
+              input.readMessage(
+                  internalGetMetadataFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000010;
+              break;
+            } // case 42
+            case 50: {
+              filename_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000020;
+              break;
+            } // case 50
+            case 58: {
+              mediaType_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000040;
+              break;
+            } // case 58
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -717,17 +934,17 @@ private static final long serialVersionUID = 0L;
       } // finally
       return this;
     }
-    private int partCase_ = 0;
-    private java.lang.Object part_;
-    public PartCase
-        getPartCase() {
-      return PartCase.forNumber(
-          partCase_);
+    private int contentCase_ = 0;
+    private java.lang.Object content_;
+    public ContentCase
+        getContentCase() {
+      return ContentCase.forNumber(
+          contentCase_);
     }
 
-    public Builder clearPart() {
-      partCase_ = 0;
-      part_ = null;
+    public Builder clearContent() {
+      contentCase_ = 0;
+      content_ = null;
       onChanged();
       return this;
     }
@@ -744,7 +961,7 @@ private static final long serialVersionUID = 0L;
      */
     @java.lang.Override
     public boolean hasText() {
-      return partCase_ == 1;
+      return contentCase_ == 1;
     }
     /**
      * <pre>
@@ -757,15 +974,15 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public java.lang.String getText() {
       java.lang.Object ref = "";
-      if (partCase_ == 1) {
-        ref = part_;
+      if (contentCase_ == 1) {
+        ref = content_;
       }
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        if (partCase_ == 1) {
-          part_ = s;
+        if (contentCase_ == 1) {
+          content_ = s;
         }
         return s;
       } else {
@@ -784,15 +1001,15 @@ private static final long serialVersionUID = 0L;
     public com.google.protobuf.ByteString
         getTextBytes() {
       java.lang.Object ref = "";
-      if (partCase_ == 1) {
-        ref = part_;
+      if (contentCase_ == 1) {
+        ref = content_;
       }
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        if (partCase_ == 1) {
-          part_ = b;
+        if (contentCase_ == 1) {
+          content_ = b;
         }
         return b;
       } else {
@@ -811,8 +1028,8 @@ private static final long serialVersionUID = 0L;
     public Builder setText(
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
-      partCase_ = 1;
-      part_ = value;
+      contentCase_ = 1;
+      content_ = value;
       onChanged();
       return this;
     }
@@ -825,9 +1042,9 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearText() {
-      if (partCase_ == 1) {
-        partCase_ = 0;
-        part_ = null;
+      if (contentCase_ == 1) {
+        contentCase_ = 0;
+        content_ = null;
         onChanged();
       }
       return this;
@@ -845,309 +1062,306 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.ByteString value) {
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
-      partCase_ = 1;
-      part_ = value;
+      contentCase_ = 1;
+      content_ = value;
+      onChanged();
+      return this;
+    }
+
+    /**
+     * <pre>
+     * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+     * </pre>
+     *
+     * <code>bytes raw = 2;</code>
+     * @return Whether the raw field is set.
+     */
+    public boolean hasRaw() {
+      return contentCase_ == 2;
+    }
+    /**
+     * <pre>
+     * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+     * </pre>
+     *
+     * <code>bytes raw = 2;</code>
+     * @return The raw.
+     */
+    public com.google.protobuf.ByteString getRaw() {
+      if (contentCase_ == 2) {
+        return (com.google.protobuf.ByteString) content_;
+      }
+      return com.google.protobuf.ByteString.EMPTY;
+    }
+    /**
+     * <pre>
+     * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+     * </pre>
+     *
+     * <code>bytes raw = 2;</code>
+     * @param value The raw to set.
+     * @return This builder for chaining.
+     */
+    public Builder setRaw(com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      contentCase_ = 2;
+      content_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+     * </pre>
+     *
+     * <code>bytes raw = 2;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearRaw() {
+      if (contentCase_ == 2) {
+        contentCase_ = 0;
+        content_ = null;
+        onChanged();
+      }
+      return this;
+    }
+
+    /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
+     * <code>string url = 3;</code>
+     * @return Whether the url field is set.
+     */
+    @java.lang.Override
+    public boolean hasUrl() {
+      return contentCase_ == 3;
+    }
+    /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
+     * <code>string url = 3;</code>
+     * @return The url.
+     */
+    @java.lang.Override
+    public java.lang.String getUrl() {
+      java.lang.Object ref = "";
+      if (contentCase_ == 3) {
+        ref = content_;
+      }
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (contentCase_ == 3) {
+          content_ = s;
+        }
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
+     * <code>string url = 3;</code>
+     * @return The bytes for url.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getUrlBytes() {
+      java.lang.Object ref = "";
+      if (contentCase_ == 3) {
+        ref = content_;
+      }
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        if (contentCase_ == 3) {
+          content_ = b;
+        }
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
+     * <code>string url = 3;</code>
+     * @param value The url to set.
+     * @return This builder for chaining.
+     */
+    public Builder setUrl(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      contentCase_ = 3;
+      content_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
+     * <code>string url = 3;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearUrl() {
+      if (contentCase_ == 3) {
+        contentCase_ = 0;
+        content_ = null;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * A URL pointing to the file's content.
+     * </pre>
+     *
+     * <code>string url = 3;</code>
+     * @param value The bytes for url to set.
+     * @return This builder for chaining.
+     */
+    public Builder setUrlBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      contentCase_ = 3;
+      content_ = value;
       onChanged();
       return this;
     }
 
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.FilePart, io.a2a.grpc.FilePart.Builder, io.a2a.grpc.FilePartOrBuilder> fileBuilder_;
+        com.google.protobuf.Value, com.google.protobuf.Value.Builder, com.google.protobuf.ValueOrBuilder> dataBuilder_;
     /**
      * <pre>
-     * The file content, represented as either a URI or as base64-encoded bytes.
+     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
-     * <code>.a2a.v1.FilePart file = 2;</code>
-     * @return Whether the file field is set.
-     */
-    @java.lang.Override
-    public boolean hasFile() {
-      return partCase_ == 2;
-    }
-    /**
-     * <pre>
-     * The file content, represented as either a URI or as base64-encoded bytes.
-     * </pre>
-     *
-     * <code>.a2a.v1.FilePart file = 2;</code>
-     * @return The file.
-     */
-    @java.lang.Override
-    public io.a2a.grpc.FilePart getFile() {
-      if (fileBuilder_ == null) {
-        if (partCase_ == 2) {
-          return (io.a2a.grpc.FilePart) part_;
-        }
-        return io.a2a.grpc.FilePart.getDefaultInstance();
-      } else {
-        if (partCase_ == 2) {
-          return fileBuilder_.getMessage();
-        }
-        return io.a2a.grpc.FilePart.getDefaultInstance();
-      }
-    }
-    /**
-     * <pre>
-     * The file content, represented as either a URI or as base64-encoded bytes.
-     * </pre>
-     *
-     * <code>.a2a.v1.FilePart file = 2;</code>
-     */
-    public Builder setFile(io.a2a.grpc.FilePart value) {
-      if (fileBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        part_ = value;
-        onChanged();
-      } else {
-        fileBuilder_.setMessage(value);
-      }
-      partCase_ = 2;
-      return this;
-    }
-    /**
-     * <pre>
-     * The file content, represented as either a URI or as base64-encoded bytes.
-     * </pre>
-     *
-     * <code>.a2a.v1.FilePart file = 2;</code>
-     */
-    public Builder setFile(
-        io.a2a.grpc.FilePart.Builder builderForValue) {
-      if (fileBuilder_ == null) {
-        part_ = builderForValue.build();
-        onChanged();
-      } else {
-        fileBuilder_.setMessage(builderForValue.build());
-      }
-      partCase_ = 2;
-      return this;
-    }
-    /**
-     * <pre>
-     * The file content, represented as either a URI or as base64-encoded bytes.
-     * </pre>
-     *
-     * <code>.a2a.v1.FilePart file = 2;</code>
-     */
-    public Builder mergeFile(io.a2a.grpc.FilePart value) {
-      if (fileBuilder_ == null) {
-        if (partCase_ == 2 &&
-            part_ != io.a2a.grpc.FilePart.getDefaultInstance()) {
-          part_ = io.a2a.grpc.FilePart.newBuilder((io.a2a.grpc.FilePart) part_)
-              .mergeFrom(value).buildPartial();
-        } else {
-          part_ = value;
-        }
-        onChanged();
-      } else {
-        if (partCase_ == 2) {
-          fileBuilder_.mergeFrom(value);
-        } else {
-          fileBuilder_.setMessage(value);
-        }
-      }
-      partCase_ = 2;
-      return this;
-    }
-    /**
-     * <pre>
-     * The file content, represented as either a URI or as base64-encoded bytes.
-     * </pre>
-     *
-     * <code>.a2a.v1.FilePart file = 2;</code>
-     */
-    public Builder clearFile() {
-      if (fileBuilder_ == null) {
-        if (partCase_ == 2) {
-          partCase_ = 0;
-          part_ = null;
-          onChanged();
-        }
-      } else {
-        if (partCase_ == 2) {
-          partCase_ = 0;
-          part_ = null;
-        }
-        fileBuilder_.clear();
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     * The file content, represented as either a URI or as base64-encoded bytes.
-     * </pre>
-     *
-     * <code>.a2a.v1.FilePart file = 2;</code>
-     */
-    public io.a2a.grpc.FilePart.Builder getFileBuilder() {
-      return internalGetFileFieldBuilder().getBuilder();
-    }
-    /**
-     * <pre>
-     * The file content, represented as either a URI or as base64-encoded bytes.
-     * </pre>
-     *
-     * <code>.a2a.v1.FilePart file = 2;</code>
-     */
-    @java.lang.Override
-    public io.a2a.grpc.FilePartOrBuilder getFileOrBuilder() {
-      if ((partCase_ == 2) && (fileBuilder_ != null)) {
-        return fileBuilder_.getMessageOrBuilder();
-      } else {
-        if (partCase_ == 2) {
-          return (io.a2a.grpc.FilePart) part_;
-        }
-        return io.a2a.grpc.FilePart.getDefaultInstance();
-      }
-    }
-    /**
-     * <pre>
-     * The file content, represented as either a URI or as base64-encoded bytes.
-     * </pre>
-     *
-     * <code>.a2a.v1.FilePart file = 2;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.FilePart, io.a2a.grpc.FilePart.Builder, io.a2a.grpc.FilePartOrBuilder> 
-        internalGetFileFieldBuilder() {
-      if (fileBuilder_ == null) {
-        if (!(partCase_ == 2)) {
-          part_ = io.a2a.grpc.FilePart.getDefaultInstance();
-        }
-        fileBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-            io.a2a.grpc.FilePart, io.a2a.grpc.FilePart.Builder, io.a2a.grpc.FilePartOrBuilder>(
-                (io.a2a.grpc.FilePart) part_,
-                getParentForChildren(),
-                isClean());
-        part_ = null;
-      }
-      partCase_ = 2;
-      onChanged();
-      return fileBuilder_;
-    }
-
-    private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.DataPart, io.a2a.grpc.DataPart.Builder, io.a2a.grpc.DataPartOrBuilder> dataBuilder_;
-    /**
-     * <pre>
-     * The structured data content.
-     * </pre>
-     *
-     * <code>.a2a.v1.DataPart data = 3;</code>
+     * <code>.google.protobuf.Value data = 4;</code>
      * @return Whether the data field is set.
      */
     @java.lang.Override
     public boolean hasData() {
-      return partCase_ == 3;
+      return contentCase_ == 4;
     }
     /**
      * <pre>
-     * The structured data content.
+     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
-     * <code>.a2a.v1.DataPart data = 3;</code>
+     * <code>.google.protobuf.Value data = 4;</code>
      * @return The data.
      */
     @java.lang.Override
-    public io.a2a.grpc.DataPart getData() {
+    public com.google.protobuf.Value getData() {
       if (dataBuilder_ == null) {
-        if (partCase_ == 3) {
-          return (io.a2a.grpc.DataPart) part_;
+        if (contentCase_ == 4) {
+          return (com.google.protobuf.Value) content_;
         }
-        return io.a2a.grpc.DataPart.getDefaultInstance();
+        return com.google.protobuf.Value.getDefaultInstance();
       } else {
-        if (partCase_ == 3) {
+        if (contentCase_ == 4) {
           return dataBuilder_.getMessage();
         }
-        return io.a2a.grpc.DataPart.getDefaultInstance();
+        return com.google.protobuf.Value.getDefaultInstance();
       }
     }
     /**
      * <pre>
-     * The structured data content.
+     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
-     * <code>.a2a.v1.DataPart data = 3;</code>
+     * <code>.google.protobuf.Value data = 4;</code>
      */
-    public Builder setData(io.a2a.grpc.DataPart value) {
+    public Builder setData(com.google.protobuf.Value value) {
       if (dataBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        part_ = value;
+        content_ = value;
         onChanged();
       } else {
         dataBuilder_.setMessage(value);
       }
-      partCase_ = 3;
+      contentCase_ = 4;
       return this;
     }
     /**
      * <pre>
-     * The structured data content.
+     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
-     * <code>.a2a.v1.DataPart data = 3;</code>
+     * <code>.google.protobuf.Value data = 4;</code>
      */
     public Builder setData(
-        io.a2a.grpc.DataPart.Builder builderForValue) {
+        com.google.protobuf.Value.Builder builderForValue) {
       if (dataBuilder_ == null) {
-        part_ = builderForValue.build();
+        content_ = builderForValue.build();
         onChanged();
       } else {
         dataBuilder_.setMessage(builderForValue.build());
       }
-      partCase_ = 3;
+      contentCase_ = 4;
       return this;
     }
     /**
      * <pre>
-     * The structured data content.
+     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
-     * <code>.a2a.v1.DataPart data = 3;</code>
+     * <code>.google.protobuf.Value data = 4;</code>
      */
-    public Builder mergeData(io.a2a.grpc.DataPart value) {
+    public Builder mergeData(com.google.protobuf.Value value) {
       if (dataBuilder_ == null) {
-        if (partCase_ == 3 &&
-            part_ != io.a2a.grpc.DataPart.getDefaultInstance()) {
-          part_ = io.a2a.grpc.DataPart.newBuilder((io.a2a.grpc.DataPart) part_)
+        if (contentCase_ == 4 &&
+            content_ != com.google.protobuf.Value.getDefaultInstance()) {
+          content_ = com.google.protobuf.Value.newBuilder((com.google.protobuf.Value) content_)
               .mergeFrom(value).buildPartial();
         } else {
-          part_ = value;
+          content_ = value;
         }
         onChanged();
       } else {
-        if (partCase_ == 3) {
+        if (contentCase_ == 4) {
           dataBuilder_.mergeFrom(value);
         } else {
           dataBuilder_.setMessage(value);
         }
       }
-      partCase_ = 3;
+      contentCase_ = 4;
       return this;
     }
     /**
      * <pre>
-     * The structured data content.
+     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
-     * <code>.a2a.v1.DataPart data = 3;</code>
+     * <code>.google.protobuf.Value data = 4;</code>
      */
     public Builder clearData() {
       if (dataBuilder_ == null) {
-        if (partCase_ == 3) {
-          partCase_ = 0;
-          part_ = null;
+        if (contentCase_ == 4) {
+          contentCase_ = 0;
+          content_ = null;
           onChanged();
         }
       } else {
-        if (partCase_ == 3) {
-          partCase_ = 0;
-          part_ = null;
+        if (contentCase_ == 4) {
+          contentCase_ = 0;
+          content_ = null;
         }
         dataBuilder_.clear();
       }
@@ -1155,54 +1369,54 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The structured data content.
+     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
-     * <code>.a2a.v1.DataPart data = 3;</code>
+     * <code>.google.protobuf.Value data = 4;</code>
      */
-    public io.a2a.grpc.DataPart.Builder getDataBuilder() {
+    public com.google.protobuf.Value.Builder getDataBuilder() {
       return internalGetDataFieldBuilder().getBuilder();
     }
     /**
      * <pre>
-     * The structured data content.
+     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
-     * <code>.a2a.v1.DataPart data = 3;</code>
+     * <code>.google.protobuf.Value data = 4;</code>
      */
     @java.lang.Override
-    public io.a2a.grpc.DataPartOrBuilder getDataOrBuilder() {
-      if ((partCase_ == 3) && (dataBuilder_ != null)) {
+    public com.google.protobuf.ValueOrBuilder getDataOrBuilder() {
+      if ((contentCase_ == 4) && (dataBuilder_ != null)) {
         return dataBuilder_.getMessageOrBuilder();
       } else {
-        if (partCase_ == 3) {
-          return (io.a2a.grpc.DataPart) part_;
+        if (contentCase_ == 4) {
+          return (com.google.protobuf.Value) content_;
         }
-        return io.a2a.grpc.DataPart.getDefaultInstance();
+        return com.google.protobuf.Value.getDefaultInstance();
       }
     }
     /**
      * <pre>
-     * The structured data content.
+     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
-     * <code>.a2a.v1.DataPart data = 3;</code>
+     * <code>.google.protobuf.Value data = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.DataPart, io.a2a.grpc.DataPart.Builder, io.a2a.grpc.DataPartOrBuilder> 
+        com.google.protobuf.Value, com.google.protobuf.Value.Builder, com.google.protobuf.ValueOrBuilder> 
         internalGetDataFieldBuilder() {
       if (dataBuilder_ == null) {
-        if (!(partCase_ == 3)) {
-          part_ = io.a2a.grpc.DataPart.getDefaultInstance();
+        if (!(contentCase_ == 4)) {
+          content_ = com.google.protobuf.Value.getDefaultInstance();
         }
         dataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-            io.a2a.grpc.DataPart, io.a2a.grpc.DataPart.Builder, io.a2a.grpc.DataPartOrBuilder>(
-                (io.a2a.grpc.DataPart) part_,
+            com.google.protobuf.Value, com.google.protobuf.Value.Builder, com.google.protobuf.ValueOrBuilder>(
+                (com.google.protobuf.Value) content_,
                 getParentForChildren(),
                 isClean());
-        part_ = null;
+        content_ = null;
       }
-      partCase_ = 3;
+      contentCase_ = 4;
       onChanged();
       return dataBuilder_;
     }
@@ -1215,18 +1429,18 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with this part.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
-      return ((bitField0_ & 0x00000008) != 0);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <pre>
      * Optional metadata associated with this part.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      * @return The metadata.
      */
     public com.google.protobuf.Struct getMetadata() {
@@ -1241,7 +1455,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with this part.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder setMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1252,7 +1466,7 @@ private static final long serialVersionUID = 0L;
       } else {
         metadataBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000008;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1261,7 +1475,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with this part.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder setMetadata(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -1270,7 +1484,7 @@ private static final long serialVersionUID = 0L;
       } else {
         metadataBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000008;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1279,11 +1493,11 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with this part.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
-        if (((bitField0_ & 0x00000008) != 0) &&
+        if (((bitField0_ & 0x00000010) != 0) &&
           metadata_ != null &&
           metadata_ != com.google.protobuf.Struct.getDefaultInstance()) {
           getMetadataBuilder().mergeFrom(value);
@@ -1294,7 +1508,7 @@ private static final long serialVersionUID = 0L;
         metadataBuilder_.mergeFrom(value);
       }
       if (metadata_ != null) {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         onChanged();
       }
       return this;
@@ -1304,10 +1518,10 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with this part.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder clearMetadata() {
-      bitField0_ = (bitField0_ & ~0x00000008);
+      bitField0_ = (bitField0_ & ~0x00000010);
       metadata_ = null;
       if (metadataBuilder_ != null) {
         metadataBuilder_.dispose();
@@ -1321,10 +1535,10 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with this part.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
-      bitField0_ |= 0x00000008;
+      bitField0_ |= 0x00000010;
       onChanged();
       return internalGetMetadataFieldBuilder().getBuilder();
     }
@@ -1333,7 +1547,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with this part.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
       if (metadataBuilder_ != null) {
@@ -1348,7 +1562,7 @@ private static final long serialVersionUID = 0L;
      * Optional metadata associated with this part.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 4;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
@@ -1362,6 +1576,195 @@ private static final long serialVersionUID = 0L;
         metadata_ = null;
       }
       return metadataBuilder_;
+    }
+
+    private java.lang.Object filename_ = "";
+    /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
+     * <code>string filename = 6;</code>
+     * @return The filename.
+     */
+    public java.lang.String getFilename() {
+      java.lang.Object ref = filename_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        filename_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
+     * <code>string filename = 6;</code>
+     * @return The bytes for filename.
+     */
+    public com.google.protobuf.ByteString
+        getFilenameBytes() {
+      java.lang.Object ref = filename_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        filename_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
+     * <code>string filename = 6;</code>
+     * @param value The filename to set.
+     * @return This builder for chaining.
+     */
+    public Builder setFilename(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      filename_ = value;
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
+     * <code>string filename = 6;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearFilename() {
+      filename_ = getDefaultInstance().getFilename();
+      bitField0_ = (bitField0_ & ~0x00000020);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * An optional name for the file (e.g., "document.pdf").
+     * </pre>
+     *
+     * <code>string filename = 6;</code>
+     * @param value The bytes for filename to set.
+     * @return This builder for chaining.
+     */
+    public Builder setFilenameBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      filename_ = value;
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object mediaType_ = "";
+    /**
+     * <pre>
+     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * This field is available for all part types.
+     * </pre>
+     *
+     * <code>string media_type = 7;</code>
+     * @return The mediaType.
+     */
+    public java.lang.String getMediaType() {
+      java.lang.Object ref = mediaType_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        mediaType_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * This field is available for all part types.
+     * </pre>
+     *
+     * <code>string media_type = 7;</code>
+     * @return The bytes for mediaType.
+     */
+    public com.google.protobuf.ByteString
+        getMediaTypeBytes() {
+      java.lang.Object ref = mediaType_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        mediaType_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * This field is available for all part types.
+     * </pre>
+     *
+     * <code>string media_type = 7;</code>
+     * @param value The mediaType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setMediaType(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      mediaType_ = value;
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * This field is available for all part types.
+     * </pre>
+     *
+     * <code>string media_type = 7;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearMediaType() {
+      mediaType_ = getDefaultInstance().getMediaType();
+      bitField0_ = (bitField0_ & ~0x00000040);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * This field is available for all part types.
+     * </pre>
+     *
+     * <code>string media_type = 7;</code>
+     * @param value The bytes for mediaType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setMediaTypeBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      mediaType_ = value;
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
     }
 
     // @@protoc_insertion_point(builder_scope:a2a.v1.Part)

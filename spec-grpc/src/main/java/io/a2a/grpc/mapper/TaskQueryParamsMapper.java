@@ -21,12 +21,12 @@ public interface TaskQueryParamsMapper {
      * Extracts task ID from the resource name.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "id", expression = "java(ResourceNameParser.extractTaskId(proto.getName()))")
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "historyLength", source = "historyLength")
     TaskQueryParams fromProto(io.a2a.grpc.GetTaskRequest proto);
 
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "name", expression = "java(ResourceNameParser.defineTaskName(domain.id()))")
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "historyLength", source = "historyLength")
     @Mapping(target = "tenant", source = "tenant")
     io.a2a.grpc.GetTaskRequest toProto(TaskQueryParams domain);

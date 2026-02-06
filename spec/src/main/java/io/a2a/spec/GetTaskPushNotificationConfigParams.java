@@ -3,7 +3,6 @@ package io.a2a.spec;
 
 
 import io.a2a.util.Assert;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Parameters for retrieving push notification configuration for a specific task.
@@ -17,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  * @see TaskPushNotificationConfig for the returned configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record GetTaskPushNotificationConfigParams(String id, @Nullable String pushNotificationConfigId, String tenant) {
+public record GetTaskPushNotificationConfigParams(String id, String pushNotificationConfigId, String tenant) {
 
     /**
      * Compact constructor that validates required fields.
@@ -29,16 +28,8 @@ public record GetTaskPushNotificationConfigParams(String id, @Nullable String pu
      */
     public GetTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("id", id);
+        Assert.checkNotNullParam("pushNotificationConfigId", pushNotificationConfigId);
         Assert.checkNotNullParam("tenant", tenant);
-    }
-
-    /**
-     * Convenience constructor for creating parameters with only task ID.
-     *
-     * @param id the task identifier (required)
-     */
-    public GetTaskPushNotificationConfigParams(String id) {
-        this(id, null, "");
     }
 
     /**

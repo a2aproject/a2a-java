@@ -41,64 +41,85 @@ public interface PartOrBuilder extends
 
   /**
    * <pre>
-   * The file content, represented as either a URI or as base64-encoded bytes.
+   * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
    * </pre>
    *
-   * <code>.a2a.v1.FilePart file = 2;</code>
-   * @return Whether the file field is set.
+   * <code>bytes raw = 2;</code>
+   * @return Whether the raw field is set.
    */
-  boolean hasFile();
+  boolean hasRaw();
   /**
    * <pre>
-   * The file content, represented as either a URI or as base64-encoded bytes.
+   * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
    * </pre>
    *
-   * <code>.a2a.v1.FilePart file = 2;</code>
-   * @return The file.
+   * <code>bytes raw = 2;</code>
+   * @return The raw.
    */
-  io.a2a.grpc.FilePart getFile();
-  /**
-   * <pre>
-   * The file content, represented as either a URI or as base64-encoded bytes.
-   * </pre>
-   *
-   * <code>.a2a.v1.FilePart file = 2;</code>
-   */
-  io.a2a.grpc.FilePartOrBuilder getFileOrBuilder();
+  com.google.protobuf.ByteString getRaw();
 
   /**
    * <pre>
-   * The structured data content.
+   * A URL pointing to the file's content.
    * </pre>
    *
-   * <code>.a2a.v1.DataPart data = 3;</code>
+   * <code>string url = 3;</code>
+   * @return Whether the url field is set.
+   */
+  boolean hasUrl();
+  /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
+   * <code>string url = 3;</code>
+   * @return The url.
+   */
+  java.lang.String getUrl();
+  /**
+   * <pre>
+   * A URL pointing to the file's content.
+   * </pre>
+   *
+   * <code>string url = 3;</code>
+   * @return The bytes for url.
+   */
+  com.google.protobuf.ByteString
+      getUrlBytes();
+
+  /**
+   * <pre>
+   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+   * </pre>
+   *
+   * <code>.google.protobuf.Value data = 4;</code>
    * @return Whether the data field is set.
    */
   boolean hasData();
   /**
    * <pre>
-   * The structured data content.
+   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
-   * <code>.a2a.v1.DataPart data = 3;</code>
+   * <code>.google.protobuf.Value data = 4;</code>
    * @return The data.
    */
-  io.a2a.grpc.DataPart getData();
+  com.google.protobuf.Value getData();
   /**
    * <pre>
-   * The structured data content.
+   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
-   * <code>.a2a.v1.DataPart data = 3;</code>
+   * <code>.google.protobuf.Value data = 4;</code>
    */
-  io.a2a.grpc.DataPartOrBuilder getDataOrBuilder();
+  com.google.protobuf.ValueOrBuilder getDataOrBuilder();
 
   /**
    * <pre>
    * Optional metadata associated with this part.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
@@ -107,7 +128,7 @@ public interface PartOrBuilder extends
    * Optional metadata associated with this part.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
@@ -116,9 +137,51 @@ public interface PartOrBuilder extends
    * Optional metadata associated with this part.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 4;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 
-  io.a2a.grpc.Part.PartCase getPartCase();
+  /**
+   * <pre>
+   * An optional name for the file (e.g., "document.pdf").
+   * </pre>
+   *
+   * <code>string filename = 6;</code>
+   * @return The filename.
+   */
+  java.lang.String getFilename();
+  /**
+   * <pre>
+   * An optional name for the file (e.g., "document.pdf").
+   * </pre>
+   *
+   * <code>string filename = 6;</code>
+   * @return The bytes for filename.
+   */
+  com.google.protobuf.ByteString
+      getFilenameBytes();
+
+  /**
+   * <pre>
+   * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+   * This field is available for all part types.
+   * </pre>
+   *
+   * <code>string media_type = 7;</code>
+   * @return The mediaType.
+   */
+  java.lang.String getMediaType();
+  /**
+   * <pre>
+   * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+   * This field is available for all part types.
+   * </pre>
+   *
+   * <code>string media_type = 7;</code>
+   * @return The bytes for mediaType.
+   */
+  com.google.protobuf.ByteString
+      getMediaTypeBytes();
+
+  io.a2a.grpc.Part.ContentCase getContentCase();
 }

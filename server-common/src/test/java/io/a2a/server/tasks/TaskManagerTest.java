@@ -141,7 +141,6 @@ public class TaskManagerTest {
                 .taskId("new-task")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
-                .isFinal(false)
                 .build();
 
         taskManagerWithoutId.saveTaskEvent(event, false);
@@ -353,7 +352,6 @@ public class TaskManagerTest {
                 .taskId("different-task-id")
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(false)
                 .build();
 
         assertThrows(A2AServerException.class, () -> {
@@ -399,7 +397,6 @@ public class TaskManagerTest {
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
-                .isFinal(false)
                 .build();
 
         taskManagerWithInitialMessage.saveTaskEvent(event, false);
@@ -437,7 +434,6 @@ public class TaskManagerTest {
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED, taskMessage, null))
-                .isFinal(false)
                 .build();
 
         taskManagerWithInitialMessage.saveTaskEvent(event, false);
@@ -566,7 +562,6 @@ public class TaskManagerTest {
                 .taskId(minimalTask.id())
                 .contextId(minimalTask.contextId())
                 .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(false)
                 .metadata(newMetadata)
                 .build();
 
@@ -586,7 +581,6 @@ public class TaskManagerTest {
                 .taskId(minimalTask.id())
                 .contextId(minimalTask.contextId())
                 .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(false)
                 .metadata(null)
                 .build();
 
@@ -615,7 +609,6 @@ public class TaskManagerTest {
                 .taskId(minimalTask.id())
                 .contextId(minimalTask.contextId())
                 .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(false)
                 .metadata(newMetadata)
                 .build();
 
@@ -643,7 +636,6 @@ public class TaskManagerTest {
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
-                .isFinal(false)
                 .build();
 
         taskManagerWithMessage.saveTaskEvent(event, false);
@@ -672,7 +664,6 @@ public class TaskManagerTest {
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED))
-                .isFinal(false)
                 .build();
 
         taskManagerWithoutMessage.saveTaskEvent(event, false);
@@ -728,7 +719,6 @@ public class TaskManagerTest {
                 .taskId("new-task-id")
                 .contextId("some-context")
                 .status(new TaskStatus(TaskState.SUBMITTED, taskMessage, null))
-                .isFinal(false)
                 .build();
 
         taskManagerWithInitialMessage.saveTaskEvent(event, false);

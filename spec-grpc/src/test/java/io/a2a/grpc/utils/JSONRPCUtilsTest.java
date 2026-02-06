@@ -33,16 +33,13 @@ public class JSONRPCUtilsTest {
               "method": "CreateTaskPushNotificationConfig",
               "id": "1",
               "params": {
-                "parent": "tasks/task-123",
+                "taskId": "task-123",
                 "configId": "config-456",
                 "tenant": "",
                 "config": {
-                  "name": "tasks/task-123/pushNotificationConfigs/config-456",
-                  "pushNotificationConfig": {
-                    "url": "https://example.com/callback",
-                    "authentication": {
-                      "schemes": ["jwt"]
-                    }
+                  "url": "https://example.com/callback",
+                  "authentication": {
+                    "scheme": "jwt"
                   }
                 }
               }
@@ -73,7 +70,8 @@ public class JSONRPCUtilsTest {
               "method": "GetTaskPushNotificationConfig",
               "id": "2",
               "params": {
-                "name": "tasks/task-123/pushNotificationConfigs/config-456"
+                "taskId": "task-123",
+                "id": "config-456"
               }
             }
             """;
@@ -277,7 +275,8 @@ public class JSONRPCUtilsTest {
               "jsonrpc": "2.0",
               "id": "1",
               "result": {
-                "name": "tasks/task-123/pushNotificationConfigs/config-456",
+                "taskId": "task-123",
+                "id": "config-456",
                 "pushNotificationConfig": {
                   "url": "https://example.com/callback",
                   "id": "config-456"
@@ -303,7 +302,8 @@ public class JSONRPCUtilsTest {
               "jsonrpc": "2.0",
               "id": "2",
               "result": {
-                "name": "tasks/task-123/pushNotificationConfigs/config-456",
+                "taskId": "task-123",
+                "id": "config-456",
                 "pushNotificationConfig": {
                   "url": "https://example.com/callback",
                   "id": "config-456"

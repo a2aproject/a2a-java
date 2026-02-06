@@ -255,7 +255,7 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
+    public void subscribeToTask(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
                             Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         checkNotNullParam("eventConsumer", eventConsumer);

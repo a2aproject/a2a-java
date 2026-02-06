@@ -175,7 +175,7 @@ public class A2AServerRoutesTest {
     }
 
     @Test
-    public void testResubscribeTask_MethodNameSetInContext() {
+    public void testSubscribeTask_MethodNameSetInContext() {
         // Arrange
         when(mockRoutingContext.pathParam("taskId")).thenReturn("task123");
         HTTPRestResponse mockHttpResponse = mock(HTTPRestResponse.class);

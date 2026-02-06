@@ -184,12 +184,15 @@ public class SSEEventListenerTest {
 
     @Test
     public void testFinalTaskStatusUpdateEventCancels() {
-        TaskStatusUpdateEvent tsue = TaskStatusUpdateEvent.builder()
-                .taskId("1234")
-                .contextId("xyz")
-                .status(new TaskStatus(TaskState.COMPLETED))
-                .isFinal(true)
-                .build();
+        TaskStatus completedStatus = new TaskStatus(TaskState.COMPLETED);
+        // Use constructor since Builder doesn't have isFinal method
+        TaskStatusUpdateEvent tsue = new TaskStatusUpdateEvent(
+                "1234",
+                completedStatus,
+                "xyz",
+                completedStatus.state().isFinal(),  // Derive from state
+                null
+        );
 
         // Set up event handler
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();

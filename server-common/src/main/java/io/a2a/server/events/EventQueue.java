@@ -224,7 +224,7 @@ public abstract class EventQueue implements AutoCloseable {
      * Enqueues an event directly to this specific queue only, bypassing the MainEventBus.
      * <p>
      * This method is used for enqueuing already-persisted events (e.g., current task state
-     * on resubscribe) that should only be sent to this specific subscriber, not distributed
+     * on subscribe) that should only be sent to this specific subscriber, not distributed
      * to all children or sent through MainEventBusProcessor.
      * </p>
      * <p>
@@ -236,7 +236,7 @@ public abstract class EventQueue implements AutoCloseable {
      */
     public void enqueueLocalOnly(EventQueueItem item) {
         throw new UnsupportedOperationException(
-            "enqueueLocalOnly is only supported on ChildQueue for resubscribe scenarios");
+            "enqueueLocalOnly is only supported on ChildQueue for subscribe scenarios");
     }
 
     /**
@@ -504,7 +504,7 @@ public abstract class EventQueue implements AutoCloseable {
                 boolean isFinalized = taskStateProvider.isTaskFinalized(taskId);
                 if (!isFinalized) {
                     LOGGER.debug("MainQueue for task {} has no children, but task is not finalized - keeping queue open for potential resubscriptions", taskId);
-                    return;  // Don't close - keep queue open for fire-and-forget or late resubscribes
+                    return;  // Don't close - keep queue open for fire-and-forget or late subscribes
                 }
                 LOGGER.debug("MainQueue for task {} has no children and task is finalized - closing queue", taskId);
             } else {

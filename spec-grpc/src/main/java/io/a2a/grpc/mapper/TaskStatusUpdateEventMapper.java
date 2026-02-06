@@ -1,8 +1,7 @@
 package io.a2a.grpc.mapper;
 
+import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -20,19 +19,26 @@ public interface TaskStatusUpdateEventMapper {
     /**
      * Converts domain TaskStatusUpdateEvent to proto.
      * Uses declarative mapping with CommonFieldMapper for metadata conversion.
-     * Maps record's isFinal field to proto's final field.
+     * Note: isFinal field is ignored as it has been removed from the proto (field 4 is reserved).
      */
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
-    @Mapping(target = "final", source = "isFinal")
     io.a2a.grpc.TaskStatusUpdateEvent toProto(TaskStatusUpdateEvent domain);
 
     /**
      * Converts proto TaskStatusUpdateEvent to domain.
-     * Now fully declarative using Builder pattern configured via @BeanMapping.
-     * MapStruct automatically maps proto.getFinal() → builder.isFinal().
+     * Note: isFinal is derived from status.state().isFinal() since the field has been removed from the proto (field 4 is reserved).
      */
-    @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "isFinal", source = "final")
-    @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
-    TaskStatusUpdateEvent fromProto(io.a2a.grpc.TaskStatusUpdateEvent proto);
+    default TaskStatusUpdateEvent fromProto(io.a2a.grpc.TaskStatusUpdateEvent proto) {
+        if (proto == null) {
+            return null;
+        }
+        TaskStatus status = TaskStatusMapper.INSTANCE.fromProto(proto.getStatus());
+        return new TaskStatusUpdateEvent(
+                proto.getTaskId(),
+                status,
+                proto.getContextId(),
+                status != null && status.state() != null && status.state().isFinal(),
+                A2ACommonFieldMapper.INSTANCE.metadataFromProto(proto.getMetadata())
+        );
+    }
 }

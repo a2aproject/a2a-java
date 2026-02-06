@@ -119,7 +119,6 @@ public class StreamResponseMapperTest {
                 .taskId("task-123")
                 .contextId("context-456")
                 .status(new TaskStatus(TaskState.WORKING))
-                .isFinal(false)
                 .build();
 
         // Act
@@ -131,7 +130,6 @@ public class StreamResponseMapperTest {
         assertEquals("task-123", result.getStatusUpdate().getTaskId());
         assertEquals("context-456", result.getStatusUpdate().getContextId());
         assertEquals(io.a2a.grpc.TaskState.TASK_STATE_WORKING, result.getStatusUpdate().getStatus().getState());
-        assertEquals(false, result.getStatusUpdate().getFinal());
     }
 
     @Test
@@ -144,7 +142,6 @@ public class StreamResponseMapperTest {
                         .setStatus(io.a2a.grpc.TaskStatus.newBuilder()
                                 .setState(io.a2a.grpc.TaskState.TASK_STATE_WORKING)
                                 .build())
-                        .setFinal(false)
                         .build())
                 .build();
 

@@ -32,23 +32,41 @@ public interface GetTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * The resource name of the config to retrieve.
-   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+   * The parent task resource id.
    * </pre>
    *
-   * <code>string name = 1;</code>
-   * @return The name.
+   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The taskId.
    */
-  java.lang.String getName();
+  java.lang.String getTaskId();
   /**
    * <pre>
-   * The resource name of the config to retrieve.
-   * Format: tasks/{task_id}/pushNotificationConfigs/{config_id}
+   * The parent task resource id.
    * </pre>
    *
-   * <code>string name = 1;</code>
-   * @return The bytes for name.
+   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
-      getNameBytes();
+      getTaskIdBytes();
+
+  /**
+   * <pre>
+   * The resource id of the config to retrieve.
+   * </pre>
+   *
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The id.
+   */
+  java.lang.String getId();
+  /**
+   * <pre>
+   * The resource id of the config to retrieve.
+   * </pre>
+   *
+   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for id.
+   */
+  com.google.protobuf.ByteString
+      getIdBytes();
 }

@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
-import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.client.http.A2AHttpResponse;
@@ -132,7 +131,7 @@ public class RestTransport implements ClientTransport {
     public Task getTask(TaskQueryParams taskQueryParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("taskQueryParams", taskQueryParams);
         io.a2a.grpc.GetTaskRequest.Builder builder = io.a2a.grpc.GetTaskRequest.newBuilder();
-        builder.setName("tasks/" + taskQueryParams.id());
+        builder.setId(taskQueryParams.id());
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_TASK_METHOD, builder, agentCard, context);
         try {
             StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, taskQueryParams.tenant()));
@@ -166,7 +165,7 @@ public class RestTransport implements ClientTransport {
     public Task cancelTask(TaskIdParams taskIdParams, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("taskIdParams", taskIdParams);
         io.a2a.grpc.CancelTaskRequest.Builder builder = io.a2a.grpc.CancelTaskRequest.newBuilder();
-        builder.setName("tasks/" + taskIdParams.id());
+        builder.setId(taskIdParams.id());
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(CANCEL_TASK_METHOD, builder, agentCard, context);
         try {
             String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, taskIdParams.tenant()) + String.format("/tasks/%1s:cancel", taskIdParams.id()), payloadAndHeaders);
@@ -273,8 +272,8 @@ public class RestTransport implements ClientTransport {
         checkNotNullParam("request", request);
         io.a2a.grpc.CreateTaskPushNotificationConfigRequest.Builder builder
                 = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
-        builder.setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(request))
-                .setParent("tasks/" + request.taskId());
+        builder.setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(request).getPushNotificationConfig())
+                .setTaskId(request.taskId());
         if (request.pushNotificationConfig().id() != null) {
             builder.setConfigId(request.pushNotificationConfig().id());
         }
@@ -299,12 +298,12 @@ public class RestTransport implements ClientTransport {
         StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()));
         String configId = request.pushNotificationConfigId();
         if (configId != null && !configId.isEmpty()) {
-            builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId));
-            url.append(builder.getName());
+            builder.setId(configId).setTaskId(request.id());
+            url.append(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId));
         } else {
             // Use trailing slash to distinguish GET from LIST
-            builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/", request.id()));
-            url.append(builder.getName());
+            builder.setTaskId(request.id());
+            url.append(String.format("/tasks/%1s/pushNotificationConfigs/", request.id()));
         }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
@@ -335,7 +334,7 @@ public class RestTransport implements ClientTransport {
         checkNotNullParam("request", request);
         io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder builder
                 = io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder();
-        builder.setParent(String.format("/tasks/%1s/pushNotificationConfigs", request.id()));
+        builder.setTaskId(request.id());
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
         try {
@@ -387,11 +386,11 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public void resubscribe(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
+    public void subscribeToTask(TaskIdParams request, Consumer<StreamingEventKind> eventConsumer,
             Consumer<Throwable> errorConsumer, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         io.a2a.grpc.SubscribeToTaskRequest.Builder builder = io.a2a.grpc.SubscribeToTaskRequest.newBuilder();
-        builder.setName("tasks/" + request.id());
+        builder.setId(request.id());
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SUBSCRIBE_TO_TASK_METHOD, builder,
                 agentCard, context);
         AtomicReference<CompletableFuture<Void>> ref = new AtomicReference<>();

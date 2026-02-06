@@ -8,11 +8,6 @@ import org.mapstruct.Mapping;
 
 /**
  * Mapper between {@link io.a2a.grpc.GetTaskPushNotificationConfigRequest} and {@link io.a2a.spec.GetTaskPushNotificationConfigParams}.
- * <p>
- * Extracts task ID and config ID from resource name using {@link ResourceNameParser}.
- * Handles both formats:
- * - "tasks/{taskId}" (uses taskId as configId)
- * - "tasks/{taskId}/pushNotificationConfigs/{configId}"
  */
 @Mapper(config = A2AProtoMapperConfig.class)
 public interface GetTaskPushNotificationConfigParamsMapper {
@@ -21,19 +16,18 @@ public interface GetTaskPushNotificationConfigParamsMapper {
 
     /**
      * Converts proto GetTaskPushNotificationConfigRequest to domain GetTaskPushNotificationConfigParams.
-     * Parses the name field to extract both task ID and config ID.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "id", expression = "java(ResourceNameParser.parseGetTaskPushNotificationConfigName(proto.getName())[0])")
-    @Mapping(target = "pushNotificationConfigId", expression = "java(ResourceNameParser.parseGetTaskPushNotificationConfigName(proto.getName())[1])")
+    @Mapping(target = "id", source = "taskId")
+    @Mapping(target = "pushNotificationConfigId", source = "id")
     @Mapping(target = "tenant", source = "tenant")
     GetTaskPushNotificationConfigParams fromProto(io.a2a.grpc.GetTaskPushNotificationConfigRequest proto);
 
     /**
-     * Converts domain Message to proto Message.Uses CommonFieldMapper for metadata conversion and ADDER_PREFERRED for lists.
-     * @param domain
-     * @return 
+     * Converts domain GetTaskPushNotificationConfigParams to proto GetTaskPushNotificationConfigRequest.
      */
-    @Mapping(target = "name", expression = "java(ResourceNameParser.defineGetTaskPushNotificationConfigName(domain.id(), domain.pushNotificationConfigId()))")
+    @Mapping(target = "taskId", source = "id")
+    @Mapping(target = "id", source = "pushNotificationConfigId", conditionExpression = "java(domain.pushNotificationConfigId() != null)")
+    @Mapping(target = "tenant", source = "tenant")
     io.a2a.grpc.GetTaskPushNotificationConfigRequest toProto(GetTaskPushNotificationConfigParams domain);
 }

@@ -1,6 +1,5 @@
 package io.a2a.examples.cloud;
 
-import static io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION;
 
 import java.util.Collections;
 import java.util.List;
@@ -57,7 +56,6 @@ public class CloudAgentCardProducer {
                                 ))
                                 .build()
                 ))
-                .protocolVersions(CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 }
