@@ -207,7 +207,10 @@ public interface A2ACommonFieldMapper {
     private Object valueToObject(Value value) {
         switch (value.getKindCase()) {
             case STRUCT_VALUE:
-                if (value.getStructValue() == null || value.getStructValue().getFieldsCount() == 0) {
+                if (value.getStructValue() == null) {
+                    return null;
+                }
+                if (value.getStructValue().getFieldsCount() == 0) {
                     return java.util.Collections.emptyMap();
                 }
                 return structToMap(value.getStructValue());
