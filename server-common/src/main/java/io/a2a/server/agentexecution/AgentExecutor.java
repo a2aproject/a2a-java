@@ -2,6 +2,7 @@ package io.a2a.server.agentexecution;
 
 import io.a2a.server.events.EventQueue;
 import io.a2a.spec.A2AError;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 /**
  * Core business logic interface for implementing A2A agent functionality.
@@ -119,6 +120,7 @@ public interface AgentExecutor {
      * @param eventQueue the queue for enqueueing status updates and artifacts
      * @throws A2AError if execution fails catastrophically (exception propagates to client)
      */
+    @WithSpan("AgentExecutor.execute")
     void execute(RequestContext context, EventQueue eventQueue) throws A2AError;
 
     /**
@@ -150,5 +152,6 @@ public interface AgentExecutor {
      * @throws io.a2a.spec.TaskNotCancelableError if this agent does not support cancellation
      * @throws A2AError if cancellation is supported but failed to execute
      */
+    @WithSpan("AgentExecutor.cancel")
     void cancel(RequestContext context, EventQueue eventQueue) throws A2AError;
 }

@@ -30,6 +30,7 @@ import io.a2a.server.ServerCallContext;
 import io.a2a.server.agentexecution.AgentExecutor;
 import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.agentexecution.SimpleRequestContextBuilder;
+import io.a2a.server.util.IdGenerator;
 import io.a2a.server.config.A2AConfigProvider;
 import io.a2a.server.events.EnhancedRunnable;
 import io.a2a.server.events.EventConsumer;
@@ -185,6 +186,9 @@ public class DefaultRequestHandler implements RequestHandler {
     @Inject
     A2AConfigProvider configProvider;
 
+    @Inject
+    IdGenerator idGenerator;
+
     /**
      * Timeout in seconds to wait for agent execution to complete in blocking calls.
      * This allows slow agents (LLM-based, data processing, external APIs) sufficient time.
@@ -253,7 +257,7 @@ public class DefaultRequestHandler implements RequestHandler {
         //  implementation if the parameter is null. Skip that for now, since otherwise I get CDI errors, and
         //  I am unsure about the correct scope.
         //  Also reworked to make a Supplier since otherwise the builder gets polluted with wrong tasks
-        this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false);
+        this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false, idGenerator);
     }
 
     @PostConstruct
@@ -370,7 +374,7 @@ public class DefaultRequestHandler implements RequestHandler {
                         .setTaskId(task.id())
                         .setContextId(task.contextId())
                         .setTask(task)
-                        .setServerCallContext(context)
+                        .setCallContext(context)
                         .build(),
                 queue);
 
@@ -950,7 +954,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 .setTaskId(task == null ? null : task.id())
                 .setContextId(params.message().contextId())
                 .setTask(task)
-                .setServerCallContext(context)
+                .setCallContext(context)
                 .build();
         return new MessageSendSetup(taskManager, task, requestContext);
     }
