@@ -67,6 +67,7 @@ public class A2AServerRoutes {
     private static final String HISTORY_LENGTH_PARAM = "historyLength";
     private static final String PAGE_SIZE_PARAM = "pageSize";
     private static final String PAGE_TOKEN_PARAM = "pageToken";
+    private static final String STATUS_TIMESTAMP_AFTER = "statusTimestampAfter";
 
     @Inject
     RestHandler jsonRestHandler;
@@ -139,7 +140,7 @@ public class A2AServerRoutes {
             String pageSizeStr = rc.request().params().get(PAGE_SIZE_PARAM);
             String pageToken = rc.request().params().get(PAGE_TOKEN_PARAM);
             String historyLengthStr = rc.request().params().get(HISTORY_LENGTH_PARAM);
-            String lastUpdatedAfter = rc.request().params().get("lastUpdatedAfter");
+            String statusTimestampAfter = rc.request().params().get(STATUS_TIMESTAMP_AFTER);
             String includeArtifactsStr = rc.request().params().get("includeArtifacts");
 
             // Parse optional parameters
@@ -159,7 +160,7 @@ public class A2AServerRoutes {
             }
 
             response = jsonRestHandler.listTasks(contextId, statusStr, pageSize, pageToken,
-                    historyLength, lastUpdatedAfter, includeArtifacts, extractTenant(rc), context);
+                    historyLength, statusTimestampAfter, includeArtifacts, extractTenant(rc), context);
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
         } catch (IllegalArgumentException e) {
