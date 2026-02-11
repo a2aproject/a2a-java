@@ -78,7 +78,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
         String nextPageToken = null;
         do {
           ListTaskPushNotificationConfigResult pageResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId,
-              DEFAULT_PAGE_SIZE, nextPageToken, ""));
+              DEFAULT_PAGE_SIZE, nextPageToken == null ? "" : nextPageToken, ""));
           if (!pageResult.configs().isEmpty()) {
             configs.addAll(pageResult.configs());
           }
@@ -111,11 +111,14 @@ public class BasePushNotificationSender implements PushNotificationSender {
     protected @Nullable String extractTaskId(StreamingEventKind event) {
         if (event instanceof Task task) {
             return task.id();
-        } else if (event instanceof Message message) {
+        }
+        if (event instanceof Message message) {
             return message.taskId();
-        } else if (event instanceof TaskStatusUpdateEvent statusUpdate) {
+        }
+        if (event instanceof TaskStatusUpdateEvent statusUpdate) {
             return statusUpdate.taskId();
-        } else if (event instanceof TaskArtifactUpdateEvent artifactUpdate) {
+        }
+        if (event instanceof TaskArtifactUpdateEvent artifactUpdate) {
             return artifactUpdate.taskId();
         }
         throw new IllegalStateException("Unknown StreamingEventKind: " + event);

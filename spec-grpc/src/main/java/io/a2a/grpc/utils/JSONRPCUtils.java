@@ -434,10 +434,10 @@ public class JSONRPCUtils {
                 case TASK_NOT_FOUND_ERROR_CODE:
                     return new TaskNotFoundError(code, message, data);
                 default:
-                    return new A2AError(code, message, data);
+                    return new A2AError(code, message == null ? "": message, data);
             }
         }
-        return new A2AError(code, message, data);
+        return new A2AError(INTERNAL_ERROR_CODE, message == null ? "": message, data);
     }
 
     protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {

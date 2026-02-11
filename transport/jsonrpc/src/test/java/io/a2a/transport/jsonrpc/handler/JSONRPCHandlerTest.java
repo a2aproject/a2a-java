@@ -63,6 +63,7 @@ import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
+import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.PushNotificationNotSupportedError;
@@ -91,6 +92,13 @@ import org.mockito.Mockito;
 public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
     private final ServerCallContext callContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>());
+
+    private static MessageSendConfiguration defaultConfiguration() {
+        return MessageSendConfiguration.builder()
+                .acceptedOutputModes(List.of())
+                .blocking(false)
+                .build();
+    }
 
     @Test
     public void testOnGetTaskSuccess() throws Exception {
@@ -1008,6 +1016,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .id("1")
                 .params(MessageSendParams.builder()
                         .message(MESSAGE)
+                        .configuration(defaultConfiguration())
                         .build())
                 .build();
         Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
@@ -1171,7 +1180,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         JSONRPCHandler handler = new JSONRPCHandler(CARD, mocked, internalExecutor);
 
-        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(MESSAGE, null, null));
+        SendMessageRequest request = new SendMessageRequest("1", new MessageSendParams(MESSAGE, defaultConfiguration(), null));
         SendMessageResponse response = handler.onMessageSend(request, callContext);
 
         assertInstanceOf(InternalError.class, response.getError());
@@ -1185,7 +1194,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         JSONRPCHandler handler = new JSONRPCHandler(CARD, mocked, internalExecutor);
 
-        SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null));
+        SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, defaultConfiguration(), null));
         Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
 
         List<SendStreamingMessageResponse> results = new ArrayList<>();
@@ -1270,7 +1279,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.emitEvent(MINIMAL_TASK);
         });
         SendMessageRequest request = new SendMessageRequest("1",
-                new MessageSendParams(MESSAGE, null, null));
+                new MessageSendParams(MESSAGE, defaultConfiguration(), null));
         SendMessageResponse response = handler.onMessageSend(request, callContext);
         assertInstanceOf(InternalError.class, response.getError());
 
@@ -1286,7 +1295,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 agentEmitter.emitEvent(MINIMAL_TASK);
             });
 
-            SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, null, null));
+            SendStreamingMessageRequest request = new SendStreamingMessageRequest("1", new MessageSendParams(MESSAGE, defaultConfiguration(), null));
             Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
 
         CompletableFuture<Void> future = new CompletableFuture<>();

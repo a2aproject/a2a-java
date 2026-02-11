@@ -3,6 +3,8 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A2A Protocol error indicating that the requested task ID does not exist.
  * <p>
@@ -46,10 +48,7 @@ public class TaskNotFoundError extends A2AProtocolError {
      * @param message the error message (defaults to "Task not found" if null)
      * @param data additional error data (optional)
      */
-    public TaskNotFoundError(
-            Integer code,
-            String message,
-            Object data) {
+    public TaskNotFoundError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
         super(
                 defaultIfNull(code, TASK_NOT_FOUND_ERROR_CODE),
                 defaultIfNull(message, "Task not found"),

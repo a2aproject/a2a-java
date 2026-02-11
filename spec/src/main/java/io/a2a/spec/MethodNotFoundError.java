@@ -3,6 +3,8 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.METHOD_NOT_FOUND_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * JSON-RPC error indicating that the requested method does not exist or is not available.
  * <p>
@@ -29,10 +31,7 @@ public class MethodNotFoundError extends A2AError {
      * @param message the error message (defaults to "Method not found" if null)
      * @param data additional error data (optional)
      */
-    public MethodNotFoundError(
-            Integer code,
-            String message,
-            Object data) {
+    public MethodNotFoundError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
         super(
                 defaultIfNull(code, METHOD_NOT_FOUND_ERROR_CODE),
                 defaultIfNull(message, "Method not found"),

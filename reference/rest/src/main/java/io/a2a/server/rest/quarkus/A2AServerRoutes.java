@@ -289,7 +289,9 @@ public class A2AServerRoutes {
         try {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else {
+            } else if (configId == null || configId.isEmpty()) { 
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad configuration id"));
+            }else {
                 response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, extractTenant(rc), context);
             }
         } catch (Throwable t) {
@@ -299,26 +301,7 @@ public class A2AServerRoutes {
         }
     }
 
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/$", order = 1, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
-    public void getTaskPushNotificationConfigurationWithoutId(RoutingContext rc) {
-        String taskId = rc.pathParam("taskId");
-        ServerCallContext context = createCallContext(rc, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
-        HTTPRestResponse response = null;
-        try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else {
-                // Call get with null configId - trailing slash distinguishes this from list
-                response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, null, extractTenant(rc), context);
-            }
-        } catch (Throwable t) {
-            response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
-        } finally {
-            sendResponse(rc, response);
-        }
-    }
-
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs", order = 3, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/?$", order = 3, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
     public void listTaskPushNotificationConfigurations(RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);

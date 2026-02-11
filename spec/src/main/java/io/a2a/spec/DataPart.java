@@ -1,8 +1,8 @@
 package io.a2a.spec;
 
-import java.util.Map;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -77,7 +77,7 @@ public record DataPart(Object data) implements Part<Object> {
      * Builder for constructing {@link DataPart} instances.
      */
     public static class Builder {
-        private Object data;
+        private @Nullable Object data;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -103,7 +103,7 @@ public record DataPart(Object data) implements Part<Object> {
          * @throws IllegalArgumentException if data is null
          */
         public DataPart build() {
-            return new DataPart(data);
+            return new DataPart(Assert.checkNotNullParam("data", data));
         }
     }
 }

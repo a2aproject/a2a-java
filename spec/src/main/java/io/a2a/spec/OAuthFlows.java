@@ -1,5 +1,7 @@
 package io.a2a.spec;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Configuration for supported OAuth 2.0 authorization flows.
  * <p>
@@ -15,8 +17,8 @@ package io.a2a.spec;
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#oauth-flows-object">OpenAPI OAuth Flows Object</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCredentialsOAuthFlow clientCredentials,
-                         DeviceCodeOAuthFlow deviceCode) {
+public record OAuthFlows(@Nullable AuthorizationCodeOAuthFlow authorizationCode, @Nullable ClientCredentialsOAuthFlow clientCredentials,
+                         @Nullable DeviceCodeOAuthFlow deviceCode) {
 
     /**
      * Create a new Builder
@@ -31,9 +33,9 @@ public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCre
      * Builder for constructing {@link OAuthFlows} instances.
      */
     public static class Builder {
-        private AuthorizationCodeOAuthFlow authorizationCode;
-        private ClientCredentialsOAuthFlow clientCredentials;
-        private DeviceCodeOAuthFlow deviceCode;
+        private @Nullable AuthorizationCodeOAuthFlow authorizationCode;
+        private @Nullable ClientCredentialsOAuthFlow clientCredentials;
+        private @Nullable DeviceCodeOAuthFlow deviceCode;
 
         /**
          * Creates a new Builder with all fields unset.

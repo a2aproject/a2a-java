@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Marker interface for A2A Protocol error events.
@@ -36,7 +37,7 @@ public class A2AError extends RuntimeException implements Event {
     /**
      * Additional error information (structure defined by the error code).
      */
-    private final Object data;
+    private final @Nullable Object data;
 
     /**
      * Constructs a JSON-RPC error with the specified code, message, and optional data.
@@ -48,11 +49,9 @@ public class A2AError extends RuntimeException implements Event {
      * @param data additional error information, structure defined by the error code (optional)
      * @throws IllegalArgumentException if code or message is null
      */
-    public A2AError(Integer code, String message, Object data) {
-        super(message);
-        Assert.checkNotNullParam("code", code);
-        Assert.checkNotNullParam("message", message);
-        this.code = code;
+    public A2AError(Integer code, String message, @Nullable Object data) {
+        super(Assert.checkNotNullParam("message", message));
+        this.code = Assert.checkNotNullParam("code", code);
         this.data = data;
     }
 
@@ -84,7 +83,7 @@ public class A2AError extends RuntimeException implements Event {
      *
      * @return the error data, or null if not provided
      */
-    public Object getData() {
+    public @Nullable Object getData() {
         return data;
     }
 }

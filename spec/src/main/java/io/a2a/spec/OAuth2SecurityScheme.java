@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * OAuth 2.0 security scheme for agent authentication.
@@ -19,11 +20,8 @@ import io.a2a.util.Assert;
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record OAuth2SecurityScheme(
-        OAuthFlows flows,
-        String description,
-        String oauth2MetadataUrl
-) implements SecurityScheme {
+public record OAuth2SecurityScheme(OAuthFlows flows, @Nullable String description, @Nullable String oauth2MetadataUrl)
+        implements SecurityScheme {
 
     /**
      * The type identifier for OAuth 2.0 security schemes: "oauth2SecurityScheme".
@@ -69,9 +67,10 @@ public record OAuth2SecurityScheme(
      * }</pre>
      */
     public static class Builder {
-        private OAuthFlows flows;
-        private String description;
-        private String oauth2MetadataUrl;
+
+        private @Nullable OAuthFlows flows;
+        private @Nullable String description;
+        private @Nullable String oauth2MetadataUrl;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -119,7 +118,7 @@ public record OAuth2SecurityScheme(
          * @throws IllegalArgumentException if flows is null
          */
         public OAuth2SecurityScheme build() {
-            return new OAuth2SecurityScheme(flows, description, oauth2MetadataUrl);
+            return new OAuth2SecurityScheme(Assert.checkNotNullParam("flows", flows), description, oauth2MetadataUrl);
         }
     }
 }

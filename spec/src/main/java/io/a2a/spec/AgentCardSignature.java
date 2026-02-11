@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a digital signature for an {@link AgentCard} using JSON Web Signature (JWS) format.
@@ -31,7 +32,7 @@ import io.a2a.util.Assert;
  * @see <a href="https://tools.ietf.org/html/rfc7515">RFC 7515 - JSON Web Signature</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentCardSignature(Map<String, Object> header, @SerializedName("protected")String protectedHeader,
+public record AgentCardSignature(@Nullable Map<String, Object> header, @SerializedName("protected")String protectedHeader,
                                  String signature) {
 
     /**
@@ -69,9 +70,9 @@ public record AgentCardSignature(Map<String, Object> header, @SerializedName("pr
      * }</pre>
      */
     public static class Builder {
-        private Map<String, Object> header;
-        String protectedHeader;
-        String signature;
+        private @Nullable Map<String, Object> header;
+        @Nullable String protectedHeader;
+        @Nullable String signature;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -122,7 +123,10 @@ public record AgentCardSignature(Map<String, Object> header, @SerializedName("pr
          * @throws IllegalArgumentException if protectedHeader or signature is null
          */
         public AgentCardSignature build() {
-            return new AgentCardSignature(header, protectedHeader, signature);
+            return new AgentCardSignature(
+                    header,
+                    Assert.checkNotNullParam("protectedHeader", protectedHeader),
+                    Assert.checkNotNullParam("signature", signature));
         }
     }
 }

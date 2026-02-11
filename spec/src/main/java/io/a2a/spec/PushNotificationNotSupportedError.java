@@ -3,6 +3,8 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A2A Protocol error indicating that the agent does not support push notifications.
  * <p>
@@ -42,10 +44,7 @@ public class PushNotificationNotSupportedError extends A2AProtocolError {
      * @param message the error message (defaults to "Push Notification is not supported" if null)
      * @param data additional error data (optional)
      */
-    public PushNotificationNotSupportedError(
-            Integer code,
-            String message,
-            Object data) {
+    public PushNotificationNotSupportedError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
         super(
                 defaultIfNull(code, PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE),
                 defaultIfNull(message, "Push Notification is not supported"),

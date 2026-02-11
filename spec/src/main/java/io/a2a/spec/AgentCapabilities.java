@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines optional capabilities supported by an agent in the A2A Protocol.
@@ -32,7 +33,7 @@ import java.util.List;
 public record AgentCapabilities(boolean streaming,
                                 boolean pushNotifications,
                                 boolean extendedAgentCard,
-                                List<AgentExtension> extensions) {
+                                @Nullable List<AgentExtension> extensions) {
 
     /**
      * Create a new Builder
@@ -61,7 +62,7 @@ public record AgentCapabilities(boolean streaming,
         private boolean streaming;
         private boolean pushNotifications;
         private boolean extendedAgentCard;
-        private List<AgentExtension> extensions;
+        private @Nullable List<AgentExtension> extensions;
 
         /**
          * Creates a new Builder with all capabilities set to false by default.

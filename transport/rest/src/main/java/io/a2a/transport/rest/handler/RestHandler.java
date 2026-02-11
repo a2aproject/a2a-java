@@ -290,7 +290,7 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, @Nullable String configId, String tenant, ServerCallContext context) {
+    public HTTPRestResponse getTaskPushNotificationConfiguration(String taskId, String configId, String tenant, ServerCallContext context) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();

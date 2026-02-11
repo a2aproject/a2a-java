@@ -1,5 +1,7 @@
 package io.a2a.spec;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Represents a protocol-level error in the A2A Protocol with a reference URL.
  * <p>
@@ -15,7 +17,7 @@ public class A2AProtocolError extends A2AError {
     /**
      * URL reference for additional information about this protocol error.
      */
-    private final String url;
+    private final @Nullable String url;
 
     /**
      * Constructs a protocol error with the specified code, message, data, and reference URL.
@@ -25,7 +27,7 @@ public class A2AProtocolError extends A2AError {
      * @param data additional error information, structure defined by the error code (optional)
      * @param url URL reference providing additional context about this protocol error (optional)
      */
-    public A2AProtocolError(Integer code, String message, Object data, String url) {
+    public A2AProtocolError(Integer code, String message, @Nullable Object data, @Nullable String url) {
         super(code, message, data);
         this.url = url;
     }
@@ -38,7 +40,7 @@ public class A2AProtocolError extends A2AError {
      *
      * @return the reference URL, or null if not provided
      */
-    public String getUrl() {
+    public @Nullable String getUrl() {
         return url;
     }
 }

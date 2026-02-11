@@ -22,7 +22,6 @@ import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Map;
 import java.util.Set;
 
 import com.google.gson.Gson;
@@ -30,7 +29,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.TypeAdapter;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
@@ -435,7 +433,7 @@ public class JsonUtil {
                 case INVALID_AGENT_RESPONSE_ERROR_CODE ->
                     new InvalidAgentResponseError(code, message, data);
                 default ->
-                    new A2AError(code, message, data);
+                    new A2AError(code, message == null ? "" : message, data);
             };
         }
     }

@@ -3,6 +3,8 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.INTERNAL_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
+import org.jspecify.annotations.Nullable;
+
 
 /**
  * JSON-RPC error indicating an internal error occurred on the server.
@@ -34,7 +36,7 @@ public class InternalError extends A2AError {
      * @param message the error message
      * @param data additional error data
      */
-    public InternalError(Integer code, String message, Object data) {
+    public InternalError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
         super(
                 defaultIfNull(code, INTERNAL_ERROR_CODE),
                 defaultIfNull(message, "Internal Error"),
@@ -46,7 +48,7 @@ public class InternalError extends A2AError {
      *
      * @param message the error message
      */
-    public InternalError(String message) {
+    public InternalError(@Nullable String message) {
         this(null, message, null);
     }
 }

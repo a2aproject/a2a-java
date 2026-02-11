@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a single, stateful operation or conversation between a client and an agent in the A2A Protocol.
@@ -42,14 +43,8 @@ import io.a2a.util.Assert;
  * @see Message
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record Task(
-        String id,
-        String contextId,
-        TaskStatus status,
-        List<Artifact> artifacts,
-        List<Message> history,
-        Map<String, Object> metadata
-) implements EventKind, StreamingEventKind {
+public record Task(String id, String contextId, TaskStatus status, @Nullable List<Artifact> artifacts,
+        @Nullable List<Message> history, @Nullable Map<String, Object> metadata) implements EventKind, StreamingEventKind {
 
     /**
      * The identifier when used in streaming responses
@@ -124,12 +119,12 @@ public record Task(
      * }</pre>
      */
     public static class Builder {
-        private String id;
-        private String contextId;
-        private TaskStatus status;
-        private List<Artifact> artifacts;
-        private List<Message> history;
-        private Map<String, Object> metadata;
+        private @Nullable String id;
+        private @Nullable String contextId;
+        private @Nullable TaskStatus status;
+        private @Nullable List<Artifact> artifacts;
+        private @Nullable List<Message> history;
+        private @Nullable Map<String, Object> metadata;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -203,7 +198,7 @@ public record Task(
          * @return this builder for method chaining
          * @see Artifact
          */
-        public Builder artifacts(List<Artifact> artifacts) {
+        public Builder artifacts(@Nullable List<Artifact> artifacts) {
             this.artifacts = artifacts;
             return this;
         }
@@ -218,7 +213,7 @@ public record Task(
          * @return this builder for method chaining
          * @see Message
          */
-        public Builder history(List<Message> history) {
+        public Builder history(@Nullable List<Message> history) {
             this.history = history;
             return this;
         }
@@ -258,7 +253,13 @@ public record Task(
          * @throws IllegalArgumentException if any required field (id, contextId, status) is null
          */
         public Task build() {
-            return new Task(id, contextId, status, artifacts, history, metadata);
+            return new Task(
+                    Assert.checkNotNullParam("id", id),
+                    Assert.checkNotNullParam("contextId", contextId),
+                    Assert.checkNotNullParam("status", status),
+                    artifacts,
+                    history,
+                    metadata);
         }
     }
 }

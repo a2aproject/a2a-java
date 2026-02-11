@@ -3,6 +3,7 @@ package io.a2a.spec;
 
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Parameters for deleting a push notification configuration from a task.
@@ -57,9 +58,9 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
      * Provides a fluent API for setting parameters with optional metadata.
      */
     public static class Builder {
-        String id;
-        String pushNotificationConfigId;
-        String tenant;
+        @Nullable String id;
+        @Nullable String pushNotificationConfigId;
+        @Nullable String tenant;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -107,7 +108,10 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
          * @throws IllegalArgumentException if id or pushNotificationConfigId is null
          */
         public DeleteTaskPushNotificationConfigParams build() {
-            return new DeleteTaskPushNotificationConfigParams(id, pushNotificationConfigId, tenant);
+            return new DeleteTaskPushNotificationConfigParams(
+                    Assert.checkNotNullParam("id", id),
+                    Assert.checkNotNullParam("pushNotificationConfigId", pushNotificationConfigId),
+                    Assert.checkNotNullParam("tenant", tenant));
         }
     }
 }

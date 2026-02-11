@@ -3,6 +3,8 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.INVALID_AGENT_RESPONSE_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
+import org.jspecify.annotations.Nullable;
+
 
 /**
  * A2A Protocol error indicating that an agent returned a response not conforming to protocol specifications.
@@ -44,7 +46,7 @@ public class InvalidAgentResponseError extends A2AProtocolError {
      * @param message the error message
      * @param data additional error data
      */
-    public InvalidAgentResponseError(Integer code, String message, Object data) {
+    public InvalidAgentResponseError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
         super(
                 defaultIfNull(code, INVALID_AGENT_RESPONSE_ERROR_CODE),
                 defaultIfNull(message, "Invalid agent response"),

@@ -3,6 +3,8 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A2A Protocol error indicating that the requested operation is not supported by the agent.
  * <p>
@@ -40,10 +42,7 @@ public class UnsupportedOperationError extends A2AProtocolError {
      * @param message the error message (defaults to "This operation is not supported" if null)
      * @param data additional error data (optional)
      */
-    public UnsupportedOperationError(
-            Integer code,
-            String message,
-            Object data) {
+    public UnsupportedOperationError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
         super(
                 defaultIfNull(code, UNSUPPORTED_OPERATION_ERROR_CODE),
                 defaultIfNull(message, "This operation is not supported"),

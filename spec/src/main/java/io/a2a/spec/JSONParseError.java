@@ -3,6 +3,8 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * JSON-RPC error indicating that the server received invalid JSON that could not be parsed.
  * <p>
@@ -51,10 +53,7 @@ public class JSONParseError extends A2AError {
      * @param message the error message
      * @param data additional error data
      */
-    public JSONParseError(
-            Integer code,
-            String message,
-            Object data) {
+    public JSONParseError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
         super(
                 defaultIfNull(code, JSON_PARSE_ERROR_CODE),
                 defaultIfNull(message, "Invalid JSON payload"),

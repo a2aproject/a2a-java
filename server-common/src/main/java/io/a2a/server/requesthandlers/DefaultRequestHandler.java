@@ -422,6 +422,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @SuppressWarnings("NullAway")
     public EventKind onMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
         LOGGER.debug("onMessageSend - task: {}; context {}", params.message().taskId(), params.message().contextId());
 
@@ -605,6 +606,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
+    @SuppressWarnings("NullAway")
     public Flow.Publisher<StreamingEventKind> onMessageSendStream(
             MessageSendParams params, ServerCallContext context) throws A2AError {
         LOGGER.debug("onMessageSendStream START - task: {}; context: {}; runningAgents: {}",
@@ -1014,7 +1016,7 @@ public class DefaultRequestHandler implements RequestHandler {
             LOGGER.debug("Found task updating with message {}", params.message());
             task = taskManager.updateWithMessage(params.message(), task);
 
-            if (shouldAddPushInfo(params)) {
+            if (pushConfigStore != null && params.configuration() != null && params.configuration().pushNotificationConfig() != null) {
                 LOGGER.debug("Adding push info");
                 pushConfigStore.setInfo(task.id(), params.configuration().pushNotificationConfig());
             }

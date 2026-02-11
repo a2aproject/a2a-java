@@ -1,5 +1,7 @@
 package io.a2a.util;
 
+import org.jspecify.annotations.Nullable;
+
 public final class Assert {
 
     /**
@@ -11,18 +13,21 @@ public final class Assert {
      * @return the value that was passed in
      * @throws IllegalArgumentException if the value is {@code null}
      */
-    @NotNull
-    public static <T> T checkNotNullParam(String name, T value) throws IllegalArgumentException {
+    public static <T> @NotNull T checkNotNullParam(String name, @Nullable T value) throws IllegalArgumentException {
         checkNotNullParamChecked("name", name);
-        checkNotNullParamChecked(name, value);
+        if (value == null) {
+            throw new IllegalArgumentException("Parameter '" + name + "' may not be null");
+        }
         return value;
     }
 
-    private static <T> void checkNotNullParamChecked(final String name, final T value) {
-        if (value == null) throw new IllegalArgumentException("Parameter '" + name + "' may not be null");
+    private static <T> void checkNotNullParamChecked(final String name, final @Nullable T value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Parameter '" + name + "' may not be null");
+        }
     }
 
-    public static void isNullOrStringOrInteger(Object value) {
+    public static void isNullOrStringOrInteger(@Nullable Object value) {
         if (! (value == null || value instanceof String || value instanceof Integer)) {
             throw new IllegalArgumentException("Id must be null, a String, or an Integer");
         }

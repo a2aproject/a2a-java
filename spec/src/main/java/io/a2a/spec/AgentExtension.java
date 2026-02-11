@@ -3,6 +3,7 @@ package io.a2a.spec;
 import java.util.Map;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a protocol extension supported by an agent.
@@ -23,7 +24,7 @@ import io.a2a.util.Assert;
  * @see AgentCard
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentExtension (String description, Map<String, Object> params, boolean required, String uri) {
+public record AgentExtension (@Nullable String description, @Nullable Map<String, Object> params, boolean required, String uri) {
 
     /**
      * Compact constructor that validates required fields.
@@ -61,10 +62,10 @@ public record AgentExtension (String description, Map<String, Object> params, bo
      * }</pre>
      */
     public static class Builder {
-        String description;
-        Map<String, Object> params;
+        @Nullable  String description;
+        @Nullable Map<String, Object> params;
         boolean required;
-        String uri;
+        @Nullable String uri;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -123,7 +124,7 @@ public record AgentExtension (String description, Map<String, Object> params, bo
          * @throws IllegalArgumentException if uri is null
          */
         public AgentExtension build() {
-            return new AgentExtension(description, params, required, uri);
+            return new AgentExtension(description, params, required, Assert.checkNotNullParam("uri", uri));
         }
     }
 

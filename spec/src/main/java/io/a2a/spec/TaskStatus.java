@@ -1,9 +1,10 @@
 package io.a2a.spec;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 
 import io.a2a.util.Assert;
+import java.time.ZoneOffset;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents the status of a task at a specific point in time in the A2A Protocol.
@@ -37,8 +38,7 @@ import io.a2a.util.Assert;
  * @see Task
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record TaskStatus(TaskState state, Message message,
-                         OffsetDateTime timestamp) {
+public record TaskStatus(TaskState state, @Nullable Message message, OffsetDateTime timestamp) {
 
     /**
      * Compact constructor for validation and timestamp initialization.
@@ -48,11 +48,15 @@ public record TaskStatus(TaskState state, Message message,
      * @param message optional status message
      * @param timestamp the status timestamp
      */
-    public TaskStatus {
-        Assert.checkNotNullParam("state", state);
-        timestamp = timestamp == null ? OffsetDateTime.now(ZoneOffset.UTC) : timestamp;
+    public TaskStatus(TaskState state, @Nullable Message message, @Nullable OffsetDateTime timestamp){
+        this.state = Assert.checkNotNullParam("state", state);
+        this.timestamp = timestamp == null ? OffsetDateTime.now(ZoneOffset.UTC) : timestamp;
+        this.message = message;
     }
 
+    public OffsetDateTime timestamp() {
+        return timestamp;
+    }
     /**
      * Creates a TaskStatus with only a state, using the current UTC time as the timestamp.
      * <p>
@@ -62,19 +66,6 @@ public record TaskStatus(TaskState state, Message message,
      * @param state the task state (required)
      */
     public TaskStatus(TaskState state) {
-        this(state, null, null);
-    }
-
-    /**
-     * Creates a TaskStatus with a specific timestamp, primarily for testing purposes.
-     * <p>
-     * This package-private constructor allows tests to create TaskStatus instances
-     * with deterministic timestamps for assertions.
-     *
-     * @param state the task state (required)
-     * @param timestamp the timestamp to use (if null, current UTC time is used)
-     */
-    TaskStatus(TaskState state, OffsetDateTime timestamp) {
-        this(state, null, timestamp);
+        this(state, null, OffsetDateTime.now(ZoneOffset.UTC));
     }
 }

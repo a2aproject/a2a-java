@@ -3,6 +3,7 @@ package io.a2a.spec;
 import java.util.Map;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Event notifying that a task artifact has been created, modified, or appended to.
@@ -38,14 +39,8 @@ import io.a2a.util.Assert;
  * @see Artifact
  * @see Task
  */
-public record TaskArtifactUpdateEvent(
-        String taskId,
-        Artifact artifact,
-        String contextId,
-        Boolean append,
-        Boolean lastChunk,
-        Map<String, Object> metadata
-) implements EventKind, StreamingEventKind, UpdateEvent {
+public record TaskArtifactUpdateEvent(String taskId, Artifact artifact, String contextId, @Nullable Boolean append,
+        @Nullable Boolean lastChunk, @Nullable Map<String, Object> metadata) implements EventKind, StreamingEventKind, UpdateEvent {
 
     /**
      * The identifier when used in streaming responses
@@ -124,12 +119,12 @@ public record TaskArtifactUpdateEvent(
      */
     public static class Builder {
 
-        private String taskId;
-        private Artifact artifact;
-        private String contextId;
-        private Boolean append;
-        private Boolean lastChunk;
-        private Map<String, Object> metadata;
+        private @Nullable String taskId;
+        private @Nullable Artifact artifact;
+        private @Nullable String contextId;
+        private @Nullable Boolean append;
+        private @Nullable Boolean lastChunk;
+        private @Nullable Map<String, Object> metadata;
 
         private Builder() {
         }
@@ -182,7 +177,7 @@ public record TaskArtifactUpdateEvent(
          * @param append true to append, false or null for new artifact
          * @return this builder for method chaining
          */
-        public Builder append(Boolean append) {
+        public Builder append(@Nullable Boolean append) {
             this.append = append;
             return this;
         }
@@ -193,7 +188,7 @@ public record TaskArtifactUpdateEvent(
          * @param lastChunk true if final chunk, false or null otherwise
          * @return this builder for method chaining
          */
-        public Builder lastChunk(Boolean lastChunk) {
+        public Builder lastChunk(@Nullable Boolean lastChunk) {
             this.lastChunk  = lastChunk;
             return this;
         }
@@ -216,7 +211,13 @@ public record TaskArtifactUpdateEvent(
          * @throws IllegalArgumentException if required fields are missing
          */
         public TaskArtifactUpdateEvent build() {
-            return new TaskArtifactUpdateEvent(taskId, artifact, contextId, append, lastChunk, metadata);
+            return new TaskArtifactUpdateEvent(
+                    Assert.checkNotNullParam("taskId", taskId),
+                    Assert.checkNotNullParam("artifact", artifact),
+                    Assert.checkNotNullParam("contextId", contextId),
+                    append,
+                    lastChunk,
+                    metadata);
         }
     }
 }

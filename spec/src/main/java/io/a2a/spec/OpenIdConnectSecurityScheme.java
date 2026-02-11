@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * OpenID Connect security scheme for agent authentication.
@@ -28,10 +29,7 @@ import io.a2a.util.Assert;
  * @see <a href="https://openid.net/specs/openid-connect-discovery-1_0.html">OpenID Connect Discovery</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record OpenIdConnectSecurityScheme(
-        String openIdConnectUrl,
-        String description
-) implements SecurityScheme {
+public record OpenIdConnectSecurityScheme(String openIdConnectUrl, @Nullable String description) implements SecurityScheme {
 
     /**
      * The type identifier for OpenID Connect security schemes: "openIdConnect".
@@ -70,8 +68,8 @@ public record OpenIdConnectSecurityScheme(
      * The {@code openIdConnectUrl} parameter is required.
      */
     public static class Builder {
-        private String openIdConnectUrl;
-        private String description;
+        private @Nullable String openIdConnectUrl;
+        private @Nullable String description;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -108,7 +106,7 @@ public record OpenIdConnectSecurityScheme(
          * @throws IllegalArgumentException if openIdConnectUrl is null
          */
         public OpenIdConnectSecurityScheme build() {
-            return new OpenIdConnectSecurityScheme(openIdConnectUrl, description);
+            return new OpenIdConnectSecurityScheme(Assert.checkNotNullParam("openIdConnectUrl", openIdConnectUrl), description);
         }
     }
 }

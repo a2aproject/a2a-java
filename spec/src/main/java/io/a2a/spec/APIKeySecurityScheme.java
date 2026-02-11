@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * API key security scheme for agent authentication.
@@ -17,13 +18,12 @@ import io.a2a.util.Assert;
  * @see <a href="https://spec.openapis.org/oas/v3.0.0#security-scheme-object">OpenAPI Security Scheme</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record APIKeySecurityScheme(
-        Location location,
-        String name,
-        String description
-) implements SecurityScheme {
+public record APIKeySecurityScheme(Location location, String name, @Nullable
+        String description) implements SecurityScheme {
 
-    /** The security scheme type identifier for API key authentication. */
+    /**
+     * The security scheme type identifier for API key authentication.
+     */
     public static final String TYPE = "apiKeySecurityScheme";
 
     @Override
@@ -48,13 +48,17 @@ public record APIKeySecurityScheme(
      * Represents the location of the API key.
      */
     public enum Location {
-        /** API key sent in a cookie. */
+        /**
+         * API key sent in a cookie.
+         */
         COOKIE("cookie"),
-
-        /** API key sent in an HTTP header. */
+        /**
+         * API key sent in an HTTP header.
+         */
         HEADER("header"),
-
-        /** API key sent as a query parameter. */
+        /**
+         * API key sent as a query parameter.
+         */
         QUERY("query");
 
         private final String location;
@@ -90,7 +94,8 @@ public record APIKeySecurityScheme(
                 case "query" -> {
                     return QUERY;
                 }
-                default -> throw new IllegalArgumentException("Invalid API key location: " + location);
+                default ->
+                    throw new IllegalArgumentException("Invalid API key location: " + location);
             }
         }
     }
@@ -117,9 +122,10 @@ public record APIKeySecurityScheme(
      * }</pre>
      */
     public static class Builder {
-        private Location location;
-        private String name;
-        private String description;
+
+        private @Nullable Location location;
+        private @Nullable String name;
+        private @Nullable String description;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -167,7 +173,8 @@ public record APIKeySecurityScheme(
          * @throws IllegalArgumentException if location or name is null
          */
         public APIKeySecurityScheme build() {
-            return new APIKeySecurityScheme(location, name, description);
+            return new APIKeySecurityScheme(Assert.checkNotNullParam("location", location), 
+                    Assert.checkNotNullParam("name", name), description);
         }
     }
 }

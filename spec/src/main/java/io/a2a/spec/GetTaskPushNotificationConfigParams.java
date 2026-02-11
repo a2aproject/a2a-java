@@ -3,6 +3,7 @@ package io.a2a.spec;
 
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Parameters for retrieving push notification configuration for a specific task.
@@ -55,9 +56,9 @@ public record GetTaskPushNotificationConfigParams(String id, String pushNotifica
      * Builder for constructing GetTaskPushNotificationConfigParams instances.
      */
     public static class Builder {
-        String id;
-        String pushNotificationConfigId;
-        String tenant;
+        @Nullable String id;
+        @Nullable String pushNotificationConfigId;
+        @Nullable String tenant;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -104,7 +105,10 @@ public record GetTaskPushNotificationConfigParams(String id, String pushNotifica
          * @return a new GetTaskPushNotificationConfigParams
          */
         public GetTaskPushNotificationConfigParams build() {
-            return new GetTaskPushNotificationConfigParams(id, pushNotificationConfigId, tenant == null ? "" : tenant);
+            return new GetTaskPushNotificationConfigParams(
+                    Assert.checkNotNullParam("id", id),
+                    Assert.checkNotNullParam("pushNotificationConfigId", pushNotificationConfigId),
+                    Assert.checkNotNullParam("tenant", tenant));
         }
     }
 }

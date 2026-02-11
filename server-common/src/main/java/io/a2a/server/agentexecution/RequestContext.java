@@ -99,14 +99,12 @@ public class RequestContext {
         if (params != null) {
             if (taskId != null && !taskId.equals(params.message().taskId())) {
                 throw new InvalidParamsError("bad task id");
-            } else {
-                checkOrGenerateTaskId();
             }
+            this.taskId = checkOrGenerateTaskId();
             if (contextId != null && !contextId.equals(params.message().contextId())) {
                 throw new InvalidParamsError("bad context id");
-            } else {
-                checkOrGenerateContextId();
             }
+            this.contextId = checkOrGenerateContextId();
         }
     }
 
@@ -246,9 +244,9 @@ public class RequestContext {
         relatedTasks.add(task);
     }
 
-    private void checkOrGenerateTaskId() {
+    private @Nullable String checkOrGenerateTaskId() {
         if (params == null) {
-            return;
+            return taskId;
         }
         if (taskId == null && params.message().taskId() == null) {
             // Message is immutable, create new one with generated taskId
@@ -257,15 +255,17 @@ public class RequestContext {
                     .taskId(generatedTaskId)
                     .build();
             params = new MessageSendParams(updatedMessage, params.configuration(), params.metadata());
-            this.taskId = generatedTaskId;
-        } else if (params.message().taskId() != null) {
-            this.taskId = params.message().taskId();
+            return generatedTaskId;
+        } 
+        if (params.message().taskId() != null) {
+            return params.message().taskId();
         }
+        return taskId;
     }
 
-    private void checkOrGenerateContextId() {
+    private @Nullable String checkOrGenerateContextId() {
         if (params == null) {
-            return;
+            return contextId;
         }
         if (contextId == null && params.message().contextId() == null) {
             // Message is immutable, create new one with generated contextId
@@ -274,10 +274,12 @@ public class RequestContext {
                     .contextId(generatedContextId)
                     .build();
             params = new MessageSendParams(updatedMessage, params.configuration(), params.metadata());
-            this.contextId = generatedContextId;
-        } else if (params.message().contextId() != null) {
-            this.contextId = params.message().contextId();
+            return generatedContextId;
+        } 
+        if (params.message().contextId() != null) {
+            return params.message().contextId();
         }
+        return contextId;
     }
 
     private String getMessageText(Message message, String delimiter) {

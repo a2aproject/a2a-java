@@ -1,5 +1,6 @@
 package io.a2a.spec;
 
+import io.a2a.util.Assert;
 import java.time.Instant;
 
 import org.jspecify.annotations.Nullable;
@@ -44,10 +45,7 @@ public record ListTasksParams(
      * @throws InvalidParamsError if tenant is null or if pageSize or historyLength are out of valid range
      */
     public ListTasksParams {
-        if (tenant == null) {
-            throw new InvalidParamsError(null, "Parameter 'tenant' may not be null", null);
-        }
-
+        Assert.checkNotNullParam("tenant", tenant);
         // Validate pageSize (1-100)
         if (pageSize != null && (pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE)) {
             throw new InvalidParamsError(null,
@@ -119,14 +117,14 @@ public record ListTasksParams(
      * Builder for constructing instances.
      */
     public static class Builder {
-        private String contextId;
-        private TaskState status;
-        private Integer pageSize;
-        private String pageToken;
-        private Integer historyLength;
-        private Instant statusTimestampAfter;
-        private Boolean includeArtifacts;
-        private String tenant;
+        private @Nullable String contextId;
+        private @Nullable TaskState status;
+        private @Nullable Integer pageSize;
+        private @Nullable String pageToken;
+        private @Nullable Integer historyLength;
+        private @Nullable Instant statusTimestampAfter;
+        private @Nullable Boolean includeArtifacts;
+        private @Nullable String tenant;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -229,7 +227,7 @@ public record ListTasksParams(
          */
         public ListTasksParams build() {
             return new ListTasksParams(contextId, status, pageSize, pageToken, historyLength,
-                    statusTimestampAfter, includeArtifacts, tenant);
+                    statusTimestampAfter, includeArtifacts, Assert.checkNotNullParam("tenant", tenant));
         }
     }
 }

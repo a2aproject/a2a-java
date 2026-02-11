@@ -41,7 +41,7 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
         Iterator<PushNotificationConfig> notificationConfigIterator = notificationConfigList.iterator();
         while (notificationConfigIterator.hasNext()) {
             PushNotificationConfig config = notificationConfigIterator.next();
-            if (config.id().equals(notificationConfig.id())) {
+            if (config.id() != null  && config.id().equals(notificationConfig.id())) {
                 notificationConfigIterator.remove();
                 break;
             }

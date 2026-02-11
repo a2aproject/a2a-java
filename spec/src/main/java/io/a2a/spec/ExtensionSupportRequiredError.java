@@ -3,6 +3,8 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.EXTENSION_SUPPORT_REQUIRED_ERROR;
 import static io.a2a.util.Utils.defaultIfNull;
 
+import org.jspecify.annotations.Nullable;
+
 
 /**
  * A2A Protocol error indicating that a client requested use of an extension marked as required
@@ -36,10 +38,7 @@ public class ExtensionSupportRequiredError extends A2AProtocolError {
      * @param message the error message (defaults to standard message if null)
      * @param data additional error data (optional)
      */
-    public ExtensionSupportRequiredError(
-            Integer code,
-            String message,
-            Object data) {
+    public ExtensionSupportRequiredError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
         super(
                 defaultIfNull(code, EXTENSION_SUPPORT_REQUIRED_ERROR),
                 defaultIfNull(message, "Extension support required but not declared"),

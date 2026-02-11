@@ -3,6 +3,8 @@ package io.a2a.spec;
 import static io.a2a.spec.A2AErrorCodes.INVALID_PARAMS_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * JSON-RPC error indicating that method parameters are invalid or missing required fields.
  * <p>
@@ -37,7 +39,7 @@ public class InvalidParamsError extends A2AError {
      * @param message the error message
      * @param data additional error data
      */
-    public InvalidParamsError(Integer code, String message, Object data) {
+    public InvalidParamsError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
         super(
                 defaultIfNull(code, INVALID_PARAMS_ERROR_CODE),
                 defaultIfNull(message, "Invalid parameters"),
@@ -49,7 +51,7 @@ public class InvalidParamsError extends A2AError {
      *
      * @param message the error message
      */
-    public InvalidParamsError(String message) {
+    public InvalidParamsError(@Nullable String message) {
         this(null, message, null);
     }
 

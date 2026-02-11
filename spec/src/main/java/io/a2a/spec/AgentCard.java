@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.a2a.util.Assert;
+import java.util.Collections;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The AgentCard is a self-describing manifest for an agent in the A2A Protocol.
@@ -43,18 +45,18 @@ import io.a2a.util.Assert;
 public record AgentCard(
         String name,
         String description,
-        AgentProvider provider,
+        @Nullable AgentProvider provider,
         String version,
-        String documentationUrl,
+        @Nullable String documentationUrl,
         AgentCapabilities capabilities,
         List<String> defaultInputModes,
         List<String> defaultOutputModes,
         List<AgentSkill> skills,
-        Map<String, SecurityScheme> securitySchemes,
-        List<Map<String, List<String>>> securityRequirements,
-        String iconUrl,
+        @Nullable Map<String, SecurityScheme> securitySchemes,
+        @Nullable List<Map<String, List<String>>> securityRequirements,
+        @Nullable String iconUrl,
         List<AgentInterface> supportedInterfaces,
-        List<AgentCardSignature> signatures) {
+        @Nullable List<AgentCardSignature> signatures) {
 
     /**
      * Compact constructor that validates required fields.
@@ -98,7 +100,7 @@ public record AgentCard(
     /**
      * Create a new Builder initialized with values from an existing AgentCard.
      * <p>
-     * This builder  creates defensive copies of mutable collections to ensure
+     * This builder creates defensive copies of mutable collections to ensure
      * that modifications to the builder do not affect the original AgentCard.
      *
      * @param card the AgentCard to copy values from
@@ -107,7 +109,6 @@ public record AgentCard(
     public static Builder builder(AgentCard card) {
         return new Builder(card);
     }
-
 
     /**
      * Builder for constructing immutable {@link AgentCard} instances.
@@ -140,26 +141,26 @@ public record AgentCard(
      * }</pre>
      */
     public static class Builder {
-        private String name;
-        private String description;
-        private AgentProvider provider;
-        private String version;
-        private String documentationUrl;
-        private AgentCapabilities capabilities;
-        private List<String> defaultInputModes;
-        private List<String> defaultOutputModes;
-        private List<AgentSkill> skills;
-        private Map<String, SecurityScheme> securitySchemes;
-        private List<Map<String, List<String>>> securityRequirements;
-        private String iconUrl;
-        private List<AgentInterface> supportedInterfaces;
-        private List<AgentCardSignature> signatures;
+
+        private @Nullable String name;
+        private @Nullable String description;
+        private @Nullable AgentProvider provider;
+        private @Nullable String version;
+        private @Nullable String documentationUrl;
+        private @Nullable AgentCapabilities capabilities;
+        private @Nullable List<String> defaultInputModes;
+        private @Nullable List<String> defaultOutputModes;
+        private @Nullable List<AgentSkill> skills;
+        private @Nullable Map<String, SecurityScheme> securitySchemes;
+        private @Nullable List<Map<String, List<String>>> securityRequirements;
+        private @Nullable String iconUrl;
+        private @Nullable List<AgentInterface> supportedInterfaces;
+        private @Nullable List<AgentCardSignature> signatures;
 
         /**
          * Creates a new Builder with all fields unset.
          */
         private Builder() {
-
         }
 
         /**
@@ -177,13 +178,13 @@ public record AgentCard(
             this.version = card.version;
             this.documentationUrl = card.documentationUrl;
             this.capabilities = card.capabilities;
-            this.defaultInputModes = card.defaultInputModes != null ? new ArrayList<>(card.defaultInputModes) : null;
-            this.defaultOutputModes = card.defaultOutputModes != null ? new ArrayList<>(card.defaultOutputModes) : null;
-            this.skills = card.skills != null ? new ArrayList<>(card.skills) : null;
-            this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
-            this.securityRequirements = card.securityRequirements != null ? new ArrayList<>(card.securityRequirements) : null;
+            this.defaultInputModes = card.defaultInputModes != null ? new ArrayList<>(card.defaultInputModes) : Collections.emptyList();
+            this.defaultOutputModes = card.defaultOutputModes != null ? new ArrayList<>(card.defaultOutputModes) : Collections.emptyList();
+            this.skills = card.skills != null ? new ArrayList<>(card.skills) : Collections.emptyList();
+            this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : Collections.emptyMap();
+            this.securityRequirements = card.securityRequirements != null ? new ArrayList<>(card.securityRequirements) :Collections.emptyList();
             this.iconUrl = card.iconUrl;
-            this.supportedInterfaces = card.supportedInterfaces != null ? new ArrayList<>(card.supportedInterfaces) : null;
+            this.supportedInterfaces = card.supportedInterfaces != null ? new ArrayList<>(card.supportedInterfaces) : Collections.emptyList();
             this.signatures = card.signatures != null ? new ArrayList<>(card.signatures) : null;
         }
 
@@ -208,7 +209,6 @@ public record AgentCard(
             this.description = description;
             return this;
         }
-
 
         /**
          * Sets information about the organization or entity providing the agent.
@@ -387,10 +387,21 @@ public record AgentCard(
          * @throws IllegalArgumentException if any required field is null
          */
         public AgentCard build() {
-            return new AgentCard(name, description, provider, version, documentationUrl,
-                    capabilities, defaultInputModes, defaultOutputModes, skills,
-                    securitySchemes, securityRequirements, iconUrl,
-                    supportedInterfaces, signatures);
+            return new AgentCard(
+                    Assert.checkNotNullParam("name", name),
+                    Assert.checkNotNullParam("description", description),
+                    provider,
+                    Assert.checkNotNullParam("version", version),
+                    documentationUrl,
+                    Assert.checkNotNullParam("capabilities", capabilities),
+                    Assert.checkNotNullParam("defaultInputModes", defaultInputModes),
+                    Assert.checkNotNullParam("defaultOutputModes", defaultOutputModes),
+                    Assert.checkNotNullParam("skills", skills),
+                    securitySchemes,
+                    securityRequirements,
+                    iconUrl,
+                    Assert.checkNotNullParam("supportedInterfaces", supportedInterfaces),
+                    signatures);
         }
     }
 }

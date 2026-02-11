@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a single message in the conversation between a user and an agent in the A2A Protocol.
@@ -34,9 +35,9 @@ import io.a2a.util.Assert;
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record Message(Role role, List<Part<?>> parts,
-                      String messageId, String contextId,
-                      String taskId, List<String> referenceTaskIds,
-                      Map<String, Object> metadata, List<String> extensions
+                      String messageId, @Nullable String contextId,
+                      @Nullable String taskId, @Nullable List<String> referenceTaskIds,
+                      @Nullable Map<String, Object> metadata, @Nullable List<String> extensions
 ) implements EventKind, StreamingEventKind {
 
     /**
@@ -66,8 +67,8 @@ public record Message(Role role, List<Part<?>> parts,
         }
         parts = List.copyOf(parts);
         referenceTaskIds = referenceTaskIds != null ? List.copyOf(referenceTaskIds) : null;
-        extensions = extensions != null ? List.copyOf(extensions) : null;
         metadata = (metadata != null) ? Map.copyOf(metadata) : null;
+        extensions = extensions != null ? List.copyOf(extensions) : null;
     }
 
     @Override
@@ -144,14 +145,14 @@ public record Message(Role role, List<Part<?>> parts,
      */
     public static class Builder {
 
-        private Role role;
-        private List<Part<?>> parts;
-        private String messageId;
-        private String contextId;
-        private String taskId;
-        private List<String> referenceTaskIds;
-        private Map<String, Object> metadata;
-        private List<String> extensions;
+        private @Nullable Role role;
+        private @Nullable List<Part<?>> parts;
+        private @Nullable String messageId;
+        private @Nullable String contextId;
+        private @Nullable String taskId;
+        private @Nullable List<String> referenceTaskIds;
+        private @Nullable Map<String, Object> metadata;
+        private @Nullable List<String> extensions;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -260,7 +261,7 @@ public record Message(Role role, List<Part<?>> parts,
          * @param metadata map of metadata key-value pairs (optional)
          * @return this builder for method chaining
          */
-        public Builder metadata(Map<String, Object> metadata) {
+        public Builder metadata(@Nullable Map<String, Object> metadata) {
             this.metadata = metadata;
             return this;
         }
@@ -285,8 +286,15 @@ public record Message(Role role, List<Part<?>> parts,
          * @throws IllegalArgumentException if required fields are missing or invalid
          */
         public Message build() {
-            return new Message(role, parts, messageId == null ? UUID.randomUUID().toString() : messageId,
-                    contextId, taskId, referenceTaskIds, metadata, extensions);
+            return new Message(
+                    Assert.checkNotNullParam("role", role), 
+                    Assert.checkNotNullParam("parts", parts), 
+                    messageId == null ? UUID.randomUUID().toString() : messageId,
+                    contextId,
+                    taskId,
+                    referenceTaskIds,
+                    metadata,
+                    extensions);
         }
     }
 }

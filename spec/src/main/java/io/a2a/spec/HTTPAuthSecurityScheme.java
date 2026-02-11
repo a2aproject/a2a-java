@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * HTTP authentication security scheme for agent authentication.
@@ -35,11 +36,7 @@ import io.a2a.util.Assert;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc7235">RFC 7235 - HTTP Authentication</a>
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record HTTPAuthSecurityScheme(
-        String bearerFormat,
-        String scheme,
-        String description
-) implements SecurityScheme {
+public record HTTPAuthSecurityScheme(@Nullable String bearerFormat, String scheme, @Nullable String description) implements SecurityScheme {
 
     /** The HTTP security scheme type identifier. */
     public static final String TYPE = "httpAuthSecurityScheme";
@@ -77,9 +74,9 @@ public record HTTPAuthSecurityScheme(
      * The {@code scheme} parameter is required and must be set before calling {@code build()}.
      */
     public static class Builder {
-        private String bearerFormat;
-        private String scheme;
-        private String description;
+        private @Nullable String bearerFormat;
+        private @Nullable String scheme;
+        private @Nullable String description;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -127,7 +124,7 @@ public record HTTPAuthSecurityScheme(
          * @throws IllegalArgumentException if required fields are missing
          */
         public HTTPAuthSecurityScheme build() {
-            return new HTTPAuthSecurityScheme(bearerFormat, scheme, description);
+            return new HTTPAuthSecurityScheme(bearerFormat, Assert.checkNotNullParam("scheme", scheme), description);
         }
     }
 }

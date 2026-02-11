@@ -1,6 +1,7 @@
 package io.a2a.spec;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Configuration for asynchronous push notifications of task updates.
@@ -25,7 +26,7 @@ import io.a2a.util.Assert;
  * @see MessageSendConfiguration for configuring push notifications on message send
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record PushNotificationConfig(String url, String token, AuthenticationInfo authentication, String id) {
+public record PushNotificationConfig(String url, @Nullable String token, @Nullable AuthenticationInfo authentication, @Nullable String id) {
 
     /**
      * Compact constructor for validation.
@@ -66,10 +67,10 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
      * authentication and identification.
      */
     public static class Builder {
-        private String url;
-        private String token;
-        private AuthenticationInfo authentication;
-        private String id;
+        private @Nullable String url;
+        private @Nullable String token;
+        private @Nullable AuthenticationInfo authentication;
+        private @Nullable String id;
 
         /** Creates an empty builder. */
         private Builder() {
@@ -138,7 +139,7 @@ public record PushNotificationConfig(String url, String token, AuthenticationInf
          * @throws IllegalArgumentException if url is null
          */
         public PushNotificationConfig build() {
-            return new PushNotificationConfig(url, token, authentication, id);
+            return new PushNotificationConfig(Assert.checkNotNullParam("url", url), token, authentication, id);
         }
     }
 }

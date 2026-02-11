@@ -21,8 +21,8 @@ import org.jspecify.annotations.Nullable;
  * @see PushNotificationConfig for push notification options
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer historyLength,
-        PushNotificationConfig pushNotificationConfig, Boolean blocking) {
+public record MessageSendConfiguration(@Nullable List<String> acceptedOutputModes, @Nullable Integer historyLength,
+        @Nullable PushNotificationConfig pushNotificationConfig, Boolean blocking) {
 
     /**
      * Compact constructor for validation.
@@ -56,9 +56,9 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
      */
     public static class Builder {
 
-        List<String> acceptedOutputModes;
-        Integer historyLength;
-        PushNotificationConfig pushNotificationConfig;
+        @Nullable List<String> acceptedOutputModes;
+        @Nullable Integer historyLength;
+        @Nullable PushNotificationConfig pushNotificationConfig;
         Boolean blocking = false;
 
         /**
@@ -121,7 +121,11 @@ public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer
          * @return a new message send configuration instance
          */
         public MessageSendConfiguration build() {
-            return new MessageSendConfiguration(acceptedOutputModes, historyLength, pushNotificationConfig, blocking);
+            return new MessageSendConfiguration(
+                    acceptedOutputModes,
+                    historyLength,
+                    pushNotificationConfig,
+                    blocking);
         }
     }
 }

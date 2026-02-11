@@ -10,6 +10,7 @@ import java.util.Map;
 
 import com.google.gson.annotations.SerializedName;
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An event sent by the agent to notify the client of a change in a task's status.
@@ -21,14 +22,8 @@ import io.a2a.util.Assert;
  * @param isFinal whether this is a final status
  * @param metadata additional metadata (optional)
  */
-public record TaskStatusUpdateEvent(
-        String taskId,
-        TaskStatus status,
-        String contextId,
-        @SerializedName("final")
-        boolean isFinal,
-        Map<String, Object> metadata
-        ) implements EventKind, StreamingEventKind, UpdateEvent {
+public record TaskStatusUpdateEvent(String taskId, TaskStatus status, String contextId,
+        @SerializedName("final") boolean isFinal, @Nullable Map<String, Object> metadata) implements EventKind, StreamingEventKind, UpdateEvent {
 
     /**
      * The identifier when used in streaming responses
@@ -91,10 +86,10 @@ public record TaskStatusUpdateEvent(
      */
     public static class Builder {
 
-        private String taskId;
-        private TaskStatus status;
-        private String contextId;
-        private Map<String, Object> metadata;
+        private @Nullable String taskId;
+        private @Nullable TaskStatus status;
+        private @Nullable String contextId;
+        private @Nullable Map<String, Object> metadata;
 
         private Builder() {
         }
@@ -156,7 +151,12 @@ public record TaskStatusUpdateEvent(
          * @return a new TaskStatusUpdateEvent instance
          */
         public TaskStatusUpdateEvent build() {
-            return new TaskStatusUpdateEvent(taskId, status, contextId, status.state().isFinal(), metadata);
+            return new TaskStatusUpdateEvent(
+                    Assert.checkNotNullParam("taskId", taskId),
+                    Assert.checkNotNullParam("status", status),
+                    Assert.checkNotNullParam("contextId", contextId),
+                    Assert.checkNotNullParam("status", status).state().isFinal(),
+                    metadata);
         }
     }
 }

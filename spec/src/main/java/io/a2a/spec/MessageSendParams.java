@@ -3,6 +3,7 @@ package io.a2a.spec;
 import java.util.Map;
 
 import io.a2a.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Parameters for sending a message to an agent in the A2A Protocol.
@@ -20,8 +21,8 @@ import io.a2a.util.Assert;
  * @see MessageSendConfiguration for available configuration options
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record MessageSendParams(Message message, MessageSendConfiguration configuration,
-                                Map<String, Object> metadata, String tenant) {
+public record MessageSendParams(Message message, @Nullable MessageSendConfiguration configuration,
+                                @Nullable Map<String, Object> metadata, String tenant) {
 
     /**
      * Compact constructor for validation.
@@ -44,7 +45,7 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
      * @param configuration optional configuration for message processing
      * @param metadata optional metadata
      */
-     public MessageSendParams(Message message, MessageSendConfiguration configuration, Map<String, Object> metadata) {
+     public MessageSendParams(Message message, @Nullable MessageSendConfiguration configuration, @Nullable Map<String, Object> metadata) {
         this(message, configuration, metadata, "");
     }
 
@@ -64,10 +65,10 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
      * configuration and metadata.
      */
     public static class Builder {
-        Message message;
-        MessageSendConfiguration configuration;
-        Map<String, Object> metadata;
-        String tenant;
+        @Nullable Message message;
+        @Nullable MessageSendConfiguration configuration;
+        @Nullable Map<String, Object> metadata;
+        @Nullable String tenant;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -92,7 +93,7 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
          * @param configuration the message send configuration
          * @return this builder
          */
-        public Builder configuration(MessageSendConfiguration configuration) {
+        public Builder configuration(@Nullable MessageSendConfiguration configuration) {
             this.configuration = configuration;
             return this;
         }
@@ -103,7 +104,7 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
          * @param metadata arbitrary key-value metadata
          * @return this builder
          */
-        public Builder metadata(Map<String, Object> metadata) {
+        public Builder metadata(@Nullable Map<String, Object> metadata) {
             this.metadata = metadata;
             return this;
         }
@@ -126,7 +127,11 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
          * @throws IllegalArgumentException if message is null
          */
         public MessageSendParams build() {
-            return new MessageSendParams(message, configuration, metadata, tenant == null ? "" : tenant);
+            return new MessageSendParams(
+                    Assert.checkNotNullParam("message", message),
+                    configuration,
+                    metadata,
+                    tenant == null ? "" : tenant);
         }
     }
 }
