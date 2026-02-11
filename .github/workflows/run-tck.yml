@@ -5,18 +5,15 @@ on:
   push:
     branches:
       - main
-      - 0.3.x
   pull_request:
     branches:
-# Disable TCK runs on main PRs for now, since we are making spec and TCK updates for 1.0.0
-#      - main
-      - 0.3.x
+      - main
   workflow_dispatch:
 
 env:
   # TODO this is currently running the TCK off the main branch which included changes needed for 0.4.0
   # Tag/branch of the TCK
-  TCK_VERSION: main
+  TCK_VERSION: spec_1.0
   # Tell the TCK runner to report failure if the quality tests fail
   A2A_TCK_FAIL_ON_QUALITY: 1
   # Tell the TCK runner to report failure if the features tests fail
