@@ -887,16 +887,12 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testListTasksUnixMillisecondsTimestamp() {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
-        taskStore.save(MINIMAL_TASK, false);
 
-        // Unix milliseconds timestamp should be accepted
-        String timestampMillis = String.valueOf(System.currentTimeMillis() - 10000);
+        // Unix milliseconds timestamp are no longer accepted
         RestHandler.HTTPRestResponse response = handler.listTasks(null, null, null, null,
-                null, timestampMillis, null, "", callContext);
+                null, "1234567", null, "", callContext);
 
-        Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
-        Assertions.assertTrue(response.getBody().contains("tasks"));
+        Assertions.assertEquals(422, response.getStatusCode());
     }
 
     @Test

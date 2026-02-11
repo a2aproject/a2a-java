@@ -489,7 +489,7 @@ public class JSONRPCUtils {
         }
 
         // Extract field name if present in error message - check common prefixes
-        String[] prefixes = {"Cannot find field: ", "Invalid value for", "Invalid enum value:"};
+        String[] prefixes = {"Cannot find field: ", "Invalid value for", "Invalid enum value:", "Failed to parse"};
         for (String prefix : prefixes) {
             if (message.contains(prefix)) {
                 return new InvalidParamsJsonMappingException(ERROR_MESSAGE.formatted(message.substring(message.indexOf(prefix) + prefix.length())), id);

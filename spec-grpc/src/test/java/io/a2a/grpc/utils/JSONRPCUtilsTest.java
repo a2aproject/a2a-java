@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.gson.JsonSyntaxException;
 import io.a2a.jsonrpc.common.json.InvalidParamsJsonMappingException;
@@ -141,6 +142,42 @@ public class JSONRPCUtilsTest {
         );
         assertEquals(4, exception.getId());
         assertEquals(ERROR_MESSAGE.formatted("invalid_field in message a2a.v1.CreateTaskPushNotificationConfigRequest"), exception.getMessage());
+    }
+
+    @Test
+    public void testParseNumericalTimestampThrowsInvalidParamsJsonMappingException() {
+        String valideRequest = """
+            {
+              "jsonrpc": "2.0",
+              "method": "ListTasks",
+              "id": "1",
+              "params": {
+                "statusTimestampAfter": "2023-10-27T10:00:00Z"
+              }
+            }
+            """;
+        String invalidRequest = """
+            {
+              "jsonrpc": "2.0",
+              "method": "ListTasks",
+              "id": "2",
+              "params": {
+                "statusTimestampAfter": "1"
+              }
+            }
+            """;
+
+        try {
+            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(valideRequest, null);
+            assertEquals(1, request.getId());
+        } catch (JsonProcessingException e) {
+            fail(e);
+        }
+        InvalidParamsJsonMappingException exception = assertThrows(
+                InvalidParamsJsonMappingException.class,
+                () -> JSONRPCUtils.parseRequestBody(invalidRequest, null)
+        );
+        assertEquals(2, exception.getId());
     }
 
     @Test

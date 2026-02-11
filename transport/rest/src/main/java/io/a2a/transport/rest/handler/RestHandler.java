@@ -268,25 +268,12 @@ public class RestHandler {
             paramsBuilder.tenant(tenant);
             if (statusTimestampAfter != null) {
                 try {
-                    // Try parsing as Unix milliseconds first (integer)
-                    long millis = Long.parseLong(statusTimestampAfter);
-                    if (millis < 0L) {
-                        Map<String, Object> errorData = new HashMap<>();
-                        errorData.put("parameter", "statusTimestampAfter");
-                        errorData.put("reason", "Must be a non-negative timestamp value, got: " + millis);
-                        throw new InvalidParamsError(null, "Invalid params", errorData);
-                    }
-                    paramsBuilder.statusTimestampAfter(Instant.ofEpochMilli(millis));
-                } catch (NumberFormatException nfe) {
-                    // Fall back to ISO-8601 format
-                    try {
-                        paramsBuilder.statusTimestampAfter(Instant.parse(statusTimestampAfter));
-                    } catch (DateTimeParseException e) {
-                        Map<String, Object> errorData = new HashMap<>();
-                        errorData.put("parameter", "lastUpdatedAfter");
-                        errorData.put("reason", "Must be valid Unix milliseconds or ISO-8601 timestamp");
-                        throw new InvalidParamsError(null, "Invalid params", errorData);
-                    }
+                    paramsBuilder.statusTimestampAfter(Instant.parse(statusTimestampAfter));
+                } catch (DateTimeParseException e) {
+                    Map<String, Object> errorData = new HashMap<>();
+                    errorData.put("parameter", "statusTimestampAfter");
+                    errorData.put("reason", "Must be an ISO-8601 timestamp");
+                    throw new InvalidParamsError(null, "Invalid params", errorData);
                 }
             }
             if (includeArtifacts != null) {
