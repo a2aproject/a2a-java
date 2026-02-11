@@ -110,7 +110,6 @@ public class JSONRPCHandler {
         }
     }
 
-
     public Flow.Publisher<SendStreamingMessageResponse> onMessageSendStream(
             SendStreamingMessageRequest request, ServerCallContext context) {
         if (!agentCard.capabilities().streaming()) {

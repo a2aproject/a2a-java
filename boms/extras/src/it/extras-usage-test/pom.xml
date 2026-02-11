@@ -50,6 +50,22 @@
         </dependency>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-opentelemetry-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-opentelemetry-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-opentelemetry-client-propagation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-opentelemetry-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
         </dependency>
         <dependency>

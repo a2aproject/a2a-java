@@ -17,7 +17,8 @@ public class ExtrasBomVerifier extends DynamicBomVerifier {
         "tck/",        // TCK test suite
         "tests/",      // Integration tests
         "extras/queue-manager-replicated/tests-multi-instance/",   // Test harness applications
-        "extras/queue-manager-replicated/tests-single-instance/"   // Test harness applications
+        "extras/queue-manager-replicated/tests-single-instance/",   // Test harness applications
+        "extras/opentelemetry/integration-tests/"   // Test harness applications
         // Note: extras/ production modules are NOT in this list - we want to verify those classes load
     );
 

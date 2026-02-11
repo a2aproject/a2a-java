@@ -35,10 +35,15 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record Message(Role role, List<Part<?>> parts,
-                      String messageId, @Nullable String contextId,
-                      @Nullable String taskId, @Nullable List<String> referenceTaskIds,
-                      @Nullable Map<String, Object> metadata, @Nullable List<String> extensions
-) implements EventKind, StreamingEventKind {
+        String messageId, @Nullable
+        String contextId,
+        @Nullable
+        String taskId, @Nullable
+        List<String> referenceTaskIds,
+        @Nullable
+        Map<String, Object> metadata, @Nullable
+        List<String> extensions
+        ) implements EventKind, StreamingEventKind {
 
     /**
      * The identifier when used in streaming responses
@@ -106,7 +111,6 @@ public record Message(Role role, List<Part<?>> parts,
          * Message originated from the user (client side).
          */
         USER("user"),
-
         /**
          * Message originated from the agent (server side).
          */
@@ -145,14 +149,22 @@ public record Message(Role role, List<Part<?>> parts,
      */
     public static class Builder {
 
-        private @Nullable Role role;
-        private @Nullable List<Part<?>> parts;
-        private @Nullable String messageId;
-        private @Nullable String contextId;
-        private @Nullable String taskId;
-        private @Nullable List<String> referenceTaskIds;
-        private @Nullable Map<String, Object> metadata;
-        private @Nullable List<String> extensions;
+        private @Nullable
+        Role role;
+        private @Nullable
+        List<Part<?>> parts;
+        private @Nullable
+        String messageId;
+        private @Nullable
+        String contextId;
+        private @Nullable
+        String taskId;
+        private @Nullable
+        List<String> referenceTaskIds;
+        private @Nullable
+        Map<String, Object> metadata;
+        private @Nullable
+        List<String> extensions;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -204,7 +216,7 @@ public record Message(Role role, List<Part<?>> parts,
          * @param parts the message parts (required, must not be empty)
          * @return this builder for method chaining
          */
-        public Builder parts(Part<?>...parts) {
+        public Builder parts(Part<?>... parts) {
             this.parts = List.of(parts);
             return this;
         }
@@ -287,8 +299,8 @@ public record Message(Role role, List<Part<?>> parts,
          */
         public Message build() {
             return new Message(
-                    Assert.checkNotNullParam("role", role), 
-                    Assert.checkNotNullParam("parts", parts), 
+                    Assert.checkNotNullParam("role", role),
+                    Assert.checkNotNullParam("parts", parts),
                     messageId == null ? UUID.randomUUID().toString() : messageId,
                     contextId,
                     taskId,

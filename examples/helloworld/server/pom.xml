@@ -12,7 +12,7 @@
 
     <artifactId>a2a-java-sdk-examples-server</artifactId>
 
-    <name>Java SDK A2A Examples</name>
+    <name>Java SDK A2A Examples - HelloWorld Server</name>
     <description>Examples for the Java SDK for the Agent2Agent Protocol (A2A)</description>
 
     <dependencies>
@@ -28,6 +28,14 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-reference-grpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-reference-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise</groupId>
@@ -55,7 +63,31 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <jvmArgs>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmArgs>
+                </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>opentelemetry</id>
+            <dependencies>
+                <dependency>
+                    <groupId>io.github.a2asdk</groupId>
+                    <artifactId>a2a-java-sdk-opentelemetry-server</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-opentelemetry</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-observability-devservices-lgtm</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

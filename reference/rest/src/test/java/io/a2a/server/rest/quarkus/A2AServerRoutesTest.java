@@ -94,7 +94,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.sendMessage(anyString(), anyString(), any(ServerCallContext.class))).thenReturn(mockHttpResponse);
+        when(mockRestHandler.sendMessage(any(ServerCallContext.class), anyString(), anyString())).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -102,7 +102,7 @@ public class A2AServerRoutesTest {
         routes.sendMessage("{}", mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).sendMessage(eq("{}"), anyString(), contextCaptor.capture());
+        verify(mockRestHandler).sendMessage(contextCaptor.capture(), anyString(), eq("{}"));
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(SEND_MESSAGE_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -115,7 +115,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.sendStreamingMessage(anyString(), anyString(), any(ServerCallContext.class)))
+        when(mockRestHandler.sendStreamingMessage(any(ServerCallContext.class), anyString(), anyString()))
                 .thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -124,7 +124,7 @@ public class A2AServerRoutesTest {
         routes.sendMessageStreaming("{}", mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).sendStreamingMessage(eq("{}"), anyString(), contextCaptor.capture());
+        verify(mockRestHandler).sendStreamingMessage(contextCaptor.capture(), anyString(), eq("{}"));
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(SEND_STREAMING_MESSAGE_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -138,7 +138,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{test:value}");
-        when(mockRestHandler.getTask(anyString(), any(), anyString(), any(ServerCallContext.class))).thenReturn(mockHttpResponse);
+        when(mockRestHandler.getTask(any(ServerCallContext.class), anyString(), anyString(), any())).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -146,7 +146,7 @@ public class A2AServerRoutesTest {
         routes.getTask(mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).getTask(eq("task123"), any(), anyString(), contextCaptor.capture());
+        verify(mockRestHandler).getTask(contextCaptor.capture(), anyString(), eq("task123"), any());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(GET_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -160,7 +160,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.cancelTask(anyString(), anyString(), any(ServerCallContext.class))).thenReturn(mockHttpResponse);
+        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString())).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -168,7 +168,7 @@ public class A2AServerRoutesTest {
         routes.cancelTask(mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).cancelTask(eq("task123"), anyString(), contextCaptor.capture());
+        verify(mockRestHandler).cancelTask(contextCaptor.capture(), anyString(), eq("task123"));
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(CANCEL_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -182,7 +182,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.subscribeToTask(anyString(), anyString(), any(ServerCallContext.class)))
+        when(mockRestHandler.subscribeToTask(any(ServerCallContext.class), anyString(), anyString()))
                 .thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -191,7 +191,7 @@ public class A2AServerRoutesTest {
         routes.subscribeToTask(mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).subscribeToTask(eq("task123"), anyString(), contextCaptor.capture());
+        verify(mockRestHandler).subscribeToTask(contextCaptor.capture(), anyString(), eq("task123"));
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(SUBSCRIBE_TO_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -205,8 +205,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.CreateTaskPushNotificationConfiguration(anyString(), anyString(), anyString(),
-                any(ServerCallContext.class))).thenReturn(mockHttpResponse);
+        when(mockRestHandler.createTaskPushNotificationConfiguration(any(ServerCallContext.class), anyString(), anyString(), anyString())).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -214,7 +213,7 @@ public class A2AServerRoutesTest {
         routes.CreateTaskPushNotificationConfiguration("{}", mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).CreateTaskPushNotificationConfiguration(eq("task123"), eq("{}"), anyString(), contextCaptor.capture());
+        verify(mockRestHandler).createTaskPushNotificationConfiguration(contextCaptor.capture(), anyString(), eq("{}"), eq("task123"));
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -229,8 +228,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.getTaskPushNotificationConfiguration(anyString(), anyString(), anyString(),
-                any(ServerCallContext.class))).thenReturn(mockHttpResponse);
+        when(mockRestHandler.getTaskPushNotificationConfiguration(any(ServerCallContext.class), anyString(), anyString(), anyString())).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -238,8 +236,8 @@ public class A2AServerRoutesTest {
         routes.getTaskPushNotificationConfiguration(mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).getTaskPushNotificationConfiguration(eq("task123"), eq("config456"), anyString(),
-                contextCaptor.capture());
+        verify(mockRestHandler).getTaskPushNotificationConfiguration(contextCaptor.capture(), anyString(), eq("task123"),
+                eq("config456"));
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -253,7 +251,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.listTaskPushNotificationConfigurations(anyString(), anyInt(),  anyString(), anyString(), any(ServerCallContext.class)))
+        when(mockRestHandler.listTaskPushNotificationConfigurations(any(ServerCallContext.class), anyString(), anyString(), anyInt(), anyString()))
                 .thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -262,7 +260,7 @@ public class A2AServerRoutesTest {
         routes.listTaskPushNotificationConfigurations(mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).listTaskPushNotificationConfigurations(eq("task123"), anyInt(), anyString(), anyString(), contextCaptor.capture());
+        verify(mockRestHandler).listTaskPushNotificationConfigurations(contextCaptor.capture(), anyString(), eq("task123"), anyInt(), anyString());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
@@ -277,8 +275,7 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.deleteTaskPushNotificationConfiguration(anyString(), anyString(), anyString(),
-                any(ServerCallContext.class))).thenReturn(mockHttpResponse);
+        when(mockRestHandler.deleteTaskPushNotificationConfiguration(any(ServerCallContext.class), anyString(), anyString(), anyString())).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
@@ -286,8 +283,8 @@ public class A2AServerRoutesTest {
         routes.deleteTaskPushNotificationConfiguration(mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).deleteTaskPushNotificationConfiguration(eq("task123"), eq("config456"), anyString(),
-                contextCaptor.capture());
+        verify(mockRestHandler).deleteTaskPushNotificationConfiguration(contextCaptor.capture(), anyString(), eq("task123"),
+                eq("config456"));
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));

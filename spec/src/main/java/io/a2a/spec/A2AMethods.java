@@ -27,5 +27,6 @@ public interface A2AMethods {
     String SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD = "CreateTaskPushNotificationConfig";
     /** Method name for subscribing to task events. */
     String SUBSCRIBE_TO_TASK_METHOD = "SubscribeToTask";
+    
 
 }

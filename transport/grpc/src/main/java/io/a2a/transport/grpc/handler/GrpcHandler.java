@@ -57,15 +57,17 @@ import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.transport.grpc.context.GrpcContextKeys;
 import io.grpc.Context;
+import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import org.jspecify.annotations.Nullable;
 
 @Vetoed
 public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
     // Hook so testing can wait until streaming subscriptions are established.
     // Without this we get intermittent failures
-    private static volatile Runnable streamingSubscribedRunnable;
+    private static volatile @Nullable Runnable streamingSubscribedRunnable;
 
     private final AtomicBoolean initialised = new AtomicBoolean(false);
 
@@ -279,12 +281,14 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                                          ServerCallContext context) {
         CompletableFuture.runAsync(() -> {
             publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
-                private Flow.Subscription subscription;
+                private  Flow.@Nullable Subscription subscription;
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
                     this.subscription = subscription;
-                    subscription.request(1);
+                    if (this.subscription != null) {
+                        this.subscription.request(1);
+                    }
 
                     // Detect gRPC client disconnect and call EventConsumer.cancel() directly
                     // This stops the polling loop without relying on subscription cancellation propagation
@@ -318,17 +322,23 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                         if (isFinal) {
                             responseObserver.onCompleted();
                         } else {
-                            subscription.request(1);
+                            if (this.subscription != null) {
+                                subscription.request(1);
+                            }
                         }
                     } else {
-                        subscription.request(1);
+                        if (this.subscription != null) {
+                            this.subscription.request(1);
+                        }
                     }
                 }
 
                 @Override
                 public void onError(Throwable throwable) {
                     // Cancel upstream to stop EventConsumer when error occurs
-                    subscription.cancel();
+                    if (this.subscription != null) {
+                        subscription.cancel();
+                     }
                     if (throwable instanceof A2AError jsonrpcError) {
                         handleError(responseObserver, jsonrpcError);
                     } else {
@@ -412,8 +422,12 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                     if (grpcMetadata != null) {
                         state.put("grpc_metadata", grpcMetadata);
                     }
-                    
-                    String methodName = GrpcContextKeys.METHOD_NAME_KEY.get(currentContext);
+                    Map<String, String> headers= new HashMap<>();
+                    for(String key : grpcMetadata.keys()) {
+                        headers.put(key, grpcMetadata.get(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER)));
+                    }
+                    state.put("headers", headers);
+                    String methodName = GrpcContextKeys.GRPC_METHOD_NAME_KEY.get(currentContext);
                     if (methodName != null) {
                         state.put("grpc_method_name", methodName);
                     }
@@ -582,7 +596,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      *
      * @return the version header value, or null if not available
      */
-    private String getVersionFromContext() {
+    private @Nullable String getVersionFromContext() {
         try {
             return GrpcContextKeys.VERSION_HEADER_KEY.get();
         } catch (Exception e) {
@@ -598,7 +612,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      *
      * @return the extensions header value, or null if not available
      */
-    private String getExtensionsFromContext() {
+    private @Nullable String getExtensionsFromContext() {
         try {
             return GrpcContextKeys.EXTENSIONS_HEADER_KEY.get();
         } catch (Exception e) {
@@ -618,7 +632,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      * @param key the context key to retrieve
      * @return the context value, or null if not available
      */
-    private static <T> T getFromContext(Context.Key<T> key) {
+    private static @Nullable <T> T getFromContext(Context.Key<T> key) {
         try {
             return key.get();
         } catch (Exception e) {
@@ -633,7 +647,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      * 
      * @return the gRPC Metadata object, or null if not available
      */
-    protected static io.grpc.Metadata getCurrentMetadata() {
+    protected static io.grpc.@Nullable Metadata getCurrentMetadata() {
         return getFromContext(GrpcContextKeys.METADATA_KEY);
     }
     
@@ -643,8 +657,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      * 
      * @return the method name, or null if not available
      */
-    protected static String getCurrentMethodName() {
-        return getFromContext(GrpcContextKeys.METHOD_NAME_KEY);
+    protected static @Nullable String getCurrentMethodName() {
+        return getFromContext(GrpcContextKeys.GRPC_METHOD_NAME_KEY);
     }
     
     /**
@@ -653,7 +667,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      * 
      * @return the peer information, or null if not available
      */
-    protected static String getCurrentPeerInfo() {
+    protected static @Nullable String getCurrentPeerInfo() {
         return getFromContext(GrpcContextKeys.PEER_INFO_KEY);
     }
 }

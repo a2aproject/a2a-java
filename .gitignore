@@ -7,6 +7,9 @@ release.properties
 .flattened-pom.xml
 *.args
 
+#Claude
+CLAUDE.md
+
 # Eclipse
 .project
 .classpath
@@ -19,8 +22,10 @@ bin/
 *.iml
 *.iws
 
-# NetBeans
+# Apache NetBeans
 nb-configuration.xml
+nbactions.xml
+nbproject/
 
 # Visual Studio Code
 .vscode
@@ -44,10 +49,6 @@ nb-configuration.xml
 /.quarkus/cli/plugins/
 # TLS Certificates
 .certs/
-
-#Apache NetBeans
-nbproject/
-nbactions.xml
 
 # Private Claude config
 .claude/

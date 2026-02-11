@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.a2asdk</groupId>
+        <artifactId>a2a-java-sdk-parent</artifactId>
+        <version>1.0.0.Alpha2-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>a2a-java-sdk-opentelemetry-parent</artifactId>
+    <packaging>pom</packaging>
+
+    <name>A2A Java SDK :: Extras :: Opentelemetry :: Parent</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - Extras - Opentelemetry</description>
+
+    <properties>
+        <version.org.eclipse.microprofile.telemetry>2.0.1</version.org.eclipse.microprofile.telemetry>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.microprofile.telemetry</groupId>
+            <artifactId>microprofile-telemetry-api</artifactId>
+            <version>${version.org.eclipse.microprofile.telemetry}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <modules>
+        <module>common</module>
+        <module>client-propagation</module>
+        <module>client</module>
+        <module>server</module>
+        <module>integration-tests</module>
+    </modules>
+
+</project>
