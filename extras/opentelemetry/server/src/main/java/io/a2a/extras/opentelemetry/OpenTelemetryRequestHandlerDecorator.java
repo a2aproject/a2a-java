@@ -298,8 +298,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         if (params.taskId() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, params.taskId());
         }
-        if (params.pushNotificationConfig() != null && params.pushNotificationConfig().id() != null) {
-            spanBuilder.setAttribute(GENAI_CONFIG_ID, params.pushNotificationConfig().id());
+        if (params.config() != null && params.config().id() != null) {
+            spanBuilder.setAttribute(GENAI_CONFIG_ID, params.config().id());
         }
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, params.toString());
@@ -331,11 +331,11 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
                 .setSpanKind(SpanKind.SERVER)
                 .setAttribute(GENAI_OPERATION_NAME, A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
-        if (params.id() != null) {
-            spanBuilder.setAttribute(GENAI_TASK_ID, params.id());
+        if (params.taskId() != null) {
+            spanBuilder.setAttribute(GENAI_TASK_ID, params.taskId());
         }
-        if (params.pushNotificationConfigId() != null) {
-            spanBuilder.setAttribute(GENAI_CONFIG_ID, params.pushNotificationConfigId());
+        if (params.id() != null) {
+            spanBuilder.setAttribute(GENAI_CONFIG_ID, params.id());
         }
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, params.toString());
@@ -436,8 +436,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, params.toString());
         }
-        if (params.id() != null) {
-            spanBuilder.setAttribute(GENAI_TASK_ID, params.id());
+        if (params.taskId() != null) {
+            spanBuilder.setAttribute(GENAI_TASK_ID, params.taskId());
         }
 
         Span span = spanBuilder.startSpan();

@@ -54,6 +54,11 @@ public record TaskStatus(TaskState state, @Nullable Message message, OffsetDateT
         this.message = message;
     }
 
+    /**
+     * Returns the timestamp when this status was created.
+     *
+     * @return the UTC timestamp of the status
+     */
     public OffsetDateTime timestamp() {
         return timestamp;
     }

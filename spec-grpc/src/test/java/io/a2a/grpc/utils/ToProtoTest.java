@@ -319,8 +319,8 @@ public class ToProtoTest {
         // Test round-trip conversion
         DeleteTaskPushNotificationConfigParams convertedBack =
                 ProtoUtils.FromProto.deleteTaskPushNotificationConfigParams(result);
-        assertEquals("task-123", convertedBack.id());
-        assertEquals("config-456", convertedBack.pushNotificationConfigId());
+        assertEquals("task-123", convertedBack.taskId());
+        assertEquals("config-456", convertedBack.id());
     }
 
     @Test
