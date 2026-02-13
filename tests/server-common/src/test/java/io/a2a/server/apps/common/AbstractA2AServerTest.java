@@ -19,6 +19,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.ws.rs.core.MediaType;
@@ -617,7 +619,6 @@ public abstract class AbstractA2AServerTest {
                 .filter(i -> getTransportProtocol().equals(i.protocolBinding()))
                 .findFirst();
         assertTrue(transportInterface.isPresent());
-        System.out.println("transportInterface = " + transportInterface);
         assertEquals(getTransportUrl(),transportInterface.get().url());
         assertEquals("1.0", agentCard.version());
         assertEquals("http://example.com/docs", agentCard.documentationUrl());
@@ -2449,6 +2450,143 @@ public abstract class AbstractA2AServerTest {
                 // Ignore cleanup errors - task might not have been persisted
             }
         }
+    }
+
+    /**
+     * Test agent-to-agent communication where AgentExecutor uses a client
+     * to delegate requests to another agent (same server, for testing).
+     * <p>
+     * This test verifies:
+     * <ul>
+     *   <li>Transport type is correctly passed via ServerCallContext state</li>
+     *   <li>AgentExecutor can create a client with matching transport</li>
+     *   <li>Delegation pattern ("delegate:" prefix) is recognized</li>
+     *   <li>Client successfully communicates with same server</li>
+     *   <li>Artifacts from delegated task are extracted and returned</li>
+     *   <li>Local handling works without delegation</li>
+     * </ul>
+     */
+    @Test
+    public void testAgentToAgentCommunication() throws Exception {
+        // Test 1: Delegation pattern (with "delegate:" prefix)
+        String delegationTaskId = "agent-to-agent-test-" + UUID.randomUUID();
+
+        Message delegationMessage = Message.builder()
+                .taskId(delegationTaskId)
+                .contextId("agent-to-agent-context")
+                .role(Message.Role.USER)
+                .parts(new TextPart("delegate:What is 2+2?"))
+                .build();
+
+        CountDownLatch delegationLatch = new CountDownLatch(1);
+        AtomicReference<Task> delegationResultRef = new AtomicReference<>();
+        AtomicReference<Throwable> delegationErrorRef = new AtomicReference<>();
+
+        BiConsumer<ClientEvent, AgentCard> delegationConsumer = (event, agentCard) -> {
+            Task task = null;
+            if (event instanceof TaskEvent taskEvent) {
+                task = taskEvent.getTask();
+            } else if (event instanceof TaskUpdateEvent taskUpdateEvent) {
+                task = taskUpdateEvent.getTask();
+            }
+
+            if (task != null && task.status().state().isFinal()) {
+                delegationResultRef.set(task);
+                delegationLatch.countDown();
+            }
+        };
+
+        getClient().sendMessage(delegationMessage, List.of(delegationConsumer), error -> {
+            delegationErrorRef.set(error);
+            delegationLatch.countDown();
+        });
+
+        assertTrue(delegationLatch.await(30, TimeUnit.SECONDS), "Delegation should complete within timeout");
+
+        Task delegationResult = delegationResultRef.get();
+
+        // Only fail on errors if we didn't get a successful result
+        // (errors can occur after completion due to stream cleanup)
+        if (delegationResult == null && delegationErrorRef.get() != null) {
+            fail("Delegation failed: " + delegationErrorRef.get().getMessage());
+        }
+
+        assertNotNull(delegationResult, "Delegation task should not be null");
+        assertEquals(TaskState.COMPLETED, delegationResult.status().state(),
+                "Delegation task should be completed");
+        assertNotNull(delegationResult.artifacts(), "Delegation should have artifacts");
+        assertFalse(delegationResult.artifacts().isEmpty(), "Delegation should have at least one artifact");
+
+        // Extract text from result
+        String delegatedText = extractTextFromTask(delegationResult);
+        assertTrue(delegatedText.contains("Handled locally:"),
+                "Delegated content should have been handled locally by target agent. Got: " + delegatedText);
+
+        // Verify the task ID is the original one (not the delegated task's ID)
+        assertEquals(delegationTaskId, delegationResult.id(),
+                "Task ID should be the original task ID, not the delegated task's ID");
+
+        // Test 2: Local handling (without "delegate:" prefix)
+        String localTaskId = "agent-to-agent-test-" + UUID.randomUUID();
+
+        Message localMessage = Message.builder()
+                .taskId(localTaskId)
+                .contextId("agent-to-agent-context")
+                .role(Message.Role.USER)
+                .parts(new TextPart("Hello directly"))
+                .build();
+
+        CountDownLatch localLatch = new CountDownLatch(1);
+        AtomicReference<Task> localResultRef = new AtomicReference<>();
+        AtomicReference<Throwable> localErrorRef = new AtomicReference<>();
+
+        BiConsumer<ClientEvent, AgentCard> localConsumer = (event, agentCard) -> {
+            Task task = null;
+            if (event instanceof TaskEvent taskEvent) {
+                task = taskEvent.getTask();
+            } else if (event instanceof TaskUpdateEvent taskUpdateEvent) {
+                task = taskUpdateEvent.getTask();
+            }
+
+            if (task != null && task.status().state().isFinal()) {
+                localResultRef.set(task);
+                localLatch.countDown();
+            }
+        };
+
+        getClient().sendMessage(localMessage, List.of(localConsumer), error -> {
+            localErrorRef.set(error);
+            localLatch.countDown();
+        });
+
+        assertTrue(localLatch.await(30, TimeUnit.SECONDS), "Local handling should complete within timeout");
+        assertNull(localErrorRef.get(), "Local handling should not have errors");
+
+        Task localResult = localResultRef.get();
+        assertNotNull(localResult, "Local task should not be null");
+        assertEquals(TaskState.COMPLETED, localResult.status().state(),
+                "Local task should be completed");
+
+        String localText = extractTextFromTask(localResult);
+        assertTrue(localText.contains("Handled locally: Hello directly"),
+                "Should be handled locally without delegation. Got: " + localText);
+    }
+
+    /**
+     * Extracts all text from a task's artifacts.
+     *
+     * @param task the task containing artifacts
+     * @return concatenated text from all TextParts in all artifacts
+     */
+    private String extractTextFromTask(Task task) {
+        if (task.artifacts() == null || task.artifacts().isEmpty()) {
+            return "";
+        }
+        return task.artifacts().stream()
+                .flatMap(artifact -> artifact.parts().stream())
+                .filter(part -> part instanceof TextPart)
+                .map(part -> ((TextPart) part).text())
+                .collect(Collectors.joining("\n"));
     }
 
 }

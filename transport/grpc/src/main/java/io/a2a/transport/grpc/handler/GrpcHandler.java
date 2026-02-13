@@ -2,6 +2,7 @@ package io.a2a.transport.grpc.handler;
 
 import static io.a2a.grpc.utils.ProtoUtils.FromProto;
 import static io.a2a.grpc.utils.ProtoUtils.ToProto;
+import static io.a2a.server.ServerCallContext.TRANSPORT_KEY;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,6 +54,7 @@ import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
+import io.a2a.spec.TransportProtocol;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.transport.grpc.context.GrpcContextKeys;
@@ -403,7 +405,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             // This handles both CDI injection scenarios and test scenarios where callContextFactory is null
             User user = UnauthenticatedUser.INSTANCE;
             Map<String, Object> state = new HashMap<>();
-            
+            state.put(TRANSPORT_KEY, TransportProtocol.GRPC);
+
             // Enhanced gRPC context access - equivalent to Python's grpc.aio.ServicerContext
             // The A2AExtensionsInterceptor captures ServerCall + Metadata and stores them in gRPC Context
             // This provides proper equivalence to Python's ServicerContext for metadata access
