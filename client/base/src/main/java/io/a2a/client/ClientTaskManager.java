@@ -115,10 +115,7 @@ public class ClientTaskManager {
      */
     public Task updateWithMessage(Message message, Task task) {
         Task.Builder taskBuilder = Task.builder(task);
-        List<Message> history = task.history();
-        if (history == null) {
-            history = new ArrayList<>();
-        }
+        List<Message> history = new ArrayList<>(task.history());
         if (task.status().message() != null) {
             history.add(task.status().message());
             taskBuilder.status(new TaskStatus(task.status().state(), null, task.status().timestamp()));
