@@ -18,6 +18,9 @@ jobs:
       matrix:
         java-version: ['17', '21', '25']
     steps:
+    # 'ubuntu-latest' should set up Docker, but apparently it isn't guaranteed
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
     - uses: actions/checkout@v4
     - name: Set up JDK ${{ matrix.java-version }}
       uses: actions/setup-java@v4
