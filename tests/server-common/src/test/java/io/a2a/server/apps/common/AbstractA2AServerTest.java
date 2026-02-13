@@ -2453,8 +2453,11 @@ public abstract class AbstractA2AServerTest {
     }
 
     /**
-     * Test agent-to-agent communication where AgentExecutor uses a client
-     * to delegate requests to another agent (same server, for testing).
+     * Test agent-to-agent communication with delegation pattern.
+     * <p>
+     * Verifies that an AgentExecutor can use a client to delegate work to another agent
+     * by using the "delegate:" prefix. The delegated request is forwarded to another agent
+     * on the same server, and the artifacts from the delegated task are extracted and returned.
      * <p>
      * This test verifies:
      * <ul>
@@ -2463,12 +2466,11 @@ public abstract class AbstractA2AServerTest {
      *   <li>Delegation pattern ("delegate:" prefix) is recognized</li>
      *   <li>Client successfully communicates with same server</li>
      *   <li>Artifacts from delegated task are extracted and returned</li>
-     *   <li>Local handling works without delegation</li>
+     *   <li>Original task ID is preserved (not replaced by delegated task ID)</li>
      * </ul>
      */
     @Test
-    public void testAgentToAgentCommunication() throws Exception {
-        // Test 1: Delegation pattern (with "delegate:" prefix)
+    public void testAgentToAgentDelegation() throws Exception {
         String delegationTaskId = "agent-to-agent-test-" + UUID.randomUUID();
 
         Message delegationMessage = Message.builder()
@@ -2525,8 +2527,23 @@ public abstract class AbstractA2AServerTest {
         // Verify the task ID is the original one (not the delegated task's ID)
         assertEquals(delegationTaskId, delegationResult.id(),
                 "Task ID should be the original task ID, not the delegated task's ID");
+    }
 
-        // Test 2: Local handling (without "delegate:" prefix)
+    /**
+     * Test agent-to-agent communication with local handling (no delegation).
+     * <p>
+     * Verifies that requests without the "delegate:" prefix are handled locally
+     * by the agent without creating a client connection.
+     * <p>
+     * This test verifies:
+     * <ul>
+     *   <li>Requests without "delegate:" prefix are handled locally</li>
+     *   <li>No client-to-client communication occurs for local handling</li>
+     *   <li>Task completes successfully with expected content</li>
+     * </ul>
+     */
+    @Test
+    public void testAgentToAgentLocalHandling() throws Exception {
         String localTaskId = "agent-to-agent-test-" + UUID.randomUUID();
 
         Message localMessage = Message.builder()

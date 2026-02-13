@@ -17,17 +17,14 @@ import io.grpc.ManagedChannelBuilder;
 
 /**
  * Helper class for creating A2A clients for agent-to-agent communication testing.
- * Uses reflection to load transport-specific factory classes to avoid class loading
- * issues when transport dependencies aren't on the classpath.
+ * Uses inner classes to avoid class loading issues when transport dependencies aren't on the classpath.
  */
 public class AgentToAgentClientFactory {
 
     /**
      * Creates a client for the specified transport protocol.
-     * Uses reflection to load the appropriate factory class, ensuring that
-     * only the factory for the active transport is loaded.
      *
-     * @param agentCard
+     * @param agentCard the agentcard of the remote server
      * @param transportProtocol the transport protocol to use
      * @param serverUrl         the server URL (e.g., "http://localhost:8081" or "localhost:9090")
      * @return configured client
@@ -35,8 +32,6 @@ public class AgentToAgentClientFactory {
      */
     public static Client createClient(AgentCard agentCard, TransportProtocol transportProtocol, String serverUrl)
             throws A2AClientException {
-        String factoryClassName;
-
         ClientConfig clientConfig = ClientConfig.builder()
             .setStreaming(false)
             .build();
@@ -72,7 +67,6 @@ public class AgentToAgentClientFactory {
     }
 
     private static class GrpcClientEnhancer implements AgentToAgentClientFactory.ClientTransportEnhancer {
-
         @Override
         public void enhance(ClientBuilder clientBuilder, String serverUrl) {
             clientBuilder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder().channelFactory(target -> {
