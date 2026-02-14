@@ -20,9 +20,7 @@ public interface CreateTaskPushNotificationConfigMapper {
      * @param request the protobuf CreateTaskPushNotificationConfigRequest
      * @return domain TaskPushNotificationConfig
      */
-    @Mapping(target = "taskId", source = "taskId")
-    @Mapping(target = "pushNotificationConfig", expression = "java(mapPushNotificationConfigWithId(request))")
-    @Mapping(target = "tenant", source = "tenant")
+    @Mapping(target = "config", expression = "java(mapPushNotificationConfigWithId(request))")
     TaskPushNotificationConfig fromProto(CreateTaskPushNotificationConfigRequest request);
 
     /**
@@ -31,10 +29,7 @@ public interface CreateTaskPushNotificationConfigMapper {
      * @param config the domain TaskPushNotificationConfig
      * @return proto CreateTaskPushNotificationConfigRequest
      */
-    @Mapping(target = "taskId", source = "taskId")
     @Mapping(target = "configId", expression = "java(extractConfigId(config))")
-    @Mapping(target = "config", source = "pushNotificationConfig")
-    @Mapping(target = "tenant", source = "tenant")
     CreateTaskPushNotificationConfigRequest toProto(TaskPushNotificationConfig config);
 
     /**
@@ -44,7 +39,7 @@ public interface CreateTaskPushNotificationConfigMapper {
      * @return the extracted config ID
      */
     default String extractConfigId(TaskPushNotificationConfig config) {
-        return config.pushNotificationConfig() != null ? config.pushNotificationConfig().id() : null;
+        return config.config() != null ? config.config().id() : null;
     }
 
     /**

@@ -554,8 +554,8 @@ public abstract class AbstractA2AServerTest {
                             MINIMAL_TASK.id(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "");
             TaskPushNotificationConfig config = getClient().createTaskPushNotificationConfiguration(taskPushConfig);
             assertEquals(MINIMAL_TASK.id(), config.taskId());
-            assertEquals("http://example.com", config.pushNotificationConfig().url());
-            assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", config.pushNotificationConfig().id());
+            assertEquals("http://example.com", config.config().url());
+            assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", config.config().id());
         } catch (A2AClientException e) {
             fail("Unexpected exception during set push notification test: " + e.getMessage(), e);
         } finally {
@@ -578,7 +578,7 @@ public abstract class AbstractA2AServerTest {
             TaskPushNotificationConfig config = getClient().getTaskPushNotificationConfiguration(
                     new GetTaskPushNotificationConfigParams(MINIMAL_TASK.id(), "c295ea44-7543-4f78-b524-7a38915ad6e4"));
             assertEquals(MINIMAL_TASK.id(), config.taskId());
-            assertEquals("http://example.com", config.pushNotificationConfig().url());
+            assertEquals("http://example.com", config.config().url());
         } catch (A2AClientException e) {
             fail("Unexpected exception during get push notification test: " + e.getMessage(), e);
         } finally {

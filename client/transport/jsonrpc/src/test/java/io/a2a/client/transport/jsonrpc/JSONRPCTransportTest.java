@@ -309,7 +309,7 @@ public class JSONRPCTransportTest {
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
                 new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "c295ea44-7543-4f78-b524-7a38915ad6e4"), null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.config();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
@@ -339,7 +339,7 @@ public class JSONRPCTransportTest {
                                 .url("https://example.com/callback")
                                 .authentication(new AuthenticationInfo("jwt", null))
                                 .build(), ""), null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.config();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();

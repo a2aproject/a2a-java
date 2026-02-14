@@ -274,8 +274,8 @@ public class RestTransport implements ClientTransport {
                 = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
         builder.setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(request).getPushNotificationConfig())
                 .setTaskId(request.taskId());
-        if (request.pushNotificationConfig().id() != null) {
-            builder.setConfigId(request.pushNotificationConfig().id());
+        if (request.config().id() != null) {
+            builder.setConfigId(request.config().id());
         }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder, agentCard, context);
         try {
@@ -296,14 +296,14 @@ public class RestTransport implements ClientTransport {
         io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder builder
                 = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
         StringBuilder url = new StringBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()));
-        String configId = request.pushNotificationConfigId();
+        String configId = request.id();
         if (configId != null && !configId.isEmpty()) {
-            builder.setId(configId).setTaskId(request.id());
-            url.append(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId));
+            builder.setId(configId).setTaskId(request.taskId());
+            url.append(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.taskId(), configId));
         } else {
             // Use trailing slash to distinguish GET from LIST
-            builder.setTaskId(request.id());
-            url.append(String.format("/tasks/%1s/pushNotificationConfigs/", request.id()));
+            builder.setTaskId(request.taskId());
+            url.append(String.format("/tasks/%1s/pushNotificationConfigs/", request.taskId()));
         }
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
@@ -367,7 +367,7 @@ public class RestTransport implements ClientTransport {
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder,
                 agentCard, context);
         try {
-            String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId());
+            String url = Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.taskId(), request.id());
             A2AHttpClient.DeleteBuilder deleteBuilder = httpClient.createDelete().url(url);
             if (payloadAndHeaders.getHeaders() != null) {
                 for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {

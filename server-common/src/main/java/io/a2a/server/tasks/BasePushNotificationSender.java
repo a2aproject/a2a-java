@@ -87,7 +87,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
         List<CompletableFuture<Boolean>> dispatchResults = configs
                 .stream()
-                .map(pushConfig -> dispatch(event, pushConfig.pushNotificationConfig()))
+                .map(pushConfig -> dispatch(event, pushConfig.config()))
                 .toList();
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(dispatchResults.toArray(new CompletableFuture[0]));
         CompletableFuture<Boolean> dispatchResult = allFutures.thenApply(v -> dispatchResults.stream()

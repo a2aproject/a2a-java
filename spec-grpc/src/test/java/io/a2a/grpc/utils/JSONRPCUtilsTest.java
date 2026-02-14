@@ -59,8 +59,8 @@ public class JSONRPCUtilsTest {
         TaskPushNotificationConfig config = setRequest.getParams();
         assertNotNull(config);
         assertEquals("task-123", config.taskId());
-        assertNotNull(config.pushNotificationConfig());
-        assertEquals("https://example.com/callback", config.pushNotificationConfig().url());
+        assertNotNull(config.config());
+        assertEquals("https://example.com/callback", config.config().url());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class JSONRPCUtilsTest {
         assertEquals(2, getRequest.getId());
         assertEquals("GetTaskPushNotificationConfig", getRequest.getMethod());
         assertNotNull(getRequest.getParams());
-        assertEquals("task-123", getRequest.getParams().id());
+        assertEquals("task-123", getRequest.getParams().taskId());
     }
 
     @Test
@@ -329,7 +329,7 @@ public class JSONRPCUtilsTest {
         assertEquals(1, response.getId());
         assertNotNull(response.getResult());
         assertEquals("task-123", response.getResult().taskId());
-        assertEquals("https://example.com/callback", response.getResult().pushNotificationConfig().url());
+        assertEquals("https://example.com/callback", response.getResult().config().url());
     }
 
     @Test
@@ -356,7 +356,7 @@ public class JSONRPCUtilsTest {
         assertEquals(2, response.getId());
         assertNotNull(response.getResult());
         assertEquals("task-123", response.getResult().taskId());
-        assertEquals("https://example.com/callback", response.getResult().pushNotificationConfig().url());
+        assertEquals("https://example.com/callback", response.getResult().config().url());
     }
 
     @Test

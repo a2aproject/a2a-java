@@ -19,14 +19,14 @@ public interface TaskPushNotificationConfigMapper {
     /**
      * Converts domain TaskPushNotificationConfig to protobuf TaskPushNotificationConfig.
      *
-     * @param config the domain TaskPushNotificationConfig
+     * @param domain the domain TaskPushNotificationConfig
      * @return protobuf TaskPushNotificationConfig
      */
-    @Mapping(target = "id", expression = "java(extractId(config))")
+    @Mapping(target = "id", expression = "java(extractId(domain))")
     @Mapping(target = "taskId", source = "taskId")
-    @Mapping(target = "pushNotificationConfig", source = "pushNotificationConfig")
-    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(config.tenant() != null)")
-    io.a2a.grpc.TaskPushNotificationConfig toProto(TaskPushNotificationConfig config);
+    @Mapping(target = "pushNotificationConfig", source = "config")
+    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
+    io.a2a.grpc.TaskPushNotificationConfig toProto(TaskPushNotificationConfig domain);
 
     /**
      * Converts protobuf TaskPushNotificationConfig to domain TaskPushNotificationConfig.
@@ -35,7 +35,7 @@ public interface TaskPushNotificationConfigMapper {
      * @return domain TaskPushNotificationConfig
      */
     @Mapping(target = "taskId", source = "taskId")
-    @Mapping(target = "pushNotificationConfig", expression = "java(mapPushNotificationConfigWithId(proto))")
+    @Mapping(target = "config", expression = "java(mapPushNotificationConfigWithId(proto))")
     @Mapping(target = "tenant", expression = "java(proto.getTenant().isEmpty() ? null : proto.getTenant())")
     TaskPushNotificationConfig fromProto(io.a2a.grpc.TaskPushNotificationConfig proto);
 
@@ -46,7 +46,7 @@ public interface TaskPushNotificationConfigMapper {
      * @return the config ID
      */
     default String extractId(TaskPushNotificationConfig config) {
-        return config.pushNotificationConfig() != null ? config.pushNotificationConfig().id() : null;
+        return config.config()!= null ? config.config().id() : null;
     }
 
     /**

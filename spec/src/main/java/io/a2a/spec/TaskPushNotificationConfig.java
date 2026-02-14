@@ -15,23 +15,24 @@ import org.jspecify.annotations.Nullable;
  * management methods ({@code tasks/pushNotificationConfig/set}, {@code tasks/pushNotificationConfig/get}, etc.).
  *
  * @param taskId the unique identifier of the task to receive push notifications for (required)
- * @param pushNotificationConfig the push notification endpoint and authentication configuration (required)
+ * @param config the push notification endpoint and authentication configuration (required)
+ * @param tenant optional tenant identifier, provided as a path parameter
  * @see PushNotificationConfig for notification endpoint details
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record TaskPushNotificationConfig(String taskId, PushNotificationConfig pushNotificationConfig, @Nullable String tenant) {
+public record TaskPushNotificationConfig(String taskId, PushNotificationConfig config, @Nullable String tenant) {
 
     /**
      * Compact constructor for validation.
      * Validates that required parameters are not null.
      *
      * @param taskId the task identifier
-     * @param pushNotificationConfig the push notification configuration
+     * @param config the push notification configuration
      * @param tenant the tenant identifier
      */
     public TaskPushNotificationConfig {
         Assert.checkNotNullParam("taskId", taskId);
-        Assert.checkNotNullParam("pushNotificationConfig", pushNotificationConfig);
-        Assert.checkNotNullParam("configId", pushNotificationConfig.id());
+        Assert.checkNotNullParam("config", config);
+        Assert.checkNotNullParam("configId", config.id());
     }
 }

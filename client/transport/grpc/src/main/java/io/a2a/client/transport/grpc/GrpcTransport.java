@@ -233,7 +233,7 @@ public class GrpcTransport implements ClientTransport {
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        String configId = request.pushNotificationConfig().id();
+        String configId = request.config().id();
         io.a2a.grpc.CreateTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder()
                 .setTaskId(request.taskId())
                 .setConfig(ToProto.taskPushNotificationConfig(request).getPushNotificationConfig())
@@ -254,15 +254,15 @@ public class GrpcTransport implements ClientTransport {
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request,
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
-        checkNotNullParam("taskId", request.id());
-        if(request.pushNotificationConfigId() == null) {
+        checkNotNullParam("taskId", request.taskId());
+        if(request.id() == null) {
              throw new IllegalArgumentException("Id must not be null");
         }
 
         io.a2a.grpc.GetTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder()
-                .setTaskId(request.id())
+                .setTaskId(request.taskId())
                 .setTenant(resolveTenant(request.tenant()))
-                .setId(request.pushNotificationConfigId())
+                .setId(request.id())
                 .build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, grpcRequest, agentCard, context);
 
@@ -304,8 +304,8 @@ public class GrpcTransport implements ClientTransport {
         checkNotNullParam("request", request);
 
         io.a2a.grpc.DeleteTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder()
-                .setTaskId(request.id())
-                .setId(request.pushNotificationConfigId())
+                .setTaskId(request.taskId())
+                .setId(request.id())
                 .setTenant(resolveTenant(request.tenant()))
                 .build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, grpcRequest, agentCard, context);

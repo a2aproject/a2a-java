@@ -41,6 +41,13 @@ public class Utils {
     private static final Logger log = Logger.getLogger(Utils.class.getName());
 
     /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
+    private Utils() {
+        // Utility class - no instances
+    }
+
+    /**
      * Returns the provided value if non-null, otherwise returns the default value.
      * <p>
      * This is a null-safe utility for providing default values when a parameter

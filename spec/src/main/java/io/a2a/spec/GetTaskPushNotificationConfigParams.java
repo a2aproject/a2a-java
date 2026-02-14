@@ -11,36 +11,36 @@ import org.jspecify.annotations.Nullable;
  * This record specifies which task's push notification configuration to retrieve, with
  * an optional filter by configuration ID if multiple configurations exist for the task.
  *
- * @param id the task identifier (required)
- * @param pushNotificationConfigId optional specific configuration ID to retrieve
+ * @param taskId the task identifier (required)
+ * @param id optional specific configuration ID to retrieve
  * @param tenant optional tenant, provided as a path parameter.
  * @see TaskPushNotificationConfig for the returned configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record GetTaskPushNotificationConfigParams(String id, String pushNotificationConfigId, String tenant) {
+public record GetTaskPushNotificationConfigParams(String taskId, String id, String tenant) {
 
     /**
      * Compact constructor that validates required fields.
      *
+     * @param taskId the taskId parameter (see class-level JavaDoc)
      * @param id the id parameter (see class-level JavaDoc)
-     * @param pushNotificationConfigId the pushNotificationConfigId parameter (see class-level JavaDoc)
      * @param tenant the tenant parameter (see class-level JavaDoc)
-     * @throws IllegalArgumentException if id or tenant is null
+     * @throws IllegalArgumentException if taskId or tenant is null
      */
     public GetTaskPushNotificationConfigParams {
+        Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("id", id);
-        Assert.checkNotNullParam("pushNotificationConfigId", pushNotificationConfigId);
         Assert.checkNotNullParam("tenant", tenant);
     }
 
     /**
      * Convenience constructor for creating parameters without tenant.
      *
-     * @param id the task identifier (required)
-     * @param pushNotificationConfigId optional configuration ID to retrieve
+     * @param taskId the task identifier (required)
+     * @param id optional configuration ID to retrieve
      */
-    public GetTaskPushNotificationConfigParams(String id, String pushNotificationConfigId) {
-        this(id, pushNotificationConfigId, "");
+    public GetTaskPushNotificationConfigParams(String taskId, String id) {
+        this(taskId, id, "");
     }
 
     /**
@@ -56,8 +56,8 @@ public record GetTaskPushNotificationConfigParams(String id, String pushNotifica
      * Builder for constructing GetTaskPushNotificationConfigParams instances.
      */
     public static class Builder {
+        @Nullable String taskId;
         @Nullable String id;
-        @Nullable String pushNotificationConfigId;
         @Nullable String tenant;
 
         /**
@@ -69,22 +69,22 @@ public record GetTaskPushNotificationConfigParams(String id, String pushNotifica
         /**
          * Sets the task ID.
          *
-         * @param id the task ID
+         * @param taskId the task ID
          * @return this builder for method chaining
          */
-        public Builder id(String id) {
-            this.id = id;
+        public Builder taskId(String taskId) {
+            this.taskId = taskId;
             return this;
         }
 
         /**
          * Sets the push notification configuration ID.
          *
-         * @param pushNotificationConfigId the configuration ID
+         * @param id the configuration ID
          * @return this builder for method chaining
          */
-        public Builder pushNotificationConfigId(String pushNotificationConfigId) {
-            this.pushNotificationConfigId = pushNotificationConfigId;
+        public Builder id(String id) {
+            this.id = id;
             return this;
         }
 
@@ -106,8 +106,8 @@ public record GetTaskPushNotificationConfigParams(String id, String pushNotifica
          */
         public GetTaskPushNotificationConfigParams build() {
             return new GetTaskPushNotificationConfigParams(
+                    Assert.checkNotNullParam("taskId", taskId),
                     Assert.checkNotNullParam("id", id),
-                    Assert.checkNotNullParam("pushNotificationConfigId", pushNotificationConfigId),
                     Assert.checkNotNullParam("tenant", tenant));
         }
     }
