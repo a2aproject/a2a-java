@@ -142,7 +142,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         Task task = response.getResult();
         assertEquals(MINIMAL_TASK.id(), task.id());
         assertEquals(MINIMAL_TASK.contextId(), task.contextId());
-        assertEquals(TaskState.CANCELED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_CANCELED, task.status().state());
     }
 
     @Test
@@ -310,7 +310,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
             // Create multiple events to be sent during streaming
         Task taskEvent = Task.builder(MINIMAL_TASK)
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         TaskArtifactUpdateEvent artifactEvent = TaskArtifactUpdateEvent.builder()
@@ -325,7 +325,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
 
         // Configure the agent executor to enqueue multiple events
@@ -397,7 +397,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         Task receivedTask = assertInstanceOf(Task.class, results.get(0), "First event should be a Task");
         assertEquals(MINIMAL_TASK.id(), receivedTask.id());
         assertEquals(MINIMAL_TASK.contextId(), receivedTask.contextId());
-        assertEquals(TaskState.WORKING, receivedTask.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, receivedTask.status().state());
 
         // Verify the second event is the artifact update
         TaskArtifactUpdateEvent receivedArtifact = assertInstanceOf(TaskArtifactUpdateEvent.class, results.get(1),
@@ -409,13 +409,13 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         TaskStatusUpdateEvent receivedStatus = assertInstanceOf(TaskStatusUpdateEvent.class, results.get(2),
                 "Third event should be a TaskStatusUpdateEvent");
         assertEquals(MINIMAL_TASK.id(), receivedStatus.taskId());
-        assertEquals(TaskState.COMPLETED, receivedStatus.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, receivedStatus.status().state());
 
         // Verify events were persisted to TaskStore (poll for final state)
         for (int i = 0; i < 50; i++) {
             Task storedTask = taskStore.get(MINIMAL_TASK.id());
             if (storedTask != null && storedTask.status() != null
-                    && TaskState.COMPLETED.equals(storedTask.status().state())) {
+                    && TaskState.TASK_STATE_COMPLETED.equals(storedTask.status().state())) {
                 return; // Success - task finalized in TaskStore
             }
             Thread.sleep(100);
@@ -441,7 +441,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 TaskStatusUpdateEvent.builder()
                         .taskId(MINIMAL_TASK.id())
                         .contextId(MINIMAL_TASK.contextId())
-                        .status(new TaskStatus(TaskState.COMPLETED))
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                         .build());
 
         Message message = Message.builder(MESSAGE)
@@ -588,7 +588,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 TaskStatusUpdateEvent.builder()
                         .taskId(task.id())
                         .contextId(task.contextId())
-                        .status(new TaskStatus(TaskState.WORKING))
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                         .build());
 
         Message message = Message.builder(MESSAGE)
@@ -719,7 +719,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                     TaskStatusUpdateEvent.builder()
                             .taskId(MINIMAL_TASK.id())
                             .contextId(MINIMAL_TASK.contextId())
-                            .status(new TaskStatus(TaskState.COMPLETED))
+                            .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                             .build());
 
 
@@ -806,7 +806,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             TaskStatusUpdateEvent statusUpdate = (TaskStatusUpdateEvent) httpClient.events.get(2);
             assertEquals(MINIMAL_TASK.id(), statusUpdate.taskId());
             assertEquals(MINIMAL_TASK.contextId(), statusUpdate.contextId());
-            assertEquals(TaskState.COMPLETED, statusUpdate.status().state());
+            assertEquals(TaskState.TASK_STATE_COMPLETED, statusUpdate.status().state());
         } finally {
             mainEventBusProcessor.setPushNotificationExecutor(null);
         }
@@ -910,7 +910,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 TaskStatusUpdateEvent.builder()
                         .taskId(MINIMAL_TASK.id())
                         .contextId(MINIMAL_TASK.contextId())
-                        .status(new TaskStatus(TaskState.WORKING))
+                        .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                         .build());
 
         SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));

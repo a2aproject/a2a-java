@@ -122,7 +122,7 @@ public class RequestContextTest {
     @Test
     public void testInitWithTask() {
         var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).build();
-        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
+        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build();
         var mockParams = MessageSendParams.builder().message(mockMessage).configuration(defaultConfiguration()).build();
 
         RequestContext context = new RequestContext.Builder()
@@ -141,7 +141,7 @@ public class RequestContextTest {
 
     @Test
     public void testAttachRelatedTask() {
-        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
+        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build();
 
         RequestContext context = new RequestContext.Builder().build();
         assertEquals(0, context.getRelatedTasks().size());
@@ -189,7 +189,7 @@ public class RequestContextTest {
     public void testInitRaisesErrorOnTaskIdMismatch() {
         var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").build();
         var mockParams = MessageSendParams.builder().message(mockMessage).configuration(defaultConfiguration()).build();
-        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
+        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build();
 
         InvalidParamsError error = assertThrows(InvalidParamsError.class, () ->
                 new RequestContext.Builder()
@@ -205,7 +205,7 @@ public class RequestContextTest {
     public void testInitRaisesErrorOnContextIdMismatch() {
         var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").contextId("context-456").build();
         var mockParams = MessageSendParams.builder().message(mockMessage).configuration(defaultConfiguration()).build();
-        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
+        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build();
 
         InvalidParamsError error = assertThrows(InvalidParamsError.class, () ->
                 new RequestContext.Builder()
@@ -220,7 +220,7 @@ public class RequestContextTest {
 
     @Test
     public void testWithRelatedTasksProvided() {
-        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
+        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build();
 
         List<Task> relatedTasks = new ArrayList<>();
         relatedTasks.add(mockTask);
@@ -276,7 +276,7 @@ public class RequestContextTest {
     public void testInitWithTaskIdAndExistingTaskIdMatch() {
         var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").contextId("context-456").build();
         var mockParams = MessageSendParams.builder().message(mockMessage).configuration(defaultConfiguration()).build();
-        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
+        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build();
 
         RequestContext context = new RequestContext.Builder()
                 .setParams(mockParams)
@@ -292,7 +292,7 @@ public class RequestContextTest {
     public void testInitWithContextIdAndExistingContextIdMatch() {
         var mockMessage = Message.builder().role(Message.Role.USER).parts(List.of(new TextPart(""))).taskId("task-123").contextId("context-456").build();
         var mockParams = MessageSendParams.builder().message(mockMessage).configuration(defaultConfiguration()).build();
-        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.COMPLETED)).build();
+        var mockTask = Task.builder().id("task-123").contextId("context-456").status(new TaskStatus(TaskState.TASK_STATE_COMPLETED)).build();
 
         RequestContext context = new RequestContext.Builder()
                 .setParams(mockParams)

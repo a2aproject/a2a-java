@@ -58,7 +58,7 @@ public class AbstractA2ARequestHandlerTest {
     protected static final Task MINIMAL_TASK = Task.builder()
             .id("task-123")
             .contextId("session-xyz")
-            .status(new TaskStatus(TaskState.SUBMITTED))
+            .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
             .build();
 
     protected static final Message MESSAGE = Message.builder()

@@ -71,7 +71,7 @@ class InMemoryPushNotificationConfigStoreTest {
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.id()));
-        assertTrue(sentBody.contains(task.status().state().asString()));
+        assertTrue(sentBody.contains(task.status().state().name()));
     }
 
     private Task createSampleTask(String taskId, TaskState state) {
@@ -236,7 +236,7 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testSendNotificationSuccess() throws Exception {
         String taskId = "task_send_success";
-        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
         configStore.setInfo(taskId, config);
 
@@ -255,13 +255,13 @@ class InMemoryPushNotificationConfigStoreTest {
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.id()));
-        assertTrue(sentBody.contains(task.status().state().asString()));
+        assertTrue(sentBody.contains(task.status().state().name()));
     }
 
     @Test
     public void testSendNotificationWithToken() throws Exception {
         String taskId = "task_send_with_token";
-        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
         configStore.setInfo(taskId, config);
 
@@ -287,13 +287,13 @@ class InMemoryPushNotificationConfigStoreTest {
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.id()));
-        assertTrue(sentBody.contains(task.status().state().asString()));
+        assertTrue(sentBody.contains(task.status().state().name()));
     }
 
     @Test
     public void testSendNotificationNoConfig() throws Exception {
         String taskId = "task_send_no_config";
-        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
 
         notificationSender.sendNotification(task);
 
@@ -304,7 +304,7 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testSendNotificationWithEmptyToken() throws Exception {
         String taskId = "task_send_empty_token";
-        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "");
         configStore.setInfo(taskId, config);
 
@@ -316,7 +316,7 @@ class InMemoryPushNotificationConfigStoreTest {
     @Test
     public void testSendNotificationWithBlankToken() throws Exception {
         String taskId = "task_send_blank_token";
-        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "   ");
         configStore.setInfo(taskId, config);
 

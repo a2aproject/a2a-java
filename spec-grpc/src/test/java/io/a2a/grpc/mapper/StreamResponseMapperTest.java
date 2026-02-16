@@ -26,7 +26,7 @@ public class StreamResponseMapperTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
 
         // Act
@@ -62,7 +62,7 @@ public class StreamResponseMapperTest {
         Task task = (Task) result;
         assertEquals("task-123", task.id());
         assertEquals("context-456", task.contextId());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
     }
 
     @Test
@@ -118,7 +118,7 @@ public class StreamResponseMapperTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         // Act
@@ -154,7 +154,7 @@ public class StreamResponseMapperTest {
         TaskStatusUpdateEvent event = (TaskStatusUpdateEvent) result;
         assertEquals("task-123", event.taskId());
         assertEquals("context-456", event.contextId());
-        assertEquals(TaskState.WORKING, event.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, event.status().state());
         assertEquals(false, event.isFinal());
     }
 
@@ -231,7 +231,7 @@ public class StreamResponseMapperTest {
         Task originalTask = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         // Act

@@ -165,7 +165,7 @@ public class KafkaReplicationIntegrationTest {
         Task task = createdTask.get();
         assertNotNull(task, "Task should be created");
         assertEquals(taskId, task.id());
-        assertEquals(TaskState.SUBMITTED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, task.status().state());
 
         // Wait for the event to be replicated to Kafka
         ReplicatedEventQueueItem replicatedEvent = testConsumer.waitForEvent(taskId, 30);
@@ -184,7 +184,7 @@ public class KafkaReplicationIntegrationTest {
         // Verify the event data is consistent with the task returned from the client
         assertEquals(taskId, statusUpdateEvent.taskId(), "Event task ID should match original task ID");
         assertEquals(contextId, statusUpdateEvent.contextId(), "Event context ID should match original context ID");
-        assertEquals(TaskState.SUBMITTED, statusUpdateEvent.status().state(), "Event should show SUBMITTED state");
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, statusUpdateEvent.status().state(), "Event should show SUBMITTED state");
         assertFalse(statusUpdateEvent.isFinal(), "Event should show final:false");
         assertEquals(TaskStatusUpdateEvent.STREAMING_EVENT_ID, statusUpdateEvent.kind(), "Event should indicate status-update type");
     }
@@ -221,7 +221,7 @@ public class KafkaReplicationIntegrationTest {
         assertTrue(createLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
         Task initialTask = createdTask.get();
         assertNotNull(initialTask, "Task should be created");
-        assertEquals(TaskState.SUBMITTED, initialTask.status().state(), "Initial task should be in SUBMITTED state");
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, initialTask.status().state(), "Initial task should be in SUBMITTED state");
 
         // Add a small delay to ensure the task is fully processed before resubscription
         Thread.sleep(1000);
@@ -248,7 +248,7 @@ public class KafkaReplicationIntegrationTest {
             // Process subsequent events
             if (event instanceof TaskUpdateEvent taskUpdateEvent) {
                 if (taskUpdateEvent.getUpdateEvent() instanceof TaskStatusUpdateEvent statusEvent) {
-                    if (statusEvent.status().state() == TaskState.COMPLETED) {
+                    if (statusEvent.status().state() == TaskState.TASK_STATE_COMPLETED) {
                         receivedCompletedEvent.set(statusEvent);
                         subscribeLatch.countDown();
                     }
@@ -277,7 +277,7 @@ public class KafkaReplicationIntegrationTest {
         TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
                 .taskId(taskId)
                 .contextId(contextId)
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
 
         ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, statusEvent);
@@ -297,7 +297,7 @@ public class KafkaReplicationIntegrationTest {
         // Verify the received event
         TaskStatusUpdateEvent completedEvent = receivedCompletedEvent.get();
         assertNotNull(completedEvent, "Should have received a TaskStatusUpdateEvent");
-        assertEquals(TaskState.COMPLETED, completedEvent.status().state(), "Event should show COMPLETED state");
+        assertEquals(TaskState.TASK_STATE_COMPLETED, completedEvent.status().state(), "Event should show COMPLETED state");
         assertTrue(completedEvent.isFinal(), "Event should be marked as final");
         assertEquals(taskId, completedEvent.taskId(), "Event should have correct task ID");
         assertEquals(contextId, completedEvent.contextId(), "Event should have correct context ID");
@@ -334,7 +334,7 @@ public class KafkaReplicationIntegrationTest {
                 taskIdRef.set(taskEvent.getTask().id());
                 workingLatch.countDown();
             } else if (event instanceof TaskUpdateEvent tue && tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
-                if (status.status().state() == TaskState.WORKING) {
+                if (status.status().state() == TaskState.TASK_STATE_WORKING) {
                     taskIdRef.set(status.taskId());
                     workingLatch.countDown();
                 }

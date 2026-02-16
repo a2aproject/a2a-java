@@ -33,7 +33,7 @@ class StreamingEventKindSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         // Serialize as StreamingEventKind
@@ -43,7 +43,7 @@ class StreamingEventKindSerializationTest {
         assertNotNull(json);
         assertTrue(json.contains("\"task\""));
         assertTrue(json.contains("\"id\":\"task-123\""));
-        assertTrue(json.contains("\"state\":\"submitted\""));
+        assertTrue(json.contains("\"state\":\"TASK_STATE_SUBMITTED\""));
         assertFalse(json.contains("\"kind\""));
 
         // Deserialize back to StreamingEventKind
@@ -96,7 +96,7 @@ class StreamingEventKindSerializationTest {
         TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
                 .taskId("task-abc")
                 .contextId("context-def")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         // Serialize as StreamingEventKind
@@ -106,7 +106,7 @@ class StreamingEventKindSerializationTest {
         assertNotNull(json);
         assertTrue(json.contains("\"statusUpdate\""));
         assertTrue(json.contains("\"taskId\":\"task-abc\""));
-        assertTrue(json.contains("\"state\":\"working\""));
+        assertTrue(json.contains("\"state\":\"TASK_STATE_WORKING\""));
         assertTrue(json.contains("\"final\":false"));
         assertFalse(json.contains("\"kind\""));
 
@@ -165,7 +165,7 @@ class StreamingEventKindSerializationTest {
               "id": "task-unwrapped",
               "contextId": "context-999",
               "status": {
-                "state": "completed"
+                "state": "TASK_STATE_COMPLETED"
               }
             }
             """;
@@ -178,7 +178,7 @@ class StreamingEventKindSerializationTest {
         Task task = (Task) deserialized;
         assertEquals("task-unwrapped", task.id());
         assertEquals("context-999", task.contextId());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
     }
 
     @Test
@@ -216,7 +216,7 @@ class StreamingEventKindSerializationTest {
               "taskId": "task-status-unwrapped",
               "contextId": "context-999",
               "status": {
-                "state": "working"
+                "state": "TASK_STATE_WORKING"
               },
               "final": false
             }
@@ -229,7 +229,7 @@ class StreamingEventKindSerializationTest {
         assertInstanceOf(TaskStatusUpdateEvent.class, deserialized);
         TaskStatusUpdateEvent event = (TaskStatusUpdateEvent) deserialized;
         assertEquals("task-status-unwrapped", event.taskId());
-        assertEquals(TaskState.WORKING, event.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, event.status().state());
         assertFalse(event.isFinal());
     }
 

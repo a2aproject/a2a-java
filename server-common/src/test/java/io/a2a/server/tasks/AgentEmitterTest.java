@@ -102,141 +102,141 @@ public class AgentEmitterTest {
     @Test
     public void testCompleteWithoutMessage() throws Exception {
         agentEmitter.complete();
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.COMPLETED, null);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_COMPLETED, null);
     }
 
     @Test
     public void testCompleteWithMessage() throws Exception {
         agentEmitter.complete(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.COMPLETED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_COMPLETED, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testSubmitWithoutMessage() throws Exception {
         agentEmitter.submit();
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.SUBMITTED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_SUBMITTED, null);
     }
 
     @Test
     public void testSubmitWithMessage() throws Exception {
         agentEmitter.submit(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.SUBMITTED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_SUBMITTED, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testStartWorkWithoutMessage() throws Exception {
         agentEmitter.startWork();
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.WORKING, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_WORKING, null);
     }
 
     @Test
     public void testStartWorkWithMessage() throws Exception {
         agentEmitter.startWork(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.WORKING, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_WORKING, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testFailedWithoutMessage() throws Exception {
         agentEmitter.fail();
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.FAILED, null);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_FAILED, null);
     }
 
     @Test
     public void testFailedWithMessage() throws Exception {
         agentEmitter.fail(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.FAILED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_FAILED, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testCanceledWithoutMessage() throws Exception {
         agentEmitter.cancel();
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.CANCELED, null);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_CANCELED, null);
     }
 
     @Test
     public void testCanceledWithMessage() throws Exception {
         agentEmitter.cancel(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.CANCELED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_CANCELED, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testRejectWithoutMessage() throws Exception {
         agentEmitter.reject();
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.REJECTED, null);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_REJECTED, null);
     }
 
     @Test
     public void testRejectWithMessage() throws Exception {
         agentEmitter.reject(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.REJECTED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_REJECTED, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testRequiresInputWithoutMessage() throws Exception {
         agentEmitter.requiresInput();
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.INPUT_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, null);
     }
 
     @Test
     public void testRequiresInputWithMessage() throws Exception {
         agentEmitter.requiresInput(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.INPUT_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testRequiresInputWithFinalTrue() throws Exception {
         agentEmitter.requiresInput(true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.INPUT_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, null);
     }
 
     @Test
     public void testRequiresInputWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresInput(SAMPLE_MESSAGE, true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.INPUT_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testRequiresAuthWithoutMessage() throws Exception {
         agentEmitter.requiresAuth();
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.AUTH_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, null);
     }
 
     @Test
     public void testRequiresAuthWithMessage() throws Exception {
         agentEmitter.requiresAuth(SAMPLE_MESSAGE);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.AUTH_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testRequiresAuthWithFinalTrue() throws Exception {
         agentEmitter.requiresAuth(true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.AUTH_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, null);
     }
 
     @Test
     public void testRequiresAuthWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresAuth(SAMPLE_MESSAGE, true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.AUTH_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE);
     }
 
     @Test
     public void testNonTerminalStateUpdatesAllowed() throws Exception {
         // Non-terminal states should be allowed multiple times
         agentEmitter.submit();
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.SUBMITTED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_SUBMITTED, null);
 
         agentEmitter.startWork();
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.WORKING, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_WORKING, null);
 
         agentEmitter.requiresInput();
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.INPUT_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, null);
 
         agentEmitter.requiresAuth();
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.AUTH_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, null);
 
         // Should still be able to complete
         agentEmitter.complete();
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.COMPLETED, null);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_COMPLETED, null);
     }
 
     @Test
@@ -341,7 +341,7 @@ public class AgentEmitterTest {
     public void testTerminalStateProtectionAfterComplete() throws Exception {
         // Complete the task first
         agentEmitter.complete();
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.COMPLETED, null);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_COMPLETED, null);
 
         // Try to update status again - should throw RuntimeException
         RuntimeException exception = assertThrows(RuntimeException.class, () -> agentEmitter.startWork());
@@ -355,7 +355,7 @@ public class AgentEmitterTest {
     public void testTerminalStateProtectionAfterFail() throws Exception {
         // Fail the task first
         agentEmitter.fail();
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.FAILED, null);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_FAILED, null);
 
         // Try to update status again - should throw RuntimeException
         RuntimeException exception = assertThrows(RuntimeException.class, () -> agentEmitter.complete());
@@ -369,7 +369,7 @@ public class AgentEmitterTest {
     public void testTerminalStateProtectionAfterReject() throws Exception {
         // Reject the task first
         agentEmitter.reject();
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.REJECTED, null);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_REJECTED, null);
 
         // Try to update status again - should throw RuntimeException
         RuntimeException exception = assertThrows(RuntimeException.class, () -> agentEmitter.startWork());
@@ -383,7 +383,7 @@ public class AgentEmitterTest {
     public void testTerminalStateProtectionAfterCancel() throws Exception {
         // Cancel the task first
         agentEmitter.cancel();
-        checkTaskStatusUpdateEventOnQueue(true, TaskState.CANCELED, null);
+        checkTaskStatusUpdateEventOnQueue(true, TaskState.TASK_STATE_CANCELED, null);
 
         // Try to update status again - should throw RuntimeException
         RuntimeException exception = assertThrows(RuntimeException.class, () -> agentEmitter.submit());
@@ -427,7 +427,7 @@ public class AgentEmitterTest {
 
         TaskStatusUpdateEvent tsue = (TaskStatusUpdateEvent) event;
         assertTrue(tsue.isFinal());
-        assertTrue(tsue.status().state() == TaskState.COMPLETED || tsue.status().state() == TaskState.FAILED);
+        assertTrue(tsue.status().state() == TaskState.TASK_STATE_COMPLETED || tsue.status().state() == TaskState.TASK_STATE_FAILED);
 
         // No additional events should be queued
         assertNull(eventQueue.dequeueEventItem(0));

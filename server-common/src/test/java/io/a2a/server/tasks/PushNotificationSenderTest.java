@@ -23,7 +23,6 @@ import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Message;
-import io.a2a.spec.Part;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -155,7 +154,7 @@ public class PushNotificationSenderTest {
 
     private void testSendNotificationWithInvalidToken(String token, String testName) throws InterruptedException {
         String taskId = testName;
-        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", token);
         
         // Set up the configuration in the store
@@ -206,7 +205,7 @@ public class PushNotificationSenderTest {
     @Test
     public void testSendNotificationSuccess() throws InterruptedException {
         String taskId = "task_send_success";
-        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
 
         // Set up the configuration in the store
@@ -237,7 +236,7 @@ public class PushNotificationSenderTest {
     @Test
     public void testSendNotificationWithTokenSuccess() throws InterruptedException {
         String taskId = "task_send_with_token";
-        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
 
         // Set up the configuration in the store
@@ -273,7 +272,7 @@ public class PushNotificationSenderTest {
     @Test
     public void testSendNotificationNoConfig() {
         String taskId = "task_send_no_config";
-        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
 
         // Don't set any configuration in the store
         sender.sendNotification(taskData);
@@ -295,7 +294,7 @@ public class PushNotificationSenderTest {
     @Test
     public void testSendNotificationMultipleConfigs() throws InterruptedException {
         String taskId = "task_multiple_configs";
-        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config1 = createSamplePushConfig("http://notify.me/cfg1", "cfg1", null);
         PushNotificationConfig config2 = createSamplePushConfig("http://notify.me/cfg2", "cfg2", null);
 
@@ -329,7 +328,7 @@ public class PushNotificationSenderTest {
     @Test
     public void testSendNotificationHttpError() {
         String taskId = "task_send_http_err";
-        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/http_error", "cfg1", null);
 
         // Set up the configuration in the store
@@ -384,7 +383,7 @@ public class PushNotificationSenderTest {
         TaskStatusUpdateEvent statusUpdate = TaskStatusUpdateEvent.builder()
                 .taskId(taskId)
                 .contextId("ctx456")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
 
@@ -405,7 +404,7 @@ public class PushNotificationSenderTest {
         assertTrue(sentEvent instanceof TaskStatusUpdateEvent, "Event should be a TaskStatusUpdateEvent");
         TaskStatusUpdateEvent sentUpdate = (TaskStatusUpdateEvent) sentEvent;
         assertEquals(taskId, sentUpdate.taskId());
-        assertEquals(TaskState.WORKING, sentUpdate.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, sentUpdate.status().state());
 
         // Verify StreamResponse wrapper with 'statusUpdate' discriminator
         String rawBody = testHttpClient.rawBodies.get(0);

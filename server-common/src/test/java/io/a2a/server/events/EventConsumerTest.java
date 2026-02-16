@@ -47,7 +47,7 @@ public class EventConsumerTest {
             {
                 "id": "123",
                 "contextId": "session-xyz",
-                "status": {"state": "submitted"}
+                "status": {"state": "TASK_STATE_SUBMITTED"}
             }
             """;
 
@@ -158,7 +158,7 @@ public class EventConsumerTest {
                 TaskStatusUpdateEvent.builder()
                         .taskId(TASK_ID)
                         .contextId("session-xyz")
-                        .status(new TaskStatus(TaskState.COMPLETED))
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                         .build());
 
         for (Event event : events) {
@@ -193,7 +193,7 @@ public class EventConsumerTest {
                 TaskStatusUpdateEvent.builder()
                         .taskId(TASK_ID)
                         .contextId("session-xyz")
-                        .status(new TaskStatus(TaskState.COMPLETED))
+                        .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                         .build());
 
         for (Event event : events) {
@@ -241,7 +241,7 @@ public class EventConsumerTest {
         Task task = Task.builder()
             .id(TASK_ID)
             .contextId("session-xyz")
-            .status(new TaskStatus(TaskState.INPUT_REQUIRED))
+            .status(new TaskStatus(TaskState.TASK_STATE_INPUT_REQUIRED))
             .build();
         List<Event> events = List.of(
             task,
@@ -256,7 +256,7 @@ public class EventConsumerTest {
             TaskStatusUpdateEvent.builder()
                 .taskId(TASK_ID)
                 .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build());
         for (Event event : events) {
             eventQueue.enqueueEvent(event);

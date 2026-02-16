@@ -151,7 +151,7 @@ public class A2AServerRoutesTest {
         Task responseTask = Task.builder()
                 .id("task-123")
                 .contextId("context-1234")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         SendMessageResponse realResponse = new SendMessageResponse("1", responseTask);
         when(mockJsonRpcHandler.onMessageSend(any(SendMessageRequest.class), any(ServerCallContext.class)))
@@ -235,7 +235,7 @@ public class A2AServerRoutesTest {
         Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
         when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
@@ -271,7 +271,7 @@ public class A2AServerRoutesTest {
         Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
-                .status(new TaskStatus(TaskState.CANCELED))
+                .status(new TaskStatus(TaskState.TASK_STATE_CANCELED))
                 .build();
         CancelTaskResponse realResponse = new CancelTaskResponse("1", responseTask);
         when(mockJsonRpcHandler.onCancelTask(any(CancelTaskRequest.class), any(ServerCallContext.class)))
@@ -540,7 +540,7 @@ public class A2AServerRoutesTest {
         Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
         when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
@@ -577,7 +577,7 @@ public class A2AServerRoutesTest {
         Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
         when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
@@ -614,7 +614,7 @@ public class A2AServerRoutesTest {
         Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
         when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))
@@ -651,7 +651,7 @@ public class A2AServerRoutesTest {
         Task responseTask = Task.builder()
                 .id("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .contextId("context-1234")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         GetTaskResponse realResponse = new GetTaskResponse("1", responseTask);
         when(mockJsonRpcHandler.onGetTask(any(GetTaskRequest.class), any(ServerCallContext.class)))

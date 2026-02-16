@@ -37,7 +37,7 @@ public class ClientTaskManagerTest {
         sampleTask = Task.builder()
                 .id("task123")
                 .contextId("context456")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         
         sampleMessage = Message.builder()
@@ -82,12 +82,12 @@ public class ClientTaskManagerTest {
         TaskStatusUpdateEvent statusUpdate = TaskStatusUpdateEvent.builder()
                 .taskId(sampleTask.id())
                 .contextId(sampleTask.contextId())
-                .status(new TaskStatus(TaskState.COMPLETED, sampleMessage, null))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED, sampleMessage, null))
                 .build();
         
         Task updatedTask = taskManager.saveTaskEvent(statusUpdate);
         
-        assertEquals(TaskState.COMPLETED, updatedTask.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, updatedTask.status().state());
         assertNotNull(updatedTask.history());
         assertEquals(1, updatedTask.history().size());
         assertEquals(sampleMessage, updatedTask.history().get(0));
@@ -104,7 +104,7 @@ public class ClientTaskManagerTest {
         TaskStatusUpdateEvent statusUpdate = TaskStatusUpdateEvent.builder()
                 .taskId(sampleTask.id())
                 .contextId(sampleTask.contextId())
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .metadata(metadata)
                 .build();
         
@@ -143,7 +143,7 @@ public class ClientTaskManagerTest {
         TaskStatusUpdateEvent statusUpdate = TaskStatusUpdateEvent.builder()
                 .taskId("new_task")
                 .contextId("new_context")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         
         Task updatedTask = taskManager.saveTaskEvent(statusUpdate);
@@ -151,7 +151,7 @@ public class ClientTaskManagerTest {
         assertNotNull(updatedTask);
         assertEquals("new_task", updatedTask.id());
         assertEquals("new_context", updatedTask.contextId());
-        assertEquals(TaskState.WORKING, updatedTask.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, updatedTask.status().state());
     }
 
     @Test
@@ -182,7 +182,7 @@ public class ClientTaskManagerTest {
         Task taskWithHistory = Task.builder()
                 .id("task123")
                 .contextId("context456")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         
         Task updatedTask = taskManager.updateWithMessage(sampleMessage, taskWithHistory);
@@ -203,7 +203,7 @@ public class ClientTaskManagerTest {
         Task taskWithStatusMessage = Task.builder()
                 .id("task123")
                 .contextId("context456")
-                .status(new TaskStatus(TaskState.WORKING, statusMessage, null))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, statusMessage, null))
                 .build();
         
         Task updatedTask = taskManager.updateWithMessage(sampleMessage, taskWithStatusMessage);
@@ -226,7 +226,7 @@ public class ClientTaskManagerTest {
         Task taskWithHistory = Task.builder()
                 .id("task123")
                 .contextId("context456")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .history(List.of(existingMessage))
                 .build();
         
@@ -246,11 +246,11 @@ public class ClientTaskManagerTest {
         TaskStatusUpdateEvent statusUpdate1 = TaskStatusUpdateEvent.builder()
                 .taskId(sampleTask.id())
                 .contextId(sampleTask.contextId())
-                .status(new TaskStatus(TaskState.WORKING, sampleMessage, null))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, sampleMessage, null))
                 .build();
         
         Task updatedTask1 = taskManager.saveTaskEvent(statusUpdate1);
-        assertEquals(TaskState.WORKING, updatedTask1.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, updatedTask1.status().state());
         assertEquals(1, updatedTask1.history().size());
         
         // Second status update
@@ -263,11 +263,11 @@ public class ClientTaskManagerTest {
         TaskStatusUpdateEvent statusUpdate2 = TaskStatusUpdateEvent.builder()
                 .taskId(sampleTask.id())
                 .contextId(sampleTask.contextId())
-                .status(new TaskStatus(TaskState.COMPLETED, secondMessage, null))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED, secondMessage, null))
                 .build();
         
         Task updatedTask2 = taskManager.saveTaskEvent(statusUpdate2);
-        assertEquals(TaskState.COMPLETED, updatedTask2.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, updatedTask2.status().state());
         assertEquals(2, updatedTask2.history().size());
     }
 
@@ -311,7 +311,7 @@ public class ClientTaskManagerTest {
         TaskStatusUpdateEvent statusUpdate = TaskStatusUpdateEvent.builder()
                 .taskId("task_with_empty_context")
                 .contextId("")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         
         Task updatedTask = taskManager.saveTaskEvent(statusUpdate);

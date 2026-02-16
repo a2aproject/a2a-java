@@ -76,7 +76,6 @@ public class JsonUtil {
                 .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
                 .registerTypeHierarchyAdapter(A2AError.class, new A2AErrorTypeAdapter())
-                .registerTypeAdapter(TaskState.class, new TaskStateTypeAdapter())
                 .registerTypeAdapter(Message.Role.class, new RoleTypeAdapter())
                 .registerTypeHierarchyAdapter(FileContent.class, new FileContentTypeAdapter());
     }
@@ -435,48 +434,6 @@ public class JsonUtil {
                 default ->
                     new A2AError(code, message == null ? "" : message, data);
             };
-        }
-    }
-
-    /**
-     * Gson TypeAdapter for serializing and deserializing {@link TaskState} enum.
-     * <p>
-     * This adapter ensures that TaskState enum values are serialized using their
-     * wire format string representation (e.g., "completed", "working") rather than
-     * the Java enum constant name (e.g., "COMPLETED", "WORKING").
-     * <p>
-     * For serialization, it uses {@link TaskState#asString()} to get the wire format.
-     * For deserialization, it uses {@link TaskState#fromString(String)} to parse the
-     * wire format back to the enum constant.
-     *
-     * @see TaskState
-     * @see TaskState#asString()
-     * @see TaskState#fromString(String)
-     */
-    static class TaskStateTypeAdapter extends TypeAdapter<TaskState> {
-
-        @Override
-        public void write(JsonWriter out, TaskState value) throws java.io.IOException {
-            if (value == null) {
-                out.nullValue();
-            } else {
-                out.value(value.asString());
-            }
-        }
-
-        @Override
-        public @Nullable
-        TaskState read(JsonReader in) throws java.io.IOException {
-            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
-                in.nextNull();
-                return null;
-            }
-            String stateString = in.nextString();
-            try {
-                return TaskState.fromString(stateString);
-            } catch (IllegalArgumentException e) {
-                throw new JsonSyntaxException("Invalid TaskState: " + stateString, e);
-            }
         }
     }
 

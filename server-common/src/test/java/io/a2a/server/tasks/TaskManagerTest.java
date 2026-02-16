@@ -31,7 +31,7 @@ public class TaskManagerTest {
             {
                 "id": "task-abc",
                 "contextId" : "session-xyz",
-                "status": {"state": "submitted"}
+                "status": {"state": "TASK_STATE_SUBMITTED"}
             }""";
 
     Task minimalTask;
@@ -73,7 +73,7 @@ public class TaskManagerTest {
         taskStore.save(initialTask, false);
 
         TaskStatus newStatus = new TaskStatus(
-                TaskState.WORKING,
+                TaskState.TASK_STATE_WORKING,
                 Message.builder()
                         .role(Message.Role.AGENT)
                         .parts(Collections.singletonList(new TextPart("content")))
@@ -140,7 +140,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task")
                 .contextId("some-context")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         taskManagerWithoutId.saveTaskEvent(event, false);
@@ -151,7 +151,7 @@ public class TaskManagerTest {
         Task newTask = taskManagerWithoutId.getTask();
         assertEquals(event.taskId(), newTask.id());
         assertEquals(event.contextId(), newTask.contextId());
-        assertEquals(TaskState.SUBMITTED, newTask.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, newTask.status().state());
         assertSame(newTask, task);
     }
 
@@ -161,7 +161,7 @@ public class TaskManagerTest {
         Task task = Task.builder()
                 .id("new-task-id")
                 .contextId("some-context")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         taskManagerWithoutId.saveTaskEvent(task, false);
@@ -335,7 +335,7 @@ public class TaskManagerTest {
         Task differentTask = Task.builder()
                 .id("different-task-id")
                 .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         assertThrows(A2AServerException.class, () -> {
@@ -351,7 +351,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("different-task-id")
                 .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         assertThrows(A2AServerException.class, () -> {
@@ -396,7 +396,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         taskManagerWithInitialMessage.saveTaskEvent(event, false);
@@ -433,7 +433,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
-                .status(new TaskStatus(TaskState.SUBMITTED, taskMessage, null))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED, taskMessage, null))
                 .build();
 
         taskManagerWithInitialMessage.saveTaskEvent(event, false);
@@ -561,7 +561,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId(minimalTask.id())
                 .contextId(minimalTask.contextId())
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .metadata(newMetadata)
                 .build();
 
@@ -580,7 +580,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId(minimalTask.id())
                 .contextId(minimalTask.contextId())
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .metadata(null)
                 .build();
 
@@ -608,7 +608,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId(minimalTask.id())
                 .contextId(minimalTask.contextId())
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .metadata(newMetadata)
                 .build();
 
@@ -635,7 +635,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         taskManagerWithMessage.saveTaskEvent(event, false);
@@ -645,7 +645,7 @@ public class TaskManagerTest {
         assertNotNull(savedTask);
         assertEquals("new-task-id", savedTask.id());
         assertEquals("some-context", savedTask.contextId());
-        assertEquals(TaskState.SUBMITTED, savedTask.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, savedTask.status().state());
 
         // Verify initial message is in history
         assertNotNull(savedTask.history());
@@ -663,7 +663,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         taskManagerWithoutMessage.saveTaskEvent(event, false);
@@ -673,7 +673,7 @@ public class TaskManagerTest {
         assertNotNull(savedTask);
         assertEquals("new-task-id", savedTask.id());
         assertEquals("some-context", savedTask.contextId());
-        assertEquals(TaskState.SUBMITTED, savedTask.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, savedTask.status().state());
 
         // Verify no history since there was no initial message
         assertTrue(savedTask.history().isEmpty());
@@ -687,7 +687,7 @@ public class TaskManagerTest {
         Task newTask = Task.builder()
                 .id("test-task-id")
                 .contextId("test-context")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         taskManagerWithoutId.saveTaskEvent(newTask, false);
@@ -718,7 +718,7 @@ public class TaskManagerTest {
         TaskStatusUpdateEvent event = TaskStatusUpdateEvent.builder()
                 .taskId("new-task-id")
                 .contextId("some-context")
-                .status(new TaskStatus(TaskState.SUBMITTED, taskMessage, null))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED, taskMessage, null))
                 .build();
 
         taskManagerWithInitialMessage.saveTaskEvent(event, false);

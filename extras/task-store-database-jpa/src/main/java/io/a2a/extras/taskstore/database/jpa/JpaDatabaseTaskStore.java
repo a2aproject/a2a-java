@@ -275,7 +275,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             query.setParameter("contextId", params.contextId());
         }
         if (params.status() != null) {
-            query.setParameter("state", params.status().asString());
+            query.setParameter("state", params.status().name());
         }
         if (params.statusTimestampAfter() != null) {
             query.setParameter("statusTimestampAfter", params.statusTimestampAfter());
@@ -304,7 +304,7 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             countQuery.setParameter("contextId", params.contextId());
         }
         if (params.status() != null) {
-            countQuery.setParameter("state", params.status().asString());
+            countQuery.setParameter("state", params.status().name());
         }
         if (params.statusTimestampAfter() != null) {
             countQuery.setParameter("statusTimestampAfter", params.statusTimestampAfter());

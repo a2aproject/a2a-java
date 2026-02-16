@@ -91,7 +91,7 @@ public class SSEEventListenerTest {
         Task task = (Task) receivedEvent.get();
         assertEquals("task-123", task.id());
         assertEquals("context-456", task.contextId());
-        assertEquals(TaskState.WORKING, task.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, task.status().state());
     }
 
     @Test
@@ -165,7 +165,7 @@ public class SSEEventListenerTest {
         TaskStatusUpdateEvent taskStatusUpdateEvent = (TaskStatusUpdateEvent) receivedEvent.get();
         assertEquals("1", taskStatusUpdateEvent.taskId());
         assertEquals("2", taskStatusUpdateEvent.contextId());
-        assertEquals(TaskState.SUBMITTED, taskStatusUpdateEvent.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, taskStatusUpdateEvent.status().state());
         assertEquals(false, taskStatusUpdateEvent.isFinal());
     }
 
@@ -200,7 +200,7 @@ public class SSEEventListenerTest {
         assertTrue(receivedEvent.get() instanceof TaskStatusUpdateEvent);
         TaskStatusUpdateEvent received = (TaskStatusUpdateEvent) receivedEvent.get();
         assertTrue(received.isFinal());
-        assertEquals(TaskState.COMPLETED, received.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, received.status().state());
 
         // Verify the future was cancelled (auto-close on final event)
         assertTrue(future.wasCancelled());
@@ -236,7 +236,7 @@ public class SSEEventListenerTest {
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof Task);
         Task task = (Task) receivedEvent.get();
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
 
         // Verify the future was cancelled (auto-close on final task state)
         assertTrue(future.wasCancelled());

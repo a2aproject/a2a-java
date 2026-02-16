@@ -97,25 +97,25 @@ public abstract class AbstractA2AServerTest {
     protected static final Task MINIMAL_TASK = Task.builder()
             .id("task-123")
             .contextId("session-xyz")
-            .status(new TaskStatus(TaskState.SUBMITTED))
+            .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
             .build();
 
     private static final Task CANCEL_TASK = Task.builder()
             .id("cancel-task-123")
             .contextId("session-xyz")
-            .status(new TaskStatus(TaskState.SUBMITTED))
+            .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
             .build();
 
     private static final Task CANCEL_TASK_NOT_SUPPORTED = Task.builder()
             .id("cancel-task-not-supported-123")
             .contextId("session-xyz")
-            .status(new TaskStatus(TaskState.SUBMITTED))
+            .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
             .build();
 
     private static final Task SEND_MESSAGE_NOT_SUPPORTED = Task.builder()
             .id("task-not-supported-123")
             .contextId("session-xyz")
-            .status(new TaskStatus(TaskState.SUBMITTED))
+            .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
             .build();
 
     protected static final Message MESSAGE = Message.builder()
@@ -185,7 +185,7 @@ public abstract class AbstractA2AServerTest {
             Task response = getClient().getTask(new TaskQueryParams(MINIMAL_TASK.id()));
             assertEquals("task-123", response.id());
             assertEquals("session-xyz", response.contextId());
-            assertEquals(TaskState.SUBMITTED, response.status().state());
+            assertEquals(TaskState.TASK_STATE_SUBMITTED, response.status().state());
         } catch (A2AClientException e) {
             fail("Unexpected exception during getTask: " + e.getMessage(), e);
         } finally {
@@ -212,7 +212,7 @@ public abstract class AbstractA2AServerTest {
             Task task = getClient().cancelTask(new TaskIdParams(CANCEL_TASK.id()));
             assertEquals(CANCEL_TASK.id(), task.id());
             assertEquals(CANCEL_TASK.contextId(), task.contextId());
-            assertEquals(TaskState.CANCELED, task.status().state());
+            assertEquals(TaskState.TASK_STATE_CANCELED, task.status().state());
         } catch (A2AClientException e) {
             fail("Unexpected exception during cancel task: " + e.getMessage(), e);
         } finally {
@@ -251,17 +251,17 @@ public abstract class AbstractA2AServerTest {
         Task task1 = Task.builder()
                 .id("list-task-1")
                 .contextId("context-1")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         Task task2 = Task.builder()
                 .id("list-task-2")
                 .contextId("context-1")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         Task task3 = Task.builder()
                 .id("list-task-3")
                 .contextId("context-2")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
 
         saveTaskInTaskStore(task1);
@@ -290,17 +290,17 @@ public abstract class AbstractA2AServerTest {
         Task task1 = Task.builder()
                 .id("list-task-ctx-1")
                 .contextId("context-filter-1")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         Task task2 = Task.builder()
                 .id("list-task-ctx-2")
                 .contextId("context-filter-1")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         Task task3 = Task.builder()
                 .id("list-task-ctx-3")
                 .contextId("context-filter-2")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
 
         saveTaskInTaskStore(task1);
@@ -331,17 +331,17 @@ public abstract class AbstractA2AServerTest {
         Task task1 = Task.builder()
                 .id("list-task-status-1")
                 .contextId("context-status")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         Task task2 = Task.builder()
                 .id("list-task-status-2")
                 .contextId("context-status")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         Task task3 = Task.builder()
                 .id("list-task-status-3")
                 .contextId("context-status")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
 
         saveTaskInTaskStore(task1);
@@ -351,7 +351,7 @@ public abstract class AbstractA2AServerTest {
         try {
             // Filter by status WORKING
             io.a2a.spec.ListTasksParams params = ListTasksParams.builder()
-                    .status(TaskState.WORKING)
+                    .status(TaskState.TASK_STATE_WORKING)
                     .tenant("")
                     .build();
             ListTasksResult result = getClient().listTasks(params);
@@ -361,7 +361,7 @@ public abstract class AbstractA2AServerTest {
             assertTrue(result.tasks().size() >= 2, "Should have at least 2 WORKING tasks");
             assertTrue(result.tasks().stream()
                     .filter(t -> t.id().startsWith("list-task-status-"))
-                    .allMatch(t -> TaskState.WORKING.equals(t.status().state())));
+                    .allMatch(t -> TaskState.TASK_STATE_WORKING.equals(t.status().state())));
         } finally {
             deleteTaskInTaskStore(task1.id());
             deleteTaskInTaskStore(task2.id());
@@ -375,17 +375,17 @@ public abstract class AbstractA2AServerTest {
         Task task1 = Task.builder()
                 .id("page-task-1")
                 .contextId("page-context")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         Task task2 = Task.builder()
                 .id("page-task-2")
                 .contextId("page-context")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         Task task3 = Task.builder()
                 .id("page-task-3")
                 .contextId("page-context")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         saveTaskInTaskStore(task1);
@@ -436,7 +436,7 @@ public abstract class AbstractA2AServerTest {
         Task taskWithHistory = Task.builder()
                 .id("list-task-history")
                 .contextId("context-history")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .history(history)
                 .build();
 
@@ -715,7 +715,7 @@ public abstract class AbstractA2AServerTest {
                     TaskStatusUpdateEvent.builder()
                             .taskId(MINIMAL_TASK.id())
                             .contextId(MINIMAL_TASK.contextId())
-                            .status(new TaskStatus(TaskState.COMPLETED))
+                            .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                             .build());
 
             for (Event event : events) {
@@ -741,7 +741,7 @@ public abstract class AbstractA2AServerTest {
             assertNotNull(receivedStatusEvent);
             assertEquals(MINIMAL_TASK.id(), receivedStatusEvent.taskId());
             assertEquals(MINIMAL_TASK.contextId(), receivedStatusEvent.contextId());
-            assertEquals(TaskState.COMPLETED, receivedStatusEvent.status().state());
+            assertEquals(TaskState.TASK_STATE_COMPLETED, receivedStatusEvent.status().state());
             assertNotNull(receivedStatusEvent.status().timestamp());
         } finally {
             deleteTaskInTaskStore(MINIMAL_TASK.id());
@@ -833,7 +833,7 @@ public abstract class AbstractA2AServerTest {
                     TaskStatusUpdateEvent.builder()
                             .taskId(MINIMAL_TASK.id())
                             .contextId(MINIMAL_TASK.contextId())
-                            .status(new TaskStatus(TaskState.COMPLETED))
+                            .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                             .build());
 
             for (Event event : events) {
@@ -859,7 +859,7 @@ public abstract class AbstractA2AServerTest {
             assertNotNull(receivedStatusEvent);
             assertEquals(MINIMAL_TASK.id(), receivedStatusEvent.taskId());
             assertEquals(MINIMAL_TASK.contextId(), receivedStatusEvent.contextId());
-            assertEquals(TaskState.COMPLETED, receivedStatusEvent.status().state());
+            assertEquals(TaskState.TASK_STATE_COMPLETED, receivedStatusEvent.status().state());
             assertNotNull(receivedStatusEvent.status().timestamp());
         } finally {
             deleteTaskInTaskStore(MINIMAL_TASK.id());
@@ -1204,7 +1204,7 @@ public abstract class AbstractA2AServerTest {
         saveTaskInTaskStore(Task.builder()
                 .id("task-456")
                 .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build());
 
         PushNotificationConfig notificationConfig1
@@ -1558,7 +1558,7 @@ public abstract class AbstractA2AServerTest {
                     TaskState state = te.getTask().status().state();
                     initialState.set(state);
                     // Only count down when we receive INPUT_REQUIRED, not intermediate states like WORKING
-                    if (state == TaskState.INPUT_REQUIRED) {
+                    if (state == TaskState.TASK_STATE_INPUT_REQUIRED) {
                         initialLatch.countDown();
                     }
                 } else {
@@ -1570,7 +1570,7 @@ public abstract class AbstractA2AServerTest {
             getNonStreamingClient().sendMessage(initialMessage, List.of(initialConsumer), null);
             assertTrue(initialLatch.await(10, TimeUnit.SECONDS));
             assertFalse(initialUnexpectedEvent.get());
-            assertEquals(TaskState.INPUT_REQUIRED, initialState.get());
+            assertEquals(TaskState.TASK_STATE_INPUT_REQUIRED, initialState.get());
 
             // 2. Send input message - AgentExecutor will complete the task
             Message inputMessage = Message.builder(MESSAGE)
@@ -1592,7 +1592,7 @@ public abstract class AbstractA2AServerTest {
                     TaskState state = te.getTask().status().state();
                     completedState.set(state);
                     // Only count down when we receive COMPLETED, not intermediate states like WORKING
-                    if (state == TaskState.COMPLETED) {
+                    if (state == TaskState.TASK_STATE_COMPLETED) {
                         completionLatch.countDown();
                     }
                 } else {
@@ -1604,7 +1604,7 @@ public abstract class AbstractA2AServerTest {
             getNonStreamingClient().sendMessage(inputMessage, List.of(completionConsumer), null);
             assertTrue(completionLatch.await(10, TimeUnit.SECONDS));
             assertFalse(completionUnexpectedEvent.get());
-            assertEquals(TaskState.COMPLETED, completedState.get());
+            assertEquals(TaskState.TASK_STATE_COMPLETED, completedState.get());
 
         } finally {
             deleteTaskInTaskStore(inputRequiredTaskId);
@@ -2237,7 +2237,7 @@ public abstract class AbstractA2AServerTest {
         Task workingTask = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         saveTaskInTaskStore(workingTask);
 

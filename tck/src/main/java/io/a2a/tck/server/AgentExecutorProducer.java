@@ -14,7 +14,6 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
-import io.a2a.spec.TaskStatusUpdateEvent;
 
 @ApplicationScoped
 public class AgentExecutorProducer {
@@ -43,7 +42,7 @@ public class AgentExecutorProducer {
                 task = Task.builder()
                         .id(context.getTaskId())
                         .contextId(context.getContextId())
-                        .status(new TaskStatus(TaskState.SUBMITTED))
+                        .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                         .history(List.of(context.getMessage()))
                         .build();
                 agentEmitter.addTask(task);
@@ -76,12 +75,12 @@ public class AgentExecutorProducer {
                 System.out.println("====> No task found");
                 throw new TaskNotCancelableError();
             }
-            if (task.status().state() == TaskState.CANCELED) {
+            if (task.status().state() == TaskState.TASK_STATE_CANCELED) {
                 System.out.println("====> task already canceled");
                 throw new TaskNotCancelableError();
             }
 
-            if (task.status().state() == TaskState.COMPLETED) {
+            if (task.status().state() == TaskState.TASK_STATE_COMPLETED) {
                 System.out.println("====> task already completed");
                 throw new TaskNotCancelableError();
             }

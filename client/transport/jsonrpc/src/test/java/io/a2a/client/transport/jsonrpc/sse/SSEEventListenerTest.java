@@ -50,7 +50,7 @@ public class SSEEventListenerTest {
         Task task = (Task) receivedEvent.get();
         assertEquals("task-123", task.id());
         assertEquals("context-456", task.contextId());
-        assertEquals(TaskState.WORKING, task.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, task.status().state());
     }
 
     @Test
@@ -104,7 +104,7 @@ public class SSEEventListenerTest {
         assertEquals("1", taskStatusUpdateEvent.taskId());
         assertEquals("2", taskStatusUpdateEvent.contextId());
         assertFalse(taskStatusUpdateEvent.isFinal());
-        assertEquals(TaskState.SUBMITTED, taskStatusUpdateEvent.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, taskStatusUpdateEvent.status().state());
     }
 
     @Test
@@ -184,7 +184,7 @@ public class SSEEventListenerTest {
 
     @Test
     public void testFinalTaskStatusUpdateEventCancels() {
-        TaskStatus completedStatus = new TaskStatus(TaskState.COMPLETED);
+        TaskStatus completedStatus = new TaskStatus(TaskState.TASK_STATE_COMPLETED);
         // Use constructor since Builder doesn't have isFinal method
         TaskStatusUpdateEvent tsue = new TaskStatusUpdateEvent(
                 "1234",
@@ -243,7 +243,7 @@ public class SSEEventListenerTest {
         assertEquals("1", taskStatusUpdateEvent.taskId());
         assertEquals("2", taskStatusUpdateEvent.contextId());
         assertTrue(taskStatusUpdateEvent.isFinal());
-        assertEquals(TaskState.COMPLETED, taskStatusUpdateEvent.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, taskStatusUpdateEvent.status().state());
 
         assertTrue(future.cancelHandlerCalled);
     }

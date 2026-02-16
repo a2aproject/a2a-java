@@ -1,10 +1,10 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.TaskState.CANCELED;
-import static io.a2a.spec.TaskState.COMPLETED;
-import static io.a2a.spec.TaskState.FAILED;
-import static io.a2a.spec.TaskState.INPUT_REQUIRED;
-import static io.a2a.spec.TaskState.REJECTED;
+import static io.a2a.spec.TaskState.TASK_STATE_CANCELED;
+import static io.a2a.spec.TaskState.TASK_STATE_COMPLETED;
+import static io.a2a.spec.TaskState.TASK_STATE_FAILED;
+import static io.a2a.spec.TaskState.TASK_STATE_INPUT_REQUIRED;
+import static io.a2a.spec.TaskState.TASK_STATE_REJECTED;
 
 import java.util.Map;
 
@@ -59,7 +59,7 @@ public record TaskStatusUpdateEvent(String taskId, TaskStatus status, String con
      * @return true if the task is fianl or waiting for some inputs from the client - false otherwise.
      */
     public boolean isFinalOrInterrupted() {
-        return status.state() == COMPLETED || status.state() == FAILED || status.state() == CANCELED || status.state() == REJECTED || status.state() == INPUT_REQUIRED;
+        return status.state() == TASK_STATE_COMPLETED || status.state() == TASK_STATE_FAILED || status.state() == TASK_STATE_CANCELED || status.state() == TASK_STATE_REJECTED || status.state() == TASK_STATE_INPUT_REQUIRED;
     }
 
     /**

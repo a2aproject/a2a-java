@@ -10,7 +10,7 @@ import io.a2a.spec.TaskState;
  * JSON-RPC response for task cancellation requests.
  * <p>
  * This response contains the updated {@link Task} object after cancellation, typically
- * showing {@link TaskState#CANCELED} status if the cancellation was successful.
+ * showing {@link TaskState#TASK_STATE_CANCELED} status if the cancellation was successful.
  * <p>
  * If the task cannot be canceled (e.g., already completed) or is not found, the error
  * field will contain a {@link io.a2a.spec.A2AError} such as {@link TaskNotCancelableError} or

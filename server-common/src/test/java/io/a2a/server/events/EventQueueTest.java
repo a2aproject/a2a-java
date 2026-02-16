@@ -43,7 +43,7 @@ public class EventQueueTest {
             {
                 "id": "123",
                 "contextId": "session-xyz",
-                "status": {"state": "submitted"}
+                "status": {"state": "TASK_STATE_SUBMITTED"}
             }
             """;
 
@@ -351,7 +351,7 @@ public class EventQueueTest {
         Event event = TaskStatusUpdateEvent.builder()
                 .taskId(TASK_ID)
                 .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         eventQueue.enqueueEvent(event);
