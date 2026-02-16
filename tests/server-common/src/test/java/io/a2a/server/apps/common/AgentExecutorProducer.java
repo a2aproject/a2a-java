@@ -40,6 +40,7 @@ import io.quarkus.arc.profile.IfBuildProfile;
 @IfBuildProfile("test")
 public class AgentExecutorProducer {
 
+    // Inject the existing AgentCard to avoid special handling for grpc
     @Inject
     @PublicAgentCard
     AgentCard agentCard;
@@ -150,14 +151,12 @@ public class AgentExecutorProducer {
                         return;
                     }
 
-                    String serverUrl = getServerUrl(transportProtocol);
-
                     // Extract user message
                     String userInput = context.getUserInput("\n");
 
                     // Check for delegation pattern
                     if (userInput.startsWith("delegate:")) {
-                        handleDelegation(userInput, transportProtocol, serverUrl, agentEmitter);
+                        handleDelegation(userInput, transportProtocol, agentEmitter);
                     } else {
                         handleLocally(userInput, agentEmitter);
                     }
@@ -170,12 +169,12 @@ public class AgentExecutorProducer {
              * Handles delegation by forwarding to another agent via client.
              */
             private void handleDelegation(String userInput, TransportProtocol transportProtocol,
-                                          String serverUrl, AgentEmitter agentEmitter) {
+                                          AgentEmitter agentEmitter) {
                 // Strip "delegate:" prefix
                 String delegatedContent = userInput.substring("delegate:".length()).trim();
 
                 // Create client for same transport
-                try (Client client = AgentToAgentClientFactory.createClient(agentCard, transportProtocol, serverUrl)) {
+                try (Client client = AgentToAgentClientFactory.createClient(agentCard, transportProtocol)) {
                     agentEmitter.startWork();
 
                     // Set up consumer to capture task result
@@ -183,19 +182,8 @@ public class AgentExecutorProducer {
                     AtomicReference<Task> resultRef = new AtomicReference<>();
                     AtomicReference<Throwable> errorRef = new AtomicReference<>();
 
-                    BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
-                        Task task = null;
-                        if (event instanceof TaskEvent taskEvent) {
-                            task = taskEvent.getTask();
-                        } else if (event instanceof TaskUpdateEvent taskUpdateEvent) {
-                            task = taskUpdateEvent.getTask();
-                        }
-
-                        if (task != null && task.status().state().isFinal()) {
-                            resultRef.set(task);
-                            latch.countDown();
-                        }
-                    };
+                    BiConsumer<ClientEvent, AgentCard> consumer =
+                            AgentToAgentClientFactory.createTaskCaptureConsumer(resultRef, latch);
 
                     // Delegate to another agent (new task on same server)
                     // Add a marker so the receiving agent knows to complete the task
@@ -270,25 +258,5 @@ public class AgentExecutorProducer {
             }
         }
         return textBuilder.toString();
-    }
-
-    /**
-     * Gets the server URL for testing based on transport protocol.
-     * Uses the same port property as AgentCardProducer.
-     *
-     * @param transportProtocol the transport protocol
-     * @return server URL (e.g., "http://localhost:8081" or "localhost:9090")
-     */
-    private static String getServerUrl(TransportProtocol transportProtocol) {
-        // Use same property as AgentCardProducer
-        String port = System.getProperty("test.agent.card.port", "8081");
-
-        // Construct URL using same logic as AgentCardProducer
-        if (transportProtocol == TransportProtocol.GRPC) {
-            return "localhost:" + port;
-        } else {
-            // JSONRPC and HTTP_JSON both use HTTP
-            return "http://localhost:" + port;
-        }
     }
 }
