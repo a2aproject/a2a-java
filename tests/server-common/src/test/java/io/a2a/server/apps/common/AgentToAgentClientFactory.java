@@ -39,20 +39,12 @@ public class AgentToAgentClientFactory {
         ClientBuilder clientBuilder = Client.builder(agentCard)
             .clientConfig(clientConfig);
 
-        ClientTransportEnhancer enhancer;
-        switch (transportProtocol) {
-            case JSONRPC:
-                enhancer = new JsonRpcClientEnhancer();
-                break;
-            case GRPC:
-                enhancer = new GrpcClientEnhancer();
-                break;
-            case HTTP_JSON:
-                enhancer = new RestClientEnhancer();
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported transport: " + transportProtocol);
-        }
+        ClientTransportEnhancer enhancer = switch (transportProtocol) {
+            case JSONRPC -> new JsonRpcClientEnhancer();
+            case GRPC -> new GrpcClientEnhancer();
+            case HTTP_JSON -> new RestClientEnhancer();
+            default -> throw new IllegalArgumentException("Unsupported transport: " + transportProtocol);
+        };
 
         enhancer.enhance(clientBuilder, serverUrl);
         return clientBuilder.build();

@@ -2484,19 +2484,8 @@ public abstract class AbstractA2AServerTest {
         AtomicReference<Task> delegationResultRef = new AtomicReference<>();
         AtomicReference<Throwable> delegationErrorRef = new AtomicReference<>();
 
-        BiConsumer<ClientEvent, AgentCard> delegationConsumer = (event, agentCard) -> {
-            Task task = null;
-            if (event instanceof TaskEvent taskEvent) {
-                task = taskEvent.getTask();
-            } else if (event instanceof TaskUpdateEvent taskUpdateEvent) {
-                task = taskUpdateEvent.getTask();
-            }
-
-            if (task != null && task.status().state().isFinal()) {
-                delegationResultRef.set(task);
-                delegationLatch.countDown();
-            }
-        };
+        BiConsumer<ClientEvent, AgentCard> delegationConsumer =
+                createTaskCaptureConsumer(delegationResultRef, delegationLatch);
 
         getClient().sendMessage(delegationMessage, List.of(delegationConsumer), error -> {
             delegationErrorRef.set(error);
@@ -2557,19 +2546,8 @@ public abstract class AbstractA2AServerTest {
         AtomicReference<Task> localResultRef = new AtomicReference<>();
         AtomicReference<Throwable> localErrorRef = new AtomicReference<>();
 
-        BiConsumer<ClientEvent, AgentCard> localConsumer = (event, agentCard) -> {
-            Task task = null;
-            if (event instanceof TaskEvent taskEvent) {
-                task = taskEvent.getTask();
-            } else if (event instanceof TaskUpdateEvent taskUpdateEvent) {
-                task = taskUpdateEvent.getTask();
-            }
-
-            if (task != null && task.status().state().isFinal()) {
-                localResultRef.set(task);
-                localLatch.countDown();
-            }
-        };
+        BiConsumer<ClientEvent, AgentCard> localConsumer =
+                createTaskCaptureConsumer(localResultRef, localLatch);
 
         getClient().sendMessage(localMessage, List.of(localConsumer), error -> {
             localErrorRef.set(error);
@@ -2587,6 +2565,31 @@ public abstract class AbstractA2AServerTest {
         String localText = extractTextFromTask(localResult);
         assertTrue(localText.contains("Handled locally: Hello directly"),
                 "Should be handled locally without delegation. Got: " + localText);
+    }
+
+    /**
+     * Creates a BiConsumer that captures the final task state.
+     * This helper method reduces code duplication in agent-to-agent tests.
+     *
+     * @param taskRef the AtomicReference to store the final task
+     * @param latch the CountDownLatch to signal completion
+     * @return a BiConsumer that captures completed tasks
+     */
+    private BiConsumer<ClientEvent, AgentCard> createTaskCaptureConsumer(
+            AtomicReference<Task> taskRef, CountDownLatch latch) {
+        return (event, agentCard) -> {
+            Task task = null;
+            if (event instanceof TaskEvent taskEvent) {
+                task = taskEvent.getTask();
+            } else if (event instanceof TaskUpdateEvent taskUpdateEvent) {
+                task = taskUpdateEvent.getTask();
+            }
+
+            if (task != null && task.status().state().isFinal()) {
+                taskRef.set(task);
+                latch.countDown();
+            }
+        };
     }
 
     /**

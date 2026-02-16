@@ -175,10 +175,7 @@ public class AgentExecutorProducer {
                 String delegatedContent = userInput.substring("delegate:".length()).trim();
 
                 // Create client for same transport
-                Client client = null;
-                try {
-                    client = AgentToAgentClientFactory.createClient(agentCard, transportProtocol, serverUrl);
-
+                try (Client client = AgentToAgentClientFactory.createClient(agentCard, transportProtocol, serverUrl)) {
                     agentEmitter.startWork();
 
                     // Set up consumer to capture task result
@@ -243,10 +240,6 @@ public class AgentExecutorProducer {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     agentEmitter.fail(new InternalError("Interrupted while waiting for response"));
-                } finally {
-                    if (client != null) {
-                        client.close();
-                    }
                 }
             }
 
