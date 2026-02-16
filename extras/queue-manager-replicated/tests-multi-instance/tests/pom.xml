@@ -84,6 +84,8 @@
                     <!-- Ensure tests run with proper module path for Testcontainers -->
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <!-- workaround for https://github.com/testcontainers/testcontainers-java/issues/11212 -->
+                        <api.version>1.44</api.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
