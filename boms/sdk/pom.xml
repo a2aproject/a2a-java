@@ -170,7 +170,26 @@
                 <version>${gson.version}</version>
             </dependency>
 
-            <!-- Jakarta APIs managed by Jakarta Platform BOM -->
+            <!-- Jakarta APIs - versions from Jakarta Platform BOM, scopes enforced here -->
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <!-- Version from Jakarta Platform BOM: 4.0.1 -->
+            </dependency>
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.json</groupId>
+                <artifactId>jakarta.json-api</artifactId>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <scope>provided</scope>
+            </dependency>
 
             <!-- JSpecify annotations -->
             <dependency>
