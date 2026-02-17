@@ -1,7 +1,6 @@
 package io.a2a.server.util;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import io.a2a.spec.Artifact;

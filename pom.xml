@@ -69,6 +69,7 @@
         <rest-assured.version>5.5.1</rest-assured.version>
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.18</logback.version>
+        <version.testcontainers>1.21.4</version.testcontainers>
         <error-prone.version>2.47.0</error-prone.version>
         <nullaway.version>0.13.1</nullaway.version>
         <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true</error-prone.flag>
@@ -223,6 +224,13 @@
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-bom</artifactId>
                 <version>${grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${version.testcontainers}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

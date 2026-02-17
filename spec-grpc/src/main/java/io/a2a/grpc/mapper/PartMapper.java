@@ -12,6 +12,7 @@ import io.a2a.spec.FileWithUri;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
+import java.util.Map;
 import org.mapstruct.Mapper;
 
 /**
@@ -46,6 +47,7 @@ public interface PartMapper {
 
         if (domain instanceof TextPart textPart) {
             builder.setText(textPart.text());
+            builder.setMetadata(A2ACommonFieldMapper.INSTANCE.metadataToProto(textPart.metadata()));
         } else if (domain instanceof FilePart filePart) {
             FileContent fileContent = filePart.file();
 
@@ -68,10 +70,12 @@ public interface PartMapper {
                     builder.setMediaType(fileWithUri.mimeType());
                 }
             }
+            builder.setMetadata(A2ACommonFieldMapper.INSTANCE.metadataToProto(filePart.metadata()));
         } else if (domain instanceof DataPart dataPart) {
             // Map data to google.protobuf.Value (supports object, array, primitive, or null)
             Value dataValue = A2ACommonFieldMapper.INSTANCE.objectToValue(dataPart.data());
             builder.setData(dataValue);
+            builder.setMetadata(A2ACommonFieldMapper.INSTANCE.metadataToProto(dataPart.metadata()));
         }
 
         return builder.build();
@@ -85,26 +89,26 @@ public interface PartMapper {
         if (proto == null) {
             return null;
         }
-
+        Map<String, Object> metadata = A2ACommonFieldMapper.INSTANCE.metadataFromProto(proto.getMetadata());
         if (proto.hasText()) {
-            return new TextPart(proto.getText());
+            return new TextPart(proto.getText(), metadata);
         } else if (proto.hasRaw()) {
             // raw bytes → FilePart(FileWithBytes)
             String bytes = Base64.getEncoder().encodeToString(proto.getRaw().toByteArray());
             String mimeType = proto.getMediaType().isEmpty() ? null : proto.getMediaType();
             String name = proto.getFilename().isEmpty() ? null : proto.getFilename();
-            return new FilePart(new FileWithBytes(mimeType, name, bytes));
+            return new FilePart(new FileWithBytes(mimeType, name, bytes), metadata);
         } else if (proto.hasUrl()) {
             // url → FilePart(FileWithUri)
             String uri = proto.getUrl();
             String mimeType = proto.getMediaType().isEmpty() ? null : proto.getMediaType();
             String name = proto.getFilename().isEmpty() ? null : proto.getFilename();
-            return new FilePart(new FileWithUri(mimeType, name, uri));
+            return new FilePart(new FileWithUri(mimeType, name, uri), metadata);
         } else if (proto.hasData()) {
             // data (google.protobuf.Value containing any JSON value) → DataPart
             Value dataValue = proto.getData();
             Object data = A2ACommonFieldMapper.INSTANCE.valueToObject(dataValue);
-            return new DataPart(data);
+            return new DataPart(data, metadata);
         }
 
         throw new InvalidRequestError();

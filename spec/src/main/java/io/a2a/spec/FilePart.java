@@ -2,6 +2,8 @@ package io.a2a.spec;
 
 
 import io.a2a.util.Assert;
+import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -31,12 +33,13 @@ import io.a2a.util.Assert;
  * }</pre>
  *
  * @param file the file content (required, either FileWithBytes or FileWithUri)
+ * @param metadata additional metadata for the part
  * @see Part
  * @see FileContent
  * @see FileWithBytes
  * @see FileWithUri
  */
-public record FilePart(FileContent file) implements Part<FileContent> {
+public record FilePart(FileContent file, @Nullable Map<String, Object> metadata) implements Part<FileContent> {
 
     /**
      * The JSON member name discriminator for file parts: "file".
@@ -52,7 +55,19 @@ public record FilePart(FileContent file) implements Part<FileContent> {
      * @param file the file content (required, either FileWithBytes or FileWithUri)
      * @throws IllegalArgumentException if file is null
      */
-    public FilePart {
+    public FilePart (FileContent file, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("file", file);
+        this.metadata = metadata == null ? null : Map.copyOf(metadata);
+        this.file = file;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param file the file content (required, either FileWithBytes or FileWithUri)
+     * @throws IllegalArgumentException if file is null
+     */
+    public FilePart (FileContent file) {
+        this(file, null);
     }
 }

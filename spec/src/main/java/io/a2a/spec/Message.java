@@ -35,14 +35,12 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record Message(Role role, List<Part<?>> parts,
-        String messageId, @Nullable
-        String contextId,
-        @Nullable
-        String taskId, @Nullable
-        List<String> referenceTaskIds,
-        @Nullable
-        Map<String, Object> metadata, @Nullable
-        List<String> extensions
+        String messageId,
+        @Nullable String contextId,
+        @Nullable String taskId,
+        @Nullable List<String> referenceTaskIds,
+        @Nullable Map<String, Object> metadata,
+        @Nullable List<String> extensions
         ) implements EventKind, StreamingEventKind {
 
     /**
