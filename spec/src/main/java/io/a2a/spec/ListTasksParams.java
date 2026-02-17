@@ -227,7 +227,7 @@ public record ListTasksParams(
          */
         public ListTasksParams build() {
             return new ListTasksParams(contextId, status, pageSize, pageToken, historyLength,
-                    statusTimestampAfter, includeArtifacts, Assert.checkNotNullParam("tenant", tenant));
+                    statusTimestampAfter, includeArtifacts, tenant == null ? "" : tenant);
         }
     }
 }
