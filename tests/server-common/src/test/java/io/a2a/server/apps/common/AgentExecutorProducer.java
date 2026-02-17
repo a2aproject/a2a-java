@@ -153,6 +153,10 @@ public class AgentExecutorProducer {
 
                     // Extract user message
                     String userInput = context.getUserInput("\n");
+                    if (userInput == null || userInput.isEmpty()) {
+                        agentEmitter.fail(new InternalError("No user input received"));
+                        return;
+                    }
 
                     // Check for delegation pattern
                     if (userInput.startsWith("delegate:")) {
@@ -161,6 +165,8 @@ public class AgentExecutorProducer {
                         handleLocally(userInput, agentEmitter);
                     }
                 } catch (Exception e) {
+                    // Log the full stack trace to help debug intermittent failures
+                    e.printStackTrace();
                     agentEmitter.fail(new InternalError("Agent-to-agent test failed: " + e.getMessage()));
                 }
             }
@@ -235,10 +241,16 @@ public class AgentExecutorProducer {
              * Handles request locally without delegation.
              */
             private void handleLocally(String userInput, AgentEmitter agentEmitter) {
-                agentEmitter.startWork();
-                String response = "Handled locally: " + userInput;
-                agentEmitter.addArtifact(List.of(new TextPart(response)));
-                agentEmitter.complete();
+                try {
+                    agentEmitter.startWork();
+                    String response = "Handled locally: " + userInput;
+                    agentEmitter.addArtifact(List.of(new TextPart(response)));
+                    agentEmitter.complete();
+                } catch (Exception e) {
+                    // Defensive catch to ensure we always emit a final state
+                    e.printStackTrace();
+                    agentEmitter.fail(new InternalError("Local handling failed: " + e.getMessage()));
+                }
             }
         };
     }
