@@ -2,6 +2,7 @@ package io.a2a.spec;
 
 
 import io.a2a.util.Assert;
+import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 
@@ -37,11 +38,12 @@ import org.jspecify.annotations.Nullable;
  * }</pre>
  *
  * @param data the structured data (required, supports JSON objects, arrays, primitives, and null)
+ * @param metadata additional metadata for the part
  * @see Part
  * @see Message
  * @see Artifact
  */
-public record DataPart(Object data) implements Part<Object> {
+public record DataPart(Object data, @Nullable Map<String, Object> metadata) implements Part<Object> {
 
     /**
      * The JSON member name discriminator for data parts: "data".
@@ -60,50 +62,19 @@ public record DataPart(Object data) implements Part<Object> {
      * @param data the structured data (supports JSON objects, arrays, primitives, and null)
      * @throws IllegalArgumentException if data is null
      */
-    public DataPart {
+    public DataPart (Object data, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("data", data);
+        this.metadata = metadata == null ? null : Map.copyOf(metadata);
+        this.data = data;
     }
 
     /**
-     * Create a new Builder
+     * Constructor.
      *
-     * @return the builder
+     * @param data the structured data (supports JSON objects, arrays, primitives, and not null)
+     * @throws IllegalArgumentException if data is null
      */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /**
-     * Builder for constructing {@link DataPart} instances.
-     */
-    public static class Builder {
-        private @Nullable Object data;
-
-        /**
-         * Creates a new Builder with all fields unset.
-         */
-        private Builder() {
-        }
-
-        /**
-         * Sets the structured data.
-         *
-         * @param data the structured data (required, supports JSON objects, arrays, primitives, and null)
-         * @return this builder for method chaining
-         */
-        public Builder data(Object data) {
-            this.data = data;
-            return this;
-        }
-
-        /**
-         * Builds a new {@link DataPart} from the current builder state.
-         *
-         * @return a new DataPart instance
-         * @throws IllegalArgumentException if data is null
-         */
-        public DataPart build() {
-            return new DataPart(Assert.checkNotNullParam("data", data));
-        }
+    public DataPart(Object data) {
+        this(data, null);
     }
 }

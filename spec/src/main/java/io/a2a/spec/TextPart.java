@@ -2,6 +2,8 @@ package io.a2a.spec;
 
 
 import io.a2a.util.Assert;
+import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -20,11 +22,12 @@ import io.a2a.util.Assert;
  * }</pre>
  *
  * @param text the text content (required, must not be null)
+ * @param metadata additional metadata for the part
  * @see Part
  * @see Message
  * @see Artifact
  */
-public record TextPart(String text) implements Part<String> {
+public record TextPart(String text, @Nullable Map<String, Object> metadata) implements Part<String> {
 
     /**
      * The JSON member name discriminator for text parts: "text".
@@ -40,7 +43,19 @@ public record TextPart(String text) implements Part<String> {
      * @param text the text content (required, must not be null)
      * @throws IllegalArgumentException if text is null
      */
-    public TextPart {
+    public TextPart (String text, @Nullable Map<String, Object> metadata) {
         Assert.checkNotNullParam("text", text);
+        this.metadata = metadata == null ? null : Map.copyOf(metadata);
+        this.text = text;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param text the text content (required, must not be null)
+     * @throws IllegalArgumentException if data is null
+     */
+    public TextPart (String text){
+        this(text, null);
     }
 }

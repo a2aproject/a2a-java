@@ -22,6 +22,7 @@ import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.gson.Gson;
@@ -29,6 +30,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
@@ -500,9 +502,17 @@ public class JsonUtil {
     static class PartTypeAdapter extends TypeAdapter<Part<?>> {
 
         private static final Set<String> VALID_KEYS = Set.of(TEXT, FILE, DATA);
+        private static final Type MAP_TYPE = new TypeToken<Map<String, Object>>(){}.getType();
 
         // Create separate Gson instance without the Part adapter to avoid recursion
         private final Gson delegateGson = createBaseGsonBuilder().create();
+
+        private void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata) throws java.io.IOException {
+            if (metadata != null && !metadata.isEmpty()) {
+                out.name("metadata");
+                delegateGson.toJson(metadata, MAP_TYPE, out);
+            }
+        }
 
         @Override
         public void write(JsonWriter out, Part<?> value) throws java.io.IOException {
@@ -517,14 +527,17 @@ public class JsonUtil {
                 // TextPart: { "text": "value" } - direct string value
                 out.name(TEXT);
                 out.value(textPart.text());
+                writeMetadata(out, textPart.metadata());
             } else if (value instanceof FilePart filePart) {
                 // FilePart: { "file": {...} }
                 out.name(FILE);
                 delegateGson.toJson(filePart.file(), FileContent.class, out);
+                writeMetadata(out, filePart.metadata());
             } else if (value instanceof DataPart dataPart) {
                 // DataPart: { "data": <any JSON value> }
                 out.name(DATA);
                 delegateGson.toJson(dataPart.data(), Object.class, out);
+                writeMetadata(out, dataPart.metadata());
             } else {
                 throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
             }
@@ -548,24 +561,34 @@ public class JsonUtil {
 
             com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
 
-            // Check for member name discriminators (v1.0 protocol)
-            Set<String> keys = jsonObject.keySet();
-            if (keys.size() != 1) {
-                throw new JsonSyntaxException(format("Part object must have exactly one key, which must be one of: %s (found: %s)", VALID_KEYS, keys));
+            // Extract metadata if present
+            Map<String, Object> metadata = null;
+            if (jsonObject.has("metadata")) {
+                metadata = delegateGson.fromJson(jsonObject.get("metadata"), new TypeToken<Map<String, Object>>(){}.getType());
             }
 
-            String discriminator = keys.iterator().next();
+            // Check for member name discriminators (v1.0 protocol)
+            Set<String> keys = jsonObject.keySet();
+            if (keys.size() < 1 || keys.size() > 2) {
+                throw new JsonSyntaxException(format("Part object must have one content key from %s and optionally 'metadata' (found: %s)", VALID_KEYS, keys));
+            }
+
+            // Find the discriminator (should be one of TEXT, FILE, DATA)
+            String discriminator = keys.stream()
+                    .filter(VALID_KEYS::contains)
+                    .findFirst()
+                    .orElseThrow(() -> new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, keys)));
 
             return switch (discriminator) {
-                case TEXT -> new TextPart(jsonObject.get(TEXT).getAsString());
-                case FILE -> new FilePart(delegateGson.fromJson(jsonObject.get(FILE), FileContent.class));
+                case TEXT -> new TextPart(jsonObject.get(TEXT).getAsString(), metadata);
+                case FILE -> new FilePart(delegateGson.fromJson(jsonObject.get(FILE), FileContent.class), metadata);
                 case DATA -> {
                     // DataPart supports any JSON value: object, array, primitive, or null
                     Object data = delegateGson.fromJson(
                             jsonObject.get(DATA),
                             Object.class
                     );
-                    yield new DataPart(data);
+                    yield new DataPart(data, metadata);
                 }
                 default ->
                         throw new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, discriminator));
