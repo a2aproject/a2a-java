@@ -764,7 +764,7 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new TaskNotFoundError();
         }
 
-        PushNotificationConfig pushNotificationConfig = pushConfigStore.setInfo(params.taskId(), params.pushNotificationConfig());
+        PushNotificationConfig pushNotificationConfig = pushConfigStore.setInfo(params.taskId(), params.config());
         return new TaskPushNotificationConfig(params.taskId(), pushNotificationConfig, params.tenant());
     }
 
@@ -774,35 +774,32 @@ public class DefaultRequestHandler implements RequestHandler {
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }
-        Task task = taskStore.get(params.id());
+        Task task = taskStore.get(params.taskId());
         if (task == null) {
             throw new TaskNotFoundError();
         }
 
-        ListTaskPushNotificationConfigResult listTaskPushNotificationConfigResult = pushConfigStore.getInfo(new ListTaskPushNotificationConfigParams(params.id()));
+        ListTaskPushNotificationConfigResult listTaskPushNotificationConfigResult = pushConfigStore.getInfo(new ListTaskPushNotificationConfigParams(params.taskId()));
         if (listTaskPushNotificationConfigResult == null || listTaskPushNotificationConfigResult.isEmpty()) {
             throw new InternalError("No push notification config found");
         }
 
-        @Nullable String configId = params.pushNotificationConfigId();
-        return new TaskPushNotificationConfig(params.id(), getPushNotificationConfig(listTaskPushNotificationConfigResult, configId), params.tenant());
+        String configId = params.id();
+        return new TaskPushNotificationConfig(params.taskId(), getPushNotificationConfig(listTaskPushNotificationConfigResult, configId), params.tenant());
     }
 
     private PushNotificationConfig getPushNotificationConfig(ListTaskPushNotificationConfigResult notificationConfigList,
-                                                             @Nullable String configId) {
-        if (configId != null) {
-            for (TaskPushNotificationConfig notificationConfig : notificationConfigList.configs()) {
-                if (configId.equals(notificationConfig.pushNotificationConfig().id())) {
-                    return notificationConfig.pushNotificationConfig();
-                }
+            String configId) {
+        for (TaskPushNotificationConfig notificationConfig : notificationConfigList.configs()) {
+            if (configId.equals(notificationConfig.config().id())) {
+                return notificationConfig.config();
             }
         }
-        return notificationConfigList.configs().get(0).pushNotificationConfig();
+        return notificationConfigList.configs().get(0).config();
     }
 
     @Override
-    public Flow.Publisher<StreamingEventKind> onSubscribeToTask(
-            TaskIdParams params, ServerCallContext context) throws A2AError {
+    public Flow.Publisher<StreamingEventKind> onSubscribeToTask(TaskIdParams params, ServerCallContext context) throws A2AError {
         LOGGER.debug("onSubscribeToTask - taskId: {}", params.id());
         Task task = taskStore.get(params.id());
         if (task == null) {
@@ -858,12 +855,12 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new UnsupportedOperationError();
         }
 
-        Task task = taskStore.get(params.id());
+        Task task = taskStore.get(params.taskId());
         if (task == null) {
             throw new TaskNotFoundError();
         }
 
-        pushConfigStore.deleteInfo(params.id(), params.pushNotificationConfigId());
+        pushConfigStore.deleteInfo(params.taskId(), params.id());
     }
 
     private boolean shouldAddPushInfo(MessageSendParams params) {

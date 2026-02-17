@@ -310,7 +310,7 @@ public class RestTransportTest {
                                 new AuthenticationInfo("jwt", null))
                         .build(), "tenant");
         TaskPushNotificationConfig taskPushNotificationConfig = client.createTaskPushNotificationConfiguration(pushedConfig, null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.config();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
@@ -336,7 +336,7 @@ public class RestTransportTest {
         RestTransport client = new RestTransport(CARD);
         TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
                 new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "10"), null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.pushNotificationConfig();
+        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.config();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
@@ -363,14 +363,14 @@ public class RestTransportTest {
         ListTaskPushNotificationConfigResult result = client.listTaskPushNotificationConfigurations(
                 new ListTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
         assertEquals(2, result.configs().size());
-        PushNotificationConfig pushNotificationConfig = result.configs().get(0).pushNotificationConfig();
+        PushNotificationConfig pushNotificationConfig = result.configs().get(0).config();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://example.com/callback", pushNotificationConfig.url());
         assertEquals("10", pushNotificationConfig.id());
         AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
         assertEquals("jwt", authenticationInfo.scheme());
         assertEquals("", authenticationInfo.credentials());
-        pushNotificationConfig = result.configs().get(1).pushNotificationConfig();
+        pushNotificationConfig = result.configs().get(1).config();
         assertNotNull(pushNotificationConfig);
         assertEquals("https://test.com/callback", pushNotificationConfig.url());
         assertEquals("5", pushNotificationConfig.id());

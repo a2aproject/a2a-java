@@ -133,9 +133,9 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         assertNotNull(storedConfig);
         assertEquals(taskId, storedConfig.taskId());
-        assertEquals("test-config-1", storedConfig.pushNotificationConfig().id());
-        assertEquals("http://localhost:9999/mock-endpoint", storedConfig.pushNotificationConfig().url());
-        assertEquals("test-token-123", storedConfig.pushNotificationConfig().token());
+        assertEquals("test-config-1", storedConfig.config().id());
+        assertEquals("http://localhost:9999/mock-endpoint", storedConfig.config().url());
+        assertEquals("test-token-123", storedConfig.config().token());
 
         // Step 4: Update the task to trigger the notification
         Message updateMessage = Message.builder()
@@ -239,10 +239,10 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         // Verify NO overlap between pages - collect all IDs from both pages
         List<String> firstPageIds = firstPage.configs().stream()
-                .map(c -> c.pushNotificationConfig().id())
+                .map(c -> c.config().id())
                 .toList();
         List<String> secondPageIds = secondPage.configs().stream()
-                .map(c -> c.pushNotificationConfig().id())
+                .map(c -> c.config().id())
                 .toList();
 
         // Check that no ID from first page appears in second page
@@ -471,10 +471,10 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
       assertEquals(2, result2.configs().size(), "Task2 should have 2 configs");
 
       List<String> task1Ids = result1.configs().stream()
-          .map(c -> taskId1 + c.pushNotificationConfig().id())
+          .map(c -> taskId1 + c.config().id())
           .toList();
       List<String> task2Ids = result2.configs().stream()
-          .map(c -> taskId2 + c.pushNotificationConfig().id())
+          .map(c -> taskId2 + c.config().id())
           .toList();
 
       for (String id : task1Ids) {
@@ -535,7 +535,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
 
         result.configs().forEach(c ->
-            allConfigIds.add(c.pushNotificationConfig().id()));
+            allConfigIds.add(c.config().id()));
         pageToken = result.nextPageToken();
         pageCount++;
 

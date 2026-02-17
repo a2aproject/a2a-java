@@ -18,16 +18,16 @@ public interface DeleteTaskPushNotificationConfigParamsMapper {
      * Converts proto DeleteTaskPushNotificationConfigRequest to domain DeleteTaskPushNotificationConfigParams.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
-    @Mapping(target = "id", source = "taskId")
-    @Mapping(target = "pushNotificationConfigId", source = "id")
+    @Mapping(target = "taskId", source = "taskId")
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "tenant", source = "tenant")
     DeleteTaskPushNotificationConfigParams fromProto(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest proto);
 
     /**
      * Converts domain DeleteTaskPushNotificationConfigParams to proto DeleteTaskPushNotificationConfigRequest.
      */
-    @Mapping(target = "taskId", source = "id")
-    @Mapping(target = "id", source = "pushNotificationConfigId")
+    @Mapping(target = "taskId", source = "taskId")
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "tenant", source = "tenant")
     io.a2a.grpc.DeleteTaskPushNotificationConfigRequest toProto(DeleteTaskPushNotificationConfigParams domain);
 }

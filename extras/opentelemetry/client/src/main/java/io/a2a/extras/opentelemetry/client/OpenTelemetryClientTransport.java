@@ -246,8 +246,8 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         if (request.taskId() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, request.taskId());
         }
-        if (request.pushNotificationConfig() != null && request.pushNotificationConfig().id() != null) {
-            spanBuilder.setAttribute(GENAI_CONFIG_ID, request.pushNotificationConfig().id());
+        if (request.config() != null && request.config().id() != null) {
+            spanBuilder.setAttribute(GENAI_CONFIG_ID, request.config().id());
         }
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, request.toString());
@@ -276,11 +276,11 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         ClientCallContext clientContext = createContext(context);
         SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD).setSpanKind(SpanKind.CLIENT);
         spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
-        if (request.id() != null) {
-            spanBuilder.setAttribute(GENAI_TASK_ID, request.id());
+        if (request.taskId() != null) {
+            spanBuilder.setAttribute(GENAI_TASK_ID, request.taskId());
         }
-        if (request.pushNotificationConfigId() != null) {
-            spanBuilder.setAttribute(GENAI_CONFIG_ID, request.pushNotificationConfigId());
+        if (request.id() != null) {
+            spanBuilder.setAttribute(GENAI_CONFIG_ID, request.id());
         }
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, request.toString());
@@ -345,11 +345,11 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, request.toString());
         }
-        if (request.id() != null) {
-            spanBuilder.setAttribute(GENAI_TASK_ID, request.id());
+        if (request.taskId() != null) {
+            spanBuilder.setAttribute(GENAI_TASK_ID, request.taskId());
         }
-        if (request.pushNotificationConfigId() != null) {
-            spanBuilder.setAttribute(GENAI_CONFIG_ID, request.pushNotificationConfigId());
+        if (request.id() != null) {
+            spanBuilder.setAttribute(GENAI_CONFIG_ID, request.id());
         }
         Span span = spanBuilder.startSpan();
         try (Scope scope = span.makeCurrent()) {
