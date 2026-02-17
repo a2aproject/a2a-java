@@ -3,6 +3,7 @@ package io.a2a.spec;
 
 
 import io.a2a.util.Assert;
+import io.a2a.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -111,7 +112,7 @@ public record DeleteTaskPushNotificationConfigParams(String id, String pushNotif
             return new DeleteTaskPushNotificationConfigParams(
                     Assert.checkNotNullParam("id", id),
                     Assert.checkNotNullParam("pushNotificationConfigId", pushNotificationConfigId),
-                    Assert.checkNotNullParam("tenant", tenant));
+                    Utils.defaultIfNull(tenant,""));
         }
     }
 }
