@@ -2503,7 +2503,7 @@ public abstract class AbstractA2AServerTest {
         }
 
         assertNotNull(delegationResult, "Delegation task should not be null");
-        assertEquals(TaskState.COMPLETED, delegationResult.status().state(),
+        assertEquals(TaskState.TASK_STATE_COMPLETED, delegationResult.status().state(),
                 "Delegation task should be completed");
         assertNotNull(delegationResult.artifacts(), "Delegation should have artifacts");
         assertFalse(delegationResult.artifacts().isEmpty(), "Delegation should have at least one artifact");
@@ -2565,7 +2565,7 @@ public abstract class AbstractA2AServerTest {
         }
 
         assertNotNull(localResult, "Local task should not be null");
-        assertEquals(TaskState.COMPLETED, localResult.status().state(),
+        assertEquals(TaskState.TASK_STATE_COMPLETED, localResult.status().state(),
                 "Local task should be completed");
 
         String localText = extractTextFromTask(localResult);
