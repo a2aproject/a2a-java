@@ -234,7 +234,13 @@ public class Client extends AbstractClient {
                             @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
                             @Nullable Consumer<Throwable> streamingErrorHandler,
                             @Nullable ClientCallContext context) throws A2AClientException {
-        MessageSendParams messageSendParams = getMessageSendParams(request, clientConfig);
+        MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(clientConfig.getPushNotificationConfig());
+
+        MessageSendParams messageSendParams = MessageSendParams.builder()
+                .message(request)
+                .configuration(messageSendConfiguration)
+                .metadata(clientConfig.getMetadata())
+                .build();
         sendMessage(messageSendParams, consumers, streamingErrorHandler, context);
     }
 
@@ -289,7 +295,6 @@ public class Client extends AbstractClient {
                             @Nullable Map<String, Object> metadata,
                             @Nullable ClientCallContext context) throws A2AClientException {
         MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(pushNotificationConfiguration);
-
         MessageSendParams messageSendParams = MessageSendParams.builder()
                 .message(request)
                 .configuration(messageSendConfiguration)
@@ -298,6 +303,37 @@ public class Client extends AbstractClient {
 
         sendMessage(messageSendParams, consumers, streamingErrorHandler, context);
     }
+
+    @Override
+    public void sendMessage(@NonNull MessageSendParams messageSendParams,
+                            @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                            @Nullable Consumer<Throwable> streamingErrorHandler,
+                            @Nullable ClientCallContext context) throws A2AClientException {
+        if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
+            EventKind eventKind = clientTransport.sendMessage(messageSendParams, context);
+            ClientEvent clientEvent;
+            if (eventKind instanceof Task task) {
+                clientEvent = new TaskEvent(task);
+            } else {
+                // must be a message
+                clientEvent = new MessageEvent((Message) eventKind);
+            }
+            consume(clientEvent, agentCard, consumers);
+        } else {
+            ClientTaskManager tracker = new ClientTaskManager();
+            Consumer<Throwable> overriddenErrorHandler = getOverriddenErrorHandler(streamingErrorHandler);
+            Consumer<StreamingEventKind> eventHandler = event -> {
+                try {
+                    ClientEvent clientEvent = getClientEvent(event, tracker);
+                    consume(clientEvent, agentCard, consumers);
+                } catch (A2AClientError e) {
+                    overriddenErrorHandler.accept(e);
+                }
+            };
+            clientTransport.sendMessageStreaming(messageSendParams, eventHandler, overriddenErrorHandler, context);
+        }
+    }
+
 
     /**
      * Retrieve a specific task by ID.
@@ -666,33 +702,6 @@ public class Client extends AbstractClient {
                 .build();
     }
 
-    private void sendMessage(@NonNull MessageSendParams messageSendParams, @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
-                             @Nullable Consumer<Throwable> errorHandler, @Nullable ClientCallContext context) throws A2AClientException {
-        if (! clientConfig.isStreaming() || ! agentCard.capabilities().streaming()) {
-            EventKind eventKind = clientTransport.sendMessage(messageSendParams, context);
-            ClientEvent clientEvent;
-            if (eventKind instanceof Task task) {
-                clientEvent = new TaskEvent(task);
-            } else {
-                // must be a message
-                clientEvent = new MessageEvent((Message) eventKind);
-            }
-            consume(clientEvent, agentCard, consumers);
-        } else {
-            ClientTaskManager tracker = new ClientTaskManager();
-            Consumer<Throwable> overriddenErrorHandler = getOverriddenErrorHandler(errorHandler);
-            Consumer<StreamingEventKind> eventHandler = event -> {
-                try {
-                    ClientEvent clientEvent = getClientEvent(event, tracker);
-                    consume(clientEvent, agentCard, consumers);
-                } catch (A2AClientError e) {
-                    overriddenErrorHandler.accept(e);
-                }
-            };
-            clientTransport.sendMessageStreaming(messageSendParams, eventHandler, overriddenErrorHandler, context);
-        }
-    }
-
     private @NonNull Consumer<Throwable> getOverriddenErrorHandler(@Nullable Consumer<Throwable> errorHandler) {
         return e -> {
             if (errorHandler != null) {
@@ -709,15 +718,5 @@ public class Client extends AbstractClient {
         for (BiConsumer<ClientEvent, AgentCard> consumer : consumers) {
             consumer.accept(clientEvent, agentCard);
         }
-    }
-
-    private MessageSendParams getMessageSendParams(Message request, ClientConfig clientConfig) {
-        MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(clientConfig.getPushNotificationConfig());
-
-        return MessageSendParams.builder()
-                .message(request)
-                .configuration(messageSendConfiguration)
-                .metadata(clientConfig.getMetadata())
-                .build();
     }
 }

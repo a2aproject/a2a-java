@@ -17,6 +17,7 @@ import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
+import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
@@ -158,6 +159,26 @@ public abstract class AbstractClient implements AutoCloseable {
     public abstract void sendMessage(@NonNull Message request,
                                      @Nullable PushNotificationConfig pushNotificationConfiguration,
                                      @Nullable Map<String, Object> metadata,
+                                     @Nullable ClientCallContext context) throws A2AClientException;
+
+    /**
+     * Send a message to the remote agent. This method will automatically use
+     * the streaming or non-streaming approach as determined by the server's
+     * agent card and the client configuration. The specified client consumers
+     * will be used to handle messages, tasks, and update events received
+     * from the remote agent. The specified streaming error handler will be used
+     * if an error occurs during streaming. The configured client push notification
+     * configuration will get used for streaming.
+     *
+     * @param params the request parameters
+     * @param consumers a list of consumers to pass responses from the remote agent to
+     * @param streamingErrorHandler an error handler that should be used for the streaming case if an error occurs
+     * @param context optional client call context for the request
+     * @throws A2AClientException if sending the message fails for any reason
+     */
+    public abstract void sendMessage(@NonNull MessageSendParams params,
+                                     @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
+                                     @Nullable Consumer<Throwable> streamingErrorHandler,
                                      @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
