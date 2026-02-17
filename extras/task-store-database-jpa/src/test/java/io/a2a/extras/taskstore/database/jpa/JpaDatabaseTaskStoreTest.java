@@ -70,7 +70,7 @@ public class JpaDatabaseTaskStoreTest {
     public void testSaveAndRetrieveTaskWithHistory() {
         // Create a message for the task history
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("Hello, agent!")))
                 .messageId("msg-1")
                 .build();
@@ -601,7 +601,7 @@ public class JpaDatabaseTaskStoreTest {
         List<Message> longHistory = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
             Message message = Message.builder()
-                    .role(Message.Role.USER)
+                    .role(Message.Role.ROLE_USER)
                     .parts(Collections.singletonList(new TextPart("Message " + i)))
                     .messageId("msg-history-limit-" + i)
                     .build();

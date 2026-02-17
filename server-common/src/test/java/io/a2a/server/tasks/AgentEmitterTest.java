@@ -1,6 +1,6 @@
 package io.a2a.server.tasks;
 
-import static io.a2a.spec.Message.Role.AGENT;
+import static io.a2a.spec.Message.Role.ROLE_AGENT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -38,7 +38,7 @@ public class AgentEmitterTest {
             .taskId(TEST_TASK_ID)
             .contextId(TEST_TASK_CONTEXT_ID)
             .parts(new TextPart("Test message"))
-            .role(AGENT)
+            .role(ROLE_AGENT)
             .build();
 
     private static final List<Part<?>> SAMPLE_PARTS = List.of(new TextPart("Test message"));
@@ -243,7 +243,7 @@ public class AgentEmitterTest {
     public void testNewAgentMessage() throws Exception {
         Message message = agentEmitter.newAgentMessage(SAMPLE_PARTS, null);
 
-        assertEquals(AGENT, message.role());
+        assertEquals(ROLE_AGENT, message.role());
         assertEquals(TEST_TASK_ID, message.taskId());
         assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
         assertNotNull(message.messageId());
@@ -256,7 +256,7 @@ public class AgentEmitterTest {
         Map<String, Object> metadata = Map.of("key", "value");
         Message message = agentEmitter.newAgentMessage(SAMPLE_PARTS, metadata);
 
-        assertEquals(AGENT, message.role());
+        assertEquals(ROLE_AGENT, message.role());
         assertEquals(TEST_TASK_ID, message.taskId());
         assertEquals(TEST_TASK_CONTEXT_ID, message.contextId());
         assertNotNull(message.messageId());

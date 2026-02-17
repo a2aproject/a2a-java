@@ -112,7 +112,7 @@ public class ResultAggregatorTest {
 
     @Test
     void testConstructorWithMessage() {
-        Message initialMessage = createSampleMessage("initial", "msg1", Message.Role.USER);
+        Message initialMessage = createSampleMessage("initial", "msg1", Message.Role.ROLE_USER);
         ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, initialMessage, testExecutor, testExecutor);
 
         // Test that the message is properly stored by checking getCurrentResult
@@ -123,7 +123,7 @@ public class ResultAggregatorTest {
 
     @Test
     void testGetCurrentResultWithMessageSet() {
-        Message sampleMessage = createSampleMessage("hola", "msg1", Message.Role.USER);
+        Message sampleMessage = createSampleMessage("hola", "msg1", Message.Role.ROLE_USER);
         ResultAggregator aggregatorWithMessage = new ResultAggregator(mockTaskManager, sampleMessage, testExecutor, testExecutor);
 
         EventKind result = aggregatorWithMessage.getCurrentResult();
@@ -218,7 +218,7 @@ public class ResultAggregatorTest {
     @Test
     void testGetCurrentResultWithMessageTakesPrecedence() {
         // Test that when both message and task are available, message takes precedence
-        Message message = createSampleMessage("priority message", "pri1", Message.Role.USER);
+        Message message = createSampleMessage("priority message", "pri1", Message.Role.ROLE_USER);
         ResultAggregator messageAggregator = new ResultAggregator(mockTaskManager, message, testExecutor, testExecutor);
 
         // Even if we set up the task manager to return something, message should take precedence

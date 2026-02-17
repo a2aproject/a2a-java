@@ -443,7 +443,7 @@ public class AgentEmitter {
      */
     public Message newAgentMessage(List<Part<?>> parts, @Nullable Map<String, Object> metadata) {
         return Message.builder()
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .taskId(taskId)
                 .contextId(contextId)
                 .messageId(UUID.randomUUID().toString())
@@ -614,7 +614,7 @@ public class AgentEmitter {
     public Message.Builder messageBuilder() {
         Message.Builder builder = Message.builder()
                 .contextId(contextId)
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .messageId(UUID.randomUUID().toString());
 
         // Only set taskId if present (messages can exist without tasks)

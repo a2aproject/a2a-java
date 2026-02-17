@@ -75,7 +75,7 @@ public class TaskManagerTest {
         TaskStatus newStatus = new TaskStatus(
                 TaskState.TASK_STATE_WORKING,
                 Message.builder()
-                        .role(Message.Role.AGENT)
+                        .role(Message.Role.ROLE_AGENT)
                         .parts(Collections.singletonList(new TextPart("content")))
                         .messageId("messageId")
                         .build(),
@@ -385,7 +385,7 @@ public class TaskManagerTest {
         // Test that adding a task with no message, and there is a TaskManager.initialMessage, 
         // the initialMessage gets used
         Message initialMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
                 .build();
@@ -416,7 +416,7 @@ public class TaskManagerTest {
     public void testTaskWithMessageDoesNotUseInitialMessage() throws A2AServerException {
         // Test that adding a task with a message does not use the initial message
         Message initialMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
                 .build();
@@ -424,7 +424,7 @@ public class TaskManagerTest {
         TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
         
         Message taskMessage = Message.builder()
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .parts(Collections.singletonList(new TextPart("task message")))
                 .messageId("task-msg-id")
                 .build();
@@ -625,7 +625,7 @@ public class TaskManagerTest {
     public void testCreateTaskWithInitialMessage() throws A2AServerException {
         // Test equivalent of _init_task_obj functionality
         Message initialMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
                 .build();
@@ -702,7 +702,7 @@ public class TaskManagerTest {
     @Test
     public void testUpdateWithMessage() throws A2AServerException {
         Message initialMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("initial message")))
                 .messageId("initial-msg-id")
                 .build();
@@ -710,7 +710,7 @@ public class TaskManagerTest {
         TaskManager taskManagerWithInitialMessage = new TaskManager(null, null, taskStore, initialMessage);
 
         Message taskMessage = Message.builder()
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .parts(Collections.singletonList(new TextPart("task message")))
                 .messageId("task-msg-id")
                 .build();
@@ -725,7 +725,7 @@ public class TaskManagerTest {
         Task saved = taskManagerWithInitialMessage.getTask();
 
         Message updateMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("update message")))
                 .messageId("update-msg-id")
                 .build();

@@ -210,7 +210,7 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
                 spanBuilder.setAttribute(GENAI_MESSAGE_ID, params.message().messageId());
             }
             if (params.message().role() != null) {
-                spanBuilder.setAttribute(GENAI_ROLE, params.message().role().asString());
+                spanBuilder.setAttribute(GENAI_ROLE, params.message().role().name());
             }
             if (params.message().extensions() != null && !params.message().extensions().isEmpty()) {
                 spanBuilder.setAttribute(GENAI_EXTENSIONS, String.join(",", params.message().extensions()));
@@ -258,7 +258,7 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
                 spanBuilder.setAttribute(GENAI_MESSAGE_ID, params.message().messageId());
             }
             if (params.message().role() != null) {
-                spanBuilder.setAttribute(GENAI_ROLE, params.message().role().asString());
+                spanBuilder.setAttribute(GENAI_ROLE, params.message().role().name());
             }
             if (params.message().extensions() != null && !params.message().extensions().isEmpty()) {
                 spanBuilder.setAttribute(GENAI_EXTENSIONS, String.join(",", params.message().extensions()));

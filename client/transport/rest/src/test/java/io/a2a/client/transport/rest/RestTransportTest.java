@@ -110,7 +110,7 @@ public class RestTransportTest {
     @Test
     public void testSendMessage() throws Exception {
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
                 .messageId("message-1234")
@@ -143,7 +143,7 @@ public class RestTransportTest {
         assertEquals(1, task.history().size());
         Message history = task.history().get(0);
         assertEquals("message", history.kind());
-        assertEquals(Message.Role.USER, history.role());
+        assertEquals(Message.Role.ROLE_USER, history.role());
         assertEquals("context-1234", history.contextId());
         assertEquals("message-1234", history.messageId());
         assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", history.taskId());
@@ -215,7 +215,7 @@ public class RestTransportTest {
         assertEquals(1, task.history().size());
         Message history = task.history().get(0);
         assertEquals("message", history.kind());
-        assertEquals(Message.Role.USER, history.role());
+        assertEquals(Message.Role.ROLE_USER, history.role());
         assertEquals("message-123", history.messageId());
         assertEquals(3, history.parts().size());
         assertTrue(history.parts().get(0) instanceof io.a2a.spec.TextPart);
@@ -252,7 +252,7 @@ public class RestTransportTest {
 
         RestTransport client = new RestTransport(CARD);
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("tell me some jokes")))
                 .contextId("context-1234")
                 .messageId("message-1234")
@@ -478,7 +478,7 @@ public class RestTransportTest {
 
         RestTransport client = new RestTransport(CARD);
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-test")
                 .messageId("message-test")
@@ -526,7 +526,7 @@ public class RestTransportTest {
 
         RestTransport client = new RestTransport(CARD);
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-test")
                 .messageId("message-test")
@@ -573,7 +573,7 @@ public class RestTransportTest {
 
         RestTransport client = new RestTransport(CARD);
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-test")
                 .messageId("message-test")

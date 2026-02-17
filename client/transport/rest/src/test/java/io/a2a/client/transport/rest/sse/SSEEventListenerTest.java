@@ -126,7 +126,7 @@ public class SSEEventListenerTest {
         assertNotNull(receivedEvent.get());
         assertTrue(receivedEvent.get() instanceof Message);
         Message message = (Message) receivedEvent.get();
-        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(Message.Role.ROLE_AGENT, message.role());
         assertEquals("msg-123", message.messageId());
         assertEquals("context-456", message.contextId());
         assertEquals(1, message.parts().size());

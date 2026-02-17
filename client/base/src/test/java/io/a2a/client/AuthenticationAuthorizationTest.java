@@ -66,7 +66,7 @@ public class AuthenticationAuthorizationTest {
     public void setUp() {
         server = new ClientAndServer(4001);
         MESSAGE = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-1234")
                 .messageId("message-1234")

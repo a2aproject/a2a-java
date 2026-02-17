@@ -35,14 +35,12 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record Message(Role role, List<Part<?>> parts,
-        String messageId, @Nullable
-        String contextId,
-        @Nullable
-        String taskId, @Nullable
-        List<String> referenceTaskIds,
-        @Nullable
-        Map<String, Object> metadata, @Nullable
-        List<String> extensions
+        String messageId,
+        @Nullable String contextId,
+        @Nullable String taskId,
+        @Nullable List<String> referenceTaskIds,
+        @Nullable Map<String, Object> metadata,
+        @Nullable List<String> extensions
         ) implements EventKind, StreamingEventKind {
 
     /**
@@ -110,26 +108,15 @@ public record Message(Role role, List<Part<?>> parts,
         /**
          * Message originated from the user (client side).
          */
-        USER("user"),
+        ROLE_USER,
         /**
          * Message originated from the agent (server side).
          */
-        AGENT("agent");
-
-        private final String role;
-
-        Role(String role) {
-            this.role = role;
-        }
-
+        ROLE_AGENT,
         /**
-         * Returns the string representation of the role for JSON serialization.
-         *
-         * @return the role as a string ("user" or "agent")
+         * Unspecified role.
          */
-        public String asString() {
-            return this.role;
-        }
+        ROLE_UNSPECIFIED;
     }
 
     /**

@@ -831,7 +831,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         Message message = Message.builder()
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .parts(new TextPart("text"))
                 .build();
         SendMessageResponse smr

@@ -78,7 +78,7 @@ public class OpenTelemetryClientTransport implements ClientTransport {
                 spanBuilder.setAttribute(GENAI_MESSAGE_ID, request.message().messageId());
             }
             if (request.message().role() != null) {
-                spanBuilder.setAttribute(GENAI_ROLE, request.message().role().asString());
+                spanBuilder.setAttribute(GENAI_ROLE, request.message().role().name());
             }
             if (request.message().extensions() != null && !request.message().extensions().isEmpty()) {
                 spanBuilder.setAttribute(GENAI_EXTENSIONS, String.join(",", request.message().extensions()));
@@ -123,7 +123,7 @@ public class OpenTelemetryClientTransport implements ClientTransport {
                 spanBuilder.setAttribute(GENAI_MESSAGE_ID, request.message().messageId());
             }
             if (request.message().role() != null) {
-                spanBuilder.setAttribute(GENAI_ROLE, request.message().role().asString());
+                spanBuilder.setAttribute(GENAI_ROLE, request.message().role().name());
             }
             if (request.message().extensions() != null && !request.message().extensions().isEmpty()) {
                 spanBuilder.setAttribute(GENAI_EXTENSIONS, String.join(",", request.message().extensions()));

@@ -59,7 +59,6 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
-import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
@@ -76,7 +75,6 @@ public class JsonUtil {
                 .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
                 .registerTypeHierarchyAdapter(A2AError.class, new A2AErrorTypeAdapter())
-                .registerTypeAdapter(Message.Role.class, new RoleTypeAdapter())
                 .registerTypeHierarchyAdapter(FileContent.class, new FileContentTypeAdapter());
     }
 
@@ -434,52 +432,6 @@ public class JsonUtil {
                 default ->
                     new A2AError(code, message == null ? "" : message, data);
             };
-        }
-    }
-
-    /**
-     * Gson TypeAdapter for serializing and deserializing {@link Message.Role} enum.
-     * <p>
-     * This adapter ensures that Message.Role enum values are serialized using their
-     * wire format string representation (e.g., "user", "agent") rather than the Java
-     * enum constant name (e.g., "USER", "AGENT").
-     * <p>
-     * For serialization, it uses {@link Message.Role#asString()} to get the wire format.
-     * For deserialization, it parses the string to the enum constant.
-     *
-     * @see Message.Role
-     * @see Message.Role#asString()
-     */
-    static class RoleTypeAdapter extends TypeAdapter<Message.Role> {
-
-        @Override
-        public void write(JsonWriter out, Message.Role value) throws java.io.IOException {
-            if (value == null) {
-                out.nullValue();
-            } else {
-                out.value(value.asString());
-            }
-        }
-
-        @Override
-        public Message.@Nullable Role read(JsonReader in) throws java.io.IOException {
-            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
-                in.nextNull();
-                return null;
-            }
-            String roleString = in.nextString();
-            try {
-                return switch (roleString) {
-                    case "user" ->
-                        Message.Role.USER;
-                    case "agent" ->
-                        Message.Role.AGENT;
-                    default ->
-                        throw new IllegalArgumentException("Invalid Role: " + roleString);
-                };
-            } catch (IllegalArgumentException e) {
-                throw new JsonSyntaxException("Invalid Message.Role: " + roleString, e);
-            }
         }
     }
 

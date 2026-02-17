@@ -75,7 +75,7 @@ public class EventSerializationTest {
     public void testMessageSerialization() throws JsonProcessingException {
         // Create a Message
         Message originalMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("Hello, world!")))
                 .taskId("test-task-789")
                 .messageId("test-msg-456")

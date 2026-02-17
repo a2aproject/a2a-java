@@ -49,7 +49,7 @@ public class EventQueueTest {
 
     private static final String MESSAGE_PAYLOAD = """
             {
-                "role": "agent",
+                "role": "ROLE_AGENT",
                 "parts": [{"text": "test message"}],
                 "messageId": "111"
             }

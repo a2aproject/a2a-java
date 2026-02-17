@@ -104,7 +104,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         // Step 1: Create the task
         Message createMessage = Message.builder()
-            .role(Message.Role.USER)
+            .role(Message.Role.ROLE_USER)
             .parts(List.of(new TextPart("create"))) // Send the "create" command
             .taskId(taskId)
             .messageId("test-msg-1")
@@ -139,7 +139,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         // Step 4: Update the task to trigger the notification
         Message updateMessage = Message.builder()
-            .role(Message.Role.USER)
+            .role(Message.Role.ROLE_USER)
             .parts(List.of(new TextPart("update"))) // Send the "update" command
             .taskId(taskId)
             .messageId("test-msg-2")

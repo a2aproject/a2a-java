@@ -71,7 +71,7 @@ public class StreamResponseMapperTest {
         Message message = Message.builder()
                 .messageId("msg-123")
                 .contextId("context-456")
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("Hello")))
                 .build();
 
@@ -109,7 +109,7 @@ public class StreamResponseMapperTest {
         Message message = (Message) result;
         assertEquals("msg-123", message.messageId());
         assertEquals("context-456", message.contextId());
-        assertEquals(Message.Role.USER, message.role());
+        assertEquals(Message.Role.ROLE_USER, message.role());
     }
 
     @Test
@@ -253,7 +253,7 @@ public class StreamResponseMapperTest {
         Message originalMessage = Message.builder()
                 .messageId("msg-123")
                 .contextId("context-456")
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .parts(Collections.singletonList(new TextPart("Response")))
                 .build();
 

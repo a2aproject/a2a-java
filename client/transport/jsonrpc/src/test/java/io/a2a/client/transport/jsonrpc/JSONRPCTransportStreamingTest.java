@@ -54,7 +54,7 @@ public class JSONRPCTransportStreamingTest {
         // The goal here is just to verify the correct parameters are being used
         // This is a unit test of the parameter construction, not the streaming itself
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-test")
                 .messageId("message-test")
@@ -73,7 +73,7 @@ public class JSONRPCTransportStreamingTest {
         assertNotNull(params);
         assertEquals(message, params.message());
         assertEquals(configuration, params.configuration());
-        assertEquals(Message.Role.USER, params.message().role());
+        assertEquals(Message.Role.ROLE_USER, params.message().role());
         assertEquals("test message", ((TextPart) params.message().parts().get(0)).text());
     }
 
@@ -95,7 +95,7 @@ public class JSONRPCTransportStreamingTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("tell me some jokes")))
                 .contextId("context-1234")
                 .messageId("message-1234")
