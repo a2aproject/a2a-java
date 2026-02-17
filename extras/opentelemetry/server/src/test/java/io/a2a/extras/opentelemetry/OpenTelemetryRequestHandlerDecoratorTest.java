@@ -202,7 +202,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         void onMessageSend_createsSpanAndDelegatesToHandler() throws A2AError {
             Message message = Message.builder()
-                    .role(Message.Role.USER)
+                    .role(Message.Role.ROLE_USER)
                     .parts(List.of(new TextPart("test message")))
                     .messageId("msg-123")
                     .contextId("ctx-1")
@@ -230,7 +230,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         void onMessageSend_withError_setsErrorStatus() throws A2AError {
             Message message = Message.builder()
-                    .role(Message.Role.USER)
+                    .role(Message.Role.ROLE_USER)
                     .parts(List.of(new TextPart("test message")))
                     .messageId("msg-123")
                     .contextId("ctx-1")
@@ -253,7 +253,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         void onMessageSendStream_createsSpanWithSpecialMessage() throws A2AError {
             Message message = Message.builder()
-                    .role(Message.Role.USER)
+                    .role(Message.Role.ROLE_USER)
                     .parts(List.of(new TextPart("test message")))
                     .messageId("msg-123")
                     .contextId("ctx-1")
@@ -275,7 +275,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         void onMessageSendStream_withError_setsErrorStatus() throws A2AError {
             Message message = Message.builder()
-                    .role(Message.Role.USER)
+                    .role(Message.Role.ROLE_USER)
                     .parts(List.of(new TextPart("test message")))
                     .messageId("msg-123")
                     .contextId("ctx-1")

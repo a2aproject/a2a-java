@@ -63,7 +63,7 @@ public class AbstractA2ARequestHandlerTest {
 
     protected static final Message MESSAGE = Message.builder()
             .messageId("111")
-            .role(Message.Role.AGENT)
+            .role(Message.Role.ROLE_AGENT)
             .parts(new TextPart("test message"))
             .build();
     private static final String PREFERRED_TRANSPORT = "preferred-transport";

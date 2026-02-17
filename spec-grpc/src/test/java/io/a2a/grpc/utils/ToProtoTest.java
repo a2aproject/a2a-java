@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 public class ToProtoTest {
 
     private static final Message SIMPLE_MESSAGE = Message.builder()
-            .role(Message.Role.USER)
+            .role(Message.Role.ROLE_USER)
             .parts(Collections.singletonList(new TextPart("tell me a joke")))
             .contextId("context-1234")
             .messageId("message-1234")
@@ -188,7 +188,7 @@ public class ToProtoTest {
         assertEquals(false, result.getParts(0).hasUrl());
         assertEquals(false, result.getParts(0).hasData());
         Message message = Message.builder()
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .messageId("message-1234")
                 .build();

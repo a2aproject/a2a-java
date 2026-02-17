@@ -108,26 +108,15 @@ public record Message(Role role, List<Part<?>> parts,
         /**
          * Message originated from the user (client side).
          */
-        USER("user"),
+        ROLE_USER,
         /**
          * Message originated from the agent (server side).
          */
-        AGENT("agent");
-
-        private final String role;
-
-        Role(String role) {
-            this.role = role;
-        }
-
+        ROLE_AGENT,
         /**
-         * Returns the string representation of the role for JSON serialization.
-         *
-         * @return the role as a string ("user" or "agent")
+         * Unspecified role.
          */
-        public String asString() {
-            return this.role;
-        }
+        ROLE_UNSPECIFIED;
     }
 
     /**

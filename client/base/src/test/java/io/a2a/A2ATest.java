@@ -20,7 +20,7 @@ public class A2ATest {
         String text = "Hello, world!";
         Message message = A2A.toUserMessage(text);
         
-        assertEquals(Message.Role.USER, message.role());
+        assertEquals(Message.Role.ROLE_USER, message.role());
         assertEquals(1, message.parts().size());
         assertEquals(text, ((TextPart) message.parts().get(0)).text());
         assertNotNull(message.messageId());
@@ -34,7 +34,7 @@ public class A2ATest {
         String messageId = "test-message-id";
         Message message = A2A.toUserMessage(text, messageId);
         
-        assertEquals(Message.Role.USER, message.role());
+        assertEquals(Message.Role.ROLE_USER, message.role());
         assertEquals(messageId, message.messageId());
     }
 
@@ -43,7 +43,7 @@ public class A2ATest {
         String text = "Hello, I'm an agent!";
         Message message = A2A.toAgentMessage(text);
         
-        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(Message.Role.ROLE_AGENT, message.role());
         assertEquals(1, message.parts().size());
         assertEquals(text, ((TextPart) message.parts().get(0)).text());
         assertNotNull(message.messageId());
@@ -55,7 +55,7 @@ public class A2ATest {
         String messageId = "agent-message-id";
         Message message = A2A.toAgentMessage(text, messageId);
         
-        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(Message.Role.ROLE_AGENT, message.role());
         assertEquals(messageId, message.messageId());
     }
 
@@ -67,7 +67,7 @@ public class A2ATest {
         
         Message message = A2A.createUserTextMessage(text, contextId, taskId);
         
-        assertEquals(Message.Role.USER, message.role());
+        assertEquals(Message.Role.ROLE_USER, message.role());
         assertEquals(contextId, message.contextId());
         assertEquals(taskId, message.taskId());
         assertEquals(1, message.parts().size());
@@ -83,7 +83,7 @@ public class A2ATest {
         
         Message message = A2A.createUserTextMessage(text, null, null);
         
-        assertEquals(Message.Role.USER, message.role());
+        assertEquals(Message.Role.ROLE_USER, message.role());
         assertNull(message.contextId());
         assertNull(message.taskId());
         assertEquals(1, message.parts().size());
@@ -98,7 +98,7 @@ public class A2ATest {
         
         Message message = A2A.createAgentTextMessage(text, contextId, taskId);
         
-        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(Message.Role.ROLE_AGENT, message.role());
         assertEquals(contextId, message.contextId());
         assertEquals(taskId, message.taskId());
         assertEquals(1, message.parts().size());
@@ -117,7 +117,7 @@ public class A2ATest {
         
         Message message = A2A.createAgentPartsMessage(parts, contextId, taskId);
         
-        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(Message.Role.ROLE_AGENT, message.role());
         assertEquals(contextId, message.contextId());
         assertEquals(taskId, message.taskId());
         assertEquals(2, message.parts().size());

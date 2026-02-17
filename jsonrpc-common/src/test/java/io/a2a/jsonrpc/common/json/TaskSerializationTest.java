@@ -114,7 +114,7 @@ class TaskSerializationTest {
     @Test
     void testTaskWithHistory() throws JsonProcessingException {
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("Test message")))
                 .build();
 
@@ -129,7 +129,7 @@ class TaskSerializationTest {
         String json = JsonUtil.toJson(task);
 
         // Verify JSON contains history data
-        assertTrue(json.contains("\"role\":\"user\""));
+        assertTrue(json.contains("\"role\":\"ROLE_USER\""));
         assertTrue(json.contains("Test message"));
 
         // Deserialize
@@ -138,7 +138,7 @@ class TaskSerializationTest {
         // Verify history is preserved
         assertNotNull(deserialized.history());
         assertEquals(1, deserialized.history().size());
-        assertEquals(Message.Role.USER, deserialized.history().get(0).role());
+        assertEquals(Message.Role.ROLE_USER, deserialized.history().get(0).role());
         assertEquals(1, deserialized.history().get(0).parts().size());
     }
 
@@ -152,11 +152,11 @@ class TaskSerializationTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
                 .history(List.of(
                         Message.builder()
-                                .role(Message.Role.USER)
+                                .role(Message.Role.ROLE_USER)
                                 .parts(List.of(new TextPart("User message")))
                                 .build(),
                         Message.builder()
-                                .role(Message.Role.AGENT)
+                                .role(Message.Role.ROLE_AGENT)
                                 .parts(List.of(new TextPart("Agent response")))
                                 .build()
                 ))
@@ -354,7 +354,7 @@ class TaskSerializationTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
                 .history(List.of(
                         Message.builder()
-                                .role(Message.Role.USER)
+                                .role(Message.Role.ROLE_USER)
                                 .parts(List.of(
                                         new TextPart("Text"),
                                         new FilePart(new FileWithBytes("text/plain", "file.txt", "data")),
@@ -394,7 +394,7 @@ class TaskSerializationTest {
     @Test
     void testTaskStatusWithMessage() throws JsonProcessingException {
         Message statusMessage = Message.builder()
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .parts(List.of(new TextPart("Processing complete")))
                 .build();
 
@@ -417,7 +417,7 @@ class TaskSerializationTest {
         // Verify status message is preserved
         assertEquals(TaskState.TASK_STATE_COMPLETED, deserialized.status().state());
         assertNotNull(deserialized.status().message());
-        assertEquals(Message.Role.AGENT, deserialized.status().message().role());
+        assertEquals(Message.Role.ROLE_AGENT, deserialized.status().message().role());
         assertTrue(deserialized.status().message().parts().get(0) instanceof TextPart);
     }
 
@@ -602,7 +602,7 @@ class TaskSerializationTest {
               },
               "history": [
                 {
-                  "role": "user",
+                  "role": "ROLE_USER",
                   "parts": [
                     {
                       "text": "User message"
@@ -611,7 +611,7 @@ class TaskSerializationTest {
                   "messageId": "msg-1"
                 },
                 {
-                  "role": "agent",
+                  "role": "ROLE_AGENT",
                   "parts": [
                     {
                       "text": "Agent response"
@@ -627,8 +627,8 @@ class TaskSerializationTest {
 
         assertEquals("task-123", task.id());
         assertEquals(2, task.history().size());
-        assertEquals(Message.Role.USER, task.history().get(0).role());
-        assertEquals(Message.Role.AGENT, task.history().get(1).role());
+        assertEquals(Message.Role.ROLE_USER, task.history().get(0).role());
+        assertEquals(Message.Role.ROLE_AGENT, task.history().get(1).role());
         assertTrue(task.history().get(0).parts().get(0) instanceof TextPart);
         assertEquals("User message", ((TextPart) task.history().get(0).parts().get(0)).text());
     }

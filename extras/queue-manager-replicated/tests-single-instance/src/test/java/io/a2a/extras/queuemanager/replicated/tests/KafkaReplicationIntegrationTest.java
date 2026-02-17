@@ -136,7 +136,7 @@ public class KafkaReplicationIntegrationTest {
 
         // Send A2A message that should trigger events and replication
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("create")))
                 .taskId(taskId)
                 .messageId("test-msg-" + System.currentTimeMillis())
@@ -199,7 +199,7 @@ public class KafkaReplicationIntegrationTest {
 
         // First create a task in the A2A system using non-streaming client
         Message createMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("create")))
                 .taskId(taskId)
                 .messageId("create-msg-" + System.currentTimeMillis())
@@ -319,7 +319,7 @@ public class KafkaReplicationIntegrationTest {
         // Use polling (non-blocking) client with "working" command
         // This creates task in WORKING state (non-final) and keeps queue alive
         Message workingMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("working")))
                 .taskId(taskId)
                 .messageId("working-msg-" + System.currentTimeMillis())
@@ -414,7 +414,7 @@ public class KafkaReplicationIntegrationTest {
 
         // Create a task that will be completed (finalized)
         Message completeMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("complete")))
                 .taskId(taskId)
                 .messageId("complete-msg-" + System.currentTimeMillis())

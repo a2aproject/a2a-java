@@ -349,7 +349,7 @@ public class PushNotificationSenderTest {
         String taskId = "task_send_message";
         Message message = Message.builder()
                 .taskId(taskId)
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .parts(new TextPart("Hello from agent"))
                 .build();
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);

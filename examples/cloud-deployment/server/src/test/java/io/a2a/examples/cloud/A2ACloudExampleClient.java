@@ -281,7 +281,7 @@ public class A2ACloudExampleClient {
                     .build();
 
             Message message = Message.builder()
-                    .role(Message.Role.USER)
+                    .role(Message.Role.ROLE_USER)
                     .parts(new TextPart("process"))
                     .taskId(serverTaskId)
                     .build();
@@ -326,7 +326,7 @@ public class A2ACloudExampleClient {
                 .build();
 
         Message completeMessage = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(new TextPart("complete"))
                 .taskId(serverTaskId)
                 .build();

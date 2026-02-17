@@ -378,7 +378,7 @@ class OpenTelemetryClientTransportTest {
         Message event = Message.builder()
                 .messageId("test-id")
                 .taskId("task-id")
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("test content")))
                 .build();
 

@@ -42,7 +42,7 @@ public class ClientTaskManagerTest {
         
         sampleMessage = Message.builder()
                 .messageId("msg1")
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("Hello")))
                 .build();
     }
@@ -196,7 +196,7 @@ public class ClientTaskManagerTest {
     public void testUpdateWithMessageMovesStatusMessage() {
         Message statusMessage = Message.builder()
                 .messageId("status_msg")
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .parts(Collections.singletonList(new TextPart("Status")))
                 .build();
         
@@ -219,7 +219,7 @@ public class ClientTaskManagerTest {
     public void testUpdateWithMessagePreservesExistingHistory() {
         Message existingMessage = Message.builder()
                 .messageId("existing_msg")
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("Existing")))
                 .build();
         
@@ -256,7 +256,7 @@ public class ClientTaskManagerTest {
         // Second status update
         Message secondMessage = Message.builder()
                 .messageId("msg2")
-                .role(Message.Role.AGENT)
+                .role(Message.Role.ROLE_AGENT)
                 .parts(Collections.singletonList(new TextPart("Second message")))
                 .build();
         

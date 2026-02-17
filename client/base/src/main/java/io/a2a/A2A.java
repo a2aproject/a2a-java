@@ -74,7 +74,7 @@ public class A2A {
      * @see #createUserTextMessage(String, String, String)
      */
     public static Message toUserMessage(String text) {
-        return toMessage(text, Message.Role.USER, null);
+        return toMessage(text, Message.Role.ROLE_USER, null);
     }
 
     /**
@@ -96,7 +96,7 @@ public class A2A {
      * @see #toUserMessage(String)
      */
     public static Message toUserMessage(String text, String messageId) {
-        return toMessage(text, Message.Role.USER, messageId);
+        return toMessage(text, Message.Role.ROLE_USER, messageId);
     }
 
     /**
@@ -117,7 +117,7 @@ public class A2A {
      * @see #toAgentMessage(String, String)
      */
     public static Message toAgentMessage(String text) {
-        return toMessage(text, Message.Role.AGENT, null);
+        return toMessage(text, Message.Role.ROLE_AGENT, null);
     }
 
     /**
@@ -133,7 +133,7 @@ public class A2A {
      * @return an agent message with the specified text and ID
      */
     public static Message toAgentMessage(String text, String messageId) {
-        return toMessage(text, Message.Role.AGENT, messageId);
+        return toMessage(text, Message.Role.ROLE_AGENT, messageId);
     }
 
     /**
@@ -180,7 +180,7 @@ public class A2A {
      * @see Message#taskId()
      */
     public static Message createUserTextMessage(String text, String contextId, String taskId) {
-        return toMessage(text, Message.Role.USER, null, contextId, taskId);
+        return toMessage(text, Message.Role.ROLE_USER, null, contextId, taskId);
     }
 
     /**
@@ -195,7 +195,7 @@ public class A2A {
      * @see #createUserTextMessage(String, String, String)
      */
     public static Message createAgentTextMessage(String text, String contextId, String taskId) {
-        return toMessage(text, Message.Role.AGENT, null, contextId, taskId);
+        return toMessage(text, Message.Role.ROLE_AGENT, null, contextId, taskId);
     }
 
     /**
@@ -225,7 +225,7 @@ public class A2A {
         if (parts == null || parts.isEmpty()) {
             throw new IllegalArgumentException("Parts cannot be null or empty");
         }
-        return toMessage(parts, Message.Role.AGENT, null, contextId, taskId);
+        return toMessage(parts, Message.Role.ROLE_AGENT, null, contextId, taskId);
     }
 
     private static Message toMessage(String text, Message.Role role, String messageId) {

@@ -61,7 +61,7 @@ class StreamingEventKindSerializationTest {
     void testMessageSerialization() throws JsonProcessingException {
         // Create a Message
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("Hello, agent!")))
                 .taskId("task-789")
                 .messageId("msg-123")
@@ -75,7 +75,7 @@ class StreamingEventKindSerializationTest {
         assertNotNull(json);
         assertTrue(json.contains("\"message\""));
         assertTrue(json.contains("\"taskId\":\"task-789\""));
-        assertTrue(json.contains("\"role\":\"user\""));
+        assertTrue(json.contains("\"role\":\"ROLE_USER\""));
         assertTrue(json.contains("Hello, agent!"));
         assertFalse(json.contains("\"kind\""));
 
@@ -186,7 +186,7 @@ class StreamingEventKindSerializationTest {
         // Test that unwrapped Message format (direct deserialization) still works
         String json = """
             {
-              "role": "agent",
+              "role": "ROLE_AGENT",
               "parts": [
                 {
                   "text": "Unwrapped message"
@@ -205,7 +205,7 @@ class StreamingEventKindSerializationTest {
         Message message = (Message) deserialized;
         assertEquals("msg-unwrapped", message.messageId());
         assertEquals("task-999", message.taskId());
-        assertEquals(Message.Role.AGENT, message.role());
+        assertEquals(Message.Role.ROLE_AGENT, message.role());
     }
 
     @Test

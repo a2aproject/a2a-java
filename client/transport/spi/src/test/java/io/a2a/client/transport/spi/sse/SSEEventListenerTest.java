@@ -144,7 +144,7 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         TestSSEEventListener listener = createListenerWithEventCapture(receivedEvent);
 
-        Message message = createMessage(Message.Role.USER);
+        Message message = createMessage(Message.Role.ROLE_USER);
 
         listener.setEventToHandle(message);
         listener.onMessage(TEST_TEXT, null);
@@ -242,7 +242,7 @@ public class SSEEventListenerTest {
     @Test
     public void testShouldAutoCloseWithMessage() {
         TestSSEEventListener listener = createBasicListener();
-        Message message = createMessage(Message.Role.AGENT);
+        Message message = createMessage(Message.Role.ROLE_AGENT);
 
         assertFalse(listener.shouldAutoClose(message));
     }
@@ -268,7 +268,7 @@ public class SSEEventListenerTest {
         AtomicReference<StreamingEventKind> receivedEvent = new AtomicReference<>();
         TestSSEEventListener listener = createListenerWithEventCapture(receivedEvent);
 
-        Message message = createMessage(Message.Role.AGENT);
+        Message message = createMessage(Message.Role.ROLE_AGENT);
         CancelCapturingFuture future = new CancelCapturingFuture();
 
         listener.setEventToHandle(message);

@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.gson.JsonSyntaxException;
+
+import io.a2a.grpc.Role;
 import io.a2a.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
@@ -18,8 +20,10 @@ import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.JSONParseError;
+import io.a2a.spec.Message;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
 import org.junit.jupiter.api.Test;
@@ -203,11 +207,12 @@ public class JSONRPCUtilsTest {
               }
             }""";
         InvalidParamsJsonMappingException exception = assertThrows(
-            InvalidParamsJsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(missingRoleMessage, null)
+                InvalidParamsJsonMappingException.class,
+                () -> JSONRPCUtils.parseRequestBody(missingRoleMessage, null)
         );
         assertEquals(18, exception.getId());
     }
+
     @Test
     public void testParseUnknownField_ThrowsJsonMappingException() throws JsonMappingException {
         String unkownFieldMessage=  """

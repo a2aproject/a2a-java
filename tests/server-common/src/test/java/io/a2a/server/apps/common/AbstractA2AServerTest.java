@@ -120,7 +120,7 @@ public abstract class AbstractA2AServerTest {
 
     protected static final Message MESSAGE = Message.builder()
             .messageId("111")
-            .role(Message.Role.AGENT)
+            .role(Message.Role.ROLE_AGENT)
             .parts(new TextPart("test message"))
             .build();
     public static final String APPLICATION_JSON = "application/json";

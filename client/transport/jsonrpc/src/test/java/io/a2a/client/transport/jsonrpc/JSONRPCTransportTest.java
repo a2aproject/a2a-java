@@ -103,7 +103,7 @@ public class JSONRPCTransportTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
                 .messageId("message-1234")
@@ -151,7 +151,7 @@ public class JSONRPCTransportTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
                 .messageId("message-1234")
@@ -168,7 +168,7 @@ public class JSONRPCTransportTest {
         EventKind result = client.sendMessage(params, null);
         assertInstanceOf(Message.class, result);
         Message agentMessage = (Message) result;
-        assertEquals(Message.Role.AGENT, agentMessage.role());
+        assertEquals(Message.Role.ROLE_AGENT, agentMessage.role());
         Part<?> part = agentMessage.parts().get(0);
         assertTrue(part instanceof TextPart);
         assertEquals("Why did the chicken cross the road? To get to the other side!", ((TextPart) part).text());
@@ -193,7 +193,7 @@ public class JSONRPCTransportTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("tell me a joke")))
                 .contextId("context-1234")
                 .messageId("message-1234")
@@ -248,7 +248,7 @@ public class JSONRPCTransportTest {
         assertNotNull(history);
         assertEquals(1, history.size());
         Message message = history.get(0);
-        assertEquals(Message.Role.USER, message.role());
+        assertEquals(Message.Role.ROLE_USER, message.role());
         List<Part<?>> parts = message.parts();
         assertNotNull(parts);
         assertEquals(3, parts.size());
@@ -435,7 +435,7 @@ public class JSONRPCTransportTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(
                         new TextPart("analyze this image"),
                         new FilePart(new FileWithUri("image/jpeg", null, "file:///path/to/image.jpg"))
@@ -495,7 +495,7 @@ public class JSONRPCTransportTest {
         data.put("timestamp", "2024-01-15T10:30:00Z");
 
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(
                         new TextPart("process this data"),
                         new DataPart(data)
@@ -552,7 +552,7 @@ public class JSONRPCTransportTest {
         data.put("labels", List.of("Q1", "Q2", "Q3", "Q4"));
 
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(List.of(
                         new TextPart("analyze this data and image"),
                         new FilePart(new FileWithBytes("image/png", "chart.png", "aGVsbG8=")),
@@ -617,7 +617,7 @@ public class JSONRPCTransportTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-test")
                 .messageId("message-test")
@@ -673,7 +673,7 @@ public class JSONRPCTransportTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         Message message = Message.builder()
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(Collections.singletonList(new TextPart("test message")))
                 .contextId("context-test")
                 .messageId("message-test")
