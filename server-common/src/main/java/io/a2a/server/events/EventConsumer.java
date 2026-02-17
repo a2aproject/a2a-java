@@ -205,7 +205,7 @@ public class EventConsumer {
      */
     private boolean isStreamTerminatingTask(Task task) {
         TaskState state = task.status().state();
-        return state.isFinal() || state == TaskState.INPUT_REQUIRED;
+        return state.isFinal() || state == TaskState.TASK_STATE_INPUT_REQUIRED;
     }
 
     public EnhancedRunnable.DoneCallback createAgentRunnableDoneCallback() {

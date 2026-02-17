@@ -136,7 +136,7 @@ public class RestTransportTest {
         Task task = (Task) result;
         assertEquals("9b511af4-b27c-47fa-aecf-2a93c08a44f8", task.id());
         assertEquals("context-1234", task.contextId());
-        assertEquals(TaskState.SUBMITTED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, task.status().state());
         assertNull(task.status().message());
         assertNull(task.metadata());
         assertEquals(true, task.artifacts().isEmpty());
@@ -174,7 +174,7 @@ public class RestTransportTest {
         RestTransport instance = new RestTransport(CARD);
         Task task = instance.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), context);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
-        assertEquals(TaskState.CANCELED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_CANCELED, task.status().state());
         assertNull(task.status().message());
         assertNotNull(task.metadata());
         assertTrue(task.metadata().isEmpty());
@@ -200,7 +200,7 @@ public class RestTransportTest {
         RestTransport instance = new RestTransport(CARD);
         Task task = instance.getTask(request, context);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         assertNull(task.status().message());
         assertNotNull(task.metadata());
         assertTrue(task.metadata().isEmpty());
@@ -438,7 +438,7 @@ public class RestTransportTest {
         Task task = (Task) eventKind;
         assertEquals("2", task.id());
         assertEquals("context-1234", task.contextId());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         List<Artifact> artifacts = task.artifacts();
         assertEquals(1, artifacts.size());
         Artifact artifact = artifacts.get(0);

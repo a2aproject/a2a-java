@@ -13,7 +13,7 @@ import io.a2a.spec.TaskState;
  * <p>
  * This request instructs the agent to cancel execution of a specific task identified by ID.
  * The agent should stop processing, clean up resources, and transition the task to
- * {@link TaskState#CANCELED} state if cancellation is possible.
+ * {@link TaskState#TASK_STATE_CANCELED} state if cancellation is possible.
  * <p>
  * Not all tasks can be canceled (e.g., already completed tasks), which may result in
  * a {@link TaskNotCancelableError}.

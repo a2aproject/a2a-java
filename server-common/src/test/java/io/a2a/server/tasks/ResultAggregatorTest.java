@@ -3,7 +3,6 @@ package io.a2a.server.tasks;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,7 +28,7 @@ import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TextPart;
-import org.junit.jupiter.api.AfterEach;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -136,7 +135,7 @@ public class ResultAggregatorTest {
 
     @Test
     void testGetCurrentResultWithMessageNull() {
-        Task expectedTask = createSampleTask("task_from_tm", TaskState.SUBMITTED, "ctx1");
+        Task expectedTask = createSampleTask("task_from_tm", TaskState.TASK_STATE_SUBMITTED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
         EventKind result = aggregator.getCurrentResult();
@@ -149,7 +148,7 @@ public class ResultAggregatorTest {
     void testConstructorStoresTaskManagerCorrectly() {
         // Test that constructor properly initializes the aggregator
         // We can't access the private field directly, but we can test behavior
-        Task expectedTask = createSampleTask("test_task", TaskState.SUBMITTED, "ctx1");
+        Task expectedTask = createSampleTask("test_task", TaskState.TASK_STATE_SUBMITTED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
         EventKind result = aggregator.getCurrentResult();
@@ -161,7 +160,7 @@ public class ResultAggregatorTest {
     @Test
     void testConstructorWithNullMessage() {
         ResultAggregator aggregatorWithNullMessage = new ResultAggregator(mockTaskManager, null, testExecutor, testExecutor);
-        Task expectedTask = createSampleTask("null_msg_task", TaskState.WORKING, "ctx1");
+        Task expectedTask = createSampleTask("null_msg_task", TaskState.TASK_STATE_WORKING, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
         EventKind result = aggregatorWithNullMessage.getCurrentResult();
@@ -172,7 +171,7 @@ public class ResultAggregatorTest {
 
     @Test
     void testGetCurrentResultReturnsTaskWhenNoMessage() {
-        Task expectedTask = createSampleTask("no_message_task", TaskState.COMPLETED, "ctx1");
+        Task expectedTask = createSampleTask("no_message_task", TaskState.TASK_STATE_COMPLETED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
         EventKind result = aggregator.getCurrentResult();
@@ -185,8 +184,8 @@ public class ResultAggregatorTest {
     @Test
     void testGetCurrentResultWithDifferentTaskStates() {
         // Test with WORKING and COMPLETED states using chained returns
-        Task workingTask = createSampleTask("working_task", TaskState.WORKING, "ctx1");
-        Task completedTask = createSampleTask("completed_task", TaskState.COMPLETED, "ctx1");
+        Task workingTask = createSampleTask("working_task", TaskState.TASK_STATE_WORKING, "ctx1");
+        Task completedTask = createSampleTask("completed_task", TaskState.TASK_STATE_COMPLETED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(workingTask, completedTask);
 
         // First call returns WORKING task
@@ -201,7 +200,7 @@ public class ResultAggregatorTest {
     @Test
     void testMultipleGetCurrentResultCalls() {
         // Test that multiple calls to getCurrentResult behave consistently
-        Task expectedTask = createSampleTask("multi_call_task", TaskState.SUBMITTED, "ctx1");
+        Task expectedTask = createSampleTask("multi_call_task", TaskState.TASK_STATE_SUBMITTED, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(expectedTask);
 
         EventKind result1 = aggregator.getCurrentResult();
@@ -223,7 +222,7 @@ public class ResultAggregatorTest {
         ResultAggregator messageAggregator = new ResultAggregator(mockTaskManager, message, testExecutor, testExecutor);
 
         // Even if we set up the task manager to return something, message should take precedence
-        Task task = createSampleTask("should_not_be_returned", TaskState.WORKING, "ctx1");
+        Task task = createSampleTask("should_not_be_returned", TaskState.TASK_STATE_WORKING, "ctx1");
         when(mockTaskManager.getTask()).thenReturn(task);
 
         EventKind result = messageAggregator.getCurrentResult();
@@ -237,7 +236,7 @@ public class ResultAggregatorTest {
     void testConsumeAndBreakNonBlocking() throws Exception {
         // Test that with blocking=false, the method returns after the first event
         String taskId = "test-task";
-        Task firstEvent = createSampleTask(taskId, TaskState.WORKING, "ctx1");
+        Task firstEvent = createSampleTask(taskId, TaskState.TASK_STATE_WORKING, "ctx1");
 
         // After processing firstEvent, the current result will be that task
         when(mockTaskManager.getTask()).thenReturn(firstEvent);

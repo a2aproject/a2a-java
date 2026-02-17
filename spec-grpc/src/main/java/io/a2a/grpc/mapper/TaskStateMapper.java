@@ -30,15 +30,15 @@ public interface TaskStateMapper {
         }
 
         return switch (domain) {
-            case SUBMITTED -> io.a2a.grpc.TaskState.TASK_STATE_SUBMITTED;
-            case WORKING -> io.a2a.grpc.TaskState.TASK_STATE_WORKING;
-            case INPUT_REQUIRED -> io.a2a.grpc.TaskState.TASK_STATE_INPUT_REQUIRED;
-            case AUTH_REQUIRED -> io.a2a.grpc.TaskState.TASK_STATE_AUTH_REQUIRED;
-            case COMPLETED -> io.a2a.grpc.TaskState.TASK_STATE_COMPLETED;
-            case CANCELED -> io.a2a.grpc.TaskState.TASK_STATE_CANCELED;
-            case FAILED -> io.a2a.grpc.TaskState.TASK_STATE_FAILED;
-            case REJECTED -> io.a2a.grpc.TaskState.TASK_STATE_REJECTED;
-            case UNKNOWN -> io.a2a.grpc.TaskState.UNRECOGNIZED;
+            case TASK_STATE_SUBMITTED -> io.a2a.grpc.TaskState.TASK_STATE_SUBMITTED;
+            case TASK_STATE_WORKING -> io.a2a.grpc.TaskState.TASK_STATE_WORKING;
+            case TASK_STATE_INPUT_REQUIRED -> io.a2a.grpc.TaskState.TASK_STATE_INPUT_REQUIRED;
+            case TASK_STATE_AUTH_REQUIRED -> io.a2a.grpc.TaskState.TASK_STATE_AUTH_REQUIRED;
+            case TASK_STATE_COMPLETED -> io.a2a.grpc.TaskState.TASK_STATE_COMPLETED;
+            case TASK_STATE_CANCELED -> io.a2a.grpc.TaskState.TASK_STATE_CANCELED;
+            case TASK_STATE_FAILED -> io.a2a.grpc.TaskState.TASK_STATE_FAILED;
+            case TASK_STATE_REJECTED -> io.a2a.grpc.TaskState.TASK_STATE_REJECTED;
+            case UNRECOGNIZED -> io.a2a.grpc.TaskState.UNRECOGNIZED;
         };
     }
 
@@ -50,19 +50,19 @@ public interface TaskStateMapper {
      */
     default io.a2a.spec.TaskState fromProto(io.a2a.grpc.TaskState proto) {
         if (proto == null) {
-            return io.a2a.spec.TaskState.UNKNOWN;
+            return io.a2a.spec.TaskState.UNRECOGNIZED;
         }
 
         return switch (proto) {
-            case TASK_STATE_SUBMITTED -> io.a2a.spec.TaskState.SUBMITTED;
-            case TASK_STATE_WORKING -> io.a2a.spec.TaskState.WORKING;
-            case TASK_STATE_INPUT_REQUIRED -> io.a2a.spec.TaskState.INPUT_REQUIRED;
-            case TASK_STATE_AUTH_REQUIRED -> io.a2a.spec.TaskState.AUTH_REQUIRED;
-            case TASK_STATE_COMPLETED -> io.a2a.spec.TaskState.COMPLETED;
-            case TASK_STATE_CANCELED -> io.a2a.spec.TaskState.CANCELED;
-            case TASK_STATE_FAILED -> io.a2a.spec.TaskState.FAILED;
-            case TASK_STATE_REJECTED -> io.a2a.spec.TaskState.REJECTED;
-            case TASK_STATE_UNSPECIFIED, UNRECOGNIZED -> io.a2a.spec.TaskState.UNKNOWN;
+            case TASK_STATE_SUBMITTED -> io.a2a.spec.TaskState.TASK_STATE_SUBMITTED;
+            case TASK_STATE_WORKING -> io.a2a.spec.TaskState.TASK_STATE_WORKING;
+            case TASK_STATE_INPUT_REQUIRED -> io.a2a.spec.TaskState.TASK_STATE_INPUT_REQUIRED;
+            case TASK_STATE_AUTH_REQUIRED -> io.a2a.spec.TaskState.TASK_STATE_AUTH_REQUIRED;
+            case TASK_STATE_COMPLETED -> io.a2a.spec.TaskState.TASK_STATE_COMPLETED;
+            case TASK_STATE_CANCELED -> io.a2a.spec.TaskState.TASK_STATE_CANCELED;
+            case TASK_STATE_FAILED -> io.a2a.spec.TaskState.TASK_STATE_FAILED;
+            case TASK_STATE_REJECTED -> io.a2a.spec.TaskState.TASK_STATE_REJECTED;
+            case TASK_STATE_UNSPECIFIED, UNRECOGNIZED -> io.a2a.spec.TaskState.UNRECOGNIZED;
         };
     }
 }

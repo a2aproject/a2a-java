@@ -63,7 +63,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "submitted", null, null,
+        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "TASK_STATE_SUBMITTED", null, null,
                 null, null, null);
 
         Assertions.assertEquals(200, response.getStatusCode());
@@ -911,8 +911,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
-        // Enum constant format (SUBMITTED) should be accepted
-        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "SUBMITTED", null, null,
+        // Enum constant format (TASK_STATE_SUBMITTED) should be accepted
+        RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "TASK_STATE_SUBMITTED", null, null,
                 null, null, null);
 
         Assertions.assertEquals(200, response.getStatusCode());

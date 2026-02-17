@@ -49,7 +49,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("test-task-1")
                 .contextId("test-context-1")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .metadata(new HashMap<>())
                 .build();
 
@@ -62,7 +62,7 @@ public class JpaDatabaseTaskStoreTest {
         assertNotNull(retrieved);
         assertEquals("test-task-1", retrieved.id());
         assertEquals("test-context-1", retrieved.contextId());
-        assertEquals(TaskState.SUBMITTED, retrieved.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, retrieved.status().state());
     }
 
     @Test
@@ -79,7 +79,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("test-task-2")
                 .contextId("test-context-2")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .history(Collections.singletonList(message))
                 .build();
 
@@ -92,7 +92,7 @@ public class JpaDatabaseTaskStoreTest {
         assertNotNull(retrieved);
         assertEquals("test-task-2", retrieved.id());
         assertEquals("test-context-2", retrieved.contextId());
-        assertEquals(TaskState.WORKING, retrieved.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, retrieved.status().state());
         assertEquals(1, retrieved.history().size());
         assertEquals("msg-1", retrieved.history().get(0).messageId());
         assertEquals("Hello, agent!", ((TextPart) retrieved.history().get(0).parts().get(0)).text());
@@ -105,7 +105,7 @@ public class JpaDatabaseTaskStoreTest {
         Task initialTask = Task.builder()
                 .id("test-task-3")
                 .contextId("test-context-3")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         
         taskStore.save(initialTask, false);
@@ -114,7 +114,7 @@ public class JpaDatabaseTaskStoreTest {
         Task updatedTask = Task.builder()
                 .id("test-task-3")
                 .contextId("test-context-3")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
         
         taskStore.save(updatedTask, false);
@@ -124,7 +124,7 @@ public class JpaDatabaseTaskStoreTest {
         
         assertNotNull(retrieved);
         assertEquals("test-task-3", retrieved.id());
-        assertEquals(TaskState.COMPLETED, retrieved.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, retrieved.status().state());
     }
 
     @Test
@@ -141,7 +141,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("test-task-4")
                 .contextId("test-context-4")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         
         taskStore.save(task, false);
@@ -175,7 +175,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("test-task-5")
                 .contextId("test-context-5")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .metadata(metadata)
                 .build();
 
@@ -198,7 +198,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("test-task-active-1")
                 .contextId("test-context")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         
         taskStore.save(task, false);
@@ -217,7 +217,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("test-task-active-2")
                 .contextId("test-context")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         
         taskStore.save(task, false);
@@ -226,7 +226,7 @@ public class JpaDatabaseTaskStoreTest {
         Task finalTask = Task.builder()
                 .id("test-task-active-2")
                 .contextId("test-context")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
         
         taskStore.save(finalTask, false);
@@ -245,7 +245,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("test-task-active-3")
                 .contextId("test-context")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
         
         taskStore.save(task, false);
@@ -307,19 +307,19 @@ public class JpaDatabaseTaskStoreTest {
         Task task1 = Task.builder()
                 .id("task-context-1")
                 .contextId("context-A")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         Task task2 = Task.builder()
                 .id("task-context-2")
                 .contextId("context-A")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         Task task3 = Task.builder()
                 .id("task-context-3")
                 .contextId("context-B")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
 
         taskStore.save(task1, false);
@@ -346,19 +346,19 @@ public class JpaDatabaseTaskStoreTest {
         Task task1 = Task.builder()
                 .id("task-status-filter-1")
                 .contextId("context-status-filter-test")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         Task task2 = Task.builder()
                 .id("task-status-filter-2")
                 .contextId("context-status-filter-test")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         Task task3 = Task.builder()
                 .id("task-status-filter-3")
                 .contextId("context-status-filter-test")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
 
         taskStore.save(task1, false);
@@ -369,14 +369,14 @@ public class JpaDatabaseTaskStoreTest {
         ListTasksParams params = ListTasksParams.builder()
                 .contextId("context-status-filter-test")
                 .tenant("tenant")
-                .status(TaskState.WORKING)
+                .status(TaskState.TASK_STATE_WORKING)
                 .build();
         ListTasksResult result = taskStore.list(params);
 
         assertEquals(1, result.totalSize());
         assertEquals(1, result.pageSize());
         assertEquals(1, result.tasks().size());
-        assertEquals(TaskState.WORKING, result.tasks().get(0).status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, result.tasks().get(0).status().state());
     }
 
     @Test
@@ -386,19 +386,19 @@ public class JpaDatabaseTaskStoreTest {
         Task task1 = Task.builder()
                 .id("task-combined-1")
                 .contextId("context-X")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         Task task2 = Task.builder()
                 .id("task-combined-2")
                 .contextId("context-X")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         Task task3 = Task.builder()
                 .id("task-combined-3")
                 .contextId("context-Y")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         taskStore.save(task1, false);
@@ -409,7 +409,7 @@ public class JpaDatabaseTaskStoreTest {
         ListTasksParams params = ListTasksParams.builder()
                 .contextId("context-X")
                 .tenant("tenant")
-                .status(TaskState.WORKING)
+                .status(TaskState.TASK_STATE_WORKING)
                 .build();
         ListTasksResult result = taskStore.list(params);
 
@@ -417,7 +417,7 @@ public class JpaDatabaseTaskStoreTest {
         assertEquals(1, result.pageSize());
         assertEquals("task-combined-2", result.tasks().get(0).id());
         assertEquals("context-X", result.tasks().get(0).contextId());
-        assertEquals(TaskState.WORKING, result.tasks().get(0).status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, result.tasks().get(0).status().state());
     }
 
     @Test
@@ -430,7 +430,7 @@ public class JpaDatabaseTaskStoreTest {
             Task task = Task.builder()
                     .id("task-page-" + i)
                     .contextId("context-pagination")
-                    .status(new TaskStatus(TaskState.SUBMITTED, null, sameTimestamp))
+                    .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED, null, sameTimestamp))
                     .build();
             taskStore.save(task, false);
         }
@@ -486,7 +486,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task1 = Task.builder()
                 .id("task-diff-a")
                 .contextId("context-diff-timestamps")
-                .status(new TaskStatus(TaskState.WORKING, null, now.minusMinutes(10)))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, now.minusMinutes(10)))
                 .build();
         taskStore.save(task1, false);
 
@@ -494,7 +494,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task2 = Task.builder()
                 .id("task-diff-b")
                 .contextId("context-diff-timestamps")
-                .status(new TaskStatus(TaskState.WORKING, null, now.minusMinutes(5)))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, now.minusMinutes(5)))
                 .build();
         taskStore.save(task2, false);
 
@@ -502,7 +502,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task3 = Task.builder()
                 .id("task-diff-c")
                 .contextId("context-diff-timestamps")
-                .status(new TaskStatus(TaskState.WORKING, null, now.minusMinutes(5)))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, now.minusMinutes(5)))
                 .build();
         taskStore.save(task3, false);
 
@@ -510,7 +510,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task4 = Task.builder()
                 .id("task-diff-d")
                 .contextId("context-diff-timestamps")
-                .status(new TaskStatus(TaskState.WORKING, null, now))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, now))
                 .build();
         taskStore.save(task4, false);
 
@@ -518,7 +518,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task5 = Task.builder()
                 .id("task-diff-e")
                 .contextId("context-diff-timestamps")
-                .status(new TaskStatus(TaskState.WORKING, null, now.minusMinutes(1)))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, now.minusMinutes(1)))
                 .build();
         taskStore.save(task5, false);
 
@@ -612,7 +612,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("task-history-limit-unique-1")
                 .contextId("context-history-limit-unique")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .history(longHistory)
                 .build();
 
@@ -650,7 +650,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("task-artifact-unique-1")
                 .contextId("context-artifact-unique")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .artifacts(artifacts)
                 .build();
 
@@ -689,7 +689,7 @@ public class JpaDatabaseTaskStoreTest {
             Task task = Task.builder()
                     .id("task-default-pagesize-" + String.format("%03d", i))
                     .contextId("context-default-pagesize")
-                    .status(new TaskStatus(TaskState.SUBMITTED))
+                    .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                     .build();
             taskStore.save(task, false);
         }
@@ -713,7 +713,7 @@ public class JpaDatabaseTaskStoreTest {
         Task task = Task.builder()
                 .id("task-invalid-token")
                 .contextId("context-invalid-token")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
         taskStore.save(task, false);
 
@@ -761,19 +761,19 @@ public class JpaDatabaseTaskStoreTest {
         Task task1 = Task.builder()
                 .id("task-order-a")
                 .contextId("context-order")
-                .status(new TaskStatus(TaskState.SUBMITTED, null, sameTimestamp))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED, null, sameTimestamp))
                 .build();
 
         Task task2 = Task.builder()
                 .id("task-order-b")
                 .contextId("context-order")
-                .status(new TaskStatus(TaskState.SUBMITTED, null, sameTimestamp))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED, null, sameTimestamp))
                 .build();
 
         Task task3 = Task.builder()
                 .id("task-order-c")
                 .contextId("context-order")
-                .status(new TaskStatus(TaskState.SUBMITTED, null, sameTimestamp))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED, null, sameTimestamp))
                 .build();
 
         // Save in reverse order

@@ -250,7 +250,7 @@ public class RestTransport implements ClientTransport {
             queryParts.add("contextId=" + URLEncoder.encode(request.contextId(), StandardCharsets.UTF_8));
         }
         if (request.status() != null) {
-            queryParts.add("status=" + request.status().asString());
+            queryParts.add("status=" + request.status());
         }
         if (request.pageSize() != null) {
             queryParts.add("pageSize=" + request.pageSize());

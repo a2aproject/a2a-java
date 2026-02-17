@@ -234,7 +234,7 @@ public class JpaPushNotificationConfigStoreTest {
     @Transactional
     public void testSendNotificationSuccess() throws Exception {
         String taskId = "task_send_success";
-        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
         configStore.setInfo(taskId, config);
 
@@ -259,7 +259,7 @@ public class JpaPushNotificationConfigStoreTest {
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.id()));
-        assertTrue(sentBody.contains(task.status().state().asString()));
+        assertTrue(sentBody.contains(task.status().state().name()));
     }
 
     @Test
@@ -267,7 +267,7 @@ public class JpaPushNotificationConfigStoreTest {
     @Disabled("Token authentication is not yet implemented in BasePushNotificationSender (TODO auth)")
     public void testSendNotificationWithToken() throws Exception {
         String taskId = "task_send_with_token";
-        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
         PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
         configStore.setInfo(taskId, config);
 
@@ -295,14 +295,14 @@ public class JpaPushNotificationConfigStoreTest {
         // Verify the request body contains the task data
         String sentBody = bodyCaptor.getValue();
         assertTrue(sentBody.contains(task.id()));
-        assertTrue(sentBody.contains(task.status().state().asString()));
+        assertTrue(sentBody.contains(task.status().state().name()));
     }
 
     @Test
     @Transactional
     public void testSendNotificationNoConfig() throws Exception {
         String taskId = "task_send_no_config";
-        Task task = createSampleTask(taskId, TaskState.COMPLETED);
+        Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
 
         notificationSender.sendNotification(task);
 

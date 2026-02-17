@@ -85,7 +85,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         Task testTask = Task.builder()
             .id("direct-test-task")
             .contextId("test-context")
-            .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.SUBMITTED))
+            .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.TASK_STATE_SUBMITTED))
             .build();
 
         // Directly trigger the mock

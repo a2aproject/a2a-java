@@ -237,7 +237,7 @@ public class AgentEmitter {
      * @param message optional message to include with completion
      */
     public void complete(@Nullable Message message) {
-        updateStatus(TaskState.COMPLETED, message);
+        updateStatus(TaskState.TASK_STATE_COMPLETED, message);
     }
 
     /**
@@ -253,7 +253,7 @@ public class AgentEmitter {
      * @param message optional message to include with failure
      */
     public void fail(@Nullable Message message) {
-        updateStatus(TaskState.FAILED, message);
+        updateStatus(TaskState.TASK_STATE_FAILED, message);
     }
 
     /**
@@ -312,7 +312,7 @@ public class AgentEmitter {
      * @param message optional message to include
      */
     public void submit(@Nullable Message message) {
-        updateStatus(TaskState.SUBMITTED, message);
+        updateStatus(TaskState.TASK_STATE_SUBMITTED, message);
     }
 
     /**
@@ -328,7 +328,7 @@ public class AgentEmitter {
      * @param message optional message to include
      */
     public void startWork(@Nullable Message message) {
-        updateStatus(TaskState.WORKING, message);
+        updateStatus(TaskState.TASK_STATE_WORKING, message);
     }
 
     /**
@@ -344,7 +344,7 @@ public class AgentEmitter {
      * @param message optional message to include
      */
     public void cancel(@Nullable Message message) {
-        updateStatus(TaskState.CANCELED, message);
+        updateStatus(TaskState.TASK_STATE_CANCELED, message);
     }
 
     /**
@@ -360,7 +360,7 @@ public class AgentEmitter {
      * @param message optional message to include
      */
     public void reject(@Nullable Message message) {
-        updateStatus(TaskState.REJECTED, message);
+        updateStatus(TaskState.TASK_STATE_REJECTED, message);
     }
 
     /**
@@ -395,7 +395,7 @@ public class AgentEmitter {
      * @param isFinal whether this is a final status (prevents further updates)
      */
     public void requiresInput(@Nullable Message message, boolean isFinal) {
-        updateStatus(TaskState.INPUT_REQUIRED, message, isFinal);
+        updateStatus(TaskState.TASK_STATE_INPUT_REQUIRED, message, isFinal);
     }
 
     /**
@@ -430,7 +430,7 @@ public class AgentEmitter {
      * @param isFinal whether this is a final status (prevents further updates)
      */
     public void requiresAuth(@Nullable Message message, boolean isFinal) {
-        updateStatus(TaskState.AUTH_REQUIRED, message, isFinal);
+        updateStatus(TaskState.TASK_STATE_AUTH_REQUIRED, message, isFinal);
     }
 
     /**

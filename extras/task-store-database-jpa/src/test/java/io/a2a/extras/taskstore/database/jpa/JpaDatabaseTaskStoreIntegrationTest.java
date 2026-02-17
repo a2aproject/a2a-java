@@ -100,7 +100,7 @@ public class JpaDatabaseTaskStoreIntegrationTest {
         Task createdTask = taskRef.get();
         assertNotNull(createdTask);
         assertEquals(0, createdTask.artifacts().size());
-        assertEquals(TaskState.SUBMITTED, createdTask.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, createdTask.status().state());
 
         // Send a message updating the Task
         userMessage = Message.builder()
@@ -129,23 +129,23 @@ public class JpaDatabaseTaskStoreIntegrationTest {
         Task updatedTask = taskRef2.get();
         assertNotNull(updatedTask);
         assertEquals(1, updatedTask.artifacts().size());
-        assertEquals(TaskState.SUBMITTED, updatedTask.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, updatedTask.status().state());
 
         Task retrievedTask = client.getTask(new TaskQueryParams(taskId), null);
         assertNotNull(retrievedTask);
         assertEquals(1, retrievedTask.artifacts().size());
-        assertEquals(TaskState.SUBMITTED, retrievedTask.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, retrievedTask.status().state());
 
         // Cancel the task
         Task cancelledTask = client.cancelTask(new TaskIdParams(taskId), null);
         assertNotNull(cancelledTask);
         assertEquals(1, cancelledTask.artifacts().size());
-        assertEquals(TaskState.CANCELED, cancelledTask.status().state());
+        assertEquals(TaskState.TASK_STATE_CANCELED, cancelledTask.status().state());
 
         Task retrievedCancelledTask = client.getTask(new TaskQueryParams(taskId), null);
         assertNotNull(retrievedCancelledTask);
         assertEquals(1, retrievedCancelledTask.artifacts().size());
-        assertEquals(TaskState.CANCELED, retrievedCancelledTask.status().state());
+        assertEquals(TaskState.TASK_STATE_CANCELED, retrievedCancelledTask.status().state());
 
         // None of the framework code deletes tasks, so just do this manually
         taskStore.delete(taskId);

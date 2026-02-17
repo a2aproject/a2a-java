@@ -133,7 +133,7 @@ public class ToProtoTest {
     public void convertTask() {
         Task task = Task.builder().id("cancel-task-123")
                 .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
         io.a2a.grpc.Task result = ProtoUtils.ToProto.task(task);
         assertEquals("session-xyz", result.getContextId());
@@ -143,7 +143,7 @@ public class ToProtoTest {
         assertEquals(0, result.getHistoryCount());
         task = Task.builder().id("cancel-task-123")
                 .contextId("session-xyz")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .artifacts(List.of(Artifact.builder()
                         .artifactId("11")
                         .name("artefact")
@@ -257,7 +257,7 @@ public class ToProtoTest {
 
     @Test
     public void convertTaskStatusUpdateEvent() {
-        TaskStatus completedStatus = new TaskStatus(TaskState.COMPLETED);
+        TaskStatus completedStatus = new TaskStatus(TaskState.TASK_STATE_COMPLETED);
         // Use constructor since Builder doesn't have isFinal method
         TaskStatusUpdateEvent tsue = new TaskStatusUpdateEvent(
                 "1234",
@@ -288,7 +288,7 @@ public class ToProtoTest {
     @Test
     public void convertTaskTimestampStatus() {
         OffsetDateTime expectedTimestamp = OffsetDateTime.parse("2024-10-05T12:34:56Z");
-        TaskStatus testStatus = new TaskStatus(TaskState.COMPLETED, null, expectedTimestamp);
+        TaskStatus testStatus = new TaskStatus(TaskState.TASK_STATE_COMPLETED, null, expectedTimestamp);
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
@@ -298,7 +298,7 @@ public class ToProtoTest {
         io.a2a.grpc.Task grpcTask = ProtoUtils.ToProto.task(task);
         task = ProtoUtils.FromProto.task(grpcTask);
         TaskStatus status = task.status();
-        assertEquals(TaskState.COMPLETED, status.state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, status.state());
         assertNotNull(status.timestamp());
         assertEquals(expectedTimestamp, status.timestamp());
     }

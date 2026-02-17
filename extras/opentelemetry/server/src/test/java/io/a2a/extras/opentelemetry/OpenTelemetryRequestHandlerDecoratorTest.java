@@ -93,7 +93,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             Task result = Task.builder()
                     .id("task-123")
                     .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.COMPLETED))
+                    .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                     .history(Collections.emptyList())
                     .artifacts(Collections.emptyList())
                     .build();
@@ -167,7 +167,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             Task result = Task.builder()
                     .id("task-123")
                     .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.CANCELED))
+                    .status(new TaskStatus(TaskState.TASK_STATE_CANCELED))
                     .history(Collections.emptyList())
                     .artifacts(Collections.emptyList())
                     .build();
@@ -212,7 +212,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             EventKind result = Task.builder()
                     .id("task-123")
                     .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.COMPLETED))
+                    .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                     .history(Collections.emptyList())
                     .artifacts(Collections.emptyList())
                     .build();
@@ -461,7 +461,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             Task result = Task.builder()
                     .id("task-123")
                     .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.COMPLETED))
+                    .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                     .history(Collections.emptyList())
                     .artifacts(Collections.emptyList())
                     .build();
@@ -479,7 +479,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
             Task result = Task.builder()
                     .id("task-123")
                     .contextId("ctx-1")
-                    .status(new TaskStatus(TaskState.COMPLETED))
+                    .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                     .history(Collections.emptyList())
                     .artifacts(Collections.emptyList())
                     .build();

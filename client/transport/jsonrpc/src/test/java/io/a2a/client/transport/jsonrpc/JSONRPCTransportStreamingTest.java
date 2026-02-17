@@ -158,7 +158,7 @@ public class JSONRPCTransportStreamingTest {
         Task task = (Task) eventKind;
         assertEquals("2", task.id());
         assertEquals("context-1234", task.contextId());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         List<Artifact> artifacts = task.artifacts();
         assertEquals(1, artifacts.size());
         Artifact artifact = artifacts.get(0);

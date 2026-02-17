@@ -9,11 +9,11 @@ import org.jspecify.annotations.Nullable;
  * A2A Protocol error indicating that a task cannot be canceled in its current state.
  * <p>
  * This error is returned when a client attempts to cancel a task
- * but the task is in a terminal state ({@link TaskState#COMPLETED}, {@link TaskState#FAILED},
- * {@link TaskState#CANCELED}) where cancellation is not applicable.
+ * but the task is in a terminal state ({@link TaskState#TASK_STATE_COMPLETED}, {@link TaskState#TASK_STATE_FAILED},
+ * {@link TaskState#TASK_STATE_CANCELED}) where cancellation is not applicable.
  * <p>
- * Tasks can only be canceled when they are in non-terminal states such as {@link TaskState#SUBMITTED}
- * or {@link TaskState#WORKING}.
+ * Tasks can only be canceled when they are in non-terminal states such as {@link TaskState#TASK_STATE_SUBMITTED}
+ * or {@link TaskState#TASK_STATE_WORKING}.
  * <p>
  * Corresponds to A2A-specific error code {@code -32002}.
  * <p>

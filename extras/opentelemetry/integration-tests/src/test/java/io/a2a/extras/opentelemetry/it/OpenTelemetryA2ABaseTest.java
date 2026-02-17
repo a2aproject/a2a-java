@@ -69,7 +69,7 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
         Task task = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .history(Collections.emptyList())
                 .artifacts(Collections.emptyList())
                 .build();
@@ -146,7 +146,7 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
         Task task = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .history(Collections.emptyList())
                 .artifacts(Collections.emptyList())
                 .build();
@@ -159,7 +159,7 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
             Task cancelledTask = client.cancelTask(new TaskIdParams(taskId), null);
 
             assertNotNull(cancelledTask);
-            assertEquals(TaskState.CANCELED, cancelledTask.status().state());
+            assertEquals(TaskState.TASK_STATE_CANCELED, cancelledTask.status().state());
 
             Thread.sleep(5000);
 
@@ -191,7 +191,7 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
         Task task = Task.builder()
                 .id(taskId)
                 .contextId(contextId)
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .history(Collections.emptyList())
                 .artifacts(Collections.emptyList())
                 .build();

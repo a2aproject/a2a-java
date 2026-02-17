@@ -1,7 +1,7 @@
 package io.a2a.server.tasks;
 
-import static io.a2a.spec.TaskState.FAILED;
-import static io.a2a.spec.TaskState.SUBMITTED;
+import static io.a2a.spec.TaskState.TASK_STATE_FAILED;
+import static io.a2a.spec.TaskState.TASK_STATE_SUBMITTED;
 import static io.a2a.util.Assert.checkNotNullParam;
 import static io.a2a.util.Utils.appendArtifactToTask;
 
@@ -142,7 +142,7 @@ public class TaskManager {
                 TaskStatusUpdateEvent failedEvent = TaskStatusUpdateEvent.builder()
                         .taskId(taskId)
                         .contextId(errorContextId)
-                        .status(new TaskStatus(FAILED))
+                        .status(new TaskStatus(TASK_STATE_FAILED))
                         .build();
                 isFinal = saveTaskEvent(failedEvent, isReplicated);
             } else {
@@ -207,7 +207,7 @@ public class TaskManager {
         return Task.builder()
                 .id(taskId)
                 .contextId(contextId)
-                .status(new TaskStatus(SUBMITTED))
+                .status(new TaskStatus(TASK_STATE_SUBMITTED))
                 .history(history)
                 .build();
     }

@@ -168,8 +168,8 @@ public class ResultAggregator {
                     boolean isFinalEvent = (event instanceof Task task && task.status().state().isFinal())
                             || (event instanceof TaskStatusUpdateEvent tsue && tsue.isFinal())
                             || (event instanceof A2AError);  // A2AError events are terminal
-                    boolean isAuthRequired = (event instanceof Task task && task.status().state() == TaskState.AUTH_REQUIRED)
-                            || (event instanceof TaskStatusUpdateEvent tsue && tsue.status().state() == TaskState.AUTH_REQUIRED);
+                    boolean isAuthRequired = (event instanceof Task task && task.status().state() == TaskState.TASK_STATE_AUTH_REQUIRED)
+                            || (event instanceof TaskStatusUpdateEvent tsue && tsue.status().state() == TaskState.TASK_STATE_AUTH_REQUIRED);
 
                     LOGGER.debug("ResultAggregator: Evaluating interrupt (blocking={}, isFinal={}, isAuth={}, eventType={})",
                         blocking, isFinalEvent, isAuthRequired, event.getClass().getSimpleName());

@@ -280,7 +280,7 @@ public class MultiInstanceReplicationTest {
 
             // Task should be in a non-final state (SUBMITTED or WORKING are both valid)
             TaskState state = createdTask.status().state();
-            assertTrue(state == TaskState.SUBMITTED || state == TaskState.WORKING,
+            assertTrue(state == TaskState.TASK_STATE_SUBMITTED || state == TaskState.TASK_STATE_WORKING,
                 "Task should be in SUBMITTED or WORKING state, but was: " + state);
             nonStreamingClient.close();
         } catch (Exception e) {

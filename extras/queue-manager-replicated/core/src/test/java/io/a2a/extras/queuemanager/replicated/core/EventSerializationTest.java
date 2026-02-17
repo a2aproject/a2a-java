@@ -44,7 +44,7 @@ public class EventSerializationTest {
     @Test
     public void testTaskSerialization() throws JsonProcessingException {
         // Create a Task
-        TaskStatus status = new TaskStatus(TaskState.SUBMITTED);
+        TaskStatus status = new TaskStatus(TaskState.TASK_STATE_SUBMITTED);
         Task originalTask = Task.builder()
                 .id("test-task-123")
                 .contextId("test-context-456")
@@ -105,7 +105,7 @@ public class EventSerializationTest {
     @Test
     public void testTaskStatusUpdateEventSerialization() throws JsonProcessingException {
         // Create a TaskStatusUpdateEvent
-        TaskStatus status = new TaskStatus(TaskState.COMPLETED);
+        TaskStatus status = new TaskStatus(TaskState.TASK_STATE_COMPLETED);
         TaskStatusUpdateEvent originalEvent = TaskStatusUpdateEvent.builder()
                 .taskId("test-task-abc")
                 .contextId("test-context-def")
@@ -204,7 +204,7 @@ public class EventSerializationTest {
         TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
                 .taskId("replicated-test-task")
                 .contextId("replicated-test-context")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
 
         // Create ReplicatedEventQueueItem with StreamingEventKind
@@ -277,7 +277,7 @@ public class EventSerializationTest {
         TaskStatusUpdateEvent statusEvent = TaskStatusUpdateEvent.builder()
                 .taskId("backward-compat-task")
                 .contextId("backward-compat-context")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .build();
 
         // Use the backward compatibility constructor

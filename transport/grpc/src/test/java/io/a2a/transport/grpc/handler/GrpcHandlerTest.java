@@ -1,6 +1,5 @@
 package io.a2a.transport.grpc.handler;
 
-import static io.a2a.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import io.a2a.server.events.EventConsumer;
 import io.a2a.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import io.a2a.server.requesthandlers.DefaultRequestHandler;
 import io.a2a.server.requesthandlers.RequestHandler;
-import io.a2a.server.tasks.AgentEmitter;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentExtension;
@@ -371,7 +369,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 TaskStatusUpdateEvent.builder()
                         .taskId(task.id())
                         .contextId(task.contextId())
-                        .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.WORKING))
+                        .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.TASK_STATE_WORKING))
                         .build());
 
         StreamRecorder<StreamResponse> streamRecorder;
@@ -421,7 +419,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                     TaskStatusUpdateEvent.builder()
                             .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                             .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId())
-                            .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.COMPLETED))
+                            .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.TASK_STATE_COMPLETED))
                             .build());
 
             agentExecutorExecute = (context, agentEmitter) -> {
@@ -482,7 +480,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             TaskStatusUpdateEvent statusUpdate = (TaskStatusUpdateEvent) httpClient.events.get(2);
             Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), statusUpdate.taskId());
             Assertions.assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId(), statusUpdate.contextId());
-            Assertions.assertEquals(io.a2a.spec.TaskState.COMPLETED, statusUpdate.status().state());
+            Assertions.assertEquals(io.a2a.spec.TaskState.TASK_STATE_COMPLETED, statusUpdate.status().state());
         } finally {
             mainEventBusProcessor.setPushNotificationExecutor(null);
         }
@@ -562,7 +560,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 TaskStatusUpdateEvent.builder()
                         .taskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                         .contextId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.contextId())
-                        .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.WORKING))
+                        .status(new io.a2a.spec.TaskStatus(io.a2a.spec.TaskState.TASK_STATE_WORKING))
                         .build());
 
         StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();

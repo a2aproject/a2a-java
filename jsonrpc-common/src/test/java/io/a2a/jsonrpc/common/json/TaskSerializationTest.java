@@ -34,7 +34,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
 
         // Serialize to JSON
@@ -43,7 +43,7 @@ class TaskSerializationTest {
         // Verify JSON contains expected fields
         assertNotNull(json);
         assertTrue(json.contains("\"id\":\"task-123\""));
-        assertTrue(json.contains("\"state\":\"submitted\""));
+        assertTrue(json.contains("\"state\":\"TASK_STATE_SUBMITTED\""));
 
         // Deserialize back to Task
         Task deserialized = JsonUtil.fromJson(json, Task.class);
@@ -60,7 +60,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.WORKING, null, timestamp))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
                 .build();
 
         // Serialize
@@ -89,7 +89,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .artifacts(List.of(artifact))
                 .build();
 
@@ -121,7 +121,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.WORKING))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .history(List.of(message))
                 .build();
 
@@ -149,7 +149,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-789")
-                .status(new TaskStatus(TaskState.WORKING, null, timestamp))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
                 .history(List.of(
                         Message.builder()
                                 .role(Message.Role.USER)
@@ -190,7 +190,7 @@ class TaskSerializationTest {
     void testTaskWithDifferentStates() throws JsonProcessingException {
         for (TaskState state : TaskState.values()) {
             Task task = Task.builder()
-                    .id("task-" + state.asString())
+                    .id("task-" + state)
                     .contextId("context-123")
                     .status(new TaskStatus(state))
                     .build();
@@ -199,7 +199,7 @@ class TaskSerializationTest {
             String json = JsonUtil.toJson(task);
 
             // Verify state is serialized correctly
-            assertTrue(json.contains("\"state\":\"" + state.asString() + "\""));
+            assertTrue(json.contains("\"state\":\"" + state + "\""));
 
             // Deserialize
             Task deserialized = JsonUtil.fromJson(json, Task.class);
@@ -214,7 +214,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.SUBMITTED))
+                .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 // artifacts, history, metadata not set
                 .build();
 
@@ -227,7 +227,7 @@ class TaskSerializationTest {
         // Verify required fields are present
         assertEquals("task-123", deserialized.id());
         assertEquals("context-456", deserialized.contextId());
-        assertEquals(TaskState.SUBMITTED, deserialized.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, deserialized.status().state());
 
         // Verify optional lists default to empty
         assertNotNull(deserialized.artifacts());
@@ -248,7 +248,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .artifacts(List.of(artifact))
                 .build();
 
@@ -286,7 +286,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .artifacts(List.of(artifact))
                 .build();
 
@@ -321,7 +321,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .artifacts(List.of(artifact))
                 .build();
 
@@ -351,7 +351,7 @@ class TaskSerializationTest {
         Task original = Task.builder()
                 .id("task-123")
                 .contextId("context-789")
-                .status(new TaskStatus(TaskState.WORKING, null, timestamp))
+                .status(new TaskStatus(TaskState.TASK_STATE_WORKING, null, timestamp))
                 .history(List.of(
                         Message.builder()
                                 .role(Message.Role.USER)
@@ -401,21 +401,21 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.COMPLETED, statusMessage, null))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED, statusMessage, null))
                 .build();
 
         // Serialize
         String json = JsonUtil.toJson(task);
 
         // Verify JSON contains status message
-        assertTrue(json.contains("\"state\":\"completed\""));
+        assertTrue(json.contains("\"state\":\"TASK_STATE_COMPLETED\""));
         assertTrue(json.contains("Processing complete"));
 
         // Deserialize
         Task deserialized = JsonUtil.fromJson(json, Task.class);
 
         // Verify status message is preserved
-        assertEquals(TaskState.COMPLETED, deserialized.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, deserialized.status().state());
         assertNotNull(deserialized.status().message());
         assertEquals(Message.Role.AGENT, deserialized.status().message().role());
         assertTrue(deserialized.status().message().parts().get(0) instanceof TextPart);
@@ -428,7 +428,7 @@ class TaskSerializationTest {
               "id": "task-123",
               "contextId": "context-456",
               "status": {
-                "state": "submitted"
+                "state": "TASK_STATE_SUBMITTED"
               }
             }
             """;
@@ -437,7 +437,7 @@ class TaskSerializationTest {
 
         assertEquals("task-123", task.id());
         assertEquals("context-456", task.contextId());
-        assertEquals(TaskState.SUBMITTED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_SUBMITTED, task.status().state());
         assertNull(task.status().message());
         // TaskStatus automatically sets timestamp to current time if not provided
         assertNotNull(task.status().timestamp());
@@ -450,7 +450,7 @@ class TaskSerializationTest {
               "id": "task-123",
               "contextId": "context-456",
               "status": {
-                "state": "completed"
+                "state": "TASK_STATE_COMPLETED"
               },
               "artifacts": [
                 {
@@ -469,7 +469,7 @@ class TaskSerializationTest {
         Task task = JsonUtil.fromJson(json, Task.class);
 
         assertEquals("task-123", task.id());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         assertEquals(1, task.artifacts().size());
         assertEquals("artifact-1", task.artifacts().get(0).artifactId());
         assertEquals("Result", task.artifacts().get(0).name());
@@ -485,7 +485,7 @@ class TaskSerializationTest {
               "id": "task-123",
               "contextId": "context-456",
               "status": {
-                "state": "completed"
+                "state": "TASK_STATE_COMPLETED"
               },
               "artifacts": [
                 {
@@ -525,7 +525,7 @@ class TaskSerializationTest {
               "id": "task-123",
               "contextId": "context-456",
               "status": {
-                "state": "completed"
+                "state": "TASK_STATE_COMPLETED"
               },
               "artifacts": [
                 {
@@ -564,7 +564,7 @@ class TaskSerializationTest {
               "id": "task-123",
               "contextId": "context-456",
               "status": {
-                "state": "completed"
+                "state": "TASK_STATE_COMPLETED"
               },
               "artifacts": [
                 {
@@ -598,7 +598,7 @@ class TaskSerializationTest {
               "id": "task-123",
               "contextId": "context-456",
               "status": {
-                "state": "working"
+                "state": "TASK_STATE_WORKING"
               },
               "history": [
                 {
@@ -640,7 +640,7 @@ class TaskSerializationTest {
               "id": "task-123",
               "contextId": "context-456",
               "status": {
-                "state": "working",
+                "state": "TASK_STATE_WORKING",
                 "timestamp": "2023-10-01T12:00:00.234-05:00"
               }
             }
@@ -649,7 +649,7 @@ class TaskSerializationTest {
         Task task = JsonUtil.fromJson(json, Task.class);
 
         assertEquals("task-123", task.id());
-        assertEquals(TaskState.WORKING, task.status().state());
+        assertEquals(TaskState.TASK_STATE_WORKING, task.status().state());
         assertNotNull(task.status().timestamp());
         assertEquals("2023-10-01T12:00:00.234-05:00", task.status().timestamp().toString());
     }
@@ -661,7 +661,7 @@ class TaskSerializationTest {
               "id": "task-123",
               "contextId": "context-456",
               "status": {
-                "state": "completed"
+                "state": "TASK_STATE_COMPLETED"
               },
               "metadata": {
                 "key1": "value1",
@@ -692,7 +692,7 @@ class TaskSerializationTest {
         Task task = Task.builder()
                 .id("task-123")
                 .contextId("context-456")
-                .status(new TaskStatus(TaskState.COMPLETED))
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
                 .artifacts(List.of(artifact))
                 .build();
 

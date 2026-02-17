@@ -6,7 +6,6 @@ import static io.a2a.server.util.async.AsyncUtils.processor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +67,7 @@ import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.UnsupportedOperationError;
-import java.util.Collections;
+
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -369,7 +368,7 @@ public class DefaultRequestHandler implements RequestHandler {
         // Check if task is in a non-cancelable state (completed, canceled, failed, rejected)
         if (task.status().state().isFinal()) {
             throw new TaskNotCancelableError(
-                    "Task cannot be canceled - current state: " + task.status().state().asString());
+                    "Task cannot be canceled - current state: " + task.status().state());
         }
 
         TaskManager taskManager = new TaskManager(
@@ -415,9 +414,9 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         // Verify task was actually canceled (not completed concurrently)
-        if (tempTask.status().state() != TaskState.CANCELED) {
+        if (tempTask.status().state() != TaskState.TASK_STATE_CANCELED) {
             throw new TaskNotCancelableError(
-                    "Task cannot be canceled - current state: " + tempTask.status().state().asString());
+                    "Task cannot be canceled - current state: " + tempTask.status().state());
         }
 
         return tempTask;

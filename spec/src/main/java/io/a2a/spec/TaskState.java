@@ -9,19 +9,19 @@ package io.a2a.spec;
  * <p>
  * <b>Transitional States:</b>
  * <ul>
- *   <li><b>SUBMITTED:</b> Task has been received by the agent and is queued for processing</li>
- *   <li><b>WORKING:</b> Agent is actively processing the task and may produce incremental results</li>
- *   <li><b>INPUT_REQUIRED:</b> Agent needs additional input from the user to continue</li>
- *   <li><b>AUTH_REQUIRED:</b> Agent requires authentication or authorization before proceeding</li>
+ *   <li><b>TASK_STATE_SUBMITTED:</b> Task has been received by the agent and is queued for processing</li>
+ *   <li><b>TASK_STATE_WORKING:</b> Agent is actively processing the task and may produce incremental results</li>
+ *   <li><b>TASK_STATE_INPUT_REQUIRED:</b> Agent needs additional input from the user to continue</li>
+ *   <li><b>TASK_STATE_AUTH_REQUIRED:</b> Agent requires authentication or authorization before proceeding</li>
  * </ul>
  * <p>
  * <b>Terminal States:</b>
  * <ul>
- *   <li><b>COMPLETED:</b> Task finished successfully with all requested work done</li>
- *   <li><b>CANCELED:</b> Task was explicitly canceled by the user or system</li>
- *   <li><b>FAILED:</b> Task failed due to an error during execution</li>
- *   <li><b>REJECTED:</b> Task was rejected by the agent (e.g., invalid request, policy violation)</li>
- *   <li><b>UNKNOWN:</b> Task state cannot be determined (error recovery state)</li>
+ *   <li><b>TASK_STATE_COMPLETED:</b> Task finished successfully with all requested work done</li>
+ *   <li><b>TASK_STATE_CANCELED:</b> Task was explicitly canceled by the user or system</li>
+ *   <li><b>TASK_STATE_FAILED:</b> Task failed due to an error during execution</li>
+ *   <li><b>TASK_STATE_REJECTED:</b> Task was rejected by the agent (e.g., invalid request, policy violation)</li>
+ *   <li><b>UNRECOGNIZED:</b> Task state cannot be determined (error recovery state)</li>
  * </ul>
  * <p>
  * The {@link #isFinal()} method can be used to determine if a state is terminal, which is
@@ -33,54 +33,36 @@ package io.a2a.spec;
  */
 public enum TaskState {
     /** Task has been received and is queued for processing (transitional state). */
-    SUBMITTED("submitted"),
+    TASK_STATE_SUBMITTED(false),
 
     /** Agent is actively processing the task (transitional state). */
-    WORKING("working"),
+    TASK_STATE_WORKING(false),
 
     /** Agent requires additional input from the user to continue (transitional state). */
-    INPUT_REQUIRED("input-required"),
+    TASK_STATE_INPUT_REQUIRED(false),
 
     /** Agent requires authentication or authorization to proceed (transitional state). */
-    AUTH_REQUIRED("auth-required"),
+    TASK_STATE_AUTH_REQUIRED(false),
 
     /** Task completed successfully (terminal state). */
-    COMPLETED("completed", true),
+    TASK_STATE_COMPLETED(true),
 
     /** Task was canceled by user or system (terminal state). */
-    CANCELED("canceled", true),
+    TASK_STATE_CANCELED(true),
 
     /** Task failed due to an error (terminal state). */
-    FAILED("failed", true),
+    TASK_STATE_FAILED(true),
 
     /** Task was rejected by the agent (terminal state). */
-    REJECTED("rejected", true),
+    TASK_STATE_REJECTED(true),
 
     /** Task state is unknown or cannot be determined (terminal state). */
-    UNKNOWN("unknown", true);
+    UNRECOGNIZED(true);
 
-    private final String state;
     private final boolean isFinal;
 
-    TaskState(String state) {
-        this(state, false);
-    }
-
-    TaskState(String state, boolean isFinal) {
-        this.state = state;
+    TaskState(boolean isFinal) {
         this.isFinal = isFinal;
-    }
-
-    /**
-     * Returns the string representation of this task state for JSON serialization.
-     * <p>
-     * This method is used to serialize TaskState values to their
-     * wire format (e.g., "working", "completed").
-     *
-     * @return the string representation of this state
-     */
-    public String asString() {
-        return state;
     }
 
     /**
@@ -90,35 +72,9 @@ public enum TaskState {
      * not transition to any other state. This is used by the event queue system
      * to determine when to close queues and by clients to know when to stop polling.
      *
-     * @return true if this is a terminal state (COMPLETED, CANCELED, FAILED, REJECTED, UNKNOWN),
-     *         false for transitional states (SUBMITTED, WORKING, INPUT_REQUIRED, AUTH_REQUIRED)
+     * @return {@code true} if this is a terminal state, {@code false} else.
      */
     public boolean isFinal(){
         return isFinal;
-    }
-
-    /**
-     * Deserializes a string value into a TaskState enum constant.
-     * <p>
-     * This method is used to deserialize TaskState values from their
-     * wire format during JSON parsing.
-     *
-     * @param state the string representation of the state
-     * @return the corresponding TaskState enum constant
-     * @throws IllegalArgumentException if the state string is not recognized
-     */
-    public static TaskState fromString(String state) {
-        return switch (state) {
-            case "submitted" -> SUBMITTED;
-            case "working" -> WORKING;
-            case "input-required" -> INPUT_REQUIRED;
-            case "auth-required" -> AUTH_REQUIRED;
-            case "completed" -> COMPLETED;
-            case "canceled" -> CANCELED;
-            case "failed" -> FAILED;
-            case "rejected" -> REJECTED;
-            case "unknown" -> UNKNOWN;
-            default -> throw new IllegalArgumentException("Invalid TaskState: " + state);
-        };
     }
 }

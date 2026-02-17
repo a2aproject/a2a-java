@@ -439,7 +439,7 @@ public interface A2ACommonFieldMapper {
         // Reject invalid enum values (e.g., "INVALID_STATUS" from JSON)
         if (state == io.a2a.grpc.TaskState.UNRECOGNIZED) {
             String validStates = java.util.Arrays.stream(io.a2a.spec.TaskState.values())
-                    .filter(s -> s != io.a2a.spec.TaskState.UNKNOWN)
+                    .filter(s -> s != io.a2a.spec.TaskState.UNRECOGNIZED)
                     .map(Enum::name)
                     .collect(java.util.stream.Collectors.joining(", "));
             throw new InvalidParamsError(null,

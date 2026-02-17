@@ -122,7 +122,7 @@ public class JSONRPCTransportTest {
         Task task = (Task) result;
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertNotNull(task.contextId());
-        assertEquals(TaskState.COMPLETED,task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED,task.status().state());
         assertEquals(1, task.artifacts().size());
         Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
@@ -235,7 +235,7 @@ public class JSONRPCTransportTest {
                 10), null);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.contextId());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         assertEquals(1, task.artifacts().size());
         Artifact artifact = task.artifacts().get(0);
         assertEquals(1, artifact.parts().size());
@@ -287,7 +287,7 @@ public class JSONRPCTransportTest {
         Task task = client.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.contextId());
-        assertEquals(TaskState.CANCELED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_CANCELED, task.status().state());
         assertTrue(task.metadata().isEmpty());
     }
 
@@ -457,7 +457,7 @@ public class JSONRPCTransportTest {
         Task task = (Task) result;
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertNotNull(task.contextId());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         assertEquals(1, task.artifacts().size());
         Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
@@ -517,7 +517,7 @@ public class JSONRPCTransportTest {
         Task task = (Task) result;
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertNotNull(task.contextId());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         assertEquals(1, task.artifacts().size());
         Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());
@@ -575,7 +575,7 @@ public class JSONRPCTransportTest {
         Task task = (Task) result;
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertNotNull(task.contextId());
-        assertEquals(TaskState.COMPLETED, task.status().state());
+        assertEquals(TaskState.TASK_STATE_COMPLETED, task.status().state());
         assertEquals(1, task.artifacts().size());
         Artifact artifact = task.artifacts().get(0);
         assertEquals("artifact-1", artifact.artifactId());

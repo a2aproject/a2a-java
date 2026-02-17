@@ -221,33 +221,13 @@ public class RestHandler {
                 paramsBuilder.contextId(contextId);
             }
             if (status != null) {
-                TaskState taskState = null;
+                TaskState taskState;
 
-                // Try JSON format first (e.g., "working", "completed")
                 try {
-                    taskState = TaskState.fromString(status);
+                    taskState = TaskState.valueOf(status);
                 } catch (IllegalArgumentException e) {
-                    // Try protobuf enum format (e.g., "TASK_STATE_WORKING")
-                    if (status.startsWith(TASK_STATE_PREFIX)) {
-                        String enumName = status.substring(TASK_STATE_PREFIX.length());
-                        try {
-                            taskState = TaskState.valueOf(enumName);
-                        } catch (IllegalArgumentException protoError) {
-                            // Fall through to error handling below
-                        }
-                    } else {
-                        // Try enum constant name directly (e.g., "WORKING")
-                        try {
-                            taskState = TaskState.valueOf(status);
-                        } catch (IllegalArgumentException valueOfError) {
-                            // Fall through to error handling below
-                        }
-                    }
-                }
-
-                if (taskState == null) {
                     String validStates = Arrays.stream(TaskState.values())
-                            .map(TaskState::asString)
+                            .map(TaskState::name)
                             .collect(Collectors.joining(", "));
                     Map<String, Object> errorData = new HashMap<>();
                     errorData.put("parameter", "status");
