@@ -2476,7 +2476,7 @@ public abstract class AbstractA2AServerTest {
         Message delegationMessage = Message.builder()
                 .taskId(delegationTaskId)
                 .contextId("agent-to-agent-context")
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(new TextPart("delegate:What is 2+2?"))
                 .build();
 
@@ -2538,7 +2538,7 @@ public abstract class AbstractA2AServerTest {
         Message localMessage = Message.builder()
                 .taskId(localTaskId)
                 .contextId("agent-to-agent-context")
-                .role(Message.Role.USER)
+                .role(Message.Role.ROLE_USER)
                 .parts(new TextPart("Hello directly"))
                 .build();
 
