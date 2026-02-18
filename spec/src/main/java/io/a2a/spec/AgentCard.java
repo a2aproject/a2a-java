@@ -1,11 +1,11 @@
 package io.a2a.spec;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import io.a2a.util.Assert;
-import java.util.Collections;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -53,7 +53,7 @@ public record AgentCard(
         List<String> defaultOutputModes,
         List<AgentSkill> skills,
         @Nullable Map<String, SecurityScheme> securitySchemes,
-        @Nullable List<Map<String, List<String>>> securityRequirements,
+        @Nullable List<SecurityRequirement> securityRequirements,
         @Nullable String iconUrl,
         List<AgentInterface> supportedInterfaces,
         @Nullable List<AgentCardSignature> signatures) {
@@ -152,7 +152,7 @@ public record AgentCard(
         private @Nullable List<String> defaultOutputModes;
         private @Nullable List<AgentSkill> skills;
         private @Nullable Map<String, SecurityScheme> securitySchemes;
-        private @Nullable List<Map<String, List<String>>> securityRequirements;
+        private @Nullable List<SecurityRequirement> securityRequirements;
         private @Nullable String iconUrl;
         private @Nullable List<AgentInterface> supportedInterfaces;
         private @Nullable List<AgentCardSignature> signatures;
@@ -182,7 +182,7 @@ public record AgentCard(
             this.defaultOutputModes = card.defaultOutputModes != null ? new ArrayList<>(card.defaultOutputModes) : Collections.emptyList();
             this.skills = card.skills != null ? new ArrayList<>(card.skills) : Collections.emptyList();
             this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : Collections.emptyMap();
-            this.securityRequirements = card.securityRequirements != null ? new ArrayList<>(card.securityRequirements) :Collections.emptyList();
+            this.securityRequirements = card.securityRequirements != null ? new ArrayList<>(card.securityRequirements) : Collections.emptyList();
             this.iconUrl = card.iconUrl;
             this.supportedInterfaces = card.supportedInterfaces != null ? new ArrayList<>(card.supportedInterfaces) : Collections.emptyList();
             this.signatures = card.signatures != null ? new ArrayList<>(card.signatures) : null;
@@ -316,14 +316,12 @@ public record AgentCard(
 
         /**
          * Sets the list of security requirements for accessing the agent.
-         * <p>
-         * Each entry in the list represents an alternative security requirement,
-         * where each map contains scheme names and their required scopes.
          *
          * @param securityRequirements the list of security requirements (optional)
          * @return this builder for method chaining
+         * @see SecurityRequirement
          */
-        public Builder securityRequirements(List<Map<String, List<String>>> securityRequirements) {
+        public Builder securityRequirements(List<SecurityRequirement> securityRequirements) {
             this.securityRequirements = securityRequirements;
             return this;
         }

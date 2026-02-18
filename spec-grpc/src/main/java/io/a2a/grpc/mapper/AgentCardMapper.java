@@ -14,7 +14,7 @@ import org.mapstruct.Mapping;
             AgentCapabilitiesMapper.class,
             AgentSkillMapper.class,
             SecuritySchemeMapper.class,
-            SecurityMapper.class,
+            SecurityRequirementMapper.class,
             AgentInterfaceMapper.class,
             AgentCardSignatureMapper.class
         })

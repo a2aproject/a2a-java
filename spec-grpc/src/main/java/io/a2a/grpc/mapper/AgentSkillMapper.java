@@ -8,7 +8,7 @@ import org.mapstruct.Mapper;
  */
 @Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = SecurityMapper.class)
+        uses = SecurityRequirementMapper.class)
 public interface AgentSkillMapper {
 
     AgentSkillMapper INSTANCE = A2AMappers.getMapper(AgentSkillMapper.class);

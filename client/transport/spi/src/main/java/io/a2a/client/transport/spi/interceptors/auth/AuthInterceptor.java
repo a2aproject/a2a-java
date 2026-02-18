@@ -13,6 +13,7 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.HTTPAuthSecurityScheme;
 import io.a2a.spec.OAuth2SecurityScheme;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
+import io.a2a.spec.SecurityRequirement;
 import io.a2a.spec.SecurityScheme;
 import org.jspecify.annotations.Nullable;
 
@@ -38,8 +39,11 @@ public class AuthInterceptor extends ClientCallInterceptor {
         if (agentCard == null || agentCard.securityRequirements()== null || agentCard.securitySchemes() == null) {
             return new PayloadAndHeaders(payload, updatedHeaders);
         }
-        for (Map<String, List<String>> requirement : agentCard.securityRequirements()) {
-            for (String securitySchemeName : requirement.keySet()) {
+        for (SecurityRequirement requirement : agentCard.securityRequirements()) {
+            if (requirement == null) {
+                continue;
+            }
+            for (String securitySchemeName : requirement.schemes().keySet()) {
                 String credential = credentialService.getCredential(securitySchemeName, clientCallContext);
                 if (credential != null && agentCard.securitySchemes().containsKey(securitySchemeName)) {
                     SecurityScheme securityScheme = agentCard.securitySchemes().get(securitySchemeName);

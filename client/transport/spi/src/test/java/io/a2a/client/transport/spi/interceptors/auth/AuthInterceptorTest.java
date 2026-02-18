@@ -18,6 +18,7 @@ import io.a2a.spec.HTTPAuthSecurityScheme;
 import io.a2a.spec.OAuth2SecurityScheme;
 import io.a2a.spec.OAuthFlows;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
+import io.a2a.spec.SecurityRequirement;
 import io.a2a.spec.SecurityScheme;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -235,7 +236,7 @@ public class AuthInterceptorTest {
             .defaultInputModes(List.of("text"))
             .defaultOutputModes(List.of("text"))
             .skills(List.of())
-            .securityRequirements(List.of(Map.of(schemeName, List.of())))
+            .securityRequirements(List.of(SecurityRequirement.builder().scheme(schemeName, List.of()).build()))
             .securitySchemes(Map.of()) // no security schemes
             .build();
             
@@ -321,7 +322,7 @@ public class AuthInterceptorTest {
             .defaultInputModes(List.of("text"))
             .defaultOutputModes(List.of("text"))
             .skills(List.of())
-            .securityRequirements(List.of(Map.of(schemeName, List.of())))
+            .securityRequirements(List.of(SecurityRequirement.builder().scheme(schemeName, List.of()).build()))
             .securitySchemes(Map.of(schemeName, securityScheme))
             .build();
     }

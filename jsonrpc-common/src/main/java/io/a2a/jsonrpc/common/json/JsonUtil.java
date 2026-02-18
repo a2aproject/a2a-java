@@ -16,12 +16,17 @@ import static io.a2a.spec.DataPart.DATA;
 import static io.a2a.spec.FilePart.FILE;
 import static io.a2a.spec.TextPart.TEXT;
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 
 import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,6 +60,7 @@ import io.a2a.spec.OAuth2SecurityScheme;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
 import io.a2a.spec.Part;
 import io.a2a.spec.PushNotificationNotSupportedError;
+import io.a2a.spec.SecurityRequirement;
 import io.a2a.spec.SecurityScheme;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -76,8 +82,10 @@ public class JsonUtil {
         return new GsonBuilder()
                 .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
+                .registerTypeAdapter(SecurityRequirement.class, new SecurityRequirementTypeAdapter())
                 .registerTypeHierarchyAdapter(A2AError.class, new A2AErrorTypeAdapter())
                 .registerTypeHierarchyAdapter(FileContent.class, new FileContentTypeAdapter());
+
     }
 
     /**
@@ -839,6 +847,125 @@ public class JsonUtil {
                 case MutualTLSSecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, MutualTLSSecurityScheme.class);
                 default -> throw new JsonSyntaxException(format("Unknown SecurityScheme type. Must be one of: %s (found: %s)", VALID_KEYS, discriminator));
             };
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link SecurityRequirement}.
+     * <p>
+     * This adapter handles the JSON structure where a SecurityRequirement is represented
+     * as an object with a "schemes" field containing a map of security scheme names to
+     * StringList objects (matching the protobuf representation).
+     * <p>
+     * Serialization format:
+     * <pre>{@code
+     * {
+     *   "schemes": {
+     *     "oauth2": { "list": ["read", "write"] },
+     *     "apiKey": { "list": [] }
+     *   }
+     * }
+     * }</pre>
+     *
+     * @see SecurityRequirement
+     */
+    static class SecurityRequirementTypeAdapter extends TypeAdapter<SecurityRequirement> {
+
+        private static final String SCHEMES_FIELD = "schemes";
+        private static final String LIST_FIELD = "list";
+
+        @Override
+        public void write(JsonWriter out, SecurityRequirement value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+
+            out.beginObject();
+            out.name(SCHEMES_FIELD);
+
+            Map<String, List<String>> schemes = value.schemes();
+            if (schemes == null || schemes.isEmpty()) {
+                out.beginObject();
+                out.endObject();
+            } else {
+                out.beginObject();
+                for (Map.Entry<String, List<String>> entry : schemes.entrySet()) {
+                    out.name(entry.getKey());
+                    out.beginObject();
+                    out.name(LIST_FIELD);
+                    out.beginArray();
+                    List<String> scopes = entry.getValue();
+                    if (scopes != null) {
+                        for (String scope : scopes) {
+                            out.value(scope);
+                        }
+                    }
+                    out.endArray();
+                    out.endObject();
+                }
+                out.endObject();
+            }
+
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable SecurityRequirement read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            Map<String, List<String>> schemes = emptyMap();
+
+            in.beginObject();
+            while (in.hasNext()) {
+                String fieldName = in.nextName();
+                if (SCHEMES_FIELD.equals(fieldName)) {
+                    schemes = readSchemesMap(in);
+                } else {
+                    in.skipValue();
+                }
+            }
+            in.endObject();
+
+            return new SecurityRequirement(schemes);
+        }
+
+        private Map<String, List<String>> readSchemesMap(JsonReader in) throws java.io.IOException {
+            Map<String, List<String>> schemes = new LinkedHashMap<>();
+
+            in.beginObject();
+            while (in.hasNext()) {
+                String schemeName = in.nextName();
+                List<String> scopes = readStringList(in);
+                schemes.put(schemeName, scopes);
+            }
+            in.endObject();
+
+            return schemes;
+        }
+
+        private List<String> readStringList(JsonReader in) throws java.io.IOException {
+            List<String> scopes = new ArrayList<>();
+
+            in.beginObject();
+            while (in.hasNext()) {
+                String fieldName = in.nextName();
+                if (LIST_FIELD.equals(fieldName)) {
+                    in.beginArray();
+                    while (in.hasNext()) {
+                        scopes.add(in.nextString());
+                    }
+                    in.endArray();
+                } else {
+                    in.skipValue();
+                }
+            }
+            in.endObject();
+
+            return scopes;
         }
     }
 }
