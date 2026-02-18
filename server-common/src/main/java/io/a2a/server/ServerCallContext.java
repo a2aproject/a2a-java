@@ -9,6 +9,12 @@ import io.a2a.server.auth.User;
 import org.jspecify.annotations.Nullable;
 
 public class ServerCallContext {
+    /**
+     * Key for transport protocol type in the state map.
+     * Value should be a {@link io.a2a.spec.TransportProtocol} instance.
+     */
+    public static final String TRANSPORT_KEY = "transport";
+
     // TODO Not totally sure yet about these field types
     private final Map<Object, Object> modelConfig = new ConcurrentHashMap<>();
     private final Map<String, Object> state;

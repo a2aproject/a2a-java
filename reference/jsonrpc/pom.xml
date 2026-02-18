@@ -51,6 +51,12 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+        <!-- JSON-RPC client transport for agent-to-agent communication tests -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-reactive-routes</artifactId>

@@ -1,5 +1,6 @@
 package io.a2a.server.rest.quarkus;
 
+import static io.a2a.server.ServerCallContext.TRANSPORT_KEY;
 import static io.a2a.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 import static io.a2a.transport.rest.context.RestContextKeys.HEADERS_KEY;
@@ -33,6 +34,7 @@ import io.a2a.spec.A2AError;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.MethodNotFoundError;
+import io.a2a.spec.TransportProtocol;
 import io.a2a.transport.rest.handler.RestHandler;
 import io.a2a.transport.rest.handler.RestHandler.HTTPRestResponse;
 import io.a2a.transport.rest.handler.RestHandler.HTTPRestStreamingResponse;
@@ -430,6 +432,7 @@ public class A2AServerRoutes {
             state.put(HEADERS_KEY, headers);
             state.put(METHOD_NAME_KEY, jsonRpcMethodName);
             state.put(TENANT_KEY, extractTenant(rc));
+            state.put(TRANSPORT_KEY, TransportProtocol.HTTP_JSON);
 
             // Extract requested protocol version from X-A2A-Version header
             String requestedVersion = rc.request().getHeader(A2AHeaders.X_A2A_VERSION);
