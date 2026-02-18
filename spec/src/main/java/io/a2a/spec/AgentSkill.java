@@ -1,7 +1,6 @@
 package io.a2a.spec;
 
 import java.util.List;
-import java.util.Map;
 
 import io.a2a.util.Assert;
 import org.jspecify.annotations.Nullable;
@@ -42,7 +41,7 @@ import org.jspecify.annotations.Nullable;
  */
 public record AgentSkill(String id, String name, String description, List<String> tags,
                          @Nullable List<String> examples, @Nullable List<String> inputModes, @Nullable List<String> outputModes,
-                         @Nullable List<Map<String, List<String>>> securityRequirements) {
+                         @Nullable List<SecurityRequirement> securityRequirements) {
 
     /**
      * Compact constructor that validates required fields.
@@ -105,7 +104,7 @@ public record AgentSkill(String id, String name, String description, List<String
         private @Nullable List<String> examples;
         private @Nullable List<String> inputModes;
         private @Nullable List<String> outputModes;
-        private @Nullable List<Map<String, List<String>>> securityRequirements;
+        private @Nullable List<SecurityRequirement> securityRequirements;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -215,12 +214,14 @@ public record AgentSkill(String id, String name, String description, List<String
          * <p>
          * Security requirements override or supplement the agent-level security
          * defined in the AgentCard. Each entry represents an alternative security
-         * requirement, where each map contains scheme names and their required scopes.
+         * requirement (OR relationship). Schemes within a single SecurityRequirement
+         * must all be satisfied (AND relationship).
          *
          * @param securityRequirements list of security requirements (optional)
          * @return this builder for method chaining
+         * @see SecurityRequirement
          */
-        public Builder securityRequirements(List<Map<String, List<String>>> securityRequirements) {
+        public Builder securityRequirements(List<SecurityRequirement> securityRequirements) {
             this.securityRequirements = securityRequirements;
             return this;
         }

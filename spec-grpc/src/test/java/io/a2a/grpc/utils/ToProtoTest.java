@@ -17,6 +17,7 @@ import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
+import io.a2a.spec.SecurityRequirement;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
@@ -100,7 +101,10 @@ public class ToProtoTest {
                         .build()))
                 //                .iconUrl("http://example.com/icon.svg")
                 .securitySchemes(Map.of("basic", HTTPAuthSecurityScheme.builder().scheme("basic").description("Basic Auth").build()))
-                .securityRequirements(List.of(Map.of("oauth", List.of("read"))))
+                .securityRequirements(List.of(SecurityRequirement.builder()
+                        .scheme("oauth",
+                                List.of("read"))
+                        .build()))
                 .build();
         result = ProtoUtils.ToProto.agentCard(agentCard);
         assertEquals("Hello World Agent", result.getName());
