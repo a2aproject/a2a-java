@@ -3,10 +3,7 @@ package io.a2a.server.apps.common;
 import static io.a2a.server.ServerCallContext.TRANSPORT_KEY;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
@@ -176,49 +173,56 @@ public class AgentExecutorProducer {
 
             /**
              * Handles delegation by forwarding to another agent via client.
+             * <p>
+             * Uses blocking client call (streaming=false) which should return the final task state
+             * synchronously without requiring async callbacks and latches. This simplified approach
+             * avoids race conditions between event consumption and callback invocation.
              */
             private void handleDelegation(String userInput, TransportProtocol transportProtocol,
                                           AgentEmitter agentEmitter) {
                 // Strip "delegate:" prefix
                 String delegatedContent = userInput.substring("delegate:".length()).trim();
 
-                // Create client for same transport
+                // Create client for same transport (streaming=false for blocking behavior)
                 try (Client client = AgentToAgentClientFactory.createClient(agentCard, transportProtocol)) {
                     agentEmitter.startWork();
 
-                    // Set up consumer to capture task result
-                    CountDownLatch latch = new CountDownLatch(1);
-                    AtomicReference<Task> resultRef = new AtomicReference<>();
-                    AtomicReference<Throwable> errorRef = new AtomicReference<>();
-
-                    BiConsumer<ClientEvent, AgentCard> consumer =
-                            AgentToAgentClientFactory.createTaskCaptureConsumer(resultRef, latch);
+                    // Store the result task from blocking call
+                    AtomicReference<Task> taskRef = new AtomicReference<>();
 
                     // Delegate to another agent (new task on same server)
                     // Add a marker so the receiving agent knows to complete the task
                     Message delegatedMessage = A2A.toUserMessage("#a2a-delegated#" + delegatedContent);
-                    client.sendMessage(delegatedMessage, List.of(consumer), error -> {
-                        errorRef.set(error);
-                        latch.countDown();
-                    });
 
-                    // Wait for response
-                    if (!latch.await(30, TimeUnit.SECONDS)) {
-                        agentEmitter.fail(new InternalError("Timeout waiting for delegated response"));
-                        return;
-                    }
+                    // Blocking call should return final task synchronously
+                    client.sendMessage(delegatedMessage, List.of((event, card) -> {
+                        if (event instanceof TaskEvent te) {
+                            taskRef.set(te.getTask());
+                        } else if (event instanceof TaskUpdateEvent tue) {
+                            taskRef.set(tue.getTask());
+                        }
+                    }), null);
 
-                    Task delegatedResult = resultRef.get();
-
-                    // Check for error only if we didn't get a successful result
-                    // (errors can occur after completion due to stream cleanup)
-                    if (delegatedResult == null && errorRef.get() != null) {
-                        agentEmitter.fail(new InternalError("Delegation failed: " + errorRef.get().getMessage()));
-                        return;
-                    }
+                    // Blocking call should have completed before returning
+                    Task delegatedResult = taskRef.get();
 
                     if (delegatedResult == null) {
-                        agentEmitter.fail(new InternalError("No result received from delegation"));
+                        agentEmitter.fail(new InternalError("No result received from blocking delegation call"));
+                        return;
+                    }
+
+                    // DIAGNOSTIC: Check if task is actually final
+                    // If blocking call returns non-final task, it indicates a server-side race condition
+                    if (!delegatedResult.status().state().isFinal()) {
+                        String diagnostic = String.format(
+                            "RACE CONDITION DETECTED: Blocking call returned non-final task! " +
+                            "State: %s, TaskId: %s, Artifacts: %d. " +
+                            "This indicates DefaultRequestHandler wait logic failed to synchronize with MainEventBusProcessor.",
+                            delegatedResult.status().state(),
+                            delegatedResult.id(),
+                            delegatedResult.artifacts() != null ? delegatedResult.artifacts().size() : 0);
+                        System.err.println(diagnostic);  // Also print to stderr for CI visibility
+                        agentEmitter.fail(new InternalError(diagnostic));
                         return;
                     }
 
@@ -234,9 +238,6 @@ public class AgentExecutorProducer {
                     agentEmitter.complete();
                 } catch (A2AClientException e) {
                     agentEmitter.fail(new InternalError("Failed to create client: " + e.getMessage()));
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    agentEmitter.fail(new InternalError("Interrupted while waiting for response"));
                 }
             }
 
