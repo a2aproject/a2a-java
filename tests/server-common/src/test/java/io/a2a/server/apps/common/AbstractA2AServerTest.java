@@ -2491,7 +2491,7 @@ public abstract class AbstractA2AServerTest {
         BiConsumer<ClientEvent, AgentCard> delegationConsumer =
                 AgentToAgentClientFactory.createTaskCaptureConsumer(delegationResultRef, delegationLatch);
 
-        getClient().sendMessage(delegationMessage, List.of(delegationConsumer), error -> {
+        getNonStreamingClient().sendMessage(delegationMessage, List.of(delegationConsumer), error -> {
             delegationErrorRef.set(error);
             delegationLatch.countDown();
         });
