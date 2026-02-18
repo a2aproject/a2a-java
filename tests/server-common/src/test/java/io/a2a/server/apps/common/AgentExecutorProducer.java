@@ -79,7 +79,9 @@ public class AgentExecutorProducer {
                 if (taskId != null && taskId.startsWith("input-required-test")) {
                     // First call: context.getTask() == null (new task)
                     if (context.getTask() == null) {
-                        agentEmitter.startWork();
+                        // Go directly to INPUT_REQUIRED without intermediate WORKING state
+                        // This avoids race condition where blocking call interrupts on WORKING
+                        // before INPUT_REQUIRED is persisted to TaskStore
                         agentEmitter.requiresInput(agentEmitter.newAgentMessage(
                                 List.of(new TextPart("Please provide additional information")),
                                 context.getMessage().metadata()));
@@ -91,7 +93,8 @@ public class AgentExecutorProducer {
                             throw new InvalidParamsError("We didn't get the expected input");
                         }
                         // Second call: context.getTask() != null (input provided)
-                        agentEmitter.startWork();
+                        // Go directly to COMPLETED without intermediate WORKING state
+                        // This avoids the same race condition as the first call
                         agentEmitter.complete();
                         return;
                     }

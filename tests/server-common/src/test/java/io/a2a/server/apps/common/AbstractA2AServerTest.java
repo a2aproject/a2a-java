@@ -1538,6 +1538,7 @@ public abstract class AbstractA2AServerTest {
     @Timeout(value = 1, unit = TimeUnit.MINUTES)
     public void testInputRequiredWorkflow() throws Exception {
         String inputRequiredTaskId = "input-required-test-" + java.util.UUID.randomUUID();
+        boolean taskCreated = false;
         try {
             // 1. Send initial message - AgentExecutor will transition task to INPUT_REQUIRED
             Message initialMessage = Message.builder(MESSAGE)
@@ -1572,6 +1573,7 @@ public abstract class AbstractA2AServerTest {
             assertTrue(initialLatch.await(10, TimeUnit.SECONDS));
             assertFalse(initialUnexpectedEvent.get());
             assertEquals(TaskState.TASK_STATE_INPUT_REQUIRED, initialState.get());
+            taskCreated = true;
 
             // 2. Send input message - AgentExecutor will complete the task
             Message inputMessage = Message.builder(MESSAGE)
@@ -1608,7 +1610,9 @@ public abstract class AbstractA2AServerTest {
             assertEquals(TaskState.TASK_STATE_COMPLETED, completedState.get());
 
         } finally {
-            deleteTaskInTaskStore(inputRequiredTaskId);
+            if (taskCreated) {
+                deleteTaskInTaskStore(inputRequiredTaskId);
+            }
         }
     }
 
