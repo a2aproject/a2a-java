@@ -1,12 +1,12 @@
 
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.github.a2asdk:a2a-java-sdk-client:1.0.0.Alpha3
-//DEPS io.github.a2asdk:a2a-java-sdk-client-transport-jsonrpc:1.0.0.Alpha3
-//DEPS io.github.a2asdk:a2a-java-sdk-client-transport-grpc:1.0.0.Alpha3
-//DEPS io.github.a2asdk:a2a-java-sdk-client-transport-rest:1.0.0.Alpha3
-//DEPS io.github.a2asdk:a2a-java-sdk-opentelemetry-client:1.0.0.Alpha3
-//DEPS io.github.a2asdk:a2a-java-sdk-opentelemetry-client-propagation:1.0.0.Alpha3
+//DEPS io.github.a2asdk:a2a-java-sdk-client:1.0.0.Alpha4-SNAPSHOT
+//DEPS io.github.a2asdk:a2a-java-sdk-client-transport-jsonrpc:1.0.0.Alpha4-SNAPSHOT
+//DEPS io.github.a2asdk:a2a-java-sdk-client-transport-grpc:1.0.0.Alpha4-SNAPSHOT
+//DEPS io.github.a2asdk:a2a-java-sdk-client-transport-rest:1.0.0.Alpha4-SNAPSHOT
+//DEPS io.github.a2asdk:a2a-java-sdk-opentelemetry-client:1.0.0.Alpha4-SNAPSHOT
+//DEPS io.github.a2asdk:a2a-java-sdk-opentelemetry-client-propagation:1.0.0.Alpha4-SNAPSHOT
 //DEPS io.opentelemetry:opentelemetry-sdk:1.55.0
 //DEPS io.opentelemetry:opentelemetry-exporter-otlp:1.55.0
 //DEPS io.opentelemetry:opentelemetry-exporter-logging:1.55.0
