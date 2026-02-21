@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +39,7 @@ public class RequestContextTest {
         RequestContext context = new RequestContext.Builder().build();
 
         assertNull(context.getMessage());
+        assertNull(context.getMetadata());
         assertNotNull(context.getTaskId()); // Generated UUID
         assertNotNull(context.getContextId()); // Generated UUID
         assertNull(context.getTask());
@@ -68,6 +70,24 @@ public class RequestContextTest {
             assertEquals(contextId.toString(), context.getContextId());
             assertEquals(contextId.toString(), context.getMessage().contextId());
         }
+    }
+
+    @Test
+    public void testInitWithParamsMetadata() {
+        var message = Message.builder().role(Message.Role.ROLE_USER).parts(List.of(new TextPart(""))).build();
+        var metadata = new HashMap<String, Object>();
+        metadata.put("key", "value");
+
+        var params = MessageSendParams.builder()
+                .message(message)
+                .metadata(metadata)
+                .build();
+
+        RequestContext context = new RequestContext.Builder()
+                .setParams(params)
+                .build();
+
+        assertEquals(metadata, context.getMetadata());
     }
 
     @Test
