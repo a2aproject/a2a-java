@@ -205,7 +205,7 @@ public class RequestContext {
      * @return the metadata, or null if not available
      */
     public @Nullable Map<String, Object> getMetadata() {
-        return params != null ? params.metadata() : null;
+        return (params != null && params.metadata() != null) ? Collections.unmodifiableMap(params.metadata()) : null;
     }
 
     /**
