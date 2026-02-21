@@ -88,6 +88,7 @@ public class RequestContextTest {
                 .build();
 
         assertEquals(metadata, context.getMetadata());
+        assertThrows(UnsupportedOperationException.class, () -> context.getMetadata().put("anotherKey", "anotherValue"));
     }
 
     @Test
