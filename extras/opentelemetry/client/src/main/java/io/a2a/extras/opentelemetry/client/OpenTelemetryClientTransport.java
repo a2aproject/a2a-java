@@ -21,6 +21,7 @@ import io.a2a.spec.A2AMethods;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
@@ -393,13 +394,13 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
+    public AgentCard getExtendedAgentCard(GetExtendedAgentCardParams params, @Nullable ClientCallContext context) throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD).setSpanKind(SpanKind.CLIENT);
         spanBuilder.setAttribute(GENAI_OPERATION_NAME, A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD);
         Span span = spanBuilder.startSpan();
         try (Scope scope = span.makeCurrent()) {
-            AgentCard result = delegate.getExtendedAgentCard(clientContext);
+            AgentCard result = delegate.getExtendedAgentCard(params, clientContext);
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());
             }

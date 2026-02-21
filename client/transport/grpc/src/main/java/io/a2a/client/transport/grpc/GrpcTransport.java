@@ -35,6 +35,7 @@ import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
@@ -356,9 +357,12 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
-        GetExtendedAgentCardRequest request = GetExtendedAgentCardRequest.newBuilder()
-                .build();
+    public AgentCard getExtendedAgentCard(GetExtendedAgentCardParams params, @Nullable ClientCallContext context) throws A2AClientException {
+        GetExtendedAgentCardRequest.Builder builder = GetExtendedAgentCardRequest.newBuilder();
+        if (params.tenant() != null) {
+            builder.setTenant(params.tenant());
+        }
+        GetExtendedAgentCardRequest request = builder.build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_EXTENDED_AGENT_CARD_METHOD, request, agentCard, context);
 
         try {
