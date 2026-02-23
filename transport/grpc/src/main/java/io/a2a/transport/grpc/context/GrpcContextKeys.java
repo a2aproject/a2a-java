@@ -84,22 +84,22 @@ public final class GrpcContextKeys {
     /**
      * Mapping from gRPC method names to A2A protocol method names.
      *
-     * <p>This mapping translates gRPC protobuf method names (e.g., "SendMessage")
-     * to A2A protocol method names (e.g., "sendMessage") for consistent method
-     * identification across all transports.
+     * <p>This mapping translates gRPC protobuf method names to their corresponding
+     * A2A protocol method name constants for consistent method identification across
+     * all transports.
      *
      * <p><b>Method Mappings:</b>
      * <ul>
-     *   <li>SendMessage → sendMessage</li>
-     *   <li>SendStreamingMessage → sendStreamingMessage</li>
-     *   <li>GetTask → getTask</li>
-     *   <li>ListTasks → listTasks</li>
-     *   <li>CancelTask → cancelTask</li>
-     *   <li>SubscribeToTask → subscribeToTask</li>
-     *   <li>CreateTaskPushNotificationConfig → setTaskPushNotificationConfig</li>
-     *   <li>GetTaskPushNotificationConfig → getTaskPushNotificationConfig</li>
-     *   <li>ListTaskPushNotificationConfig → listTaskPushNotificationConfig</li>
-     *   <li>DeleteTaskPushNotificationConfig → deleteTaskPushNotificationConfig</li>
+     *   <li>SendMessage → SendMessage</li>
+     *   <li>SendStreamingMessage → SendStreamingMessage</li>
+     *   <li>GetTask → GetTask</li>
+     *   <li>ListTask → ListTasks</li>
+     *   <li>CancelTask → CancelTask</li>
+     *   <li>SubscribeToTask → SubscribeToTask</li>
+     *   <li>CreateTaskPushNotification → CreateTaskPushNotificationConfig</li>
+     *   <li>GetTaskPushNotification → GetTaskPushNotificationConfig</li>
+     *   <li>ListTaskPushNotification → ListTaskPushNotificationConfig</li>
+     *   <li>DeleteTaskPushNotification → DeleteTaskPushNotificationConfig</li>
      * </ul>
      *
      * @see io.a2a.spec.A2AMethods
@@ -108,13 +108,13 @@ public final class GrpcContextKeys {
             "SendMessage", A2AMethods.SEND_MESSAGE_METHOD,
             "SendStreamingMessage", A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
             "GetTask", A2AMethods.GET_TASK_METHOD,
-            "ListTasks", A2AMethods.LIST_TASK_METHOD,
+            "ListTask", A2AMethods.LIST_TASK_METHOD,
             "CancelTask", A2AMethods.CANCEL_TASK_METHOD,
             "SubscribeToTask", A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
-            "CreateTaskPushNotificationConfig", A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-            "GetTaskPushNotificationConfig", A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-            "ListTaskPushNotificationConfig", A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-            "DeleteTaskPushNotificationConfig", A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+            "CreateTaskPushNotification", A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+            "GetTaskPushNotification", A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+            "ListTaskPushNotification", A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+            "DeleteTaskPushNotification", A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
     private GrpcContextKeys() {
         // Utility class
