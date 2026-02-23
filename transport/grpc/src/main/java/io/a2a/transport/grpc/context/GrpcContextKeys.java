@@ -93,13 +93,13 @@ public final class GrpcContextKeys {
      *   <li>SendMessage → sendMessage</li>
      *   <li>SendStreamingMessage → sendStreamingMessage</li>
      *   <li>GetTask → getTask</li>
-     *   <li>ListTask → listTasks</li>
+     *   <li>ListTasks → listTasks</li>
      *   <li>CancelTask → cancelTask</li>
      *   <li>SubscribeToTask → subscribeToTask</li>
-     *   <li>CreateTaskPushNotification → setTaskPushNotificationConfig</li>
-     *   <li>GetTaskPushNotification → getTaskPushNotificationConfig</li>
-     *   <li>ListTaskPushNotification → listTaskPushNotificationConfig</li>
-     *   <li>DeleteTaskPushNotification → deleteTaskPushNotificationConfig</li>
+     *   <li>CreateTaskPushNotificationConfig → setTaskPushNotificationConfig</li>
+     *   <li>GetTaskPushNotificationConfig → getTaskPushNotificationConfig</li>
+     *   <li>ListTaskPushNotificationConfig → listTaskPushNotificationConfig</li>
+     *   <li>DeleteTaskPushNotificationConfig → deleteTaskPushNotificationConfig</li>
      * </ul>
      *
      * @see io.a2a.spec.A2AMethods
@@ -108,13 +108,13 @@ public final class GrpcContextKeys {
             "SendMessage", A2AMethods.SEND_MESSAGE_METHOD,
             "SendStreamingMessage", A2AMethods.SEND_STREAMING_MESSAGE_METHOD,
             "GetTask", A2AMethods.GET_TASK_METHOD,
-            "ListTask", A2AMethods.LIST_TASK_METHOD,
+            "ListTasks", A2AMethods.LIST_TASK_METHOD,
             "CancelTask", A2AMethods.CANCEL_TASK_METHOD,
             "SubscribeToTask", A2AMethods.SUBSCRIBE_TO_TASK_METHOD,
-            "CreateTaskPushNotification", A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-            "GetTaskPushNotification", A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-            "ListTaskPushNotification", A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
-            "DeleteTaskPushNotification", A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+            "CreateTaskPushNotificationConfig", A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+            "GetTaskPushNotificationConfig", A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+            "ListTaskPushNotificationConfig", A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD,
+            "DeleteTaskPushNotificationConfig", A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
 
     private GrpcContextKeys() {
         // Utility class
