@@ -44,11 +44,19 @@ import io.a2a.spec.AgentInterface;
  * A2ACardResolver resolver = new A2ACardResolver("http://localhost:9999", "my-tenant");
  * AgentCard card = resolver.getAgentCard();
  *
- * // With authentication
+ * // With custom HTTP client
+ * A2AHttpClient httpClient = A2AHttpClientFactory.create();
+ * A2ACardResolver resolver = new A2ACardResolver(httpClient, "http://localhost:9999", "my-tenant");
+ * AgentCard card = resolver.getAgentCard();
+ *
+ * // With authentication headers
+ * A2AHttpClient httpClient = A2AHttpClientFactory.create();
  * Map<String, String> authHeaders = Map.of("Authorization", "Bearer token");
  * A2ACardResolver resolver = new A2ACardResolver(
+ *     httpClient,
  *     "http://localhost:9999",
  *     "my-tenant",
+ *     null,  // use default agent card path
  *     authHeaders
  * );
  * AgentCard card = resolver.getAgentCard();
