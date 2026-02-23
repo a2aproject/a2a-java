@@ -72,8 +72,41 @@ import org.jspecify.annotations.Nullable;
  * manages the lifecycle of agent interactions including message sending, task
  * management, and push notification configurations.
  *
- * <p>The handler supports both blocking and streaming operations, and validates
- * protocol versions and required extensions before processing requests.
+ * <h2>Request Flow</h2>
+ * <p>HTTP REST requests flow through this handler to the underlying {@link RequestHandler},
+ * which coordinates with the agent executor and event queue system:
+ * <pre>
+ * HTTP Request → RestHandler → RequestHandler → AgentExecutor
+ *                    ↓              ↓
+ *              Validation    EventQueue → Response
+ * </pre>
+ *
+ * <h2>Supported Operations</h2>
+ * <ul>
+ *   <li>Message sending (blocking and streaming)</li>
+ *   <li>Task management (get, list, cancel, subscribe)</li>
+ *   <li>Push notification configurations (create, get, list, delete)</li>
+ *   <li>Agent card retrieval (public and extended)</li>
+ * </ul>
+ *
+ * <h2>Error Handling</h2>
+ * <p>All A2A protocol errors are caught and converted to appropriate HTTP status codes
+ * via {@link #mapErrorToHttpStatus(A2AError)}. Protocol version and required extensions
+ * are validated before processing requests.
+ *
+ * <h2>CDI Integration</h2>
+ * <p>This handler is an {@code @ApplicationScoped} CDI bean that requires:
+ * <ul>
+ *   <li>{@link AgentCard} qualified with {@code @PublicAgentCard}</li>
+ *   <li>{@link RequestHandler} for processing A2A operations</li>
+ *   <li>{@link Executor} qualified with {@code @Internal} for async operations</li>
+ *   <li>Optional {@link AgentCard} qualified with {@code @ExtendedAgentCard}</li>
+ * </ul>
+ *
+ * @see RequestHandler
+ * @see io.a2a.server.requesthandlers.DefaultRequestHandler
+ * @see io.a2a.spec.AgentCard
+ * @see ServerCallContext
  */
 @ApplicationScoped
 public class RestHandler {
@@ -136,10 +169,45 @@ public class RestHandler {
     /**
      * Handles a blocking message send request.
      *
+     * <p>This method processes an HTTP POST request containing a message to be sent to the agent.
+     * The request is validated for protocol version and required extensions before being forwarded
+     * to the {@link RequestHandler}. The method blocks until the agent produces a terminal event
+     * or requires authentication/input.
+     *
+     * <p><b>Example Request:</b></p>
+     * <pre>{@code
+     * POST /v1/tenants/{tenant}/messages
+     * Content-Type: application/json
+     *
+     * {
+     *   "message": {
+     *     "parts": [
+     *       {"text": "What is the weather in San Francisco?"}
+     *     ]
+     *   }
+     * }
+     * }</pre>
+     *
+     * <p><b>Example Response:</b></p>
+     * <pre>{@code
+     * HTTP/1.1 200 OK
+     * Content-Type: application/json
+     *
+     * {
+     *   "task": {
+     *     "id": "task-123",
+     *     "status": {"state": "COMPLETED"},
+     *     "artifacts": [...]
+     *   }
+     * }
+     * }</pre>
+     *
      * @param context the server call context containing authentication and metadata
      * @param tenant the tenant identifier
-     * @param body the JSON request body
+     * @param body the JSON request body containing the message to send
      * @return the HTTP response containing the task or message result
+     * @see #sendStreamingMessage(ServerCallContext, String, String)
+     * @see RequestHandler#onMessageSend(io.a2a.spec.MessageSendParams, ServerCallContext)
      */
     public HTTPRestResponse sendMessage(ServerCallContext context, String tenant, String body) {
 
@@ -161,10 +229,47 @@ public class RestHandler {
     /**
      * Handles a streaming message send request.
      *
+     * <p>This method processes an HTTP POST request for streaming responses from the agent.
+     * The response is returned as Server-Sent Events (SSE) via {@link HTTPRestStreamingResponse},
+     * allowing clients to receive task updates and artifacts as they are produced by the agent.
+     *
+     * <p>This method requires the agent card to have {@code capabilities.streaming = true}.
+     *
+     * <p><b>Example Request:</b></p>
+     * <pre>{@code
+     * POST /v1/tenants/{tenant}/messages/stream
+     * Content-Type: application/json
+     *
+     * {
+     *   "message": {
+     *     "parts": [
+     *       {"text": "Generate a long story"}
+     *     ]
+     *   }
+     * }
+     * }</pre>
+     *
+     * <p><b>Example Streaming Response:</b></p>
+     * <pre>{@code
+     * HTTP/1.1 200 OK
+     * Content-Type: text/event-stream
+     *
+     * data: {"taskStatusUpdate":{"task":{"id":"task-123","status":{"state":"WORKING"}}}}
+     *
+     * data: {"taskArtifactUpdate":{"taskId":"task-123","artifacts":[{"parts":[{"text":"Once upon"}]}]}}
+     *
+     * data: {"taskArtifactUpdate":{"taskId":"task-123","artifacts":[{"parts":[{"text":" a time..."}]}]}}
+     *
+     * data: {"taskStatusUpdate":{"task":{"id":"task-123","status":{"state":"COMPLETED"}}}}
+     * }</pre>
+     *
      * @param context the server call context containing authentication and metadata
      * @param tenant the tenant identifier
-     * @param body the JSON request body
+     * @param body the JSON request body containing the message to send
      * @return the streaming HTTP response containing a publisher of events
+     * @see #sendMessage(ServerCallContext, String, String)
+     * @see RequestHandler#onMessageSendStream(io.a2a.spec.MessageSendParams, ServerCallContext)
+     * @see HTTPRestStreamingResponse
      */
     public HTTPRestResponse sendStreamingMessage(ServerCallContext context, String tenant, String body) {
         try {
@@ -188,10 +293,22 @@ public class RestHandler {
     /**
      * Handles a task cancellation request.
      *
+     * <p>Attempts to cancel a running task identified by the task ID. The cancellation
+     * request is forwarded to the {@link RequestHandler}, which signals the agent executor
+     * to stop processing. The agent should transition the task to {@code CANCELED} state.
+     *
+     * <p><b>Example Request:</b></p>
+     * <pre>{@code
+     * POST /v1/tenants/{tenant}/tasks/{taskId}/cancel
+     * }</pre>
+     *
      * @param context the server call context containing authentication and metadata
      * @param tenant the tenant identifier
      * @param taskId the ID of the task to cancel
      * @return the HTTP response containing the cancelled task
+     * @throws InvalidParamsError if taskId is null or empty
+     * @see RequestHandler#onCancelTask(TaskIdParams, ServerCallContext)
+     * @see io.a2a.server.agentexecution.AgentExecutor#cancel
      */
     public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String taskId) {
         try {
@@ -240,10 +357,30 @@ public class RestHandler {
     /**
      * Subscribes to task updates via a streaming connection.
      *
+     * <p>Creates a Server-Sent Events (SSE) stream that delivers real-time updates for an
+     * existing task. This allows clients to reconnect to ongoing or completed tasks and
+     * receive their event history and future updates.
+     *
+     * <p>This method requires the agent card to have {@code capabilities.streaming = true}.
+     *
+     * <p><b>Example Request:</b></p>
+     * <pre>{@code
+     * GET /v1/tenants/{tenant}/tasks/{taskId}/subscribe
+     * }</pre>
+     *
+     * <p><b>Use Cases:</b></p>
+     * <ul>
+     *   <li>Reconnecting to a task after network interruption</li>
+     *   <li>Monitoring long-running tasks from multiple clients</li>
+     *   <li>Viewing historical events for completed tasks</li>
+     * </ul>
+     *
      * @param context the server call context containing authentication and metadata
      * @param tenant the tenant identifier
      * @param taskId the ID of the task to subscribe to
      * @return the streaming HTTP response containing task updates
+     * @see RequestHandler#onSubscribeToTask(TaskIdParams, ServerCallContext)
+     * @see #sendStreamingMessage(ServerCallContext, String, String)
      */
     public HTTPRestResponse subscribeToTask(ServerCallContext context, String tenant, String taskId) {
         try {
@@ -287,16 +424,39 @@ public class RestHandler {
     /**
      * Lists tasks with optional filtering and pagination.
      *
+     * <p>Retrieves a list of tasks with support for filtering by context, status, and timestamp,
+     * along with pagination controls. This method is useful for task management dashboards,
+     * monitoring systems, and task history retrieval.
+     *
+     * <p><b>Example Request:</b></p>
+     * <pre>{@code
+     * GET /v1/tenants/{tenant}/tasks?status=COMPLETED&pageSize=10&includeArtifacts=true
+     * }</pre>
+     *
+     * <p><b>Query Parameters:</b></p>
+     * <ul>
+     *   <li>{@code contextId} - Filter tasks by conversation context</li>
+     *   <li>{@code status} - Filter by task state (SUBMITTED, WORKING, COMPLETED, etc.)</li>
+     *   <li>{@code pageSize} - Maximum tasks to return (for pagination)</li>
+     *   <li>{@code pageToken} - Token for retrieving next page of results</li>
+     *   <li>{@code historyLength} - Maximum history entries to include per task</li>
+     *   <li>{@code statusTimestampAfter} - ISO-8601 timestamp for filtering recent tasks</li>
+     *   <li>{@code includeArtifacts} - Whether to include task artifacts in response</li>
+     * </ul>
+     *
      * @param context the server call context containing authentication and metadata
      * @param tenant the tenant identifier
      * @param contextId optional context ID to filter by
-     * @param status optional task status to filter by
+     * @param status optional task status to filter by (must be valid {@link TaskState} value)
      * @param pageSize optional maximum number of tasks to return
      * @param pageToken optional token for pagination
      * @param historyLength optional maximum number of history entries per task
      * @param statusTimestampAfter optional ISO-8601 timestamp to filter tasks updated after
      * @param includeArtifacts optional flag to include task artifacts
      * @return the HTTP response containing the list of tasks
+     * @throws InvalidParamsError if status is not a valid TaskState or timestamp is malformed
+     * @see RequestHandler#onListTasks(ListTasksParams, ServerCallContext)
+     * @see TaskState
      */
     public HTTPRestResponse listTasks(ServerCallContext context, String tenant,
                                        @Nullable String contextId, @Nullable String status,
@@ -548,6 +708,24 @@ public class RestHandler {
         });
     }
 
+    /**
+     * Maps A2A protocol errors to HTTP status codes.
+     *
+     * <p>This method ensures consistent HTTP status code mapping for all A2A errors:
+     * <ul>
+     *   <li>400 - Invalid request, JSON parse errors, missing extensions</li>
+     *   <li>404 - Method not found, task not found</li>
+     *   <li>409 - Task not cancelable (conflict)</li>
+     *   <li>415 - Unsupported content type</li>
+     *   <li>422 - Invalid parameters (unprocessable entity)</li>
+     *   <li>500 - Internal errors</li>
+     *   <li>501 - Not implemented (unsupported operations, version)</li>
+     *   <li>502 - Bad gateway (invalid agent response)</li>
+     * </ul>
+     *
+     * @param error the A2A error to map
+     * @return the corresponding HTTP status code
+     */
     private int mapErrorToHttpStatus(A2AError error) {
         if (error instanceof InvalidRequestError || error instanceof JSONParseError) {
             return 400;
@@ -585,9 +763,22 @@ public class RestHandler {
     /**
      * Retrieves the extended agent card if configured.
      *
+     * <p>The extended agent card provides additional metadata beyond the public agent card,
+     * such as tenant-specific configurations or private capabilities. This endpoint requires
+     * the agent card to have {@code capabilities.extendedAgentCard = true} and a CDI-produced
+     * {@code @ExtendedAgentCard} instance.
+     *
+     * <p><b>Example Request:</b></p>
+     * <pre>{@code
+     * GET /v1/tenants/{tenant}/extended-agent-card
+     * }</pre>
+     *
      * @param context the server call context containing authentication and metadata
      * @param tenant the tenant identifier
      * @return the HTTP response containing the extended agent card
+     * @throws ExtendedAgentCardNotConfiguredError if extended agent card is not available
+     * @see #getAgentCard()
+     * @see AgentCard
      */
     public HTTPRestResponse getExtendedAgentCard(ServerCallContext context, String tenant) {
         try {
@@ -605,7 +796,34 @@ public class RestHandler {
     /**
      * Retrieves the public agent card.
      *
+     * <p>The agent card is a self-describing manifest that provides essential metadata about
+     * the agent, including its capabilities, supported skills, communication methods, and
+     * security requirements. This is the primary discovery endpoint for clients to understand
+     * what the agent can do and how to interact with it.
+     *
+     * <p><b>Example Request:</b></p>
+     * <pre>{@code
+     * GET /v1/agent-card
+     * }</pre>
+     *
+     * <p><b>Example Response:</b></p>
+     * <pre>{@code
+     * {
+     *   "name": "Weather Agent",
+     *   "description": "Provides weather information",
+     *   "version": "1.0.0",
+     *   "capabilities": {
+     *     "streaming": true,
+     *     "pushNotifications": false
+     *   },
+     *   "skills": [...],
+     *   "supportedInterfaces": [...]
+     * }
+     * }</pre>
+     *
      * @return the HTTP response containing the agent card
+     * @see AgentCard
+     * @see #getExtendedAgentCard(ServerCallContext, String)
      */
     public HTTPRestResponse getAgentCard() {
         try {
