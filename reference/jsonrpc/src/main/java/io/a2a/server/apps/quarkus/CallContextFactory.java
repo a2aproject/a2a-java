@@ -28,6 +28,13 @@ import io.vertx.ext.web.RoutingContext;
  * public class CustomCallContextFactory implements CallContextFactory {
  *     @Override
  *     public ServerCallContext build(RoutingContext rc) {
+ *         // Extract user from Quarkus security context
+ *         User user = (rc.user() == null) ? UnauthenticatedUser.INSTANCE :
+ *             new User() {
+ *                 public boolean isAuthenticated() { return rc.userContext().authenticated(); }
+ *                 public String getUsername() { return rc.user().subject(); }
+ *             };
+ *
  *         // Extract custom data from routing context
  *         String orgId = rc.request().getHeader("X-Organization-ID");
  *
@@ -35,12 +42,14 @@ import io.vertx.ext.web.RoutingContext;
  *         state.put("organization", orgId);
  *         state.put("requestId", UUID.randomUUID().toString());
  *
- *         return new ServerCallContext(
- *             extractUser(rc),
- *             state,
- *             extractExtensions(rc),
- *             extractVersion(rc)
- *         );
+ *         // Extract A2A protocol version from header
+ *         String version = rc.request().getHeader(A2AHeaders.X_A2A_VERSION);
+ *
+ *         // Extract requested extensions from header
+ *         List<String> extensionHeaders = rc.request().headers().getAll(A2AHeaders.X_A2A_EXTENSIONS);
+ *         Set<String> extensions = A2AExtensions.getRequestedExtensions(extensionHeaders);
+ *
+ *         return new ServerCallContext(user, state, extensions, version);
  *     }
  * }
  * }</pre>
