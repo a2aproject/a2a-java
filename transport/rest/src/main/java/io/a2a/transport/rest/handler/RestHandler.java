@@ -309,7 +309,7 @@ public class RestHandler {
      * @param taskId the ID of the task to cancel
      * @return the HTTP response containing the cancelled task
      * @throws InvalidParamsError if taskId is null or empty
-     * @see RequestHandler#onCancelTask(TaskIdParams, ServerCallContext)
+     * @see RequestHandler#onCancelTask(CancelTaskParams, ServerCallContext) 
      * @see io.a2a.server.agentexecution.AgentExecutor#cancel
      */
     @SuppressWarnings("unchecked")
