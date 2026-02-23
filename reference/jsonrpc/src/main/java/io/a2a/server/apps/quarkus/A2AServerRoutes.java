@@ -79,6 +79,93 @@ import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Quarkus routing configuration for JSON-RPC A2A protocol requests.
+ *
+ * <p>This class defines Vert.x Web routes for handling JSON-RPC 2.0 requests over HTTP,
+ * processing them through the {@link JSONRPCHandler}, and returning responses in either
+ * standard JSON or Server-Sent Events (SSE) format for streaming operations.
+ *
+ * <h2>Request Flow</h2>
+ * <pre>
+ * HTTP POST / → invokeJSONRPCHandler()
+ *     ↓
+ * Parse JSON-RPC request body
+ *     ↓
+ * Route to handler method (blocking or streaming)
+ *     ↓
+ * JSONRPCHandler → RequestHandler → AgentExecutor
+ *     ↓
+ * Response (JSON or SSE stream)
+ * </pre>
+ *
+ * <h2>Supported Operations</h2>
+ * <p><b>Non-Streaming (JSON responses):</b>
+ * <ul>
+ *   <li>{@code sendMessage} - Send message and wait for completion</li>
+ *   <li>{@code getTask} - Retrieve task by ID</li>
+ *   <li>{@code cancelTask} - Cancel task execution</li>
+ *   <li>{@code listTasks} - List tasks with filtering</li>
+ *   <li>{@code setTaskPushNotificationConfig} - Configure push notifications</li>
+ *   <li>{@code getTaskPushNotificationConfig} - Get push notification config</li>
+ *   <li>{@code listTaskPushNotificationConfig} - List push notification configs</li>
+ *   <li>{@code deleteTaskPushNotificationConfig} - Delete push notification config</li>
+ *   <li>{@code getExtendedAgentCard} - Get extended agent capabilities</li>
+ * </ul>
+ *
+ * <p><b>Streaming (SSE responses):</b>
+ * <ul>
+ *   <li>{@code sendStreamingMessage} - Send message with streaming response</li>
+ *   <li>{@code subscribeToTask} - Subscribe to task events</li>
+ * </ul>
+ *
+ * <h2>JSON-RPC Request Format</h2>
+ * <pre>{@code
+ * POST /
+ * Content-Type: application/json
+ *
+ * {
+ *   "jsonrpc": "2.0",
+ *   "id": "req-123",
+ *   "method": "sendMessage",
+ *   "params": {
+ *     "message": {
+ *       "parts": [{"text": "Hello"}]
+ *     }
+ *   }
+ * }
+ * }</pre>
+ *
+ * <h2>Error Handling</h2>
+ * <p>Errors are mapped to JSON-RPC 2.0 error responses:
+ * <ul>
+ *   <li>{@link JsonSyntaxException} → {@link JSONParseError}</li>
+ *   <li>{@link InvalidParamsJsonMappingException} → {@link io.a2a.spec.InvalidParamsError}</li>
+ *   <li>{@link MethodNotFoundJsonMappingException} → {@link io.a2a.spec.MethodNotFoundError}</li>
+ *   <li>{@link IdJsonMappingException} → {@link io.a2a.spec.InvalidRequestError}</li>
+ *   <li>{@link Throwable} → {@link InternalError}</li>
+ * </ul>
+ *
+ * <h2>CDI Integration</h2>
+ * <p>This class is a CDI {@code @Singleton} that automatically wires:
+ * <ul>
+ *   <li>{@link JSONRPCHandler} - Core protocol handler</li>
+ *   <li>{@link Executor} - Async execution for streaming</li>
+ *   <li>{@link CallContextFactory} (optional) - Custom context creation</li>
+ * </ul>
+ *
+ * <h2>Multi-Tenancy Support</h2>
+ * <p>Tenant identification is extracted from the request path:
+ * <ul>
+ *   <li>{@code POST /} → empty tenant</li>
+ *   <li>{@code POST /tenant1} → tenant "tenant1"</li>
+ *   <li>{@code POST /tenant1/} → tenant "tenant1" (trailing slash stripped)</li>
+ * </ul>
+ *
+ * @see JSONRPCHandler
+ * @see CallContextFactory
+ * @see MultiSseSupport
+ */
 @Singleton
 public class A2AServerRoutes {
 
@@ -96,6 +183,78 @@ public class A2AServerRoutes {
     @Inject
     Instance<CallContextFactory> callContextFactory;
 
+    /**
+     * Main entry point for all JSON-RPC requests.
+     *
+     * <p>This route handler processes JSON-RPC 2.0 requests, dispatches them to the appropriate
+     * handler method based on the request type (streaming vs non-streaming), and returns either
+     * a JSON response or an SSE stream.
+     *
+     * <p><b>Request Format:</b>
+     * <pre>{@code
+     * POST /[tenant]
+     * Content-Type: application/json
+     *
+     * {
+     *   "jsonrpc": "2.0",
+     *   "id": "req-123",
+     *   "method": "sendMessage",
+     *   "params": { ... }
+     * }
+     * }</pre>
+     *
+     * <p><b>Non-Streaming Response:</b>
+     * <pre>{@code
+     * HTTP/1.1 200 OK
+     * Content-Type: application/json
+     *
+     * {
+     *   "jsonrpc": "2.0",
+     *   "id": "req-123",
+     *   "result": { ... }
+     * }
+     * }</pre>
+     *
+     * <p><b>Streaming Response (SSE):</b>
+     * <pre>{@code
+     * HTTP/1.1 200 OK
+     * Content-Type: text/event-stream
+     *
+     * id: 0
+     * data: {"jsonrpc":"2.0","id":"req-123","result":{...}}
+     *
+     * id: 1
+     * data: {"jsonrpc":"2.0","id":"req-123","result":{...}}
+     * }</pre>
+     *
+     * <p><b>Error Response:</b>
+     * <pre>{@code
+     * HTTP/1.1 200 OK
+     * Content-Type: application/json
+     *
+     * {
+     *   "jsonrpc": "2.0",
+     *   "id": "req-123",
+     *   "error": {
+     *     "code": -32602,
+     *     "message": "Invalid params"
+     *   }
+     * }
+     * }</pre>
+     *
+     * <p><b>Processing Flow:</b>
+     * <ol>
+     *   <li>Parse JSON-RPC request body using {@link JSONRPCUtils#parseRequestBody}</li>
+     *   <li>Create {@link ServerCallContext} from routing context</li>
+     *   <li>Route to streaming or non-streaming handler</li>
+     *   <li>Handle errors with appropriate JSON-RPC error codes</li>
+     *   <li>Return JSON response or start SSE stream</li>
+     * </ol>
+     *
+     * @param body the raw JSON-RPC request body
+     * @param rc the Vert.x routing context containing HTTP request/response
+     * @throws A2AError if request processing fails
+     */
     @Route(path = "/", methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     @Authenticated
     public void invokeJSONRPCHandler(@Body String body, RoutingContext rc) {
@@ -157,17 +316,64 @@ public class A2AServerRoutes {
     }
 
     /**
-     * /**
-     * Handles incoming GET requests to the agent card endpoint.
-     * Returns the agent card in JSON format.
+     * Handles GET requests to the agent card endpoint.
      *
-     * @return the agent card
+     * <p>Returns the agent's capabilities and metadata in JSON format according to the
+     * A2A protocol specification. This endpoint is publicly accessible (no authentication).
+     *
+     * <p><b>Request:</b>
+     * <pre>{@code
+     * GET /.well-known/agent-card.json
+     * }</pre>
+     *
+     * <p><b>Response:</b>
+     * <pre>{@code
+     * HTTP/1.1 200 OK
+     * Content-Type: application/json
+     *
+     * {
+     *   "name": "My Agent",
+     *   "description": "Agent description",
+     *   "capabilities": {
+     *     "streaming": true,
+     *     "pushNotifications": false
+     *   },
+     *   ...
+     * }
+     * }</pre>
+     *
+     * @return the agent card as a JSON string
+     * @throws JsonProcessingException if serialization fails
+     * @see JSONRPCHandler#getAgentCard()
      */
     @Route(path = "/.well-known/agent-card.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
     public String getAgentCard() throws JsonProcessingException {
         return JsonUtil.toJson(jsonRpcHandler.getAgentCard());
     }
 
+    /**
+     * Routes non-streaming JSON-RPC requests to the appropriate handler method.
+     *
+     * <p>This method uses pattern matching to dispatch requests based on their type,
+     * invoking the corresponding handler method in {@link JSONRPCHandler}.
+     *
+     * <p><b>Supported Request Types:</b>
+     * <ul>
+     *   <li>{@link GetTaskRequest} → {@link JSONRPCHandler#onGetTask}</li>
+     *   <li>{@link CancelTaskRequest} → {@link JSONRPCHandler#onCancelTask}</li>
+     *   <li>{@link ListTasksRequest} → {@link JSONRPCHandler#onListTasks}</li>
+     *   <li>{@link SendMessageRequest} → {@link JSONRPCHandler#onMessageSend}</li>
+     *   <li>{@link CreateTaskPushNotificationConfigRequest} → {@link JSONRPCHandler#setPushNotificationConfig}</li>
+     *   <li>{@link GetTaskPushNotificationConfigRequest} → {@link JSONRPCHandler#getPushNotificationConfig}</li>
+     *   <li>{@link ListTaskPushNotificationConfigRequest} → {@link JSONRPCHandler#listPushNotificationConfig}</li>
+     *   <li>{@link DeleteTaskPushNotificationConfigRequest} → {@link JSONRPCHandler#deletePushNotificationConfig}</li>
+     *   <li>{@link GetExtendedAgentCardRequest} → {@link JSONRPCHandler#onGetExtendedCardRequest}</li>
+     * </ul>
+     *
+     * @param request the non-streaming JSON-RPC request
+     * @param context the server call context
+     * @return the JSON-RPC response
+     */
     private A2AResponse<?> processNonStreamingRequest(NonStreamingJSONRPCRequest<?> request, ServerCallContext context) {
         if (request instanceof GetTaskRequest req) {
             return jsonRpcHandler.onGetTask(req, context);
@@ -199,6 +405,22 @@ public class A2AServerRoutes {
         return generateErrorResponse(request, new UnsupportedOperationError());
     }
 
+    /**
+     * Routes streaming JSON-RPC requests to the appropriate handler method.
+     *
+     * <p>This method dispatches streaming requests to handlers that return
+     * {@link Flow.Publisher} of responses, which are then converted to SSE streams.
+     *
+     * <p><b>Supported Request Types:</b>
+     * <ul>
+     *   <li>{@link SendStreamingMessageRequest} → {@link JSONRPCHandler#onMessageSendStream}</li>
+     *   <li>{@link SubscribeToTaskRequest} → {@link JSONRPCHandler#onSubscribeToTask}</li>
+     * </ul>
+     *
+     * @param request the streaming JSON-RPC request
+     * @param context the server call context
+     * @return a Multi stream of JSON-RPC responses
+     */
     private Multi<? extends A2AResponse<?>> processStreamingRequest(
             A2ARequest<?> request, ServerCallContext context) {
         Flow.Publisher<? extends A2AResponse<?>> publisher;
@@ -212,14 +434,55 @@ public class A2AServerRoutes {
         return Multi.createFrom().publisher(publisher);
     }
 
+    /**
+     * Generates a JSON-RPC error response for the given request and error.
+     *
+     * @param request the original request
+     * @param error the A2A error to include in the response
+     * @return a JSON-RPC error response
+     */
     private A2AResponse<?> generateErrorResponse(A2ARequest<?> request, A2AError error) {
         return new A2AErrorResponse(request.getId(), error);
     }
 
+    /**
+     * Sets a callback to be invoked when SSE streaming subscription starts.
+     *
+     * <p>This is a testing hook used to synchronize test execution with streaming setup.
+     * In production, this remains null.
+     *
+     * @param runnable the callback to invoke on subscription
+     */
     static void setStreamingMultiSseSupportSubscribedRunnable(Runnable runnable) {
         streamingMultiSseSupportSubscribedRunnable = runnable;
     }
 
+    /**
+     * Creates a {@link ServerCallContext} from the Vert.x routing context.
+     *
+     * <p>This method extracts authentication, headers, tenant, and protocol information
+     * from the HTTP request and packages them into a context object for use by the
+     * request handler and agent executor.
+     *
+     * <p><b>Default Context Creation:</b>
+     * <p>If no {@link CallContextFactory} CDI bean is provided, creates a context with:
+     * <ul>
+     *   <li>User authentication from Quarkus Security</li>
+     *   <li>HTTP headers map</li>
+     *   <li>Tenant ID from request path</li>
+     *   <li>Transport protocol ({@link TransportProtocol#JSONRPC})</li>
+     *   <li>A2A protocol version from {@code X-A2A-Version} header</li>
+     *   <li>Required extensions from {@code X-A2A-Extensions} header</li>
+     * </ul>
+     *
+     * <p><b>Custom Context Creation:</b>
+     * <p>If a {@link CallContextFactory} bean is present, delegates to
+     * {@link CallContextFactory#build(RoutingContext)} for custom context creation.
+     *
+     * @param rc the Vert.x routing context
+     * @return the server call context
+     * @see CallContextFactory
+     */
     private ServerCallContext createCallContext(RoutingContext rc) {
         if (callContextFactory.isUnsatisfied()) {
             User user;
@@ -264,6 +527,21 @@ public class A2AServerRoutes {
         }
     }
 
+    /**
+     * Extracts the tenant identifier from the request path.
+     *
+     * <p>The tenant is determined by the normalized path, with leading and trailing
+     * slashes stripped:
+     * <ul>
+     *   <li>{@code /} → empty tenant</li>
+     *   <li>{@code /tenant1} → "tenant1"</li>
+     *   <li>{@code /tenant1/} → "tenant1"</li>
+     *   <li>{@code /org/team} → "org/team"</li>
+     * </ul>
+     *
+     * @param rc the routing context
+     * @return the tenant identifier, or empty string if no tenant in path
+     */
     private String extractTenant(RoutingContext rc) {
         String tenantPath = rc.normalizedPath();
         if (tenantPath == null || tenantPath.isBlank()) {
@@ -278,6 +556,39 @@ public class A2AServerRoutes {
         return tenantPath;
     }
 
+    /**
+     * Serializes a JSON-RPC response to a JSON string.
+     *
+     * <p>This method handles both success and error responses, converting domain objects
+     * to protobuf messages before JSON serialization for consistency with the gRPC transport.
+     *
+     * <p><b>Success Response Format:</b>
+     * <pre>{@code
+     * {
+     *   "jsonrpc": "2.0",
+     *   "id": "req-123",
+     *   "result": { ... }
+     * }
+     * }</pre>
+     *
+     * <p><b>Error Response Format:</b>
+     * <pre>{@code
+     * {
+     *   "jsonrpc": "2.0",
+     *   "id": "req-123",
+     *   "error": {
+     *     "code": -32602,
+     *     "message": "Invalid params",
+     *     "data": { ... }
+     *   }
+     * }
+     * }</pre>
+     *
+     * @param response the response to serialize
+     * @return the JSON string
+     * @see JSONRPCUtils#toJsonRPCResultResponse
+     * @see JSONRPCUtils#toJsonRPCErrorResponse
+     */
     private static String serializeResponse(A2AResponse<?> response) {
         // For error responses, use Jackson serialization (errors are standardized)
         if (response instanceof A2AErrorResponse error) {
@@ -291,6 +602,32 @@ public class A2AServerRoutes {
         return JSONRPCUtils.toJsonRPCResultResponse(response.getId(), protoMessage);
     }
 
+    /**
+     * Converts a domain response object to its protobuf representation.
+     *
+     * <p>This method maps response types to their corresponding protobuf messages
+     * using {@link io.a2a.grpc.utils.ProtoUtils}, ensuring consistent serialization
+     * across all transports (JSON-RPC, gRPC, REST).
+     *
+     * <p><b>Supported Response Types:</b>
+     * <ul>
+     *   <li>{@link GetTaskResponse} → Task protobuf message</li>
+     *   <li>{@link CancelTaskResponse} → Task protobuf message</li>
+     *   <li>{@link SendMessageResponse} → TaskOrMessage protobuf message</li>
+     *   <li>{@link ListTasksResponse} → ListTasksResult protobuf message</li>
+     *   <li>{@link CreateTaskPushNotificationConfigResponse} → CreateTaskPushNotificationConfigResponse protobuf message</li>
+     *   <li>{@link GetTaskPushNotificationConfigResponse} → GetTaskPushNotificationConfigResponse protobuf message</li>
+     *   <li>{@link ListTaskPushNotificationConfigResponse} → ListTaskPushNotificationConfigResponse protobuf message</li>
+     *   <li>{@link DeleteTaskPushNotificationConfigResponse} → Empty protobuf message</li>
+     *   <li>{@link GetExtendedAgentCardResponse} → GetExtendedCardResponse protobuf message</li>
+     *   <li>{@link SendStreamingMessageResponse} → TaskOrMessageStream protobuf message</li>
+     * </ul>
+     *
+     * @param response the domain response object
+     * @return the protobuf message representation
+     * @throws IllegalArgumentException if the response type is unknown
+     * @see io.a2a.grpc.utils.ProtoUtils
+     */
     private static com.google.protobuf.MessageOrBuilder convertToProto(A2AResponse<?> response) {
         if (response instanceof GetTaskResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.task(r.getResult());
@@ -319,10 +656,45 @@ public class A2AServerRoutes {
     }
 
     /**
-     * Simplified SSE support for Vert.x/Quarkus.
-     * <p>
-     * This class only handles HTTP-specific concerns (writing to response, backpressure, disconnect).
-     * SSE formatting and JSON serialization are handled by {@link SseFormatter}.
+     * Server-Sent Events (SSE) support for streaming JSON-RPC responses.
+     *
+     * <p>This class handles the HTTP-specific aspects of SSE streaming, including:
+     * <ul>
+     *   <li>Writing SSE-formatted events to the HTTP response</li>
+     *   <li>Managing backpressure through reactive streams</li>
+     *   <li>Detecting client disconnections and canceling upstream</li>
+     *   <li>Setting appropriate HTTP headers for SSE</li>
+     * </ul>
+     *
+     * <h2>SSE Format</h2>
+     * <p>Events are written in Server-Sent Events format:
+     * <pre>
+     * id: 0
+     * data: {"jsonrpc":"2.0","id":"req-123","result":{...}}
+     *
+     * id: 1
+     * data: {"jsonrpc":"2.0","id":"req-123","result":{...}}
+     * </pre>
+     *
+     * <h2>Backpressure Handling</h2>
+     * <p>Uses reactive streams subscription to handle backpressure:
+     * <ol>
+     *   <li>Request 1 event from upstream</li>
+     *   <li>Write event to HTTP response</li>
+     *   <li>Wait for write completion</li>
+     *   <li>Request next event (backpressure)</li>
+     * </ol>
+     *
+     * <h2>Disconnect Handling</h2>
+     * <p>When the client disconnects:
+     * <ol>
+     *   <li>Vert.x closeHandler fires</li>
+     *   <li>Invokes {@link ServerCallContext#invokeEventConsumerCancelCallback()}</li>
+     *   <li>Cancels upstream subscription</li>
+     *   <li>Stops event polling</li>
+     * </ol>
+     *
+     * @see SseFormatter
      */
     private static class MultiSseSupport {
         private static final Logger logger = LoggerFactory.getLogger(MultiSseSupport.class);
@@ -332,11 +704,35 @@ public class A2AServerRoutes {
         }
 
         /**
-         * Write SSE-formatted strings to HTTP response.
+         * Writes SSE-formatted strings to the HTTP response with backpressure handling.
          *
-         * @param sseStrings Multi stream of SSE-formatted strings (from SseFormatter)
-         * @param rc         Vert.x routing context
-         * @param context    A2A server call context (for EventConsumer cancellation)
+         * <p>This method subscribes to the SSE event stream and writes each event to the
+         * HTTP response, managing backpressure through the reactive streams subscription.
+         *
+         * <p><b>Subscription Flow:</b>
+         * <ol>
+         *   <li>Subscribe to SSE stream</li>
+         *   <li>Register disconnect handler</li>
+         *   <li>Request first event</li>
+         *   <li>Write event to response</li>
+         *   <li>Wait for write completion</li>
+         *   <li>Request next event (backpressure)</li>
+         * </ol>
+         *
+         * <p><b>HTTP Headers:</b>
+         * <p>Sets {@code Content-Type: text/event-stream} on first write
+         *
+         * <p><b>Error Handling:</b>
+         * <ul>
+         *   <li>Client disconnect → cancel upstream, stop polling</li>
+         *   <li>Write failure → cancel upstream, fail routing context</li>
+         *   <li>Stream error → cancel upstream, fail routing context</li>
+         * </ul>
+         *
+         * @param sseStrings Multi stream of SSE-formatted strings from {@link SseFormatter}
+         * @param rc the Vert.x routing context
+         * @param context the A2A server call context (for EventConsumer cancellation)
+         * @see SseFormatter#formatResponseAsSSE
          */
         public static void writeSseStrings(Multi<String> sseStrings, RoutingContext rc, ServerCallContext context) {
             HttpServerResponse response = rc.response();
