@@ -64,6 +64,88 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * gRPC transport handler for processing A2A protocol requests.
+ *
+ * <p>This abstract class implements the gRPC service interface for the A2A protocol,
+ * handling both unary (blocking) and server streaming RPC calls. It translates gRPC
+ * requests to A2A protocol operations, coordinates with the request handler and agent
+ * executor, and manages error handling with appropriate gRPC status codes.
+ *
+ * <h2>Request Flow</h2>
+ * <pre>
+ * gRPC Request → GrpcHandler (this class)
+ *     ↓
+ * Protobuf → Domain conversion
+ *     ↓
+ * RequestHandler → AgentExecutor
+ *     ↓
+ * Domain → Protobuf conversion
+ *     ↓
+ * gRPC Response (unary or streaming)
+ * </pre>
+ *
+ * <h2>Supported Operations</h2>
+ *
+ * <p><b>Unary RPC (blocking):</b>
+ * <ul>
+ *   <li>{@link #sendMessage} - Send message and wait for completion</li>
+ *   <li>{@link #getTask} - Retrieve task by ID</li>
+ *   <li>{@link #cancelTask} - Cancel task execution</li>
+ *   <li>{@link #listTasks} - List tasks with filtering</li>
+ *   <li>{@link #createTaskPushNotificationConfig} - Configure push notifications</li>
+ *   <li>{@link #getTaskPushNotificationConfig} - Get push notification config</li>
+ *   <li>{@link #listTaskPushNotificationConfig} - List push notification configs</li>
+ *   <li>{@link #deleteTaskPushNotificationConfig} - Delete push notification config</li>
+ *   <li>{@link #getExtendedAgentCard} - Get extended agent capabilities</li>
+ * </ul>
+ *
+ * <p><b>Server Streaming RPC:</b>
+ * <ul>
+ *   <li>{@link #sendStreamingMessage} - Send message with streaming response</li>
+ *   <li>{@link #subscribeToTask} - Subscribe to task events</li>
+ * </ul>
+ *
+ * <h2>Error Handling</h2>
+ * <p>A2A errors are mapped to gRPC status codes:
+ * <ul>
+ *   <li>{@link io.a2a.spec.InvalidRequestError} → {@link Status#INVALID_ARGUMENT}</li>
+ *   <li>{@link io.a2a.spec.MethodNotFoundError} → {@link Status#NOT_FOUND}</li>
+ *   <li>{@link io.a2a.spec.TaskNotFoundError} → {@link Status#NOT_FOUND}</li>
+ *   <li>{@link io.a2a.spec.InternalError} → {@link Status#INTERNAL}</li>
+ *   <li>{@link io.a2a.spec.UnsupportedOperationError} → {@link Status#UNIMPLEMENTED}</li>
+ *   <li>{@link SecurityException} → {@link Status#UNAUTHENTICATED} or {@link Status#PERMISSION_DENIED}</li>
+ * </ul>
+ *
+ * <h2>Context Access</h2>
+ * <p>The handler provides rich context information equivalent to Python's
+ * {@code grpc.aio.ServicerContext}:
+ * <ul>
+ *   <li>{@link #getCurrentMetadata()} - Request metadata (headers)</li>
+ *   <li>{@link #getCurrentMethodName()} - gRPC method name</li>
+ *   <li>{@link #getCurrentPeerInfo()} - Client connection details</li>
+ * </ul>
+ *
+ * <h2>Extension Points</h2>
+ * <p>Subclasses must implement:
+ * <ul>
+ *   <li>{@link #getRequestHandler()} - Request handler instance</li>
+ *   <li>{@link #getAgentCard()} - Public agent card</li>
+ *   <li>{@link #getExtendedAgentCard()} - Extended agent card (nullable)</li>
+ *   <li>{@link #getCallContextFactory()} - Custom context factory (nullable)</li>
+ *   <li>{@link #getExecutor()} - Executor for async operations</li>
+ * </ul>
+ *
+ * <h2>CDI Integration</h2>
+ * <p>This class is marked with {@code @Vetoed} to prevent direct CDI management.
+ * Subclasses should be CDI beans (e.g., {@code @GrpcService} in Quarkus) that
+ * inject dependencies and provide them through the abstract methods.
+ *
+ * @see io.a2a.grpc.A2AServiceGrpc.A2AServiceImplBase
+ * @see io.a2a.server.requesthandlers.RequestHandler
+ * @see CallContextFactory
+ * @see io.a2a.transport.grpc.context.GrpcContextKeys
+ */
 @Vetoed
 public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
@@ -75,10 +157,38 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
     private static final Logger LOGGER = Logger.getLogger(GrpcHandler.class.getName());
 
+    /**
+     * Constructs a new GrpcHandler.
+     */
     public GrpcHandler() {
 
     }
 
+    /**
+     * Handles a unary (blocking) message send request.
+     *
+     * <p>This method processes a message send request, waits for the agent to complete
+     * processing, and returns either a Task or Message in the response.
+     *
+     * <p><b>Protocol Flow:</b>
+     * <ol>
+     *   <li>Validate A2A protocol version and extensions</li>
+     *   <li>Convert protobuf request to domain {@link MessageSendParams}</li>
+     *   <li>Invoke {@link io.a2a.server.requesthandlers.RequestHandler#onMessageSend}</li>
+     *   <li>Convert domain response to protobuf {@link io.a2a.grpc.SendMessageResponse}</li>
+     *   <li>Send response and complete the RPC</li>
+     * </ol>
+     *
+     * <p><b>Error Handling:</b>
+     * <ul>
+     *   <li>{@link A2AError} → mapped to appropriate gRPC status code</li>
+     *   <li>{@link SecurityException} → {@code UNAUTHENTICATED} or {@code PERMISSION_DENIED}</li>
+     *   <li>{@link Throwable} → {@code INTERNAL} error</li>
+     * </ul>
+     *
+     * @param request the gRPC message send request
+     * @param responseObserver the gRPC response stream observer
+     */
     @Override
     public void sendMessage(io.a2a.grpc.SendMessageRequest request,
                            StreamObserver<io.a2a.grpc.SendMessageResponse> responseObserver) {
@@ -232,6 +342,43 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         }
     }
 
+    /**
+     * Handles a server streaming message send request.
+     *
+     * <p>This method processes a message send request with streaming response, where
+     * the agent can emit multiple events (artifacts, status updates, messages) as the
+     * task progresses.
+     *
+     * <p><b>Protocol Flow:</b>
+     * <ol>
+     *   <li>Verify streaming capability is enabled in agent card</li>
+     *   <li>Validate A2A protocol version and extensions</li>
+     *   <li>Convert protobuf request to domain {@link MessageSendParams}</li>
+     *   <li>Invoke {@link io.a2a.server.requesthandlers.RequestHandler#onMessageSendStream}</li>
+     *   <li>Subscribe to event publisher and stream responses</li>
+     *   <li>Convert each domain event to protobuf {@link io.a2a.grpc.StreamResponse}</li>
+     *   <li>Complete RPC when final event received or error occurs</li>
+     * </ol>
+     *
+     * <p><b>Streaming Characteristics:</b>
+     * <ul>
+     *   <li>Server streaming RPC - server sends multiple responses</li>
+     *   <li>Backpressure handled through reactive streams subscription</li>
+     *   <li>Client disconnect detection via gRPC context cancellation</li>
+     *   <li>Automatic cleanup when stream completes or errors</li>
+     * </ul>
+     *
+     * <p><b>Error Handling:</b>
+     * <ul>
+     *   <li>Streaming not enabled → {@link io.a2a.spec.InvalidRequestError}</li>
+     *   <li>Other {@link A2AError} → mapped to appropriate gRPC status code</li>
+     *   <li>{@link SecurityException} → {@code UNAUTHENTICATED} or {@code PERMISSION_DENIED}</li>
+     *   <li>{@link Throwable} → {@code INTERNAL} error</li>
+     * </ul>
+     *
+     * @param request the gRPC message send request
+     * @param responseObserver the gRPC response stream observer
+     */
     @Override
     public void sendStreamingMessage(io.a2a.grpc.SendMessageRequest request,
                                      StreamObserver<io.a2a.grpc.StreamResponse> responseObserver) {
@@ -278,6 +425,43 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         }
     }
 
+    /**
+     * Converts a reactive stream of domain events to gRPC streaming responses.
+     *
+     * <p>This method subscribes to the event publisher and converts each domain event
+     * to a protobuf {@link StreamResponse}, handling backpressure through the reactive
+     * streams subscription and detecting client disconnections.
+     *
+     * <p><b>Backpressure Handling:</b>
+     * <ol>
+     *   <li>Request 1 event from upstream</li>
+     *   <li>Send event to gRPC response observer</li>
+     *   <li>Wait for send completion</li>
+     *   <li>Request next event (backpressure)</li>
+     * </ol>
+     *
+     * <p><b>Disconnect Detection:</b>
+     * <p>When the gRPC client disconnects:
+     * <ol>
+     *   <li>gRPC Context cancellation listener fires</li>
+     *   <li>Invokes {@link ServerCallContext#invokeEventConsumerCancelCallback()}</li>
+     *   <li>Cancels upstream subscription</li>
+     *   <li>Stops event polling</li>
+     * </ol>
+     *
+     * <p><b>Final Event Detection:</b>
+     * <p>The stream completes automatically when a final task status is received:
+     * <ul>
+     *   <li>{@code TASK_STATE_COMPLETED}</li>
+     *   <li>{@code TASK_STATE_CANCELED}</li>
+     *   <li>{@code TASK_STATE_FAILED}</li>
+     *   <li>{@code TASK_STATE_REJECTED}</li>
+     * </ul>
+     *
+     * @param publisher the reactive publisher of streaming events
+     * @param responseObserver the gRPC response stream observer
+     * @param context the server call context for disconnect detection
+     */
     private void convertToStreamResponse(Flow.Publisher<StreamingEventKind> publisher,
                                          StreamObserver<io.a2a.grpc.StreamResponse> responseObserver,
                                          ServerCallContext context) {
@@ -398,6 +582,42 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         }
     }
 
+    /**
+     * Creates a {@link ServerCallContext} from the current gRPC request context.
+     *
+     * <p>This method extracts authentication, metadata, and A2A protocol information
+     * from the gRPC context and packages them into a context object for use by the
+     * request handler and agent executor.
+     *
+     * <p><b>Default Context Creation:</b>
+     * <p>If no {@link CallContextFactory} is provided, creates a context with:
+     * <ul>
+     *   <li>User authentication (defaults to {@link UnauthenticatedUser})</li>
+     *   <li>Transport protocol ({@link TransportProtocol#GRPC})</li>
+     *   <li>gRPC response observer for streaming</li>
+     *   <li>gRPC context and metadata (equivalent to Python's ServicerContext)</li>
+     *   <li>HTTP headers extracted from metadata</li>
+     *   <li>gRPC method name</li>
+     *   <li>Peer information (client connection details)</li>
+     *   <li>A2A protocol version from {@code X-A2A-Version} header (via context)</li>
+     *   <li>Required extensions from {@code X-A2A-Extensions} header (via context)</li>
+     * </ul>
+     *
+     * <p><b>Custom Context Creation:</b>
+     * <p>If a {@link CallContextFactory} bean is present, delegates to
+     * {@link CallContextFactory#create(StreamObserver)} for custom context creation.
+     *
+     * <p><b>Context Information:</b>
+     * <p>The gRPC context information is populated by server interceptors (typically
+     * {@code A2AExtensionsInterceptor}) that capture request metadata before service
+     * methods are invoked.
+     *
+     * @param <V> the response type for the gRPC method
+     * @param responseObserver the gRPC response stream observer
+     * @return the server call context
+     * @see CallContextFactory
+     * @see io.a2a.transport.grpc.context.GrpcContextKeys
+     */
     private <V> ServerCallContext createCallContext(StreamObserver<V> responseObserver) {
         CallContextFactory factory = getCallContextFactory();
         if (factory == null) {
@@ -463,6 +683,36 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         }
     }
 
+    /**
+     * Handles A2A protocol errors by mapping them to appropriate gRPC status codes.
+     *
+     * <p>This method converts domain-specific A2A errors to gRPC status codes with
+     * descriptive error messages, allowing clients to understand and handle errors
+     * appropriately.
+     *
+     * <p><b>Error Mappings:</b>
+     * <ul>
+     *   <li>{@link InvalidRequestError} → {@code INVALID_ARGUMENT}</li>
+     *   <li>{@link MethodNotFoundError} → {@code NOT_FOUND}</li>
+     *   <li>{@link InvalidParamsError} → {@code INVALID_ARGUMENT}</li>
+     *   <li>{@link InternalError} → {@code INTERNAL}</li>
+     *   <li>{@link TaskNotFoundError} → {@code NOT_FOUND}</li>
+     *   <li>{@link TaskNotCancelableError} → {@code FAILED_PRECONDITION}</li>
+     *   <li>{@link PushNotificationNotSupportedError} → {@code UNIMPLEMENTED}</li>
+     *   <li>{@link UnsupportedOperationError} → {@code UNIMPLEMENTED}</li>
+     *   <li>{@link JSONParseError} → {@code INTERNAL}</li>
+     *   <li>{@link ContentTypeNotSupportedError} → {@code INVALID_ARGUMENT}</li>
+     *   <li>{@link InvalidAgentResponseError} → {@code INTERNAL}</li>
+     *   <li>{@link ExtendedAgentCardNotConfiguredError} → {@code FAILED_PRECONDITION}</li>
+     *   <li>{@link ExtensionSupportRequiredError} → {@code FAILED_PRECONDITION}</li>
+     *   <li>{@link VersionNotSupportedError} → {@code UNIMPLEMENTED}</li>
+     *   <li>Unknown errors → {@code UNKNOWN}</li>
+     * </ul>
+     *
+     * @param <V> the response type for the gRPC method
+     * @param responseObserver the gRPC response stream observer
+     * @param error the A2A protocol error
+     */
     private <V> void handleError(StreamObserver<V> responseObserver, A2AError error) {
         Status status;
         String description;
@@ -515,6 +765,23 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         responseObserver.onError(status.withDescription(description).asRuntimeException());
     }
 
+    /**
+     * Handles security-related exceptions by mapping them to gRPC authentication/authorization errors.
+     *
+     * <p>This method attempts to detect the type of security exception based on the exception
+     * class name and maps it to the appropriate gRPC status code.
+     *
+     * <p><b>Error Detection:</b>
+     * <ul>
+     *   <li>Unauthorized/Unauthenticated/Authentication exceptions → {@code UNAUTHENTICATED}</li>
+     *   <li>Forbidden/AccessDenied/Authorization exceptions → {@code PERMISSION_DENIED}</li>
+     *   <li>Other SecurityException → {@code PERMISSION_DENIED} (default)</li>
+     * </ul>
+     *
+     * @param <V> the response type for the gRPC method
+     * @param responseObserver the gRPC response stream observer
+     * @param e the security exception
+     */
     private <V> void handleSecurityException(StreamObserver<V> responseObserver, SecurityException e) {
         Status status;
         String description;
@@ -574,22 +841,62 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         }
     }
 
+    /**
+     * Returns the deployment classloader for this handler.
+     *
+     * <p>Used for transport configuration validation with proper classloader context.
+     *
+     * @return the deployment classloader
+     */
     protected ClassLoader getDeploymentClassLoader() {
         return this.getClass().getClassLoader();
     }
 
+    /**
+     * Sets a callback to be invoked when streaming subscription starts.
+     *
+     * <p>This is a testing hook used to synchronize test execution with streaming setup.
+     * In production, this remains null.
+     *
+     * @param runnable the callback to invoke on subscription
+     */
     public static void setStreamingSubscribedRunnable(Runnable runnable) {
         streamingSubscribedRunnable = runnable;
     }
 
+    /**
+     * Returns the request handler instance for processing A2A protocol requests.
+     *
+     * @return the request handler
+     */
     protected abstract RequestHandler getRequestHandler();
 
+    /**
+     * Returns the public agent card defining the agent's capabilities and metadata.
+     *
+     * @return the agent card
+     */
     protected abstract AgentCard getAgentCard();
 
+    /**
+     * Returns the extended agent card with additional capabilities, or null if not configured.
+     *
+     * @return the extended agent card, or null if not available
+     */
     protected abstract AgentCard getExtendedAgentCard();
 
+    /**
+     * Returns the custom call context factory, or null to use default context creation.
+     *
+     * @return the call context factory, or null for default behavior
+     */
     protected abstract CallContextFactory getCallContextFactory();
 
+    /**
+     * Returns the executor for running async operations (streaming subscriptions, etc.).
+     *
+     * @return the executor
+     */
     protected abstract Executor getExecutor();
 
     /**
