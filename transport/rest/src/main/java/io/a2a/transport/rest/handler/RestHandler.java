@@ -66,6 +66,16 @@ import io.a2a.spec.VersionNotSupportedError;
 import mutiny.zero.ZeroPublisher;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * REST transport handler for processing A2A protocol requests over HTTP.
+ *
+ * <p>This handler converts HTTP REST requests into A2A protocol operations and
+ * manages the lifecycle of agent interactions including message sending, task
+ * management, and push notification configurations.
+ *
+ * <p>The handler supports both blocking and streaming operations, and validates
+ * protocol versions and required extensions before processing requests.
+ */
 @ApplicationScoped
 public class RestHandler {
 
@@ -91,6 +101,14 @@ public class RestHandler {
         this.executor = null;
     }
 
+    /**
+     * Creates a REST handler with full CDI injection support.
+     *
+     * @param agentCard the public agent card containing agent capabilities
+     * @param extendedAgentCard optional extended agent card instance
+     * @param requestHandler the handler for processing A2A requests
+     * @param executor the executor for asynchronous operations
+     */
     @Inject
     public RestHandler(@PublicAgentCard AgentCard agentCard, @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
             RequestHandler requestHandler, @Internal Executor executor) {
@@ -103,12 +121,27 @@ public class RestHandler {
         AgentCardValidator.validateTransportConfiguration(agentCard);
     }
 
+    /**
+     * Creates a REST handler with basic dependencies.
+     *
+     * @param agentCard the agent card containing agent capabilities
+     * @param requestHandler the handler for processing A2A requests
+     * @param executor the executor for asynchronous operations
+     */
     public RestHandler(AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
         this.agentCard = agentCard;
         this.requestHandler = requestHandler;
         this.executor = executor;
     }
 
+    /**
+     * Handles a blocking message send request.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param body the JSON request body
+     * @return the HTTP response containing the task or message result
+     */
     public HTTPRestResponse sendMessage(ServerCallContext context, String tenant, String body) {
 
         try {
@@ -126,6 +159,14 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Handles a streaming message send request.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param body the JSON request body
+     * @return the streaming HTTP response containing a publisher of events
+     */
     public HTTPRestResponse sendStreamingMessage(ServerCallContext context, String tenant, String body) {
         try {
             if (!agentCard.capabilities().streaming()) {
@@ -145,6 +186,15 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Handles a task cancellation request.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param body the JSON request body
+     * @param taskId the ID of the task to cancel
+     * @return the HTTP response containing the cancelled task
+     */
     @SuppressWarnings("unchecked")
     public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String body, String taskId) {
         try {
@@ -165,6 +215,15 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Creates a push notification configuration for a task.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param body the JSON request body containing the configuration
+     * @param taskId the ID of the task
+     * @return the HTTP response containing the created configuration
+     */
     public HTTPRestResponse createTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String body, String taskId) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
@@ -182,6 +241,14 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Subscribes to task updates via a streaming connection.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param taskId the ID of the task to subscribe to
+     * @return the streaming HTTP response containing task updates
+     */
     public HTTPRestResponse subscribeToTask(ServerCallContext context, String tenant, String taskId) {
         try {
             if (!agentCard.capabilities().streaming()) {
@@ -197,6 +264,15 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Retrieves a task by ID.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param taskId the ID of the task to retrieve
+     * @param historyLength the maximum number of history entries to include
+     * @return the HTTP response containing the task
+     */
     public HTTPRestResponse getTask(ServerCallContext context, String tenant, String taskId, @Nullable Integer historyLength) {
         try {
             TaskQueryParams params = new TaskQueryParams(taskId, historyLength, tenant);
@@ -212,6 +288,20 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Lists tasks with optional filtering and pagination.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param contextId optional context ID to filter by
+     * @param status optional task status to filter by
+     * @param pageSize optional maximum number of tasks to return
+     * @param pageToken optional token for pagination
+     * @param historyLength optional maximum number of history entries per task
+     * @param statusTimestampAfter optional ISO-8601 timestamp to filter tasks updated after
+     * @param includeArtifacts optional flag to include task artifacts
+     * @return the HTTP response containing the list of tasks
+     */
     public HTTPRestResponse listTasks(ServerCallContext context, String tenant,
                                        @Nullable String contextId, @Nullable String status,
                                        @Nullable Integer pageSize, @Nullable String pageToken,
@@ -274,6 +364,15 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Retrieves a specific push notification configuration for a task.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param taskId the ID of the task
+     * @param configId the ID of the configuration to retrieve
+     * @return the HTTP response containing the configuration
+     */
     public HTTPRestResponse getTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, String configId) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
@@ -289,6 +388,16 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Lists push notification configurations for a task.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param taskId the ID of the task
+     * @param pageSize the maximum number of configurations to return
+     * @param pageToken the token for pagination
+     * @return the HTTP response containing the list of configurations
+     */
     public HTTPRestResponse listTaskPushNotificationConfigurations(ServerCallContext context, String tenant, String taskId, int pageSize, String pageToken) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
@@ -304,6 +413,15 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Deletes a push notification configuration for a task.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @param taskId the ID of the task
+     * @param configId the ID of the configuration to delete
+     * @return the HTTP response with no content on success
+     */
     public HTTPRestResponse deleteTaskPushNotificationConfiguration(ServerCallContext context, String tenant, String taskId, String configId) {
         try {
             if (!agentCard.capabilities().pushNotifications()) {
@@ -351,6 +469,12 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Creates an HTTP error response from an A2A error.
+     *
+     * @param error the A2A error to convert
+     * @return the HTTP response with appropriate status code and error details
+     */
     public HTTPRestResponse createErrorResponse(A2AError error) {
         int statusCode = mapErrorToHttpStatus(error);
         return createErrorResponse(statusCode, error);
@@ -462,6 +586,13 @@ public class RestHandler {
         return 500;
     }
 
+    /**
+     * Retrieves the extended agent card if configured.
+     *
+     * @param context the server call context containing authentication and metadata
+     * @param tenant the tenant identifier
+     * @return the HTTP response containing the extended agent card
+     */
     public HTTPRestResponse getExtendedAgentCard(ServerCallContext context, String tenant) {
         try {
             if (!agentCard.capabilities().extendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
@@ -475,6 +606,11 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Retrieves the public agent card.
+     *
+     * @return the HTTP response containing the agent card
+     */
     public HTTPRestResponse getAgentCard() {
         try {
             return new HTTPRestResponse(200, "application/json", JsonUtil.toJson(agentCard));
@@ -483,26 +619,51 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Represents an HTTP REST response with status code, content type, and body.
+     */
     public static class HTTPRestResponse {
 
         private final int statusCode;
         private final String contentType;
         private final String body;
 
+        /**
+         * Creates an HTTP REST response.
+         *
+         * @param statusCode the HTTP status code
+         * @param contentType the content type of the response
+         * @param body the response body
+         */
         public HTTPRestResponse(int statusCode, String contentType, String body) {
             this.statusCode = statusCode;
             this.contentType = contentType;
             this.body = body;
         }
 
+        /**
+         * Returns the HTTP status code.
+         *
+         * @return the status code
+         */
         public int getStatusCode() {
             return statusCode;
         }
 
+        /**
+         * Returns the content type.
+         *
+         * @return the content type
+         */
         public String getContentType() {
             return contentType;
         }
 
+        /**
+         * Returns the response body.
+         *
+         * @return the body
+         */
         public String getBody() {
             return body;
         }
@@ -513,26 +674,47 @@ public class RestHandler {
         }
     }
 
+    /**
+     * Represents an HTTP streaming response with Server-Sent Events.
+     */
     public static class HTTPRestStreamingResponse extends HTTPRestResponse {
 
         private final Flow.Publisher<String> publisher;
 
+        /**
+         * Creates an HTTP streaming response.
+         *
+         * @param publisher the publisher of streaming events
+         */
         public HTTPRestStreamingResponse(Flow.Publisher<String> publisher) {
             super(200, "text/event-stream", "");
             this.publisher = publisher;
         }
 
+        /**
+         * Returns the publisher for streaming events.
+         *
+         * @return the publisher
+         */
         public Flow.Publisher<String> getPublisher() {
             return publisher;
         }
     }
 
+    /**
+     * Represents an HTTP error response containing A2A error details.
+     */
     private static class HTTPRestErrorResponse {
 
         private final String error;
         private final @Nullable
         String message;
 
+        /**
+         * Creates an error response from an A2A error.
+         *
+         * @param jsonRpcError the A2A error
+         */
         private HTTPRestErrorResponse(A2AError jsonRpcError) {
             this.error = jsonRpcError.getClass().getName();
             this.message = jsonRpcError.getMessage();
