@@ -264,76 +264,76 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             StringBuilder queryBuilder = new StringBuilder("SELECT t FROM JpaTask t WHERE 1=1");
             StringBuilder countQueryBuilder = new StringBuilder("SELECT COUNT(t) FROM JpaTask t WHERE 1=1");
 
-        // Apply contextId filter using denormalized column
-        if (params.contextId() != null) {
-            queryBuilder.append(" AND t.contextId = :contextId");
-            countQueryBuilder.append(" AND t.contextId = :contextId");
-        }
+            // Apply contextId filter using denormalized column
+            if (params.contextId() != null) {
+                queryBuilder.append(" AND t.contextId = :contextId");
+                countQueryBuilder.append(" AND t.contextId = :contextId");
+            }
 
-        // Apply status filter using denormalized column
-        if (params.status() != null) {
-            queryBuilder.append(" AND t.state = :state");
-            countQueryBuilder.append(" AND t.state = :state");
-        }
+            // Apply status filter using denormalized column
+            if (params.status() != null) {
+                queryBuilder.append(" AND t.state = :state");
+                countQueryBuilder.append(" AND t.state = :state");
+            }
 
-        // Apply statusTimestampAfter filter using denormalized timestamp column
-        if (params.statusTimestampAfter() != null) {
-            queryBuilder.append(" AND t.statusTimestamp > :statusTimestampAfter");
-            countQueryBuilder.append(" AND t.statusTimestamp > :statusTimestampAfter");
-        }
+            // Apply statusTimestampAfter filter using denormalized timestamp column
+            if (params.statusTimestampAfter() != null) {
+                queryBuilder.append(" AND t.statusTimestamp > :statusTimestampAfter");
+                countQueryBuilder.append(" AND t.statusTimestamp > :statusTimestampAfter");
+            }
 
-        // Apply pagination cursor using keyset pagination for composite sort (timestamp DESC, id ASC)
-        if (tokenTimestamp != null) {
-            // Keyset pagination: get tasks where timestamp < tokenTimestamp OR (timestamp = tokenTimestamp AND id > tokenId)
-            queryBuilder.append(" AND (t.statusTimestamp < :tokenTimestamp OR (t.statusTimestamp = :tokenTimestamp AND t.id > :tokenId))");
-        }
+            // Apply pagination cursor using keyset pagination for composite sort (timestamp DESC, id ASC)
+            if (tokenTimestamp != null) {
+                // Keyset pagination: get tasks where timestamp < tokenTimestamp OR (timestamp = tokenTimestamp AND id > tokenId)
+                queryBuilder.append(" AND (t.statusTimestamp < :tokenTimestamp OR (t.statusTimestamp = :tokenTimestamp AND t.id > :tokenId))");
+            }
 
-        // Sort by status timestamp descending (most recent first), then by ID for stable ordering
-        queryBuilder.append(" ORDER BY t.statusTimestamp DESC, t.id ASC");
+            // Sort by status timestamp descending (most recent first), then by ID for stable ordering
+            queryBuilder.append(" ORDER BY t.statusTimestamp DESC, t.id ASC");
 
-        // Create and configure the main query
-        TypedQuery<JpaTask> query = em.createQuery(queryBuilder.toString(), JpaTask.class);
+            // Create and configure the main query
+            TypedQuery<JpaTask> query = em.createQuery(queryBuilder.toString(), JpaTask.class);
 
-        // Set filter parameters
-        if (params.contextId() != null) {
-            query.setParameter("contextId", params.contextId());
-        }
-        if (params.status() != null) {
-            query.setParameter("state", params.status().name());
-        }
-        if (params.statusTimestampAfter() != null) {
-            query.setParameter("statusTimestampAfter", params.statusTimestampAfter());
-        }
-        if (tokenTimestamp != null) {
-            query.setParameter("tokenTimestamp", tokenTimestamp);
-            query.setParameter("tokenId", tokenId);
-        }
+            // Set filter parameters
+            if (params.contextId() != null) {
+                query.setParameter("contextId", params.contextId());
+            }
+            if (params.status() != null) {
+                query.setParameter("state", params.status().name());
+            }
+            if (params.statusTimestampAfter() != null) {
+                query.setParameter("statusTimestampAfter", params.statusTimestampAfter());
+            }
+            if (tokenTimestamp != null) {
+                query.setParameter("tokenTimestamp", tokenTimestamp);
+                query.setParameter("tokenId", tokenId);
+            }
 
-        // Apply page size limit (+1 to check for next page)
-        int pageSize = params.getEffectivePageSize();
-        query.setMaxResults(pageSize + 1);
+            // Apply page size limit (+1 to check for next page)
+            int pageSize = params.getEffectivePageSize();
+            query.setMaxResults(pageSize + 1);
 
-        // Execute query and deserialize tasks
-        List<JpaTask> jpaTasksPage = query.getResultList();
+            // Execute query and deserialize tasks
+            List<JpaTask> jpaTasksPage = query.getResultList();
 
-        // Determine if there are more results
-        boolean hasMore = jpaTasksPage.size() > pageSize;
-        if (hasMore) {
-            jpaTasksPage = jpaTasksPage.subList(0, pageSize);
-        }
+            // Determine if there are more results
+            boolean hasMore = jpaTasksPage.size() > pageSize;
+            if (hasMore) {
+                jpaTasksPage = jpaTasksPage.subList(0, pageSize);
+            }
 
-        // Get total count of matching tasks
-        TypedQuery<Long> countQuery = em.createQuery(countQueryBuilder.toString(), Long.class);
-        if (params.contextId() != null) {
-            countQuery.setParameter("contextId", params.contextId());
-        }
-        if (params.status() != null) {
-            countQuery.setParameter("state", params.status().name());
-        }
-        if (params.statusTimestampAfter() != null) {
-            countQuery.setParameter("statusTimestampAfter", params.statusTimestampAfter());
-        }
-        int totalSize = countQuery.getSingleResult().intValue();
+            // Get total count of matching tasks
+            TypedQuery<Long> countQuery = em.createQuery(countQueryBuilder.toString(), Long.class);
+            if (params.contextId() != null) {
+                countQuery.setParameter("contextId", params.contextId());
+            }
+            if (params.status() != null) {
+                countQuery.setParameter("state", params.status().name());
+            }
+            if (params.statusTimestampAfter() != null) {
+                countQuery.setParameter("statusTimestampAfter", params.statusTimestampAfter());
+            }
+            int totalSize = countQuery.getSingleResult().intValue();
 
             // Deserialize tasks from JSON
             List<Task> tasks = new ArrayList<>();
@@ -347,19 +347,19 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                 }
             }
 
-        // Determine next page token (timestamp:ID of last task if there are more results)
-        // Format: "timestamp_millis:taskId" for keyset pagination
-        String nextPageToken = null;
-        if (hasMore && !tasks.isEmpty()) {
-            Task lastTask = tasks.get(tasks.size() - 1);
-            // All tasks have timestamps (TaskStatus canonical constructor ensures this)
-            Instant timestamp = lastTask.status().timestamp().toInstant();
-            nextPageToken = new PageToken(timestamp, lastTask.id()).toString();
-        }
+            // Determine next page token (timestamp:ID of last task if there are more results)
+            // Format: "timestamp_millis:taskId" for keyset pagination
+            String nextPageToken = null;
+            if (hasMore && !tasks.isEmpty()) {
+                Task lastTask = tasks.get(tasks.size() - 1);
+                // All tasks have timestamps (TaskStatus canonical constructor ensures this)
+                Instant timestamp = lastTask.status().timestamp().toInstant();
+                nextPageToken = new PageToken(timestamp, lastTask.id()).toString();
+            }
 
-        // Apply post-processing transformations (history limiting, artifact removal)
-        int historyLength = params.getEffectiveHistoryLength();
-        boolean includeArtifacts = params.shouldIncludeArtifacts();
+            // Apply post-processing transformations (history limiting, artifact removal)
+            int historyLength = params.getEffectiveHistoryLength();
+            boolean includeArtifacts = params.shouldIncludeArtifacts();
 
             List<Task> transformedTasks = tasks.stream()
                     .map(task -> transformTask(task, historyLength, includeArtifacts))
