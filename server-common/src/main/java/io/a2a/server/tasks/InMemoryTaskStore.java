@@ -46,8 +46,7 @@ import org.jspecify.annotations.Nullable;
  *   <li>No serialization step exists - tasks stored as Java objects</li>
  *   <li>No I/O or network operations that can fail</li>
  *   <li>ConcurrentHashMap guarantees thread-safe operations without checked exceptions</li>
- *   <li>Memory exhaustion (OutOfMemoryError) is an unrecoverable system failure, not a transient
- *       storage error</li>
+ *   <li>Memory exhaustion (OutOfMemoryError) is an unrecoverable system failure</li>
  * </ul>
  *
  * <h3>Comparison to Database Implementations</h3>

@@ -7,9 +7,8 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Indicates failures in the underlying storage system (database, filesystem, etc.) rather
  * than data format issues.
- * </p>
- * <p>
- * Examples of persistence failures:
+ *
+ * <h2>Common Scenarios</h2>
  * <ul>
  *   <li>Database connection timeout or network partition</li>
  *   <li>Transaction deadlock or lock wait timeout</li>
@@ -19,7 +18,6 @@ import org.jspecify.annotations.Nullable;
  *   <li>Insufficient permissions or authentication failures</li>
  *   <li>Database schema incompatibilities</li>
  * </ul>
- * </p>
  *
  * <h2>Usage Example</h2>
  * <pre>{@code

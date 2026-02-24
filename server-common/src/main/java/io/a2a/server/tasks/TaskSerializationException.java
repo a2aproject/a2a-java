@@ -6,8 +6,6 @@ import org.jspecify.annotations.Nullable;
  * Exception for task serialization/deserialization failures.
  * <p>
  * Indicates failures converting between Task domain objects and persistent storage format (JSON).
- * These failures are typically <b>non-transient</b> - they indicate data corruption, schema
- * mismatches, or invalid field values that require manual intervention.
  *
  * <h2>Common Scenarios</h2>
  * <ul>
@@ -15,14 +13,6 @@ import org.jspecify.annotations.Nullable;
  *   <li>JSON serialization errors during {@code save()} operations</li>
  *   <li>Invalid enum values or missing required fields</li>
  *   <li>Data format version mismatches after upgrades</li>
- * </ul>
- *
- * <h2>Recovery Strategy</h2>
- * <b>Non-Transient</b>: Retry will not help. Requires:
- * <ul>
- *   <li>Data migration or repair for corrupted tasks</li>
- *   <li>Schema updates for version mismatches</li>
- *   <li>Manual intervention to fix invalid data</li>
  * </ul>
  *
  * <h2>Usage Example</h2>

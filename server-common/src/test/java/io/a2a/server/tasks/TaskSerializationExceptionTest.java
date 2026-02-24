@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link TaskSerializationException}.
  * <p>
  * Tests the exception class for task serialization/deserialization failures,
- * verifying all constructor variants and non-transient failure semantics.
+ * verifying all constructor variants.
  */
 class TaskSerializationExceptionTest extends AbstractTaskStoreExceptionTest<TaskSerializationException> {
 

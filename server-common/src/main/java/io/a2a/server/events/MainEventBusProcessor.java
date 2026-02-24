@@ -47,11 +47,10 @@ import org.slf4j.LoggerFactory;
  * <h2>Exception Handling</h2>
  * TaskStore persistence failures are caught and handled gracefully:
  * <ul>
- *   <li>{@link TaskSerializationException} - Data corruption or schema mismatch (permanent).
+ *   <li>{@link TaskSerializationException} - Data corruption or schema mismatch.
  *       Logged at ERROR level, distributed as {@link InternalError} to clients.</li>
- *   <li>{@link TaskPersistenceException} - Database failure (transient or permanent).
- *       Transient failures logged at WARN level, permanent at ERROR level.
- *       InternalError message indicates retry viability.</li>
+ *   <li>{@link TaskPersistenceException} - Database/storage system failure.
+ *       Logged at ERROR level, distributed as {@link InternalError} to clients.</li>
  * </ul>
  *
  * <p>Processing continues after errors - the failed event is distributed as InternalError
