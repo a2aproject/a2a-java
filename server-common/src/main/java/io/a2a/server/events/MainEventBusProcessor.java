@@ -316,18 +316,9 @@ public class MainEventBusProcessor implements Runnable {
             throw new InternalError("Failed to serialize task " + taskId + ": " + e.getMessage());
 
         } catch (TaskPersistenceException e) {
-            // Database failure - check if transient for retry guidance
-            if (e.isTransient()) {
-                LOGGER.warn("Task {} event persistence failed (TRANSIENT) - retry may succeed: {}",
-                           taskId, e.getMessage());
-                throw new InternalError("Temporary storage failure for task " + taskId +
-                                       " (retry may succeed): " + e.getMessage());
-            } else {
-                LOGGER.error("Task {} event persistence failed (PERMANENT) - manual intervention required: {}",
-                            taskId, e.getMessage(), e);
-                throw new InternalError("Permanent storage failure for task " + taskId +
-                                       " (requires intervention): " + e.getMessage());
-            }
+            // Database/storage failure
+            LOGGER.error("Task {} event persistence failed: {}", taskId, e.getMessage(), e);
+            throw new InternalError("Storage failure for task " + taskId + ": " + e.getMessage());
 
         } catch (InternalError e) {
             // Already an InternalError from TaskManager validation - pass through

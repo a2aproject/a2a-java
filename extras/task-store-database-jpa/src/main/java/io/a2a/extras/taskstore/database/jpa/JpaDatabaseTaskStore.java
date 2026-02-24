@@ -66,66 +66,6 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         gracePeriodSeconds = Long.parseLong(configProvider.getValue(A2A_REPLICATION_GRACE_PERIOD_SECONDS));
     }
 
-    /**
-     * Determines if a database exception represents a transient failure that may succeed on retry.
-     *
-     * <h3>Transient Errors (return true):</h3>
-     * <ul>
-     *   <li>Connection timeouts and network partitions</li>
-     *   <li>Transaction deadlocks and lock timeouts</li>
-     *   <li>Connection pool exhausted</li>
-     *   <li>Query timeouts</li>
-     * </ul>
-     *
-     * <h3>Non-Transient Errors (return false):</h3>
-     * <ul>
-     *   <li>Constraint violations (unique key, foreign key)</li>
-     *   <li>Disk full / quota exceeded</li>
-     *   <li>Permission denied</li>
-     *   <li>Schema incompatibilities</li>
-     * </ul>
-     *
-     * @param e the persistence exception to analyze
-     * @return true if retry may succeed, false if manual intervention required
-     */
-    private static boolean isTransientDatabaseError(PersistenceException e) {
-        // Check exception class hierarchy for transient indicators
-        Throwable cause = e;
-        while (cause != null) {
-            String className = cause.getClass().getName();
-            String message = cause.getMessage() != null ? cause.getMessage().toLowerCase() : "";
-
-            // Transient exception types
-            if (className.contains("Timeout") ||
-                className.contains("LockTimeout") ||
-                className.contains("QueryTimeout")) {
-                return true;
-            }
-
-            // Transient message patterns
-            if (message.contains("timeout") ||
-                message.contains("deadlock") ||
-                message.contains("connection") && (message.contains("refused") || message.contains("closed")) ||
-                message.contains("pool") && message.contains("exhausted")) {
-                return true;
-            }
-
-            // Non-transient indicators
-            if (className.contains("ConstraintViolation") ||
-                className.contains("IntegrityConstraint") ||
-                message.contains("unique constraint") ||
-                message.contains("foreign key") ||
-                message.contains("disk full") ||
-                message.contains("permission denied")) {
-                return false;
-            }
-
-            cause = cause.getCause();
-        }
-
-        // Default to non-transient for safety (don't retry unless confident)
-        return false;
-    }
 
     @Transactional
     @Override
@@ -152,10 +92,9 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             throw new TaskSerializationException(task.id(),
                 "Failed to serialize task for persistence", e);
         } catch (PersistenceException e) {
-            boolean isTransient = isTransientDatabaseError(e);
-            LOGGER.error("Database save failed for task with ID: {} (transient: {})", task.id(), isTransient, e);
+            LOGGER.error("Database save failed for task with ID: {}", task.id(), e);
             throw new TaskPersistenceException(task.id(),
-                "Database save failed for task", e, isTransient);
+                "Database save failed for task", e);
         }
     }
 
@@ -181,10 +120,9 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             }
 
         } catch (PersistenceException e) {
-            boolean isTransient = isTransientDatabaseError(e);
-            LOGGER.error("Database retrieval failed for task with ID: {} (transient: {})", taskId, isTransient, e);
+            LOGGER.error("Database retrieval failed for task with ID: {}", taskId, e);
             throw new TaskPersistenceException(taskId,
-                "Database retrieval failed for task", e, isTransient);
+                "Database retrieval failed for task", e);
         }
     }
 
@@ -201,10 +139,9 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                 LOGGER.debug("Task not found for deletion with ID: {}", taskId);
             }
         } catch (PersistenceException e) {
-            boolean isTransient = isTransientDatabaseError(e);
-            LOGGER.error("Database deletion failed for task with ID: {} (transient: {})", taskId, isTransient, e);
+            LOGGER.error("Database deletion failed for task with ID: {}", taskId, e);
             throw new TaskPersistenceException(taskId,
-                "Database deletion failed for task", e, isTransient);
+                "Database deletion failed for task", e);
         }
     }
 
@@ -436,10 +373,9 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             throw e;
         } catch (PersistenceException e) {
             // Database errors from query creation, execution, or count
-            boolean isTransient = isTransientDatabaseError(e);
-            LOGGER.error("Database query failed during list operation (transient: {})", isTransient, e);
+            LOGGER.error("Database query failed during list operation", e);
             throw new TaskPersistenceException(null,  // No single taskId for list operation
-                "Database query failed during list operation", e, isTransient);
+                "Database query failed during list operation", e);
         }
     }
 

@@ -40,8 +40,7 @@ import ch.qos.logback.core.read.ListAppender;
  * and distributed to clients with appropriate logging based on failure type:
  * <ul>
  *   <li>TaskSerializationException → ERROR log + InternalError</li>
- *   <li>TaskPersistenceException (transient) → WARN log + InternalError</li>
- *   <li>TaskPersistenceException (permanent) → ERROR log + InternalError</li>
+ *   <li>TaskPersistenceException → ERROR log + InternalError</li>
  * </ul>
  */
 public class MainEventBusProcessorExceptionTest {
@@ -133,15 +132,15 @@ public class MainEventBusProcessorExceptionTest {
     }
 
     /**
-     * Test that TaskPersistenceException (transient) is converted to InternalError with WARN log.
-     * AC#2: Mock TaskStore throws TaskPersistenceException(transient) → WARN log + InternalError
+     * Test that TaskPersistenceException is converted to InternalError with ERROR log.
+     * AC#2: Mock TaskStore throws TaskPersistenceException → ERROR log + InternalError
      */
     @Test
-    public void testTaskPersistenceException_Transient_ConvertsToInternalError() throws InterruptedException {
-        // Arrange: Mock TaskStore to throw transient TaskPersistenceException
-        String exceptionMessage = "Connection timeout to database";
+    public void testTaskPersistenceException_ConvertsToInternalError() throws InterruptedException {
+        // Arrange: Mock TaskStore to throw TaskPersistenceException
+        String exceptionMessage = "Database operation failed";
         TaskPersistenceException exception = new TaskPersistenceException(
-            TASK_ID, exceptionMessage, true // transient = true
+            TASK_ID, exceptionMessage
         );
         when(mockTaskStore.get(any())).thenThrow(exception);
         doThrow(exception).when(mockTaskStore).save(any(Task.class), anyBoolean());
@@ -160,54 +159,13 @@ public class MainEventBusProcessorExceptionTest {
         InternalError error = (InternalError) distributedEvent;
         assertTrue(error.getMessage().contains(TASK_ID),
                   "Error message should contain task ID: " + error.getMessage());
-        assertTrue(error.getMessage().contains("retry may succeed"),
-                  "Transient error message should mention retry: " + error.getMessage());
 
-        // Assert: Verify WARN level logging for transient failures
-        boolean foundWarnLog = logAppender.list.stream()
-            .anyMatch(event -> event.getLevel() == Level.WARN
-                            && event.getFormattedMessage().contains(TASK_ID)
-                            && event.getFormattedMessage().contains("TRANSIENT"));
-        assertTrue(foundWarnLog, "Should log transient TaskPersistenceException at WARN level");
-    }
-
-    /**
-     * Test that TaskPersistenceException (permanent) is converted to InternalError with ERROR log.
-     * AC#3: Mock TaskStore throws TaskPersistenceException(permanent) → ERROR log + InternalError
-     */
-    @Test
-    public void testTaskPersistenceException_Permanent_ConvertsToInternalError() throws InterruptedException {
-        // Arrange: Mock TaskStore to throw permanent TaskPersistenceException
-        String exceptionMessage = "Disk full - cannot write";
-        TaskPersistenceException exception = new TaskPersistenceException(
-            TASK_ID, exceptionMessage, false // transient = false (permanent)
-        );
-        when(mockTaskStore.get(any())).thenThrow(exception);
-        doThrow(exception).when(mockTaskStore).save(any(Task.class), anyBoolean());
-
-        Task testTask = createTestTask();
-
-        // Act: Enqueue event and wait for processing
-        List<Event> distributedEvents = captureDistributedEvent(testTask);
-
-        // Assert: Verify InternalError was distributed
-        assertEquals(1, distributedEvents.size(), "Should distribute exactly one event");
-        Event distributedEvent = distributedEvents.get(0);
-        assertInstanceOf(InternalError.class, distributedEvent,
-                        "TaskPersistenceException should convert to InternalError");
-
-        InternalError error = (InternalError) distributedEvent;
-        assertTrue(error.getMessage().contains(TASK_ID),
-                  "Error message should contain task ID: " + error.getMessage());
-        assertTrue(error.getMessage().contains("requires intervention"),
-                  "Permanent error message should mention intervention: " + error.getMessage());
-
-        // Assert: Verify ERROR level logging for permanent failures
+        // Assert: Verify ERROR level logging
         boolean foundErrorLog = logAppender.list.stream()
             .anyMatch(event -> event.getLevel() == Level.ERROR
                             && event.getFormattedMessage().contains(TASK_ID)
-                            && event.getFormattedMessage().contains("PERMANENT"));
-        assertTrue(foundErrorLog, "Should log permanent TaskPersistenceException at ERROR level");
+                            && event.getFormattedMessage().contains("persistence failed"));
+        assertTrue(foundErrorLog, "Should log TaskPersistenceException at ERROR level");
     }
 
     /**
