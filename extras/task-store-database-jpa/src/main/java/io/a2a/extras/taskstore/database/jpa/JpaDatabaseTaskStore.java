@@ -368,9 +368,6 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             LOGGER.debug("Returning {} tasks out of {} total", transformedTasks.size(), totalSize);
             return new ListTasksResult(transformedTasks, totalSize, transformedTasks.size(), nextPageToken);
 
-        } catch (TaskSerializationException e) {
-            // Re-throw TaskSerializationException from inner loop
-            throw e;
         } catch (PersistenceException e) {
             // Database errors from query creation, execution, or count
             LOGGER.error("Database query failed during list operation", e);
