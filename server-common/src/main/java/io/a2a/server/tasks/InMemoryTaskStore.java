@@ -25,6 +25,63 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * This is the default TaskStore used when no other implementation is provided.
  * </p>
+ *
+ * <h2>Exception Behavior</h2>
+ * InMemoryTaskStore has minimal exception scenarios compared to database-backed implementations:
+ * <ul>
+ *   <li><b>No TaskSerializationException:</b> Task objects are stored directly in memory without
+ *       serialization. No JSON parsing or schema compatibility issues can occur.</li>
+ *   <li><b>No TaskPersistenceException:</b> ConcurrentHashMap operations do not involve I/O,
+ *       network, or transactional concerns. Standard put/get/remove operations are guaranteed
+ *       to succeed under normal JVM operation.</li>
+ *   <li><b>OutOfMemoryError (potential):</b> The only failure scenario is JVM heap exhaustion if
+ *       too many tasks are stored. This is an {@link Error} (not Exception) and indicates a fatal
+ *       system condition requiring JVM restart and capacity planning.</li>
+ * </ul>
+ *
+ * <h3>Design Rationale</h3>
+ * This implementation intentionally does NOT throw {@link TaskStoreException} or its subclasses
+ * because:
+ * <ul>
+ *   <li>No serialization step exists - tasks stored as Java objects</li>
+ *   <li>No I/O or network operations that can fail</li>
+ *   <li>ConcurrentHashMap guarantees thread-safe operations without checked exceptions</li>
+ *   <li>Memory exhaustion (OutOfMemoryError) is an unrecoverable system failure, not a transient
+ *       storage error</li>
+ * </ul>
+ *
+ * <h3>Comparison to Database Implementations</h3>
+ * Database-backed implementations (e.g., JpaDatabaseTaskStore) throw exceptions for:
+ * <ul>
+ *   <li>Serialization errors (JSON parsing, schema mismatches)</li>
+ *   <li>Connection failures (network, timeouts)</li>
+ *   <li>Transaction failures (deadlocks, constraint violations)</li>
+ *   <li>Capacity issues (disk full, quota exceeded)</li>
+ * </ul>
+ * InMemoryTaskStore avoids all of these by operating entirely in-process.
+ *
+ * <h3>Memory Management Considerations</h3>
+ * Callers should monitor memory usage and implement task cleanup policies:
+ * <pre>{@code
+ * // Example: Delete finalized tasks older than 48 hours
+ * ListTasksParams params = new ListTasksParams.Builder()
+ *     .statusTimestampBefore(Instant.now().minus(Duration.ofHours(48)))
+ *     .build();
+ *
+ * List<Task> oldTasks = taskStore.list(params).tasks();
+ * oldTasks.stream()
+ *     .filter(task -> task.status().state().isFinal())
+ *     .forEach(task -> taskStore.delete(task.id()));
+ * }</pre>
+ *
+ * <h3>Thread Safety</h3>
+ * All operations are thread-safe via {@link ConcurrentHashMap}. Multiple threads can
+ * concurrently save, get, list, and delete tasks without synchronization. Last-write-wins
+ * semantics apply for concurrent {@code save()} calls to the same task ID.
+ *
+ * @see TaskStore for interface contract and exception documentation
+ * @see TaskStoreException for exception hierarchy (not thrown by this implementation)
+ * @see TaskStateProvider for queue lifecycle integration
  */
 @ApplicationScoped
 public class InMemoryTaskStore implements TaskStore, TaskStateProvider {

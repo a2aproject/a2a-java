@@ -10,6 +10,8 @@ import jakarta.inject.Inject;
 
 import io.a2a.server.tasks.PushNotificationSender;
 import io.a2a.server.tasks.TaskManager;
+import io.a2a.server.tasks.TaskPersistenceException;
+import io.a2a.server.tasks.TaskSerializationException;
 import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.A2AServerException;
@@ -41,6 +43,19 @@ import org.slf4j.LoggerFactory;
  * <b>Note:</b> This bean is eagerly initialized by {@link MainEventBusProcessorInitializer}
  * to ensure the background thread starts automatically when the application starts.
  * </p>
+ *
+ * <h2>Exception Handling</h2>
+ * TaskStore persistence failures are caught and handled gracefully:
+ * <ul>
+ *   <li>{@link TaskSerializationException} - Data corruption or schema mismatch (permanent).
+ *       Logged at ERROR level, distributed as {@link InternalError} to clients.</li>
+ *   <li>{@link TaskPersistenceException} - Database failure (transient or permanent).
+ *       Transient failures logged at WARN level, permanent at ERROR level.
+ *       InternalError message indicates retry viability.</li>
+ * </ul>
+ *
+ * <p>Processing continues after errors - the failed event is distributed as InternalError
+ * to all ChildQueues, and the MainEventBusProcessor continues consuming subsequent events.</p>
  */
 @ApplicationScoped
 public class MainEventBusProcessor implements Runnable {
@@ -293,11 +308,35 @@ public class MainEventBusProcessor implements Runnable {
             LOGGER.debug("TaskStore updated via TaskManager.process() for task {}: {} (final: {}, replicated: {})",
                         taskId, event.getClass().getSimpleName(), isFinal, isReplicated);
             return isFinal;
+
+        } catch (TaskSerializationException e) {
+            // Data corruption or schema mismatch - ALWAYS permanent
+            LOGGER.error("Task {} event serialization failed - data corruption detected: {}",
+                        taskId, e.getMessage(), e);
+            throw new InternalError("Failed to serialize task " + taskId + ": " + e.getMessage());
+
+        } catch (TaskPersistenceException e) {
+            // Database failure - check if transient for retry guidance
+            if (e.isTransient()) {
+                LOGGER.warn("Task {} event persistence failed (TRANSIENT) - retry may succeed: {}",
+                           taskId, e.getMessage());
+                throw new InternalError("Temporary storage failure for task " + taskId +
+                                       " (retry may succeed): " + e.getMessage());
+            } else {
+                LOGGER.error("Task {} event persistence failed (PERMANENT) - manual intervention required: {}",
+                            taskId, e.getMessage(), e);
+                throw new InternalError("Permanent storage failure for task " + taskId +
+                                       " (requires intervention): " + e.getMessage());
+            }
+
         } catch (InternalError e) {
+            // Already an InternalError from TaskManager validation - pass through
             LOGGER.error("Error updating TaskStore via TaskManager for task {}", taskId, e);
             // Rethrow to prevent distributing unpersisted event to clients
             throw e;
+
         } catch (Exception e) {
+            // Unexpected exception type - treat as permanent failure
             LOGGER.error("Unexpected error updating TaskStore for task {}", taskId, e);
             // Rethrow to prevent distributing unpersisted event to clients
             throw new InternalError("TaskStore persistence failed: " + e.getMessage());

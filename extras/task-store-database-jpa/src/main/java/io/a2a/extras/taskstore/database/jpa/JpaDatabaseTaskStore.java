@@ -13,6 +13,7 @@ import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceException;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 
@@ -22,6 +23,8 @@ import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.server.config.A2AConfigProvider;
 import io.a2a.server.tasks.TaskStateProvider;
 import io.a2a.server.tasks.TaskStore;
+import io.a2a.server.tasks.TaskSerializationException;
+import io.a2a.server.tasks.TaskPersistenceException;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
@@ -63,6 +66,67 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         gracePeriodSeconds = Long.parseLong(configProvider.getValue(A2A_REPLICATION_GRACE_PERIOD_SECONDS));
     }
 
+    /**
+     * Determines if a database exception represents a transient failure that may succeed on retry.
+     *
+     * <h3>Transient Errors (return true):</h3>
+     * <ul>
+     *   <li>Connection timeouts and network partitions</li>
+     *   <li>Transaction deadlocks and lock timeouts</li>
+     *   <li>Connection pool exhausted</li>
+     *   <li>Query timeouts</li>
+     * </ul>
+     *
+     * <h3>Non-Transient Errors (return false):</h3>
+     * <ul>
+     *   <li>Constraint violations (unique key, foreign key)</li>
+     *   <li>Disk full / quota exceeded</li>
+     *   <li>Permission denied</li>
+     *   <li>Schema incompatibilities</li>
+     * </ul>
+     *
+     * @param e the persistence exception to analyze
+     * @return true if retry may succeed, false if manual intervention required
+     */
+    private static boolean isTransientDatabaseError(PersistenceException e) {
+        // Check exception class hierarchy for transient indicators
+        Throwable cause = e;
+        while (cause != null) {
+            String className = cause.getClass().getName();
+            String message = cause.getMessage() != null ? cause.getMessage().toLowerCase() : "";
+
+            // Transient exception types
+            if (className.contains("Timeout") ||
+                className.contains("LockTimeout") ||
+                className.contains("QueryTimeout")) {
+                return true;
+            }
+
+            // Transient message patterns
+            if (message.contains("timeout") ||
+                message.contains("deadlock") ||
+                message.contains("connection") && (message.contains("refused") || message.contains("closed")) ||
+                message.contains("pool") && message.contains("exhausted")) {
+                return true;
+            }
+
+            // Non-transient indicators
+            if (className.contains("ConstraintViolation") ||
+                className.contains("IntegrityConstraint") ||
+                message.contains("unique constraint") ||
+                message.contains("foreign key") ||
+                message.contains("disk full") ||
+                message.contains("permission denied")) {
+                return false;
+            }
+
+            cause = cause.getCause();
+        }
+
+        // Default to non-transient for safety (don't retry unless confident)
+        return false;
+    }
+
     @Transactional
     @Override
     public void save(Task task, boolean isReplicated) {
@@ -85,7 +149,13 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             }
         } catch (JsonProcessingException e) {
             LOGGER.error("Failed to serialize task with ID: {}", task.id(), e);
-            throw new RuntimeException("Failed to serialize task with ID: " + task.id(), e);
+            throw new TaskSerializationException(task.id(),
+                "Failed to serialize task for persistence", e);
+        } catch (PersistenceException e) {
+            boolean isTransient = isTransientDatabaseError(e);
+            LOGGER.error("Database save failed for task with ID: {} (transient: {})", task.id(), isTransient, e);
+            throw new TaskPersistenceException(task.id(),
+                "Database save failed for task", e, isTransient);
         }
     }
 
@@ -93,19 +163,28 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
     @Override
     public Task get(String taskId) {
         LOGGER.debug("Retrieving task with ID: {}", taskId);
-        JpaTask jpaTask = em.find(JpaTask.class, taskId);
-        if (jpaTask == null) {
-            LOGGER.debug("Task not found with ID: {}", taskId);
-            return null;
-        }
-
         try {
-            Task task = jpaTask.getTask();
-            LOGGER.debug("Successfully retrieved task with ID: {}", taskId);
-            return task;
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to deserialize task with ID: {}", taskId, e);
-            throw new RuntimeException("Failed to deserialize task with ID: " + taskId, e);
+            JpaTask jpaTask = em.find(JpaTask.class, taskId);
+            if (jpaTask == null) {
+                LOGGER.debug("Task not found with ID: {}", taskId);
+                return null;
+            }
+
+            try {
+                Task task = jpaTask.getTask();
+                LOGGER.debug("Successfully retrieved task with ID: {}", taskId);
+                return task;
+            } catch (JsonProcessingException e) {
+                LOGGER.error("Failed to deserialize task with ID: {}", taskId, e);
+                throw new TaskSerializationException(taskId,
+                    "Failed to deserialize task from database", e);
+            }
+
+        } catch (PersistenceException e) {
+            boolean isTransient = isTransientDatabaseError(e);
+            LOGGER.error("Database retrieval failed for task with ID: {} (transient: {})", taskId, isTransient, e);
+            throw new TaskPersistenceException(taskId,
+                "Database retrieval failed for task", e, isTransient);
         }
     }
 
@@ -113,12 +192,19 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
     @Override
     public void delete(String taskId) {
         LOGGER.debug("Deleting task with ID: {}", taskId);
-        JpaTask jpaTask = em.find(JpaTask.class, taskId);
-        if (jpaTask != null) {
-            em.remove(jpaTask);
-            LOGGER.debug("Successfully deleted task with ID: {}", taskId);
-        } else {
-            LOGGER.debug("Task not found for deletion with ID: {}", taskId);
+        try {
+            JpaTask jpaTask = em.find(JpaTask.class, taskId);
+            if (jpaTask != null) {
+                em.remove(jpaTask);
+                LOGGER.debug("Successfully deleted task with ID: {}", taskId);
+            } else {
+                LOGGER.debug("Task not found for deletion with ID: {}", taskId);
+            }
+        } catch (PersistenceException e) {
+            boolean isTransient = isTransientDatabaseError(e);
+            LOGGER.error("Database deletion failed for task with ID: {} (transient: {})", taskId, isTransient, e);
+            throw new TaskPersistenceException(taskId,
+                "Database deletion failed for task", e, isTransient);
         }
     }
 
@@ -231,14 +317,15 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         LOGGER.debug("Listing tasks with params: contextId={}, status={}, pageSize={}, pageToken={}",
                 params.contextId(), params.status(), params.pageSize(), params.pageToken());
 
-        // Parse pageToken once at the beginning
-        PageToken pageToken = PageToken.fromString(params.pageToken());
-        Instant tokenTimestamp = pageToken != null ? pageToken.timestamp() : null;
-        String tokenId = pageToken != null ? pageToken.id() : null;
+        try {
+            // Parse pageToken once at the beginning
+            PageToken pageToken = PageToken.fromString(params.pageToken());
+            Instant tokenTimestamp = pageToken != null ? pageToken.timestamp() : null;
+            String tokenId = pageToken != null ? pageToken.id() : null;
 
-        // Build dynamic JPQL query with WHERE clauses for filtering
-        StringBuilder queryBuilder = new StringBuilder("SELECT t FROM JpaTask t WHERE 1=1");
-        StringBuilder countQueryBuilder = new StringBuilder("SELECT COUNT(t) FROM JpaTask t WHERE 1=1");
+            // Build dynamic JPQL query with WHERE clauses for filtering
+            StringBuilder queryBuilder = new StringBuilder("SELECT t FROM JpaTask t WHERE 1=1");
+            StringBuilder countQueryBuilder = new StringBuilder("SELECT COUNT(t) FROM JpaTask t WHERE 1=1");
 
         // Apply contextId filter using denormalized column
         if (params.contextId() != null) {
@@ -311,16 +398,17 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         }
         int totalSize = countQuery.getSingleResult().intValue();
 
-        // Deserialize tasks from JSON
-        List<Task> tasks = new ArrayList<>();
-        for (JpaTask jpaTask : jpaTasksPage) {
-            try {
-                tasks.add(jpaTask.getTask());
-            } catch (JsonProcessingException e) {
-                LOGGER.error("Failed to deserialize task with ID: {}", jpaTask.getId(), e);
-                throw new RuntimeException("Failed to deserialize task with ID: " + jpaTask.getId(), e);
+            // Deserialize tasks from JSON
+            List<Task> tasks = new ArrayList<>();
+            for (JpaTask jpaTask : jpaTasksPage) {
+                try {
+                    tasks.add(jpaTask.getTask());
+                } catch (JsonProcessingException e) {
+                    LOGGER.error("Failed to deserialize task with ID: {}", jpaTask.getId(), e);
+                    throw new TaskSerializationException(jpaTask.getId(),
+                        "Failed to deserialize task during list operation", e);
+                }
             }
-        }
 
         // Determine next page token (timestamp:ID of last task if there are more results)
         // Format: "timestamp_millis:taskId" for keyset pagination
@@ -336,12 +424,23 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
         int historyLength = params.getEffectiveHistoryLength();
         boolean includeArtifacts = params.shouldIncludeArtifacts();
 
-        List<Task> transformedTasks = tasks.stream()
-                .map(task -> transformTask(task, historyLength, includeArtifacts))
-                .toList();
+            List<Task> transformedTasks = tasks.stream()
+                    .map(task -> transformTask(task, historyLength, includeArtifacts))
+                    .toList();
 
-        LOGGER.debug("Returning {} tasks out of {} total", transformedTasks.size(), totalSize);
-        return new ListTasksResult(transformedTasks, totalSize, transformedTasks.size(), nextPageToken);
+            LOGGER.debug("Returning {} tasks out of {} total", transformedTasks.size(), totalSize);
+            return new ListTasksResult(transformedTasks, totalSize, transformedTasks.size(), nextPageToken);
+
+        } catch (TaskSerializationException e) {
+            // Re-throw TaskSerializationException from inner loop
+            throw e;
+        } catch (PersistenceException e) {
+            // Database errors from query creation, execution, or count
+            boolean isTransient = isTransientDatabaseError(e);
+            LOGGER.error("Database query failed during list operation (transient: {})", isTransient, e);
+            throw new TaskPersistenceException(null,  // No single taskId for list operation
+                "Database query failed during list operation", e, isTransient);
+        }
     }
 
     private Task transformTask(Task task, int historyLength, boolean includeArtifacts) {
