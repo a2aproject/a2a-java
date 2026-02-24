@@ -225,6 +225,24 @@ public class RequestContext {
     }
 
     /**
+     * Extracts all text content from the message and joins with the newline delimiter.
+     * <p>
+     * This is a convenience method for getting text input from messages that may contain
+     * multiple text parts. Non-text parts (images, etc.) are ignored.
+     * <p>
+     * <b>Examples:</b>
+     * <pre>{@code
+     * // Join with newlines (common for multi-paragraph input)
+     * String text = context.getUserInput();
+     * }</pre>
+     *
+     * @return all text parts joined with newline, or empty string if no message
+     */
+    public String getUserInput() {
+        return getUserInput("\n");
+    }
+
+    /**
      * Extracts all text content from the message and joins with the specified delimiter.
      * <p>
      * This is a convenience method for getting text input from messages that may contain
@@ -233,7 +251,7 @@ public class RequestContext {
      * <b>Examples:</b>
      * <pre>{@code
      * // Join with newlines (common for multi-paragraph input)
-     * String text = context.getUserInput("\n");
+     * String text = context.getUserInput();
      *
      * // Join with spaces (common for single-line input)
      * String text = context.getUserInput(" ");
@@ -245,14 +263,11 @@ public class RequestContext {
      * @param delimiter the string to insert between text parts (null defaults to "\n")
      * @return all text parts joined with delimiter, or empty string if no message
      */
-    public String getUserInput(String delimiter) {
+    public String getUserInput(@Nullable String delimiter) {
         if (params == null) {
             return "";
         }
-        if (delimiter == null) {
-            delimiter = "\n";
-        }
-        return getMessageText(params.message(), delimiter);
+        return getMessageText(params.message(), delimiter == null ? "\n" : delimiter);
     }
 
     /**
