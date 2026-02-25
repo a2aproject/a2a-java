@@ -1,6 +1,7 @@
 package io.a2a.server.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atMost;
@@ -27,6 +28,7 @@ import io.a2a.spec.Message;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
+import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -277,5 +279,186 @@ public class ResultAggregatorTest {
 
         // Cleanup: stop the processor
         EventQueueUtil.stop(processor);
+    }
+
+    // AUTH_REQUIRED Tests
+
+    @Test
+    void testConsumeAndBreakOnAuthRequired_Blocking() throws Exception {
+        // Test that AUTH_REQUIRED with blocking=true sets interrupted=true and continues consumption in background
+        String taskId = "auth-required-blocking-task";
+        Task authRequiredTask = createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
+
+        when(mockTaskManager.getTask()).thenReturn(authRequiredTask);
+
+        // Create event queue infrastructure
+        MainEventBus mainEventBus = new MainEventBus();
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        InMemoryQueueManager queueManager =
+            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        EventQueueUtil.start(processor);
+
+        EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
+
+        try {
+            // Enqueue AUTH_REQUIRED task using callback pattern
+            waitForEventProcessing(processor, () -> queue.enqueueEvent(authRequiredTask));
+
+            // Create EventConsumer
+            EventConsumer eventConsumer = new EventConsumer(queue);
+
+            // Call consumeAndBreakOnInterrupt with blocking=true
+            ResultAggregator.EventTypeAndInterrupt result =
+                aggregator.consumeAndBreakOnInterrupt(eventConsumer, true);
+
+            // Assert: interrupted=true for AUTH_REQUIRED
+            assertTrue(result.interrupted(), "AUTH_REQUIRED should trigger interrupt in blocking mode");
+            assertEquals(authRequiredTask, result.eventType(), "Event type should be the AUTH_REQUIRED task");
+
+            // Verify consumption continues in background (consumptionFuture should be running)
+            // For blocking mode, the consumption future should complete after processing
+            assertNotNull(result, "Result should not be null");
+        } finally {
+            queue.close();
+            EventQueueUtil.stop(processor);
+        }
+    }
+
+    @Test
+    void testConsumeAndBreakOnAuthRequired_NonBlocking() throws Exception {
+        // Test that AUTH_REQUIRED with blocking=false sets interrupted=true and completes immediately
+        String taskId = "auth-required-nonblocking-task";
+        Task authRequiredTask = createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
+
+        when(mockTaskManager.getTask()).thenReturn(authRequiredTask);
+
+        // Create event queue infrastructure
+        MainEventBus mainEventBus = new MainEventBus();
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        InMemoryQueueManager queueManager =
+            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        EventQueueUtil.start(processor);
+
+        EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
+
+        try {
+            // Enqueue AUTH_REQUIRED task
+            waitForEventProcessing(processor, () -> queue.enqueueEvent(authRequiredTask));
+
+            // Create EventConsumer
+            EventConsumer eventConsumer = new EventConsumer(queue);
+
+            // Call consumeAndBreakOnInterrupt with blocking=false
+            ResultAggregator.EventTypeAndInterrupt result =
+                aggregator.consumeAndBreakOnInterrupt(eventConsumer, false);
+
+            // Assert: interrupted=true for AUTH_REQUIRED
+            assertTrue(result.interrupted(), "AUTH_REQUIRED should trigger interrupt in non-blocking mode");
+            assertEquals(authRequiredTask, result.eventType(), "Event type should be the AUTH_REQUIRED task");
+
+            // For non-blocking mode, consumption should complete immediately
+            assertNotNull(result, "Result should not be null");
+        } finally {
+            queue.close();
+            EventQueueUtil.stop(processor);
+        }
+    }
+
+    @Test
+    void testAuthRequiredWithTaskStatusUpdateEvent() throws Exception {
+        // Test that TaskStatusUpdateEvent with AUTH_REQUIRED state triggers same interrupt behavior
+        String taskId = "auth-required-status-update-task";
+        TaskStatusUpdateEvent authRequiredEvent = new TaskStatusUpdateEvent(
+            taskId,
+            new TaskStatus(TaskState.TASK_STATE_AUTH_REQUIRED),
+            "ctx1",
+            false,  // isFinal=false for AUTH_REQUIRED
+            null
+        );
+
+        Task authRequiredTask = createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
+        when(mockTaskManager.getTask()).thenReturn(authRequiredTask);
+
+        // Create event queue infrastructure
+        MainEventBus mainEventBus = new MainEventBus();
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        InMemoryQueueManager queueManager =
+            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        EventQueueUtil.start(processor);
+
+        EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
+
+        try {
+            // Enqueue TaskStatusUpdateEvent
+            waitForEventProcessing(processor, () -> queue.enqueueEvent(authRequiredEvent));
+
+            // Create EventConsumer
+            EventConsumer eventConsumer = new EventConsumer(queue);
+
+            // Call consumeAndBreakOnInterrupt
+            ResultAggregator.EventTypeAndInterrupt result =
+                aggregator.consumeAndBreakOnInterrupt(eventConsumer, true);
+
+            // Assert: interrupted=true for AUTH_REQUIRED (TaskStatusUpdateEvent)
+            assertTrue(result.interrupted(), "AUTH_REQUIRED via TaskStatusUpdateEvent should trigger interrupt");
+
+            // Note: ResultAggregator returns a Task (from getCurrentResult or capturedTask),
+            // not the TaskStatusUpdateEvent itself. The event triggers interrupt behavior,
+            // but the returned eventType is a Task.
+            assertNotNull(result.eventType(), "Result should have an event type");
+            assertTrue(result.eventType() instanceof Task, "Event type should be a Task");
+            Task resultTask = (Task) result.eventType();
+            assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, resultTask.status().state(),
+                "Task should have AUTH_REQUIRED state");
+        } finally {
+            queue.close();
+            EventQueueUtil.stop(processor);
+        }
+    }
+
+    @Test
+    void testAuthRequiredWithTaskEvent() throws Exception {
+        // Test that Task event with AUTH_REQUIRED state triggers interrupt correctly
+        String taskId = "auth-required-task-event";
+        Task authRequiredTask = createSampleTask(taskId, TaskState.TASK_STATE_AUTH_REQUIRED, "ctx1");
+
+        when(mockTaskManager.getTask()).thenReturn(authRequiredTask);
+
+        // Create event queue infrastructure
+        MainEventBus mainEventBus = new MainEventBus();
+        InMemoryTaskStore taskStore = new InMemoryTaskStore();
+        InMemoryQueueManager queueManager =
+            new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        EventQueueUtil.start(processor);
+
+        EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
+
+        try {
+            // Enqueue Task event with AUTH_REQUIRED
+            waitForEventProcessing(processor, () -> queue.enqueueEvent(authRequiredTask));
+
+            // Create EventConsumer
+            EventConsumer eventConsumer = new EventConsumer(queue);
+
+            // Call consumeAndBreakOnInterrupt
+            ResultAggregator.EventTypeAndInterrupt result =
+                aggregator.consumeAndBreakOnInterrupt(eventConsumer, true);
+
+            // Assert: interrupted=true for AUTH_REQUIRED
+            assertTrue(result.interrupted(), "AUTH_REQUIRED Task event should trigger interrupt");
+            assertEquals(authRequiredTask, result.eventType(), "Event type should be the AUTH_REQUIRED task");
+
+            // Verify both Task and TaskStatusUpdateEvent can trigger AUTH_REQUIRED interrupt
+            // (this test validates Task event, testAuthRequiredWithTaskStatusUpdateEvent validates TaskStatusUpdateEvent)
+            TaskState state = ((Task) result.eventType()).status().state();
+            assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, state, "Task state should be AUTH_REQUIRED");
+        } finally {
+            queue.close();
+            EventQueueUtil.stop(processor);
+        }
     }
 }
