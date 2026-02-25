@@ -498,14 +498,11 @@ public class DefaultRequestHandler implements RequestHandler {
             // Check if task requires immediate return (AUTH_REQUIRED)
             // AUTH_REQUIRED expects the client to receive it immediately and handle it out-of-band,
             // while the agent continues executing in the background
-            boolean requiresImmediateReturn = false;
-            if (kind instanceof Task task) {
-                io.a2a.spec.TaskState state = task.status().state();
-                requiresImmediateReturn = state == io.a2a.spec.TaskState.TASK_STATE_AUTH_REQUIRED;
-                if (requiresImmediateReturn) {
-                    LOGGER.debug("DefaultRequestHandler: Task {} in AUTH_REQUIRED state, skipping fire-and-forget handling",
-                            taskId.get());
-                }
+            boolean requiresImmediateReturn = kind instanceof Task task &&
+                    task.status().state() == io.a2a.spec.TaskState.TASK_STATE_AUTH_REQUIRED;
+            if (requiresImmediateReturn) {
+                LOGGER.debug("DefaultRequestHandler: Task {} in AUTH_REQUIRED state, skipping fire-and-forget handling",
+                        taskId.get());
             }
 
             if (blocking && interruptedOrNonBlocking && !requiresImmediateReturn) {

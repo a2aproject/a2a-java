@@ -1690,7 +1690,13 @@ public abstract class AbstractA2AServerTest {
                 if (event instanceof TaskEvent te) {
                     state = te.getTask().status().state();
                 } else if (event instanceof TaskUpdateEvent tue) {
-                    state = tue.getTask().status().state();
+                    io.a2a.spec.UpdateEvent updateEvent = tue.getUpdateEvent();
+                    if (updateEvent instanceof TaskStatusUpdateEvent statusUpdate) {
+                        state = statusUpdate.status().state();
+                    } else {
+                        // Ignore other update events like TaskArtifactUpdateEvent as they don't change the task state
+                        return;
+                    }
                 } else {
                     completionUnexpectedEvent.set(true);
                     return;
