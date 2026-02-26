@@ -7,19 +7,18 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:Task]
- * Task is the core unit of action for A2A. It has a current status
+ * `Task` is the core unit of action for A2A. It has a current status
  * and when results are created for the task they are stored in the
  * artifact. If there are multiple turns for a task, these are stored in
  * history.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.Task}
+ * Protobuf type {@code lf.a2a.v1.Task}
  */
 @com.google.protobuf.Generated
 public final class Task extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.Task)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.Task)
     TaskOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -44,13 +43,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Task_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Task_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Task_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Task_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.Task.class, io.a2a.grpc.Task.Builder.class);
   }
@@ -158,10 +157,10 @@ private static final long serialVersionUID = 0L;
   private io.a2a.grpc.TaskStatus status_;
   /**
    * <pre>
-   * The current status of a Task, including state and a message.
+   * The current status of a `Task`, including `state` and a `message`.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the status field is set.
    */
   @java.lang.Override
@@ -170,10 +169,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The current status of a Task, including state and a message.
+   * The current status of a `Task`, including `state` and a `message`.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The status.
    */
   @java.lang.Override
@@ -182,10 +181,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The current status of a Task, including state and a message.
+   * The current status of a `Task`, including `state` and a `message`.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
@@ -197,10 +196,10 @@ private static final long serialVersionUID = 0L;
   private java.util.List<io.a2a.grpc.Artifact> artifacts_;
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Artifact> getArtifactsList() {
@@ -208,10 +207,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.ArtifactOrBuilder> 
@@ -220,10 +219,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public int getArtifactsCount() {
@@ -231,10 +230,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Artifact getArtifacts(int index) {
@@ -242,10 +241,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.ArtifactOrBuilder getArtifactsOrBuilder(
@@ -259,10 +258,10 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Message> getHistoryList() {
@@ -271,10 +270,10 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.MessageOrBuilder> 
@@ -284,10 +283,10 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public int getHistoryCount() {
@@ -296,10 +295,10 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Message getHistory(int index) {
@@ -308,10 +307,10 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.MessageOrBuilder getHistoryOrBuilder(
@@ -586,28 +585,27 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:Task]
-   * Task is the core unit of action for A2A. It has a current status
+   * `Task` is the core unit of action for A2A. It has a current status
    * and when results are created for the task they are stored in the
    * artifact. If there are multiple turns for a task, these are stored in
    * history.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.Task}
+   * Protobuf type {@code lf.a2a.v1.Task}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.Task)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.Task)
       io.a2a.grpc.TaskOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Task_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Task_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Task_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Task_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.Task.class, io.a2a.grpc.Task.Builder.class);
     }
@@ -667,7 +665,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Task_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Task_descriptor;
     }
 
     @java.lang.Override
@@ -1110,10 +1108,10 @@ private static final long serialVersionUID = 0L;
         io.a2a.grpc.TaskStatus, io.a2a.grpc.TaskStatus.Builder, io.a2a.grpc.TaskStatusOrBuilder> statusBuilder_;
     /**
      * <pre>
-     * The current status of a Task, including state and a message.
+     * The current status of a `Task`, including `state` and a `message`.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
@@ -1121,10 +1119,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current status of a Task, including state and a message.
+     * The current status of a `Task`, including `state` and a `message`.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The status.
      */
     public io.a2a.grpc.TaskStatus getStatus() {
@@ -1136,10 +1134,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current status of a Task, including state and a message.
+     * The current status of a `Task`, including `state` and a `message`.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -1156,10 +1154,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current status of a Task, including state and a message.
+     * The current status of a `Task`, including `state` and a `message`.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setStatus(
         io.a2a.grpc.TaskStatus.Builder builderForValue) {
@@ -1174,10 +1172,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current status of a Task, including state and a message.
+     * The current status of a `Task`, including `state` and a `message`.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -1199,10 +1197,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current status of a Task, including state and a message.
+     * The current status of a `Task`, including `state` and a `message`.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearStatus() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -1216,10 +1214,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current status of a Task, including state and a message.
+     * The current status of a `Task`, including `state` and a `message`.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskStatus.Builder getStatusBuilder() {
       bitField0_ |= 0x00000004;
@@ -1228,10 +1226,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current status of a Task, including state and a message.
+     * The current status of a `Task`, including `state` and a `message`.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
       if (statusBuilder_ != null) {
@@ -1243,10 +1241,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The current status of a Task, including state and a message.
+     * The current status of a `Task`, including `state` and a `message`.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskStatus, io.a2a.grpc.TaskStatus.Builder, io.a2a.grpc.TaskStatusOrBuilder> 
@@ -1276,10 +1274,10 @@ private static final long serialVersionUID = 0L;
 
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public java.util.List<io.a2a.grpc.Artifact> getArtifactsList() {
       if (artifactsBuilder_ == null) {
@@ -1290,10 +1288,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public int getArtifactsCount() {
       if (artifactsBuilder_ == null) {
@@ -1304,10 +1302,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.Artifact getArtifacts(int index) {
       if (artifactsBuilder_ == null) {
@@ -1318,10 +1316,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder setArtifacts(
         int index, io.a2a.grpc.Artifact value) {
@@ -1339,10 +1337,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder setArtifacts(
         int index, io.a2a.grpc.Artifact.Builder builderForValue) {
@@ -1357,10 +1355,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addArtifacts(io.a2a.grpc.Artifact value) {
       if (artifactsBuilder_ == null) {
@@ -1377,10 +1375,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addArtifacts(
         int index, io.a2a.grpc.Artifact value) {
@@ -1398,10 +1396,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addArtifacts(
         io.a2a.grpc.Artifact.Builder builderForValue) {
@@ -1416,10 +1414,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addArtifacts(
         int index, io.a2a.grpc.Artifact.Builder builderForValue) {
@@ -1434,10 +1432,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder addAllArtifacts(
         java.lang.Iterable<? extends io.a2a.grpc.Artifact> values) {
@@ -1453,10 +1451,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder clearArtifacts() {
       if (artifactsBuilder_ == null) {
@@ -1470,10 +1468,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public Builder removeArtifacts(int index) {
       if (artifactsBuilder_ == null) {
@@ -1487,10 +1485,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.Artifact.Builder getArtifactsBuilder(
         int index) {
@@ -1498,10 +1496,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.ArtifactOrBuilder getArtifactsOrBuilder(
         int index) {
@@ -1512,10 +1510,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public java.util.List<? extends io.a2a.grpc.ArtifactOrBuilder> 
          getArtifactsOrBuilderList() {
@@ -1527,10 +1525,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.Artifact.Builder addArtifactsBuilder() {
       return internalGetArtifactsFieldBuilder().addBuilder(
@@ -1538,10 +1536,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public io.a2a.grpc.Artifact.Builder addArtifactsBuilder(
         int index) {
@@ -1550,10 +1548,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A set of output artifacts for a Task.
+     * A set of output artifacts for a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+     * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
      */
     public java.util.List<io.a2a.grpc.Artifact.Builder> 
          getArtifactsBuilderList() {
@@ -1589,10 +1587,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public java.util.List<io.a2a.grpc.Message> getHistoryList() {
       if (historyBuilder_ == null) {
@@ -1604,10 +1602,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public int getHistoryCount() {
       if (historyBuilder_ == null) {
@@ -1619,10 +1617,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.Message getHistory(int index) {
       if (historyBuilder_ == null) {
@@ -1634,10 +1632,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public Builder setHistory(
         int index, io.a2a.grpc.Message value) {
@@ -1656,10 +1654,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public Builder setHistory(
         int index, io.a2a.grpc.Message.Builder builderForValue) {
@@ -1675,10 +1673,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public Builder addHistory(io.a2a.grpc.Message value) {
       if (historyBuilder_ == null) {
@@ -1696,10 +1694,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public Builder addHistory(
         int index, io.a2a.grpc.Message value) {
@@ -1718,10 +1716,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public Builder addHistory(
         io.a2a.grpc.Message.Builder builderForValue) {
@@ -1737,10 +1735,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public Builder addHistory(
         int index, io.a2a.grpc.Message.Builder builderForValue) {
@@ -1756,10 +1754,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public Builder addAllHistory(
         java.lang.Iterable<? extends io.a2a.grpc.Message> values) {
@@ -1776,10 +1774,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public Builder clearHistory() {
       if (historyBuilder_ == null) {
@@ -1794,10 +1792,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public Builder removeHistory(int index) {
       if (historyBuilder_ == null) {
@@ -1812,10 +1810,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.Message.Builder getHistoryBuilder(
         int index) {
@@ -1824,10 +1822,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.MessageOrBuilder getHistoryOrBuilder(
         int index) {
@@ -1839,10 +1837,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public java.util.List<? extends io.a2a.grpc.MessageOrBuilder> 
          getHistoryOrBuilderList() {
@@ -1855,10 +1853,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.Message.Builder addHistoryBuilder() {
       return internalGetHistoryFieldBuilder().addBuilder(
@@ -1867,10 +1865,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public io.a2a.grpc.Message.Builder addHistoryBuilder(
         int index) {
@@ -1880,10 +1878,10 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-     * The history of interactions from a task.
+     * The history of interactions from a `Task`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Message history = 5;</code>
+     * <code>repeated .lf.a2a.v1.Message history = 5;</code>
      */
     public java.util.List<io.a2a.grpc.Message.Builder> 
          getHistoryBuilderList() {
@@ -2070,10 +2068,10 @@ private static final long serialVersionUID = 0L;
       return metadataBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.Task)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.Task)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.Task)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.Task)
   private static final io.a2a.grpc.Task DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.Task();

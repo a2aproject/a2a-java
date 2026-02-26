@@ -2,6 +2,8 @@ package io.a2a.spec;
 
 import io.a2a.util.Assert;
 import io.a2a.util.Utils;
+import java.util.Collections;
+import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -14,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  * @param tenant optional tenant, provided as a path parameter.
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record TaskIdParams(String id, String tenant) {
+public record TaskIdParams(String id, String tenant, @Nullable Map<String, Object> metadata) {
 
     /**
      * Compact constructor for validation.
@@ -34,7 +36,7 @@ public record TaskIdParams(String id, String tenant) {
      * @param id the task identifier (required)
      */
     public TaskIdParams(String id) {
-        this(id, "");
+        this(id, "", Collections.emptyMap());
     }
 
     /**
@@ -52,6 +54,7 @@ public record TaskIdParams(String id, String tenant) {
     public static class Builder {
         private @Nullable String id;
         private @Nullable String tenant;
+        private @Nullable Map<String, Object> metadata;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -82,6 +85,17 @@ public record TaskIdParams(String id, String tenant) {
         }
 
         /**
+         * Sets optional metadata for the request.
+         *
+         * @param metadata arbitrary key-value metadata
+         * @return this builder
+         */
+        public Builder metadata(@Nullable Map<String, Object> metadata) {
+            this.metadata = Map.copyOf(metadata);
+            return this;
+        }
+
+        /**
          * Builds the TaskIdParams.
          *
          * @return a new TaskIdParams instance
@@ -90,7 +104,8 @@ public record TaskIdParams(String id, String tenant) {
         public TaskIdParams build() {
             return new TaskIdParams(
                 Assert.checkNotNullParam("id", id),
-                Utils.defaultIfNull(tenant,"")
+                Utils.defaultIfNull(tenant,""),
+                metadata
             );
         }
     }

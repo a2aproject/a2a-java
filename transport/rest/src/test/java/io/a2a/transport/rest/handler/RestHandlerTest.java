@@ -252,8 +252,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         String requestBody = """
             {
               "taskId": "%s",
-              "configId": "default-config-id",
               "config": {
+                "id": "default-config-id",
                 "url": "https://example.com/callback",
                 "authentication": {
                   "scheme": "jwt"
@@ -297,8 +297,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         String createRequestBody = """
             {
               "taskId": "%s",
-              "configId": "default-config-id",
               "config": {
+                "id": "default-config-id",
                 "url": "https://example.com/callback",
                 "authentication": {
                   "scheme": "jwt"

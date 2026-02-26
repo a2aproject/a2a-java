@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface OAuth2SecuritySchemeOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.OAuth2SecurityScheme)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.OAuth2SecurityScheme)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -35,7 +35,7 @@ public interface OAuth2SecuritySchemeOrBuilder extends
    * An object containing configuration information for the supported OAuth 2.0 flows.
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the flows field is set.
    */
   boolean hasFlows();
@@ -44,7 +44,7 @@ public interface OAuth2SecuritySchemeOrBuilder extends
    * An object containing configuration information for the supported OAuth 2.0 flows.
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The flows.
    */
   io.a2a.grpc.OAuthFlows getFlows();
@@ -53,14 +53,14 @@ public interface OAuth2SecuritySchemeOrBuilder extends
    * An object containing configuration information for the supported OAuth 2.0 flows.
    * </pre>
    *
-   * <code>.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.OAuthFlows flows = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.OAuthFlowsOrBuilder getFlowsOrBuilder();
 
   /**
    * <pre>
-   * URL to the oauth2 authorization server metadata
-   * RFC8414 (https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+   * URL to the OAuth2 authorization server metadata [RFC 8414](https://datatracker.ietf.org/doc/html/rfc8414).
+   * TLS is required.
    * </pre>
    *
    * <code>string oauth2_metadata_url = 3;</code>
@@ -69,8 +69,8 @@ public interface OAuth2SecuritySchemeOrBuilder extends
   java.lang.String getOauth2MetadataUrl();
   /**
    * <pre>
-   * URL to the oauth2 authorization server metadata
-   * RFC8414 (https://datatracker.ietf.org/doc/html/rfc8414). TLS is required.
+   * URL to the OAuth2 authorization server metadata [RFC 8414](https://datatracker.ietf.org/doc/html/rfc8414).
+   * TLS is required.
    * </pre>
    *
    * <code>string oauth2_metadata_url = 3;</code>

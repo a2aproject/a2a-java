@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:AgentSkill]
  * Represents a distinct capability or function that an agent can perform.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.AgentSkill}
+ * Protobuf type {@code lf.a2a.v1.AgentSkill}
  */
 @com.google.protobuf.Generated
 public final class AgentSkill extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.AgentSkill)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.AgentSkill)
     AgentSkillOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -49,13 +48,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentSkill_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentSkill_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentSkill_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentSkill_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.AgentSkill.class, io.a2a.grpc.AgentSkill.Builder.class);
   }
@@ -421,7 +420,7 @@ private static final long serialVersionUID = 0L;
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.SecurityRequirement> getSecurityRequirementsList() {
@@ -432,7 +431,7 @@ private static final long serialVersionUID = 0L;
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
@@ -444,7 +443,7 @@ private static final long serialVersionUID = 0L;
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
   public int getSecurityRequirementsCount() {
@@ -455,7 +454,7 @@ private static final long serialVersionUID = 0L;
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index) {
@@ -466,7 +465,7 @@ private static final long serialVersionUID = 0L;
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
@@ -733,25 +732,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:AgentSkill]
    * Represents a distinct capability or function that an agent can perform.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.AgentSkill}
+   * Protobuf type {@code lf.a2a.v1.AgentSkill}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.AgentSkill)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.AgentSkill)
       io.a2a.grpc.AgentSkillOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentSkill_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentSkill_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentSkill_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentSkill_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.AgentSkill.class, io.a2a.grpc.AgentSkill.Builder.class);
     }
@@ -794,7 +792,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentSkill_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentSkill_descriptor;
     }
 
     @java.lang.Override
@@ -1930,7 +1928,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public java.util.List<io.a2a.grpc.SecurityRequirement> getSecurityRequirementsList() {
       if (securityRequirementsBuilder_ == null) {
@@ -1944,7 +1942,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public int getSecurityRequirementsCount() {
       if (securityRequirementsBuilder_ == null) {
@@ -1958,7 +1956,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index) {
       if (securityRequirementsBuilder_ == null) {
@@ -1972,7 +1970,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public Builder setSecurityRequirements(
         int index, io.a2a.grpc.SecurityRequirement value) {
@@ -1993,7 +1991,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public Builder setSecurityRequirements(
         int index, io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
@@ -2011,7 +2009,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public Builder addSecurityRequirements(io.a2a.grpc.SecurityRequirement value) {
       if (securityRequirementsBuilder_ == null) {
@@ -2031,7 +2029,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public Builder addSecurityRequirements(
         int index, io.a2a.grpc.SecurityRequirement value) {
@@ -2052,7 +2050,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public Builder addSecurityRequirements(
         io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
@@ -2070,7 +2068,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public Builder addSecurityRequirements(
         int index, io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
@@ -2088,7 +2086,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public Builder addAllSecurityRequirements(
         java.lang.Iterable<? extends io.a2a.grpc.SecurityRequirement> values) {
@@ -2107,7 +2105,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public Builder clearSecurityRequirements() {
       if (securityRequirementsBuilder_ == null) {
@@ -2124,7 +2122,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public Builder removeSecurityRequirements(int index) {
       if (securityRequirementsBuilder_ == null) {
@@ -2141,7 +2139,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public io.a2a.grpc.SecurityRequirement.Builder getSecurityRequirementsBuilder(
         int index) {
@@ -2152,7 +2150,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
         int index) {
@@ -2166,7 +2164,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
          getSecurityRequirementsOrBuilderList() {
@@ -2181,7 +2179,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public io.a2a.grpc.SecurityRequirement.Builder addSecurityRequirementsBuilder() {
       return internalGetSecurityRequirementsFieldBuilder().addBuilder(
@@ -2192,7 +2190,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public io.a2a.grpc.SecurityRequirement.Builder addSecurityRequirementsBuilder(
         int index) {
@@ -2204,7 +2202,7 @@ private static final long serialVersionUID = 0L;
      * Security schemes necessary for this skill.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
      */
     public java.util.List<io.a2a.grpc.SecurityRequirement.Builder> 
          getSecurityRequirementsBuilderList() {
@@ -2225,10 +2223,10 @@ private static final long serialVersionUID = 0L;
       return securityRequirementsBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.AgentSkill)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.AgentSkill)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.AgentSkill)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.AgentSkill)
   private static final io.a2a.grpc.AgentSkill DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.AgentSkill();

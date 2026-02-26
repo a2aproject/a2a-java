@@ -7,22 +7,25 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:Role]
  * Defines the sender of a message in A2A protocol communication.
  * </pre>
  *
- * Protobuf enum {@code a2a.v1.Role}
+ * Protobuf enum {@code lf.a2a.v1.Role}
  */
 @com.google.protobuf.Generated
 public enum Role
     implements com.google.protobuf.ProtocolMessageEnum {
   /**
+   * <pre>
+   * The role is unspecified.
+   * </pre>
+   *
    * <code>ROLE_UNSPECIFIED = 0;</code>
    */
   ROLE_UNSPECIFIED(0),
   /**
    * <pre>
-   * USER role refers to communication from the client to the server.
+   * The message is from the client to the server.
    * </pre>
    *
    * <code>ROLE_USER = 1;</code>
@@ -30,7 +33,7 @@ public enum Role
   ROLE_USER(1),
   /**
    * <pre>
-   * AGENT role refers to communication from the server to the client.
+   * The message is from the server to the client.
    * </pre>
    *
    * <code>ROLE_AGENT = 2;</code>
@@ -49,12 +52,16 @@ public enum Role
       "Role");
   }
   /**
+   * <pre>
+   * The role is unspecified.
+   * </pre>
+   *
    * <code>ROLE_UNSPECIFIED = 0;</code>
    */
   public static final int ROLE_UNSPECIFIED_VALUE = 0;
   /**
    * <pre>
-   * USER role refers to communication from the client to the server.
+   * The message is from the client to the server.
    * </pre>
    *
    * <code>ROLE_USER = 1;</code>
@@ -62,7 +69,7 @@ public enum Role
   public static final int ROLE_USER_VALUE = 1;
   /**
    * <pre>
-   * AGENT role refers to communication from the server to the client.
+   * The message is from the server to the client.
    * </pre>
    *
    * <code>ROLE_AGENT = 2;</code>
@@ -150,6 +157,6 @@ public enum Role
     this.value = value;
   }
 
-  // @@protoc_insertion_point(enum_scope:a2a.v1.Role)
+  // @@protoc_insertion_point(enum_scope:lf.a2a.v1.Role)
 }
 

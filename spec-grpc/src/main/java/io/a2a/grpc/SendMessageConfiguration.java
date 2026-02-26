@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:SendMessageConfiguration]
  * Configuration of a send message request.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.SendMessageConfiguration}
+ * Protobuf type {@code lf.a2a.v1.SendMessageConfiguration}
  */
 @com.google.protobuf.Generated
 public final class SendMessageConfiguration extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.SendMessageConfiguration)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.SendMessageConfiguration)
     SendMessageConfigurationOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -39,13 +38,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageConfiguration_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageConfiguration_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageConfiguration_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageConfiguration_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.SendMessageConfiguration.class, io.a2a.grpc.SendMessageConfiguration.Builder.class);
   }
@@ -57,7 +56,8 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    * <pre>
-   * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+   * A list of media types the client is prepared to accept for response parts.
+   * Agents SHOULD use this to tailor their output.
    * </pre>
    *
    * <code>repeated string accepted_output_modes = 1;</code>
@@ -69,7 +69,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+   * A list of media types the client is prepared to accept for response parts.
+   * Agents SHOULD use this to tailor their output.
    * </pre>
    *
    * <code>repeated string accepted_output_modes = 1;</code>
@@ -80,7 +81,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+   * A list of media types the client is prepared to accept for response parts.
+   * Agents SHOULD use this to tailor their output.
    * </pre>
    *
    * <code>repeated string accepted_output_modes = 1;</code>
@@ -92,7 +94,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+   * A list of media types the client is prepared to accept for response parts.
+   * Agents SHOULD use this to tailor their output.
    * </pre>
    *
    * <code>repeated string accepted_output_modes = 1;</code>
@@ -111,7 +114,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the agent to send push notifications for task updates.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return Whether the pushNotificationConfig field is set.
    */
   @java.lang.Override
@@ -123,7 +126,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the agent to send push notifications for task updates.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return The pushNotificationConfig.
    */
   @java.lang.Override
@@ -135,7 +138,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the agent to send push notifications for task updates.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
@@ -179,7 +182,9 @@ private static final long serialVersionUID = 0L;
   private boolean blocking_ = false;
   /**
    * <pre>
-   * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
+   * If `true`, the operation MUST wait until the task reaches a terminal state
+   * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
+   * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
    * </pre>
    *
    * <code>bool blocking = 4;</code>
@@ -399,25 +404,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:SendMessageConfiguration]
    * Configuration of a send message request.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.SendMessageConfiguration}
+   * Protobuf type {@code lf.a2a.v1.SendMessageConfiguration}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.SendMessageConfiguration)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.SendMessageConfiguration)
       io.a2a.grpc.SendMessageConfigurationOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageConfiguration_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageConfiguration_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageConfiguration_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageConfiguration_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.SendMessageConfiguration.class, io.a2a.grpc.SendMessageConfiguration.Builder.class);
     }
@@ -457,7 +461,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageConfiguration_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageConfiguration_descriptor;
     }
 
     @java.lang.Override
@@ -612,7 +616,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+     * A list of media types the client is prepared to accept for response parts.
+     * Agents SHOULD use this to tailor their output.
      * </pre>
      *
      * <code>repeated string accepted_output_modes = 1;</code>
@@ -625,7 +630,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+     * A list of media types the client is prepared to accept for response parts.
+     * Agents SHOULD use this to tailor their output.
      * </pre>
      *
      * <code>repeated string accepted_output_modes = 1;</code>
@@ -636,7 +642,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+     * A list of media types the client is prepared to accept for response parts.
+     * Agents SHOULD use this to tailor their output.
      * </pre>
      *
      * <code>repeated string accepted_output_modes = 1;</code>
@@ -648,7 +655,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+     * A list of media types the client is prepared to accept for response parts.
+     * Agents SHOULD use this to tailor their output.
      * </pre>
      *
      * <code>repeated string accepted_output_modes = 1;</code>
@@ -661,7 +669,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+     * A list of media types the client is prepared to accept for response parts.
+     * Agents SHOULD use this to tailor their output.
      * </pre>
      *
      * <code>repeated string accepted_output_modes = 1;</code>
@@ -680,7 +689,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+     * A list of media types the client is prepared to accept for response parts.
+     * Agents SHOULD use this to tailor their output.
      * </pre>
      *
      * <code>repeated string accepted_output_modes = 1;</code>
@@ -698,7 +708,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+     * A list of media types the client is prepared to accept for response parts.
+     * Agents SHOULD use this to tailor their output.
      * </pre>
      *
      * <code>repeated string accepted_output_modes = 1;</code>
@@ -716,7 +727,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+     * A list of media types the client is prepared to accept for response parts.
+     * Agents SHOULD use this to tailor their output.
      * </pre>
      *
      * <code>repeated string accepted_output_modes = 1;</code>
@@ -731,7 +743,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+     * A list of media types the client is prepared to accept for response parts.
+     * Agents SHOULD use this to tailor their output.
      * </pre>
      *
      * <code>repeated string accepted_output_modes = 1;</code>
@@ -757,7 +770,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the agent to send push notifications for task updates.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      * @return Whether the pushNotificationConfig field is set.
      */
     public boolean hasPushNotificationConfig() {
@@ -768,7 +781,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the agent to send push notifications for task updates.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      * @return The pushNotificationConfig.
      */
     public io.a2a.grpc.PushNotificationConfig getPushNotificationConfig() {
@@ -783,7 +796,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the agent to send push notifications for task updates.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public Builder setPushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
       if (pushNotificationConfigBuilder_ == null) {
@@ -803,7 +816,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the agent to send push notifications for task updates.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public Builder setPushNotificationConfig(
         io.a2a.grpc.PushNotificationConfig.Builder builderForValue) {
@@ -821,7 +834,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the agent to send push notifications for task updates.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public Builder mergePushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
       if (pushNotificationConfigBuilder_ == null) {
@@ -846,7 +859,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the agent to send push notifications for task updates.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public Builder clearPushNotificationConfig() {
       bitField0_ = (bitField0_ & ~0x00000002);
@@ -863,7 +876,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the agent to send push notifications for task updates.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public io.a2a.grpc.PushNotificationConfig.Builder getPushNotificationConfigBuilder() {
       bitField0_ |= 0x00000002;
@@ -875,7 +888,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the agent to send push notifications for task updates.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
       if (pushNotificationConfigBuilder_ != null) {
@@ -890,7 +903,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the agent to send push notifications for task updates.
      * </pre>
      *
-     * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> 
@@ -977,7 +990,9 @@ private static final long serialVersionUID = 0L;
     private boolean blocking_ ;
     /**
      * <pre>
-     * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
+     * If `true`, the operation MUST wait until the task reaches a terminal state
+     * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
+     * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
      * </pre>
      *
      * <code>bool blocking = 4;</code>
@@ -989,7 +1004,9 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
+     * If `true`, the operation MUST wait until the task reaches a terminal state
+     * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
+     * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
      * </pre>
      *
      * <code>bool blocking = 4;</code>
@@ -1005,7 +1022,9 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
+     * If `true`, the operation MUST wait until the task reaches a terminal state
+     * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
+     * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
      * </pre>
      *
      * <code>bool blocking = 4;</code>
@@ -1018,10 +1037,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.SendMessageConfiguration)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.SendMessageConfiguration)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.SendMessageConfiguration)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.SendMessageConfiguration)
   private static final io.a2a.grpc.SendMessageConfiguration DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.SendMessageConfiguration();

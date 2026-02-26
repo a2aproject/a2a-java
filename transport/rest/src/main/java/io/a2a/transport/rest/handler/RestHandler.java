@@ -149,7 +149,7 @@ public class RestHandler {
             if (taskId == null || taskId.isEmpty()) {
                 throw new InvalidParamsError();
             }
-            TaskIdParams params = new TaskIdParams(taskId, tenant);
+            TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
             Task task = requestHandler.onCancelTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
@@ -184,7 +184,7 @@ public class RestHandler {
             if (!agentCard.capabilities().streaming()) {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
             }
-            TaskIdParams params = new TaskIdParams(taskId, tenant);
+            TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onSubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
@@ -293,7 +293,7 @@ public class RestHandler {
             }
             ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, pageSize, pageToken, tenant);
             ListTaskPushNotificationConfigResult result = requestHandler.onListTaskPushNotificationConfig(params, context);
-            return createSuccessResponse(200, io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(result)));
+            return createSuccessResponse(200, io.a2a.grpc.ListTaskPushNotificationConfigsResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {

@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:PushNotificationConfig]
  * Configuration for setting up push notifications for task updates.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.PushNotificationConfig}
+ * Protobuf type {@code lf.a2a.v1.PushNotificationConfig}
  */
 @com.google.protobuf.Generated
 public final class PushNotificationConfig extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.PushNotificationConfig)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.PushNotificationConfig)
     PushNotificationConfigOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -40,13 +39,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_PushNotificationConfig_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PushNotificationConfig_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_PushNotificationConfig_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PushNotificationConfig_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.PushNotificationConfig.class, io.a2a.grpc.PushNotificationConfig.Builder.class);
   }
@@ -57,7 +56,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object id_ = "";
   /**
    * <pre>
-   * A unique identifier (e.g. UUID) for this push notification.
+   * A unique identifier (e.g. UUID) for this push notification configuration.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -78,7 +77,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A unique identifier (e.g. UUID) for this push notification.
+   * A unique identifier (e.g. UUID) for this push notification configuration.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -104,7 +103,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object url_ = "";
   /**
    * <pre>
-   * Url to send the notification too
+   * The URL where the notification should be sent.
    * </pre>
    *
    * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -125,7 +124,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Url to send the notification too
+   * The URL where the notification should be sent.
    * </pre>
    *
    * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -151,7 +150,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object token_ = "";
   /**
    * <pre>
-   * Token unique for this task/session
+   * A token unique for this task or session.
    * </pre>
    *
    * <code>string token = 3;</code>
@@ -172,7 +171,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Token unique for this task/session
+   * A token unique for this task or session.
    * </pre>
    *
    * <code>string token = 3;</code>
@@ -197,10 +196,10 @@ private static final long serialVersionUID = 0L;
   private io.a2a.grpc.AuthenticationInfo authentication_;
   /**
    * <pre>
-   * Authentication information required to send the notification
+   * Authentication information required to send the notification.
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
    * @return Whether the authentication field is set.
    */
   @java.lang.Override
@@ -209,10 +208,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Authentication information required to send the notification
+   * Authentication information required to send the notification.
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
    * @return The authentication.
    */
   @java.lang.Override
@@ -221,10 +220,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Authentication information required to send the notification
+   * Authentication information required to send the notification.
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AuthenticationInfoOrBuilder getAuthenticationOrBuilder() {
@@ -425,25 +424,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:PushNotificationConfig]
    * Configuration for setting up push notifications for task updates.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.PushNotificationConfig}
+   * Protobuf type {@code lf.a2a.v1.PushNotificationConfig}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.PushNotificationConfig)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.PushNotificationConfig)
       io.a2a.grpc.PushNotificationConfigOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_PushNotificationConfig_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PushNotificationConfig_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_PushNotificationConfig_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PushNotificationConfig_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.PushNotificationConfig.class, io.a2a.grpc.PushNotificationConfig.Builder.class);
     }
@@ -482,7 +480,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_PushNotificationConfig_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PushNotificationConfig_descriptor;
     }
 
     @java.lang.Override
@@ -626,7 +624,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object id_ = "";
     /**
      * <pre>
-     * A unique identifier (e.g. UUID) for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -646,7 +644,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A unique identifier (e.g. UUID) for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -667,7 +665,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A unique identifier (e.g. UUID) for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -684,7 +682,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A unique identifier (e.g. UUID) for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -698,7 +696,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A unique identifier (e.g. UUID) for this push notification.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
      * </pre>
      *
      * <code>string id = 1;</code>
@@ -718,7 +716,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object url_ = "";
     /**
      * <pre>
-     * Url to send the notification too
+     * The URL where the notification should be sent.
      * </pre>
      *
      * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -738,7 +736,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Url to send the notification too
+     * The URL where the notification should be sent.
      * </pre>
      *
      * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -759,7 +757,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Url to send the notification too
+     * The URL where the notification should be sent.
      * </pre>
      *
      * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -776,7 +774,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Url to send the notification too
+     * The URL where the notification should be sent.
      * </pre>
      *
      * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -790,7 +788,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Url to send the notification too
+     * The URL where the notification should be sent.
      * </pre>
      *
      * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -810,7 +808,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object token_ = "";
     /**
      * <pre>
-     * Token unique for this task/session
+     * A token unique for this task or session.
      * </pre>
      *
      * <code>string token = 3;</code>
@@ -830,7 +828,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token unique for this task/session
+     * A token unique for this task or session.
      * </pre>
      *
      * <code>string token = 3;</code>
@@ -851,7 +849,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token unique for this task/session
+     * A token unique for this task or session.
      * </pre>
      *
      * <code>string token = 3;</code>
@@ -868,7 +866,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token unique for this task/session
+     * A token unique for this task or session.
      * </pre>
      *
      * <code>string token = 3;</code>
@@ -882,7 +880,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token unique for this task/session
+     * A token unique for this task or session.
      * </pre>
      *
      * <code>string token = 3;</code>
@@ -904,10 +902,10 @@ private static final long serialVersionUID = 0L;
         io.a2a.grpc.AuthenticationInfo, io.a2a.grpc.AuthenticationInfo.Builder, io.a2a.grpc.AuthenticationInfoOrBuilder> authenticationBuilder_;
     /**
      * <pre>
-     * Authentication information required to send the notification
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
      * @return Whether the authentication field is set.
      */
     public boolean hasAuthentication() {
@@ -915,10 +913,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Authentication information required to send the notification
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
      * @return The authentication.
      */
     public io.a2a.grpc.AuthenticationInfo getAuthentication() {
@@ -930,10 +928,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Authentication information required to send the notification
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public Builder setAuthentication(io.a2a.grpc.AuthenticationInfo value) {
       if (authenticationBuilder_ == null) {
@@ -950,10 +948,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Authentication information required to send the notification
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public Builder setAuthentication(
         io.a2a.grpc.AuthenticationInfo.Builder builderForValue) {
@@ -968,10 +966,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Authentication information required to send the notification
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public Builder mergeAuthentication(io.a2a.grpc.AuthenticationInfo value) {
       if (authenticationBuilder_ == null) {
@@ -993,10 +991,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Authentication information required to send the notification
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public Builder clearAuthentication() {
       bitField0_ = (bitField0_ & ~0x00000008);
@@ -1010,10 +1008,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Authentication information required to send the notification
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public io.a2a.grpc.AuthenticationInfo.Builder getAuthenticationBuilder() {
       bitField0_ |= 0x00000008;
@@ -1022,10 +1020,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Authentication information required to send the notification
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     public io.a2a.grpc.AuthenticationInfoOrBuilder getAuthenticationOrBuilder() {
       if (authenticationBuilder_ != null) {
@@ -1037,10 +1035,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Authentication information required to send the notification
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AuthenticationInfo, io.a2a.grpc.AuthenticationInfo.Builder, io.a2a.grpc.AuthenticationInfoOrBuilder> 
@@ -1056,10 +1054,10 @@ private static final long serialVersionUID = 0L;
       return authenticationBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.PushNotificationConfig)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.PushNotificationConfig)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.PushNotificationConfig)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.PushNotificationConfig)
   private static final io.a2a.grpc.PushNotificationConfig DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.PushNotificationConfig();

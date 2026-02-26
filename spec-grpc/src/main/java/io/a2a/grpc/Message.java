@@ -7,21 +7,20 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:Message]
- * Message is one unit of communication between client and server. It can be
- * associated with a context and/or a task. For server messages, context_id must
- * be provided, and task_id only if a task was created. For client messages, both
+ * `Message` is one unit of communication between client and server. It can be
+ * associated with a context and/or a task. For server messages, `context_id` must
+ * be provided, and `task_id` only if a task was created. For client messages, both
  * fields are optional, with the caveat that if both are provided, they have to
- * match (the context_id has to be the one that is set on the task). If only
- * task_id is provided, the server will infer context_id from it.
+ * match (the `context_id` has to be the one that is set on the task). If only
+ * `task_id` is provided, the server will infer `context_id` from it.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.Message}
+ * Protobuf type {@code lf.a2a.v1.Message}
  */
 @com.google.protobuf.Generated
 public final class Message extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.Message)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.Message)
     MessageOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -51,13 +50,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Message_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Message_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Message_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Message_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.Message.class, io.a2a.grpc.Message.Builder.class);
   }
@@ -68,8 +67,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object messageId_ = "";
   /**
    * <pre>
-   * The unique identifier (e.g. UUID) of the message. This is required and
-   * created by the message creator.
+   * The unique identifier (e.g. UUID) of the message. This is created by the message creator.
    * </pre>
    *
    * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -90,8 +88,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The unique identifier (e.g. UUID) of the message. This is required and
-   * created by the message creator.
+   * The unique identifier (e.g. UUID) of the message. This is created by the message creator.
    * </pre>
    *
    * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -117,8 +114,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object contextId_ = "";
   /**
    * <pre>
-   * The context id of the message. This is optional and if set, the message
-   * will be associated with the given context.
+   * Optional. The context id of the message. If set, the message will be associated with the given context.
    * </pre>
    *
    * <code>string context_id = 2;</code>
@@ -139,8 +135,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The context id of the message. This is optional and if set, the message
-   * will be associated with the given context.
+   * Optional. The context id of the message. If set, the message will be associated with the given context.
    * </pre>
    *
    * <code>string context_id = 2;</code>
@@ -166,8 +161,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object taskId_ = "";
   /**
    * <pre>
-   * The task id of the message. This is optional and if set, the message
-   * will be associated with the given task.
+   * Optional. The task id of the message. If set, the message will be associated with the given task.
    * </pre>
    *
    * <code>string task_id = 3;</code>
@@ -188,8 +182,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The task id of the message. This is optional and if set, the message
-   * will be associated with the given task.
+   * Optional. The task id of the message. If set, the message will be associated with the given task.
    * </pre>
    *
    * <code>string task_id = 3;</code>
@@ -217,7 +210,7 @@ private static final long serialVersionUID = 0L;
    * Identifies the sender of the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The enum numeric value on the wire for role.
    */
   @java.lang.Override public int getRoleValue() {
@@ -228,7 +221,7 @@ private static final long serialVersionUID = 0L;
    * Identifies the sender of the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The role.
    */
   @java.lang.Override public io.a2a.grpc.Role getRole() {
@@ -241,11 +234,10 @@ private static final long serialVersionUID = 0L;
   private java.util.List<io.a2a.grpc.Part> parts_;
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Part> getPartsList() {
@@ -253,11 +245,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
@@ -266,11 +257,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public int getPartsCount() {
@@ -278,11 +268,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Part getParts(int index) {
@@ -290,11 +279,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
@@ -306,8 +294,7 @@ private static final long serialVersionUID = 0L;
   private com.google.protobuf.Struct metadata_;
   /**
    * <pre>
-   * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-   * Any optional metadata to provide along with the message.
+   * Optional. Any metadata to provide along with the message.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -319,8 +306,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-   * Any optional metadata to provide along with the message.
+   * Optional. Any metadata to provide along with the message.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -332,8 +318,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-   * Any optional metadata to provide along with the message.
+   * Optional. Any metadata to provide along with the message.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -700,30 +685,29 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:Message]
-   * Message is one unit of communication between client and server. It can be
-   * associated with a context and/or a task. For server messages, context_id must
-   * be provided, and task_id only if a task was created. For client messages, both
+   * `Message` is one unit of communication between client and server. It can be
+   * associated with a context and/or a task. For server messages, `context_id` must
+   * be provided, and `task_id` only if a task was created. For client messages, both
    * fields are optional, with the caveat that if both are provided, they have to
-   * match (the context_id has to be the one that is set on the task). If only
-   * task_id is provided, the server will infer context_id from it.
+   * match (the `context_id` has to be the one that is set on the task). If only
+   * `task_id` is provided, the server will infer `context_id` from it.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.Message}
+   * Protobuf type {@code lf.a2a.v1.Message}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.Message)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.Message)
       io.a2a.grpc.MessageOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Message_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Message_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Message_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Message_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.Message.class, io.a2a.grpc.Message.Builder.class);
     }
@@ -775,7 +759,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Message_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Message_descriptor;
     }
 
     @java.lang.Override
@@ -1022,8 +1006,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object messageId_ = "";
     /**
      * <pre>
-     * The unique identifier (e.g. UUID) of the message. This is required and
-     * created by the message creator.
+     * The unique identifier (e.g. UUID) of the message. This is created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1043,8 +1026,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The unique identifier (e.g. UUID) of the message. This is required and
-     * created by the message creator.
+     * The unique identifier (e.g. UUID) of the message. This is created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1065,8 +1047,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The unique identifier (e.g. UUID) of the message. This is required and
-     * created by the message creator.
+     * The unique identifier (e.g. UUID) of the message. This is created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1083,8 +1064,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The unique identifier (e.g. UUID) of the message. This is required and
-     * created by the message creator.
+     * The unique identifier (e.g. UUID) of the message. This is created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1098,8 +1078,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The unique identifier (e.g. UUID) of the message. This is required and
-     * created by the message creator.
+     * The unique identifier (e.g. UUID) of the message. This is created by the message creator.
      * </pre>
      *
      * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1119,8 +1098,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object contextId_ = "";
     /**
      * <pre>
-     * The context id of the message. This is optional and if set, the message
-     * will be associated with the given context.
+     * Optional. The context id of the message. If set, the message will be associated with the given context.
      * </pre>
      *
      * <code>string context_id = 2;</code>
@@ -1140,8 +1118,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The context id of the message. This is optional and if set, the message
-     * will be associated with the given context.
+     * Optional. The context id of the message. If set, the message will be associated with the given context.
      * </pre>
      *
      * <code>string context_id = 2;</code>
@@ -1162,8 +1139,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The context id of the message. This is optional and if set, the message
-     * will be associated with the given context.
+     * Optional. The context id of the message. If set, the message will be associated with the given context.
      * </pre>
      *
      * <code>string context_id = 2;</code>
@@ -1180,8 +1156,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The context id of the message. This is optional and if set, the message
-     * will be associated with the given context.
+     * Optional. The context id of the message. If set, the message will be associated with the given context.
      * </pre>
      *
      * <code>string context_id = 2;</code>
@@ -1195,8 +1170,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The context id of the message. This is optional and if set, the message
-     * will be associated with the given context.
+     * Optional. The context id of the message. If set, the message will be associated with the given context.
      * </pre>
      *
      * <code>string context_id = 2;</code>
@@ -1216,8 +1190,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object taskId_ = "";
     /**
      * <pre>
-     * The task id of the message. This is optional and if set, the message
-     * will be associated with the given task.
+     * Optional. The task id of the message. If set, the message will be associated with the given task.
      * </pre>
      *
      * <code>string task_id = 3;</code>
@@ -1237,8 +1210,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The task id of the message. This is optional and if set, the message
-     * will be associated with the given task.
+     * Optional. The task id of the message. If set, the message will be associated with the given task.
      * </pre>
      *
      * <code>string task_id = 3;</code>
@@ -1259,8 +1231,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The task id of the message. This is optional and if set, the message
-     * will be associated with the given task.
+     * Optional. The task id of the message. If set, the message will be associated with the given task.
      * </pre>
      *
      * <code>string task_id = 3;</code>
@@ -1277,8 +1248,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The task id of the message. This is optional and if set, the message
-     * will be associated with the given task.
+     * Optional. The task id of the message. If set, the message will be associated with the given task.
      * </pre>
      *
      * <code>string task_id = 3;</code>
@@ -1292,8 +1262,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The task id of the message. This is optional and if set, the message
-     * will be associated with the given task.
+     * Optional. The task id of the message. If set, the message will be associated with the given task.
      * </pre>
      *
      * <code>string task_id = 3;</code>
@@ -1316,7 +1285,7 @@ private static final long serialVersionUID = 0L;
      * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The enum numeric value on the wire for role.
      */
     @java.lang.Override public int getRoleValue() {
@@ -1327,7 +1296,7 @@ private static final long serialVersionUID = 0L;
      * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The enum numeric value on the wire for role to set.
      * @return This builder for chaining.
      */
@@ -1342,7 +1311,7 @@ private static final long serialVersionUID = 0L;
      * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The role.
      */
     @java.lang.Override
@@ -1355,7 +1324,7 @@ private static final long serialVersionUID = 0L;
      * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The role to set.
      * @return This builder for chaining.
      */
@@ -1371,7 +1340,7 @@ private static final long serialVersionUID = 0L;
      * Identifies the sender of the message.
      * </pre>
      *
-     * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearRole() {
@@ -1395,11 +1364,10 @@ private static final long serialVersionUID = 0L;
 
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.Part> getPartsList() {
       if (partsBuilder_ == null) {
@@ -1410,11 +1378,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public int getPartsCount() {
       if (partsBuilder_ == null) {
@@ -1425,11 +1392,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part getParts(int index) {
       if (partsBuilder_ == null) {
@@ -1440,11 +1406,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setParts(
         int index, io.a2a.grpc.Part value) {
@@ -1462,11 +1427,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1481,11 +1445,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(io.a2a.grpc.Part value) {
       if (partsBuilder_ == null) {
@@ -1502,11 +1465,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         int index, io.a2a.grpc.Part value) {
@@ -1524,11 +1486,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         io.a2a.grpc.Part.Builder builderForValue) {
@@ -1543,11 +1504,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1562,11 +1522,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addAllParts(
         java.lang.Iterable<? extends io.a2a.grpc.Part> values) {
@@ -1582,11 +1541,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearParts() {
       if (partsBuilder_ == null) {
@@ -1600,11 +1558,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder removeParts(int index) {
       if (partsBuilder_ == null) {
@@ -1618,11 +1575,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder getPartsBuilder(
         int index) {
@@ -1630,11 +1586,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
         int index) {
@@ -1645,11 +1600,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
          getPartsOrBuilderList() {
@@ -1661,11 +1615,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder addPartsBuilder() {
       return internalGetPartsFieldBuilder().addBuilder(
@@ -1673,11 +1626,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder addPartsBuilder(
         int index) {
@@ -1686,11 +1638,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
      * Parts is the container of the message content.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.Part.Builder> 
          getPartsBuilderList() {
@@ -1716,8 +1667,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
     /**
      * <pre>
-     * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-     * Any optional metadata to provide along with the message.
+     * Optional. Any metadata to provide along with the message.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1728,8 +1678,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-     * Any optional metadata to provide along with the message.
+     * Optional. Any metadata to provide along with the message.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1744,8 +1693,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-     * Any optional metadata to provide along with the message.
+     * Optional. Any metadata to provide along with the message.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1765,8 +1713,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-     * Any optional metadata to provide along with the message.
+     * Optional. Any metadata to provide along with the message.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1784,8 +1731,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-     * Any optional metadata to provide along with the message.
+     * Optional. Any metadata to provide along with the message.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1810,8 +1756,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-     * Any optional metadata to provide along with the message.
+     * Optional. Any metadata to provide along with the message.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1828,8 +1773,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-     * Any optional metadata to provide along with the message.
+     * Optional. Any metadata to provide along with the message.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1841,8 +1785,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-     * Any optional metadata to provide along with the message.
+     * Optional. Any metadata to provide along with the message.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -1857,8 +1800,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-     * Any optional metadata to provide along with the message.
+     * Optional. Any metadata to provide along with the message.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -2171,10 +2113,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.Message)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.Message)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.Message)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.Message)
   private static final io.a2a.grpc.Message DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.Message();

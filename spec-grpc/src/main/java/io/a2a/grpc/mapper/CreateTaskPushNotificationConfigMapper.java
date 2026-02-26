@@ -29,7 +29,6 @@ public interface CreateTaskPushNotificationConfigMapper {
      * @param config the domain TaskPushNotificationConfig
      * @return proto CreateTaskPushNotificationConfigRequest
      */
-    @Mapping(target = "configId", expression = "java(extractConfigId(config))")
     CreateTaskPushNotificationConfigRequest toProto(TaskPushNotificationConfig config);
 
     /**
@@ -57,7 +56,7 @@ public interface CreateTaskPushNotificationConfigMapper {
         PushNotificationConfig result = PushNotificationConfigMapper.INSTANCE.fromProto(request.getConfig());
 
         // Override ID with config_id from request
-        String configId = request.getConfigId();
+        String configId = request.getConfig().getId();
         if (configId != null && !configId.isEmpty() && !configId.equals(result.id())) {
             return new PushNotificationConfig(
                     result.url(),

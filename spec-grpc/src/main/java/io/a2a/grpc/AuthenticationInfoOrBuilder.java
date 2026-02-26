@@ -7,13 +7,14 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface AuthenticationInfoOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.AuthenticationInfo)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.AuthenticationInfo)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
    * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
-   * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+   * Examples: `Bearer`, `Basic`, `Digest`.
+   * Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
    * </pre>
    *
    * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -23,7 +24,8 @@ public interface AuthenticationInfoOrBuilder extends
   /**
    * <pre>
    * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
-   * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+   * Examples: `Bearer`, `Basic`, `Digest`.
+   * Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
    * </pre>
    *
    * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>

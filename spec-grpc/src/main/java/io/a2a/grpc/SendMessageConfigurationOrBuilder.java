@@ -7,12 +7,13 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface SendMessageConfigurationOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.SendMessageConfiguration)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.SendMessageConfiguration)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+   * A list of media types the client is prepared to accept for response parts.
+   * Agents SHOULD use this to tailor their output.
    * </pre>
    *
    * <code>repeated string accepted_output_modes = 1;</code>
@@ -22,7 +23,8 @@ public interface SendMessageConfigurationOrBuilder extends
       getAcceptedOutputModesList();
   /**
    * <pre>
-   * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+   * A list of media types the client is prepared to accept for response parts.
+   * Agents SHOULD use this to tailor their output.
    * </pre>
    *
    * <code>repeated string accepted_output_modes = 1;</code>
@@ -31,7 +33,8 @@ public interface SendMessageConfigurationOrBuilder extends
   int getAcceptedOutputModesCount();
   /**
    * <pre>
-   * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+   * A list of media types the client is prepared to accept for response parts.
+   * Agents SHOULD use this to tailor their output.
    * </pre>
    *
    * <code>repeated string accepted_output_modes = 1;</code>
@@ -41,7 +44,8 @@ public interface SendMessageConfigurationOrBuilder extends
   java.lang.String getAcceptedOutputModes(int index);
   /**
    * <pre>
-   * A list of media types the client is prepared to accept for response parts. Agents SHOULD use this to tailor their output.
+   * A list of media types the client is prepared to accept for response parts.
+   * Agents SHOULD use this to tailor their output.
    * </pre>
    *
    * <code>repeated string accepted_output_modes = 1;</code>
@@ -56,7 +60,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * Configuration for the agent to send push notifications for task updates.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return Whether the pushNotificationConfig field is set.
    */
   boolean hasPushNotificationConfig();
@@ -65,7 +69,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * Configuration for the agent to send push notifications for task updates.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    * @return The pushNotificationConfig.
    */
   io.a2a.grpc.PushNotificationConfig getPushNotificationConfig();
@@ -74,7 +78,7 @@ public interface SendMessageConfigurationOrBuilder extends
    * Configuration for the agent to send push notifications for task updates.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
    */
   io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder();
 
@@ -105,7 +109,9 @@ public interface SendMessageConfigurationOrBuilder extends
 
   /**
    * <pre>
-   * If true, the operation waits until the task reaches a terminal or interrupted state before returning. Default is false.
+   * If `true`, the operation MUST wait until the task reaches a terminal state
+   * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
+   * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
    * </pre>
    *
    * <code>bool blocking = 4;</code>

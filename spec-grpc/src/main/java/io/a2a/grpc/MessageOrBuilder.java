@@ -7,13 +7,12 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface MessageOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.Message)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.Message)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * The unique identifier (e.g. UUID) of the message. This is required and
-   * created by the message creator.
+   * The unique identifier (e.g. UUID) of the message. This is created by the message creator.
    * </pre>
    *
    * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -22,8 +21,7 @@ public interface MessageOrBuilder extends
   java.lang.String getMessageId();
   /**
    * <pre>
-   * The unique identifier (e.g. UUID) of the message. This is required and
-   * created by the message creator.
+   * The unique identifier (e.g. UUID) of the message. This is created by the message creator.
    * </pre>
    *
    * <code>string message_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -34,8 +32,7 @@ public interface MessageOrBuilder extends
 
   /**
    * <pre>
-   * The context id of the message. This is optional and if set, the message
-   * will be associated with the given context.
+   * Optional. The context id of the message. If set, the message will be associated with the given context.
    * </pre>
    *
    * <code>string context_id = 2;</code>
@@ -44,8 +41,7 @@ public interface MessageOrBuilder extends
   java.lang.String getContextId();
   /**
    * <pre>
-   * The context id of the message. This is optional and if set, the message
-   * will be associated with the given context.
+   * Optional. The context id of the message. If set, the message will be associated with the given context.
    * </pre>
    *
    * <code>string context_id = 2;</code>
@@ -56,8 +52,7 @@ public interface MessageOrBuilder extends
 
   /**
    * <pre>
-   * The task id of the message. This is optional and if set, the message
-   * will be associated with the given task.
+   * Optional. The task id of the message. If set, the message will be associated with the given task.
    * </pre>
    *
    * <code>string task_id = 3;</code>
@@ -66,8 +61,7 @@ public interface MessageOrBuilder extends
   java.lang.String getTaskId();
   /**
    * <pre>
-   * The task id of the message. This is optional and if set, the message
-   * will be associated with the given task.
+   * Optional. The task id of the message. If set, the message will be associated with the given task.
    * </pre>
    *
    * <code>string task_id = 3;</code>
@@ -81,7 +75,7 @@ public interface MessageOrBuilder extends
    * Identifies the sender of the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The enum numeric value on the wire for role.
    */
   int getRoleValue();
@@ -90,64 +84,58 @@ public interface MessageOrBuilder extends
    * Identifies the sender of the message.
    * </pre>
    *
-   * <code>.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Role role = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The role.
    */
   io.a2a.grpc.Role getRole();
 
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<io.a2a.grpc.Part> 
       getPartsList();
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.Part getParts(int index);
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getPartsCount();
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
       getPartsOrBuilderList();
   /**
    * <pre>
-   * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
    * Parts is the container of the message content.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
       int index);
 
   /**
    * <pre>
-   * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-   * Any optional metadata to provide along with the message.
+   * Optional. Any metadata to provide along with the message.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -156,8 +144,7 @@ public interface MessageOrBuilder extends
   boolean hasMetadata();
   /**
    * <pre>
-   * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-   * Any optional metadata to provide along with the message.
+   * Optional. Any metadata to provide along with the message.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -166,8 +153,7 @@ public interface MessageOrBuilder extends
   com.google.protobuf.Struct getMetadata();
   /**
    * <pre>
-   * protolint:enable REPEATED_FIELD_NAMES_PLURALIZED
-   * Any optional metadata to provide along with the message.
+   * Optional. Any metadata to provide along with the message.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>

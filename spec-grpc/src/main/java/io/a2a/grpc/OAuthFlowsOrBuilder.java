@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface OAuthFlowsOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.OAuthFlows)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.OAuthFlows)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -15,7 +15,7 @@ public interface OAuthFlowsOrBuilder extends
    * Configuration for the OAuth Authorization Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+   * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return Whether the authorizationCode field is set.
    */
   boolean hasAuthorizationCode();
@@ -24,7 +24,7 @@ public interface OAuthFlowsOrBuilder extends
    * Configuration for the OAuth Authorization Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+   * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return The authorizationCode.
    */
   io.a2a.grpc.AuthorizationCodeOAuthFlow getAuthorizationCode();
@@ -33,7 +33,7 @@ public interface OAuthFlowsOrBuilder extends
    * Configuration for the OAuth Authorization Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+   * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    */
   io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder getAuthorizationCodeOrBuilder();
 
@@ -42,7 +42,7 @@ public interface OAuthFlowsOrBuilder extends
    * Configuration for the OAuth Client Credentials flow.
    * </pre>
    *
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+   * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return Whether the clientCredentials field is set.
    */
   boolean hasClientCredentials();
@@ -51,7 +51,7 @@ public interface OAuthFlowsOrBuilder extends
    * Configuration for the OAuth Client Credentials flow.
    * </pre>
    *
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+   * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return The clientCredentials.
    */
   io.a2a.grpc.ClientCredentialsOAuthFlow getClientCredentials();
@@ -60,45 +60,69 @@ public interface OAuthFlowsOrBuilder extends
    * Configuration for the OAuth Client Credentials flow.
    * </pre>
    *
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+   * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    */
   io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder getClientCredentialsOrBuilder();
 
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.OAuthFlows.implicit is deprecated.
-   *     See a2a.proto;l=633
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE instead.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+   * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
+   *     See a2a.proto;l=570
    * @return Whether the implicit field is set.
    */
   @java.lang.Deprecated boolean hasImplicit();
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.OAuthFlows.implicit is deprecated.
-   *     See a2a.proto;l=633
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE instead.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+   * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
+   *     See a2a.proto;l=570
    * @return The implicit.
    */
   @java.lang.Deprecated io.a2a.grpc.ImplicitOAuthFlow getImplicit();
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE instead.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
    */
   @java.lang.Deprecated io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder();
 
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
-   * @deprecated a2a.v1.OAuthFlows.password is deprecated.
-   *     See a2a.proto;l=634
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE or Device Code.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+   * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
+   *     See a2a.proto;l=572
    * @return Whether the password field is set.
    */
   @java.lang.Deprecated boolean hasPassword();
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
-   * @deprecated a2a.v1.OAuthFlows.password is deprecated.
-   *     See a2a.proto;l=634
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE or Device Code.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+   * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
+   *     See a2a.proto;l=572
    * @return The password.
    */
   @java.lang.Deprecated io.a2a.grpc.PasswordOAuthFlow getPassword();
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE or Device Code.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
    */
   @java.lang.Deprecated io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder();
 
@@ -107,7 +131,7 @@ public interface OAuthFlowsOrBuilder extends
    * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
    * @return Whether the deviceCode field is set.
    */
   boolean hasDeviceCode();
@@ -116,7 +140,7 @@ public interface OAuthFlowsOrBuilder extends
    * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
    * @return The deviceCode.
    */
   io.a2a.grpc.DeviceCodeOAuthFlow getDeviceCode();
@@ -125,7 +149,7 @@ public interface OAuthFlowsOrBuilder extends
    * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
    */
   io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder getDeviceCodeOrBuilder();
 

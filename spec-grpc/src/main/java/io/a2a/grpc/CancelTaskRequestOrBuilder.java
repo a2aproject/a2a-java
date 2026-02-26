@@ -7,24 +7,24 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface CancelTaskRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.CancelTaskRequest)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.CancelTaskRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   java.lang.String getTenant();
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   com.google.protobuf.ByteString
@@ -32,21 +32,48 @@ public interface CancelTaskRequestOrBuilder extends
 
   /**
    * <pre>
-   * The resource id of the task to cancel.
+   * The resource ID of the task to cancel.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   java.lang.String getId();
   /**
    * <pre>
-   * The resource id of the task to cancel.
+   * The resource ID of the task to cancel.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   com.google.protobuf.ByteString
       getIdBytes();
+
+  /**
+   * <pre>
+   * A flexible key-value map for passing additional context or parameters.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * @return Whether the metadata field is set.
+   */
+  boolean hasMetadata();
+  /**
+   * <pre>
+   * A flexible key-value map for passing additional context or parameters.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * @return The metadata.
+   */
+  com.google.protobuf.Struct getMetadata();
+  /**
+   * <pre>
+   * A flexible key-value map for passing additional context or parameters.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 3;</code>
+   */
+  com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 }

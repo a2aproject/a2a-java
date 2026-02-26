@@ -7,18 +7,17 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:SecurityScheme]
  * Defines a security scheme that can be used to secure an agent's endpoints.
  * This is a discriminated union type based on the OpenAPI 3.2 Security Scheme Object.
  * See: https://spec.openapis.org/oas/v3.2.0.html#security-scheme-object
  * </pre>
  *
- * Protobuf type {@code a2a.v1.SecurityScheme}
+ * Protobuf type {@code lf.a2a.v1.SecurityScheme}
  */
 @com.google.protobuf.Generated
 public final class SecurityScheme extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.SecurityScheme)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.SecurityScheme)
     SecuritySchemeOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -39,13 +38,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityScheme_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityScheme_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityScheme_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityScheme_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.SecurityScheme.class, io.a2a.grpc.SecurityScheme.Builder.class);
   }
@@ -104,7 +103,7 @@ private static final long serialVersionUID = 0L;
    * API key-based authentication.
    * </pre>
    *
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+   * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    * @return Whether the apiKeySecurityScheme field is set.
    */
   @java.lang.Override
@@ -116,7 +115,7 @@ private static final long serialVersionUID = 0L;
    * API key-based authentication.
    * </pre>
    *
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+   * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    * @return The apiKeySecurityScheme.
    */
   @java.lang.Override
@@ -131,7 +130,7 @@ private static final long serialVersionUID = 0L;
    * API key-based authentication.
    * </pre>
    *
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+   * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.APIKeySecuritySchemeOrBuilder getApiKeySecuritySchemeOrBuilder() {
@@ -147,7 +146,7 @@ private static final long serialVersionUID = 0L;
    * HTTP authentication (Basic, Bearer, etc.).
    * </pre>
    *
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+   * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    * @return Whether the httpAuthSecurityScheme field is set.
    */
   @java.lang.Override
@@ -159,7 +158,7 @@ private static final long serialVersionUID = 0L;
    * HTTP authentication (Basic, Bearer, etc.).
    * </pre>
    *
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+   * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    * @return The httpAuthSecurityScheme.
    */
   @java.lang.Override
@@ -174,7 +173,7 @@ private static final long serialVersionUID = 0L;
    * HTTP authentication (Basic, Bearer, etc.).
    * </pre>
    *
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+   * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder getHttpAuthSecuritySchemeOrBuilder() {
@@ -190,7 +189,7 @@ private static final long serialVersionUID = 0L;
    * OAuth 2.0 authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+   * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    * @return Whether the oauth2SecurityScheme field is set.
    */
   @java.lang.Override
@@ -202,7 +201,7 @@ private static final long serialVersionUID = 0L;
    * OAuth 2.0 authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+   * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    * @return The oauth2SecurityScheme.
    */
   @java.lang.Override
@@ -217,7 +216,7 @@ private static final long serialVersionUID = 0L;
    * OAuth 2.0 authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+   * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.OAuth2SecuritySchemeOrBuilder getOauth2SecuritySchemeOrBuilder() {
@@ -233,7 +232,7 @@ private static final long serialVersionUID = 0L;
    * OpenID Connect authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+   * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    * @return Whether the openIdConnectSecurityScheme field is set.
    */
   @java.lang.Override
@@ -245,7 +244,7 @@ private static final long serialVersionUID = 0L;
    * OpenID Connect authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+   * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    * @return The openIdConnectSecurityScheme.
    */
   @java.lang.Override
@@ -260,7 +259,7 @@ private static final long serialVersionUID = 0L;
    * OpenID Connect authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+   * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder getOpenIdConnectSecuritySchemeOrBuilder() {
@@ -276,7 +275,7 @@ private static final long serialVersionUID = 0L;
    * Mutual TLS authentication.
    * </pre>
    *
-   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
    * @return Whether the mtlsSecurityScheme field is set.
    */
   @java.lang.Override
@@ -288,7 +287,7 @@ private static final long serialVersionUID = 0L;
    * Mutual TLS authentication.
    * </pre>
    *
-   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
    * @return The mtlsSecurityScheme.
    */
   @java.lang.Override
@@ -303,7 +302,7 @@ private static final long serialVersionUID = 0L;
    * Mutual TLS authentication.
    * </pre>
    *
-   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder getMtlsSecuritySchemeOrBuilder() {
@@ -545,27 +544,26 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:SecurityScheme]
    * Defines a security scheme that can be used to secure an agent's endpoints.
    * This is a discriminated union type based on the OpenAPI 3.2 Security Scheme Object.
    * See: https://spec.openapis.org/oas/v3.2.0.html#security-scheme-object
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.SecurityScheme}
+   * Protobuf type {@code lf.a2a.v1.SecurityScheme}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.SecurityScheme)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.SecurityScheme)
       io.a2a.grpc.SecuritySchemeOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityScheme_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityScheme_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityScheme_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityScheme_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.SecurityScheme.class, io.a2a.grpc.SecurityScheme.Builder.class);
     }
@@ -607,7 +605,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityScheme_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityScheme_descriptor;
     }
 
     @java.lang.Override
@@ -799,7 +797,7 @@ private static final long serialVersionUID = 0L;
      * API key-based authentication.
      * </pre>
      *
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+     * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      * @return Whether the apiKeySecurityScheme field is set.
      */
     @java.lang.Override
@@ -811,7 +809,7 @@ private static final long serialVersionUID = 0L;
      * API key-based authentication.
      * </pre>
      *
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+     * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      * @return The apiKeySecurityScheme.
      */
     @java.lang.Override
@@ -833,7 +831,7 @@ private static final long serialVersionUID = 0L;
      * API key-based authentication.
      * </pre>
      *
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+     * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public Builder setApiKeySecurityScheme(io.a2a.grpc.APIKeySecurityScheme value) {
       if (apiKeySecuritySchemeBuilder_ == null) {
@@ -853,7 +851,7 @@ private static final long serialVersionUID = 0L;
      * API key-based authentication.
      * </pre>
      *
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+     * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public Builder setApiKeySecurityScheme(
         io.a2a.grpc.APIKeySecurityScheme.Builder builderForValue) {
@@ -871,7 +869,7 @@ private static final long serialVersionUID = 0L;
      * API key-based authentication.
      * </pre>
      *
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+     * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public Builder mergeApiKeySecurityScheme(io.a2a.grpc.APIKeySecurityScheme value) {
       if (apiKeySecuritySchemeBuilder_ == null) {
@@ -898,7 +896,7 @@ private static final long serialVersionUID = 0L;
      * API key-based authentication.
      * </pre>
      *
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+     * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public Builder clearApiKeySecurityScheme() {
       if (apiKeySecuritySchemeBuilder_ == null) {
@@ -921,7 +919,7 @@ private static final long serialVersionUID = 0L;
      * API key-based authentication.
      * </pre>
      *
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+     * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     public io.a2a.grpc.APIKeySecurityScheme.Builder getApiKeySecuritySchemeBuilder() {
       return internalGetApiKeySecuritySchemeFieldBuilder().getBuilder();
@@ -931,7 +929,7 @@ private static final long serialVersionUID = 0L;
      * API key-based authentication.
      * </pre>
      *
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+     * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.APIKeySecuritySchemeOrBuilder getApiKeySecuritySchemeOrBuilder() {
@@ -949,7 +947,7 @@ private static final long serialVersionUID = 0L;
      * API key-based authentication.
      * </pre>
      *
-     * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+     * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.APIKeySecurityScheme, io.a2a.grpc.APIKeySecurityScheme.Builder, io.a2a.grpc.APIKeySecuritySchemeOrBuilder> 
@@ -977,7 +975,7 @@ private static final long serialVersionUID = 0L;
      * HTTP authentication (Basic, Bearer, etc.).
      * </pre>
      *
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+     * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      * @return Whether the httpAuthSecurityScheme field is set.
      */
     @java.lang.Override
@@ -989,7 +987,7 @@ private static final long serialVersionUID = 0L;
      * HTTP authentication (Basic, Bearer, etc.).
      * </pre>
      *
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+     * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      * @return The httpAuthSecurityScheme.
      */
     @java.lang.Override
@@ -1011,7 +1009,7 @@ private static final long serialVersionUID = 0L;
      * HTTP authentication (Basic, Bearer, etc.).
      * </pre>
      *
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+     * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public Builder setHttpAuthSecurityScheme(io.a2a.grpc.HTTPAuthSecurityScheme value) {
       if (httpAuthSecuritySchemeBuilder_ == null) {
@@ -1031,7 +1029,7 @@ private static final long serialVersionUID = 0L;
      * HTTP authentication (Basic, Bearer, etc.).
      * </pre>
      *
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+     * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public Builder setHttpAuthSecurityScheme(
         io.a2a.grpc.HTTPAuthSecurityScheme.Builder builderForValue) {
@@ -1049,7 +1047,7 @@ private static final long serialVersionUID = 0L;
      * HTTP authentication (Basic, Bearer, etc.).
      * </pre>
      *
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+     * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public Builder mergeHttpAuthSecurityScheme(io.a2a.grpc.HTTPAuthSecurityScheme value) {
       if (httpAuthSecuritySchemeBuilder_ == null) {
@@ -1076,7 +1074,7 @@ private static final long serialVersionUID = 0L;
      * HTTP authentication (Basic, Bearer, etc.).
      * </pre>
      *
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+     * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public Builder clearHttpAuthSecurityScheme() {
       if (httpAuthSecuritySchemeBuilder_ == null) {
@@ -1099,7 +1097,7 @@ private static final long serialVersionUID = 0L;
      * HTTP authentication (Basic, Bearer, etc.).
      * </pre>
      *
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+     * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     public io.a2a.grpc.HTTPAuthSecurityScheme.Builder getHttpAuthSecuritySchemeBuilder() {
       return internalGetHttpAuthSecuritySchemeFieldBuilder().getBuilder();
@@ -1109,7 +1107,7 @@ private static final long serialVersionUID = 0L;
      * HTTP authentication (Basic, Bearer, etc.).
      * </pre>
      *
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+     * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder getHttpAuthSecuritySchemeOrBuilder() {
@@ -1127,7 +1125,7 @@ private static final long serialVersionUID = 0L;
      * HTTP authentication (Basic, Bearer, etc.).
      * </pre>
      *
-     * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+     * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.HTTPAuthSecurityScheme, io.a2a.grpc.HTTPAuthSecurityScheme.Builder, io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder> 
@@ -1155,7 +1153,7 @@ private static final long serialVersionUID = 0L;
      * OAuth 2.0 authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+     * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      * @return Whether the oauth2SecurityScheme field is set.
      */
     @java.lang.Override
@@ -1167,7 +1165,7 @@ private static final long serialVersionUID = 0L;
      * OAuth 2.0 authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+     * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      * @return The oauth2SecurityScheme.
      */
     @java.lang.Override
@@ -1189,7 +1187,7 @@ private static final long serialVersionUID = 0L;
      * OAuth 2.0 authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+     * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public Builder setOauth2SecurityScheme(io.a2a.grpc.OAuth2SecurityScheme value) {
       if (oauth2SecuritySchemeBuilder_ == null) {
@@ -1209,7 +1207,7 @@ private static final long serialVersionUID = 0L;
      * OAuth 2.0 authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+     * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public Builder setOauth2SecurityScheme(
         io.a2a.grpc.OAuth2SecurityScheme.Builder builderForValue) {
@@ -1227,7 +1225,7 @@ private static final long serialVersionUID = 0L;
      * OAuth 2.0 authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+     * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public Builder mergeOauth2SecurityScheme(io.a2a.grpc.OAuth2SecurityScheme value) {
       if (oauth2SecuritySchemeBuilder_ == null) {
@@ -1254,7 +1252,7 @@ private static final long serialVersionUID = 0L;
      * OAuth 2.0 authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+     * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public Builder clearOauth2SecurityScheme() {
       if (oauth2SecuritySchemeBuilder_ == null) {
@@ -1277,7 +1275,7 @@ private static final long serialVersionUID = 0L;
      * OAuth 2.0 authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+     * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     public io.a2a.grpc.OAuth2SecurityScheme.Builder getOauth2SecuritySchemeBuilder() {
       return internalGetOauth2SecuritySchemeFieldBuilder().getBuilder();
@@ -1287,7 +1285,7 @@ private static final long serialVersionUID = 0L;
      * OAuth 2.0 authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+     * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.OAuth2SecuritySchemeOrBuilder getOauth2SecuritySchemeOrBuilder() {
@@ -1305,7 +1303,7 @@ private static final long serialVersionUID = 0L;
      * OAuth 2.0 authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+     * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.OAuth2SecurityScheme, io.a2a.grpc.OAuth2SecurityScheme.Builder, io.a2a.grpc.OAuth2SecuritySchemeOrBuilder> 
@@ -1333,7 +1331,7 @@ private static final long serialVersionUID = 0L;
      * OpenID Connect authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+     * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      * @return Whether the openIdConnectSecurityScheme field is set.
      */
     @java.lang.Override
@@ -1345,7 +1343,7 @@ private static final long serialVersionUID = 0L;
      * OpenID Connect authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+     * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      * @return The openIdConnectSecurityScheme.
      */
     @java.lang.Override
@@ -1367,7 +1365,7 @@ private static final long serialVersionUID = 0L;
      * OpenID Connect authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+     * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public Builder setOpenIdConnectSecurityScheme(io.a2a.grpc.OpenIdConnectSecurityScheme value) {
       if (openIdConnectSecuritySchemeBuilder_ == null) {
@@ -1387,7 +1385,7 @@ private static final long serialVersionUID = 0L;
      * OpenID Connect authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+     * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public Builder setOpenIdConnectSecurityScheme(
         io.a2a.grpc.OpenIdConnectSecurityScheme.Builder builderForValue) {
@@ -1405,7 +1403,7 @@ private static final long serialVersionUID = 0L;
      * OpenID Connect authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+     * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public Builder mergeOpenIdConnectSecurityScheme(io.a2a.grpc.OpenIdConnectSecurityScheme value) {
       if (openIdConnectSecuritySchemeBuilder_ == null) {
@@ -1432,7 +1430,7 @@ private static final long serialVersionUID = 0L;
      * OpenID Connect authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+     * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public Builder clearOpenIdConnectSecurityScheme() {
       if (openIdConnectSecuritySchemeBuilder_ == null) {
@@ -1455,7 +1453,7 @@ private static final long serialVersionUID = 0L;
      * OpenID Connect authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+     * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     public io.a2a.grpc.OpenIdConnectSecurityScheme.Builder getOpenIdConnectSecuritySchemeBuilder() {
       return internalGetOpenIdConnectSecuritySchemeFieldBuilder().getBuilder();
@@ -1465,7 +1463,7 @@ private static final long serialVersionUID = 0L;
      * OpenID Connect authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+     * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder getOpenIdConnectSecuritySchemeOrBuilder() {
@@ -1483,7 +1481,7 @@ private static final long serialVersionUID = 0L;
      * OpenID Connect authentication.
      * </pre>
      *
-     * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+     * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.OpenIdConnectSecurityScheme, io.a2a.grpc.OpenIdConnectSecurityScheme.Builder, io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder> 
@@ -1511,7 +1509,7 @@ private static final long serialVersionUID = 0L;
      * Mutual TLS authentication.
      * </pre>
      *
-     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      * @return Whether the mtlsSecurityScheme field is set.
      */
     @java.lang.Override
@@ -1523,7 +1521,7 @@ private static final long serialVersionUID = 0L;
      * Mutual TLS authentication.
      * </pre>
      *
-     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      * @return The mtlsSecurityScheme.
      */
     @java.lang.Override
@@ -1545,7 +1543,7 @@ private static final long serialVersionUID = 0L;
      * Mutual TLS authentication.
      * </pre>
      *
-     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      */
     public Builder setMtlsSecurityScheme(io.a2a.grpc.MutualTlsSecurityScheme value) {
       if (mtlsSecuritySchemeBuilder_ == null) {
@@ -1565,7 +1563,7 @@ private static final long serialVersionUID = 0L;
      * Mutual TLS authentication.
      * </pre>
      *
-     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      */
     public Builder setMtlsSecurityScheme(
         io.a2a.grpc.MutualTlsSecurityScheme.Builder builderForValue) {
@@ -1583,7 +1581,7 @@ private static final long serialVersionUID = 0L;
      * Mutual TLS authentication.
      * </pre>
      *
-     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      */
     public Builder mergeMtlsSecurityScheme(io.a2a.grpc.MutualTlsSecurityScheme value) {
       if (mtlsSecuritySchemeBuilder_ == null) {
@@ -1610,7 +1608,7 @@ private static final long serialVersionUID = 0L;
      * Mutual TLS authentication.
      * </pre>
      *
-     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      */
     public Builder clearMtlsSecurityScheme() {
       if (mtlsSecuritySchemeBuilder_ == null) {
@@ -1633,7 +1631,7 @@ private static final long serialVersionUID = 0L;
      * Mutual TLS authentication.
      * </pre>
      *
-     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      */
     public io.a2a.grpc.MutualTlsSecurityScheme.Builder getMtlsSecuritySchemeBuilder() {
       return internalGetMtlsSecuritySchemeFieldBuilder().getBuilder();
@@ -1643,7 +1641,7 @@ private static final long serialVersionUID = 0L;
      * Mutual TLS authentication.
      * </pre>
      *
-     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder getMtlsSecuritySchemeOrBuilder() {
@@ -1661,7 +1659,7 @@ private static final long serialVersionUID = 0L;
      * Mutual TLS authentication.
      * </pre>
      *
-     * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+     * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.MutualTlsSecurityScheme, io.a2a.grpc.MutualTlsSecurityScheme.Builder, io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder> 
@@ -1682,10 +1680,10 @@ private static final long serialVersionUID = 0L;
       return mtlsSecuritySchemeBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.SecurityScheme)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.SecurityScheme)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.SecurityScheme)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.SecurityScheme)
   private static final io.a2a.grpc.SecurityScheme DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.SecurityScheme();

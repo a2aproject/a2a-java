@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface AgentExtensionOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.AgentExtension)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.AgentExtension)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -62,7 +62,7 @@ public interface AgentExtensionOrBuilder extends
 
   /**
    * <pre>
-   * Optional, extension-specific configuration parameters.
+   * Optional. Extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -71,7 +71,7 @@ public interface AgentExtensionOrBuilder extends
   boolean hasParams();
   /**
    * <pre>
-   * Optional, extension-specific configuration parameters.
+   * Optional. Extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -80,7 +80,7 @@ public interface AgentExtensionOrBuilder extends
   com.google.protobuf.Struct getParams();
   /**
    * <pre>
-   * Optional, extension-specific configuration parameters.
+   * Optional. Extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>

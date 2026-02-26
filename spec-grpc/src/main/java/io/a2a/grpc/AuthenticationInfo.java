@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:PushNotificationAuthenticationInfo]
  * Defines authentication details, used for push notifications.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.AuthenticationInfo}
+ * Protobuf type {@code lf.a2a.v1.AuthenticationInfo}
  */
 @com.google.protobuf.Generated
 public final class AuthenticationInfo extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.AuthenticationInfo)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.AuthenticationInfo)
     AuthenticationInfoOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -39,13 +38,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AuthenticationInfo_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AuthenticationInfo_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.AuthenticationInfo.class, io.a2a.grpc.AuthenticationInfo.Builder.class);
   }
@@ -56,7 +55,8 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
-   * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+   * Examples: `Bearer`, `Basic`, `Digest`.
+   * Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
    * </pre>
    *
    * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -78,7 +78,8 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
-   * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+   * Examples: `Bearer`, `Basic`, `Digest`.
+   * Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
    * </pre>
    *
    * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -314,25 +315,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:PushNotificationAuthenticationInfo]
    * Defines authentication details, used for push notifications.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.AuthenticationInfo}
+   * Protobuf type {@code lf.a2a.v1.AuthenticationInfo}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.AuthenticationInfo)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.AuthenticationInfo)
       io.a2a.grpc.AuthenticationInfoOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AuthenticationInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AuthenticationInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.AuthenticationInfo.class, io.a2a.grpc.AuthenticationInfo.Builder.class);
     }
@@ -359,7 +359,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AuthenticationInfo_descriptor;
     }
 
     @java.lang.Override
@@ -473,7 +473,8 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
-     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+     * Examples: `Bearer`, `Basic`, `Digest`.
+     * Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
      * </pre>
      *
      * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -494,7 +495,8 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
-     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+     * Examples: `Bearer`, `Basic`, `Digest`.
+     * Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
      * </pre>
      *
      * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -516,7 +518,8 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
-     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+     * Examples: `Bearer`, `Basic`, `Digest`.
+     * Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
      * </pre>
      *
      * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -534,7 +537,8 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
-     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+     * Examples: `Bearer`, `Basic`, `Digest`.
+     * Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
      * </pre>
      *
      * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -549,7 +553,8 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * HTTP Authentication Scheme from the [IANA registry](https://www.iana.org/assignments/http-authschemes/).
-     * Common values: `Bearer`, `Basic`, `Digest`. Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
+     * Examples: `Bearer`, `Basic`, `Digest`.
+     * Scheme names are case-insensitive per [RFC 9110 Section 11.1](https://www.rfc-editor.org/rfc/rfc9110#section-11.1).
      * </pre>
      *
      * <code>string scheme = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -658,10 +663,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.AuthenticationInfo)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.AuthenticationInfo)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.AuthenticationInfo)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.AuthenticationInfo)
   private static final io.a2a.grpc.AuthenticationInfo DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.AuthenticationInfo();

@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:CancelTaskRequest]
  * Represents a request for the `CancelTask` method.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.CancelTaskRequest}
+ * Protobuf type {@code lf.a2a.v1.CancelTaskRequest}
  */
 @com.google.protobuf.Generated
 public final class CancelTaskRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.CancelTaskRequest)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.CancelTaskRequest)
     CancelTaskRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -39,26 +38,27 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_CancelTaskRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_CancelTaskRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.CancelTaskRequest.class, io.a2a.grpc.CancelTaskRequest.Builder.class);
   }
 
-  public static final int TENANT_FIELD_NUMBER = 2;
+  private int bitField0_;
+  public static final int TENANT_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object tenant_ = "";
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   @java.lang.Override
@@ -76,10 +76,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   @java.lang.Override
@@ -97,15 +97,15 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int ID_FIELD_NUMBER = 1;
+  public static final int ID_FIELD_NUMBER = 2;
   @SuppressWarnings("serial")
   private volatile java.lang.Object id_ = "";
   /**
    * <pre>
-   * The resource id of the task to cancel.
+   * The resource ID of the task to cancel.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   @java.lang.Override
@@ -123,10 +123,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The resource id of the task to cancel.
+   * The resource ID of the task to cancel.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   @java.lang.Override
@@ -144,6 +144,44 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int METADATA_FIELD_NUMBER = 3;
+  private com.google.protobuf.Struct metadata_;
+  /**
+   * <pre>
+   * A flexible key-value map for passing additional context or parameters.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * @return Whether the metadata field is set.
+   */
+  @java.lang.Override
+  public boolean hasMetadata() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <pre>
+   * A flexible key-value map for passing additional context or parameters.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * @return The metadata.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Struct getMetadata() {
+    return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+  }
+  /**
+   * <pre>
+   * A flexible key-value map for passing additional context or parameters.
+   * </pre>
+   *
+   * <code>.google.protobuf.Struct metadata = 3;</code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
+    return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -158,11 +196,14 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, id_);
-    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 2, tenant_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, tenant_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, id_);
+    }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeMessage(3, getMetadata());
     }
     getUnknownFields().writeTo(output);
   }
@@ -173,11 +214,15 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, id_);
-    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, tenant_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, tenant_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, id_);
+    }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(3, getMetadata());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -198,6 +243,11 @@ private static final long serialVersionUID = 0L;
         .equals(other.getTenant())) return false;
     if (!getId()
         .equals(other.getId())) return false;
+    if (hasMetadata() != other.hasMetadata()) return false;
+    if (hasMetadata()) {
+      if (!getMetadata()
+          .equals(other.getMetadata())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -213,6 +263,10 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getTenant().hashCode();
     hash = (37 * hash) + ID_FIELD_NUMBER;
     hash = (53 * hash) + getId().hashCode();
+    if (hasMetadata()) {
+      hash = (37 * hash) + METADATA_FIELD_NUMBER;
+      hash = (53 * hash) + getMetadata().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -312,38 +366,43 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:CancelTaskRequest]
    * Represents a request for the `CancelTask` method.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.CancelTaskRequest}
+   * Protobuf type {@code lf.a2a.v1.CancelTaskRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.CancelTaskRequest)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.CancelTaskRequest)
       io.a2a.grpc.CancelTaskRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_CancelTaskRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_CancelTaskRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.CancelTaskRequest.class, io.a2a.grpc.CancelTaskRequest.Builder.class);
     }
 
     // Construct using io.a2a.grpc.CancelTaskRequest.newBuilder()
     private Builder() {
-
+      maybeForceBuilderInitialization();
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       super(parent);
-
+      maybeForceBuilderInitialization();
+    }
+    private void maybeForceBuilderInitialization() {
+      if (com.google.protobuf.GeneratedMessage
+              .alwaysUseFieldBuilders) {
+        internalGetMetadataFieldBuilder();
+      }
     }
     @java.lang.Override
     public Builder clear() {
@@ -351,13 +410,18 @@ private static final long serialVersionUID = 0L;
       bitField0_ = 0;
       tenant_ = "";
       id_ = "";
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
+        metadataBuilder_ = null;
+      }
       return this;
     }
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_CancelTaskRequest_descriptor;
     }
 
     @java.lang.Override
@@ -390,6 +454,14 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.id_ = id_;
       }
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.metadata_ = metadataBuilder_ == null
+            ? metadata_
+            : metadataBuilder_.build();
+        to_bitField0_ |= 0x00000001;
+      }
+      result.bitField0_ |= to_bitField0_;
     }
 
     @java.lang.Override
@@ -413,6 +485,9 @@ private static final long serialVersionUID = 0L;
         id_ = other.id_;
         bitField0_ |= 0x00000002;
         onChanged();
+      }
+      if (other.hasMetadata()) {
+        mergeMetadata(other.getMetadata());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -441,15 +516,22 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
-              id_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000002;
-              break;
-            } // case 10
-            case 18: {
               tenant_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000001;
               break;
+            } // case 10
+            case 18: {
+              id_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000002;
+              break;
             } // case 18
+            case 26: {
+              input.readMessage(
+                  internalGetMetadataFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 26
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -470,10 +552,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object tenant_ = "";
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @return The tenant.
      */
     public java.lang.String getTenant() {
@@ -490,10 +572,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @return The bytes for tenant.
      */
     public com.google.protobuf.ByteString
@@ -511,10 +593,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @param value The tenant to set.
      * @return This builder for chaining.
      */
@@ -528,10 +610,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearTenant() {
@@ -542,10 +624,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @param value The bytes for tenant to set.
      * @return This builder for chaining.
      */
@@ -562,10 +644,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object id_ = "";
     /**
      * <pre>
-     * The resource id of the task to cancel.
+     * The resource ID of the task to cancel.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The id.
      */
     public java.lang.String getId() {
@@ -582,10 +664,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task to cancel.
+     * The resource ID of the task to cancel.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for id.
      */
     public com.google.protobuf.ByteString
@@ -603,10 +685,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task to cancel.
+     * The resource ID of the task to cancel.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The id to set.
      * @return This builder for chaining.
      */
@@ -620,10 +702,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task to cancel.
+     * The resource ID of the task to cancel.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearId() {
@@ -634,10 +716,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task to cancel.
+     * The resource ID of the task to cancel.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for id to set.
      * @return This builder for chaining.
      */
@@ -651,10 +733,167 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.CancelTaskRequest)
+    private com.google.protobuf.Struct metadata_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
+    /**
+     * <pre>
+     * A flexible key-value map for passing additional context or parameters.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * @return Whether the metadata field is set.
+     */
+    public boolean hasMetadata() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+    /**
+     * <pre>
+     * A flexible key-value map for passing additional context or parameters.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * @return The metadata.
+     */
+    public com.google.protobuf.Struct getMetadata() {
+      if (metadataBuilder_ == null) {
+        return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+      } else {
+        return metadataBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * A flexible key-value map for passing additional context or parameters.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 3;</code>
+     */
+    public Builder setMetadata(com.google.protobuf.Struct value) {
+      if (metadataBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        metadata_ = value;
+      } else {
+        metadataBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A flexible key-value map for passing additional context or parameters.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 3;</code>
+     */
+    public Builder setMetadata(
+        com.google.protobuf.Struct.Builder builderForValue) {
+      if (metadataBuilder_ == null) {
+        metadata_ = builderForValue.build();
+      } else {
+        metadataBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A flexible key-value map for passing additional context or parameters.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 3;</code>
+     */
+    public Builder mergeMetadata(com.google.protobuf.Struct value) {
+      if (metadataBuilder_ == null) {
+        if (((bitField0_ & 0x00000004) != 0) &&
+          metadata_ != null &&
+          metadata_ != com.google.protobuf.Struct.getDefaultInstance()) {
+          getMetadataBuilder().mergeFrom(value);
+        } else {
+          metadata_ = value;
+        }
+      } else {
+        metadataBuilder_.mergeFrom(value);
+      }
+      if (metadata_ != null) {
+        bitField0_ |= 0x00000004;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * A flexible key-value map for passing additional context or parameters.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 3;</code>
+     */
+    public Builder clearMetadata() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
+        metadataBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A flexible key-value map for passing additional context or parameters.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 3;</code>
+     */
+    public com.google.protobuf.Struct.Builder getMetadataBuilder() {
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return internalGetMetadataFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * A flexible key-value map for passing additional context or parameters.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 3;</code>
+     */
+    public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
+      if (metadataBuilder_ != null) {
+        return metadataBuilder_.getMessageOrBuilder();
+      } else {
+        return metadata_ == null ?
+            com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+      }
+    }
+    /**
+     * <pre>
+     * A flexible key-value map for passing additional context or parameters.
+     * </pre>
+     *
+     * <code>.google.protobuf.Struct metadata = 3;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        internalGetMetadataFieldBuilder() {
+      if (metadataBuilder_ == null) {
+        metadataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>(
+                getMetadata(),
+                getParentForChildren(),
+                isClean());
+        metadata_ = null;
+      }
+      return metadataBuilder_;
+    }
+
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.CancelTaskRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.CancelTaskRequest)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.CancelTaskRequest)
   private static final io.a2a.grpc.CancelTaskRequest DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.CancelTaskRequest();

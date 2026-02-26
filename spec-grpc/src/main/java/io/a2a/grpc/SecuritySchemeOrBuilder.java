@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface SecuritySchemeOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.SecurityScheme)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.SecurityScheme)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -15,7 +15,7 @@ public interface SecuritySchemeOrBuilder extends
    * API key-based authentication.
    * </pre>
    *
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+   * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    * @return Whether the apiKeySecurityScheme field is set.
    */
   boolean hasApiKeySecurityScheme();
@@ -24,7 +24,7 @@ public interface SecuritySchemeOrBuilder extends
    * API key-based authentication.
    * </pre>
    *
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+   * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    * @return The apiKeySecurityScheme.
    */
   io.a2a.grpc.APIKeySecurityScheme getApiKeySecurityScheme();
@@ -33,7 +33,7 @@ public interface SecuritySchemeOrBuilder extends
    * API key-based authentication.
    * </pre>
    *
-   * <code>.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
+   * <code>.lf.a2a.v1.APIKeySecurityScheme api_key_security_scheme = 1;</code>
    */
   io.a2a.grpc.APIKeySecuritySchemeOrBuilder getApiKeySecuritySchemeOrBuilder();
 
@@ -42,7 +42,7 @@ public interface SecuritySchemeOrBuilder extends
    * HTTP authentication (Basic, Bearer, etc.).
    * </pre>
    *
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+   * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    * @return Whether the httpAuthSecurityScheme field is set.
    */
   boolean hasHttpAuthSecurityScheme();
@@ -51,7 +51,7 @@ public interface SecuritySchemeOrBuilder extends
    * HTTP authentication (Basic, Bearer, etc.).
    * </pre>
    *
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+   * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    * @return The httpAuthSecurityScheme.
    */
   io.a2a.grpc.HTTPAuthSecurityScheme getHttpAuthSecurityScheme();
@@ -60,7 +60,7 @@ public interface SecuritySchemeOrBuilder extends
    * HTTP authentication (Basic, Bearer, etc.).
    * </pre>
    *
-   * <code>.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
+   * <code>.lf.a2a.v1.HTTPAuthSecurityScheme http_auth_security_scheme = 2;</code>
    */
   io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder getHttpAuthSecuritySchemeOrBuilder();
 
@@ -69,7 +69,7 @@ public interface SecuritySchemeOrBuilder extends
    * OAuth 2.0 authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+   * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    * @return Whether the oauth2SecurityScheme field is set.
    */
   boolean hasOauth2SecurityScheme();
@@ -78,7 +78,7 @@ public interface SecuritySchemeOrBuilder extends
    * OAuth 2.0 authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+   * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    * @return The oauth2SecurityScheme.
    */
   io.a2a.grpc.OAuth2SecurityScheme getOauth2SecurityScheme();
@@ -87,7 +87,7 @@ public interface SecuritySchemeOrBuilder extends
    * OAuth 2.0 authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
+   * <code>.lf.a2a.v1.OAuth2SecurityScheme oauth2_security_scheme = 3;</code>
    */
   io.a2a.grpc.OAuth2SecuritySchemeOrBuilder getOauth2SecuritySchemeOrBuilder();
 
@@ -96,7 +96,7 @@ public interface SecuritySchemeOrBuilder extends
    * OpenID Connect authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+   * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    * @return Whether the openIdConnectSecurityScheme field is set.
    */
   boolean hasOpenIdConnectSecurityScheme();
@@ -105,7 +105,7 @@ public interface SecuritySchemeOrBuilder extends
    * OpenID Connect authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+   * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    * @return The openIdConnectSecurityScheme.
    */
   io.a2a.grpc.OpenIdConnectSecurityScheme getOpenIdConnectSecurityScheme();
@@ -114,7 +114,7 @@ public interface SecuritySchemeOrBuilder extends
    * OpenID Connect authentication.
    * </pre>
    *
-   * <code>.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
+   * <code>.lf.a2a.v1.OpenIdConnectSecurityScheme open_id_connect_security_scheme = 4;</code>
    */
   io.a2a.grpc.OpenIdConnectSecuritySchemeOrBuilder getOpenIdConnectSecuritySchemeOrBuilder();
 
@@ -123,7 +123,7 @@ public interface SecuritySchemeOrBuilder extends
    * Mutual TLS authentication.
    * </pre>
    *
-   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
    * @return Whether the mtlsSecurityScheme field is set.
    */
   boolean hasMtlsSecurityScheme();
@@ -132,7 +132,7 @@ public interface SecuritySchemeOrBuilder extends
    * Mutual TLS authentication.
    * </pre>
    *
-   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
    * @return The mtlsSecurityScheme.
    */
   io.a2a.grpc.MutualTlsSecurityScheme getMtlsSecurityScheme();
@@ -141,7 +141,7 @@ public interface SecuritySchemeOrBuilder extends
    * Mutual TLS authentication.
    * </pre>
    *
-   * <code>.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
+   * <code>.lf.a2a.v1.MutualTlsSecurityScheme mtls_security_scheme = 5;</code>
    */
   io.a2a.grpc.MutualTlsSecuritySchemeOrBuilder getMtlsSecuritySchemeOrBuilder();
 

@@ -7,36 +7,60 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface SendMessageResponseOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.SendMessageResponse)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.SendMessageResponse)
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <pre>
+   * The task created or updated by the message.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    * @return Whether the task field is set.
    */
   boolean hasTask();
   /**
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <pre>
+   * The task created or updated by the message.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    * @return The task.
    */
   io.a2a.grpc.Task getTask();
   /**
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <pre>
+   * The task created or updated by the message.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    */
   io.a2a.grpc.TaskOrBuilder getTaskOrBuilder();
 
   /**
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <pre>
+   * A message from the agent.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return Whether the message field is set.
    */
   boolean hasMessage();
   /**
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <pre>
+   * A message from the agent.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return The message.
    */
   io.a2a.grpc.Message getMessage();
   /**
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <pre>
+   * A message from the agent.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    */
   io.a2a.grpc.MessageOrBuilder getMessageOrBuilder();
 

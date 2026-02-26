@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:Artifact]
  * Artifacts represent task outputs.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.Artifact}
+ * Protobuf type {@code lf.a2a.v1.Artifact}
  */
 @com.google.protobuf.Generated
 public final class Artifact extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.Artifact)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.Artifact)
     ArtifactOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -43,13 +42,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Artifact_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Artifact_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Artifact_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Artifact_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.Artifact.class, io.a2a.grpc.Artifact.Builder.class);
   }
@@ -60,8 +59,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object artifactId_ = "";
   /**
    * <pre>
-   * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
-   * within a task.
+   * Unique identifier (e.g. UUID) for the artifact. It must be unique within a task.
    * </pre>
    *
    * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -82,8 +80,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
-   * within a task.
+   * Unique identifier (e.g. UUID) for the artifact. It must be unique within a task.
    * </pre>
    *
    * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -104,7 +101,7 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int NAME_FIELD_NUMBER = 3;
+  public static final int NAME_FIELD_NUMBER = 2;
   @SuppressWarnings("serial")
   private volatile java.lang.Object name_ = "";
   /**
@@ -112,7 +109,7 @@ private static final long serialVersionUID = 0L;
    * A human readable name for the artifact.
    * </pre>
    *
-   * <code>string name = 3;</code>
+   * <code>string name = 2;</code>
    * @return The name.
    */
   @java.lang.Override
@@ -133,7 +130,7 @@ private static final long serialVersionUID = 0L;
    * A human readable name for the artifact.
    * </pre>
    *
-   * <code>string name = 3;</code>
+   * <code>string name = 2;</code>
    * @return The bytes for name.
    */
   @java.lang.Override
@@ -151,15 +148,15 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int DESCRIPTION_FIELD_NUMBER = 4;
+  public static final int DESCRIPTION_FIELD_NUMBER = 3;
   @SuppressWarnings("serial")
   private volatile java.lang.Object description_ = "";
   /**
    * <pre>
-   * A human readable description of the artifact, optional.
+   * Optional. A human readable description of the artifact.
    * </pre>
    *
-   * <code>string description = 4;</code>
+   * <code>string description = 3;</code>
    * @return The description.
    */
   @java.lang.Override
@@ -177,10 +174,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A human readable description of the artifact, optional.
+   * Optional. A human readable description of the artifact.
    * </pre>
    *
-   * <code>string description = 4;</code>
+   * <code>string description = 3;</code>
    * @return The bytes for description.
    */
   @java.lang.Override
@@ -198,7 +195,7 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int PARTS_FIELD_NUMBER = 5;
+  public static final int PARTS_FIELD_NUMBER = 4;
   @SuppressWarnings("serial")
   private java.util.List<io.a2a.grpc.Part> parts_;
   /**
@@ -206,7 +203,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.Part> getPartsList() {
@@ -217,7 +214,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
@@ -229,7 +226,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public int getPartsCount() {
@@ -240,7 +237,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.Part getParts(int index) {
@@ -251,7 +248,7 @@ private static final long serialVersionUID = 0L;
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
@@ -259,14 +256,14 @@ private static final long serialVersionUID = 0L;
     return parts_.get(index);
   }
 
-  public static final int METADATA_FIELD_NUMBER = 6;
+  public static final int METADATA_FIELD_NUMBER = 5;
   private com.google.protobuf.Struct metadata_;
   /**
    * <pre>
-   * Optional metadata included with the artifact.
+   * Optional. Metadata included with the artifact.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return Whether the metadata field is set.
    */
   @java.lang.Override
@@ -275,10 +272,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional metadata included with the artifact.
+   * Optional. Metadata included with the artifact.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return The metadata.
    */
   @java.lang.Override
@@ -287,17 +284,17 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional metadata included with the artifact.
+   * Optional. Metadata included with the artifact.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
     return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
   }
 
-  public static final int EXTENSIONS_FIELD_NUMBER = 7;
+  public static final int EXTENSIONS_FIELD_NUMBER = 6;
   @SuppressWarnings("serial")
   private com.google.protobuf.LazyStringArrayList extensions_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
@@ -306,7 +303,7 @@ private static final long serialVersionUID = 0L;
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7;</code>
+   * <code>repeated string extensions = 6;</code>
    * @return A list containing the extensions.
    */
   public com.google.protobuf.ProtocolStringList
@@ -318,7 +315,7 @@ private static final long serialVersionUID = 0L;
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7;</code>
+   * <code>repeated string extensions = 6;</code>
    * @return The count of extensions.
    */
   public int getExtensionsCount() {
@@ -329,7 +326,7 @@ private static final long serialVersionUID = 0L;
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7;</code>
+   * <code>repeated string extensions = 6;</code>
    * @param index The index of the element to return.
    * @return The extensions at the given index.
    */
@@ -341,7 +338,7 @@ private static final long serialVersionUID = 0L;
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7;</code>
+   * <code>repeated string extensions = 6;</code>
    * @param index The index of the value to return.
    * @return The bytes of the extensions at the given index.
    */
@@ -368,19 +365,19 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.GeneratedMessage.writeString(output, 1, artifactId_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 3, name_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, name_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(description_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 4, description_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, description_);
     }
     for (int i = 0; i < parts_.size(); i++) {
-      output.writeMessage(5, parts_.get(i));
+      output.writeMessage(4, parts_.get(i));
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(6, getMetadata());
+      output.writeMessage(5, getMetadata());
     }
     for (int i = 0; i < extensions_.size(); i++) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 7, extensions_.getRaw(i));
+      com.google.protobuf.GeneratedMessage.writeString(output, 6, extensions_.getRaw(i));
     }
     getUnknownFields().writeTo(output);
   }
@@ -395,18 +392,18 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.GeneratedMessage.computeStringSize(1, artifactId_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(name_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, name_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, name_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(description_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(4, description_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, description_);
     }
     for (int i = 0; i < parts_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, parts_.get(i));
+        .computeMessageSize(4, parts_.get(i));
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, getMetadata());
+        .computeMessageSize(5, getMetadata());
     }
     {
       int dataSize = 0;
@@ -574,25 +571,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:Artifact]
    * Artifacts represent task outputs.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.Artifact}
+   * Protobuf type {@code lf.a2a.v1.Artifact}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.Artifact)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.Artifact)
       io.a2a.grpc.ArtifactOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Artifact_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Artifact_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Artifact_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Artifact_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.Artifact.class, io.a2a.grpc.Artifact.Builder.class);
     }
@@ -641,7 +637,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Artifact_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Artifact_descriptor;
     }
 
     @java.lang.Override
@@ -801,17 +797,17 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000001;
               break;
             } // case 10
-            case 26: {
+            case 18: {
               name_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000002;
               break;
-            } // case 26
-            case 34: {
+            } // case 18
+            case 26: {
               description_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000004;
               break;
-            } // case 34
-            case 42: {
+            } // case 26
+            case 34: {
               io.a2a.grpc.Part m =
                   input.readMessage(
                       io.a2a.grpc.Part.parser(),
@@ -823,20 +819,20 @@ private static final long serialVersionUID = 0L;
                 partsBuilder_.addMessage(m);
               }
               break;
-            } // case 42
-            case 50: {
+            } // case 34
+            case 42: {
               input.readMessage(
                   internalGetMetadataFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000010;
               break;
-            } // case 50
-            case 58: {
+            } // case 42
+            case 50: {
               java.lang.String s = input.readStringRequireUtf8();
               ensureExtensionsIsMutable();
               extensions_.add(s);
               break;
-            } // case 58
+            } // case 50
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -857,8 +853,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object artifactId_ = "";
     /**
      * <pre>
-     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
-     * within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be unique within a task.
      * </pre>
      *
      * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -878,8 +873,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
-     * within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be unique within a task.
      * </pre>
      *
      * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -900,8 +894,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
-     * within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be unique within a task.
      * </pre>
      *
      * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -918,8 +911,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
-     * within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be unique within a task.
      * </pre>
      *
      * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -933,8 +925,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
-     * within a task.
+     * Unique identifier (e.g. UUID) for the artifact. It must be unique within a task.
      * </pre>
      *
      * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -957,7 +948,7 @@ private static final long serialVersionUID = 0L;
      * A human readable name for the artifact.
      * </pre>
      *
-     * <code>string name = 3;</code>
+     * <code>string name = 2;</code>
      * @return The name.
      */
     public java.lang.String getName() {
@@ -977,7 +968,7 @@ private static final long serialVersionUID = 0L;
      * A human readable name for the artifact.
      * </pre>
      *
-     * <code>string name = 3;</code>
+     * <code>string name = 2;</code>
      * @return The bytes for name.
      */
     public com.google.protobuf.ByteString
@@ -998,7 +989,7 @@ private static final long serialVersionUID = 0L;
      * A human readable name for the artifact.
      * </pre>
      *
-     * <code>string name = 3;</code>
+     * <code>string name = 2;</code>
      * @param value The name to set.
      * @return This builder for chaining.
      */
@@ -1015,7 +1006,7 @@ private static final long serialVersionUID = 0L;
      * A human readable name for the artifact.
      * </pre>
      *
-     * <code>string name = 3;</code>
+     * <code>string name = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearName() {
@@ -1029,7 +1020,7 @@ private static final long serialVersionUID = 0L;
      * A human readable name for the artifact.
      * </pre>
      *
-     * <code>string name = 3;</code>
+     * <code>string name = 2;</code>
      * @param value The bytes for name to set.
      * @return This builder for chaining.
      */
@@ -1046,10 +1037,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object description_ = "";
     /**
      * <pre>
-     * A human readable description of the artifact, optional.
+     * Optional. A human readable description of the artifact.
      * </pre>
      *
-     * <code>string description = 4;</code>
+     * <code>string description = 3;</code>
      * @return The description.
      */
     public java.lang.String getDescription() {
@@ -1066,10 +1057,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human readable description of the artifact, optional.
+     * Optional. A human readable description of the artifact.
      * </pre>
      *
-     * <code>string description = 4;</code>
+     * <code>string description = 3;</code>
      * @return The bytes for description.
      */
     public com.google.protobuf.ByteString
@@ -1087,10 +1078,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human readable description of the artifact, optional.
+     * Optional. A human readable description of the artifact.
      * </pre>
      *
-     * <code>string description = 4;</code>
+     * <code>string description = 3;</code>
      * @param value The description to set.
      * @return This builder for chaining.
      */
@@ -1104,10 +1095,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human readable description of the artifact, optional.
+     * Optional. A human readable description of the artifact.
      * </pre>
      *
-     * <code>string description = 4;</code>
+     * <code>string description = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearDescription() {
@@ -1118,10 +1109,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A human readable description of the artifact, optional.
+     * Optional. A human readable description of the artifact.
      * </pre>
      *
-     * <code>string description = 4;</code>
+     * <code>string description = 3;</code>
      * @param value The bytes for description to set.
      * @return This builder for chaining.
      */
@@ -1152,7 +1143,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.Part> getPartsList() {
       if (partsBuilder_ == null) {
@@ -1166,7 +1157,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public int getPartsCount() {
       if (partsBuilder_ == null) {
@@ -1180,7 +1171,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part getParts(int index) {
       if (partsBuilder_ == null) {
@@ -1194,7 +1185,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setParts(
         int index, io.a2a.grpc.Part value) {
@@ -1215,7 +1206,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1233,7 +1224,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(io.a2a.grpc.Part value) {
       if (partsBuilder_ == null) {
@@ -1253,7 +1244,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         int index, io.a2a.grpc.Part value) {
@@ -1274,7 +1265,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         io.a2a.grpc.Part.Builder builderForValue) {
@@ -1292,7 +1283,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addParts(
         int index, io.a2a.grpc.Part.Builder builderForValue) {
@@ -1310,7 +1301,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addAllParts(
         java.lang.Iterable<? extends io.a2a.grpc.Part> values) {
@@ -1329,7 +1320,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearParts() {
       if (partsBuilder_ == null) {
@@ -1346,7 +1337,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder removeParts(int index) {
       if (partsBuilder_ == null) {
@@ -1363,7 +1354,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder getPartsBuilder(
         int index) {
@@ -1374,7 +1365,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
         int index) {
@@ -1388,7 +1379,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
          getPartsOrBuilderList() {
@@ -1403,7 +1394,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder addPartsBuilder() {
       return internalGetPartsFieldBuilder().addBuilder(
@@ -1414,7 +1405,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Part.Builder addPartsBuilder(
         int index) {
@@ -1426,7 +1417,7 @@ private static final long serialVersionUID = 0L;
      * The content of the artifact. Must contain at least one part.
      * </pre>
      *
-     * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.Part.Builder> 
          getPartsBuilderList() {
@@ -1452,10 +1443,10 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
     /**
      * <pre>
-     * Optional metadata included with the artifact.
+     * Optional. Metadata included with the artifact.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
@@ -1463,10 +1454,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata included with the artifact.
+     * Optional. Metadata included with the artifact.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      * @return The metadata.
      */
     public com.google.protobuf.Struct getMetadata() {
@@ -1478,10 +1469,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata included with the artifact.
+     * Optional. Metadata included with the artifact.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder setMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1498,10 +1489,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata included with the artifact.
+     * Optional. Metadata included with the artifact.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder setMetadata(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -1516,10 +1507,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata included with the artifact.
+     * Optional. Metadata included with the artifact.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1541,10 +1532,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata included with the artifact.
+     * Optional. Metadata included with the artifact.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public Builder clearMetadata() {
       bitField0_ = (bitField0_ & ~0x00000010);
@@ -1558,10 +1549,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata included with the artifact.
+     * Optional. Metadata included with the artifact.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
       bitField0_ |= 0x00000010;
@@ -1570,10 +1561,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata included with the artifact.
+     * Optional. Metadata included with the artifact.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
       if (metadataBuilder_ != null) {
@@ -1585,10 +1576,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata included with the artifact.
+     * Optional. Metadata included with the artifact.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 6;</code>
+     * <code>.google.protobuf.Struct metadata = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
@@ -1617,7 +1608,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Artifact.
      * </pre>
      *
-     * <code>repeated string extensions = 7;</code>
+     * <code>repeated string extensions = 6;</code>
      * @return A list containing the extensions.
      */
     public com.google.protobuf.ProtocolStringList
@@ -1630,7 +1621,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Artifact.
      * </pre>
      *
-     * <code>repeated string extensions = 7;</code>
+     * <code>repeated string extensions = 6;</code>
      * @return The count of extensions.
      */
     public int getExtensionsCount() {
@@ -1641,7 +1632,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Artifact.
      * </pre>
      *
-     * <code>repeated string extensions = 7;</code>
+     * <code>repeated string extensions = 6;</code>
      * @param index The index of the element to return.
      * @return The extensions at the given index.
      */
@@ -1653,7 +1644,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Artifact.
      * </pre>
      *
-     * <code>repeated string extensions = 7;</code>
+     * <code>repeated string extensions = 6;</code>
      * @param index The index of the value to return.
      * @return The bytes of the extensions at the given index.
      */
@@ -1666,7 +1657,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Artifact.
      * </pre>
      *
-     * <code>repeated string extensions = 7;</code>
+     * <code>repeated string extensions = 6;</code>
      * @param index The index to set the value at.
      * @param value The extensions to set.
      * @return This builder for chaining.
@@ -1685,7 +1676,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Artifact.
      * </pre>
      *
-     * <code>repeated string extensions = 7;</code>
+     * <code>repeated string extensions = 6;</code>
      * @param value The extensions to add.
      * @return This builder for chaining.
      */
@@ -1703,7 +1694,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Artifact.
      * </pre>
      *
-     * <code>repeated string extensions = 7;</code>
+     * <code>repeated string extensions = 6;</code>
      * @param values The extensions to add.
      * @return This builder for chaining.
      */
@@ -1721,7 +1712,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Artifact.
      * </pre>
      *
-     * <code>repeated string extensions = 7;</code>
+     * <code>repeated string extensions = 6;</code>
      * @return This builder for chaining.
      */
     public Builder clearExtensions() {
@@ -1736,7 +1727,7 @@ private static final long serialVersionUID = 0L;
      * The URIs of extensions that are present or contributed to this Artifact.
      * </pre>
      *
-     * <code>repeated string extensions = 7;</code>
+     * <code>repeated string extensions = 6;</code>
      * @param value The bytes of the extensions to add.
      * @return This builder for chaining.
      */
@@ -1751,10 +1742,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.Artifact)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.Artifact)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.Artifact)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.Artifact)
   private static final io.a2a.grpc.Artifact DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.Artifact();

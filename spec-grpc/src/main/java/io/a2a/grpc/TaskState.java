@@ -7,11 +7,10 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:TaskState]
- * Defines the possible lifecycle states of a Task.
+ * Defines the possible lifecycle states of a `Task`.
  * </pre>
  *
- * Protobuf enum {@code a2a.v1.TaskState}
+ * Protobuf enum {@code lf.a2a.v1.TaskState}
  */
 @com.google.protobuf.Generated
 public enum TaskState
@@ -26,7 +25,7 @@ public enum TaskState
   TASK_STATE_UNSPECIFIED(0),
   /**
    * <pre>
-   * Represents the status that acknowledges a task is created.
+   * Indicates that a task has been successfully submitted and acknowledged.
    * </pre>
    *
    * <code>TASK_STATE_SUBMITTED = 1;</code>
@@ -34,7 +33,7 @@ public enum TaskState
   TASK_STATE_SUBMITTED(1),
   /**
    * <pre>
-   * Represents the status that a task is actively being processed.
+   * Indicates that a task is actively being processed by the agent.
    * </pre>
    *
    * <code>TASK_STATE_WORKING = 2;</code>
@@ -42,7 +41,7 @@ public enum TaskState
   TASK_STATE_WORKING(2),
   /**
    * <pre>
-   * Represents the status a task is finished. This is a terminal state.
+   * Indicates that a task has finished successfully. This is a terminal state.
    * </pre>
    *
    * <code>TASK_STATE_COMPLETED = 3;</code>
@@ -50,7 +49,7 @@ public enum TaskState
   TASK_STATE_COMPLETED(3),
   /**
    * <pre>
-   * Represents the status a task is done but failed. This is a terminal state.
+   * Indicates that a task has finished with an error. This is a terminal state.
    * </pre>
    *
    * <code>TASK_STATE_FAILED = 4;</code>
@@ -58,8 +57,7 @@ public enum TaskState
   TASK_STATE_FAILED(4),
   /**
    * <pre>
-   * Represents the status a task was canceled before it finished.
-   * This is a terminal state.
+   * Indicates that a task was canceled before completion. This is a terminal state.
    * </pre>
    *
    * <code>TASK_STATE_CANCELED = 5;</code>
@@ -67,8 +65,7 @@ public enum TaskState
   TASK_STATE_CANCELED(5),
   /**
    * <pre>
-   * Represents the status that the task requires information to complete.
-   * This is an interrupted state.
+   * Indicates that the agent requires additional user input to proceed. This is an interrupted state.
    * </pre>
    *
    * <code>TASK_STATE_INPUT_REQUIRED = 6;</code>
@@ -76,7 +73,7 @@ public enum TaskState
   TASK_STATE_INPUT_REQUIRED(6),
   /**
    * <pre>
-   * Represents the status that the agent has decided to not perform the task.
+   * Indicates that the agent has decided to not perform the task.
    * This may be done during initial task creation or later once an agent
    * has determined it can't or won't proceed. This is a terminal state.
    * </pre>
@@ -86,8 +83,7 @@ public enum TaskState
   TASK_STATE_REJECTED(7),
   /**
    * <pre>
-   * Represents the state that some authentication is needed from the upstream
-   * client. This is an interrupted state. Authentication is expected to come out-of-band.
+   * Indicates that authentication is required to proceed. This is an interrupted state.
    * </pre>
    *
    * <code>TASK_STATE_AUTH_REQUIRED = 8;</code>
@@ -115,7 +111,7 @@ public enum TaskState
   public static final int TASK_STATE_UNSPECIFIED_VALUE = 0;
   /**
    * <pre>
-   * Represents the status that acknowledges a task is created.
+   * Indicates that a task has been successfully submitted and acknowledged.
    * </pre>
    *
    * <code>TASK_STATE_SUBMITTED = 1;</code>
@@ -123,7 +119,7 @@ public enum TaskState
   public static final int TASK_STATE_SUBMITTED_VALUE = 1;
   /**
    * <pre>
-   * Represents the status that a task is actively being processed.
+   * Indicates that a task is actively being processed by the agent.
    * </pre>
    *
    * <code>TASK_STATE_WORKING = 2;</code>
@@ -131,7 +127,7 @@ public enum TaskState
   public static final int TASK_STATE_WORKING_VALUE = 2;
   /**
    * <pre>
-   * Represents the status a task is finished. This is a terminal state.
+   * Indicates that a task has finished successfully. This is a terminal state.
    * </pre>
    *
    * <code>TASK_STATE_COMPLETED = 3;</code>
@@ -139,7 +135,7 @@ public enum TaskState
   public static final int TASK_STATE_COMPLETED_VALUE = 3;
   /**
    * <pre>
-   * Represents the status a task is done but failed. This is a terminal state.
+   * Indicates that a task has finished with an error. This is a terminal state.
    * </pre>
    *
    * <code>TASK_STATE_FAILED = 4;</code>
@@ -147,8 +143,7 @@ public enum TaskState
   public static final int TASK_STATE_FAILED_VALUE = 4;
   /**
    * <pre>
-   * Represents the status a task was canceled before it finished.
-   * This is a terminal state.
+   * Indicates that a task was canceled before completion. This is a terminal state.
    * </pre>
    *
    * <code>TASK_STATE_CANCELED = 5;</code>
@@ -156,8 +151,7 @@ public enum TaskState
   public static final int TASK_STATE_CANCELED_VALUE = 5;
   /**
    * <pre>
-   * Represents the status that the task requires information to complete.
-   * This is an interrupted state.
+   * Indicates that the agent requires additional user input to proceed. This is an interrupted state.
    * </pre>
    *
    * <code>TASK_STATE_INPUT_REQUIRED = 6;</code>
@@ -165,7 +159,7 @@ public enum TaskState
   public static final int TASK_STATE_INPUT_REQUIRED_VALUE = 6;
   /**
    * <pre>
-   * Represents the status that the agent has decided to not perform the task.
+   * Indicates that the agent has decided to not perform the task.
    * This may be done during initial task creation or later once an agent
    * has determined it can't or won't proceed. This is a terminal state.
    * </pre>
@@ -175,8 +169,7 @@ public enum TaskState
   public static final int TASK_STATE_REJECTED_VALUE = 7;
   /**
    * <pre>
-   * Represents the state that some authentication is needed from the upstream
-   * client. This is an interrupted state. Authentication is expected to come out-of-band.
+   * Indicates that authentication is required to proceed. This is an interrupted state.
    * </pre>
    *
    * <code>TASK_STATE_AUTH_REQUIRED = 8;</code>
@@ -270,6 +263,6 @@ public enum TaskState
     this.value = value;
   }
 
-  // @@protoc_insertion_point(enum_scope:a2a.v1.TaskState)
+  // @@protoc_insertion_point(enum_scope:lf.a2a.v1.TaskState)
 }
 

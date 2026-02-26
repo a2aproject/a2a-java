@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.gson.JsonSyntaxException;
 
-import io.a2a.grpc.Role;
 import io.a2a.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
@@ -20,10 +19,8 @@ import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
-import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.JSONParseError;
-import io.a2a.spec.Message;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
 import org.junit.jupiter.api.Test;
@@ -39,9 +36,9 @@ public class JSONRPCUtilsTest {
               "id": "1",
               "params": {
                 "taskId": "task-123",
-                "configId": "config-456",
                 "tenant": "",
                 "config": {
+                  "id": "config-456",
                   "url": "https://example.com/callback",
                   "authentication": {
                     "scheme": "jwt"
@@ -145,7 +142,7 @@ public class JSONRPCUtilsTest {
             () -> JSONRPCUtils.parseRequestBody(invalidStructure, null)
         );
         assertEquals(4, exception.getId());
-        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message a2a.v1.CreateTaskPushNotificationConfigRequest"), exception.getMessage());
+        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message lf.a2a.v1.CreateTaskPushNotificationConfigRequest"), exception.getMessage());
     }
 
     @Test
@@ -241,7 +238,7 @@ public class JSONRPCUtilsTest {
             JsonMappingException.class,
             () -> JSONRPCUtils.parseRequestBody(unkownFieldMessage, null)
         );
-        assertEquals(ERROR_MESSAGE.formatted("unknown in message a2a.v1.Message"), exception.getMessage());
+        assertEquals(ERROR_MESSAGE.formatted("unknown in message lf.a2a.v1.Message"), exception.getMessage());
     }
 
     @Test
@@ -315,10 +312,10 @@ public class JSONRPCUtilsTest {
         String responseJson = """
             {
               "jsonrpc": "2.0",
-              "id": "1",
+              "id": 1,
               "result": {
+                "tenant": "tenant",
                 "taskId": "task-123",
-                "id": "config-456",
                 "pushNotificationConfig": {
                   "url": "https://example.com/callback",
                   "id": "config-456"
@@ -342,10 +339,10 @@ public class JSONRPCUtilsTest {
         String responseJson = """
             {
               "jsonrpc": "2.0",
-              "id": "2",
+              "id": 2,
               "result": {
+                "tenant": "tenant",
                 "taskId": "task-123",
-                "id": "config-456",
                 "pushNotificationConfig": {
                   "url": "https://example.com/callback",
                   "id": "config-456"
