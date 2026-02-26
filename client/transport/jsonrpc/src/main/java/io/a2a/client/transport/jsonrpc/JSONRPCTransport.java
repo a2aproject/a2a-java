@@ -51,6 +51,7 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
@@ -284,13 +285,13 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
+    public AgentCard getExtendedAgentCard(GetExtendedAgentCardParams params, @Nullable ClientCallContext context) throws A2AClientException {
         try {
             PayloadAndHeaders payloadAndHeaders = applyInterceptors(GET_EXTENDED_AGENT_CARD_METHOD,
-                    ProtoUtils.ToProto.extendedAgentCard(), agentCard, context);
+                    ProtoUtils.ToProto.extendedAgentCard(params), agentCard, context);
 
             try {
-                String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, ""), payloadAndHeaders, GET_EXTENDED_AGENT_CARD_METHOD);
+                String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, params.tenant()), payloadAndHeaders, GET_EXTENDED_AGENT_CARD_METHOD);
                 GetExtendedAgentCardResponse response = unmarshalResponse(httpResponseBody, GET_EXTENDED_AGENT_CARD_METHOD);
                 return response.getResult();
             } catch (IOException | InterruptedException | JsonProcessingException e) {

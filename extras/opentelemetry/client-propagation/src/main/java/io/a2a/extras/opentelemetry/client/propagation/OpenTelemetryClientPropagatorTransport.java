@@ -7,6 +7,7 @@ import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
@@ -112,8 +113,8 @@ public class OpenTelemetryClientPropagatorTransport implements ClientTransport {
     }
 
     @Override
-    public AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
-        return delegate.getExtendedAgentCard(propagateContext(context));
+    public AgentCard getExtendedAgentCard(GetExtendedAgentCardParams request, @Nullable ClientCallContext context) throws A2AClientException {
+        return delegate.getExtendedAgentCard(request, propagateContext(context));
     }
 
     @Override

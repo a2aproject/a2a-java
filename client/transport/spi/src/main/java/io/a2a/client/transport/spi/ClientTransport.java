@@ -8,6 +8,7 @@ import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
@@ -139,11 +140,12 @@ public interface ClientTransport {
     /**
      * Retrieve the extended AgentCard.
      *
+     * @param params the parameters to get the extended agent card.
      * @param context optional client call context for the request (may be {@code null})
      * @return the extended agent card
      * @throws A2AClientException if retrieving the agent card fails for any reason
      */
-    AgentCard getExtendedAgentCard(@Nullable ClientCallContext context) throws A2AClientException;
+    AgentCard getExtendedAgentCard(GetExtendedAgentCardParams params, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Close the transport and release any associated resources.

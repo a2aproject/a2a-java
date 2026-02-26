@@ -27,6 +27,7 @@ import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
@@ -55,8 +56,12 @@ public class ProtoUtils {
             return AgentCardMapper.INSTANCE.toProto(agentCard);
         }
 
-        public static io.a2a.grpc.GetExtendedAgentCardRequest extendedAgentCard() {
-            return GetExtendedAgentCardRequest.newBuilder().build();
+        public static io.a2a.grpc.GetExtendedAgentCardRequest extendedAgentCard(GetExtendedAgentCardParams params) {
+            GetExtendedAgentCardRequest.Builder builder = GetExtendedAgentCardRequest.newBuilder();
+            if (params.tenant() != null) {
+                builder.setTenant(params.tenant());
+            }
+            return builder.build();
         }
 
         public static io.a2a.grpc.GetTaskRequest getTaskRequest(TaskQueryParams params) {
