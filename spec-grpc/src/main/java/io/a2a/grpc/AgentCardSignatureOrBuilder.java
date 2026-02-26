@@ -7,13 +7,15 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface AgentCardSignatureOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.AgentCardSignature)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.AgentCardSignature)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * The protected JWS header for the signature. This is always a
-   * base64url-encoded JSON object. Required.
+   * (-- api-linter: core::0140::reserved-words=disabled
+   * aip.dev/not-precedent: Backwards compatibility --)
+   * Required. The protected JWS header for the signature. This is always a
+   * base64url-encoded JSON object.
    * </pre>
    *
    * <code>string protected = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -22,8 +24,10 @@ public interface AgentCardSignatureOrBuilder extends
   java.lang.String getProtected();
   /**
    * <pre>
-   * The protected JWS header for the signature. This is always a
-   * base64url-encoded JSON object. Required.
+   * (-- api-linter: core::0140::reserved-words=disabled
+   * aip.dev/not-precedent: Backwards compatibility --)
+   * Required. The protected JWS header for the signature. This is always a
+   * base64url-encoded JSON object.
    * </pre>
    *
    * <code>string protected = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -34,7 +38,7 @@ public interface AgentCardSignatureOrBuilder extends
 
   /**
    * <pre>
-   * The computed signature, base64url-encoded. Required.
+   * Required. The computed signature, base64url-encoded.
    * </pre>
    *
    * <code>string signature = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -43,7 +47,7 @@ public interface AgentCardSignatureOrBuilder extends
   java.lang.String getSignature();
   /**
    * <pre>
-   * The computed signature, base64url-encoded. Required.
+   * Required. The computed signature, base64url-encoded.
    * </pre>
    *
    * <code>string signature = 2 [(.google.api.field_behavior) = REQUIRED];</code>

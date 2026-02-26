@@ -7,17 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:TaskStatusUpdateEvent]
- * An event sent by the agent to notify the client of a change in a task's
- * status.
+ * An event sent by the agent to notify the client of a change in a task's status.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.TaskStatusUpdateEvent}
+ * Protobuf type {@code lf.a2a.v1.TaskStatusUpdateEvent}
  */
 @com.google.protobuf.Generated
 public final class TaskStatusUpdateEvent extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.TaskStatusUpdateEvent)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.TaskStatusUpdateEvent)
     TaskStatusUpdateEventOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -40,13 +38,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatusUpdateEvent_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatusUpdateEvent_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatusUpdateEvent_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatusUpdateEvent_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.TaskStatusUpdateEvent.class, io.a2a.grpc.TaskStatusUpdateEvent.Builder.class);
   }
@@ -57,7 +55,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object taskId_ = "";
   /**
    * <pre>
-   * The id of the task that is changed
+   * The ID of the task that has changed.
    * </pre>
    *
    * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -78,7 +76,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The id of the task that is changed
+   * The ID of the task that has changed.
    * </pre>
    *
    * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -104,7 +102,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object contextId_ = "";
   /**
    * <pre>
-   * The id of the context that the task belongs to
+   * The ID of the context that the task belongs to.
    * </pre>
    *
    * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -125,7 +123,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The id of the context that the task belongs to
+   * The ID of the context that the task belongs to.
    * </pre>
    *
    * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -153,7 +151,7 @@ private static final long serialVersionUID = 0L;
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the status field is set.
    */
   @java.lang.Override
@@ -165,7 +163,7 @@ private static final long serialVersionUID = 0L;
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The status.
    */
   @java.lang.Override
@@ -177,21 +175,21 @@ private static final long serialVersionUID = 0L;
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
     return status_ == null ? io.a2a.grpc.TaskStatus.getDefaultInstance() : status_;
   }
 
-  public static final int METADATA_FIELD_NUMBER = 5;
+  public static final int METADATA_FIELD_NUMBER = 4;
   private com.google.protobuf.Struct metadata_;
   /**
    * <pre>
-   * Optional metadata to associate with the task update.
+   * Optional. Metadata associated with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    * @return Whether the metadata field is set.
    */
   @java.lang.Override
@@ -200,10 +198,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional metadata to associate with the task update.
+   * Optional. Metadata associated with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    * @return The metadata.
    */
   @java.lang.Override
@@ -212,10 +210,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional metadata to associate with the task update.
+   * Optional. Metadata associated with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
@@ -246,7 +244,7 @@ private static final long serialVersionUID = 0L;
       output.writeMessage(3, getStatus());
     }
     if (((bitField0_ & 0x00000002) != 0)) {
-      output.writeMessage(5, getMetadata());
+      output.writeMessage(4, getMetadata());
     }
     getUnknownFields().writeTo(output);
   }
@@ -269,7 +267,7 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, getMetadata());
+        .computeMessageSize(4, getMetadata());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -422,26 +420,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:TaskStatusUpdateEvent]
-   * An event sent by the agent to notify the client of a change in a task's
-   * status.
+   * An event sent by the agent to notify the client of a change in a task's status.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.TaskStatusUpdateEvent}
+   * Protobuf type {@code lf.a2a.v1.TaskStatusUpdateEvent}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.TaskStatusUpdateEvent)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.TaskStatusUpdateEvent)
       io.a2a.grpc.TaskStatusUpdateEventOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatusUpdateEvent_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatusUpdateEvent_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatusUpdateEvent_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatusUpdateEvent_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.TaskStatusUpdateEvent.class, io.a2a.grpc.TaskStatusUpdateEvent.Builder.class);
     }
@@ -485,7 +481,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatusUpdateEvent_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatusUpdateEvent_descriptor;
     }
 
     @java.lang.Override
@@ -605,13 +601,13 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000004;
               break;
             } // case 26
-            case 42: {
+            case 34: {
               input.readMessage(
                   internalGetMetadataFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000008;
               break;
-            } // case 42
+            } // case 34
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -632,7 +628,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object taskId_ = "";
     /**
      * <pre>
-     * The id of the task that is changed
+     * The ID of the task that has changed.
      * </pre>
      *
      * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -652,7 +648,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the task that is changed
+     * The ID of the task that has changed.
      * </pre>
      *
      * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -673,7 +669,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the task that is changed
+     * The ID of the task that has changed.
      * </pre>
      *
      * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -690,7 +686,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the task that is changed
+     * The ID of the task that has changed.
      * </pre>
      *
      * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -704,7 +700,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the task that is changed
+     * The ID of the task that has changed.
      * </pre>
      *
      * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -724,7 +720,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object contextId_ = "";
     /**
      * <pre>
-     * The id of the context that the task belongs to
+     * The ID of the context that the task belongs to.
      * </pre>
      *
      * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -744,7 +740,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the context that the task belongs to
+     * The ID of the context that the task belongs to.
      * </pre>
      *
      * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -765,7 +761,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the context that the task belongs to
+     * The ID of the context that the task belongs to.
      * </pre>
      *
      * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -782,7 +778,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the context that the task belongs to
+     * The ID of the context that the task belongs to.
      * </pre>
      *
      * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -796,7 +792,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The id of the context that the task belongs to
+     * The ID of the context that the task belongs to.
      * </pre>
      *
      * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -821,7 +817,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
@@ -832,7 +828,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The status.
      */
     public io.a2a.grpc.TaskStatus getStatus() {
@@ -847,7 +843,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -867,7 +863,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setStatus(
         io.a2a.grpc.TaskStatus.Builder builderForValue) {
@@ -885,7 +881,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeStatus(io.a2a.grpc.TaskStatus value) {
       if (statusBuilder_ == null) {
@@ -910,7 +906,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearStatus() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -927,7 +923,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskStatus.Builder getStatusBuilder() {
       bitField0_ |= 0x00000004;
@@ -939,7 +935,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder() {
       if (statusBuilder_ != null) {
@@ -954,7 +950,7 @@ private static final long serialVersionUID = 0L;
      * The new status of the task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskStatus, io.a2a.grpc.TaskStatus.Builder, io.a2a.grpc.TaskStatusOrBuilder> 
@@ -975,10 +971,10 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
     /**
      * <pre>
-     * Optional metadata to associate with the task update.
+     * Optional. Metadata associated with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
@@ -986,10 +982,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata to associate with the task update.
+     * Optional. Metadata associated with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      * @return The metadata.
      */
     public com.google.protobuf.Struct getMetadata() {
@@ -1001,10 +997,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata to associate with the task update.
+     * Optional. Metadata associated with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public Builder setMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1021,10 +1017,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata to associate with the task update.
+     * Optional. Metadata associated with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public Builder setMetadata(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -1039,10 +1035,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata to associate with the task update.
+     * Optional. Metadata associated with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1064,10 +1060,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata to associate with the task update.
+     * Optional. Metadata associated with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public Builder clearMetadata() {
       bitField0_ = (bitField0_ & ~0x00000008);
@@ -1081,10 +1077,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata to associate with the task update.
+     * Optional. Metadata associated with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
       bitField0_ |= 0x00000008;
@@ -1093,10 +1089,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata to associate with the task update.
+     * Optional. Metadata associated with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
       if (metadataBuilder_ != null) {
@@ -1108,10 +1104,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata to associate with the task update.
+     * Optional. Metadata associated with the task update.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 5;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
@@ -1127,10 +1123,10 @@ private static final long serialVersionUID = 0L;
       return metadataBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.TaskStatusUpdateEvent)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.TaskStatusUpdateEvent)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.TaskStatusUpdateEvent)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.TaskStatusUpdateEvent)
   private static final io.a2a.grpc.TaskStatusUpdateEvent DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.TaskStatusUpdateEvent();

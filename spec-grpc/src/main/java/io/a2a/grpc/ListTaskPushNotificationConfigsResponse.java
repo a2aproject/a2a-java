@@ -7,18 +7,17 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:ListTaskPushNotificationConfigResponse]
- * Represents a successful response for the `ListTaskPushNotificationConfig`
+ * Represents a successful response for the `ListTaskPushNotificationConfigs`
  * method.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.ListTaskPushNotificationConfigResponse}
+ * Protobuf type {@code lf.a2a.v1.ListTaskPushNotificationConfigsResponse}
  */
 @com.google.protobuf.Generated
-public final class ListTaskPushNotificationConfigResponse extends
+public final class ListTaskPushNotificationConfigsResponse extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.ListTaskPushNotificationConfigResponse)
-    ListTaskPushNotificationConfigResponseOrBuilder {
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.ListTaskPushNotificationConfigsResponse)
+    ListTaskPushNotificationConfigsResponseOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -27,28 +26,28 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 33,
       /* patch= */ 1,
       /* suffix= */ "",
-      "ListTaskPushNotificationConfigResponse");
+      "ListTaskPushNotificationConfigsResponse");
   }
-  // Use ListTaskPushNotificationConfigResponse.newBuilder() to construct.
-  private ListTaskPushNotificationConfigResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use ListTaskPushNotificationConfigsResponse.newBuilder() to construct.
+  private ListTaskPushNotificationConfigsResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private ListTaskPushNotificationConfigResponse() {
+  private ListTaskPushNotificationConfigsResponse() {
     configs_ = java.util.Collections.emptyList();
     nextPageToken_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            io.a2a.grpc.ListTaskPushNotificationConfigResponse.class, io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder.class);
+            io.a2a.grpc.ListTaskPushNotificationConfigsResponse.class, io.a2a.grpc.ListTaskPushNotificationConfigsResponse.Builder.class);
   }
 
   public static final int CONFIGS_FIELD_NUMBER = 1;
@@ -59,7 +58,7 @@ private static final long serialVersionUID = 0L;
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.TaskPushNotificationConfig> getConfigsList() {
@@ -70,7 +69,7 @@ private static final long serialVersionUID = 0L;
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
@@ -82,7 +81,7 @@ private static final long serialVersionUID = 0L;
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public int getConfigsCount() {
@@ -93,7 +92,7 @@ private static final long serialVersionUID = 0L;
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskPushNotificationConfig getConfigs(int index) {
@@ -104,7 +103,7 @@ private static final long serialVersionUID = 0L;
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigsOrBuilder(
@@ -117,8 +116,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object nextPageToken_ = "";
   /**
    * <pre>
-   * A token, which can be sent as `page_token` to retrieve the next page.
-   * If this field is omitted, there are no subsequent pages.
+   * A token to retrieve the next page of results, or empty if there are no more results in the list.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -139,8 +137,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A token, which can be sent as `page_token` to retrieve the next page.
-   * If this field is omitted, there are no subsequent pages.
+   * A token to retrieve the next page of results, or empty if there are no more results in the list.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -207,10 +204,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof io.a2a.grpc.ListTaskPushNotificationConfigResponse)) {
+    if (!(obj instanceof io.a2a.grpc.ListTaskPushNotificationConfigsResponse)) {
       return super.equals(obj);
     }
-    io.a2a.grpc.ListTaskPushNotificationConfigResponse other = (io.a2a.grpc.ListTaskPushNotificationConfigResponse) obj;
+    io.a2a.grpc.ListTaskPushNotificationConfigsResponse other = (io.a2a.grpc.ListTaskPushNotificationConfigsResponse) obj;
 
     if (!getConfigsList()
         .equals(other.getConfigsList())) return false;
@@ -238,44 +235,44 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(byte[] data)
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(java.io.InputStream input)
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -283,26 +280,26 @@ private static final long serialVersionUID = 0L;
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseDelimitedFrom(java.io.InputStream input)
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseDelimitedFrom(
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse parseFrom(
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -315,7 +312,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(io.a2a.grpc.ListTaskPushNotificationConfigResponse prototype) {
+  public static Builder newBuilder(io.a2a.grpc.ListTaskPushNotificationConfigsResponse prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -332,31 +329,30 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:ListTaskPushNotificationConfigResponse]
-   * Represents a successful response for the `ListTaskPushNotificationConfig`
+   * Represents a successful response for the `ListTaskPushNotificationConfigs`
    * method.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.ListTaskPushNotificationConfigResponse}
+   * Protobuf type {@code lf.a2a.v1.ListTaskPushNotificationConfigsResponse}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.ListTaskPushNotificationConfigResponse)
-      io.a2a.grpc.ListTaskPushNotificationConfigResponseOrBuilder {
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.ListTaskPushNotificationConfigsResponse)
+      io.a2a.grpc.ListTaskPushNotificationConfigsResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.a2a.grpc.ListTaskPushNotificationConfigResponse.class, io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder.class);
+              io.a2a.grpc.ListTaskPushNotificationConfigsResponse.class, io.a2a.grpc.ListTaskPushNotificationConfigsResponse.Builder.class);
     }
 
-    // Construct using io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder()
+    // Construct using io.a2a.grpc.ListTaskPushNotificationConfigsResponse.newBuilder()
     private Builder() {
 
     }
@@ -384,17 +380,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTaskPushNotificationConfigResponse_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_descriptor;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.ListTaskPushNotificationConfigResponse getDefaultInstanceForType() {
-      return io.a2a.grpc.ListTaskPushNotificationConfigResponse.getDefaultInstance();
+    public io.a2a.grpc.ListTaskPushNotificationConfigsResponse getDefaultInstanceForType() {
+      return io.a2a.grpc.ListTaskPushNotificationConfigsResponse.getDefaultInstance();
     }
 
     @java.lang.Override
-    public io.a2a.grpc.ListTaskPushNotificationConfigResponse build() {
-      io.a2a.grpc.ListTaskPushNotificationConfigResponse result = buildPartial();
+    public io.a2a.grpc.ListTaskPushNotificationConfigsResponse build() {
+      io.a2a.grpc.ListTaskPushNotificationConfigsResponse result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -402,15 +398,15 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public io.a2a.grpc.ListTaskPushNotificationConfigResponse buildPartial() {
-      io.a2a.grpc.ListTaskPushNotificationConfigResponse result = new io.a2a.grpc.ListTaskPushNotificationConfigResponse(this);
+    public io.a2a.grpc.ListTaskPushNotificationConfigsResponse buildPartial() {
+      io.a2a.grpc.ListTaskPushNotificationConfigsResponse result = new io.a2a.grpc.ListTaskPushNotificationConfigsResponse(this);
       buildPartialRepeatedFields(result);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    private void buildPartialRepeatedFields(io.a2a.grpc.ListTaskPushNotificationConfigResponse result) {
+    private void buildPartialRepeatedFields(io.a2a.grpc.ListTaskPushNotificationConfigsResponse result) {
       if (configsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           configs_ = java.util.Collections.unmodifiableList(configs_);
@@ -422,7 +418,7 @@ private static final long serialVersionUID = 0L;
       }
     }
 
-    private void buildPartial0(io.a2a.grpc.ListTaskPushNotificationConfigResponse result) {
+    private void buildPartial0(io.a2a.grpc.ListTaskPushNotificationConfigsResponse result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.nextPageToken_ = nextPageToken_;
@@ -431,16 +427,16 @@ private static final long serialVersionUID = 0L;
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof io.a2a.grpc.ListTaskPushNotificationConfigResponse) {
-        return mergeFrom((io.a2a.grpc.ListTaskPushNotificationConfigResponse)other);
+      if (other instanceof io.a2a.grpc.ListTaskPushNotificationConfigsResponse) {
+        return mergeFrom((io.a2a.grpc.ListTaskPushNotificationConfigsResponse)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(io.a2a.grpc.ListTaskPushNotificationConfigResponse other) {
-      if (other == io.a2a.grpc.ListTaskPushNotificationConfigResponse.getDefaultInstance()) return this;
+    public Builder mergeFrom(io.a2a.grpc.ListTaskPushNotificationConfigsResponse other) {
+      if (other == io.a2a.grpc.ListTaskPushNotificationConfigsResponse.getDefaultInstance()) return this;
       if (configsBuilder_ == null) {
         if (!other.configs_.isEmpty()) {
           if (configs_.isEmpty()) {
@@ -550,7 +546,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public java.util.List<io.a2a.grpc.TaskPushNotificationConfig> getConfigsList() {
       if (configsBuilder_ == null) {
@@ -564,7 +560,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public int getConfigsCount() {
       if (configsBuilder_ == null) {
@@ -578,7 +574,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfig getConfigs(int index) {
       if (configsBuilder_ == null) {
@@ -592,7 +588,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder setConfigs(
         int index, io.a2a.grpc.TaskPushNotificationConfig value) {
@@ -613,7 +609,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder setConfigs(
         int index, io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
@@ -631,7 +627,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addConfigs(io.a2a.grpc.TaskPushNotificationConfig value) {
       if (configsBuilder_ == null) {
@@ -651,7 +647,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addConfigs(
         int index, io.a2a.grpc.TaskPushNotificationConfig value) {
@@ -672,7 +668,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addConfigs(
         io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
@@ -690,7 +686,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addConfigs(
         int index, io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
@@ -708,7 +704,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder addAllConfigs(
         java.lang.Iterable<? extends io.a2a.grpc.TaskPushNotificationConfig> values) {
@@ -727,7 +723,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder clearConfigs() {
       if (configsBuilder_ == null) {
@@ -744,7 +740,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public Builder removeConfigs(int index) {
       if (configsBuilder_ == null) {
@@ -761,7 +757,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfig.Builder getConfigsBuilder(
         int index) {
@@ -772,7 +768,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigsOrBuilder(
         int index) {
@@ -786,7 +782,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public java.util.List<? extends io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
          getConfigsOrBuilderList() {
@@ -801,7 +797,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfig.Builder addConfigsBuilder() {
       return internalGetConfigsFieldBuilder().addBuilder(
@@ -812,7 +808,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public io.a2a.grpc.TaskPushNotificationConfig.Builder addConfigsBuilder(
         int index) {
@@ -824,7 +820,7 @@ private static final long serialVersionUID = 0L;
      * The list of push notification configurations.
      * </pre>
      *
-     * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+     * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
      */
     public java.util.List<io.a2a.grpc.TaskPushNotificationConfig.Builder> 
          getConfigsBuilderList() {
@@ -848,8 +844,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object nextPageToken_ = "";
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * A token to retrieve the next page of results, or empty if there are no more results in the list.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -869,8 +864,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * A token to retrieve the next page of results, or empty if there are no more results in the list.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -891,8 +885,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * A token to retrieve the next page of results, or empty if there are no more results in the list.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -909,8 +902,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * A token to retrieve the next page of results, or empty if there are no more results in the list.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -924,8 +916,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token, which can be sent as `page_token` to retrieve the next page.
-     * If this field is omitted, there are no subsequent pages.
+     * A token to retrieve the next page of results, or empty if there are no more results in the list.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -942,23 +933,23 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.ListTaskPushNotificationConfigResponse)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.ListTaskPushNotificationConfigsResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.ListTaskPushNotificationConfigResponse)
-  private static final io.a2a.grpc.ListTaskPushNotificationConfigResponse DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.ListTaskPushNotificationConfigsResponse)
+  private static final io.a2a.grpc.ListTaskPushNotificationConfigsResponse DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new io.a2a.grpc.ListTaskPushNotificationConfigResponse();
+    DEFAULT_INSTANCE = new io.a2a.grpc.ListTaskPushNotificationConfigsResponse();
   }
 
-  public static io.a2a.grpc.ListTaskPushNotificationConfigResponse getDefaultInstance() {
+  public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<ListTaskPushNotificationConfigResponse>
-      PARSER = new com.google.protobuf.AbstractParser<ListTaskPushNotificationConfigResponse>() {
+  private static final com.google.protobuf.Parser<ListTaskPushNotificationConfigsResponse>
+      PARSER = new com.google.protobuf.AbstractParser<ListTaskPushNotificationConfigsResponse>() {
     @java.lang.Override
-    public ListTaskPushNotificationConfigResponse parsePartialFrom(
+    public ListTaskPushNotificationConfigsResponse parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -977,17 +968,17 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public static com.google.protobuf.Parser<ListTaskPushNotificationConfigResponse> parser() {
+  public static com.google.protobuf.Parser<ListTaskPushNotificationConfigsResponse> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<ListTaskPushNotificationConfigResponse> getParserForType() {
+  public com.google.protobuf.Parser<ListTaskPushNotificationConfigsResponse> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public io.a2a.grpc.ListTaskPushNotificationConfigResponse getDefaultInstanceForType() {
+  public io.a2a.grpc.ListTaskPushNotificationConfigsResponse getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

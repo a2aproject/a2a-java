@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:HTTPAuthSecurityScheme]
  * Defines a security scheme using HTTP authentication.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.HTTPAuthSecurityScheme}
+ * Protobuf type {@code lf.a2a.v1.HTTPAuthSecurityScheme}
  */
 @com.google.protobuf.Generated
 public final class HTTPAuthSecurityScheme extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.HTTPAuthSecurityScheme)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.HTTPAuthSecurityScheme)
     HTTPAuthSecuritySchemeOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -40,13 +39,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_HTTPAuthSecurityScheme_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_HTTPAuthSecurityScheme_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.HTTPAuthSecurityScheme.class, io.a2a.grpc.HTTPAuthSecurityScheme.Builder.class);
   }
@@ -155,7 +154,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
-   * This is primarily for documentation purposes.
+   * Primarily for documentation purposes.
    * </pre>
    *
    * <code>string bearer_format = 3;</code>
@@ -177,7 +176,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
-   * This is primarily for documentation purposes.
+   * Primarily for documentation purposes.
    * </pre>
    *
    * <code>string bearer_format = 3;</code>
@@ -376,25 +375,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:HTTPAuthSecurityScheme]
    * Defines a security scheme using HTTP authentication.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.HTTPAuthSecurityScheme}
+   * Protobuf type {@code lf.a2a.v1.HTTPAuthSecurityScheme}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.HTTPAuthSecurityScheme)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.HTTPAuthSecurityScheme)
       io.a2a.grpc.HTTPAuthSecuritySchemeOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_HTTPAuthSecurityScheme_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_HTTPAuthSecurityScheme_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.HTTPAuthSecurityScheme.class, io.a2a.grpc.HTTPAuthSecurityScheme.Builder.class);
     }
@@ -422,7 +420,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_HTTPAuthSecurityScheme_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_descriptor;
     }
 
     @java.lang.Override
@@ -743,7 +741,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
-     * This is primarily for documentation purposes.
+     * Primarily for documentation purposes.
      * </pre>
      *
      * <code>string bearer_format = 3;</code>
@@ -764,7 +762,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
-     * This is primarily for documentation purposes.
+     * Primarily for documentation purposes.
      * </pre>
      *
      * <code>string bearer_format = 3;</code>
@@ -786,7 +784,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
-     * This is primarily for documentation purposes.
+     * Primarily for documentation purposes.
      * </pre>
      *
      * <code>string bearer_format = 3;</code>
@@ -804,7 +802,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
-     * This is primarily for documentation purposes.
+     * Primarily for documentation purposes.
      * </pre>
      *
      * <code>string bearer_format = 3;</code>
@@ -819,7 +817,7 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
-     * This is primarily for documentation purposes.
+     * Primarily for documentation purposes.
      * </pre>
      *
      * <code>string bearer_format = 3;</code>
@@ -836,10 +834,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.HTTPAuthSecurityScheme)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.HTTPAuthSecurityScheme)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.HTTPAuthSecurityScheme)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.HTTPAuthSecurityScheme)
   private static final io.a2a.grpc.HTTPAuthSecurityScheme DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.HTTPAuthSecurityScheme();

@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:ListTasksRequest]
  * Parameters for listing tasks with optional filtering criteria.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.ListTasksRequest}
+ * Protobuf type {@code lf.a2a.v1.ListTasksRequest}
  */
 @com.google.protobuf.Generated
 public final class ListTasksRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.ListTasksRequest)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.ListTasksRequest)
     ListTasksRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -41,27 +40,27 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTasksRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTasksRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.ListTasksRequest.class, io.a2a.grpc.ListTasksRequest.Builder.class);
   }
 
   private int bitField0_;
-  public static final int TENANT_FIELD_NUMBER = 9;
+  public static final int TENANT_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object tenant_ = "";
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 9;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   @java.lang.Override
@@ -79,10 +78,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 9;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   @java.lang.Override
@@ -100,7 +99,7 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int CONTEXT_ID_FIELD_NUMBER = 1;
+  public static final int CONTEXT_ID_FIELD_NUMBER = 2;
   @SuppressWarnings("serial")
   private volatile java.lang.Object contextId_ = "";
   /**
@@ -108,7 +107,7 @@ private static final long serialVersionUID = 0L;
    * Filter tasks by context ID to get tasks from a specific conversation or session.
    * </pre>
    *
-   * <code>string context_id = 1;</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   @java.lang.Override
@@ -129,7 +128,7 @@ private static final long serialVersionUID = 0L;
    * Filter tasks by context ID to get tasks from a specific conversation or session.
    * </pre>
    *
-   * <code>string context_id = 1;</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   @java.lang.Override
@@ -147,14 +146,14 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int STATUS_FIELD_NUMBER = 2;
+  public static final int STATUS_FIELD_NUMBER = 3;
   private int status_ = 0;
   /**
    * <pre>
    * Filter tasks by their current status state.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState status = 2;</code>
+   * <code>.lf.a2a.v1.TaskState status = 3;</code>
    * @return The enum numeric value on the wire for status.
    */
   @java.lang.Override public int getStatusValue() {
@@ -165,7 +164,7 @@ private static final long serialVersionUID = 0L;
    * Filter tasks by their current status state.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState status = 2;</code>
+   * <code>.lf.a2a.v1.TaskState status = 3;</code>
    * @return The status.
    */
   @java.lang.Override public io.a2a.grpc.TaskState getStatus() {
@@ -173,15 +172,17 @@ private static final long serialVersionUID = 0L;
     return result == null ? io.a2a.grpc.TaskState.UNRECOGNIZED : result;
   }
 
-  public static final int PAGE_SIZE_FIELD_NUMBER = 3;
+  public static final int PAGE_SIZE_FIELD_NUMBER = 4;
   private int pageSize_ = 0;
   /**
    * <pre>
-   * Maximum number of tasks to return. Must be between 1 and 100.
-   * Defaults to 50 if not specified.
+   * The maximum number of tasks to return. The service may return fewer than this value.
+   * If unspecified, at most 50 tasks will be returned.
+   * The minimum value is 1.
+   * The maximum value is 100.
    * </pre>
    *
-   * <code>optional int32 page_size = 3;</code>
+   * <code>optional int32 page_size = 4;</code>
    * @return Whether the pageSize field is set.
    */
   @java.lang.Override
@@ -190,11 +191,13 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Maximum number of tasks to return. Must be between 1 and 100.
-   * Defaults to 50 if not specified.
+   * The maximum number of tasks to return. The service may return fewer than this value.
+   * If unspecified, at most 50 tasks will be returned.
+   * The minimum value is 1.
+   * The maximum value is 100.
    * </pre>
    *
-   * <code>optional int32 page_size = 3;</code>
+   * <code>optional int32 page_size = 4;</code>
    * @return The pageSize.
    */
   @java.lang.Override
@@ -202,15 +205,17 @@ private static final long serialVersionUID = 0L;
     return pageSize_;
   }
 
-  public static final int PAGE_TOKEN_FIELD_NUMBER = 4;
+  public static final int PAGE_TOKEN_FIELD_NUMBER = 5;
   @SuppressWarnings("serial")
   private volatile java.lang.Object pageToken_ = "";
   /**
    * <pre>
-   * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
+   * A page token, received from a previous `ListTasks` call.
+   * `ListTasksResponse.next_page_token`.
+   * Provide this to retrieve the subsequent page.
    * </pre>
    *
-   * <code>string page_token = 4;</code>
+   * <code>string page_token = 5;</code>
    * @return The pageToken.
    */
   @java.lang.Override
@@ -228,10 +233,12 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
+   * A page token, received from a previous `ListTasks` call.
+   * `ListTasksResponse.next_page_token`.
+   * Provide this to retrieve the subsequent page.
    * </pre>
    *
-   * <code>string page_token = 4;</code>
+   * <code>string page_token = 5;</code>
    * @return The bytes for pageToken.
    */
   @java.lang.Override
@@ -249,14 +256,14 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int HISTORY_LENGTH_FIELD_NUMBER = 5;
+  public static final int HISTORY_LENGTH_FIELD_NUMBER = 6;
   private int historyLength_ = 0;
   /**
    * <pre>
    * The maximum number of messages to include in each task's history.
    * </pre>
    *
-   * <code>optional int32 history_length = 5;</code>
+   * <code>optional int32 history_length = 6;</code>
    * @return Whether the historyLength field is set.
    */
   @java.lang.Override
@@ -268,7 +275,7 @@ private static final long serialVersionUID = 0L;
    * The maximum number of messages to include in each task's history.
    * </pre>
    *
-   * <code>optional int32 history_length = 5;</code>
+   * <code>optional int32 history_length = 6;</code>
    * @return The historyLength.
    */
   @java.lang.Override
@@ -276,7 +283,7 @@ private static final long serialVersionUID = 0L;
     return historyLength_;
   }
 
-  public static final int STATUS_TIMESTAMP_AFTER_FIELD_NUMBER = 6;
+  public static final int STATUS_TIMESTAMP_AFTER_FIELD_NUMBER = 7;
   private com.google.protobuf.Timestamp statusTimestampAfter_;
   /**
    * <pre>
@@ -284,7 +291,7 @@ private static final long serialVersionUID = 0L;
    * Only tasks with a status timestamp time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
    * @return Whether the statusTimestampAfter field is set.
    */
   @java.lang.Override
@@ -297,7 +304,7 @@ private static final long serialVersionUID = 0L;
    * Only tasks with a status timestamp time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
    * @return The statusTimestampAfter.
    */
   @java.lang.Override
@@ -310,14 +317,14 @@ private static final long serialVersionUID = 0L;
    * Only tasks with a status timestamp time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getStatusTimestampAfterOrBuilder() {
     return statusTimestampAfter_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : statusTimestampAfter_;
   }
 
-  public static final int INCLUDE_ARTIFACTS_FIELD_NUMBER = 7;
+  public static final int INCLUDE_ARTIFACTS_FIELD_NUMBER = 8;
   private boolean includeArtifacts_ = false;
   /**
    * <pre>
@@ -325,7 +332,7 @@ private static final long serialVersionUID = 0L;
    * Defaults to false to reduce payload size.
    * </pre>
    *
-   * <code>optional bool include_artifacts = 7;</code>
+   * <code>optional bool include_artifacts = 8;</code>
    * @return Whether the includeArtifacts field is set.
    */
   @java.lang.Override
@@ -338,7 +345,7 @@ private static final long serialVersionUID = 0L;
    * Defaults to false to reduce payload size.
    * </pre>
    *
-   * <code>optional bool include_artifacts = 7;</code>
+   * <code>optional bool include_artifacts = 8;</code>
    * @return The includeArtifacts.
    */
   @java.lang.Override
@@ -360,29 +367,29 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, tenant_);
+    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(contextId_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, contextId_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, contextId_);
     }
     if (status_ != io.a2a.grpc.TaskState.TASK_STATE_UNSPECIFIED.getNumber()) {
-      output.writeEnum(2, status_);
+      output.writeEnum(3, status_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeInt32(3, pageSize_);
+      output.writeInt32(4, pageSize_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(pageToken_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 4, pageToken_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 5, pageToken_);
     }
     if (((bitField0_ & 0x00000002) != 0)) {
-      output.writeInt32(5, historyLength_);
+      output.writeInt32(6, historyLength_);
     }
     if (((bitField0_ & 0x00000004) != 0)) {
-      output.writeMessage(6, getStatusTimestampAfter());
+      output.writeMessage(7, getStatusTimestampAfter());
     }
     if (((bitField0_ & 0x00000008) != 0)) {
-      output.writeBool(7, includeArtifacts_);
-    }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 9, tenant_);
+      output.writeBool(8, includeArtifacts_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -393,34 +400,34 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, tenant_);
+    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(contextId_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, contextId_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, contextId_);
     }
     if (status_ != io.a2a.grpc.TaskState.TASK_STATE_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
-        .computeEnumSize(2, status_);
+        .computeEnumSize(3, status_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(3, pageSize_);
+        .computeInt32Size(4, pageSize_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(pageToken_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(4, pageToken_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(5, pageToken_);
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(5, historyLength_);
+        .computeInt32Size(6, historyLength_);
     }
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, getStatusTimestampAfter());
+        .computeMessageSize(7, getStatusTimestampAfter());
     }
     if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(7, includeArtifacts_);
-    }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(9, tenant_);
+        .computeBoolSize(8, includeArtifacts_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -599,25 +606,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:ListTasksRequest]
    * Parameters for listing tasks with optional filtering criteria.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.ListTasksRequest}
+   * Protobuf type {@code lf.a2a.v1.ListTasksRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.ListTasksRequest)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.ListTasksRequest)
       io.a2a.grpc.ListTasksRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTasksRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTasksRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.ListTasksRequest.class, io.a2a.grpc.ListTasksRequest.Builder.class);
     }
@@ -660,7 +666,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_ListTasksRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_ListTasksRequest_descriptor;
     }
 
     @java.lang.Override
@@ -790,47 +796,47 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
+              tenant_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000001;
+              break;
+            } // case 10
+            case 18: {
               contextId_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000002;
               break;
-            } // case 10
-            case 16: {
+            } // case 18
+            case 24: {
               status_ = input.readEnum();
               bitField0_ |= 0x00000004;
               break;
-            } // case 16
-            case 24: {
+            } // case 24
+            case 32: {
               pageSize_ = input.readInt32();
               bitField0_ |= 0x00000008;
               break;
-            } // case 24
-            case 34: {
+            } // case 32
+            case 42: {
               pageToken_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000010;
               break;
-            } // case 34
-            case 40: {
+            } // case 42
+            case 48: {
               historyLength_ = input.readInt32();
               bitField0_ |= 0x00000020;
               break;
-            } // case 40
-            case 50: {
+            } // case 48
+            case 58: {
               input.readMessage(
                   internalGetStatusTimestampAfterFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000040;
               break;
-            } // case 50
-            case 56: {
+            } // case 58
+            case 64: {
               includeArtifacts_ = input.readBool();
               bitField0_ |= 0x00000080;
               break;
-            } // case 56
-            case 74: {
-              tenant_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000001;
-              break;
-            } // case 74
+            } // case 64
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -851,10 +857,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object tenant_ = "";
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 9;</code>
+     * <code>string tenant = 1;</code>
      * @return The tenant.
      */
     public java.lang.String getTenant() {
@@ -871,10 +877,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 9;</code>
+     * <code>string tenant = 1;</code>
      * @return The bytes for tenant.
      */
     public com.google.protobuf.ByteString
@@ -892,10 +898,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 9;</code>
+     * <code>string tenant = 1;</code>
      * @param value The tenant to set.
      * @return This builder for chaining.
      */
@@ -909,10 +915,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 9;</code>
+     * <code>string tenant = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearTenant() {
@@ -923,10 +929,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 9;</code>
+     * <code>string tenant = 1;</code>
      * @param value The bytes for tenant to set.
      * @return This builder for chaining.
      */
@@ -946,7 +952,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
-     * <code>string context_id = 1;</code>
+     * <code>string context_id = 2;</code>
      * @return The contextId.
      */
     public java.lang.String getContextId() {
@@ -966,7 +972,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
-     * <code>string context_id = 1;</code>
+     * <code>string context_id = 2;</code>
      * @return The bytes for contextId.
      */
     public com.google.protobuf.ByteString
@@ -987,7 +993,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
-     * <code>string context_id = 1;</code>
+     * <code>string context_id = 2;</code>
      * @param value The contextId to set.
      * @return This builder for chaining.
      */
@@ -1004,7 +1010,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
-     * <code>string context_id = 1;</code>
+     * <code>string context_id = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearContextId() {
@@ -1018,7 +1024,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by context ID to get tasks from a specific conversation or session.
      * </pre>
      *
-     * <code>string context_id = 1;</code>
+     * <code>string context_id = 2;</code>
      * @param value The bytes for contextId to set.
      * @return This builder for chaining.
      */
@@ -1038,7 +1044,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by their current status state.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState status = 2;</code>
+     * <code>.lf.a2a.v1.TaskState status = 3;</code>
      * @return The enum numeric value on the wire for status.
      */
     @java.lang.Override public int getStatusValue() {
@@ -1049,7 +1055,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by their current status state.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState status = 2;</code>
+     * <code>.lf.a2a.v1.TaskState status = 3;</code>
      * @param value The enum numeric value on the wire for status to set.
      * @return This builder for chaining.
      */
@@ -1064,7 +1070,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by their current status state.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState status = 2;</code>
+     * <code>.lf.a2a.v1.TaskState status = 3;</code>
      * @return The status.
      */
     @java.lang.Override
@@ -1077,7 +1083,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by their current status state.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState status = 2;</code>
+     * <code>.lf.a2a.v1.TaskState status = 3;</code>
      * @param value The status to set.
      * @return This builder for chaining.
      */
@@ -1093,7 +1099,7 @@ private static final long serialVersionUID = 0L;
      * Filter tasks by their current status state.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState status = 2;</code>
+     * <code>.lf.a2a.v1.TaskState status = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearStatus() {
@@ -1106,11 +1112,13 @@ private static final long serialVersionUID = 0L;
     private int pageSize_ ;
     /**
      * <pre>
-     * Maximum number of tasks to return. Must be between 1 and 100.
-     * Defaults to 50 if not specified.
+     * The maximum number of tasks to return. The service may return fewer than this value.
+     * If unspecified, at most 50 tasks will be returned.
+     * The minimum value is 1.
+     * The maximum value is 100.
      * </pre>
      *
-     * <code>optional int32 page_size = 3;</code>
+     * <code>optional int32 page_size = 4;</code>
      * @return Whether the pageSize field is set.
      */
     @java.lang.Override
@@ -1119,11 +1127,13 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Maximum number of tasks to return. Must be between 1 and 100.
-     * Defaults to 50 if not specified.
+     * The maximum number of tasks to return. The service may return fewer than this value.
+     * If unspecified, at most 50 tasks will be returned.
+     * The minimum value is 1.
+     * The maximum value is 100.
      * </pre>
      *
-     * <code>optional int32 page_size = 3;</code>
+     * <code>optional int32 page_size = 4;</code>
      * @return The pageSize.
      */
     @java.lang.Override
@@ -1132,11 +1142,13 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Maximum number of tasks to return. Must be between 1 and 100.
-     * Defaults to 50 if not specified.
+     * The maximum number of tasks to return. The service may return fewer than this value.
+     * If unspecified, at most 50 tasks will be returned.
+     * The minimum value is 1.
+     * The maximum value is 100.
      * </pre>
      *
-     * <code>optional int32 page_size = 3;</code>
+     * <code>optional int32 page_size = 4;</code>
      * @param value The pageSize to set.
      * @return This builder for chaining.
      */
@@ -1149,11 +1161,13 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Maximum number of tasks to return. Must be between 1 and 100.
-     * Defaults to 50 if not specified.
+     * The maximum number of tasks to return. The service may return fewer than this value.
+     * If unspecified, at most 50 tasks will be returned.
+     * The minimum value is 1.
+     * The maximum value is 100.
      * </pre>
      *
-     * <code>optional int32 page_size = 3;</code>
+     * <code>optional int32 page_size = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearPageSize() {
@@ -1166,10 +1180,12 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object pageToken_ = "";
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
+     * A page token, received from a previous `ListTasks` call.
+     * `ListTasksResponse.next_page_token`.
+     * Provide this to retrieve the subsequent page.
      * </pre>
      *
-     * <code>string page_token = 4;</code>
+     * <code>string page_token = 5;</code>
      * @return The pageToken.
      */
     public java.lang.String getPageToken() {
@@ -1186,10 +1202,12 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
+     * A page token, received from a previous `ListTasks` call.
+     * `ListTasksResponse.next_page_token`.
+     * Provide this to retrieve the subsequent page.
      * </pre>
      *
-     * <code>string page_token = 4;</code>
+     * <code>string page_token = 5;</code>
      * @return The bytes for pageToken.
      */
     public com.google.protobuf.ByteString
@@ -1207,10 +1225,12 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
+     * A page token, received from a previous `ListTasks` call.
+     * `ListTasksResponse.next_page_token`.
+     * Provide this to retrieve the subsequent page.
      * </pre>
      *
-     * <code>string page_token = 4;</code>
+     * <code>string page_token = 5;</code>
      * @param value The pageToken to set.
      * @return This builder for chaining.
      */
@@ -1224,10 +1244,12 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
+     * A page token, received from a previous `ListTasks` call.
+     * `ListTasksResponse.next_page_token`.
+     * Provide this to retrieve the subsequent page.
      * </pre>
      *
-     * <code>string page_token = 4;</code>
+     * <code>string page_token = 5;</code>
      * @return This builder for chaining.
      */
     public Builder clearPageToken() {
@@ -1238,10 +1260,12 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
+     * A page token, received from a previous `ListTasks` call.
+     * `ListTasksResponse.next_page_token`.
+     * Provide this to retrieve the subsequent page.
      * </pre>
      *
-     * <code>string page_token = 4;</code>
+     * <code>string page_token = 5;</code>
      * @param value The bytes for pageToken to set.
      * @return This builder for chaining.
      */
@@ -1261,7 +1285,7 @@ private static final long serialVersionUID = 0L;
      * The maximum number of messages to include in each task's history.
      * </pre>
      *
-     * <code>optional int32 history_length = 5;</code>
+     * <code>optional int32 history_length = 6;</code>
      * @return Whether the historyLength field is set.
      */
     @java.lang.Override
@@ -1273,7 +1297,7 @@ private static final long serialVersionUID = 0L;
      * The maximum number of messages to include in each task's history.
      * </pre>
      *
-     * <code>optional int32 history_length = 5;</code>
+     * <code>optional int32 history_length = 6;</code>
      * @return The historyLength.
      */
     @java.lang.Override
@@ -1285,7 +1309,7 @@ private static final long serialVersionUID = 0L;
      * The maximum number of messages to include in each task's history.
      * </pre>
      *
-     * <code>optional int32 history_length = 5;</code>
+     * <code>optional int32 history_length = 6;</code>
      * @param value The historyLength to set.
      * @return This builder for chaining.
      */
@@ -1301,7 +1325,7 @@ private static final long serialVersionUID = 0L;
      * The maximum number of messages to include in each task's history.
      * </pre>
      *
-     * <code>optional int32 history_length = 5;</code>
+     * <code>optional int32 history_length = 6;</code>
      * @return This builder for chaining.
      */
     public Builder clearHistoryLength() {
@@ -1320,7 +1344,7 @@ private static final long serialVersionUID = 0L;
      * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
      * @return Whether the statusTimestampAfter field is set.
      */
     public boolean hasStatusTimestampAfter() {
@@ -1332,7 +1356,7 @@ private static final long serialVersionUID = 0L;
      * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
      * @return The statusTimestampAfter.
      */
     public com.google.protobuf.Timestamp getStatusTimestampAfter() {
@@ -1348,7 +1372,7 @@ private static final long serialVersionUID = 0L;
      * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
      */
     public Builder setStatusTimestampAfter(com.google.protobuf.Timestamp value) {
       if (statusTimestampAfterBuilder_ == null) {
@@ -1369,7 +1393,7 @@ private static final long serialVersionUID = 0L;
      * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
      */
     public Builder setStatusTimestampAfter(
         com.google.protobuf.Timestamp.Builder builderForValue) {
@@ -1388,7 +1412,7 @@ private static final long serialVersionUID = 0L;
      * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
      */
     public Builder mergeStatusTimestampAfter(com.google.protobuf.Timestamp value) {
       if (statusTimestampAfterBuilder_ == null) {
@@ -1414,7 +1438,7 @@ private static final long serialVersionUID = 0L;
      * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
      */
     public Builder clearStatusTimestampAfter() {
       bitField0_ = (bitField0_ & ~0x00000040);
@@ -1432,7 +1456,7 @@ private static final long serialVersionUID = 0L;
      * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
      */
     public com.google.protobuf.Timestamp.Builder getStatusTimestampAfterBuilder() {
       bitField0_ |= 0x00000040;
@@ -1445,7 +1469,7 @@ private static final long serialVersionUID = 0L;
      * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
      */
     public com.google.protobuf.TimestampOrBuilder getStatusTimestampAfterOrBuilder() {
       if (statusTimestampAfterBuilder_ != null) {
@@ -1461,7 +1485,7 @@ private static final long serialVersionUID = 0L;
      * Only tasks with a status timestamp time greater than or equal to this value will be returned.
      * </pre>
      *
-     * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+     * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 
@@ -1484,7 +1508,7 @@ private static final long serialVersionUID = 0L;
      * Defaults to false to reduce payload size.
      * </pre>
      *
-     * <code>optional bool include_artifacts = 7;</code>
+     * <code>optional bool include_artifacts = 8;</code>
      * @return Whether the includeArtifacts field is set.
      */
     @java.lang.Override
@@ -1497,7 +1521,7 @@ private static final long serialVersionUID = 0L;
      * Defaults to false to reduce payload size.
      * </pre>
      *
-     * <code>optional bool include_artifacts = 7;</code>
+     * <code>optional bool include_artifacts = 8;</code>
      * @return The includeArtifacts.
      */
     @java.lang.Override
@@ -1510,7 +1534,7 @@ private static final long serialVersionUID = 0L;
      * Defaults to false to reduce payload size.
      * </pre>
      *
-     * <code>optional bool include_artifacts = 7;</code>
+     * <code>optional bool include_artifacts = 8;</code>
      * @param value The includeArtifacts to set.
      * @return This builder for chaining.
      */
@@ -1527,7 +1551,7 @@ private static final long serialVersionUID = 0L;
      * Defaults to false to reduce payload size.
      * </pre>
      *
-     * <code>optional bool include_artifacts = 7;</code>
+     * <code>optional bool include_artifacts = 8;</code>
      * @return This builder for chaining.
      */
     public Builder clearIncludeArtifacts() {
@@ -1537,10 +1561,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.ListTasksRequest)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.ListTasksRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.ListTasksRequest)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.ListTasksRequest)
   private static final io.a2a.grpc.ListTasksRequest DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.ListTasksRequest();

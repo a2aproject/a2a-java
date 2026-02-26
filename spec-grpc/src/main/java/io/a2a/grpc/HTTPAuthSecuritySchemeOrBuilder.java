@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface HTTPAuthSecuritySchemeOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.HTTPAuthSecurityScheme)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.HTTPAuthSecurityScheme)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -57,7 +57,7 @@ public interface HTTPAuthSecuritySchemeOrBuilder extends
   /**
    * <pre>
    * A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
-   * This is primarily for documentation purposes.
+   * Primarily for documentation purposes.
    * </pre>
    *
    * <code>string bearer_format = 3;</code>
@@ -67,7 +67,7 @@ public interface HTTPAuthSecuritySchemeOrBuilder extends
   /**
    * <pre>
    * A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
-   * This is primarily for documentation purposes.
+   * Primarily for documentation purposes.
    * </pre>
    *
    * <code>string bearer_format = 3;</code>

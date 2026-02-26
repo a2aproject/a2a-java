@@ -54,8 +54,8 @@ import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskResponse;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsRequest;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
@@ -253,12 +253,12 @@ public class JSONRPCUtils {
                 return new SendMessageRequest(version, id, ProtoUtils.FromProto.messageSendParams(builder));
             }
             case LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder();
+                io.a2a.grpc.ListTaskPushNotificationConfigsRequest.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
                 if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
                     builder.setTenant(tenant);
                 }
-                return new ListTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigParams(builder));
+                return new ListTaskPushNotificationConfigsRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigParams(builder));
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
@@ -350,9 +350,9 @@ public class JSONRPCUtils {
                 return new SendMessageResponse(id, ProtoUtils.FromProto.task(builder.getTask()));
             }
             case LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder();
+                io.a2a.grpc.ListTaskPushNotificationConfigsResponse.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigsResponse.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                return new ListTaskPushNotificationConfigResponse(id, ProtoUtils.FromProto.listTaskPushNotificationConfigResult(builder));
+                return new ListTaskPushNotificationConfigsResponse(id, ProtoUtils.FromProto.listTaskPushNotificationConfigResult(builder));
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 return new DeleteTaskPushNotificationConfigResponse(id);
@@ -389,7 +389,7 @@ public class JSONRPCUtils {
                 return new SendMessageResponse(id, rpcError);
             }
             case LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                return new ListTaskPushNotificationConfigResponse(id, rpcError);
+                return new ListTaskPushNotificationConfigsResponse(id, rpcError);
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 return new DeleteTaskPushNotificationConfigResponse(id, rpcError);

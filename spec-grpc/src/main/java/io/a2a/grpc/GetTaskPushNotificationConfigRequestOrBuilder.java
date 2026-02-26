@@ -7,24 +7,24 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface GetTaskPushNotificationConfigRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.GetTaskPushNotificationConfigRequest)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.GetTaskPushNotificationConfigRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   java.lang.String getTenant();
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   com.google.protobuf.ByteString
@@ -32,19 +32,19 @@ public interface GetTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * The parent task resource id.
+   * The parent task resource ID.
    * </pre>
    *
-   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The taskId.
    */
   java.lang.String getTaskId();
   /**
    * <pre>
-   * The parent task resource id.
+   * The parent task resource ID.
    * </pre>
    *
-   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
@@ -52,19 +52,19 @@ public interface GetTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * The resource id of the config to retrieve.
+   * The resource ID of the configuration to retrieve.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   java.lang.String getId();
   /**
    * <pre>
-   * The resource id of the config to retrieve.
+   * The resource ID of the configuration to retrieve.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   com.google.protobuf.ByteString

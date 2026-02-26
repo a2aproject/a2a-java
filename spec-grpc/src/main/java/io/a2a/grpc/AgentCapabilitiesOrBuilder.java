@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface AgentCapabilitiesOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.AgentCapabilities)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.AgentCapabilities)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -53,7 +53,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   java.util.List<io.a2a.grpc.AgentExtension> 
       getExtensionsList();
@@ -62,7 +62,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   io.a2a.grpc.AgentExtension getExtensions(int index);
   /**
@@ -70,7 +70,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   int getExtensionsCount();
   /**
@@ -78,7 +78,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   java.util.List<? extends io.a2a.grpc.AgentExtensionOrBuilder> 
       getExtensionsOrBuilderList();
@@ -87,7 +87,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   io.a2a.grpc.AgentExtensionOrBuilder getExtensionsOrBuilder(
       int index);
@@ -97,7 +97,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * Indicates if the agent supports providing an extended agent card when authenticated.
    * </pre>
    *
-   * <code>optional bool extended_agent_card = 5;</code>
+   * <code>optional bool extended_agent_card = 4;</code>
    * @return Whether the extendedAgentCard field is set.
    */
   boolean hasExtendedAgentCard();
@@ -106,7 +106,7 @@ public interface AgentCapabilitiesOrBuilder extends
    * Indicates if the agent supports providing an extended agent card when authenticated.
    * </pre>
    *
-   * <code>optional bool extended_agent_card = 5;</code>
+   * <code>optional bool extended_agent_card = 4;</code>
    * @return The extendedAgentCard.
    */
   boolean getExtendedAgentCard();

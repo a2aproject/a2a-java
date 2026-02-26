@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:StreamResponse]
  * A wrapper object used in streaming operations to encapsulate different types of response data.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.StreamResponse}
+ * Protobuf type {@code lf.a2a.v1.StreamResponse}
  */
 @com.google.protobuf.Generated
 public final class StreamResponse extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.StreamResponse)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.StreamResponse)
     StreamResponseOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -37,13 +36,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_StreamResponse_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StreamResponse_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_StreamResponse_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StreamResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.StreamResponse.class, io.a2a.grpc.StreamResponse.Builder.class);
   }
@@ -100,7 +99,7 @@ private static final long serialVersionUID = 0L;
    * A Task object containing the current state of the task.
    * </pre>
    *
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    * @return Whether the task field is set.
    */
   @java.lang.Override
@@ -112,7 +111,7 @@ private static final long serialVersionUID = 0L;
    * A Task object containing the current state of the task.
    * </pre>
    *
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    * @return The task.
    */
   @java.lang.Override
@@ -127,7 +126,7 @@ private static final long serialVersionUID = 0L;
    * A Task object containing the current state of the task.
    * </pre>
    *
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskOrBuilder getTaskOrBuilder() {
@@ -143,7 +142,7 @@ private static final long serialVersionUID = 0L;
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return Whether the message field is set.
    */
   @java.lang.Override
@@ -155,7 +154,7 @@ private static final long serialVersionUID = 0L;
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return The message.
    */
   @java.lang.Override
@@ -170,7 +169,7 @@ private static final long serialVersionUID = 0L;
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
@@ -186,7 +185,7 @@ private static final long serialVersionUID = 0L;
    * An event indicating a task status update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+   * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
    * @return Whether the statusUpdate field is set.
    */
   @java.lang.Override
@@ -198,7 +197,7 @@ private static final long serialVersionUID = 0L;
    * An event indicating a task status update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+   * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
    * @return The statusUpdate.
    */
   @java.lang.Override
@@ -213,7 +212,7 @@ private static final long serialVersionUID = 0L;
    * An event indicating a task status update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+   * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskStatusUpdateEventOrBuilder getStatusUpdateOrBuilder() {
@@ -229,7 +228,7 @@ private static final long serialVersionUID = 0L;
    * An event indicating a task artifact update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+   * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
    * @return Whether the artifactUpdate field is set.
    */
   @java.lang.Override
@@ -241,7 +240,7 @@ private static final long serialVersionUID = 0L;
    * An event indicating a task artifact update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+   * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
    * @return The artifactUpdate.
    */
   @java.lang.Override
@@ -256,7 +255,7 @@ private static final long serialVersionUID = 0L;
    * An event indicating a task artifact update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+   * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskArtifactUpdateEventOrBuilder getArtifactUpdateOrBuilder() {
@@ -483,25 +482,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:StreamResponse]
    * A wrapper object used in streaming operations to encapsulate different types of response data.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.StreamResponse}
+   * Protobuf type {@code lf.a2a.v1.StreamResponse}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.StreamResponse)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.StreamResponse)
       io.a2a.grpc.StreamResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_StreamResponse_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StreamResponse_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_StreamResponse_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StreamResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.StreamResponse.class, io.a2a.grpc.StreamResponse.Builder.class);
     }
@@ -540,7 +538,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_StreamResponse_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StreamResponse_descriptor;
     }
 
     @java.lang.Override
@@ -717,7 +715,7 @@ private static final long serialVersionUID = 0L;
      * A Task object containing the current state of the task.
      * </pre>
      *
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      * @return Whether the task field is set.
      */
     @java.lang.Override
@@ -729,7 +727,7 @@ private static final long serialVersionUID = 0L;
      * A Task object containing the current state of the task.
      * </pre>
      *
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      * @return The task.
      */
     @java.lang.Override
@@ -751,7 +749,7 @@ private static final long serialVersionUID = 0L;
      * A Task object containing the current state of the task.
      * </pre>
      *
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public Builder setTask(io.a2a.grpc.Task value) {
       if (taskBuilder_ == null) {
@@ -771,7 +769,7 @@ private static final long serialVersionUID = 0L;
      * A Task object containing the current state of the task.
      * </pre>
      *
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public Builder setTask(
         io.a2a.grpc.Task.Builder builderForValue) {
@@ -789,7 +787,7 @@ private static final long serialVersionUID = 0L;
      * A Task object containing the current state of the task.
      * </pre>
      *
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public Builder mergeTask(io.a2a.grpc.Task value) {
       if (taskBuilder_ == null) {
@@ -816,7 +814,7 @@ private static final long serialVersionUID = 0L;
      * A Task object containing the current state of the task.
      * </pre>
      *
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public Builder clearTask() {
       if (taskBuilder_ == null) {
@@ -839,7 +837,7 @@ private static final long serialVersionUID = 0L;
      * A Task object containing the current state of the task.
      * </pre>
      *
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public io.a2a.grpc.Task.Builder getTaskBuilder() {
       return internalGetTaskFieldBuilder().getBuilder();
@@ -849,7 +847,7 @@ private static final long serialVersionUID = 0L;
      * A Task object containing the current state of the task.
      * </pre>
      *
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.TaskOrBuilder getTaskOrBuilder() {
@@ -867,7 +865,7 @@ private static final long serialVersionUID = 0L;
      * A Task object containing the current state of the task.
      * </pre>
      *
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Task, io.a2a.grpc.Task.Builder, io.a2a.grpc.TaskOrBuilder> 
@@ -895,7 +893,7 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      * @return Whether the message field is set.
      */
     @java.lang.Override
@@ -907,7 +905,7 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      * @return The message.
      */
     @java.lang.Override
@@ -929,7 +927,7 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder setMessage(io.a2a.grpc.Message value) {
       if (messageBuilder_ == null) {
@@ -949,7 +947,7 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder setMessage(
         io.a2a.grpc.Message.Builder builderForValue) {
@@ -967,7 +965,7 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder mergeMessage(io.a2a.grpc.Message value) {
       if (messageBuilder_ == null) {
@@ -994,7 +992,7 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder clearMessage() {
       if (messageBuilder_ == null) {
@@ -1017,7 +1015,7 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public io.a2a.grpc.Message.Builder getMessageBuilder() {
       return internalGetMessageFieldBuilder().getBuilder();
@@ -1027,7 +1025,7 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
@@ -1045,7 +1043,7 @@ private static final long serialVersionUID = 0L;
      * A Message object containing a message from the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> 
@@ -1073,7 +1071,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task status update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+     * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      * @return Whether the statusUpdate field is set.
      */
     @java.lang.Override
@@ -1085,7 +1083,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task status update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+     * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      * @return The statusUpdate.
      */
     @java.lang.Override
@@ -1107,7 +1105,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task status update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+     * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      */
     public Builder setStatusUpdate(io.a2a.grpc.TaskStatusUpdateEvent value) {
       if (statusUpdateBuilder_ == null) {
@@ -1127,7 +1125,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task status update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+     * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      */
     public Builder setStatusUpdate(
         io.a2a.grpc.TaskStatusUpdateEvent.Builder builderForValue) {
@@ -1145,7 +1143,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task status update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+     * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      */
     public Builder mergeStatusUpdate(io.a2a.grpc.TaskStatusUpdateEvent value) {
       if (statusUpdateBuilder_ == null) {
@@ -1172,7 +1170,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task status update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+     * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      */
     public Builder clearStatusUpdate() {
       if (statusUpdateBuilder_ == null) {
@@ -1195,7 +1193,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task status update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+     * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      */
     public io.a2a.grpc.TaskStatusUpdateEvent.Builder getStatusUpdateBuilder() {
       return internalGetStatusUpdateFieldBuilder().getBuilder();
@@ -1205,7 +1203,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task status update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+     * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.TaskStatusUpdateEventOrBuilder getStatusUpdateOrBuilder() {
@@ -1223,7 +1221,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task status update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+     * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskStatusUpdateEvent, io.a2a.grpc.TaskStatusUpdateEvent.Builder, io.a2a.grpc.TaskStatusUpdateEventOrBuilder> 
@@ -1251,7 +1249,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task artifact update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+     * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      * @return Whether the artifactUpdate field is set.
      */
     @java.lang.Override
@@ -1263,7 +1261,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task artifact update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+     * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      * @return The artifactUpdate.
      */
     @java.lang.Override
@@ -1285,7 +1283,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task artifact update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+     * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      */
     public Builder setArtifactUpdate(io.a2a.grpc.TaskArtifactUpdateEvent value) {
       if (artifactUpdateBuilder_ == null) {
@@ -1305,7 +1303,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task artifact update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+     * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      */
     public Builder setArtifactUpdate(
         io.a2a.grpc.TaskArtifactUpdateEvent.Builder builderForValue) {
@@ -1323,7 +1321,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task artifact update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+     * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      */
     public Builder mergeArtifactUpdate(io.a2a.grpc.TaskArtifactUpdateEvent value) {
       if (artifactUpdateBuilder_ == null) {
@@ -1350,7 +1348,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task artifact update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+     * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      */
     public Builder clearArtifactUpdate() {
       if (artifactUpdateBuilder_ == null) {
@@ -1373,7 +1371,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task artifact update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+     * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      */
     public io.a2a.grpc.TaskArtifactUpdateEvent.Builder getArtifactUpdateBuilder() {
       return internalGetArtifactUpdateFieldBuilder().getBuilder();
@@ -1383,7 +1381,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task artifact update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+     * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.TaskArtifactUpdateEventOrBuilder getArtifactUpdateOrBuilder() {
@@ -1401,7 +1399,7 @@ private static final long serialVersionUID = 0L;
      * An event indicating a task artifact update.
      * </pre>
      *
-     * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+     * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.TaskArtifactUpdateEvent, io.a2a.grpc.TaskArtifactUpdateEvent.Builder, io.a2a.grpc.TaskArtifactUpdateEventOrBuilder> 
@@ -1422,10 +1420,10 @@ private static final long serialVersionUID = 0L;
       return artifactUpdateBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.StreamResponse)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.StreamResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.StreamResponse)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.StreamResponse)
   private static final io.a2a.grpc.StreamResponse DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.StreamResponse();

@@ -7,15 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:SubscribeToTaskRequest]
+ * Represents a request for the `SubscribeToTask` method.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.SubscribeToTaskRequest}
+ * Protobuf type {@code lf.a2a.v1.SubscribeToTaskRequest}
  */
 @com.google.protobuf.Generated
 public final class SubscribeToTaskRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.SubscribeToTaskRequest)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.SubscribeToTaskRequest)
     SubscribeToTaskRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -38,26 +38,26 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SubscribeToTaskRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SubscribeToTaskRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.SubscribeToTaskRequest.class, io.a2a.grpc.SubscribeToTaskRequest.Builder.class);
   }
 
-  public static final int TENANT_FIELD_NUMBER = 2;
+  public static final int TENANT_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object tenant_ = "";
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   @java.lang.Override
@@ -75,10 +75,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   @java.lang.Override
@@ -96,15 +96,15 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int ID_FIELD_NUMBER = 1;
+  public static final int ID_FIELD_NUMBER = 2;
   @SuppressWarnings("serial")
   private volatile java.lang.Object id_ = "";
   /**
    * <pre>
-   * The resource id of the task to subscribe to.
+   * The resource ID of the task to subscribe to.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   @java.lang.Override
@@ -122,10 +122,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The resource id of the task to subscribe to.
+   * The resource ID of the task to subscribe to.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   @java.lang.Override
@@ -157,11 +157,11 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, id_);
-    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 2, tenant_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, tenant_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, id_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -172,11 +172,11 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, id_);
-    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, tenant_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, tenant_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, id_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -311,24 +311,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:SubscribeToTaskRequest]
+   * Represents a request for the `SubscribeToTask` method.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.SubscribeToTaskRequest}
+   * Protobuf type {@code lf.a2a.v1.SubscribeToTaskRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.SubscribeToTaskRequest)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.SubscribeToTaskRequest)
       io.a2a.grpc.SubscribeToTaskRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SubscribeToTaskRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SubscribeToTaskRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.SubscribeToTaskRequest.class, io.a2a.grpc.SubscribeToTaskRequest.Builder.class);
     }
@@ -355,7 +355,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SubscribeToTaskRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SubscribeToTaskRequest_descriptor;
     }
 
     @java.lang.Override
@@ -439,13 +439,13 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
-              id_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000002;
+              tenant_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000001;
               break;
             } // case 10
             case 18: {
-              tenant_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000001;
+              id_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000002;
               break;
             } // case 18
             default: {
@@ -468,10 +468,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object tenant_ = "";
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @return The tenant.
      */
     public java.lang.String getTenant() {
@@ -488,10 +488,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @return The bytes for tenant.
      */
     public com.google.protobuf.ByteString
@@ -509,10 +509,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @param value The tenant to set.
      * @return This builder for chaining.
      */
@@ -526,10 +526,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearTenant() {
@@ -540,10 +540,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @param value The bytes for tenant to set.
      * @return This builder for chaining.
      */
@@ -560,10 +560,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object id_ = "";
     /**
      * <pre>
-     * The resource id of the task to subscribe to.
+     * The resource ID of the task to subscribe to.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The id.
      */
     public java.lang.String getId() {
@@ -580,10 +580,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task to subscribe to.
+     * The resource ID of the task to subscribe to.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for id.
      */
     public com.google.protobuf.ByteString
@@ -601,10 +601,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task to subscribe to.
+     * The resource ID of the task to subscribe to.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The id to set.
      * @return This builder for chaining.
      */
@@ -618,10 +618,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task to subscribe to.
+     * The resource ID of the task to subscribe to.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearId() {
@@ -632,10 +632,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task to subscribe to.
+     * The resource ID of the task to subscribe to.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for id to set.
      * @return This builder for chaining.
      */
@@ -649,10 +649,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.SubscribeToTaskRequest)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.SubscribeToTaskRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.SubscribeToTaskRequest)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.SubscribeToTaskRequest)
   private static final io.a2a.grpc.SubscribeToTaskRequest DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.SubscribeToTaskRequest();

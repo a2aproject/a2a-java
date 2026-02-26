@@ -7,12 +7,12 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface TaskArtifactUpdateEventOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.TaskArtifactUpdateEvent)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.TaskArtifactUpdateEvent)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * The id of the task for this artifact.
+   * The ID of the task for this artifact.
    * </pre>
    *
    * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -21,7 +21,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
   java.lang.String getTaskId();
   /**
    * <pre>
-   * The id of the task for this artifact.
+   * The ID of the task for this artifact.
    * </pre>
    *
    * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -32,7 +32,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
 
   /**
    * <pre>
-   * The id of the context that this task belongs to.
+   * The ID of the context that this task belongs to.
    * </pre>
    *
    * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -41,7 +41,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
   java.lang.String getContextId();
   /**
    * <pre>
-   * The id of the context that this task belongs to.
+   * The ID of the context that this task belongs to.
    * </pre>
    *
    * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -55,7 +55,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The artifact that was generated or updated.
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the artifact field is set.
    */
   boolean hasArtifact();
@@ -64,7 +64,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The artifact that was generated or updated.
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The artifact.
    */
   io.a2a.grpc.Artifact getArtifact();
@@ -73,7 +73,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
    * The artifact that was generated or updated.
    * </pre>
    *
-   * <code>.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Artifact artifact = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.ArtifactOrBuilder getArtifactOrBuilder();
 
@@ -100,7 +100,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
 
   /**
    * <pre>
-   * Optional metadata associated with the artifact update.
+   * Optional. Metadata associated with the artifact update.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -109,7 +109,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
   boolean hasMetadata();
   /**
    * <pre>
-   * Optional metadata associated with the artifact update.
+   * Optional. Metadata associated with the artifact update.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>
@@ -118,7 +118,7 @@ public interface TaskArtifactUpdateEventOrBuilder extends
   com.google.protobuf.Struct getMetadata();
   /**
    * <pre>
-   * Optional metadata associated with the artifact update.
+   * Optional. Metadata associated with the artifact update.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 6;</code>

@@ -7,19 +7,18 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:AgentCard]
- * AgentCard is a self-describing manifest for an agent. It provides essential
+ * A self-describing manifest for an agent. It provides essential
  * metadata including the agent's identity, capabilities, skills, supported
  * communication methods, and security requirements.
  * Next ID: 20
  * </pre>
  *
- * Protobuf type {@code a2a.v1.AgentCard}
+ * Protobuf type {@code lf.a2a.v1.AgentCard}
  */
 @com.google.protobuf.Generated
 public final class AgentCard extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.AgentCard)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.AgentCard)
     AgentCardOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -53,7 +52,7 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCard_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCard_descriptor;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -71,7 +70,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCard_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCard_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.AgentCard.class, io.a2a.grpc.AgentCard.Builder.class);
   }
@@ -177,15 +176,15 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int SUPPORTED_INTERFACES_FIELD_NUMBER = 19;
+  public static final int SUPPORTED_INTERFACES_FIELD_NUMBER = 3;
   @SuppressWarnings("serial")
   private java.util.List<io.a2a.grpc.AgentInterface> supportedInterfaces_;
   /**
    * <pre>
-   * Ordered list of supported interfaces. First entry is preferred.
+   * Ordered list of supported interfaces. The first entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.AgentInterface> getSupportedInterfacesList() {
@@ -193,10 +192,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Ordered list of supported interfaces. First entry is preferred.
+   * Ordered list of supported interfaces. The first entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
@@ -205,10 +204,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Ordered list of supported interfaces. First entry is preferred.
+   * Ordered list of supported interfaces. The first entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public int getSupportedInterfacesCount() {
@@ -216,10 +215,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Ordered list of supported interfaces. First entry is preferred.
+   * Ordered list of supported interfaces. The first entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentInterface getSupportedInterfaces(int index) {
@@ -227,10 +226,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Ordered list of supported interfaces. First entry is preferred.
+   * Ordered list of supported interfaces. The first entry is preferred.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentInterfaceOrBuilder getSupportedInterfacesOrBuilder(
@@ -245,7 +244,7 @@ private static final long serialVersionUID = 0L;
    * The service provider of the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentProvider provider = 4;</code>
+   * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
    * @return Whether the provider field is set.
    */
   @java.lang.Override
@@ -257,7 +256,7 @@ private static final long serialVersionUID = 0L;
    * The service provider of the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentProvider provider = 4;</code>
+   * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
    * @return The provider.
    */
   @java.lang.Override
@@ -269,7 +268,7 @@ private static final long serialVersionUID = 0L;
    * The service provider of the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentProvider provider = 4;</code>
+   * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentProviderOrBuilder getProviderOrBuilder() {
@@ -330,7 +329,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object documentationUrl_ = "";
   /**
    * <pre>
-   * A url to provide additional documentation about the agent.
+   * A URL providing additional documentation about the agent.
    * </pre>
    *
    * <code>optional string documentation_url = 6;</code>
@@ -342,7 +341,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A url to provide additional documentation about the agent.
+   * A URL providing additional documentation about the agent.
    * </pre>
    *
    * <code>optional string documentation_url = 6;</code>
@@ -363,7 +362,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A url to provide additional documentation about the agent.
+   * A URL providing additional documentation about the agent.
    * </pre>
    *
    * <code>optional string documentation_url = 6;</code>
@@ -391,7 +390,7 @@ private static final long serialVersionUID = 0L;
    * A2A Capability set supported by the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the capabilities field is set.
    */
   @java.lang.Override
@@ -403,7 +402,7 @@ private static final long serialVersionUID = 0L;
    * A2A Capability set supported by the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The capabilities.
    */
   @java.lang.Override
@@ -415,7 +414,7 @@ private static final long serialVersionUID = 0L;
    * A2A Capability set supported by the agent.
    * </pre>
    *
-   * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentCapabilitiesOrBuilder getCapabilitiesOrBuilder() {
@@ -428,7 +427,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String, io.a2a.grpc.SecurityScheme> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, io.a2a.grpc.SecurityScheme>newDefaultInstance(
-                io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCard_SecuritySchemesEntry_descriptor, 
+                io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCard_SecuritySchemesEntry_descriptor, 
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.MESSAGE,
@@ -453,7 +452,7 @@ private static final long serialVersionUID = 0L;
    * The security scheme details used for authenticating with this agent.
    * </pre>
    *
-   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+   * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
    */
   @java.lang.Override
   public boolean containsSecuritySchemes(
@@ -474,7 +473,7 @@ private static final long serialVersionUID = 0L;
    * The security scheme details used for authenticating with this agent.
    * </pre>
    *
-   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+   * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
    */
   @java.lang.Override
   public java.util.Map<java.lang.String, io.a2a.grpc.SecurityScheme> getSecuritySchemesMap() {
@@ -485,7 +484,7 @@ private static final long serialVersionUID = 0L;
    * The security scheme details used for authenticating with this agent.
    * </pre>
    *
-   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+   * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
    */
   @java.lang.Override
   public /* nullable */
@@ -503,7 +502,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * The security scheme details used for authenticating with this agent.
    * </pre>
    *
-   * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+   * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.SecurityScheme getSecuritySchemesOrThrow(
@@ -517,7 +516,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     return map.get(key);
   }
 
-  public static final int SECURITY_REQUIREMENTS_FIELD_NUMBER = 13;
+  public static final int SECURITY_REQUIREMENTS_FIELD_NUMBER = 9;
   @SuppressWarnings("serial")
   private java.util.List<io.a2a.grpc.SecurityRequirement> securityRequirements_;
   /**
@@ -525,7 +524,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.SecurityRequirement> getSecurityRequirementsList() {
@@ -536,7 +535,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
@@ -548,7 +547,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
    */
   @java.lang.Override
   public int getSecurityRequirementsCount() {
@@ -559,7 +558,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index) {
@@ -570,7 +569,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
    * Security requirements for contacting the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
@@ -697,12 +696,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   private java.util.List<io.a2a.grpc.AgentSkill> skills_;
   /**
    * <pre>
-   * Skills represent an ability of an agent. It is largely
-   * a descriptive concept but represents a more focused set of behaviors that the
+   * Skills represent the abilities of an agent.
+   * It is largely a descriptive concept but represents a more focused set of behaviors that the
    * agent is likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.AgentSkill> getSkillsList() {
@@ -710,12 +709,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * Skills represent an ability of an agent. It is largely
-   * a descriptive concept but represents a more focused set of behaviors that the
+   * Skills represent the abilities of an agent.
+   * It is largely a descriptive concept but represents a more focused set of behaviors that the
    * agent is likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.AgentSkillOrBuilder> 
@@ -724,12 +723,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * Skills represent an ability of an agent. It is largely
-   * a descriptive concept but represents a more focused set of behaviors that the
+   * Skills represent the abilities of an agent.
+   * It is largely a descriptive concept but represents a more focused set of behaviors that the
    * agent is likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public int getSkillsCount() {
@@ -737,12 +736,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * Skills represent an ability of an agent. It is largely
-   * a descriptive concept but represents a more focused set of behaviors that the
+   * Skills represent the abilities of an agent.
+   * It is largely a descriptive concept but represents a more focused set of behaviors that the
    * agent is likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentSkill getSkills(int index) {
@@ -750,12 +749,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * Skills represent an ability of an agent. It is largely
-   * a descriptive concept but represents a more focused set of behaviors that the
+   * Skills represent the abilities of an agent.
+   * It is largely a descriptive concept but represents a more focused set of behaviors that the
    * agent is likely to succeed at.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentSkillOrBuilder getSkillsOrBuilder(
@@ -763,15 +762,15 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     return skills_.get(index);
   }
 
-  public static final int SIGNATURES_FIELD_NUMBER = 17;
+  public static final int SIGNATURES_FIELD_NUMBER = 13;
   @SuppressWarnings("serial")
   private java.util.List<io.a2a.grpc.AgentCardSignature> signatures_;
   /**
    * <pre>
-   * JSON Web Signatures computed for this AgentCard.
+   * JSON Web Signatures computed for this `AgentCard`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.AgentCardSignature> getSignaturesList() {
@@ -779,10 +778,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * JSON Web Signatures computed for this AgentCard.
+   * JSON Web Signatures computed for this `AgentCard`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.AgentCardSignatureOrBuilder> 
@@ -791,10 +790,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * JSON Web Signatures computed for this AgentCard.
+   * JSON Web Signatures computed for this `AgentCard`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
    */
   @java.lang.Override
   public int getSignaturesCount() {
@@ -802,10 +801,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * JSON Web Signatures computed for this AgentCard.
+   * JSON Web Signatures computed for this `AgentCard`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentCardSignature getSignatures(int index) {
@@ -813,10 +812,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * JSON Web Signatures computed for this AgentCard.
+   * JSON Web Signatures computed for this `AgentCard`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+   * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentCardSignatureOrBuilder getSignaturesOrBuilder(
@@ -824,15 +823,15 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     return signatures_.get(index);
   }
 
-  public static final int ICON_URL_FIELD_NUMBER = 18;
+  public static final int ICON_URL_FIELD_NUMBER = 14;
   @SuppressWarnings("serial")
   private volatile java.lang.Object iconUrl_ = "";
   /**
    * <pre>
-   * An optional URL to an icon for the agent.
+   * Optional. A URL to an icon for the agent.
    * </pre>
    *
-   * <code>optional string icon_url = 18;</code>
+   * <code>optional string icon_url = 14;</code>
    * @return Whether the iconUrl field is set.
    */
   @java.lang.Override
@@ -841,10 +840,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * An optional URL to an icon for the agent.
+   * Optional. A URL to an icon for the agent.
    * </pre>
    *
-   * <code>optional string icon_url = 18;</code>
+   * <code>optional string icon_url = 14;</code>
    * @return The iconUrl.
    */
   @java.lang.Override
@@ -862,10 +861,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * An optional URL to an icon for the agent.
+   * Optional. A URL to an icon for the agent.
    * </pre>
    *
-   * <code>optional string icon_url = 18;</code>
+   * <code>optional string icon_url = 14;</code>
    * @return The bytes for iconUrl.
    */
   @java.lang.Override
@@ -903,6 +902,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(description_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 2, description_);
     }
+    for (int i = 0; i < supportedInterfaces_.size(); i++) {
+      output.writeMessage(3, supportedInterfaces_.get(i));
+    }
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(4, getProvider());
     }
@@ -921,6 +923,9 @@ io.a2a.grpc.SecurityScheme defaultValue) {
         internalGetSecuritySchemes(),
         SecuritySchemesDefaultEntryHolder.defaultEntry,
         8);
+    for (int i = 0; i < securityRequirements_.size(); i++) {
+      output.writeMessage(9, securityRequirements_.get(i));
+    }
     for (int i = 0; i < defaultInputModes_.size(); i++) {
       com.google.protobuf.GeneratedMessage.writeString(output, 10, defaultInputModes_.getRaw(i));
     }
@@ -930,17 +935,11 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     for (int i = 0; i < skills_.size(); i++) {
       output.writeMessage(12, skills_.get(i));
     }
-    for (int i = 0; i < securityRequirements_.size(); i++) {
-      output.writeMessage(13, securityRequirements_.get(i));
-    }
     for (int i = 0; i < signatures_.size(); i++) {
-      output.writeMessage(17, signatures_.get(i));
+      output.writeMessage(13, signatures_.get(i));
     }
     if (((bitField0_ & 0x00000008) != 0)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 18, iconUrl_);
-    }
-    for (int i = 0; i < supportedInterfaces_.size(); i++) {
-      output.writeMessage(19, supportedInterfaces_.get(i));
+      com.google.protobuf.GeneratedMessage.writeString(output, 14, iconUrl_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -956,6 +955,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(description_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(2, description_);
+    }
+    for (int i = 0; i < supportedInterfaces_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(3, supportedInterfaces_.get(i));
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
@@ -981,6 +984,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, securitySchemes__);
     }
+    for (int i = 0; i < securityRequirements_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(9, securityRequirements_.get(i));
+    }
     {
       int dataSize = 0;
       for (int i = 0; i < defaultInputModes_.size(); i++) {
@@ -1001,20 +1008,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(12, skills_.get(i));
     }
-    for (int i = 0; i < securityRequirements_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(13, securityRequirements_.get(i));
-    }
     for (int i = 0; i < signatures_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(17, signatures_.get(i));
+        .computeMessageSize(13, signatures_.get(i));
     }
     if (((bitField0_ & 0x00000008) != 0)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(18, iconUrl_);
-    }
-    for (int i = 0; i < supportedInterfaces_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(19, supportedInterfaces_.get(i));
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(14, iconUrl_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -1231,22 +1230,21 @@ io.a2a.grpc.SecurityScheme defaultValue) {
   }
   /**
    * <pre>
-   * --8&lt;-- [start:AgentCard]
-   * AgentCard is a self-describing manifest for an agent. It provides essential
+   * A self-describing manifest for an agent. It provides essential
    * metadata including the agent's identity, capabilities, skills, supported
    * communication methods, and security requirements.
    * Next ID: 20
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.AgentCard}
+   * Protobuf type {@code lf.a2a.v1.AgentCard}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.AgentCard)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.AgentCard)
       io.a2a.grpc.AgentCardOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCard_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCard_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -1274,7 +1272,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCard_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCard_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.AgentCard.class, io.a2a.grpc.AgentCard.Builder.class);
     }
@@ -1358,7 +1356,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCard_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCard_descriptor;
     }
 
     @java.lang.Override
@@ -1675,6 +1673,19 @@ io.a2a.grpc.SecurityScheme defaultValue) {
               bitField0_ |= 0x00000002;
               break;
             } // case 18
+            case 26: {
+              io.a2a.grpc.AgentInterface m =
+                  input.readMessage(
+                      io.a2a.grpc.AgentInterface.parser(),
+                      extensionRegistry);
+              if (supportedInterfacesBuilder_ == null) {
+                ensureSupportedInterfacesIsMutable();
+                supportedInterfaces_.add(m);
+              } else {
+                supportedInterfacesBuilder_.addMessage(m);
+              }
+              break;
+            } // case 26
             case 34: {
               input.readMessage(
                   internalGetProviderFieldBuilder().getBuilder(),
@@ -1708,6 +1719,19 @@ io.a2a.grpc.SecurityScheme defaultValue) {
               bitField0_ |= 0x00000080;
               break;
             } // case 66
+            case 74: {
+              io.a2a.grpc.SecurityRequirement m =
+                  input.readMessage(
+                      io.a2a.grpc.SecurityRequirement.parser(),
+                      extensionRegistry);
+              if (securityRequirementsBuilder_ == null) {
+                ensureSecurityRequirementsIsMutable();
+                securityRequirements_.add(m);
+              } else {
+                securityRequirementsBuilder_.addMessage(m);
+              }
+              break;
+            } // case 74
             case 82: {
               java.lang.String s = input.readStringRequireUtf8();
               ensureDefaultInputModesIsMutable();
@@ -1734,19 +1758,6 @@ io.a2a.grpc.SecurityScheme defaultValue) {
               break;
             } // case 98
             case 106: {
-              io.a2a.grpc.SecurityRequirement m =
-                  input.readMessage(
-                      io.a2a.grpc.SecurityRequirement.parser(),
-                      extensionRegistry);
-              if (securityRequirementsBuilder_ == null) {
-                ensureSecurityRequirementsIsMutable();
-                securityRequirements_.add(m);
-              } else {
-                securityRequirementsBuilder_.addMessage(m);
-              }
-              break;
-            } // case 106
-            case 138: {
               io.a2a.grpc.AgentCardSignature m =
                   input.readMessage(
                       io.a2a.grpc.AgentCardSignature.parser(),
@@ -1758,25 +1769,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
                 signaturesBuilder_.addMessage(m);
               }
               break;
-            } // case 138
-            case 146: {
+            } // case 106
+            case 114: {
               iconUrl_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00002000;
               break;
-            } // case 146
-            case 154: {
-              io.a2a.grpc.AgentInterface m =
-                  input.readMessage(
-                      io.a2a.grpc.AgentInterface.parser(),
-                      extensionRegistry);
-              if (supportedInterfacesBuilder_ == null) {
-                ensureSupportedInterfacesIsMutable();
-                supportedInterfaces_.add(m);
-              } else {
-                supportedInterfacesBuilder_.addMessage(m);
-              }
-              break;
-            } // case 154
+            } // case 114
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -2007,10 +2005,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
 
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.AgentInterface> getSupportedInterfacesList() {
       if (supportedInterfacesBuilder_ == null) {
@@ -2021,10 +2019,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public int getSupportedInterfacesCount() {
       if (supportedInterfacesBuilder_ == null) {
@@ -2035,10 +2033,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterface getSupportedInterfaces(int index) {
       if (supportedInterfacesBuilder_ == null) {
@@ -2049,10 +2047,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setSupportedInterfaces(
         int index, io.a2a.grpc.AgentInterface value) {
@@ -2070,10 +2068,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setSupportedInterfaces(
         int index, io.a2a.grpc.AgentInterface.Builder builderForValue) {
@@ -2088,10 +2086,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSupportedInterfaces(io.a2a.grpc.AgentInterface value) {
       if (supportedInterfacesBuilder_ == null) {
@@ -2108,10 +2106,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSupportedInterfaces(
         int index, io.a2a.grpc.AgentInterface value) {
@@ -2129,10 +2127,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSupportedInterfaces(
         io.a2a.grpc.AgentInterface.Builder builderForValue) {
@@ -2147,10 +2145,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSupportedInterfaces(
         int index, io.a2a.grpc.AgentInterface.Builder builderForValue) {
@@ -2165,10 +2163,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addAllSupportedInterfaces(
         java.lang.Iterable<? extends io.a2a.grpc.AgentInterface> values) {
@@ -2184,10 +2182,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearSupportedInterfaces() {
       if (supportedInterfacesBuilder_ == null) {
@@ -2201,10 +2199,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder removeSupportedInterfaces(int index) {
       if (supportedInterfacesBuilder_ == null) {
@@ -2218,10 +2216,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterface.Builder getSupportedInterfacesBuilder(
         int index) {
@@ -2229,10 +2227,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterfaceOrBuilder getSupportedInterfacesOrBuilder(
         int index) {
@@ -2243,10 +2241,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<? extends io.a2a.grpc.AgentInterfaceOrBuilder> 
          getSupportedInterfacesOrBuilderList() {
@@ -2258,10 +2256,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterface.Builder addSupportedInterfacesBuilder() {
       return internalGetSupportedInterfacesFieldBuilder().addBuilder(
@@ -2269,10 +2267,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentInterface.Builder addSupportedInterfacesBuilder(
         int index) {
@@ -2281,10 +2279,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Ordered list of supported interfaces. First entry is preferred.
+     * Ordered list of supported interfaces. The first entry is preferred.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentInterface supported_interfaces = 19 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentInterface supported_interfaces = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.AgentInterface.Builder> 
          getSupportedInterfacesBuilderList() {
@@ -2313,7 +2311,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4;</code>
+     * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      * @return Whether the provider field is set.
      */
     public boolean hasProvider() {
@@ -2324,7 +2322,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4;</code>
+     * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      * @return The provider.
      */
     public io.a2a.grpc.AgentProvider getProvider() {
@@ -2339,7 +2337,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4;</code>
+     * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder setProvider(io.a2a.grpc.AgentProvider value) {
       if (providerBuilder_ == null) {
@@ -2359,7 +2357,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4;</code>
+     * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder setProvider(
         io.a2a.grpc.AgentProvider.Builder builderForValue) {
@@ -2377,7 +2375,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4;</code>
+     * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder mergeProvider(io.a2a.grpc.AgentProvider value) {
       if (providerBuilder_ == null) {
@@ -2402,7 +2400,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4;</code>
+     * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      */
     public Builder clearProvider() {
       bitField0_ = (bitField0_ & ~0x00000008);
@@ -2419,7 +2417,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4;</code>
+     * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      */
     public io.a2a.grpc.AgentProvider.Builder getProviderBuilder() {
       bitField0_ |= 0x00000008;
@@ -2431,7 +2429,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4;</code>
+     * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      */
     public io.a2a.grpc.AgentProviderOrBuilder getProviderOrBuilder() {
       if (providerBuilder_ != null) {
@@ -2446,7 +2444,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The service provider of the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentProvider provider = 4;</code>
+     * <code>.lf.a2a.v1.AgentProvider provider = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AgentProvider, io.a2a.grpc.AgentProvider.Builder, io.a2a.grpc.AgentProviderOrBuilder> 
@@ -2562,7 +2560,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     private java.lang.Object documentationUrl_ = "";
     /**
      * <pre>
-     * A url to provide additional documentation about the agent.
+     * A URL providing additional documentation about the agent.
      * </pre>
      *
      * <code>optional string documentation_url = 6;</code>
@@ -2573,7 +2571,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * A url to provide additional documentation about the agent.
+     * A URL providing additional documentation about the agent.
      * </pre>
      *
      * <code>optional string documentation_url = 6;</code>
@@ -2593,7 +2591,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * A url to provide additional documentation about the agent.
+     * A URL providing additional documentation about the agent.
      * </pre>
      *
      * <code>optional string documentation_url = 6;</code>
@@ -2614,7 +2612,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * A url to provide additional documentation about the agent.
+     * A URL providing additional documentation about the agent.
      * </pre>
      *
      * <code>optional string documentation_url = 6;</code>
@@ -2631,7 +2629,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * A url to provide additional documentation about the agent.
+     * A URL providing additional documentation about the agent.
      * </pre>
      *
      * <code>optional string documentation_url = 6;</code>
@@ -2645,7 +2643,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * A url to provide additional documentation about the agent.
+     * A URL providing additional documentation about the agent.
      * </pre>
      *
      * <code>optional string documentation_url = 6;</code>
@@ -2670,7 +2668,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the capabilities field is set.
      */
     public boolean hasCapabilities() {
@@ -2681,7 +2679,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The capabilities.
      */
     public io.a2a.grpc.AgentCapabilities getCapabilities() {
@@ -2696,7 +2694,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setCapabilities(io.a2a.grpc.AgentCapabilities value) {
       if (capabilitiesBuilder_ == null) {
@@ -2716,7 +2714,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setCapabilities(
         io.a2a.grpc.AgentCapabilities.Builder builderForValue) {
@@ -2734,7 +2732,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeCapabilities(io.a2a.grpc.AgentCapabilities value) {
       if (capabilitiesBuilder_ == null) {
@@ -2759,7 +2757,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearCapabilities() {
       bitField0_ = (bitField0_ & ~0x00000040);
@@ -2776,7 +2774,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentCapabilities.Builder getCapabilitiesBuilder() {
       bitField0_ |= 0x00000040;
@@ -2788,7 +2786,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentCapabilitiesOrBuilder getCapabilitiesOrBuilder() {
       if (capabilitiesBuilder_ != null) {
@@ -2803,7 +2801,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * A2A Capability set supported by the agent.
      * </pre>
      *
-     * <code>.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AgentCapabilities capabilities = 7 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AgentCapabilities, io.a2a.grpc.AgentCapabilities.Builder, io.a2a.grpc.AgentCapabilitiesOrBuilder> 
@@ -2859,7 +2857,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+     * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     @java.lang.Override
     public boolean containsSecuritySchemes(
@@ -2880,7 +2878,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+     * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     @java.lang.Override
     public java.util.Map<java.lang.String, io.a2a.grpc.SecurityScheme> getSecuritySchemesMap() {
@@ -2891,7 +2889,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+     * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     @java.lang.Override
     public /* nullable */
@@ -2908,7 +2906,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+     * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.SecurityScheme getSecuritySchemesOrThrow(
@@ -2930,7 +2928,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+     * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     public Builder removeSecuritySchemes(
         java.lang.String key) {
@@ -2953,7 +2951,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+     * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     public Builder putSecuritySchemes(
         java.lang.String key,
@@ -2970,7 +2968,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+     * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     public Builder putAllSecuritySchemes(
         java.util.Map<java.lang.String, io.a2a.grpc.SecurityScheme> values) {
@@ -2989,7 +2987,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * The security scheme details used for authenticating with this agent.
      * </pre>
      *
-     * <code>map&lt;string, .a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
+     * <code>map&lt;string, .lf.a2a.v1.SecurityScheme&gt; security_schemes = 8;</code>
      */
     public io.a2a.grpc.SecurityScheme.Builder putSecuritySchemesBuilderIfAbsent(
         java.lang.String key) {
@@ -3023,7 +3021,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public java.util.List<io.a2a.grpc.SecurityRequirement> getSecurityRequirementsList() {
       if (securityRequirementsBuilder_ == null) {
@@ -3037,7 +3035,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public int getSecurityRequirementsCount() {
       if (securityRequirementsBuilder_ == null) {
@@ -3051,7 +3049,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index) {
       if (securityRequirementsBuilder_ == null) {
@@ -3065,7 +3063,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public Builder setSecurityRequirements(
         int index, io.a2a.grpc.SecurityRequirement value) {
@@ -3086,7 +3084,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public Builder setSecurityRequirements(
         int index, io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
@@ -3104,7 +3102,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public Builder addSecurityRequirements(io.a2a.grpc.SecurityRequirement value) {
       if (securityRequirementsBuilder_ == null) {
@@ -3124,7 +3122,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public Builder addSecurityRequirements(
         int index, io.a2a.grpc.SecurityRequirement value) {
@@ -3145,7 +3143,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public Builder addSecurityRequirements(
         io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
@@ -3163,7 +3161,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public Builder addSecurityRequirements(
         int index, io.a2a.grpc.SecurityRequirement.Builder builderForValue) {
@@ -3181,7 +3179,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public Builder addAllSecurityRequirements(
         java.lang.Iterable<? extends io.a2a.grpc.SecurityRequirement> values) {
@@ -3200,7 +3198,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public Builder clearSecurityRequirements() {
       if (securityRequirementsBuilder_ == null) {
@@ -3217,7 +3215,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public Builder removeSecurityRequirements(int index) {
       if (securityRequirementsBuilder_ == null) {
@@ -3234,7 +3232,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public io.a2a.grpc.SecurityRequirement.Builder getSecurityRequirementsBuilder(
         int index) {
@@ -3245,7 +3243,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
         int index) {
@@ -3259,7 +3257,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
          getSecurityRequirementsOrBuilderList() {
@@ -3274,7 +3272,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public io.a2a.grpc.SecurityRequirement.Builder addSecurityRequirementsBuilder() {
       return internalGetSecurityRequirementsFieldBuilder().addBuilder(
@@ -3285,7 +3283,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public io.a2a.grpc.SecurityRequirement.Builder addSecurityRequirementsBuilder(
         int index) {
@@ -3297,7 +3295,7 @@ io.a2a.grpc.SecurityScheme defaultValue) {
      * Security requirements for contacting the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 13;</code>
+     * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 9;</code>
      */
     public java.util.List<io.a2a.grpc.SecurityRequirement.Builder> 
          getSecurityRequirementsBuilderList() {
@@ -3644,12 +3642,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
 
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.AgentSkill> getSkillsList() {
       if (skillsBuilder_ == null) {
@@ -3660,12 +3658,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public int getSkillsCount() {
       if (skillsBuilder_ == null) {
@@ -3676,12 +3674,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentSkill getSkills(int index) {
       if (skillsBuilder_ == null) {
@@ -3692,12 +3690,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setSkills(
         int index, io.a2a.grpc.AgentSkill value) {
@@ -3715,12 +3713,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setSkills(
         int index, io.a2a.grpc.AgentSkill.Builder builderForValue) {
@@ -3735,12 +3733,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSkills(io.a2a.grpc.AgentSkill value) {
       if (skillsBuilder_ == null) {
@@ -3757,12 +3755,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSkills(
         int index, io.a2a.grpc.AgentSkill value) {
@@ -3780,12 +3778,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSkills(
         io.a2a.grpc.AgentSkill.Builder builderForValue) {
@@ -3800,12 +3798,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addSkills(
         int index, io.a2a.grpc.AgentSkill.Builder builderForValue) {
@@ -3820,12 +3818,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder addAllSkills(
         java.lang.Iterable<? extends io.a2a.grpc.AgentSkill> values) {
@@ -3841,12 +3839,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearSkills() {
       if (skillsBuilder_ == null) {
@@ -3860,12 +3858,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder removeSkills(int index) {
       if (skillsBuilder_ == null) {
@@ -3879,12 +3877,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentSkill.Builder getSkillsBuilder(
         int index) {
@@ -3892,12 +3890,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentSkillOrBuilder getSkillsOrBuilder(
         int index) {
@@ -3908,12 +3906,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<? extends io.a2a.grpc.AgentSkillOrBuilder> 
          getSkillsOrBuilderList() {
@@ -3925,12 +3923,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentSkill.Builder addSkillsBuilder() {
       return internalGetSkillsFieldBuilder().addBuilder(
@@ -3938,12 +3936,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.AgentSkill.Builder addSkillsBuilder(
         int index) {
@@ -3952,12 +3950,12 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * Skills represent an ability of an agent. It is largely
-     * a descriptive concept but represents a more focused set of behaviors that the
+     * Skills represent the abilities of an agent.
+     * It is largely a descriptive concept but represents a more focused set of behaviors that the
      * agent is likely to succeed at.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>repeated .lf.a2a.v1.AgentSkill skills = 12 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public java.util.List<io.a2a.grpc.AgentSkill.Builder> 
          getSkillsBuilderList() {
@@ -3992,10 +3990,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
 
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public java.util.List<io.a2a.grpc.AgentCardSignature> getSignaturesList() {
       if (signaturesBuilder_ == null) {
@@ -4006,10 +4004,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public int getSignaturesCount() {
       if (signaturesBuilder_ == null) {
@@ -4020,10 +4018,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public io.a2a.grpc.AgentCardSignature getSignatures(int index) {
       if (signaturesBuilder_ == null) {
@@ -4034,10 +4032,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public Builder setSignatures(
         int index, io.a2a.grpc.AgentCardSignature value) {
@@ -4055,10 +4053,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public Builder setSignatures(
         int index, io.a2a.grpc.AgentCardSignature.Builder builderForValue) {
@@ -4073,10 +4071,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public Builder addSignatures(io.a2a.grpc.AgentCardSignature value) {
       if (signaturesBuilder_ == null) {
@@ -4093,10 +4091,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public Builder addSignatures(
         int index, io.a2a.grpc.AgentCardSignature value) {
@@ -4114,10 +4112,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public Builder addSignatures(
         io.a2a.grpc.AgentCardSignature.Builder builderForValue) {
@@ -4132,10 +4130,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public Builder addSignatures(
         int index, io.a2a.grpc.AgentCardSignature.Builder builderForValue) {
@@ -4150,10 +4148,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public Builder addAllSignatures(
         java.lang.Iterable<? extends io.a2a.grpc.AgentCardSignature> values) {
@@ -4169,10 +4167,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public Builder clearSignatures() {
       if (signaturesBuilder_ == null) {
@@ -4186,10 +4184,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public Builder removeSignatures(int index) {
       if (signaturesBuilder_ == null) {
@@ -4203,10 +4201,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public io.a2a.grpc.AgentCardSignature.Builder getSignaturesBuilder(
         int index) {
@@ -4214,10 +4212,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public io.a2a.grpc.AgentCardSignatureOrBuilder getSignaturesOrBuilder(
         int index) {
@@ -4228,10 +4226,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public java.util.List<? extends io.a2a.grpc.AgentCardSignatureOrBuilder> 
          getSignaturesOrBuilderList() {
@@ -4243,10 +4241,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public io.a2a.grpc.AgentCardSignature.Builder addSignaturesBuilder() {
       return internalGetSignaturesFieldBuilder().addBuilder(
@@ -4254,10 +4252,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public io.a2a.grpc.AgentCardSignature.Builder addSignaturesBuilder(
         int index) {
@@ -4266,10 +4264,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * JSON Web Signatures computed for this AgentCard.
+     * JSON Web Signatures computed for this `AgentCard`.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentCardSignature signatures = 17;</code>
+     * <code>repeated .lf.a2a.v1.AgentCardSignature signatures = 13;</code>
      */
     public java.util.List<io.a2a.grpc.AgentCardSignature.Builder> 
          getSignaturesBuilderList() {
@@ -4293,10 +4291,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     private java.lang.Object iconUrl_ = "";
     /**
      * <pre>
-     * An optional URL to an icon for the agent.
+     * Optional. A URL to an icon for the agent.
      * </pre>
      *
-     * <code>optional string icon_url = 18;</code>
+     * <code>optional string icon_url = 14;</code>
      * @return Whether the iconUrl field is set.
      */
     public boolean hasIconUrl() {
@@ -4304,10 +4302,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * An optional URL to an icon for the agent.
+     * Optional. A URL to an icon for the agent.
      * </pre>
      *
-     * <code>optional string icon_url = 18;</code>
+     * <code>optional string icon_url = 14;</code>
      * @return The iconUrl.
      */
     public java.lang.String getIconUrl() {
@@ -4324,10 +4322,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * An optional URL to an icon for the agent.
+     * Optional. A URL to an icon for the agent.
      * </pre>
      *
-     * <code>optional string icon_url = 18;</code>
+     * <code>optional string icon_url = 14;</code>
      * @return The bytes for iconUrl.
      */
     public com.google.protobuf.ByteString
@@ -4345,10 +4343,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * An optional URL to an icon for the agent.
+     * Optional. A URL to an icon for the agent.
      * </pre>
      *
-     * <code>optional string icon_url = 18;</code>
+     * <code>optional string icon_url = 14;</code>
      * @param value The iconUrl to set.
      * @return This builder for chaining.
      */
@@ -4362,10 +4360,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * An optional URL to an icon for the agent.
+     * Optional. A URL to an icon for the agent.
      * </pre>
      *
-     * <code>optional string icon_url = 18;</code>
+     * <code>optional string icon_url = 14;</code>
      * @return This builder for chaining.
      */
     public Builder clearIconUrl() {
@@ -4376,10 +4374,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
     }
     /**
      * <pre>
-     * An optional URL to an icon for the agent.
+     * Optional. A URL to an icon for the agent.
      * </pre>
      *
-     * <code>optional string icon_url = 18;</code>
+     * <code>optional string icon_url = 14;</code>
      * @param value The bytes for iconUrl to set.
      * @return This builder for chaining.
      */
@@ -4393,10 +4391,10 @@ io.a2a.grpc.SecurityScheme defaultValue) {
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.AgentCard)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.AgentCard)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.AgentCard)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.AgentCard)
   private static final io.a2a.grpc.AgentCard DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.AgentCard();

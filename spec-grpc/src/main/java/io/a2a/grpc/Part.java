@@ -7,18 +7,17 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:Part]
- * Part represents a container for a section of communication content.
+ * `Part` represents a container for a section of communication content.
  * Parts can be purely textual, some sort of file (image, video, etc) or
  * a structured data blob (i.e. JSON).
  * </pre>
  *
- * Protobuf type {@code a2a.v1.Part}
+ * Protobuf type {@code lf.a2a.v1.Part}
  */
 @com.google.protobuf.Generated
 public final class Part extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.Part)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.Part)
     PartOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -41,13 +40,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Part_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Part_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_Part_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Part_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.Part.class, io.a2a.grpc.Part.Builder.class);
   }
@@ -102,7 +101,7 @@ private static final long serialVersionUID = 0L;
   public static final int TEXT_FIELD_NUMBER = 1;
   /**
    * <pre>
-   * The string content of the text part.
+   * The string content of the `text` part.
    * </pre>
    *
    * <code>string text = 1;</code>
@@ -113,7 +112,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The string content of the text part.
+   * The string content of the `text` part.
    * </pre>
    *
    * <code>string text = 1;</code>
@@ -138,7 +137,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The string content of the text part.
+   * The string content of the `text` part.
    * </pre>
    *
    * <code>string text = 1;</code>
@@ -166,7 +165,7 @@ private static final long serialVersionUID = 0L;
   public static final int RAW_FIELD_NUMBER = 2;
   /**
    * <pre>
-   * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+   * The `raw` byte content of a file. In JSON serialization, this is encoded as a base64 string.
    * </pre>
    *
    * <code>bytes raw = 2;</code>
@@ -178,7 +177,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+   * The `raw` byte content of a file. In JSON serialization, this is encoded as a base64 string.
    * </pre>
    *
    * <code>bytes raw = 2;</code>
@@ -195,7 +194,7 @@ private static final long serialVersionUID = 0L;
   public static final int URL_FIELD_NUMBER = 3;
   /**
    * <pre>
-   * A URL pointing to the file's content.
+   * A `url` pointing to the file's content.
    * </pre>
    *
    * <code>string url = 3;</code>
@@ -206,7 +205,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A URL pointing to the file's content.
+   * A `url` pointing to the file's content.
    * </pre>
    *
    * <code>string url = 3;</code>
@@ -231,7 +230,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A URL pointing to the file's content.
+   * A `url` pointing to the file's content.
    * </pre>
    *
    * <code>string url = 3;</code>
@@ -259,7 +258,7 @@ private static final long serialVersionUID = 0L;
   public static final int DATA_FIELD_NUMBER = 4;
   /**
    * <pre>
-   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+   * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
    * <code>.google.protobuf.Value data = 4;</code>
@@ -271,7 +270,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+   * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
    * <code>.google.protobuf.Value data = 4;</code>
@@ -286,7 +285,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+   * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
    * <code>.google.protobuf.Value data = 4;</code>
@@ -303,7 +302,7 @@ private static final long serialVersionUID = 0L;
   private com.google.protobuf.Struct metadata_;
   /**
    * <pre>
-   * Optional metadata associated with this part.
+   * Optional. metadata associated with this part.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -315,7 +314,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional metadata associated with this part.
+   * Optional. metadata associated with this part.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -327,7 +326,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional metadata associated with this part.
+   * Optional. metadata associated with this part.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -342,7 +341,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object filename_ = "";
   /**
    * <pre>
-   * An optional name for the file (e.g., "document.pdf").
+   * An optional `filename` for the file (e.g., "document.pdf").
    * </pre>
    *
    * <code>string filename = 6;</code>
@@ -363,7 +362,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * An optional name for the file (e.g., "document.pdf").
+   * An optional `filename` for the file (e.g., "document.pdf").
    * </pre>
    *
    * <code>string filename = 6;</code>
@@ -389,7 +388,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object mediaType_ = "";
   /**
    * <pre>
-   * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+   * The `media_type` (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
    * This field is available for all part types.
    * </pre>
    *
@@ -411,7 +410,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+   * The `media_type` (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
    * This field is available for all part types.
    * </pre>
    *
@@ -686,27 +685,26 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:Part]
-   * Part represents a container for a section of communication content.
+   * `Part` represents a container for a section of communication content.
    * Parts can be purely textual, some sort of file (image, video, etc) or
    * a structured data blob (i.e. JSON).
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.Part}
+   * Protobuf type {@code lf.a2a.v1.Part}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.Part)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.Part)
       io.a2a.grpc.PartOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Part_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Part_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Part_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Part_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.Part.class, io.a2a.grpc.Part.Builder.class);
     }
@@ -749,7 +747,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_Part_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_Part_descriptor;
     }
 
     @java.lang.Override
@@ -953,7 +951,7 @@ private static final long serialVersionUID = 0L;
 
     /**
      * <pre>
-     * The string content of the text part.
+     * The string content of the `text` part.
      * </pre>
      *
      * <code>string text = 1;</code>
@@ -965,7 +963,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The string content of the text part.
+     * The string content of the `text` part.
      * </pre>
      *
      * <code>string text = 1;</code>
@@ -991,7 +989,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The string content of the text part.
+     * The string content of the `text` part.
      * </pre>
      *
      * <code>string text = 1;</code>
@@ -1018,7 +1016,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The string content of the text part.
+     * The string content of the `text` part.
      * </pre>
      *
      * <code>string text = 1;</code>
@@ -1035,7 +1033,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The string content of the text part.
+     * The string content of the `text` part.
      * </pre>
      *
      * <code>string text = 1;</code>
@@ -1051,7 +1049,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The string content of the text part.
+     * The string content of the `text` part.
      * </pre>
      *
      * <code>string text = 1;</code>
@@ -1070,7 +1068,7 @@ private static final long serialVersionUID = 0L;
 
     /**
      * <pre>
-     * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+     * The `raw` byte content of a file. In JSON serialization, this is encoded as a base64 string.
      * </pre>
      *
      * <code>bytes raw = 2;</code>
@@ -1081,7 +1079,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+     * The `raw` byte content of a file. In JSON serialization, this is encoded as a base64 string.
      * </pre>
      *
      * <code>bytes raw = 2;</code>
@@ -1095,7 +1093,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+     * The `raw` byte content of a file. In JSON serialization, this is encoded as a base64 string.
      * </pre>
      *
      * <code>bytes raw = 2;</code>
@@ -1111,7 +1109,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+     * The `raw` byte content of a file. In JSON serialization, this is encoded as a base64 string.
      * </pre>
      *
      * <code>bytes raw = 2;</code>
@@ -1128,7 +1126,7 @@ private static final long serialVersionUID = 0L;
 
     /**
      * <pre>
-     * A URL pointing to the file's content.
+     * A `url` pointing to the file's content.
      * </pre>
      *
      * <code>string url = 3;</code>
@@ -1140,7 +1138,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A URL pointing to the file's content.
+     * A `url` pointing to the file's content.
      * </pre>
      *
      * <code>string url = 3;</code>
@@ -1166,7 +1164,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A URL pointing to the file's content.
+     * A `url` pointing to the file's content.
      * </pre>
      *
      * <code>string url = 3;</code>
@@ -1193,7 +1191,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A URL pointing to the file's content.
+     * A `url` pointing to the file's content.
      * </pre>
      *
      * <code>string url = 3;</code>
@@ -1210,7 +1208,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A URL pointing to the file's content.
+     * A `url` pointing to the file's content.
      * </pre>
      *
      * <code>string url = 3;</code>
@@ -1226,7 +1224,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A URL pointing to the file's content.
+     * A `url` pointing to the file's content.
      * </pre>
      *
      * <code>string url = 3;</code>
@@ -1247,7 +1245,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Value, com.google.protobuf.Value.Builder, com.google.protobuf.ValueOrBuilder> dataBuilder_;
     /**
      * <pre>
-     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+     * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
      * <code>.google.protobuf.Value data = 4;</code>
@@ -1259,7 +1257,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+     * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
      * <code>.google.protobuf.Value data = 4;</code>
@@ -1281,7 +1279,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+     * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
      * <code>.google.protobuf.Value data = 4;</code>
@@ -1301,7 +1299,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+     * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
      * <code>.google.protobuf.Value data = 4;</code>
@@ -1319,7 +1317,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+     * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
      * <code>.google.protobuf.Value data = 4;</code>
@@ -1346,7 +1344,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+     * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
      * <code>.google.protobuf.Value data = 4;</code>
@@ -1369,7 +1367,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+     * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
      * <code>.google.protobuf.Value data = 4;</code>
@@ -1379,7 +1377,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+     * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
      * <code>.google.protobuf.Value data = 4;</code>
@@ -1397,7 +1395,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+     * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
      * </pre>
      *
      * <code>.google.protobuf.Value data = 4;</code>
@@ -1426,7 +1424,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
     /**
      * <pre>
-     * Optional metadata associated with this part.
+     * Optional. metadata associated with this part.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -1437,7 +1435,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata associated with this part.
+     * Optional. metadata associated with this part.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -1452,7 +1450,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata associated with this part.
+     * Optional. metadata associated with this part.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -1472,7 +1470,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata associated with this part.
+     * Optional. metadata associated with this part.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -1490,7 +1488,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata associated with this part.
+     * Optional. metadata associated with this part.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -1515,7 +1513,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata associated with this part.
+     * Optional. metadata associated with this part.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -1532,7 +1530,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata associated with this part.
+     * Optional. metadata associated with this part.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -1544,7 +1542,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata associated with this part.
+     * Optional. metadata associated with this part.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -1559,7 +1557,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional metadata associated with this part.
+     * Optional. metadata associated with this part.
      * </pre>
      *
      * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -1581,7 +1579,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object filename_ = "";
     /**
      * <pre>
-     * An optional name for the file (e.g., "document.pdf").
+     * An optional `filename` for the file (e.g., "document.pdf").
      * </pre>
      *
      * <code>string filename = 6;</code>
@@ -1601,7 +1599,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An optional name for the file (e.g., "document.pdf").
+     * An optional `filename` for the file (e.g., "document.pdf").
      * </pre>
      *
      * <code>string filename = 6;</code>
@@ -1622,7 +1620,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An optional name for the file (e.g., "document.pdf").
+     * An optional `filename` for the file (e.g., "document.pdf").
      * </pre>
      *
      * <code>string filename = 6;</code>
@@ -1639,7 +1637,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An optional name for the file (e.g., "document.pdf").
+     * An optional `filename` for the file (e.g., "document.pdf").
      * </pre>
      *
      * <code>string filename = 6;</code>
@@ -1653,7 +1651,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * An optional name for the file (e.g., "document.pdf").
+     * An optional `filename` for the file (e.g., "document.pdf").
      * </pre>
      *
      * <code>string filename = 6;</code>
@@ -1673,7 +1671,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object mediaType_ = "";
     /**
      * <pre>
-     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * The `media_type` (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
      * This field is available for all part types.
      * </pre>
      *
@@ -1694,7 +1692,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * The `media_type` (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
      * This field is available for all part types.
      * </pre>
      *
@@ -1716,7 +1714,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * The `media_type` (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
      * This field is available for all part types.
      * </pre>
      *
@@ -1734,7 +1732,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * The `media_type` (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
      * This field is available for all part types.
      * </pre>
      *
@@ -1749,7 +1747,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+     * The `media_type` (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
      * This field is available for all part types.
      * </pre>
      *
@@ -1767,10 +1765,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.Part)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.Part)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.Part)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.Part)
   private static final io.a2a.grpc.Part DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.Part();

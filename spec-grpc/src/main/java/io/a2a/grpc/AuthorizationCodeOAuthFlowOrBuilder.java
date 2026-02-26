@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface AuthorizationCodeOAuthFlowOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.AuthorizationCodeOAuthFlow)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.AuthorizationCodeOAuthFlow)
     com.google.protobuf.MessageOrBuilder {
 
   /**

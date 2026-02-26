@@ -7,17 +7,16 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:AgentInterface]
  * Declares a combination of a target URL, transport and protocol version for interacting with the agent.
  * This allows agents to expose the same functionality over multiple protocol binding mechanisms.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.AgentInterface}
+ * Protobuf type {@code lf.a2a.v1.AgentInterface}
  */
 @com.google.protobuf.Generated
 public final class AgentInterface extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.AgentInterface)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.AgentInterface)
     AgentInterfaceOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -42,13 +41,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentInterface_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentInterface_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentInterface_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentInterface_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.AgentInterface.class, io.a2a.grpc.AgentInterface.Builder.class);
   }
@@ -158,7 +157,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object tenant_ = "";
   /**
    * <pre>
-   * Tenant to be set in the request when calling the agent.
+   * Tenant ID to be used in the request when calling the agent.
    * </pre>
    *
    * <code>string tenant = 3;</code>
@@ -179,7 +178,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Tenant to be set in the request when calling the agent.
+   * Tenant ID to be used in the request when calling the agent.
    * </pre>
    *
    * <code>string tenant = 3;</code>
@@ -439,26 +438,25 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:AgentInterface]
    * Declares a combination of a target URL, transport and protocol version for interacting with the agent.
    * This allows agents to expose the same functionality over multiple protocol binding mechanisms.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.AgentInterface}
+   * Protobuf type {@code lf.a2a.v1.AgentInterface}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.AgentInterface)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.AgentInterface)
       io.a2a.grpc.AgentInterfaceOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentInterface_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentInterface_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentInterface_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentInterface_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.AgentInterface.class, io.a2a.grpc.AgentInterface.Builder.class);
     }
@@ -487,7 +485,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentInterface_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentInterface_descriptor;
     }
 
     @java.lang.Override
@@ -825,7 +823,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object tenant_ = "";
     /**
      * <pre>
-     * Tenant to be set in the request when calling the agent.
+     * Tenant ID to be used in the request when calling the agent.
      * </pre>
      *
      * <code>string tenant = 3;</code>
@@ -845,7 +843,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Tenant to be set in the request when calling the agent.
+     * Tenant ID to be used in the request when calling the agent.
      * </pre>
      *
      * <code>string tenant = 3;</code>
@@ -866,7 +864,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Tenant to be set in the request when calling the agent.
+     * Tenant ID to be used in the request when calling the agent.
      * </pre>
      *
      * <code>string tenant = 3;</code>
@@ -883,7 +881,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Tenant to be set in the request when calling the agent.
+     * Tenant ID to be used in the request when calling the agent.
      * </pre>
      *
      * <code>string tenant = 3;</code>
@@ -897,7 +895,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Tenant to be set in the request when calling the agent.
+     * Tenant ID to be used in the request when calling the agent.
      * </pre>
      *
      * <code>string tenant = 3;</code>
@@ -1016,10 +1014,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.AgentInterface)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.AgentInterface)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.AgentInterface)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.AgentInterface)
   private static final io.a2a.grpc.AgentInterface DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.AgentInterface();

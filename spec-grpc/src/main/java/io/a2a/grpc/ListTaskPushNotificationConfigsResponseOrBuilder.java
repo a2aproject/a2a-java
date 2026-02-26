@@ -6,8 +6,8 @@
 package io.a2a.grpc;
 
 @com.google.protobuf.Generated
-public interface ListTaskPushNotificationConfigResponseOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.ListTaskPushNotificationConfigResponse)
+public interface ListTaskPushNotificationConfigsResponseOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.ListTaskPushNotificationConfigsResponse)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -15,7 +15,7 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   java.util.List<io.a2a.grpc.TaskPushNotificationConfig> 
       getConfigsList();
@@ -24,7 +24,7 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   io.a2a.grpc.TaskPushNotificationConfig getConfigs(int index);
   /**
@@ -32,7 +32,7 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   int getConfigsCount();
   /**
@@ -40,7 +40,7 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   java.util.List<? extends io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
       getConfigsOrBuilderList();
@@ -49,15 +49,14 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
    * The list of push notification configurations.
    * </pre>
    *
-   * <code>repeated .a2a.v1.TaskPushNotificationConfig configs = 1;</code>
+   * <code>repeated .lf.a2a.v1.TaskPushNotificationConfig configs = 1;</code>
    */
   io.a2a.grpc.TaskPushNotificationConfigOrBuilder getConfigsOrBuilder(
       int index);
 
   /**
    * <pre>
-   * A token, which can be sent as `page_token` to retrieve the next page.
-   * If this field is omitted, there are no subsequent pages.
+   * A token to retrieve the next page of results, or empty if there are no more results in the list.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -66,8 +65,7 @@ public interface ListTaskPushNotificationConfigResponseOrBuilder extends
   java.lang.String getNextPageToken();
   /**
    * <pre>
-   * A token, which can be sent as `page_token` to retrieve the next page.
-   * If this field is omitted, there are no subsequent pages.
+   * A token to retrieve the next page of results, or empty if there are no more results in the list.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>

@@ -7,24 +7,24 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface ListTasksRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.ListTasksRequest)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.ListTasksRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 9;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   java.lang.String getTenant();
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 9;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface ListTasksRequestOrBuilder extends
    * Filter tasks by context ID to get tasks from a specific conversation or session.
    * </pre>
    *
-   * <code>string context_id = 1;</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   java.lang.String getContextId();
@@ -44,7 +44,7 @@ public interface ListTasksRequestOrBuilder extends
    * Filter tasks by context ID to get tasks from a specific conversation or session.
    * </pre>
    *
-   * <code>string context_id = 1;</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   com.google.protobuf.ByteString
@@ -55,7 +55,7 @@ public interface ListTasksRequestOrBuilder extends
    * Filter tasks by their current status state.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState status = 2;</code>
+   * <code>.lf.a2a.v1.TaskState status = 3;</code>
    * @return The enum numeric value on the wire for status.
    */
   int getStatusValue();
@@ -64,47 +64,55 @@ public interface ListTasksRequestOrBuilder extends
    * Filter tasks by their current status state.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState status = 2;</code>
+   * <code>.lf.a2a.v1.TaskState status = 3;</code>
    * @return The status.
    */
   io.a2a.grpc.TaskState getStatus();
 
   /**
    * <pre>
-   * Maximum number of tasks to return. Must be between 1 and 100.
-   * Defaults to 50 if not specified.
+   * The maximum number of tasks to return. The service may return fewer than this value.
+   * If unspecified, at most 50 tasks will be returned.
+   * The minimum value is 1.
+   * The maximum value is 100.
    * </pre>
    *
-   * <code>optional int32 page_size = 3;</code>
+   * <code>optional int32 page_size = 4;</code>
    * @return Whether the pageSize field is set.
    */
   boolean hasPageSize();
   /**
    * <pre>
-   * Maximum number of tasks to return. Must be between 1 and 100.
-   * Defaults to 50 if not specified.
+   * The maximum number of tasks to return. The service may return fewer than this value.
+   * If unspecified, at most 50 tasks will be returned.
+   * The minimum value is 1.
+   * The maximum value is 100.
    * </pre>
    *
-   * <code>optional int32 page_size = 3;</code>
+   * <code>optional int32 page_size = 4;</code>
    * @return The pageSize.
    */
   int getPageSize();
 
   /**
    * <pre>
-   * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
+   * A page token, received from a previous `ListTasks` call.
+   * `ListTasksResponse.next_page_token`.
+   * Provide this to retrieve the subsequent page.
    * </pre>
    *
-   * <code>string page_token = 4;</code>
+   * <code>string page_token = 5;</code>
    * @return The pageToken.
    */
   java.lang.String getPageToken();
   /**
    * <pre>
-   * Token for pagination. Use the next_page_token from a previous ListTasksResponse.
+   * A page token, received from a previous `ListTasks` call.
+   * `ListTasksResponse.next_page_token`.
+   * Provide this to retrieve the subsequent page.
    * </pre>
    *
-   * <code>string page_token = 4;</code>
+   * <code>string page_token = 5;</code>
    * @return The bytes for pageToken.
    */
   com.google.protobuf.ByteString
@@ -115,7 +123,7 @@ public interface ListTasksRequestOrBuilder extends
    * The maximum number of messages to include in each task's history.
    * </pre>
    *
-   * <code>optional int32 history_length = 5;</code>
+   * <code>optional int32 history_length = 6;</code>
    * @return Whether the historyLength field is set.
    */
   boolean hasHistoryLength();
@@ -124,7 +132,7 @@ public interface ListTasksRequestOrBuilder extends
    * The maximum number of messages to include in each task's history.
    * </pre>
    *
-   * <code>optional int32 history_length = 5;</code>
+   * <code>optional int32 history_length = 6;</code>
    * @return The historyLength.
    */
   int getHistoryLength();
@@ -135,7 +143,7 @@ public interface ListTasksRequestOrBuilder extends
    * Only tasks with a status timestamp time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
    * @return Whether the statusTimestampAfter field is set.
    */
   boolean hasStatusTimestampAfter();
@@ -145,7 +153,7 @@ public interface ListTasksRequestOrBuilder extends
    * Only tasks with a status timestamp time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
    * @return The statusTimestampAfter.
    */
   com.google.protobuf.Timestamp getStatusTimestampAfter();
@@ -155,7 +163,7 @@ public interface ListTasksRequestOrBuilder extends
    * Only tasks with a status timestamp time greater than or equal to this value will be returned.
    * </pre>
    *
-   * <code>.google.protobuf.Timestamp status_timestamp_after = 6;</code>
+   * <code>.google.protobuf.Timestamp status_timestamp_after = 7;</code>
    */
   com.google.protobuf.TimestampOrBuilder getStatusTimestampAfterOrBuilder();
 
@@ -165,7 +173,7 @@ public interface ListTasksRequestOrBuilder extends
    * Defaults to false to reduce payload size.
    * </pre>
    *
-   * <code>optional bool include_artifacts = 7;</code>
+   * <code>optional bool include_artifacts = 8;</code>
    * @return Whether the includeArtifacts field is set.
    */
   boolean hasIncludeArtifacts();
@@ -175,7 +183,7 @@ public interface ListTasksRequestOrBuilder extends
    * Defaults to false to reduce payload size.
    * </pre>
    *
-   * <code>optional bool include_artifacts = 7;</code>
+   * <code>optional bool include_artifacts = 8;</code>
    * @return The includeArtifacts.
    */
   boolean getIncludeArtifacts();
