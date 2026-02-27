@@ -160,15 +160,15 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString())).thenReturn(mockHttpResponse);
+        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString(), anyString())).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.cancelTask(mockRoutingContext);
+        routes.cancelTask("{\"id\":\"task123\"}", mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).cancelTask(contextCaptor.capture(), anyString(), eq("task123"));
+        verify(mockRestHandler).cancelTask(contextCaptor.capture(), anyString(), anyString(), eq("task123"));
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(CANCEL_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));

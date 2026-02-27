@@ -174,7 +174,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.cancel();
         };
 
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", MINIMAL_TASK.id());
+        String requestBody = String.format("{\"id\":\"%s\"}", MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -185,7 +186,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testCancelTaskNotFound() {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", "nonexistent");
+        String requestBody = "{\"id\":\"nonexistent\"}";
+        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, "nonexistent");
 
         Assertions.assertEquals(404, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());

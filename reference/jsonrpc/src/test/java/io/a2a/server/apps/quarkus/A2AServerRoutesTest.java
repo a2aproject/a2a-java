@@ -417,7 +417,7 @@ public class A2AServerRoutesTest {
             {
              "jsonrpc": "2.0",
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
-             "method": "ListTaskPushNotificationConfig",
+             "method": "ListTaskPushNotificationConfigs",
              "params": {
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
               "pageSize": 0,

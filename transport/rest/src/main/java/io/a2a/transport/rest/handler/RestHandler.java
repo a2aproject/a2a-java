@@ -144,12 +144,29 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String taskId) {
+    public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String body, String taskId) {
         try {
             if (taskId == null || taskId.isEmpty()) {
                 throw new InvalidParamsError();
             }
-            TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
+            TaskIdParams params;
+            if (body != null && !body.isEmpty()) {
+                io.a2a.grpc.CancelTaskRequest.Builder request = io.a2a.grpc.CancelTaskRequest.newBuilder();
+                parseRequestBody(body, request);
+                request.setTenant(tenant);
+                if (!taskId.equals(request.getId())) {
+                    throw new InvalidParamsError();
+                }
+                params = ProtoUtils.FromProto.taskIdParams(request);
+            } else {
+                params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
+            }
+            io.a2a.grpc.CancelTaskRequest.Builder request = io.a2a.grpc.CancelTaskRequest.newBuilder();
+            parseRequestBody(body, request);
+            request.setTenant(tenant);
+            if (!taskId.equals(request.getId())) {
+                throw new InvalidParamsError();
+            }
             Task task = requestHandler.onCancelTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
