@@ -1616,6 +1616,132 @@ public abstract class AbstractA2AServerTest {
         }
     }
 
+    /**
+     * Test AUTH_REQUIRED workflow: agent emits AUTH_REQUIRED, continues in background, completes after out-of-band auth.
+     * <p>
+     * Flow:
+     * 1. Send initial message → Agent emits AUTH_REQUIRED and returns immediately
+     * 2. Verify client receives AUTH_REQUIRED state (non-streaming blocking call)
+     * 3. Subscribe to task to catch background completion
+     * 4. Verify agent completes in background (simulating out-of-band auth)
+     * 5. Verify COMPLETED state received via subscription
+     * <p>
+     * Key behaviors:
+     * - AUTH_REQUIRED causes immediate return from blocking call (like INPUT_REQUIRED)
+     * - Agent continues executing in background after returning AUTH_REQUIRED
+     * - No second message sent (auth happens out-of-band)
+     * - Subscription receives completion event when agent finishes
+     */
+    @Test
+    @Timeout(value = 1, unit = TimeUnit.MINUTES)
+    public void testAuthRequiredWorkflow() throws Exception {
+        String authRequiredTaskId = "auth-required-test-" + java.util.UUID.randomUUID();
+        boolean taskCreated = false;
+        try {
+            // 1. Send initial message - AgentExecutor will transition task to AUTH_REQUIRED then continue in background
+            Message initialMessage = Message.builder(MESSAGE)
+                    .taskId(authRequiredTaskId)
+                    .contextId("test-context")
+                    .parts(new TextPart("Initial request requiring auth"))
+                    .build();
+
+            CountDownLatch initialLatch = new CountDownLatch(1);
+            AtomicReference<TaskState> initialState = new AtomicReference<>();
+            AtomicBoolean initialUnexpectedEvent = new AtomicBoolean(false);
+
+            BiConsumer<ClientEvent, AgentCard> initialConsumer = (event, agentCard) -> {
+                // Idempotency guard: prevent late events from modifying state after latch countdown
+                if (initialLatch.getCount() == 0) {
+                    return;
+                }
+                if (event instanceof TaskEvent te) {
+                    TaskState state = te.getTask().status().state();
+                    initialState.set(state);
+                    // Only count down when we receive AUTH_REQUIRED, not intermediate states like WORKING
+                    if (state == TaskState.TASK_STATE_AUTH_REQUIRED) {
+                        initialLatch.countDown();
+                    }
+                } else {
+                    initialUnexpectedEvent.set(true);
+                }
+            };
+
+            // Send initial message - task will go to AUTH_REQUIRED state and return immediately
+            getNonStreamingClient().sendMessage(initialMessage, List.of(initialConsumer), null);
+            assertTrue(initialLatch.await(10, TimeUnit.SECONDS), "Should receive AUTH_REQUIRED state");
+            assertFalse(initialUnexpectedEvent.get(), "Should only receive TaskEvent");
+            assertEquals(TaskState.TASK_STATE_AUTH_REQUIRED, initialState.get(), "Task should be in AUTH_REQUIRED state");
+            taskCreated = true;
+
+            // 2. Subscribe to task to catch background completion
+            // Agent continues executing after returning AUTH_REQUIRED (simulating out-of-band auth flow)
+            CountDownLatch completionLatch = new CountDownLatch(1);
+            AtomicReference<TaskState> completedState = new AtomicReference<>();
+            AtomicBoolean completionUnexpectedEvent = new AtomicBoolean(false);
+            AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+            BiConsumer<ClientEvent, AgentCard> subscriptionConsumer = (event, agentCard) -> {
+                // Idempotency guard: prevent late events from modifying state after latch countdown
+                if (completionLatch.getCount() == 0) {
+                    return;
+                }
+                // subscribeToTask returns initial state as TaskEvent, then subsequent events as TaskUpdateEvent
+                TaskState state = null;
+                if (event instanceof TaskEvent te) {
+                    state = te.getTask().status().state();
+                } else if (event instanceof TaskUpdateEvent tue) {
+                    io.a2a.spec.UpdateEvent updateEvent = tue.getUpdateEvent();
+                    if (updateEvent instanceof TaskStatusUpdateEvent statusUpdate) {
+                        state = statusUpdate.status().state();
+                    } else {
+                        // Ignore other update events like TaskArtifactUpdateEvent as they don't change the task state
+                        return;
+                    }
+                } else {
+                    completionUnexpectedEvent.set(true);
+                    return;
+                }
+
+                completedState.set(state);
+                // A2A spec: first event from subscribeToTask is TaskEvent with current state (AUTH_REQUIRED)
+                // Then we receive TaskUpdateEvent with COMPLETED when agent finishes
+                if (state == TaskState.TASK_STATE_COMPLETED) {
+                    completionLatch.countDown();
+                }
+            };
+
+            Consumer<Throwable> errorHandler = errorRef::set;
+
+            // Wait for subscription to be established
+            CountDownLatch subscriptionLatch = new CountDownLatch(1);
+            awaitStreamingSubscription()
+                    .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
+
+            getClient().subscribeToTask(new TaskIdParams(authRequiredTaskId),
+                    List.of(subscriptionConsumer),
+                    errorHandler);
+
+            assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS), "Subscription should be established");
+
+            // Note: We don't use awaitChildQueueCountStable() here because the agent is already running
+            // in the background (sleeping for 3s). By the time we check, it might have already completed.
+            // The subscriptionLatch already ensures the subscription is established, and completionLatch
+            // below will catch the COMPLETED event from the background agent.
+
+            // 3. Verify subscription receives COMPLETED state from background agent execution
+            // Agent should complete after simulating out-of-band auth delay (500ms)
+            assertTrue(completionLatch.await(10, TimeUnit.SECONDS), "Should receive COMPLETED state from background agent");
+            assertFalse(completionUnexpectedEvent.get(), "Should only receive TaskEvent");
+            assertNull(errorRef.get(), "Should not receive errors");
+            assertEquals(TaskState.TASK_STATE_COMPLETED, completedState.get(), "Task should be COMPLETED after background auth");
+
+        } finally {
+            if (taskCreated) {
+                deleteTaskInTaskStore(authRequiredTaskId);
+            }
+        }
+    }
+
     @Test
     public void testMalformedJSONRPCRequest() {
         // skip this test for non-JSONRPC transports
