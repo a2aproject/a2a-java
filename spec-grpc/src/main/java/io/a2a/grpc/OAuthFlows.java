@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:OAuthFlows]
  * Defines the configuration for the supported OAuth 2.0 flows.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.OAuthFlows}
+ * Protobuf type {@code lf.a2a.v1.OAuthFlows}
  */
 @com.google.protobuf.Generated
 public final class OAuthFlows extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.OAuthFlows)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.OAuthFlows)
     OAuthFlowsOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -37,13 +36,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_OAuthFlows_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_OAuthFlows_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_OAuthFlows_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_OAuthFlows_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.OAuthFlows.class, io.a2a.grpc.OAuthFlows.Builder.class);
   }
@@ -102,7 +101,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the OAuth Authorization Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+   * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return Whether the authorizationCode field is set.
    */
   @java.lang.Override
@@ -114,7 +113,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the OAuth Authorization Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+   * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    * @return The authorizationCode.
    */
   @java.lang.Override
@@ -129,7 +128,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the OAuth Authorization Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+   * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder getAuthorizationCodeOrBuilder() {
@@ -145,7 +144,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the OAuth Client Credentials flow.
    * </pre>
    *
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+   * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return Whether the clientCredentials field is set.
    */
   @java.lang.Override
@@ -157,7 +156,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the OAuth Client Credentials flow.
    * </pre>
    *
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+   * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    * @return The clientCredentials.
    */
   @java.lang.Override
@@ -172,7 +171,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the OAuth Client Credentials flow.
    * </pre>
    *
-   * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+   * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder getClientCredentialsOrBuilder() {
@@ -184,9 +183,13 @@ private static final long serialVersionUID = 0L;
 
   public static final int IMPLICIT_FIELD_NUMBER = 3;
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.OAuthFlows.implicit is deprecated.
-   *     See a2a.proto;l=633
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE instead.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+   * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
+   *     See a2a.proto;l=570
    * @return Whether the implicit field is set.
    */
   @java.lang.Override
@@ -194,9 +197,13 @@ private static final long serialVersionUID = 0L;
     return flowCase_ == 3;
   }
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
-   * @deprecated a2a.v1.OAuthFlows.implicit is deprecated.
-   *     See a2a.proto;l=633
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE instead.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+   * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
+   *     See a2a.proto;l=570
    * @return The implicit.
    */
   @java.lang.Override
@@ -207,7 +214,11 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.ImplicitOAuthFlow.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE instead.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
    */
   @java.lang.Override
   @java.lang.Deprecated public io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder() {
@@ -219,9 +230,13 @@ private static final long serialVersionUID = 0L;
 
   public static final int PASSWORD_FIELD_NUMBER = 4;
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
-   * @deprecated a2a.v1.OAuthFlows.password is deprecated.
-   *     See a2a.proto;l=634
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE or Device Code.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+   * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
+   *     See a2a.proto;l=572
    * @return Whether the password field is set.
    */
   @java.lang.Override
@@ -229,9 +244,13 @@ private static final long serialVersionUID = 0L;
     return flowCase_ == 4;
   }
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
-   * @deprecated a2a.v1.OAuthFlows.password is deprecated.
-   *     See a2a.proto;l=634
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE or Device Code.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+   * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
+   *     See a2a.proto;l=572
    * @return The password.
    */
   @java.lang.Override
@@ -242,7 +261,11 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.PasswordOAuthFlow.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+   * <pre>
+   * Deprecated: Use Authorization Code + PKCE or Device Code.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
    */
   @java.lang.Override
   @java.lang.Deprecated public io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder() {
@@ -258,7 +281,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
    * @return Whether the deviceCode field is set.
    */
   @java.lang.Override
@@ -270,7 +293,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
    * @return The deviceCode.
    */
   @java.lang.Override
@@ -285,7 +308,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the OAuth Device Code flow.
    * </pre>
    *
-   * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+   * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder getDeviceCodeOrBuilder() {
@@ -527,25 +550,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:OAuthFlows]
    * Defines the configuration for the supported OAuth 2.0 flows.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.OAuthFlows}
+   * Protobuf type {@code lf.a2a.v1.OAuthFlows}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.OAuthFlows)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.OAuthFlows)
       io.a2a.grpc.OAuthFlowsOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_OAuthFlows_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_OAuthFlows_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_OAuthFlows_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_OAuthFlows_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.OAuthFlows.class, io.a2a.grpc.OAuthFlows.Builder.class);
     }
@@ -587,7 +609,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_OAuthFlows_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_OAuthFlows_descriptor;
     }
 
     @java.lang.Override
@@ -779,7 +801,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Authorization Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+     * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      * @return Whether the authorizationCode field is set.
      */
     @java.lang.Override
@@ -791,7 +813,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Authorization Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+     * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      * @return The authorizationCode.
      */
     @java.lang.Override
@@ -813,7 +835,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Authorization Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+     * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public Builder setAuthorizationCode(io.a2a.grpc.AuthorizationCodeOAuthFlow value) {
       if (authorizationCodeBuilder_ == null) {
@@ -833,7 +855,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Authorization Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+     * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public Builder setAuthorizationCode(
         io.a2a.grpc.AuthorizationCodeOAuthFlow.Builder builderForValue) {
@@ -851,7 +873,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Authorization Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+     * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public Builder mergeAuthorizationCode(io.a2a.grpc.AuthorizationCodeOAuthFlow value) {
       if (authorizationCodeBuilder_ == null) {
@@ -878,7 +900,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Authorization Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+     * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public Builder clearAuthorizationCode() {
       if (authorizationCodeBuilder_ == null) {
@@ -901,7 +923,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Authorization Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+     * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     public io.a2a.grpc.AuthorizationCodeOAuthFlow.Builder getAuthorizationCodeBuilder() {
       return internalGetAuthorizationCodeFieldBuilder().getBuilder();
@@ -911,7 +933,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Authorization Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+     * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder getAuthorizationCodeOrBuilder() {
@@ -929,7 +951,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Authorization Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
+     * <code>.lf.a2a.v1.AuthorizationCodeOAuthFlow authorization_code = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.AuthorizationCodeOAuthFlow, io.a2a.grpc.AuthorizationCodeOAuthFlow.Builder, io.a2a.grpc.AuthorizationCodeOAuthFlowOrBuilder> 
@@ -957,7 +979,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Client Credentials flow.
      * </pre>
      *
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+     * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      * @return Whether the clientCredentials field is set.
      */
     @java.lang.Override
@@ -969,7 +991,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Client Credentials flow.
      * </pre>
      *
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+     * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      * @return The clientCredentials.
      */
     @java.lang.Override
@@ -991,7 +1013,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Client Credentials flow.
      * </pre>
      *
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+     * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public Builder setClientCredentials(io.a2a.grpc.ClientCredentialsOAuthFlow value) {
       if (clientCredentialsBuilder_ == null) {
@@ -1011,7 +1033,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Client Credentials flow.
      * </pre>
      *
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+     * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public Builder setClientCredentials(
         io.a2a.grpc.ClientCredentialsOAuthFlow.Builder builderForValue) {
@@ -1029,7 +1051,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Client Credentials flow.
      * </pre>
      *
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+     * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public Builder mergeClientCredentials(io.a2a.grpc.ClientCredentialsOAuthFlow value) {
       if (clientCredentialsBuilder_ == null) {
@@ -1056,7 +1078,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Client Credentials flow.
      * </pre>
      *
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+     * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public Builder clearClientCredentials() {
       if (clientCredentialsBuilder_ == null) {
@@ -1079,7 +1101,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Client Credentials flow.
      * </pre>
      *
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+     * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     public io.a2a.grpc.ClientCredentialsOAuthFlow.Builder getClientCredentialsBuilder() {
       return internalGetClientCredentialsFieldBuilder().getBuilder();
@@ -1089,7 +1111,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Client Credentials flow.
      * </pre>
      *
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+     * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder getClientCredentialsOrBuilder() {
@@ -1107,7 +1129,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Client Credentials flow.
      * </pre>
      *
-     * <code>.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
+     * <code>.lf.a2a.v1.ClientCredentialsOAuthFlow client_credentials = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.ClientCredentialsOAuthFlow, io.a2a.grpc.ClientCredentialsOAuthFlow.Builder, io.a2a.grpc.ClientCredentialsOAuthFlowOrBuilder> 
@@ -1131,9 +1153,13 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.ImplicitOAuthFlow, io.a2a.grpc.ImplicitOAuthFlow.Builder, io.a2a.grpc.ImplicitOAuthFlowOrBuilder> implicitBuilder_;
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
-     * @deprecated a2a.v1.OAuthFlows.implicit is deprecated.
-     *     See a2a.proto;l=633
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE instead.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+     * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
+     *     See a2a.proto;l=570
      * @return Whether the implicit field is set.
      */
     @java.lang.Override
@@ -1141,9 +1167,13 @@ private static final long serialVersionUID = 0L;
       return flowCase_ == 3;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
-     * @deprecated a2a.v1.OAuthFlows.implicit is deprecated.
-     *     See a2a.proto;l=633
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE instead.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+     * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
+     *     See a2a.proto;l=570
      * @return The implicit.
      */
     @java.lang.Override
@@ -1161,7 +1191,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE instead.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      */
     @java.lang.Deprecated public Builder setImplicit(io.a2a.grpc.ImplicitOAuthFlow value) {
       if (implicitBuilder_ == null) {
@@ -1177,7 +1211,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE instead.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      */
     @java.lang.Deprecated public Builder setImplicit(
         io.a2a.grpc.ImplicitOAuthFlow.Builder builderForValue) {
@@ -1191,7 +1229,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE instead.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      */
     @java.lang.Deprecated public Builder mergeImplicit(io.a2a.grpc.ImplicitOAuthFlow value) {
       if (implicitBuilder_ == null) {
@@ -1214,7 +1256,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE instead.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      */
     @java.lang.Deprecated public Builder clearImplicit() {
       if (implicitBuilder_ == null) {
@@ -1233,13 +1279,21 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE instead.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      */
     @java.lang.Deprecated public io.a2a.grpc.ImplicitOAuthFlow.Builder getImplicitBuilder() {
       return internalGetImplicitFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE instead.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      */
     @java.lang.Override
     @java.lang.Deprecated public io.a2a.grpc.ImplicitOAuthFlowOrBuilder getImplicitOrBuilder() {
@@ -1253,7 +1307,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE instead.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.ImplicitOAuthFlow, io.a2a.grpc.ImplicitOAuthFlow.Builder, io.a2a.grpc.ImplicitOAuthFlowOrBuilder> 
@@ -1277,9 +1335,13 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PasswordOAuthFlow, io.a2a.grpc.PasswordOAuthFlow.Builder, io.a2a.grpc.PasswordOAuthFlowOrBuilder> passwordBuilder_;
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
-     * @deprecated a2a.v1.OAuthFlows.password is deprecated.
-     *     See a2a.proto;l=634
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE or Device Code.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+     * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
+     *     See a2a.proto;l=572
      * @return Whether the password field is set.
      */
     @java.lang.Override
@@ -1287,9 +1349,13 @@ private static final long serialVersionUID = 0L;
       return flowCase_ == 4;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
-     * @deprecated a2a.v1.OAuthFlows.password is deprecated.
-     *     See a2a.proto;l=634
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE or Device Code.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+     * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
+     *     See a2a.proto;l=572
      * @return The password.
      */
     @java.lang.Override
@@ -1307,7 +1373,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE or Device Code.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      */
     @java.lang.Deprecated public Builder setPassword(io.a2a.grpc.PasswordOAuthFlow value) {
       if (passwordBuilder_ == null) {
@@ -1323,7 +1393,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE or Device Code.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      */
     @java.lang.Deprecated public Builder setPassword(
         io.a2a.grpc.PasswordOAuthFlow.Builder builderForValue) {
@@ -1337,7 +1411,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE or Device Code.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      */
     @java.lang.Deprecated public Builder mergePassword(io.a2a.grpc.PasswordOAuthFlow value) {
       if (passwordBuilder_ == null) {
@@ -1360,7 +1438,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE or Device Code.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      */
     @java.lang.Deprecated public Builder clearPassword() {
       if (passwordBuilder_ == null) {
@@ -1379,13 +1461,21 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE or Device Code.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      */
     @java.lang.Deprecated public io.a2a.grpc.PasswordOAuthFlow.Builder getPasswordBuilder() {
       return internalGetPasswordFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE or Device Code.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      */
     @java.lang.Override
     @java.lang.Deprecated public io.a2a.grpc.PasswordOAuthFlowOrBuilder getPasswordOrBuilder() {
@@ -1399,7 +1489,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
+     * <pre>
+     * Deprecated: Use Authorization Code + PKCE or Device Code.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.PasswordOAuthFlow, io.a2a.grpc.PasswordOAuthFlow.Builder, io.a2a.grpc.PasswordOAuthFlowOrBuilder> 
@@ -1427,7 +1521,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      * @return Whether the deviceCode field is set.
      */
     @java.lang.Override
@@ -1439,7 +1533,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      * @return The deviceCode.
      */
     @java.lang.Override
@@ -1461,7 +1555,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     public Builder setDeviceCode(io.a2a.grpc.DeviceCodeOAuthFlow value) {
       if (deviceCodeBuilder_ == null) {
@@ -1481,7 +1575,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     public Builder setDeviceCode(
         io.a2a.grpc.DeviceCodeOAuthFlow.Builder builderForValue) {
@@ -1499,7 +1593,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     public Builder mergeDeviceCode(io.a2a.grpc.DeviceCodeOAuthFlow value) {
       if (deviceCodeBuilder_ == null) {
@@ -1526,7 +1620,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     public Builder clearDeviceCode() {
       if (deviceCodeBuilder_ == null) {
@@ -1549,7 +1643,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     public io.a2a.grpc.DeviceCodeOAuthFlow.Builder getDeviceCodeBuilder() {
       return internalGetDeviceCodeFieldBuilder().getBuilder();
@@ -1559,7 +1653,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder getDeviceCodeOrBuilder() {
@@ -1577,7 +1671,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the OAuth Device Code flow.
      * </pre>
      *
-     * <code>.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
+     * <code>.lf.a2a.v1.DeviceCodeOAuthFlow device_code = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.DeviceCodeOAuthFlow, io.a2a.grpc.DeviceCodeOAuthFlow.Builder, io.a2a.grpc.DeviceCodeOAuthFlowOrBuilder> 
@@ -1598,10 +1692,10 @@ private static final long serialVersionUID = 0L;
       return deviceCodeBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.OAuthFlows)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.OAuthFlows)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.OAuthFlows)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.OAuthFlows)
   private static final io.a2a.grpc.OAuthFlows DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.OAuthFlows();

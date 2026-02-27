@@ -88,7 +88,7 @@ public class ProtoUtils {
             return DeleteTaskPushNotificationConfigParamsMapper.INSTANCE.toProto(params);
         }
 
-        public static io.a2a.grpc.ListTaskPushNotificationConfigRequest listTaskPushNotificationConfigRequest(ListTaskPushNotificationConfigParams params) {
+        public static io.a2a.grpc.ListTaskPushNotificationConfigsRequest listTaskPushNotificationConfigRequest(ListTaskPushNotificationConfigParams params) {
             return ListTaskPushNotificationConfigParamsMapper.INSTANCE.toProto(params);
         }
 
@@ -132,12 +132,12 @@ public class ProtoUtils {
             return MessageSendParamsMapper.INSTANCE.toProto(request);
         }
 
-        public static io.a2a.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfigResponse(ListTaskPushNotificationConfigResult result) {
+        public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse listTaskPushNotificationConfigResponse(ListTaskPushNotificationConfigResult result) {
             List<io.a2a.grpc.TaskPushNotificationConfig> confs = new ArrayList<>(result.configs().size());
             for (TaskPushNotificationConfig config : result.configs()) {
                 confs.add(taskPushNotificationConfig(config));
             }
-            io.a2a.grpc.ListTaskPushNotificationConfigResponse.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder().addAllConfigs(confs);
+            io.a2a.grpc.ListTaskPushNotificationConfigsResponse.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigsResponse.newBuilder().addAllConfigs(confs);
             if (result.nextPageToken() != null) {
                 builder.setNextPageToken(result.nextPageToken());
             }
@@ -264,7 +264,7 @@ public class ProtoUtils {
             return convert(() -> TaskIdParamsMapper.INSTANCE.fromProtoSubscribeToTaskRequest(reqProto));
         }
 
-        public static ListTaskPushNotificationConfigResult listTaskPushNotificationConfigResult(io.a2a.grpc.ListTaskPushNotificationConfigResponseOrBuilder response) {
+        public static ListTaskPushNotificationConfigResult listTaskPushNotificationConfigResult(io.a2a.grpc.ListTaskPushNotificationConfigsResponseOrBuilder response) {
             List<io.a2a.grpc.TaskPushNotificationConfig> configs = response.getConfigsList();
             List<TaskPushNotificationConfig> result = new ArrayList<>(configs.size());
             for (io.a2a.grpc.TaskPushNotificationConfig config : configs) {
@@ -277,10 +277,10 @@ public class ProtoUtils {
             return new ListTaskPushNotificationConfigResult(result, nextPageToken);
         }
 
-        public static ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigRequestOrBuilder request) {
-            io.a2a.grpc.ListTaskPushNotificationConfigRequest reqProto = request instanceof io.a2a.grpc.ListTaskPushNotificationConfigRequest
-                    ? (io.a2a.grpc.ListTaskPushNotificationConfigRequest) request
-                    : ((io.a2a.grpc.ListTaskPushNotificationConfigRequest.Builder) request).build();
+        public static ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigsRequestOrBuilder request) {
+            io.a2a.grpc.ListTaskPushNotificationConfigsRequest reqProto = request instanceof io.a2a.grpc.ListTaskPushNotificationConfigsRequest
+                    ? (io.a2a.grpc.ListTaskPushNotificationConfigsRequest) request
+                    : ((io.a2a.grpc.ListTaskPushNotificationConfigsRequest.Builder) request).build();
             return convert(() -> ListTaskPushNotificationConfigParamsMapper.INSTANCE.fromProto(reqProto));
         }
 

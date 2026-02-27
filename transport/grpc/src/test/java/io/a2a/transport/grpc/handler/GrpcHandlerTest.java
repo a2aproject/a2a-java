@@ -215,7 +215,6 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), response.getTaskId());
         PushNotificationConfig responseConfig = response.getPushNotificationConfig();
         assertEquals("config456", responseConfig.getId());
-        assertEquals("config456", response.getId());
         assertEquals("http://example.com", responseConfig.getUrl());
         assertEquals(AuthenticationInfo.getDefaultInstance(), responseConfig.getAuthentication());
         Assertions.assertTrue(responseConfig.getToken().isEmpty());
@@ -241,7 +240,6 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(1, result.size());
         TaskPushNotificationConfig response = result.get(0);
         assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), response.getTaskId());
-        assertEquals("config456", response.getId());
         PushNotificationConfig responseConfig = response.getPushNotificationConfig();
         assertEquals("config456", responseConfig.getId());
         assertEquals("http://example.com", responseConfig.getUrl());
@@ -633,13 +631,13 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), AbstractA2ARequestHandlerTest.MINIMAL_TASK.id());
         Assertions.assertNull(pushRecorder.getError());
 
-        ListTaskPushNotificationConfigRequest request = ListTaskPushNotificationConfigRequest.newBuilder()
+        ListTaskPushNotificationConfigsRequest request = ListTaskPushNotificationConfigsRequest.newBuilder()
                 .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
-        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder = StreamRecorder.create();
-        handler.listTaskPushNotificationConfig(request, streamRecorder);
+        StreamRecorder<ListTaskPushNotificationConfigsResponse> streamRecorder = StreamRecorder.create();
+        handler.listTaskPushNotificationConfigs(request, streamRecorder);
         Assertions.assertNull(streamRecorder.getError());
-        List<ListTaskPushNotificationConfigResponse> result = streamRecorder.getValues();
+        List<ListTaskPushNotificationConfigsResponse> result = streamRecorder.getValues();
         Assertions.assertEquals(1, result.size());
         List<TaskPushNotificationConfig> configList = result.get(0).getConfigsList();
         Assertions.assertEquals(1, configList.size());
@@ -655,11 +653,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.emitEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        ListTaskPushNotificationConfigRequest request = ListTaskPushNotificationConfigRequest.newBuilder()
+        ListTaskPushNotificationConfigsRequest request = ListTaskPushNotificationConfigsRequest.newBuilder()
                 .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
-        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder = StreamRecorder.create();
-        handler.listTaskPushNotificationConfig(request, streamRecorder);
+        StreamRecorder<ListTaskPushNotificationConfigsResponse> streamRecorder = StreamRecorder.create();
+        handler.listTaskPushNotificationConfigs(request, streamRecorder);
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
@@ -672,11 +670,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.emitEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        ListTaskPushNotificationConfigRequest request = ListTaskPushNotificationConfigRequest.newBuilder()
+        ListTaskPushNotificationConfigsRequest request = ListTaskPushNotificationConfigsRequest.newBuilder()
                 .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
-        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder = StreamRecorder.create();
-        handler.listTaskPushNotificationConfig(request, streamRecorder);
+        StreamRecorder<ListTaskPushNotificationConfigsResponse> streamRecorder = StreamRecorder.create();
+        handler.listTaskPushNotificationConfigs(request, streamRecorder);
         assertGrpcError(streamRecorder, Status.Code.UNIMPLEMENTED);
     }
 
@@ -687,11 +685,11 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.emitEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        ListTaskPushNotificationConfigRequest request = ListTaskPushNotificationConfigRequest.newBuilder()
+        ListTaskPushNotificationConfigsRequest request = ListTaskPushNotificationConfigsRequest.newBuilder()
                 .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
                 .build();
-        StreamRecorder<ListTaskPushNotificationConfigResponse> streamRecorder = StreamRecorder.create();
-        handler.listTaskPushNotificationConfig(request, streamRecorder);
+        StreamRecorder<ListTaskPushNotificationConfigsResponse> streamRecorder = StreamRecorder.create();
+        handler.listTaskPushNotificationConfigs(request, streamRecorder);
         assertGrpcError(streamRecorder, Status.Code.NOT_FOUND);
     }
 
@@ -1152,7 +1150,6 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
         CreateTaskPushNotificationConfigRequest setRequest = CreateTaskPushNotificationConfigRequest.newBuilder()
                 .setConfig(config)
-                .setConfigId("config456")
                 .setTaskId(MINIMAL_TASK.id())
                 .build();
 

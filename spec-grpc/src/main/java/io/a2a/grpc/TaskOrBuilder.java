@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface TaskOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.Task)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.Task)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -56,71 +56,71 @@ public interface TaskOrBuilder extends
 
   /**
    * <pre>
-   * The current status of a Task, including state and a message.
+   * The current status of a `Task`, including `state` and a `message`.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the status field is set.
    */
   boolean hasStatus();
   /**
    * <pre>
-   * The current status of a Task, including state and a message.
+   * The current status of a `Task`, including `state` and a `message`.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The status.
    */
   io.a2a.grpc.TaskStatus getStatus();
   /**
    * <pre>
-   * The current status of a Task, including state and a message.
+   * The current status of a `Task`, including `state` and a `message`.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder();
 
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   java.util.List<io.a2a.grpc.Artifact> 
       getArtifactsList();
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   io.a2a.grpc.Artifact getArtifacts(int index);
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   int getArtifactsCount();
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   java.util.List<? extends io.a2a.grpc.ArtifactOrBuilder> 
       getArtifactsOrBuilderList();
   /**
    * <pre>
-   * A set of output artifacts for a Task.
+   * A set of output artifacts for a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Artifact artifacts = 4;</code>
+   * <code>repeated .lf.a2a.v1.Artifact artifacts = 4;</code>
    */
   io.a2a.grpc.ArtifactOrBuilder getArtifactsOrBuilder(
       int index);
@@ -128,48 +128,48 @@ public interface TaskOrBuilder extends
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   java.util.List<io.a2a.grpc.Message> 
       getHistoryList();
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   io.a2a.grpc.Message getHistory(int index);
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   int getHistoryCount();
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   java.util.List<? extends io.a2a.grpc.MessageOrBuilder> 
       getHistoryOrBuilderList();
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
-   * The history of interactions from a task.
+   * The history of interactions from a `Task`.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Message history = 5;</code>
+   * <code>repeated .lf.a2a.v1.Message history = 5;</code>
    */
   io.a2a.grpc.MessageOrBuilder getHistoryOrBuilder(
       int index);

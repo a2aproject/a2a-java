@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface TaskStatusOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.TaskStatus)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.TaskStatus)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -15,7 +15,7 @@ public interface TaskStatusOrBuilder extends
    * The current state of this task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The enum numeric value on the wire for state.
    */
   int getStateValue();
@@ -24,7 +24,7 @@ public interface TaskStatusOrBuilder extends
    * The current state of this task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The state.
    */
   io.a2a.grpc.TaskState getState();
@@ -34,7 +34,7 @@ public interface TaskStatusOrBuilder extends
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return Whether the message field is set.
    */
   boolean hasMessage();
@@ -43,7 +43,7 @@ public interface TaskStatusOrBuilder extends
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return The message.
    */
   io.a2a.grpc.Message getMessage();
@@ -52,7 +52,7 @@ public interface TaskStatusOrBuilder extends
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    */
   io.a2a.grpc.MessageOrBuilder getMessageOrBuilder();
 

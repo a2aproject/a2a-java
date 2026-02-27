@@ -20,8 +20,8 @@ import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskResponse;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsRequest;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
@@ -226,20 +226,20 @@ public class JSONRPCHandler {
         }
     }
 
-    public ListTaskPushNotificationConfigResponse listPushNotificationConfig(
-            ListTaskPushNotificationConfigRequest request, ServerCallContext context) {
+    public ListTaskPushNotificationConfigsResponse listPushNotificationConfig(
+            ListTaskPushNotificationConfigsRequest request, ServerCallContext context) {
         if ( !agentCard.capabilities().pushNotifications()) {
-            return new ListTaskPushNotificationConfigResponse(request.getId(),
+            return new ListTaskPushNotificationConfigsResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
         try {
             ListTaskPushNotificationConfigResult result =
                     requestHandler.onListTaskPushNotificationConfig(request.getParams(), context);
-            return new ListTaskPushNotificationConfigResponse(request.getId(), result);
+            return new ListTaskPushNotificationConfigsResponse(request.getId(), result);
         } catch (A2AError e) {
-            return new ListTaskPushNotificationConfigResponse(request.getId(), e);
+            return new ListTaskPushNotificationConfigsResponse(request.getId(), e);
         } catch (Throwable t) {
-            return new ListTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+            return new ListTaskPushNotificationConfigsResponse(request.getId(), new InternalError(t.getMessage()));
         }
     }
 

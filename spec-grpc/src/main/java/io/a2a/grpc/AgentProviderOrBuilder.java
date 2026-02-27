@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface AgentProviderOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.AgentProvider)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.AgentProvider)
     com.google.protobuf.MessageOrBuilder {
 
   /**

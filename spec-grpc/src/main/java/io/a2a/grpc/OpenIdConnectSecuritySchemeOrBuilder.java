@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface OpenIdConnectSecuritySchemeOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.OpenIdConnectSecurityScheme)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.OpenIdConnectSecurityScheme)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -32,8 +32,7 @@ public interface OpenIdConnectSecuritySchemeOrBuilder extends
 
   /**
    * <pre>
-   * The OpenID Connect Discovery URL for the OIDC provider's metadata.
-   * See: https://openid.net/specs/openid-connect-discovery-1_0.html
+   * The [OpenID Connect Discovery URL](https://openid.net/specs/openid-connect-discovery-1_0.html) for the OIDC provider's metadata.
    * </pre>
    *
    * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -42,8 +41,7 @@ public interface OpenIdConnectSecuritySchemeOrBuilder extends
   java.lang.String getOpenIdConnectUrl();
   /**
    * <pre>
-   * The OpenID Connect Discovery URL for the OIDC provider's metadata.
-   * See: https://openid.net/specs/openid-connect-discovery-1_0.html
+   * The [OpenID Connect Discovery URL](https://openid.net/specs/openid-connect-discovery-1_0.html) for the OIDC provider's metadata.
    * </pre>
    *
    * <code>string open_id_connect_url = 2 [(.google.api.field_behavior) = REQUIRED];</code>

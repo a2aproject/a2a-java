@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:TaskStatus]
  * A container for the status of a task
  * </pre>
  *
- * Protobuf type {@code a2a.v1.TaskStatus}
+ * Protobuf type {@code lf.a2a.v1.TaskStatus}
  */
 @com.google.protobuf.Generated
 public final class TaskStatus extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.TaskStatus)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.TaskStatus)
     TaskStatusOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -38,13 +37,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatus_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatus_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatus_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatus_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.TaskStatus.class, io.a2a.grpc.TaskStatus.Builder.class);
   }
@@ -57,7 +56,7 @@ private static final long serialVersionUID = 0L;
    * The current state of this task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The enum numeric value on the wire for state.
    */
   @java.lang.Override public int getStateValue() {
@@ -68,7 +67,7 @@ private static final long serialVersionUID = 0L;
    * The current state of this task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The state.
    */
   @java.lang.Override public io.a2a.grpc.TaskState getState() {
@@ -83,7 +82,7 @@ private static final long serialVersionUID = 0L;
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return Whether the message field is set.
    */
   @java.lang.Override
@@ -95,7 +94,7 @@ private static final long serialVersionUID = 0L;
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return The message.
    */
   @java.lang.Override
@@ -107,7 +106,7 @@ private static final long serialVersionUID = 0L;
    * A message associated with the status.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
@@ -345,25 +344,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:TaskStatus]
    * A container for the status of a task
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.TaskStatus}
+   * Protobuf type {@code lf.a2a.v1.TaskStatus}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.TaskStatus)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.TaskStatus)
       io.a2a.grpc.TaskStatusOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatus_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatus_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatus_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatus_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.TaskStatus.class, io.a2a.grpc.TaskStatus.Builder.class);
     }
@@ -406,7 +404,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_TaskStatus_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_TaskStatus_descriptor;
     }
 
     @java.lang.Override
@@ -541,7 +539,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The enum numeric value on the wire for state.
      */
     @java.lang.Override public int getStateValue() {
@@ -552,7 +550,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The enum numeric value on the wire for state to set.
      * @return This builder for chaining.
      */
@@ -567,7 +565,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The state.
      */
     @java.lang.Override
@@ -580,7 +578,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The state to set.
      * @return This builder for chaining.
      */
@@ -596,7 +594,7 @@ private static final long serialVersionUID = 0L;
      * The current state of this task.
      * </pre>
      *
-     * <code>.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.TaskState state = 1 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearState() {
@@ -614,7 +612,7 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      * @return Whether the message field is set.
      */
     public boolean hasMessage() {
@@ -625,7 +623,7 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      * @return The message.
      */
     public io.a2a.grpc.Message getMessage() {
@@ -640,7 +638,7 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder setMessage(io.a2a.grpc.Message value) {
       if (messageBuilder_ == null) {
@@ -660,7 +658,7 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder setMessage(
         io.a2a.grpc.Message.Builder builderForValue) {
@@ -678,7 +676,7 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder mergeMessage(io.a2a.grpc.Message value) {
       if (messageBuilder_ == null) {
@@ -703,7 +701,7 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder clearMessage() {
       bitField0_ = (bitField0_ & ~0x00000002);
@@ -720,7 +718,7 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public io.a2a.grpc.Message.Builder getMessageBuilder() {
       bitField0_ |= 0x00000002;
@@ -732,7 +730,7 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
       if (messageBuilder_ != null) {
@@ -747,7 +745,7 @@ private static final long serialVersionUID = 0L;
      * A message associated with the status.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> 
@@ -929,10 +927,10 @@ private static final long serialVersionUID = 0L;
       return timestampBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.TaskStatus)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.TaskStatus)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.TaskStatus)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.TaskStatus)
   private static final io.a2a.grpc.TaskStatus DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.TaskStatus();

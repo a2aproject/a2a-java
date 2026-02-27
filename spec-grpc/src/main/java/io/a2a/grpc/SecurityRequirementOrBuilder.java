@@ -7,15 +7,23 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface SecurityRequirementOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.SecurityRequirement)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.SecurityRequirement)
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+   * <pre>
+   * A map of security schemes to the required scopes.
+   * </pre>
+   *
+   * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
    */
   int getSchemesCount();
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+   * <pre>
+   * A map of security schemes to the required scopes.
+   * </pre>
+   *
+   * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
    */
   boolean containsSchemes(
       java.lang.String key);
@@ -26,12 +34,20 @@ public interface SecurityRequirementOrBuilder extends
   java.util.Map<java.lang.String, io.a2a.grpc.StringList>
   getSchemes();
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+   * <pre>
+   * A map of security schemes to the required scopes.
+   * </pre>
+   *
+   * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
    */
   java.util.Map<java.lang.String, io.a2a.grpc.StringList>
   getSchemesMap();
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+   * <pre>
+   * A map of security schemes to the required scopes.
+   * </pre>
+   *
+   * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
    */
   /* nullable */
 io.a2a.grpc.StringList getSchemesOrDefault(
@@ -39,7 +55,11 @@ io.a2a.grpc.StringList getSchemesOrDefault(
       /* nullable */
 io.a2a.grpc.StringList defaultValue);
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+   * <pre>
+   * A map of security schemes to the required scopes.
+   * </pre>
+   *
+   * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
    */
   io.a2a.grpc.StringList getSchemesOrThrow(
       java.lang.String key);

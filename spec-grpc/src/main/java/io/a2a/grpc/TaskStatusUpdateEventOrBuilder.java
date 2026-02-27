@@ -7,12 +7,12 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface TaskStatusUpdateEventOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.TaskStatusUpdateEvent)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.TaskStatusUpdateEvent)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * The id of the task that is changed
+   * The ID of the task that has changed.
    * </pre>
    *
    * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -21,7 +21,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
   java.lang.String getTaskId();
   /**
    * <pre>
-   * The id of the task that is changed
+   * The ID of the task that has changed.
    * </pre>
    *
    * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -32,7 +32,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
 
   /**
    * <pre>
-   * The id of the context that the task belongs to
+   * The ID of the context that the task belongs to.
    * </pre>
    *
    * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -41,7 +41,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
   java.lang.String getContextId();
   /**
    * <pre>
-   * The id of the context that the task belongs to
+   * The ID of the context that the task belongs to.
    * </pre>
    *
    * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -55,7 +55,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the status field is set.
    */
   boolean hasStatus();
@@ -64,7 +64,7 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The status.
    */
   io.a2a.grpc.TaskStatus getStatus();
@@ -73,34 +73,34 @@ public interface TaskStatusUpdateEventOrBuilder extends
    * The new status of the task.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.TaskStatus status = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.TaskStatusOrBuilder getStatusOrBuilder();
 
   /**
    * <pre>
-   * Optional metadata to associate with the task update.
+   * Optional. Metadata associated with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
   /**
    * <pre>
-   * Optional metadata to associate with the task update.
+   * Optional. Metadata associated with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
   /**
    * <pre>
-   * Optional metadata to associate with the task update.
+   * Optional. Metadata associated with the task update.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 5;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 }

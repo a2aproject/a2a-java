@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * &#47;///// Response Messages ///////////
- * --8&lt;-- [start:SendMessageResponse]
+ * Represents the response for the `SendMessage` method.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.SendMessageResponse}
+ * Protobuf type {@code lf.a2a.v1.SendMessageResponse}
  */
 @com.google.protobuf.Generated
 public final class SendMessageResponse extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.SendMessageResponse)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.SendMessageResponse)
     SendMessageResponseOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -37,13 +36,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageResponse_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageResponse_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageResponse_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.SendMessageResponse.class, io.a2a.grpc.SendMessageResponse.Builder.class);
   }
@@ -92,7 +91,11 @@ private static final long serialVersionUID = 0L;
 
   public static final int TASK_FIELD_NUMBER = 1;
   /**
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <pre>
+   * The task created or updated by the message.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    * @return Whether the task field is set.
    */
   @java.lang.Override
@@ -100,7 +103,11 @@ private static final long serialVersionUID = 0L;
     return payloadCase_ == 1;
   }
   /**
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <pre>
+   * The task created or updated by the message.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    * @return The task.
    */
   @java.lang.Override
@@ -111,7 +118,11 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.Task.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <pre>
+   * The task created or updated by the message.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.TaskOrBuilder getTaskOrBuilder() {
@@ -123,7 +134,11 @@ private static final long serialVersionUID = 0L;
 
   public static final int MESSAGE_FIELD_NUMBER = 2;
   /**
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <pre>
+   * A message from the agent.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return Whether the message field is set.
    */
   @java.lang.Override
@@ -131,7 +146,11 @@ private static final long serialVersionUID = 0L;
     return payloadCase_ == 2;
   }
   /**
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <pre>
+   * A message from the agent.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return The message.
    */
   @java.lang.Override
@@ -142,7 +161,11 @@ private static final long serialVersionUID = 0L;
     return io.a2a.grpc.Message.getDefaultInstance();
   }
   /**
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <pre>
+   * A message from the agent.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
@@ -339,25 +362,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * &#47;///// Response Messages ///////////
-   * --8&lt;-- [start:SendMessageResponse]
+   * Represents the response for the `SendMessage` method.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.SendMessageResponse}
+   * Protobuf type {@code lf.a2a.v1.SendMessageResponse}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.SendMessageResponse)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.SendMessageResponse)
       io.a2a.grpc.SendMessageResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageResponse_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageResponse_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageResponse_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.SendMessageResponse.class, io.a2a.grpc.SendMessageResponse.Builder.class);
     }
@@ -390,7 +412,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageResponse_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageResponse_descriptor;
     }
 
     @java.lang.Override
@@ -533,7 +555,11 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Task, io.a2a.grpc.Task.Builder, io.a2a.grpc.TaskOrBuilder> taskBuilder_;
     /**
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <pre>
+     * The task created or updated by the message.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      * @return Whether the task field is set.
      */
     @java.lang.Override
@@ -541,7 +567,11 @@ private static final long serialVersionUID = 0L;
       return payloadCase_ == 1;
     }
     /**
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <pre>
+     * The task created or updated by the message.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      * @return The task.
      */
     @java.lang.Override
@@ -559,7 +589,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <pre>
+     * The task created or updated by the message.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public Builder setTask(io.a2a.grpc.Task value) {
       if (taskBuilder_ == null) {
@@ -575,7 +609,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <pre>
+     * The task created or updated by the message.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public Builder setTask(
         io.a2a.grpc.Task.Builder builderForValue) {
@@ -589,7 +627,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <pre>
+     * The task created or updated by the message.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public Builder mergeTask(io.a2a.grpc.Task value) {
       if (taskBuilder_ == null) {
@@ -612,7 +654,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <pre>
+     * The task created or updated by the message.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public Builder clearTask() {
       if (taskBuilder_ == null) {
@@ -631,13 +677,21 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <pre>
+     * The task created or updated by the message.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     public io.a2a.grpc.Task.Builder getTaskBuilder() {
       return internalGetTaskFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <pre>
+     * The task created or updated by the message.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.TaskOrBuilder getTaskOrBuilder() {
@@ -651,7 +705,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.Task task = 1;</code>
+     * <pre>
+     * The task created or updated by the message.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Task task = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Task, io.a2a.grpc.Task.Builder, io.a2a.grpc.TaskOrBuilder> 
@@ -675,7 +733,11 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> messageBuilder_;
     /**
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <pre>
+     * A message from the agent.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      * @return Whether the message field is set.
      */
     @java.lang.Override
@@ -683,7 +745,11 @@ private static final long serialVersionUID = 0L;
       return payloadCase_ == 2;
     }
     /**
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <pre>
+     * A message from the agent.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      * @return The message.
      */
     @java.lang.Override
@@ -701,7 +767,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <pre>
+     * A message from the agent.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder setMessage(io.a2a.grpc.Message value) {
       if (messageBuilder_ == null) {
@@ -717,7 +787,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <pre>
+     * A message from the agent.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder setMessage(
         io.a2a.grpc.Message.Builder builderForValue) {
@@ -731,7 +805,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <pre>
+     * A message from the agent.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder mergeMessage(io.a2a.grpc.Message value) {
       if (messageBuilder_ == null) {
@@ -754,7 +832,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <pre>
+     * A message from the agent.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public Builder clearMessage() {
       if (messageBuilder_ == null) {
@@ -773,13 +855,21 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <pre>
+     * A message from the agent.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     public io.a2a.grpc.Message.Builder getMessageBuilder() {
       return internalGetMessageFieldBuilder().getBuilder();
     }
     /**
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <pre>
+     * A message from the agent.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
@@ -793,7 +883,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.a2a.v1.Message message = 2;</code>
+     * <pre>
+     * A message from the agent.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.Message message = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> 
@@ -814,10 +908,10 @@ private static final long serialVersionUID = 0L;
       return messageBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.SendMessageResponse)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.SendMessageResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.SendMessageResponse)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.SendMessageResponse)
   private static final io.a2a.grpc.SendMessageResponse DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.SendMessageResponse();

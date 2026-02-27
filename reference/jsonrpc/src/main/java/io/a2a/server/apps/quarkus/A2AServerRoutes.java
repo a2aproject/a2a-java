@@ -43,8 +43,8 @@ import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskResponse;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsRequest;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.NonStreamingJSONRPCRequest;
@@ -187,7 +187,7 @@ public class A2AServerRoutes {
         if (request instanceof SendMessageRequest req) {
             return jsonRpcHandler.onMessageSend(req, context);
         }
-        if (request instanceof ListTaskPushNotificationConfigRequest req) {
+        if (request instanceof ListTaskPushNotificationConfigsRequest req) {
             return jsonRpcHandler.listPushNotificationConfig(req, context);
         }
         if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
@@ -304,7 +304,7 @@ public class A2AServerRoutes {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.createTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof GetTaskPushNotificationConfigResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
-        } else if (response instanceof ListTaskPushNotificationConfigResponse r) {
+        } else if (response instanceof ListTaskPushNotificationConfigsResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof DeleteTaskPushNotificationConfigResponse) {
             // DeleteTaskPushNotificationConfig has no result body, just return empty message

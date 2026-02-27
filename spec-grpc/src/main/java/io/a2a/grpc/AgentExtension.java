@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:AgentExtension]
  * A declaration of a protocol extension supported by an Agent.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.AgentExtension}
+ * Protobuf type {@code lf.a2a.v1.AgentExtension}
  */
 @com.google.protobuf.Generated
 public final class AgentExtension extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.AgentExtension)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.AgentExtension)
     AgentExtensionOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -39,13 +38,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentExtension_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentExtension_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentExtension_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentExtension_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.AgentExtension.class, io.a2a.grpc.AgentExtension.Builder.class);
   }
@@ -164,7 +163,7 @@ private static final long serialVersionUID = 0L;
   private com.google.protobuf.Struct params_;
   /**
    * <pre>
-   * Optional, extension-specific configuration parameters.
+   * Optional. Extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -176,7 +175,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional, extension-specific configuration parameters.
+   * Optional. Extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -188,7 +187,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional, extension-specific configuration parameters.
+   * Optional. Extension-specific configuration parameters.
    * </pre>
    *
    * <code>.google.protobuf.Struct params = 4;</code>
@@ -394,25 +393,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:AgentExtension]
    * A declaration of a protocol extension supported by an Agent.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.AgentExtension}
+   * Protobuf type {@code lf.a2a.v1.AgentExtension}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.AgentExtension)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.AgentExtension)
       io.a2a.grpc.AgentExtensionOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentExtension_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentExtension_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentExtension_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentExtension_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.AgentExtension.class, io.a2a.grpc.AgentExtension.Builder.class);
     }
@@ -451,7 +449,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentExtension_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentExtension_descriptor;
     }
 
     @java.lang.Override
@@ -823,7 +821,7 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> paramsBuilder_;
     /**
      * <pre>
-     * Optional, extension-specific configuration parameters.
+     * Optional. Extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -834,7 +832,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional, extension-specific configuration parameters.
+     * Optional. Extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -849,7 +847,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional, extension-specific configuration parameters.
+     * Optional. Extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -869,7 +867,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional, extension-specific configuration parameters.
+     * Optional. Extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -887,7 +885,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional, extension-specific configuration parameters.
+     * Optional. Extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -912,7 +910,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional, extension-specific configuration parameters.
+     * Optional. Extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -929,7 +927,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional, extension-specific configuration parameters.
+     * Optional. Extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -941,7 +939,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional, extension-specific configuration parameters.
+     * Optional. Extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -956,7 +954,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional, extension-specific configuration parameters.
+     * Optional. Extension-specific configuration parameters.
      * </pre>
      *
      * <code>.google.protobuf.Struct params = 4;</code>
@@ -975,10 +973,10 @@ private static final long serialVersionUID = 0L;
       return paramsBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.AgentExtension)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.AgentExtension)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.AgentExtension)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.AgentExtension)
   private static final io.a2a.grpc.AgentExtension DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.AgentExtension();

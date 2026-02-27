@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface DeviceCodeOAuthFlowOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.DeviceCodeOAuthFlow)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.DeviceCodeOAuthFlow)
     com.google.protobuf.MessageOrBuilder {
 
   /**

@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface StreamResponseOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.StreamResponse)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.StreamResponse)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -15,7 +15,7 @@ public interface StreamResponseOrBuilder extends
    * A Task object containing the current state of the task.
    * </pre>
    *
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    * @return Whether the task field is set.
    */
   boolean hasTask();
@@ -24,7 +24,7 @@ public interface StreamResponseOrBuilder extends
    * A Task object containing the current state of the task.
    * </pre>
    *
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    * @return The task.
    */
   io.a2a.grpc.Task getTask();
@@ -33,7 +33,7 @@ public interface StreamResponseOrBuilder extends
    * A Task object containing the current state of the task.
    * </pre>
    *
-   * <code>.a2a.v1.Task task = 1;</code>
+   * <code>.lf.a2a.v1.Task task = 1;</code>
    */
   io.a2a.grpc.TaskOrBuilder getTaskOrBuilder();
 
@@ -42,7 +42,7 @@ public interface StreamResponseOrBuilder extends
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return Whether the message field is set.
    */
   boolean hasMessage();
@@ -51,7 +51,7 @@ public interface StreamResponseOrBuilder extends
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    * @return The message.
    */
   io.a2a.grpc.Message getMessage();
@@ -60,7 +60,7 @@ public interface StreamResponseOrBuilder extends
    * A Message object containing a message from the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 2;</code>
+   * <code>.lf.a2a.v1.Message message = 2;</code>
    */
   io.a2a.grpc.MessageOrBuilder getMessageOrBuilder();
 
@@ -69,7 +69,7 @@ public interface StreamResponseOrBuilder extends
    * An event indicating a task status update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+   * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
    * @return Whether the statusUpdate field is set.
    */
   boolean hasStatusUpdate();
@@ -78,7 +78,7 @@ public interface StreamResponseOrBuilder extends
    * An event indicating a task status update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+   * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
    * @return The statusUpdate.
    */
   io.a2a.grpc.TaskStatusUpdateEvent getStatusUpdate();
@@ -87,7 +87,7 @@ public interface StreamResponseOrBuilder extends
    * An event indicating a task status update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
+   * <code>.lf.a2a.v1.TaskStatusUpdateEvent status_update = 3;</code>
    */
   io.a2a.grpc.TaskStatusUpdateEventOrBuilder getStatusUpdateOrBuilder();
 
@@ -96,7 +96,7 @@ public interface StreamResponseOrBuilder extends
    * An event indicating a task artifact update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+   * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
    * @return Whether the artifactUpdate field is set.
    */
   boolean hasArtifactUpdate();
@@ -105,7 +105,7 @@ public interface StreamResponseOrBuilder extends
    * An event indicating a task artifact update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+   * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
    * @return The artifactUpdate.
    */
   io.a2a.grpc.TaskArtifactUpdateEvent getArtifactUpdate();
@@ -114,7 +114,7 @@ public interface StreamResponseOrBuilder extends
    * An event indicating a task artifact update.
    * </pre>
    *
-   * <code>.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
+   * <code>.lf.a2a.v1.TaskArtifactUpdateEvent artifact_update = 4;</code>
    */
   io.a2a.grpc.TaskArtifactUpdateEventOrBuilder getArtifactUpdateOrBuilder();
 

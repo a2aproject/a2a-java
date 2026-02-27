@@ -7,24 +7,24 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface GetTaskRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.GetTaskRequest)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.GetTaskRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 3;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   java.lang.String getTenant();
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 3;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   com.google.protobuf.ByteString
@@ -32,19 +32,19 @@ public interface GetTaskRequestOrBuilder extends
 
   /**
    * <pre>
-   * The resource id of the task.
+   * The resource ID of the task to retrieve.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   java.lang.String getId();
   /**
    * <pre>
-   * The resource id of the task.
+   * The resource ID of the task to retrieve.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   com.google.protobuf.ByteString
@@ -58,7 +58,7 @@ public interface GetTaskRequestOrBuilder extends
    * messages than the provided value, but MAY apply a lower limit.
    * </pre>
    *
-   * <code>optional int32 history_length = 2;</code>
+   * <code>optional int32 history_length = 3;</code>
    * @return Whether the historyLength field is set.
    */
   boolean hasHistoryLength();
@@ -70,7 +70,7 @@ public interface GetTaskRequestOrBuilder extends
    * messages than the provided value, but MAY apply a lower limit.
    * </pre>
    *
-   * <code>optional int32 history_length = 2;</code>
+   * <code>optional int32 history_length = 3;</code>
    * @return The historyLength.
    */
   int getHistoryLength();

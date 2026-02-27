@@ -39,7 +39,7 @@ import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskResponse;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
@@ -228,7 +228,7 @@ public class JSONRPCTransport implements ClientTransport {
 
         try {
             String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
-            ListTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+            ListTaskPushNotificationConfigsResponse response = unmarshalResponse(httpResponseBody, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;

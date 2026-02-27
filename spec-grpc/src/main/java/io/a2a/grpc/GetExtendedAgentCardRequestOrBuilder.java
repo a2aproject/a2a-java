@@ -7,12 +7,12 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface GetExtendedAgentCardRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.GetExtendedAgentCardRequest)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.GetExtendedAgentCardRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
    * <code>string tenant = 1;</code>
@@ -21,7 +21,7 @@ public interface GetExtendedAgentCardRequestOrBuilder extends
   java.lang.String getTenant();
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
    * <code>string tenant = 1;</code>

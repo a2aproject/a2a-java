@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:AgentCapabilities]
  * Defines optional capabilities supported by an agent.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.AgentCapabilities}
+ * Protobuf type {@code lf.a2a.v1.AgentCapabilities}
  */
 @com.google.protobuf.Generated
 public final class AgentCapabilities extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.AgentCapabilities)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.AgentCapabilities)
     AgentCapabilitiesOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -38,13 +37,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCapabilities_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCapabilities_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCapabilities_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCapabilities_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.AgentCapabilities.class, io.a2a.grpc.AgentCapabilities.Builder.class);
   }
@@ -112,7 +111,7 @@ private static final long serialVersionUID = 0L;
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public java.util.List<io.a2a.grpc.AgentExtension> getExtensionsList() {
@@ -123,7 +122,7 @@ private static final long serialVersionUID = 0L;
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public java.util.List<? extends io.a2a.grpc.AgentExtensionOrBuilder> 
@@ -135,7 +134,7 @@ private static final long serialVersionUID = 0L;
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public int getExtensionsCount() {
@@ -146,7 +145,7 @@ private static final long serialVersionUID = 0L;
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentExtension getExtensions(int index) {
@@ -157,7 +156,7 @@ private static final long serialVersionUID = 0L;
    * A list of protocol extensions supported by the agent.
    * </pre>
    *
-   * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+   * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.AgentExtensionOrBuilder getExtensionsOrBuilder(
@@ -165,14 +164,14 @@ private static final long serialVersionUID = 0L;
     return extensions_.get(index);
   }
 
-  public static final int EXTENDED_AGENT_CARD_FIELD_NUMBER = 5;
+  public static final int EXTENDED_AGENT_CARD_FIELD_NUMBER = 4;
   private boolean extendedAgentCard_ = false;
   /**
    * <pre>
    * Indicates if the agent supports providing an extended agent card when authenticated.
    * </pre>
    *
-   * <code>optional bool extended_agent_card = 5;</code>
+   * <code>optional bool extended_agent_card = 4;</code>
    * @return Whether the extendedAgentCard field is set.
    */
   @java.lang.Override
@@ -184,7 +183,7 @@ private static final long serialVersionUID = 0L;
    * Indicates if the agent supports providing an extended agent card when authenticated.
    * </pre>
    *
-   * <code>optional bool extended_agent_card = 5;</code>
+   * <code>optional bool extended_agent_card = 4;</code>
    * @return The extendedAgentCard.
    */
   @java.lang.Override
@@ -216,7 +215,7 @@ private static final long serialVersionUID = 0L;
       output.writeMessage(3, extensions_.get(i));
     }
     if (((bitField0_ & 0x00000004) != 0)) {
-      output.writeBool(5, extendedAgentCard_);
+      output.writeBool(4, extendedAgentCard_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -241,7 +240,7 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(5, extendedAgentCard_);
+        .computeBoolSize(4, extendedAgentCard_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -404,25 +403,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:AgentCapabilities]
    * Defines optional capabilities supported by an agent.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.AgentCapabilities}
+   * Protobuf type {@code lf.a2a.v1.AgentCapabilities}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.AgentCapabilities)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.AgentCapabilities)
       io.a2a.grpc.AgentCapabilitiesOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCapabilities_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCapabilities_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCapabilities_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCapabilities_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.AgentCapabilities.class, io.a2a.grpc.AgentCapabilities.Builder.class);
     }
@@ -457,7 +455,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_AgentCapabilities_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_AgentCapabilities_descriptor;
     }
 
     @java.lang.Override
@@ -609,11 +607,11 @@ private static final long serialVersionUID = 0L;
               }
               break;
             } // case 26
-            case 40: {
+            case 32: {
               extendedAgentCard_ = input.readBool();
               bitField0_ |= 0x00000008;
               break;
-            } // case 40
+            } // case 32
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -760,7 +758,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public java.util.List<io.a2a.grpc.AgentExtension> getExtensionsList() {
       if (extensionsBuilder_ == null) {
@@ -774,7 +772,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public int getExtensionsCount() {
       if (extensionsBuilder_ == null) {
@@ -788,7 +786,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtension getExtensions(int index) {
       if (extensionsBuilder_ == null) {
@@ -802,7 +800,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder setExtensions(
         int index, io.a2a.grpc.AgentExtension value) {
@@ -823,7 +821,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder setExtensions(
         int index, io.a2a.grpc.AgentExtension.Builder builderForValue) {
@@ -841,7 +839,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addExtensions(io.a2a.grpc.AgentExtension value) {
       if (extensionsBuilder_ == null) {
@@ -861,7 +859,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addExtensions(
         int index, io.a2a.grpc.AgentExtension value) {
@@ -882,7 +880,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addExtensions(
         io.a2a.grpc.AgentExtension.Builder builderForValue) {
@@ -900,7 +898,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addExtensions(
         int index, io.a2a.grpc.AgentExtension.Builder builderForValue) {
@@ -918,7 +916,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder addAllExtensions(
         java.lang.Iterable<? extends io.a2a.grpc.AgentExtension> values) {
@@ -937,7 +935,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder clearExtensions() {
       if (extensionsBuilder_ == null) {
@@ -954,7 +952,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public Builder removeExtensions(int index) {
       if (extensionsBuilder_ == null) {
@@ -971,7 +969,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtension.Builder getExtensionsBuilder(
         int index) {
@@ -982,7 +980,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtensionOrBuilder getExtensionsOrBuilder(
         int index) {
@@ -996,7 +994,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public java.util.List<? extends io.a2a.grpc.AgentExtensionOrBuilder> 
          getExtensionsOrBuilderList() {
@@ -1011,7 +1009,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtension.Builder addExtensionsBuilder() {
       return internalGetExtensionsFieldBuilder().addBuilder(
@@ -1022,7 +1020,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public io.a2a.grpc.AgentExtension.Builder addExtensionsBuilder(
         int index) {
@@ -1034,7 +1032,7 @@ private static final long serialVersionUID = 0L;
      * A list of protocol extensions supported by the agent.
      * </pre>
      *
-     * <code>repeated .a2a.v1.AgentExtension extensions = 3;</code>
+     * <code>repeated .lf.a2a.v1.AgentExtension extensions = 3;</code>
      */
     public java.util.List<io.a2a.grpc.AgentExtension.Builder> 
          getExtensionsBuilderList() {
@@ -1061,7 +1059,7 @@ private static final long serialVersionUID = 0L;
      * Indicates if the agent supports providing an extended agent card when authenticated.
      * </pre>
      *
-     * <code>optional bool extended_agent_card = 5;</code>
+     * <code>optional bool extended_agent_card = 4;</code>
      * @return Whether the extendedAgentCard field is set.
      */
     @java.lang.Override
@@ -1073,7 +1071,7 @@ private static final long serialVersionUID = 0L;
      * Indicates if the agent supports providing an extended agent card when authenticated.
      * </pre>
      *
-     * <code>optional bool extended_agent_card = 5;</code>
+     * <code>optional bool extended_agent_card = 4;</code>
      * @return The extendedAgentCard.
      */
     @java.lang.Override
@@ -1085,7 +1083,7 @@ private static final long serialVersionUID = 0L;
      * Indicates if the agent supports providing an extended agent card when authenticated.
      * </pre>
      *
-     * <code>optional bool extended_agent_card = 5;</code>
+     * <code>optional bool extended_agent_card = 4;</code>
      * @param value The extendedAgentCard to set.
      * @return This builder for chaining.
      */
@@ -1101,7 +1099,7 @@ private static final long serialVersionUID = 0L;
      * Indicates if the agent supports providing an extended agent card when authenticated.
      * </pre>
      *
-     * <code>optional bool extended_agent_card = 5;</code>
+     * <code>optional bool extended_agent_card = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearExtendedAgentCard() {
@@ -1111,10 +1109,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.AgentCapabilities)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.AgentCapabilities)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.AgentCapabilities)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.AgentCapabilities)
   private static final io.a2a.grpc.AgentCapabilities DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.AgentCapabilities();

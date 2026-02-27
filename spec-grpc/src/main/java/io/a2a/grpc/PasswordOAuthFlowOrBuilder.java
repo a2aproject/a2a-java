@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface PasswordOAuthFlowOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.PasswordOAuthFlow)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.PasswordOAuthFlow)
     com.google.protobuf.MessageOrBuilder {
 
   /**

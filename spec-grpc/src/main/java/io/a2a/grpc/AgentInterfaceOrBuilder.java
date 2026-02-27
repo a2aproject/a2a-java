@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface AgentInterfaceOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.AgentInterface)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.AgentInterface)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -58,7 +58,7 @@ public interface AgentInterfaceOrBuilder extends
 
   /**
    * <pre>
-   * Tenant to be set in the request when calling the agent.
+   * Tenant ID to be used in the request when calling the agent.
    * </pre>
    *
    * <code>string tenant = 3;</code>
@@ -67,7 +67,7 @@ public interface AgentInterfaceOrBuilder extends
   java.lang.String getTenant();
   /**
    * <pre>
-   * Tenant to be set in the request when calling the agent.
+   * Tenant ID to be used in the request when calling the agent.
    * </pre>
    *
    * <code>string tenant = 3;</code>

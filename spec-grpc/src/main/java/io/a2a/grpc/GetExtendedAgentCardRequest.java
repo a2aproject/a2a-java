@@ -7,15 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:GetExtendedAgentCardRequest]
+ * Represents a request for the `GetExtendedAgentCard` method.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.GetExtendedAgentCardRequest}
+ * Protobuf type {@code lf.a2a.v1.GetExtendedAgentCardRequest}
  */
 @com.google.protobuf.Generated
 public final class GetExtendedAgentCardRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.GetExtendedAgentCardRequest)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.GetExtendedAgentCardRequest)
     GetExtendedAgentCardRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -37,13 +37,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.GetExtendedAgentCardRequest.class, io.a2a.grpc.GetExtendedAgentCardRequest.Builder.class);
   }
@@ -53,7 +53,7 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object tenant_ = "";
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
    * <code>string tenant = 1;</code>
@@ -74,7 +74,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
    * <code>string tenant = 1;</code>
@@ -253,24 +253,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:GetExtendedAgentCardRequest]
+   * Represents a request for the `GetExtendedAgentCard` method.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.GetExtendedAgentCardRequest}
+   * Protobuf type {@code lf.a2a.v1.GetExtendedAgentCardRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.GetExtendedAgentCardRequest)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.GetExtendedAgentCardRequest)
       io.a2a.grpc.GetExtendedAgentCardRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.GetExtendedAgentCardRequest.class, io.a2a.grpc.GetExtendedAgentCardRequest.Builder.class);
     }
@@ -296,7 +296,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetExtendedAgentCardRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_descriptor;
     }
 
     @java.lang.Override
@@ -396,7 +396,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object tenant_ = "";
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
      * <code>string tenant = 1;</code>
@@ -416,7 +416,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
      * <code>string tenant = 1;</code>
@@ -437,7 +437,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
      * <code>string tenant = 1;</code>
@@ -454,7 +454,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
      * <code>string tenant = 1;</code>
@@ -468,7 +468,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
      * <code>string tenant = 1;</code>
@@ -485,10 +485,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.GetExtendedAgentCardRequest)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.GetExtendedAgentCardRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.GetExtendedAgentCardRequest)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.GetExtendedAgentCardRequest)
   private static final io.a2a.grpc.GetExtendedAgentCardRequest DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.GetExtendedAgentCardRequest();

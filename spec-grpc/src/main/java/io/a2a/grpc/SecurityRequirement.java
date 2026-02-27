@@ -6,12 +6,16 @@
 package io.a2a.grpc;
 
 /**
- * Protobuf type {@code a2a.v1.SecurityRequirement}
+ * <pre>
+ * Defines the security requirements for an agent.
+ * </pre>
+ *
+ * Protobuf type {@code lf.a2a.v1.SecurityRequirement}
  */
 @com.google.protobuf.Generated
 public final class SecurityRequirement extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.SecurityRequirement)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.SecurityRequirement)
     SecurityRequirementOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -32,7 +36,7 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityRequirement_descriptor;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -50,7 +54,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityRequirement_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.SecurityRequirement.class, io.a2a.grpc.SecurityRequirement.Builder.class);
   }
@@ -61,7 +65,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String, io.a2a.grpc.StringList> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, io.a2a.grpc.StringList>newDefaultInstance(
-                io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_SchemesEntry_descriptor, 
+                io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityRequirement_SchemesEntry_descriptor, 
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.MESSAGE,
@@ -82,7 +86,11 @@ private static final long serialVersionUID = 0L;
     return internalGetSchemes().getMap().size();
   }
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+   * <pre>
+   * A map of security schemes to the required scopes.
+   * </pre>
+   *
+   * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
    */
   @java.lang.Override
   public boolean containsSchemes(
@@ -99,14 +107,22 @@ private static final long serialVersionUID = 0L;
     return getSchemesMap();
   }
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+   * <pre>
+   * A map of security schemes to the required scopes.
+   * </pre>
+   *
+   * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
    */
   @java.lang.Override
   public java.util.Map<java.lang.String, io.a2a.grpc.StringList> getSchemesMap() {
     return internalGetSchemes().getMap();
   }
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+   * <pre>
+   * A map of security schemes to the required scopes.
+   * </pre>
+   *
+   * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
    */
   @java.lang.Override
   public /* nullable */
@@ -120,7 +136,11 @@ io.a2a.grpc.StringList defaultValue) {
     return map.containsKey(key) ? map.get(key) : defaultValue;
   }
   /**
-   * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+   * <pre>
+   * A map of security schemes to the required scopes.
+   * </pre>
+   *
+   * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.StringList getSchemesOrThrow(
@@ -303,15 +323,19 @@ io.a2a.grpc.StringList defaultValue) {
     return builder;
   }
   /**
-   * Protobuf type {@code a2a.v1.SecurityRequirement}
+   * <pre>
+   * Defines the security requirements for an agent.
+   * </pre>
+   *
+   * Protobuf type {@code lf.a2a.v1.SecurityRequirement}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.SecurityRequirement)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.SecurityRequirement)
       io.a2a.grpc.SecurityRequirementOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityRequirement_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -339,7 +363,7 @@ io.a2a.grpc.StringList defaultValue) {
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityRequirement_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.SecurityRequirement.class, io.a2a.grpc.SecurityRequirement.Builder.class);
     }
@@ -365,7 +389,7 @@ io.a2a.grpc.StringList defaultValue) {
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SecurityRequirement_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SecurityRequirement_descriptor;
     }
 
     @java.lang.Override
@@ -500,7 +524,11 @@ io.a2a.grpc.StringList defaultValue) {
       return internalGetSchemes().ensureBuilderMap().size();
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+     * <pre>
+     * A map of security schemes to the required scopes.
+     * </pre>
+     *
+     * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
      */
     @java.lang.Override
     public boolean containsSchemes(
@@ -517,14 +545,22 @@ io.a2a.grpc.StringList defaultValue) {
       return getSchemesMap();
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+     * <pre>
+     * A map of security schemes to the required scopes.
+     * </pre>
+     *
+     * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
      */
     @java.lang.Override
     public java.util.Map<java.lang.String, io.a2a.grpc.StringList> getSchemesMap() {
       return internalGetSchemes().getImmutableMap();
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+     * <pre>
+     * A map of security schemes to the required scopes.
+     * </pre>
+     *
+     * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
      */
     @java.lang.Override
     public /* nullable */
@@ -537,7 +573,11 @@ io.a2a.grpc.StringList defaultValue) {
       return map.containsKey(key) ? schemesConverter.build(map.get(key)) : defaultValue;
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+     * <pre>
+     * A map of security schemes to the required scopes.
+     * </pre>
+     *
+     * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
      */
     @java.lang.Override
     public io.a2a.grpc.StringList getSchemesOrThrow(
@@ -555,7 +595,11 @@ io.a2a.grpc.StringList defaultValue) {
       return this;
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+     * <pre>
+     * A map of security schemes to the required scopes.
+     * </pre>
+     *
+     * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
      */
     public Builder removeSchemes(
         java.lang.String key) {
@@ -574,7 +618,11 @@ io.a2a.grpc.StringList defaultValue) {
       return internalGetMutableSchemes().ensureMessageMap();
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+     * <pre>
+     * A map of security schemes to the required scopes.
+     * </pre>
+     *
+     * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
      */
     public Builder putSchemes(
         java.lang.String key,
@@ -587,7 +635,11 @@ io.a2a.grpc.StringList defaultValue) {
       return this;
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+     * <pre>
+     * A map of security schemes to the required scopes.
+     * </pre>
+     *
+     * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
      */
     public Builder putAllSchemes(
         java.util.Map<java.lang.String, io.a2a.grpc.StringList> values) {
@@ -602,7 +654,11 @@ io.a2a.grpc.StringList defaultValue) {
       return this;
     }
     /**
-     * <code>map&lt;string, .a2a.v1.StringList&gt; schemes = 1;</code>
+     * <pre>
+     * A map of security schemes to the required scopes.
+     * </pre>
+     *
+     * <code>map&lt;string, .lf.a2a.v1.StringList&gt; schemes = 1;</code>
      */
     public io.a2a.grpc.StringList.Builder putSchemesBuilderIfAbsent(
         java.lang.String key) {
@@ -619,10 +675,10 @@ io.a2a.grpc.StringList defaultValue) {
       return (io.a2a.grpc.StringList.Builder) entry;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.SecurityRequirement)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.SecurityRequirement)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.SecurityRequirement)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.SecurityRequirement)
   private static final io.a2a.grpc.SecurityRequirement DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.SecurityRequirement();
