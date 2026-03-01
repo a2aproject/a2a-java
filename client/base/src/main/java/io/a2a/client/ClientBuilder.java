@@ -105,7 +105,7 @@ public class ClientBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientBuilder.class);
 
     static {
-        ServiceLoader<ClientTransportProvider> loader = ServiceLoader.load(ClientTransportProvider.class);
+        ServiceLoader<ClientTransportProvider> loader = ServiceLoader.load(ClientTransportProvider.class, ClientBuilder.class.getClassLoader());
         for (ClientTransportProvider<?, ?> transport : loader) {
             transportProviderRegistry.put(transport.getTransportProtocol(), transport);
             transportProtocolMapping.put(transport.getTransportProtocolClass(), transport.getTransportProtocol());
