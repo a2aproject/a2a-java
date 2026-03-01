@@ -25,10 +25,41 @@ import org.jspecify.annotations.Nullable;
 
 import io.a2a.common.A2AErrorMessages;
 
+/**
+ * Default HTTP client implementation using JDK 11+ {@link HttpClient}.
+ *
+ * <p>This is the fallback implementation used when no higher-priority
+ * {@link A2AHttpClientProvider} is available. It provides full support for:
+ * <ul>
+ *   <li>HTTP/2 with automatic fallback to HTTP/1.1</li>
+ *   <li>Synchronous GET, POST, and DELETE requests</li>
+ *   <li>Asynchronous Server-Sent Events (SSE) streaming</li>
+ *   <li>Automatic redirect following</li>
+ * </ul>
+ *
+ * <p><b>Provider Priority:</b> 0 (lowest - used as fallback)
+ *
+ * <p>This implementation is registered via {@link JdkA2AHttpClientProvider}
+ * in the ServiceLoader system and is automatically used by {@link A2AHttpClientFactory}
+ * when no other provider is available.
+ *
+ * @see A2AHttpClient
+ * @see A2AHttpClientFactory
+ * @see JdkA2AHttpClientProvider
+ */
 public class JdkA2AHttpClient implements A2AHttpClient {
 
     private final HttpClient httpClient;
 
+    /**
+     * Creates a new JDK-based HTTP client.
+     *
+     * <p>Configures the client with:
+     * <ul>
+     *   <li>HTTP/2 preferred (with HTTP/1.1 fallback)</li>
+     *   <li>Normal redirect following</li>
+     * </ul>
+     */
     public JdkA2AHttpClient() {
         httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
