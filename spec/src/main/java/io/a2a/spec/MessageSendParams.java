@@ -17,29 +17,25 @@ import org.jspecify.annotations.Nullable;
  * @param message the message to send to the agent (required)
  * @param configuration optional configuration for message processing behavior
  * @param metadata optional arbitrary key-value metadata for the request
- * @param tenant optional tenant, provided as a path parameter.
+ * @param tenant optional tenant identifier provided as a path parameter; defaults to empty string if not specified
  * @see MessageSendConfiguration for available configuration options
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record MessageSendParams(Message message, @Nullable MessageSendConfiguration configuration,
-                                @Nullable Map<String, Object> metadata, String tenant) {
+                                @Nullable Map<String, Object> metadata, @Nullable String tenant) {
 
     /**
-     * Compact constructor for validation.
-     * Validates that required parameters are not null.
-     *
-     * @param message the message to send
-     * @param configuration optional message send configuration
-     * @param metadata optional metadata
-     * @param tenant the tenant identifier
+     * Compact constructor for validation and normalization.
+     * Validates that {@code message} is not null and normalizes
+     * {@code tenant} to an empty string if null.
      */
     public MessageSendParams {
         Assert.checkNotNullParam("message", message);
-        Assert.checkNotNullParam("tenant", tenant);
+        tenant = tenant == null ? "" : tenant;
     }
 
     /**
-     * Convenience constructor with default tenant.
+     * Convenience constructor that sets tenant to empty string by default.
      *
      * @param message the message to send (required)
      * @param configuration optional configuration for message processing
@@ -50,9 +46,9 @@ public record MessageSendParams(Message message, @Nullable MessageSendConfigurat
     }
 
     /**
-     * Create a new Builder
+     * Creates a new {@link Builder} for constructing {@link MessageSendParams}.
      *
-     * @return the builder
+     * @return a new builder instance
      */
     public static Builder builder() {
         return new Builder();
@@ -112,10 +108,10 @@ public record MessageSendParams(Message message, @Nullable MessageSendConfigurat
         /**
          * Sets optional tenant for the request.
          *
-         * @param tenant arbitrary key-value metadata
+         * @param tenant optional tenant identifier
          * @return this builder
          */
-        public Builder tenant(String tenant) {
+        public Builder tenant(@Nullable String tenant) {
             this.tenant = tenant;
             return this;
         }
@@ -131,7 +127,7 @@ public record MessageSendParams(Message message, @Nullable MessageSendConfigurat
                     Assert.checkNotNullParam("message", message),
                     configuration,
                     metadata,
-                    tenant == null ? "" : tenant);
+                    tenant);
         }
     }
 }
