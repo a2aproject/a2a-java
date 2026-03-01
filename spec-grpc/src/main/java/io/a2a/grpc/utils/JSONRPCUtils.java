@@ -576,7 +576,7 @@ public class JSONRPCUtils {
                 output.name("method").value(method);
             }
             if (payload != null) {
-                String resultValue = JsonFormat.printer().includingDefaultValueFields().omittingInsignificantWhitespace().print(payload);
+                String resultValue = JsonFormat.printer().omittingInsignificantWhitespace().print(payload);
                 output.name("params").jsonValue(resultValue);
             }
             output.endObject();
@@ -599,7 +599,7 @@ public class JSONRPCUtils {
                     output.name("id").value(number.longValue());
                 }
             }
-            String resultValue = JsonFormat.printer().includingDefaultValueFields().omittingInsignificantWhitespace().print(builder);
+            String resultValue = JsonFormat.printer().omittingInsignificantWhitespace().print(builder);
             output.name("result").jsonValue(resultValue);
             output.endObject();
             return result.toString();
