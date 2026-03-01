@@ -47,10 +47,12 @@ nbproject/
 
 # Plugin directory
 /.quarkus/cli/plugins/
+
 # TLS Certificates
 .certs/
 
 # Private Claude config
+.bob
 .claude/
 .serena/
 .bob/
