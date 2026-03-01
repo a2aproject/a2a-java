@@ -1,32 +1,23 @@
 package io.a2a.grpc.utils;
 
-import static io.a2a.grpc.utils.JSONRPCUtils.ERROR_MESSAGE;
-import static io.a2a.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static io.a2a.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
-
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-
 import io.a2a.grpc.Role;
 import io.a2a.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
-import io.a2a.jsonrpc.common.wrappers.A2ARequest;
-import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
-import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
-import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
+import io.a2a.jsonrpc.common.wrappers.*;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.JSONParseError;
-import io.a2a.spec.Message;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
 import org.junit.jupiter.api.Test;
+
+import static io.a2a.grpc.utils.JSONRPCUtils.ERROR_MESSAGE;
+import static io.a2a.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JSONRPCUtilsTest {
 
@@ -386,6 +377,122 @@ public class JSONRPCUtilsTest {
         assertInstanceOf(InvalidParamsError.class, response.getError());
         assertEquals(-32602, response.getError().getCode());
         assertEquals("Invalid params", response.getError().getMessage());
+    }
+
+    // ── toJsonRPCRequest serialization ────────────────────────────────────────
+
+    @Test
+    public void testToJsonRPCRequest_TextPart_NullMetadata_OnlyTextFieldInPart() {
+        io.a2a.grpc.SendMessageRequest request = io.a2a.grpc.SendMessageRequest.newBuilder()
+                .setMessage(io.a2a.grpc.Message.newBuilder()
+                        .setMessageId("msg-1")
+                        .setRole(Role.ROLE_USER)
+                        .addParts(io.a2a.grpc.Part.newBuilder()
+                                .setText("hello")
+                                .build())
+                        .build())
+                .build();
+
+        String json = JSONRPCUtils.toJsonRPCRequest("req-1", "SendMessage", request);
+
+        JsonObject part = getFirstPart(json, "params");
+
+        assertEquals(1, part.size(), "TextPart with no metadata should only have 'text' field");
+        assertTrue(part.has("text"));
+        assertFalse(part.has("filename"), "filename must not appear for TextPart");
+        assertFalse(part.has("mediaType"), "mediaType must not appear for TextPart");
+        assertFalse(part.has("metadata"), "metadata must not appear when not set");
+    }
+
+    @Test
+    public void testToJsonRPCRequest_TextPart_WithMetadata_OnlyTextAndMetadataFields() {
+        io.a2a.grpc.SendMessageRequest request = io.a2a.grpc.SendMessageRequest.newBuilder()
+                .setMessage(io.a2a.grpc.Message.newBuilder()
+                        .setMessageId("msg-1")
+                        .setRole(Role.ROLE_USER)
+                        .addParts(io.a2a.grpc.Part.newBuilder()
+                                .setText("hello")
+                                .setMetadata(com.google.protobuf.Struct.newBuilder()
+                                        .putFields("key",
+                                                com.google.protobuf.Value.newBuilder()
+                                                        .setStringValue("value")
+                                                        .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        String json = JSONRPCUtils.toJsonRPCRequest("req-1", "SendMessage", request);
+
+        JsonObject part = getFirstPart(json, "params");
+
+        assertEquals(2, part.size(), "TextPart with metadata should only have 'text' and 'metadata' fields");
+        assertTrue(part.has("text"));
+        assertTrue(part.has("metadata"));
+        assertFalse(part.has("filename"), "filename must not appear for TextPart");
+        assertFalse(part.has("mediaType"), "mediaType must not appear for TextPart");
+    }
+
+    // ── toJsonRPCResultResponse serialization ─────────────────────────────────
+
+    @Test
+    public void testToJsonRPCResultResponse_TextPart_NullMetadata_OnlyTextFieldInPart() {
+        io.a2a.grpc.SendMessageResponse response = io.a2a.grpc.SendMessageResponse.newBuilder()
+                .setMessage(io.a2a.grpc.Message.newBuilder()
+                        .setMessageId("msg-1")
+                        .setRole(Role.ROLE_AGENT)
+                        .addParts(io.a2a.grpc.Part.newBuilder()
+                                .setText("hi there")
+                                .build())
+                        .build())
+                .build();
+
+        String json = JSONRPCUtils.toJsonRPCResultResponse("req-1", response);
+
+        JsonObject part = getFirstPart(json, "result");
+
+        assertEquals(1, part.size(), "TextPart with no metadata should only have 'text' field");
+        assertTrue(part.has("text"));
+        assertFalse(part.has("filename"), "filename must not appear for TextPart");
+        assertFalse(part.has("mediaType"), "mediaType must not appear for TextPart");
+        assertFalse(part.has("metadata"), "metadata must not appear when not set");
+    }
+
+    @Test
+    public void testToJsonRPCResultResponse_TextPart_WithMetadata_OnlyTextAndMetadataFields() {
+        io.a2a.grpc.SendMessageResponse response = io.a2a.grpc.SendMessageResponse.newBuilder()
+                .setMessage(io.a2a.grpc.Message.newBuilder()
+                        .setMessageId("msg-1")
+                        .setRole(Role.ROLE_AGENT)
+                        .addParts(io.a2a.grpc.Part.newBuilder()
+                                .setText("hi there")
+                                .setMetadata(com.google.protobuf.Struct.newBuilder()
+                                        .putFields("tag",
+                                                com.google.protobuf.Value.newBuilder()
+                                                        .setStringValue("reply")
+                                                        .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        String json = JSONRPCUtils.toJsonRPCResultResponse("req-1", response);
+
+        JsonObject part = getFirstPart(json, "result");
+
+        assertEquals(2, part.size(), "TextPart with metadata should only have 'text' and 'metadata' fields");
+        assertTrue(part.has("text"));
+        assertTrue(part.has("metadata"));
+        assertFalse(part.has("filename"), "filename must not appear for TextPart");
+        assertFalse(part.has("mediaType"), "mediaType must not appear for TextPart");
+    }
+
+    private JsonObject getFirstPart(String json, String topLevelField) {
+        return JsonParser.parseString(json).getAsJsonObject()
+                .get(topLevelField).getAsJsonObject()
+                .get("message").getAsJsonObject()
+                .get("parts").getAsJsonArray()
+                .get(0).getAsJsonObject();
     }
 
     @Test
