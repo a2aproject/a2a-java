@@ -104,19 +104,24 @@ you'd like to support.
 import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
+import io.a2a.spec.TransportProtocol;
 ...
 
 @ApplicationScoped
 public class WeatherAgentCardProducer {
-    
+
+    private static final String AGENT_URL = "http://localhost:10001";
+
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
         return AgentCard.builder()
                 .name("Weather Agent")
                 .description("Helps with weather")
-                .url("http://localhost:10001")
+                .supportedInterfaces(List.of(
+                        new AgentInterface(TransportProtocol.JSONRPC.asString(), AGENT_URL)))
                 .version("1.0.0")
                 .capabilities(AgentCapabilities.builder()
                         .streaming(true)
@@ -131,7 +136,6 @@ public class WeatherAgentCardProducer {
                         .tags(Collections.singletonList("weather"))
                         .examples(List.of("weather in LA, CA"))
                         .build()))
-                .protocolVersion(io.a2a.spec.AgentCard.CURRENT_PROTOCOL_VERSION)
                 .build();
     }
 }
