@@ -174,7 +174,8 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.cancel();
         };
 
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", MINIMAL_TASK.id());
+        String requestBody = String.format("{\"id\":\"%s\"}", MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -185,11 +186,105 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testCancelTaskNotFound() {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
 
-        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", "nonexistent");
+        String requestBody = "{\"id\":\"nonexistent\"}";
+        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, "nonexistent");
 
         Assertions.assertEquals(404, response.getStatusCode());
         Assertions.assertEquals("application/json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("TaskNotFoundError"));
+    }
+
+    @Test
+    public void testCancelTaskWithMetadata() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        agentExecutorCancel = (context, agentEmitter) -> {
+            // Verify metadata is accessible in the context
+            Task task = context.getTask();
+
+            // Cancel the task so EventConsumer finds a final event
+            agentEmitter.cancel();
+        };
+
+        // Request body with metadata
+        String requestBody = """
+            {
+                "metadata": {
+                    "reason": "user_requested",
+                    "source": "web_ui",
+                    "priority": "high"
+                }
+            }
+            """;
+
+        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testCancelTaskWithEmptyMetadata() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        agentExecutorCancel = (context, agentEmitter) -> {
+            Task task = context.getTask();
+            agentEmitter.cancel();
+        };
+
+        // Request body with empty metadata object
+        String requestBody = """
+            {
+                "metadata": {}
+            }
+            """;
+
+        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testCancelTaskWithNoMetadata() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        agentExecutorCancel = (context, agentEmitter) -> {
+            Task task = context.getTask();
+            agentEmitter.cancel();
+        };
+
+        // Request body without metadata field
+        String requestBody = "{}";
+
+        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, MINIMAL_TASK.id());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
+    }
+
+    @Test
+    public void testCancelTaskWithNullBody() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        agentExecutorCancel = (context, agentEmitter) -> {
+            Task task = context.getTask();
+            agentEmitter.cancel();
+        };
+
+        // Null body should still work - metadata defaults to empty map
+        RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", null, MINIMAL_TASK.id());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains(MINIMAL_TASK.id()));
     }
 
     @Test
