@@ -1,24 +1,23 @@
 package io.a2a.examples.helloworld;
 
-
-import java.util.Collections;
-import java.util.List;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-
 import io.a2a.server.PublicAgentCard;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AgentSkill;
+import io.a2a.spec.TransportProtocol;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import java.util.Collections;
+import java.util.List;
 
 @ApplicationScoped
 public class AgentCardProducer {
 
-    @ConfigProperty(name = "quarkus.agentcard.protocol", defaultValue="JSONRPC")
-    String protocol;
+    @ConfigProperty(name = "quarkus.agentcard.protocol", defaultValue = "JSONRPC")
+    TransportProtocol protocol;
 
     @Produces
     @PublicAgentCard
@@ -39,24 +38,20 @@ public class AgentCardProducer {
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(Collections.singletonList(AgentSkill.builder()
-                                .id("hello_world")
-                                .name("Returns hello world")
-                                .description("just returns hello world")
-                                .tags(Collections.singletonList("hello world"))
-                                .examples(List.of("hi", "hello world"))
-                                .build()))
+                        .id("hello_world")
+                        .name("Returns hello world")
+                        .description("just returns hello world")
+                        .tags(Collections.singletonList("hello world"))
+                        .examples(List.of("hi", "hello world"))
+                        .build()))
                 .build();
     }
 
     private AgentInterface getAgentInterface() {
-        switch(protocol) {
-            case "GRPC":
-                return new AgentInterface("GRPC", "localhost:9000");
-            case "HTTP+JSON":
-                return new AgentInterface("HTTP+JSON", "http://localhost:9999");
-            case "JSONRPC":
-            default:
-                return new AgentInterface("JSONRPC", "http://localhost:9999");
-        }
+        String url = switch (protocol) {
+            case GRPC -> "localhost:9000";
+            case JSONRPC, HTTP_JSON -> "http://localhost:9999";
+        };
+        return new AgentInterface(protocol.asString(), url);
     }
 }
