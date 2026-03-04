@@ -1,5 +1,6 @@
 package io.a2a.grpc.mapper;
 
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.TaskIdParams;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Builder;
@@ -23,7 +24,7 @@ public interface TaskIdParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "id")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
-    TaskIdParams fromProtoCancelTaskRequest(io.a2a.grpc.CancelTaskRequest proto);
+    CancelTaskParams fromProtoCancelTaskRequest(io.a2a.grpc.CancelTaskRequest proto);
     
      /**
      * Converts proto CancelTaskRequest to domain TaskIdParams.
@@ -32,7 +33,7 @@ public interface TaskIdParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "id")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
-    io.a2a.grpc.CancelTaskRequest toProtoCancelTaskRequest(TaskIdParams domain);
+    io.a2a.grpc.CancelTaskRequest toProtoCancelTaskRequest(CancelTaskParams domain);
 
 
     /**
@@ -42,7 +43,6 @@ public interface TaskIdParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "id")
     @Mapping(target = "tenant", source = "tenant")
-    @Mapping(target = "metadata", ignore = true)
     TaskIdParams fromProtoSubscribeToTaskRequest(io.a2a.grpc.SubscribeToTaskRequest proto);
 
     /**

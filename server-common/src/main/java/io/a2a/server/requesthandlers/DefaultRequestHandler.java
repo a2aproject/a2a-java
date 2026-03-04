@@ -45,6 +45,7 @@ import io.a2a.server.tasks.TaskStore;
 import io.a2a.server.util.async.EventConsumerExecutorProducer.EventConsumerExecutor;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
 import io.a2a.spec.EventKind;
@@ -359,7 +360,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
-    public Task onCancelTask(TaskIdParams params, ServerCallContext context) throws A2AError {
+    public Task onCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError {
         Task task = taskStore.get(params.id());
         if (task == null) {
             throw new TaskNotFoundError();

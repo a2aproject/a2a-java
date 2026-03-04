@@ -2,6 +2,7 @@ package io.a2a.jsonrpc.common.wrappers;
 
 import static io.a2a.spec.A2AMethods.CANCEL_TASK_METHOD;
 
+import io.a2a.spec.CancelTaskParams;
 import java.util.UUID;
 
 import io.a2a.spec.TaskIdParams;
@@ -25,7 +26,7 @@ import io.a2a.spec.TaskState;
  * @see TaskNotCancelableError for the error when cancellation is not possible
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdParams> {
+public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<CancelTaskParams> {
 
     /**
      * Creates a new CancelTaskRequest with the specified JSON-RPC parameters.
@@ -35,7 +36,7 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
      * @param params the request parameters containing the task ID
      * @throws IllegalArgumentException if jsonrpc version is invalid, method is not "CancelTask", params is null, or id is not a String/Integer/null
      */
-    public CancelTaskRequest(String jsonrpc, Object id, TaskIdParams params) {
+    public CancelTaskRequest(String jsonrpc, Object id, CancelTaskParams params) {
         super(jsonrpc, CANCEL_TASK_METHOD, id, params);
     }
 
@@ -46,7 +47,7 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
      * @param params the request parameters containing the task ID
      * @throws IllegalArgumentException if params is null or id is not a string/integer/null
      */
-    public CancelTaskRequest(Object id, TaskIdParams params) {
+    public CancelTaskRequest(Object id, CancelTaskParams params) {
         this(null, id, params);
     }
 
@@ -68,7 +69,7 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private TaskIdParams params;
+        private CancelTaskParams params;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -106,7 +107,7 @@ public final class CancelTaskRequest extends NonStreamingJSONRPCRequest<TaskIdPa
          * @return this builder for method chaining
          */
 
-        public CancelTaskRequest.Builder params(TaskIdParams params) {
+        public CancelTaskRequest.Builder params(CancelTaskParams params) {
             this.params = params;
             return this;
         }

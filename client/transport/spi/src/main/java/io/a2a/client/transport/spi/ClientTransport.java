@@ -6,6 +6,7 @@ import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
@@ -67,7 +68,7 @@ public interface ClientTransport {
      * @return the cancelled task
      * @throws A2AClientException if cancelling the task fails for any reason
      */
-    Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * List tasks with optional filtering and pagination.

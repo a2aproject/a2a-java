@@ -25,6 +25,7 @@ import io.a2a.grpc.mapper.TaskStateMapper;
 import io.a2a.grpc.mapper.TaskStatusUpdateEventMapper;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
@@ -68,7 +69,7 @@ public class ProtoUtils {
             return TaskQueryParamsMapper.INSTANCE.toProto(params);
         }
 
-        public static io.a2a.grpc.CancelTaskRequest cancelTaskRequest(TaskIdParams params) {
+        public static io.a2a.grpc.CancelTaskRequest cancelTaskRequest(CancelTaskParams params) {
             return TaskIdParamsMapper.INSTANCE.toProtoCancelTaskRequest(params);
         }
 
@@ -222,7 +223,7 @@ public class ProtoUtils {
             return convert(() -> ListTasksParamsMapper.INSTANCE.fromProto(reqProto));
         }
 
-        public static TaskIdParams taskIdParams(io.a2a.grpc.CancelTaskRequestOrBuilder request) {
+        public static CancelTaskParams cancelTaskParams(io.a2a.grpc.CancelTaskRequestOrBuilder request) {
             io.a2a.grpc.CancelTaskRequest reqProto = request instanceof io.a2a.grpc.CancelTaskRequest
                     ? (io.a2a.grpc.CancelTaskRequest) request
                     : ((io.a2a.grpc.CancelTaskRequest.Builder) request).build();

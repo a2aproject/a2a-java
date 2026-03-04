@@ -53,6 +53,7 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentExtension;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.Artifact;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
 import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
@@ -134,7 +135,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.cancel();
         };
 
-        CancelTaskRequest request = new CancelTaskRequest("111", new TaskIdParams(MINIMAL_TASK.id()));
+        CancelTaskRequest request = new CancelTaskRequest("111", new CancelTaskParams(MINIMAL_TASK.id()));
         CancelTaskResponse response = handler.onCancelTask(request, callContext);
 
         assertNull(response.getError());
@@ -154,7 +155,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             throw new UnsupportedOperationError();
         };
 
-        CancelTaskRequest request = new CancelTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));
+        CancelTaskRequest request = new CancelTaskRequest("1", new CancelTaskParams(MINIMAL_TASK.id()));
         CancelTaskResponse response = handler.onCancelTask(request, callContext);
         assertEquals(request.getId(), response.getId());
         assertNull(response.getResult());
@@ -164,7 +165,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnCancelTaskNotFound() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
-        CancelTaskRequest request = new CancelTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));
+        CancelTaskRequest request = new CancelTaskRequest("1", new CancelTaskParams(MINIMAL_TASK.id()));
         CancelTaskResponse response = handler.onCancelTask(request, callContext);
         assertEquals(request.getId(), response.getId());
         assertNull(response.getResult());

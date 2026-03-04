@@ -31,6 +31,7 @@ import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
@@ -145,7 +146,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                           StreamObserver<io.a2a.grpc.Task> responseObserver) {
         try {
             ServerCallContext context = createCallContext(responseObserver);
-            TaskIdParams params = FromProto.taskIdParams(request);
+            CancelTaskParams params = FromProto.cancelTaskParams(request);
             Task task = getRequestHandler().onCancelTask(params, context);
             if (task != null) {
                 responseObserver.onNext(ToProto.task(task));

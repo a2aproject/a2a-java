@@ -15,6 +15,7 @@ import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.A2AClientInvalidStateError;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
@@ -445,7 +446,7 @@ public class Client extends AbstractClient {
      * @see io.a2a.spec.TaskNotFoundError
      */
     @Override
-    public Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) throws A2AClientException {
         return clientTransport.cancelTask(request, context);
     }
 

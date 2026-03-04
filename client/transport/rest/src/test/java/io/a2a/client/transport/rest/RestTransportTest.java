@@ -37,6 +37,7 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.AuthenticationInfo;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.ExtensionSupportRequiredError;
@@ -172,7 +173,7 @@ public class RestTransportTest {
                 );
         ClientCallContext context = null;
         RestTransport instance = new RestTransport(CARD);
-        Task task = instance.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), context);
+        Task task = instance.cancelTask(new CancelTaskParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), context);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertEquals(TaskState.TASK_STATE_CANCELED, task.status().state());
         assertNull(task.status().message());

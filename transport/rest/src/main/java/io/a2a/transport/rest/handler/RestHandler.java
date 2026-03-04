@@ -21,7 +21,6 @@ import jakarta.inject.Inject;
 
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.a2a.grpc.utils.ProtoUtils;
@@ -37,6 +36,7 @@ import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
@@ -63,8 +63,6 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.VersionNotSupportedError;
-import java.lang.reflect.Type;
-import java.util.Collections;
 import mutiny.zero.ZeroPublisher;
 import org.jspecify.annotations.Nullable;
 
@@ -153,15 +151,8 @@ public class RestHandler {
             if (taskId == null || taskId.isEmpty()) {
                 throw new InvalidParamsError();
             }
-            Map<String, Object> metadata = Collections.emptyMap();
-            if (body != null && !body.isEmpty()) {
-                Type type = new TypeToken<Map<String, Object>>(){}.getType();
-                Map<String, Object> payload = JsonUtil.fromJson(body, type);
-                if(payload.containsKey("metadata") && payload.get("metadata") instanceof Map metadataMap) {
-                    metadata = (Map<String, Object>) metadataMap;
-                }
-            }
-            TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).metadata(metadata).build();
+            Map<String, Object> metadata =JsonUtil.readMetadata(body);
+            CancelTaskParams params = CancelTaskParams.builder().id(taskId).tenant(tenant).metadata(metadata).build();
             Task task = requestHandler.onCancelTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));

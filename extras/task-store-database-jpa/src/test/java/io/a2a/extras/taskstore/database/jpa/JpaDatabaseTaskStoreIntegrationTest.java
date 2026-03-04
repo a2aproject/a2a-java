@@ -24,9 +24,9 @@ import io.a2a.server.PublicAgentCard;
 import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.Task;
-import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TextPart;
@@ -137,7 +137,7 @@ public class JpaDatabaseTaskStoreIntegrationTest {
         assertEquals(TaskState.TASK_STATE_SUBMITTED, retrievedTask.status().state());
 
         // Cancel the task
-        Task cancelledTask = client.cancelTask(new TaskIdParams(taskId), null);
+        Task cancelledTask = client.cancelTask(new CancelTaskParams(taskId), null);
         assertNotNull(cancelledTask);
         assertEquals(1, cancelledTask.artifacts().size());
         assertEquals(TaskState.TASK_STATE_CANCELED, cancelledTask.status().state());

@@ -218,7 +218,7 @@ public class JSONRPCUtils {
                 if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
                     builder.setTenant(tenant);
                 }
-                return new CancelTaskRequest(version, id, ProtoUtils.FromProto.taskIdParams(builder));
+                return new CancelTaskRequest(version, id, ProtoUtils.FromProto.cancelTaskParams(builder));
             }
             case LIST_TASK_METHOD -> {
                 io.a2a.grpc.ListTasksRequest.Builder builder = io.a2a.grpc.ListTasksRequest.newBuilder();
