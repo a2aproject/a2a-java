@@ -20,6 +20,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import io.a2a.server.context.DefaultAgentExecutionContextPropagator;
+import io.a2a.server.spi.AgentExecutionContextPropagator;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -225,6 +227,7 @@ public class DefaultRequestHandler implements RequestHandler {
     private PushNotificationConfigStore pushConfigStore;
     private MainEventBusProcessor mainEventBusProcessor;
     private Supplier<RequestContext.Builder> requestContextBuilder;
+    private AgentExecutionContextPropagator context;
 
     private final ConcurrentMap<String, CompletableFuture<Void>> runningAgents = new ConcurrentHashMap<>();
 
@@ -248,6 +251,7 @@ public class DefaultRequestHandler implements RequestHandler {
         this.requestContextBuilder = null;
         this.executor = null;
         this.eventConsumerExecutor = null;
+        this.context = null;
     }
 
     @Inject
@@ -255,7 +259,8 @@ public class DefaultRequestHandler implements RequestHandler {
                                  QueueManager queueManager, PushNotificationConfigStore pushConfigStore,
                                  MainEventBusProcessor mainEventBusProcessor,
                                  @Internal Executor executor,
-                                 @EventConsumerExecutor Executor eventConsumerExecutor) {
+                                 @EventConsumerExecutor Executor eventConsumerExecutor,
+                                 AgentExecutionContextPropagator context) {
         this.agentExecutor = agentExecutor;
         this.taskStore = taskStore;
         this.queueManager = queueManager;
@@ -268,6 +273,7 @@ public class DefaultRequestHandler implements RequestHandler {
         //  I am unsure about the correct scope.
         //  Also reworked to make a Supplier since otherwise the builder gets polluted with wrong tasks
         this.requestContextBuilder = () -> new SimpleRequestContextBuilder(taskStore, false);
+        this.context = context;
     }
 
     @PostConstruct
@@ -288,7 +294,7 @@ public class DefaultRequestHandler implements RequestHandler {
                          Executor executor, Executor eventConsumerExecutor) {
         DefaultRequestHandler handler =
                 new DefaultRequestHandler(agentExecutor, taskStore, queueManager, pushConfigStore,
-                        mainEventBusProcessor, executor, eventConsumerExecutor);
+                        mainEventBusProcessor, executor, eventConsumerExecutor, new DefaultAgentExecutionContextPropagator());
         handler.agentCompletionTimeoutSeconds = 5;
         handler.consumptionCompletionTimeoutSeconds = 2;
 
@@ -883,9 +889,8 @@ public class DefaultRequestHandler implements RequestHandler {
     private EnhancedRunnable registerAndExecuteAgentAsync(String taskId, RequestContext requestContext, EventQueue queue, EnhancedRunnable.DoneCallback doneCallback) {
         LOGGER.debug("Registering agent execution for task {}, runningAgents.size() before: {}", taskId, runningAgents.size());
         logThreadStats("AGENT START");
-        EnhancedRunnable runnable = new EnhancedRunnable() {
-            @Override
-            public void run() {
+
+        Runnable wrappedRunnable = context.wrap(() -> {
                 LOGGER.debug("Agent execution starting for task {}", taskId);
                 AgentEmitter emitter = new AgentEmitter(requestContext, queue);
                 try {
@@ -909,6 +914,11 @@ public class DefaultRequestHandler implements RequestHandler {
                 LOGGER.debug("Agent execution completed for task {}", taskId);
                 // The consumer (running on the Vert.x worker thread) handles queue lifecycle.
                 // This avoids blocking agent-executor threads waiting for worker threads.
+        });
+        EnhancedRunnable runnable = new EnhancedRunnable() {
+            @Override
+            public void run() {
+                wrappedRunnable.run();
             }
         };
 

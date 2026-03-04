@@ -236,6 +236,56 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
         }
     }
 
+    @Test
+    void testOpenTelemetryContextIsPropagatedWhenSendMessageIsCalled() throws Exception {
+            Message testMessage = Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(Collections.singletonList(new TextPart("test message")))
+                .contextId("context-1234")
+                .messageId("message-1234")
+                .build();
+            client.sendMessage(testMessage);
+
+            Thread.sleep(5000);
+
+            List<Map<String, Object>> spans = getSpans();
+            var serverSpan = spans.stream().filter(span -> SpanKind.valueOf(span.get("kind").toString()) == SpanKind.SERVER).findFirst().get();
+            var agentSpan = spans.stream().filter(span -> SpanKind.valueOf(span.get("kind").toString()) == SpanKind.INTERNAL).findFirst().get();
+
+            String serverTraceId = serverSpan.get("traceId").toString();
+            String serverSpanId = serverSpan.get("spanId").toString();
+            String agentTraceId = agentSpan.get("traceId").toString();
+            String agentParentSpanId = agentSpan.get("parentSpanId").toString();
+
+            assertEquals(serverSpanId, agentParentSpanId);
+            assertEquals(serverTraceId, agentTraceId);
+    }
+
+    @Test
+    void testOpenTelemetryContextIsPropagatedWhenSendMessageStreamIsCalled() throws Exception {
+        Message testMessage = Message.builder()
+            .role(Message.Role.ROLE_USER)
+            .parts(Collections.singletonList(new TextPart("test message")))
+            .contextId("context-1234")
+            .messageId("message-1234")
+            .build();
+        client.sendMessage(testMessage);
+
+        Thread.sleep(5000);
+
+        List<Map<String, Object>> spans = getSpans();
+        var serverSpan = spans.stream().filter(span -> SpanKind.valueOf(span.get("kind").toString()) == SpanKind.SERVER).findFirst().get();
+        var agentSpan = spans.stream().filter(span -> SpanKind.valueOf(span.get("kind").toString()) == SpanKind.INTERNAL).findFirst().get();
+
+        String serverTraceId = serverSpan.get("traceId").toString();
+        String serverSpanId = serverSpan.get("spanId").toString();
+        String agentTraceId = agentSpan.get("traceId").toString();
+        String agentParentSpanId = agentSpan.get("parentSpanId").toString();
+
+        assertEquals(serverSpanId, agentParentSpanId);
+        assertEquals(serverTraceId, agentTraceId);
+    }
+
     protected void saveTaskInTaskStore(Task task) throws Exception {
         HttpClient httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)

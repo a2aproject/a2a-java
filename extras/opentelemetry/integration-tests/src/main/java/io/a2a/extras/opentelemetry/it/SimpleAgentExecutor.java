@@ -6,6 +6,7 @@ import io.a2a.server.agentexecution.RequestContext;
 import io.a2a.server.tasks.AgentEmitter;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.TextPart;
+import io.opentelemetry.api.trace.Tracer;
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
@@ -14,6 +15,12 @@ import jakarta.enterprise.context.ApplicationScoped;
  */
 @ApplicationScoped
 public class SimpleAgentExecutor implements AgentExecutor {
+
+  private final Tracer tracer;
+
+  public SimpleAgentExecutor(Tracer tracer) {
+    this.tracer = tracer;
+  }
 
     @Override
     public void execute(RequestContext context, AgentEmitter emitter) throws A2AError {
@@ -29,6 +36,10 @@ public class SimpleAgentExecutor implements AgentExecutor {
                 .findFirst()
                 .orElse("");
 
+        tracer.spanBuilder("SimpleAgentExecutor.execute")
+                .setAttribute("user.input.length", userText.length())
+                .startSpan()
+                .end();
         // Echo it back
         String response = "Echo: " + userText;
         emitter.complete(A2A.toAgentMessage(response));
