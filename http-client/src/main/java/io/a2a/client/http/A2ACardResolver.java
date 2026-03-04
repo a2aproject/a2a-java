@@ -19,6 +19,55 @@ import static io.a2a.util.Assert.checkNotNullParam;
 
 import io.a2a.spec.AgentInterface;
 
+/**
+ * Utility for fetching agent cards from A2A agents.
+ *
+ * <p>Retrieves agent cards from the standard {@code /.well-known/agent-card.json} endpoint
+ * with support for tenant-specific paths and authentication headers.
+ *
+ * <h2>Features</h2>
+ * <ul>
+ *   <li>Standard agent card endpoint discovery ({@code /.well-known/agent-card.json})</li>
+ *   <li>Tenant-specific path support ({@code /tenant/.well-known/agent-card.json})</li>
+ *   <li>Custom authentication header injection</li>
+ *   <li>Pluggable HTTP client via {@link A2AHttpClientFactory}</li>
+ *   <li>Support for both public and extended agent cards</li>
+ * </ul>
+ *
+ * <h2>Usage Examples</h2>
+ * <pre>{@code
+ * // Basic usage - fetch agent card
+ * A2ACardResolver resolver = new A2ACardResolver("http://localhost:9999");
+ * AgentCard card = resolver.getAgentCard();
+ *
+ * // With tenant path
+ * A2ACardResolver resolver = new A2ACardResolver("http://localhost:9999", "my-tenant");
+ * AgentCard card = resolver.getAgentCard();
+ *
+ * // With custom HTTP client
+ * A2AHttpClient httpClient = A2AHttpClientFactory.create();
+ * A2ACardResolver resolver = new A2ACardResolver(httpClient, "http://localhost:9999", "my-tenant");
+ * AgentCard card = resolver.getAgentCard();
+ *
+ * // With authentication headers
+ * A2AHttpClient httpClient = A2AHttpClientFactory.create();
+ * Map<String, String> authHeaders = Map.of("Authorization", "Bearer token");
+ * A2ACardResolver resolver = new A2ACardResolver(
+ *     httpClient,
+ *     "http://localhost:9999",
+ *     "my-tenant",
+ *     null,  // use default agent card path
+ *     authHeaders
+ * );
+ * AgentCard card = resolver.getAgentCard();
+ *
+ * // Fetch extended agent card (if available)
+ * AgentCard extendedCard = resolver.getExtendedAgentCard();
+ * }</pre>
+ *
+ * @see AgentCard
+ * @see A2AHttpClient
+ */
 public class A2ACardResolver {
     private final A2AHttpClient httpClient;
     private final String url;
@@ -27,7 +76,7 @@ public class A2ACardResolver {
     private static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
 
     /**
-     * Get the agent card for an A2A agent. An HTTP client will be auto-selected via {@link A2AHttpClientFactory}.
+     * Creates an agent card resolver. An HTTP client will be auto-selected via {@link A2AHttpClientFactory}.
      *
      * @param baseUrl the base URL for the agent whose agent card we want to retrieve, must not be null
      * @throws A2AClientError if the URL for the agent is invalid
