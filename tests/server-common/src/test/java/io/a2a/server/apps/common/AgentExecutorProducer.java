@@ -97,6 +97,31 @@ public class AgentExecutorProducer {
                     }
                 }
 
+                // Special handling for auth-required test
+                if (taskId != null && taskId.startsWith("auth-required-test")) {
+                    // AUTH_REQUIRED workflow: agent emits AUTH_REQUIRED, simulates out-of-band auth delay, then completes
+                    // Go directly to AUTH_REQUIRED without intermediate WORKING state
+                    // This avoids race condition where blocking call interrupts on WORKING
+                    // before AUTH_REQUIRED is persisted to TaskStore
+                    agentEmitter.requiresAuth(agentEmitter.newAgentMessage(
+                            List.of(new TextPart("Please authenticate with OAuth provider")),
+                            context.getMessage().metadata()));
+
+                    try {
+                        // Simulate out-of-band authentication delay (user authenticates externally)
+                        // Sleep long enough for test to establish subscription and wait for completion
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new InternalError("Auth simulation interrupted: " + e.getMessage());
+                    }
+
+                    // Complete task (auth "received" out-of-band)
+                    // Agent continues after AUTH_REQUIRED without new request
+                    agentEmitter.complete();
+                    return;
+                }
+
                 if (context.getTaskId().equals("task-not-supported-123")) {
                     throw new UnsupportedOperationError();
                 }
