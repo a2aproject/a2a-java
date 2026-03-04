@@ -7,12 +7,12 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface PartOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.Part)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.Part)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * The string content of the text part.
+   * The string content of the `text` part.
    * </pre>
    *
    * <code>string text = 1;</code>
@@ -21,7 +21,7 @@ public interface PartOrBuilder extends
   boolean hasText();
   /**
    * <pre>
-   * The string content of the text part.
+   * The string content of the `text` part.
    * </pre>
    *
    * <code>string text = 1;</code>
@@ -30,7 +30,7 @@ public interface PartOrBuilder extends
   java.lang.String getText();
   /**
    * <pre>
-   * The string content of the text part.
+   * The string content of the `text` part.
    * </pre>
    *
    * <code>string text = 1;</code>
@@ -41,7 +41,7 @@ public interface PartOrBuilder extends
 
   /**
    * <pre>
-   * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+   * The `raw` byte content of a file. In JSON serialization, this is encoded as a base64 string.
    * </pre>
    *
    * <code>bytes raw = 2;</code>
@@ -50,7 +50,7 @@ public interface PartOrBuilder extends
   boolean hasRaw();
   /**
    * <pre>
-   * The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+   * The `raw` byte content of a file. In JSON serialization, this is encoded as a base64 string.
    * </pre>
    *
    * <code>bytes raw = 2;</code>
@@ -60,7 +60,7 @@ public interface PartOrBuilder extends
 
   /**
    * <pre>
-   * A URL pointing to the file's content.
+   * A `url` pointing to the file's content.
    * </pre>
    *
    * <code>string url = 3;</code>
@@ -69,7 +69,7 @@ public interface PartOrBuilder extends
   boolean hasUrl();
   /**
    * <pre>
-   * A URL pointing to the file's content.
+   * A `url` pointing to the file's content.
    * </pre>
    *
    * <code>string url = 3;</code>
@@ -78,7 +78,7 @@ public interface PartOrBuilder extends
   java.lang.String getUrl();
   /**
    * <pre>
-   * A URL pointing to the file's content.
+   * A `url` pointing to the file's content.
    * </pre>
    *
    * <code>string url = 3;</code>
@@ -89,7 +89,7 @@ public interface PartOrBuilder extends
 
   /**
    * <pre>
-   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+   * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
    * <code>.google.protobuf.Value data = 4;</code>
@@ -98,7 +98,7 @@ public interface PartOrBuilder extends
   boolean hasData();
   /**
    * <pre>
-   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+   * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
    * <code>.google.protobuf.Value data = 4;</code>
@@ -107,7 +107,7 @@ public interface PartOrBuilder extends
   com.google.protobuf.Value getData();
   /**
    * <pre>
-   * Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+   * Arbitrary structured `data` as a JSON value (object, array, string, number, boolean, or null).
    * </pre>
    *
    * <code>.google.protobuf.Value data = 4;</code>
@@ -116,7 +116,7 @@ public interface PartOrBuilder extends
 
   /**
    * <pre>
-   * Optional metadata associated with this part.
+   * Optional. metadata associated with this part.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -125,7 +125,7 @@ public interface PartOrBuilder extends
   boolean hasMetadata();
   /**
    * <pre>
-   * Optional metadata associated with this part.
+   * Optional. metadata associated with this part.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -134,7 +134,7 @@ public interface PartOrBuilder extends
   com.google.protobuf.Struct getMetadata();
   /**
    * <pre>
-   * Optional metadata associated with this part.
+   * Optional. metadata associated with this part.
    * </pre>
    *
    * <code>.google.protobuf.Struct metadata = 5;</code>
@@ -143,7 +143,7 @@ public interface PartOrBuilder extends
 
   /**
    * <pre>
-   * An optional name for the file (e.g., "document.pdf").
+   * An optional `filename` for the file (e.g., "document.pdf").
    * </pre>
    *
    * <code>string filename = 6;</code>
@@ -152,7 +152,7 @@ public interface PartOrBuilder extends
   java.lang.String getFilename();
   /**
    * <pre>
-   * An optional name for the file (e.g., "document.pdf").
+   * An optional `filename` for the file (e.g., "document.pdf").
    * </pre>
    *
    * <code>string filename = 6;</code>
@@ -163,7 +163,7 @@ public interface PartOrBuilder extends
 
   /**
    * <pre>
-   * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+   * The `media_type` (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
    * This field is available for all part types.
    * </pre>
    *
@@ -173,7 +173,7 @@ public interface PartOrBuilder extends
   java.lang.String getMediaType();
   /**
    * <pre>
-   * The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
+   * The `media_type` (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
    * This field is available for all part types.
    * </pre>
    *

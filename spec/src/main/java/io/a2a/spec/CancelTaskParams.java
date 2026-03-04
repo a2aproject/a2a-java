@@ -2,19 +2,22 @@ package io.a2a.spec;
 
 import io.a2a.util.Assert;
 import io.a2a.util.Utils;
+import java.util.Collections;
+import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Parameters containing a task identifier for task-related operations.
+ * Parameters for cancelling a task.
  * <p>
- * This simple parameter record is used by operations that only need a task ID,
- * and similar task-specific requests. It optionally includes metadata for additional context.
+ * Carries the task identifier and optional tenant and metadata for cancel-specific context,
+ * such as a cancellation reason or source system.
  *
  * @param id the unique task identifier (required)
- * @param tenant optional tenant, provided as a path parameter.
+ * @param tenant optional tenant, provided as a path parameter
+ * @param metadata optional arbitrary key-value metadata (e.g. cancellation reason)
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record TaskIdParams(String id, String tenant) {
+public record CancelTaskParams(String id, String tenant, Map<String, Object> metadata) {
 
     /**
      * Compact constructor for validation.
@@ -23,7 +26,7 @@ public record TaskIdParams(String id, String tenant) {
      * @param id the task identifier
      * @param tenant the tenant identifier
      */
-    public TaskIdParams  {
+    public CancelTaskParams {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("tenant", tenant);
     }
@@ -33,8 +36,8 @@ public record TaskIdParams(String id, String tenant) {
      *
      * @param id the task identifier (required)
      */
-    public TaskIdParams(String id) {
-        this(id, "");
+    public CancelTaskParams(String id) {
+        this(id, "", Collections.emptyMap());
     }
 
     /**
@@ -52,6 +55,7 @@ public record TaskIdParams(String id, String tenant) {
     public static class Builder {
         private @Nullable String id;
         private @Nullable String tenant;
+        private Map<String, Object> metadata = Collections.emptyMap();
 
         /**
          * Creates a new Builder with all fields unset.
@@ -81,6 +85,16 @@ public record TaskIdParams(String id, String tenant) {
             return this;
         }
 
+        /**
+         * Sets optional metadata for the request.
+         *
+         * @param metadata arbitrary key-value metadata
+         * @return this builder
+         */
+        public Builder metadata(Map<String, Object> metadata) {
+            this.metadata = Map.copyOf(metadata);
+            return this;
+        }
 
         /**
          * Builds the TaskIdParams.
@@ -88,10 +102,11 @@ public record TaskIdParams(String id, String tenant) {
          * @return a new TaskIdParams instance
          * @throws IllegalArgumentException if id is null
          */
-        public TaskIdParams build() {
-            return new TaskIdParams(
+        public CancelTaskParams build() {
+            return new CancelTaskParams(
                 Assert.checkNotNullParam("id", id),
-                Utils.defaultIfNull(tenant,"")
+                Utils.defaultIfNull(tenant,""),
+                metadata
             );
         }
     }

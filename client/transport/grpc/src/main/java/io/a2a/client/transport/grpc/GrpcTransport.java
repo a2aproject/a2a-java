@@ -33,6 +33,7 @@ import io.a2a.grpc.utils.ProtoUtils.ToProto;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
@@ -161,7 +162,7 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
         io.a2a.grpc.CancelTaskRequest cancelTaskRequest = io.a2a.grpc.CancelTaskRequest.newBuilder()
@@ -238,7 +239,6 @@ public class GrpcTransport implements ClientTransport {
         io.a2a.grpc.CreateTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder()
                 .setTaskId(request.taskId())
                 .setConfig(ToProto.taskPushNotificationConfig(request).getPushNotificationConfig())
-                .setConfigId(configId != null ? configId : request.taskId())
                 .setTenant(resolveTenant(request.tenant()))
                 .build();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, grpcRequest, agentCard, context);
@@ -281,7 +281,7 @@ public class GrpcTransport implements ClientTransport {
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
-        io.a2a.grpc.ListTaskPushNotificationConfigRequest grpcRequest = io.a2a.grpc.ListTaskPushNotificationConfigRequest.newBuilder()
+        io.a2a.grpc.ListTaskPushNotificationConfigsRequest grpcRequest = io.a2a.grpc.ListTaskPushNotificationConfigsRequest.newBuilder()
                 .setTaskId(request.id())
                 .setTenant(resolveTenant(request.tenant()))
                 .setPageSize(request.pageSize())
@@ -292,7 +292,7 @@ public class GrpcTransport implements ClientTransport {
 
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
-            io.a2a.grpc.ListTaskPushNotificationConfigResponse grpcResponse = stubWithMetadata.listTaskPushNotificationConfig(grpcRequest);
+            io.a2a.grpc.ListTaskPushNotificationConfigsResponse grpcResponse = stubWithMetadata.listTaskPushNotificationConfigs(grpcRequest);
             return FromProto.listTaskPushNotificationConfigResult(grpcResponse);
         } catch (StatusRuntimeException | StatusException e) {
             throw GrpcErrorMapper.mapGrpcError(e, "Failed to list task push notification config: ");

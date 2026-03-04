@@ -156,7 +156,7 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
         reset();
 
         try {
-            Task cancelledTask = client.cancelTask(new TaskIdParams(taskId), null);
+            Task cancelledTask = client.cancelTask(new CancelTaskParams(taskId), null);
 
             assertNotNull(cancelledTask);
             assertEquals(TaskState.TASK_STATE_CANCELED, cancelledTask.status().state());

@@ -32,8 +32,8 @@ import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskResponse;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsRequest;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
@@ -53,6 +53,7 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentExtension;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.Artifact;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
 import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
@@ -134,7 +135,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.cancel();
         };
 
-        CancelTaskRequest request = new CancelTaskRequest("111", new TaskIdParams(MINIMAL_TASK.id()));
+        CancelTaskRequest request = new CancelTaskRequest("111", new CancelTaskParams(MINIMAL_TASK.id()));
         CancelTaskResponse response = handler.onCancelTask(request, callContext);
 
         assertNull(response.getError());
@@ -154,7 +155,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             throw new UnsupportedOperationError();
         };
 
-        CancelTaskRequest request = new CancelTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));
+        CancelTaskRequest request = new CancelTaskRequest("1", new CancelTaskParams(MINIMAL_TASK.id()));
         CancelTaskResponse response = handler.onCancelTask(request, callContext);
         assertEquals(request.getId(), response.getId());
         assertNull(response.getResult());
@@ -164,7 +165,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnCancelTaskNotFound() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
-        CancelTaskRequest request = new CancelTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));
+        CancelTaskRequest request = new CancelTaskRequest("1", new CancelTaskParams(MINIMAL_TASK.id()));
         CancelTaskResponse response = handler.onCancelTask(request, callContext);
         assertEquals(request.getId(), response.getId());
         assertNull(response.getResult());
@@ -1359,9 +1360,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .url("http://example.com")
                         .id(MINIMAL_TASK.id())
                         .build(), "");
-        ListTaskPushNotificationConfigRequest listRequest
-                = new ListTaskPushNotificationConfigRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
-        ListTaskPushNotificationConfigResponse listResponse = handler.listPushNotificationConfig(listRequest, callContext);
+        ListTaskPushNotificationConfigsRequest listRequest
+                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+        ListTaskPushNotificationConfigsResponse listResponse = handler.listPushNotificationConfig(listRequest, callContext);
 
         assertEquals("111", listResponse.getId());
         assertEquals(1, listResponse.getResult().size());
@@ -1386,9 +1387,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
-        ListTaskPushNotificationConfigRequest listRequest
-                = new ListTaskPushNotificationConfigRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
-        ListTaskPushNotificationConfigResponse listResponse
+        ListTaskPushNotificationConfigsRequest listRequest
+                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+        ListTaskPushNotificationConfigsResponse listResponse
                 = handler.listPushNotificationConfig(listRequest, callContext);
 
         assertEquals("111", listResponse.getId());
@@ -1405,9 +1406,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.emitEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        ListTaskPushNotificationConfigRequest listRequest
-                = new ListTaskPushNotificationConfigRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
-        ListTaskPushNotificationConfigResponse listResponse
+        ListTaskPushNotificationConfigsRequest listRequest
+                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+        ListTaskPushNotificationConfigsResponse listResponse
                 = handler.listPushNotificationConfig(listRequest, callContext);
 
         assertEquals("111", listResponse.getId());
@@ -1422,9 +1423,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             agentEmitter.emitEvent(context.getTask() != null ? context.getTask() : context.getMessage());
         };
 
-        ListTaskPushNotificationConfigRequest listRequest
-                = new ListTaskPushNotificationConfigRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
-        ListTaskPushNotificationConfigResponse listResponse
+        ListTaskPushNotificationConfigsRequest listRequest
+                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+        ListTaskPushNotificationConfigsResponse listResponse
                 = handler.listPushNotificationConfig(listRequest, callContext);
 
         assertEquals("111", listResponse.getId());

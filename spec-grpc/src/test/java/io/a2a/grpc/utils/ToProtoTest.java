@@ -216,8 +216,8 @@ public class ToProtoTest {
                         .build(), null);
         io.a2a.grpc.TaskPushNotificationConfig result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
         assertEquals("push-task-123", result.getTaskId());
-        assertEquals("xyz", result.getId());
         assertNotNull(result.getPushNotificationConfig());
+        assertEquals("xyz", result.getPushNotificationConfig().getId());
         assertEquals("http://example.com", result.getPushNotificationConfig().getUrl());
         assertEquals("xyz", result.getPushNotificationConfig().getId());
         assertEquals(false, result.getPushNotificationConfig().hasAuthentication());
@@ -231,8 +231,8 @@ public class ToProtoTest {
                                 .build(), null);
         result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
         assertEquals("push-task-123", result.getTaskId());
-        assertEquals("xyz", result.getId());
         assertNotNull(result.getPushNotificationConfig());
+        assertEquals("xyz", result.getPushNotificationConfig().getId());
         assertEquals("http://example.com", result.getPushNotificationConfig().getUrl());
         assertEquals("xyz", result.getPushNotificationConfig().getId());
         assertEquals("AAAAAA", result.getPushNotificationConfig().getToken());
@@ -328,10 +328,10 @@ public class ToProtoTest {
     }
 
     @Test
-    public void convertListTaskPushNotificationConfigRequest() {
+    public void convertListTaskPushNotificationConfigsRequest() {
         ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams("task-789");
 
-        io.a2a.grpc.ListTaskPushNotificationConfigRequest result =
+        io.a2a.grpc.ListTaskPushNotificationConfigsRequest result =
                 ProtoUtils.ToProto.listTaskPushNotificationConfigRequest(params);
 
         assertEquals("task-789", result.getTaskId());

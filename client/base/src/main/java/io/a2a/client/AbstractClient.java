@@ -11,6 +11,7 @@ import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
@@ -230,7 +231,7 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the cancelled task
      * @throws A2AClientException if cancelling the task fails for any reason
      */
-    public Task cancelTask(TaskIdParams request) throws A2AClientException {
+    public Task cancelTask(CancelTaskParams request) throws A2AClientException {
         return cancelTask(request, null);
     }
 
@@ -242,7 +243,7 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the cancelled task
      * @throws A2AClientException if cancelling the task fails for any reason
      */
-    public abstract Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException;
+    public abstract Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) throws A2AClientException;
 
     /**
      * Create or update the push notification configuration for a specific task.

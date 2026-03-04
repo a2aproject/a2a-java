@@ -8,14 +8,15 @@ package io.a2a.grpc;
 /**
  * <pre>
  * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+ * A list of strings.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.StringList}
+ * Protobuf type {@code lf.a2a.v1.StringList}
  */
 @com.google.protobuf.Generated
 public final class StringList extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.StringList)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.StringList)
     StringListOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -38,13 +39,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_StringList_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StringList_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_StringList_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StringList_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.StringList.class, io.a2a.grpc.StringList.Builder.class);
   }
@@ -54,6 +55,10 @@ private static final long serialVersionUID = 0L;
   private com.google.protobuf.LazyStringArrayList list_ =
       com.google.protobuf.LazyStringArrayList.emptyList();
   /**
+   * <pre>
+   * The individual string values.
+   * </pre>
+   *
    * <code>repeated string list = 1;</code>
    * @return A list containing the list.
    */
@@ -62,6 +67,10 @@ private static final long serialVersionUID = 0L;
     return list_;
   }
   /**
+   * <pre>
+   * The individual string values.
+   * </pre>
+   *
    * <code>repeated string list = 1;</code>
    * @return The count of list.
    */
@@ -69,6 +78,10 @@ private static final long serialVersionUID = 0L;
     return list_.size();
   }
   /**
+   * <pre>
+   * The individual string values.
+   * </pre>
+   *
    * <code>repeated string list = 1;</code>
    * @param index The index of the element to return.
    * @return The list at the given index.
@@ -77,6 +90,10 @@ private static final long serialVersionUID = 0L;
     return list_.get(index);
   }
   /**
+   * <pre>
+   * The individual string values.
+   * </pre>
+   *
    * <code>repeated string list = 1;</code>
    * @param index The index of the value to return.
    * @return The bytes of the list at the given index.
@@ -252,23 +269,24 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * protolint:disable REPEATED_FIELD_NAMES_PLURALIZED
+   * A list of strings.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.StringList}
+   * Protobuf type {@code lf.a2a.v1.StringList}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.StringList)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.StringList)
       io.a2a.grpc.StringListOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_StringList_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StringList_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_StringList_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StringList_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.StringList.class, io.a2a.grpc.StringList.Builder.class);
     }
@@ -295,7 +313,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_StringList_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_StringList_descriptor;
     }
 
     @java.lang.Override
@@ -408,6 +426,10 @@ private static final long serialVersionUID = 0L;
       bitField0_ |= 0x00000001;
     }
     /**
+     * <pre>
+     * The individual string values.
+     * </pre>
+     *
      * <code>repeated string list = 1;</code>
      * @return A list containing the list.
      */
@@ -417,6 +439,10 @@ private static final long serialVersionUID = 0L;
       return list_;
     }
     /**
+     * <pre>
+     * The individual string values.
+     * </pre>
+     *
      * <code>repeated string list = 1;</code>
      * @return The count of list.
      */
@@ -424,6 +450,10 @@ private static final long serialVersionUID = 0L;
       return list_.size();
     }
     /**
+     * <pre>
+     * The individual string values.
+     * </pre>
+     *
      * <code>repeated string list = 1;</code>
      * @param index The index of the element to return.
      * @return The list at the given index.
@@ -432,6 +462,10 @@ private static final long serialVersionUID = 0L;
       return list_.get(index);
     }
     /**
+     * <pre>
+     * The individual string values.
+     * </pre>
+     *
      * <code>repeated string list = 1;</code>
      * @param index The index of the value to return.
      * @return The bytes of the list at the given index.
@@ -441,6 +475,10 @@ private static final long serialVersionUID = 0L;
       return list_.getByteString(index);
     }
     /**
+     * <pre>
+     * The individual string values.
+     * </pre>
+     *
      * <code>repeated string list = 1;</code>
      * @param index The index to set the value at.
      * @param value The list to set.
@@ -456,6 +494,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The individual string values.
+     * </pre>
+     *
      * <code>repeated string list = 1;</code>
      * @param value The list to add.
      * @return This builder for chaining.
@@ -470,6 +512,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The individual string values.
+     * </pre>
+     *
      * <code>repeated string list = 1;</code>
      * @param values The list to add.
      * @return This builder for chaining.
@@ -484,6 +530,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The individual string values.
+     * </pre>
+     *
      * <code>repeated string list = 1;</code>
      * @return This builder for chaining.
      */
@@ -495,6 +545,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The individual string values.
+     * </pre>
+     *
      * <code>repeated string list = 1;</code>
      * @param value The bytes of the list to add.
      * @return This builder for chaining.
@@ -510,10 +564,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.StringList)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.StringList)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.StringList)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.StringList)
   private static final io.a2a.grpc.StringList DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.StringList();

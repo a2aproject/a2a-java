@@ -44,6 +44,7 @@ import io.a2a.spec.VersionNotSupportedError;
 import io.a2a.spec.AgentSkill;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.AuthenticationInfo;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DataPart;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.FileContent;
@@ -61,7 +62,6 @@ import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.SecurityRequirement;
 import io.a2a.spec.SecurityScheme;
 import io.a2a.spec.Task;
-import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
@@ -286,7 +286,7 @@ public class JSONRPCTransportTest {
                 );
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
-        Task task = client.cancelTask(new TaskIdParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
+        Task task = client.cancelTask(new CancelTaskParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
         assertEquals("de38c76d-d54c-436c-8b9f-4c2703648d64", task.id());
         assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", task.contextId());
         assertEquals(TaskState.TASK_STATE_CANCELED, task.status().state());

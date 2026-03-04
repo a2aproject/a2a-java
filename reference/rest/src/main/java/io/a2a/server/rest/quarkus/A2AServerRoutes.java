@@ -199,7 +199,7 @@ public class A2AServerRoutes {
     }
 
     @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
-    public void cancelTask(RoutingContext rc) {
+    public void cancelTask(@Body String body, RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, CANCEL_TASK_METHOD);
         HTTPRestResponse response = null;
@@ -207,7 +207,7 @@ public class A2AServerRoutes {
             if (taskId == null || taskId.isEmpty()) {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
-                response = jsonRestHandler.cancelTask(context, extractTenant(rc), taskId);
+                response = jsonRestHandler.cancelTask(context, extractTenant(rc), body, taskId);
             }
         } catch (Throwable t) {
             if (t instanceof A2AError error) {

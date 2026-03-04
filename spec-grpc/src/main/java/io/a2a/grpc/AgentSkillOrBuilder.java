@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface AgentSkillOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.AgentSkill)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.AgentSkill)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -239,7 +239,7 @@ public interface AgentSkillOrBuilder extends
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   java.util.List<io.a2a.grpc.SecurityRequirement> 
       getSecurityRequirementsList();
@@ -248,7 +248,7 @@ public interface AgentSkillOrBuilder extends
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   io.a2a.grpc.SecurityRequirement getSecurityRequirements(int index);
   /**
@@ -256,7 +256,7 @@ public interface AgentSkillOrBuilder extends
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   int getSecurityRequirementsCount();
   /**
@@ -264,7 +264,7 @@ public interface AgentSkillOrBuilder extends
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   java.util.List<? extends io.a2a.grpc.SecurityRequirementOrBuilder> 
       getSecurityRequirementsOrBuilderList();
@@ -273,7 +273,7 @@ public interface AgentSkillOrBuilder extends
    * Security schemes necessary for this skill.
    * </pre>
    *
-   * <code>repeated .a2a.v1.SecurityRequirement security_requirements = 8;</code>
+   * <code>repeated .lf.a2a.v1.SecurityRequirement security_requirements = 8;</code>
    */
   io.a2a.grpc.SecurityRequirementOrBuilder getSecurityRequirementsOrBuilder(
       int index);

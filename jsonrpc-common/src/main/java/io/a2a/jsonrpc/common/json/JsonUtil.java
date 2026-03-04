@@ -32,6 +32,7 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.TypeAdapter;
@@ -446,6 +447,65 @@ public class JsonUtil {
     }
 
     /**
+     * Writes a metadata map as a "metadata" JSON field to the given writer.
+     * Does nothing if the metadata is null or empty.
+     *
+     * @param out the JSON writer to write to
+     * @param metadata the metadata map to write
+     * @throws java.io.IOException if an I/O error occurs
+     */
+    public static void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata) throws java.io.IOException {
+        if (metadata != null && !metadata.isEmpty()) {
+            out.name("metadata");
+            OBJECT_MAPPER.toJson(metadata, new TypeToken<Map<String, Object>>(){}.getType(), out);
+        }
+    }
+
+    /**
+     * Serializes a metadata map to a JSON string.
+     *
+     * @param metadata the metadata map to serialize
+     * @return JSON string representation of the metadata, or an empty string if the map is null or empty
+     */
+    public static String writeMetadata(@Nullable Map<String, Object> metadata) {
+        if (metadata == null || metadata.isEmpty()) {
+            return "";
+        }
+        return OBJECT_MAPPER.toJson(metadata, new TypeToken<Map<String, Object>>(){}.getType());
+    }
+
+    /**
+     * Reads the "metadata" field from a JSON object, if present.
+     *
+     * @param jsonObject the JSON object to read from
+     * @return the metadata map, or {@code null} if no "metadata" field is present
+     */
+    public static Map<String, Object> readMetadata(com.google.gson.JsonObject jsonObject) {
+        if (jsonObject.has("metadata")) {
+            return OBJECT_MAPPER.fromJson(jsonObject.get("metadata"), new TypeToken<Map<String, Object>>(){}.getType());
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Reads the "metadata" field from a JSON body string, if present.
+     *
+     * @param json the JSON body string to parse
+     * @return the metadata map, or an empty map if the input is null, blank, or has no "metadata" field
+     * @throws JsonProcessingException if the JSON is invalid
+     */
+    public static Map<String, Object> readMetadata(@Nullable String json) throws JsonProcessingException {
+        if (json == null || json.isBlank()) {
+            return Collections.emptyMap();
+        }
+        try {
+            return readMetadata(JsonParser.parseString(json).getAsJsonObject());
+        } catch (JsonSyntaxException e) {
+            throw new JsonProcessingException("Failed to parse metadata JSON", e);
+        }
+    }
+
+    /**
      * Gson TypeAdapter for serializing and deserializing {@link Part} and its subclasses.
      * <p>
      * This adapter handles polymorphic deserialization, creating the
@@ -467,13 +527,6 @@ public class JsonUtil {
         // Create separate Gson instance without the Part adapter to avoid recursion
         private final Gson delegateGson = createBaseGsonBuilder().create();
 
-        private void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata) throws java.io.IOException {
-            if (metadata != null && !metadata.isEmpty()) {
-                out.name("metadata");
-                delegateGson.toJson(metadata, MAP_TYPE, out);
-            }
-        }
-
         @Override
         public void write(JsonWriter out, Part<?> value) throws java.io.IOException {
             if (value == null) {
@@ -487,17 +540,17 @@ public class JsonUtil {
                 // TextPart: { "text": "value" } - direct string value
                 out.name(TEXT);
                 out.value(textPart.text());
-                writeMetadata(out, textPart.metadata());
+                JsonUtil.writeMetadata(out, textPart.metadata());
             } else if (value instanceof FilePart filePart) {
                 // FilePart: { "file": {...} }
                 out.name(FILE);
                 delegateGson.toJson(filePart.file(), FileContent.class, out);
-                writeMetadata(out, filePart.metadata());
+                JsonUtil.writeMetadata(out, filePart.metadata());
             } else if (value instanceof DataPart dataPart) {
                 // DataPart: { "data": <any JSON value> }
                 out.name(DATA);
                 delegateGson.toJson(dataPart.data(), Object.class, out);
-                writeMetadata(out, dataPart.metadata());
+                JsonUtil.writeMetadata(out, dataPart.metadata());
             } else {
                 throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
             }
@@ -522,10 +575,7 @@ public class JsonUtil {
             com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
 
             // Extract metadata if present
-            Map<String, Object> metadata = null;
-            if (jsonObject.has("metadata")) {
-                metadata = delegateGson.fromJson(jsonObject.get("metadata"), new TypeToken<Map<String, Object>>(){}.getType());
-            }
+            Map<String, Object> metadata = JsonUtil.readMetadata(jsonObject);
 
             // Check for member name discriminators (v1.0 protocol)
             Set<String> keys = jsonObject.keySet();

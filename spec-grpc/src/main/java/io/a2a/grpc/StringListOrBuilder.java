@@ -7,27 +7,43 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface StringListOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.StringList)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.StringList)
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   * <pre>
+   * The individual string values.
+   * </pre>
+   *
    * <code>repeated string list = 1;</code>
    * @return A list containing the list.
    */
   java.util.List<java.lang.String>
       getListList();
   /**
+   * <pre>
+   * The individual string values.
+   * </pre>
+   *
    * <code>repeated string list = 1;</code>
    * @return The count of list.
    */
   int getListCount();
   /**
+   * <pre>
+   * The individual string values.
+   * </pre>
+   *
    * <code>repeated string list = 1;</code>
    * @param index The index of the element to return.
    * @return The list at the given index.
    */
   java.lang.String getList(int index);
   /**
+   * <pre>
+   * The individual string values.
+   * </pre>
+   *
    * <code>repeated string list = 1;</code>
    * @param index The index of the value to return.
    * @return The bytes of the list at the given index.

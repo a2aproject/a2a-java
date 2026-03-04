@@ -7,7 +7,7 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface ListTasksResponseOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.ListTasksResponse)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.ListTasksResponse)
     com.google.protobuf.MessageOrBuilder {
 
   /**
@@ -15,7 +15,7 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<io.a2a.grpc.Task> 
       getTasksList();
@@ -24,7 +24,7 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.Task getTasks(int index);
   /**
@@ -32,7 +32,7 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getTasksCount();
   /**
@@ -40,7 +40,7 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<? extends io.a2a.grpc.TaskOrBuilder> 
       getTasksOrBuilderList();
@@ -49,14 +49,14 @@ public interface ListTasksResponseOrBuilder extends
    * Array of tasks matching the specified criteria.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Task tasks = 1 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.TaskOrBuilder getTasksOrBuilder(
       int index);
 
   /**
    * <pre>
-   * Token for retrieving the next page. Empty string if no more results.
+   * A token to retrieve the next page of results, or empty if there are no more results in the list.
    * </pre>
    *
    * <code>string next_page_token = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -65,7 +65,7 @@ public interface ListTasksResponseOrBuilder extends
   java.lang.String getNextPageToken();
   /**
    * <pre>
-   * Token for retrieving the next page. Empty string if no more results.
+   * A token to retrieve the next page of results, or empty if there are no more results in the list.
    * </pre>
    *
    * <code>string next_page_token = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -76,7 +76,7 @@ public interface ListTasksResponseOrBuilder extends
 
   /**
    * <pre>
-   * The size of page requested.
+   * The page size used for this response.
    * </pre>
    *
    * <code>int32 page_size = 3 [(.google.api.field_behavior) = REQUIRED];</code>

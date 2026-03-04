@@ -7,17 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * &#47;////////// Request Messages ///////////
- * --8&lt;-- [start:SendMessageRequest]
  * Represents a request for the `SendMessage` method.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.SendMessageRequest}
+ * Protobuf type {@code lf.a2a.v1.SendMessageRequest}
  */
 @com.google.protobuf.Generated
 public final class SendMessageRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.SendMessageRequest)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.SendMessageRequest)
     SendMessageRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -39,27 +37,27 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.SendMessageRequest.class, io.a2a.grpc.SendMessageRequest.Builder.class);
   }
 
   private int bitField0_;
-  public static final int TENANT_FIELD_NUMBER = 4;
+  public static final int TENANT_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object tenant_ = "";
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 4;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   @java.lang.Override
@@ -77,10 +75,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 4;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   @java.lang.Override
@@ -98,14 +96,14 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int MESSAGE_FIELD_NUMBER = 1;
+  public static final int MESSAGE_FIELD_NUMBER = 2;
   private io.a2a.grpc.Message message_;
   /**
    * <pre>
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the message field is set.
    */
   @java.lang.Override
@@ -117,7 +115,7 @@ private static final long serialVersionUID = 0L;
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The message.
    */
   @java.lang.Override
@@ -129,21 +127,21 @@ private static final long serialVersionUID = 0L;
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   @java.lang.Override
   public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
     return message_ == null ? io.a2a.grpc.Message.getDefaultInstance() : message_;
   }
 
-  public static final int CONFIGURATION_FIELD_NUMBER = 2;
+  public static final int CONFIGURATION_FIELD_NUMBER = 3;
   private io.a2a.grpc.SendMessageConfiguration configuration_;
   /**
    * <pre>
    * Configuration for the send request.
    * </pre>
    *
-   * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+   * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
    * @return Whether the configuration field is set.
    */
   @java.lang.Override
@@ -155,7 +153,7 @@ private static final long serialVersionUID = 0L;
    * Configuration for the send request.
    * </pre>
    *
-   * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+   * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
    * @return The configuration.
    */
   @java.lang.Override
@@ -167,21 +165,21 @@ private static final long serialVersionUID = 0L;
    * Configuration for the send request.
    * </pre>
    *
-   * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+   * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
    */
   @java.lang.Override
   public io.a2a.grpc.SendMessageConfigurationOrBuilder getConfigurationOrBuilder() {
     return configuration_ == null ? io.a2a.grpc.SendMessageConfiguration.getDefaultInstance() : configuration_;
   }
 
-  public static final int METADATA_FIELD_NUMBER = 3;
+  public static final int METADATA_FIELD_NUMBER = 4;
   private com.google.protobuf.Struct metadata_;
   /**
    * <pre>
    * A flexible key-value map for passing additional context or parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    * @return Whether the metadata field is set.
    */
   @java.lang.Override
@@ -193,7 +191,7 @@ private static final long serialVersionUID = 0L;
    * A flexible key-value map for passing additional context or parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    * @return The metadata.
    */
   @java.lang.Override
@@ -205,7 +203,7 @@ private static final long serialVersionUID = 0L;
    * A flexible key-value map for passing additional context or parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    */
   @java.lang.Override
   public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
@@ -226,17 +224,17 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, tenant_);
+    }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(1, getMessage());
+      output.writeMessage(2, getMessage());
     }
     if (((bitField0_ & 0x00000002) != 0)) {
-      output.writeMessage(2, getConfiguration());
+      output.writeMessage(3, getConfiguration());
     }
     if (((bitField0_ & 0x00000004) != 0)) {
-      output.writeMessage(3, getMetadata());
-    }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 4, tenant_);
+      output.writeMessage(4, getMetadata());
     }
     getUnknownFields().writeTo(output);
   }
@@ -247,20 +245,20 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, tenant_);
+    }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(1, getMessage());
+        .computeMessageSize(2, getMessage());
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getConfiguration());
+        .computeMessageSize(3, getConfiguration());
     }
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, getMetadata());
-    }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(4, tenant_);
+        .computeMessageSize(4, getMetadata());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -418,26 +416,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * &#47;////////// Request Messages ///////////
-   * --8&lt;-- [start:SendMessageRequest]
    * Represents a request for the `SendMessage` method.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.SendMessageRequest}
+   * Protobuf type {@code lf.a2a.v1.SendMessageRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.SendMessageRequest)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.SendMessageRequest)
       io.a2a.grpc.SendMessageRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.SendMessageRequest.class, io.a2a.grpc.SendMessageRequest.Builder.class);
     }
@@ -486,7 +482,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_SendMessageRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_SendMessageRequest_descriptor;
     }
 
     @java.lang.Override
@@ -591,29 +587,29 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
+              tenant_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000001;
+              break;
+            } // case 10
+            case 18: {
               input.readMessage(
                   internalGetMessageFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000002;
               break;
-            } // case 10
-            case 18: {
+            } // case 18
+            case 26: {
               input.readMessage(
                   internalGetConfigurationFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000004;
               break;
-            } // case 18
-            case 26: {
+            } // case 26
+            case 34: {
               input.readMessage(
                   internalGetMetadataFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000008;
-              break;
-            } // case 26
-            case 34: {
-              tenant_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000001;
               break;
             } // case 34
             default: {
@@ -636,10 +632,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object tenant_ = "";
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 4;</code>
+     * <code>string tenant = 1;</code>
      * @return The tenant.
      */
     public java.lang.String getTenant() {
@@ -656,10 +652,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 4;</code>
+     * <code>string tenant = 1;</code>
      * @return The bytes for tenant.
      */
     public com.google.protobuf.ByteString
@@ -677,10 +673,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 4;</code>
+     * <code>string tenant = 1;</code>
      * @param value The tenant to set.
      * @return This builder for chaining.
      */
@@ -694,10 +690,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 4;</code>
+     * <code>string tenant = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearTenant() {
@@ -708,10 +704,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 4;</code>
+     * <code>string tenant = 1;</code>
      * @param value The bytes for tenant to set.
      * @return This builder for chaining.
      */
@@ -733,7 +729,7 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return Whether the message field is set.
      */
     public boolean hasMessage() {
@@ -744,7 +740,7 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The message.
      */
     public io.a2a.grpc.Message getMessage() {
@@ -759,7 +755,7 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setMessage(io.a2a.grpc.Message value) {
       if (messageBuilder_ == null) {
@@ -779,7 +775,7 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder setMessage(
         io.a2a.grpc.Message.Builder builderForValue) {
@@ -797,7 +793,7 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder mergeMessage(io.a2a.grpc.Message value) {
       if (messageBuilder_ == null) {
@@ -822,7 +818,7 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearMessage() {
       bitField0_ = (bitField0_ & ~0x00000002);
@@ -839,7 +835,7 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.Message.Builder getMessageBuilder() {
       bitField0_ |= 0x00000002;
@@ -851,7 +847,7 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public io.a2a.grpc.MessageOrBuilder getMessageOrBuilder() {
       if (messageBuilder_ != null) {
@@ -866,7 +862,7 @@ private static final long serialVersionUID = 0L;
      * The message to send to the agent.
      * </pre>
      *
-     * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.Message, io.a2a.grpc.Message.Builder, io.a2a.grpc.MessageOrBuilder> 
@@ -890,7 +886,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the send request.
      * </pre>
      *
-     * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+     * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      * @return Whether the configuration field is set.
      */
     public boolean hasConfiguration() {
@@ -901,7 +897,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the send request.
      * </pre>
      *
-     * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+     * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      * @return The configuration.
      */
     public io.a2a.grpc.SendMessageConfiguration getConfiguration() {
@@ -916,7 +912,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the send request.
      * </pre>
      *
-     * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+     * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      */
     public Builder setConfiguration(io.a2a.grpc.SendMessageConfiguration value) {
       if (configurationBuilder_ == null) {
@@ -936,7 +932,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the send request.
      * </pre>
      *
-     * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+     * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      */
     public Builder setConfiguration(
         io.a2a.grpc.SendMessageConfiguration.Builder builderForValue) {
@@ -954,7 +950,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the send request.
      * </pre>
      *
-     * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+     * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      */
     public Builder mergeConfiguration(io.a2a.grpc.SendMessageConfiguration value) {
       if (configurationBuilder_ == null) {
@@ -979,7 +975,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the send request.
      * </pre>
      *
-     * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+     * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      */
     public Builder clearConfiguration() {
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -996,7 +992,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the send request.
      * </pre>
      *
-     * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+     * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      */
     public io.a2a.grpc.SendMessageConfiguration.Builder getConfigurationBuilder() {
       bitField0_ |= 0x00000004;
@@ -1008,7 +1004,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the send request.
      * </pre>
      *
-     * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+     * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      */
     public io.a2a.grpc.SendMessageConfigurationOrBuilder getConfigurationOrBuilder() {
       if (configurationBuilder_ != null) {
@@ -1023,7 +1019,7 @@ private static final long serialVersionUID = 0L;
      * Configuration for the send request.
      * </pre>
      *
-     * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+     * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         io.a2a.grpc.SendMessageConfiguration, io.a2a.grpc.SendMessageConfiguration.Builder, io.a2a.grpc.SendMessageConfigurationOrBuilder> 
@@ -1047,7 +1043,7 @@ private static final long serialVersionUID = 0L;
      * A flexible key-value map for passing additional context or parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
@@ -1058,7 +1054,7 @@ private static final long serialVersionUID = 0L;
      * A flexible key-value map for passing additional context or parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      * @return The metadata.
      */
     public com.google.protobuf.Struct getMetadata() {
@@ -1073,7 +1069,7 @@ private static final long serialVersionUID = 0L;
      * A flexible key-value map for passing additional context or parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public Builder setMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1093,7 +1089,7 @@ private static final long serialVersionUID = 0L;
      * A flexible key-value map for passing additional context or parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public Builder setMetadata(
         com.google.protobuf.Struct.Builder builderForValue) {
@@ -1111,7 +1107,7 @@ private static final long serialVersionUID = 0L;
      * A flexible key-value map for passing additional context or parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public Builder mergeMetadata(com.google.protobuf.Struct value) {
       if (metadataBuilder_ == null) {
@@ -1136,7 +1132,7 @@ private static final long serialVersionUID = 0L;
      * A flexible key-value map for passing additional context or parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public Builder clearMetadata() {
       bitField0_ = (bitField0_ & ~0x00000008);
@@ -1153,7 +1149,7 @@ private static final long serialVersionUID = 0L;
      * A flexible key-value map for passing additional context or parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public com.google.protobuf.Struct.Builder getMetadataBuilder() {
       bitField0_ |= 0x00000008;
@@ -1165,7 +1161,7 @@ private static final long serialVersionUID = 0L;
      * A flexible key-value map for passing additional context or parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
       if (metadataBuilder_ != null) {
@@ -1180,7 +1176,7 @@ private static final long serialVersionUID = 0L;
      * A flexible key-value map for passing additional context or parameters.
      * </pre>
      *
-     * <code>.google.protobuf.Struct metadata = 3;</code>
+     * <code>.google.protobuf.Struct metadata = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
@@ -1196,10 +1192,10 @@ private static final long serialVersionUID = 0L;
       return metadataBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.SendMessageRequest)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.SendMessageRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.SendMessageRequest)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.SendMessageRequest)
   private static final io.a2a.grpc.SendMessageRequest DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.SendMessageRequest();

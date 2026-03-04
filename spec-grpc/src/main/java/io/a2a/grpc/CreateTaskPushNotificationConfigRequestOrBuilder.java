@@ -7,24 +7,24 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface CreateTaskPushNotificationConfigRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.CreateTaskPushNotificationConfigRequest)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.CreateTaskPushNotificationConfigRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 4;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   java.lang.String getTenant();
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 4;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   com.google.protobuf.ByteString
@@ -32,19 +32,19 @@ public interface CreateTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * The parent task resource id.
+   * The parent task resource ID.
    * </pre>
    *
-   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The taskId.
    */
   java.lang.String getTaskId();
   /**
    * <pre>
-   * The parent task resource id.
+   * The parent task resource ID.
    * </pre>
    *
-   * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
@@ -52,30 +52,10 @@ public interface CreateTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * The ID for the new config.
-   * </pre>
-   *
-   * <code>string config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The configId.
-   */
-  java.lang.String getConfigId();
-  /**
-   * <pre>
-   * The ID for the new config.
-   * </pre>
-   *
-   * <code>string config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The bytes for configId.
-   */
-  com.google.protobuf.ByteString
-      getConfigIdBytes();
-
-  /**
-   * <pre>
    * The configuration to create.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig config = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.PushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the config field is set.
    */
   boolean hasConfig();
@@ -84,7 +64,7 @@ public interface CreateTaskPushNotificationConfigRequestOrBuilder extends
    * The configuration to create.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig config = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.PushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The config.
    */
   io.a2a.grpc.PushNotificationConfig getConfig();
@@ -93,7 +73,7 @@ public interface CreateTaskPushNotificationConfigRequestOrBuilder extends
    * The configuration to create.
    * </pre>
    *
-   * <code>.a2a.v1.PushNotificationConfig config = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.PushNotificationConfig config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.PushNotificationConfigOrBuilder getConfigOrBuilder();
 }

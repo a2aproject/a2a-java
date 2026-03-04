@@ -18,7 +18,7 @@ public interface A2AMethods {
     /** Method name for listing tasks. */
     String LIST_TASK_METHOD = "ListTasks";
     /** Method name for listing task push notification configurations. */
-    String LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD = "ListTaskPushNotificationConfig";
+    String LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD = "ListTaskPushNotificationConfigs";
     /** Method name for sending a message. */
     String SEND_MESSAGE_METHOD = "SendMessage";
     /** Method name for sending a streaming message. */

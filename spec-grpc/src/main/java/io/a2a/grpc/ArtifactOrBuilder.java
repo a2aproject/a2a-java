@@ -7,13 +7,12 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface ArtifactOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.Artifact)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.Artifact)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
-   * within a task.
+   * Unique identifier (e.g. UUID) for the artifact. It must be unique within a task.
    * </pre>
    *
    * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -22,8 +21,7 @@ public interface ArtifactOrBuilder extends
   java.lang.String getArtifactId();
   /**
    * <pre>
-   * Unique identifier (e.g. UUID) for the artifact. It must be at least unique
-   * within a task.
+   * Unique identifier (e.g. UUID) for the artifact. It must be unique within a task.
    * </pre>
    *
    * <code>string artifact_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -37,7 +35,7 @@ public interface ArtifactOrBuilder extends
    * A human readable name for the artifact.
    * </pre>
    *
-   * <code>string name = 3;</code>
+   * <code>string name = 2;</code>
    * @return The name.
    */
   java.lang.String getName();
@@ -46,7 +44,7 @@ public interface ArtifactOrBuilder extends
    * A human readable name for the artifact.
    * </pre>
    *
-   * <code>string name = 3;</code>
+   * <code>string name = 2;</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString
@@ -54,19 +52,19 @@ public interface ArtifactOrBuilder extends
 
   /**
    * <pre>
-   * A human readable description of the artifact, optional.
+   * Optional. A human readable description of the artifact.
    * </pre>
    *
-   * <code>string description = 4;</code>
+   * <code>string description = 3;</code>
    * @return The description.
    */
   java.lang.String getDescription();
   /**
    * <pre>
-   * A human readable description of the artifact, optional.
+   * Optional. A human readable description of the artifact.
    * </pre>
    *
-   * <code>string description = 4;</code>
+   * <code>string description = 3;</code>
    * @return The bytes for description.
    */
   com.google.protobuf.ByteString
@@ -77,7 +75,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<io.a2a.grpc.Part> 
       getPartsList();
@@ -86,7 +84,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.Part getParts(int index);
   /**
@@ -94,7 +92,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   int getPartsCount();
   /**
@@ -102,7 +100,7 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   java.util.List<? extends io.a2a.grpc.PartOrBuilder> 
       getPartsOrBuilderList();
@@ -111,35 +109,35 @@ public interface ArtifactOrBuilder extends
    * The content of the artifact. Must contain at least one part.
    * </pre>
    *
-   * <code>repeated .a2a.v1.Part parts = 5 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>repeated .lf.a2a.v1.Part parts = 4 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.PartOrBuilder getPartsOrBuilder(
       int index);
 
   /**
    * <pre>
-   * Optional metadata included with the artifact.
+   * Optional. Metadata included with the artifact.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
   /**
    * <pre>
-   * Optional metadata included with the artifact.
+   * Optional. Metadata included with the artifact.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
   /**
    * <pre>
-   * Optional metadata included with the artifact.
+   * Optional. Metadata included with the artifact.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 6;</code>
+   * <code>.google.protobuf.Struct metadata = 5;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 
@@ -148,7 +146,7 @@ public interface ArtifactOrBuilder extends
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7;</code>
+   * <code>repeated string extensions = 6;</code>
    * @return A list containing the extensions.
    */
   java.util.List<java.lang.String>
@@ -158,7 +156,7 @@ public interface ArtifactOrBuilder extends
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7;</code>
+   * <code>repeated string extensions = 6;</code>
    * @return The count of extensions.
    */
   int getExtensionsCount();
@@ -167,7 +165,7 @@ public interface ArtifactOrBuilder extends
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7;</code>
+   * <code>repeated string extensions = 6;</code>
    * @param index The index of the element to return.
    * @return The extensions at the given index.
    */
@@ -177,7 +175,7 @@ public interface ArtifactOrBuilder extends
    * The URIs of extensions that are present or contributed to this Artifact.
    * </pre>
    *
-   * <code>repeated string extensions = 7;</code>
+   * <code>repeated string extensions = 6;</code>
    * @param index The index of the value to return.
    * @return The bytes of the extensions at the given index.
    */

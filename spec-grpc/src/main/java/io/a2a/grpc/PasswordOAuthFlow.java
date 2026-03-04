@@ -7,15 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * DEPRECATED
+ * Deprecated: Use Authorization Code + PKCE or Device Code.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.PasswordOAuthFlow}
+ * Protobuf type {@code lf.a2a.v1.PasswordOAuthFlow}
  */
 @com.google.protobuf.Generated
 public final class PasswordOAuthFlow extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.PasswordOAuthFlow)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.PasswordOAuthFlow)
     PasswordOAuthFlowOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -38,7 +38,7 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PasswordOAuthFlow_descriptor;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -56,7 +56,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.PasswordOAuthFlow.class, io.a2a.grpc.PasswordOAuthFlow.Builder.class);
   }
@@ -165,7 +165,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String, java.lang.String> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, java.lang.String>newDefaultInstance(
-                io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_ScopesEntry_descriptor, 
+                io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PasswordOAuthFlow_ScopesEntry_descriptor, 
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.STRING,
@@ -448,18 +448,18 @@ java.lang.String defaultValue) {
   }
   /**
    * <pre>
-   * DEPRECATED
+   * Deprecated: Use Authorization Code + PKCE or Device Code.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.PasswordOAuthFlow}
+   * Protobuf type {@code lf.a2a.v1.PasswordOAuthFlow}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.PasswordOAuthFlow)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.PasswordOAuthFlow)
       io.a2a.grpc.PasswordOAuthFlowOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PasswordOAuthFlow_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -487,7 +487,7 @@ java.lang.String defaultValue) {
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.PasswordOAuthFlow.class, io.a2a.grpc.PasswordOAuthFlow.Builder.class);
     }
@@ -515,7 +515,7 @@ java.lang.String defaultValue) {
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_PasswordOAuthFlow_descriptor;
     }
 
     @java.lang.Override
@@ -997,10 +997,10 @@ java.lang.String defaultValue) {
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.PasswordOAuthFlow)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.PasswordOAuthFlow)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.PasswordOAuthFlow)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.PasswordOAuthFlow)
   private static final io.a2a.grpc.PasswordOAuthFlow DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.PasswordOAuthFlow();

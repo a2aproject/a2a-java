@@ -12,6 +12,7 @@ import static io.a2a.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 import static io.a2a.transport.rest.context.RestContextKeys.METHOD_NAME_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -160,18 +161,165 @@ public class A2AServerRoutesTest {
         when(mockHttpResponse.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getContentType()).thenReturn("application/json");
         when(mockHttpResponse.getBody()).thenReturn("{}");
-        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString())).thenReturn(mockHttpResponse);
+        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString(), anyString())).thenReturn(mockHttpResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.cancelTask(mockRoutingContext);
+        routes.cancelTask("{\"id\":\"task123\"}", mockRoutingContext);
 
         // Assert
-        verify(mockRestHandler).cancelTask(contextCaptor.capture(), anyString(), eq("task123"));
+        verify(mockRestHandler).cancelTask(contextCaptor.capture(), anyString(), eq("{\"id\":\"task123\"}"), eq("task123"));
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(CANCEL_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+    }
+
+    @Test
+    public void testCancelTask_WithMetadata() {
+        // Arrange
+        when(mockRoutingContext.pathParam("taskId")).thenReturn("task456");
+        HTTPRestResponse mockHttpResponse = mock(HTTPRestResponse.class);
+        when(mockHttpResponse.getStatusCode()).thenReturn(200);
+        when(mockHttpResponse.getContentType()).thenReturn("application/json");
+        when(mockHttpResponse.getBody()).thenReturn("{\"id\":\"task456\",\"status\":\"cancelled\"}");
+
+        String requestBody = """
+            {
+                "metadata": {
+                    "reason": "user_requested",
+                    "source": "web_ui",
+                    "priority": "high"
+                }
+            }
+            """;
+
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString(), anyString()))
+                .thenReturn(mockHttpResponse);
+
+        // Act
+        routes.cancelTask(requestBody, mockRoutingContext);
+
+        // Assert
+        verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task456"));
+        String capturedBody = bodyCaptor.getValue();
+        assertNotNull(capturedBody);
+        assertEquals(requestBody, capturedBody);
+    }
+
+    @Test
+    public void testCancelTask_WithEmptyMetadata() {
+        // Arrange
+        when(mockRoutingContext.pathParam("taskId")).thenReturn("task789");
+        HTTPRestResponse mockHttpResponse = mock(HTTPRestResponse.class);
+        when(mockHttpResponse.getStatusCode()).thenReturn(200);
+        when(mockHttpResponse.getContentType()).thenReturn("application/json");
+        when(mockHttpResponse.getBody()).thenReturn("{\"id\":\"task789\"}");
+
+        String requestBody = """
+            {
+                "metadata": {}
+            }
+            """;
+
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString(), anyString()))
+                .thenReturn(mockHttpResponse);
+
+        // Act
+        routes.cancelTask(requestBody, mockRoutingContext);
+
+        // Assert
+        verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task789"));
+        String capturedBody = bodyCaptor.getValue();
+        assertNotNull(capturedBody);
+        assertEquals(requestBody, capturedBody);
+    }
+
+    @Test
+    public void testCancelTask_WithNoMetadataField() {
+        // Arrange
+        when(mockRoutingContext.pathParam("taskId")).thenReturn("task999");
+        HTTPRestResponse mockHttpResponse = mock(HTTPRestResponse.class);
+        when(mockHttpResponse.getStatusCode()).thenReturn(200);
+        when(mockHttpResponse.getContentType()).thenReturn("application/json");
+        when(mockHttpResponse.getBody()).thenReturn("{\"id\":\"task999\"}");
+
+        String requestBody = "{}";
+
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString(), anyString()))
+                .thenReturn(mockHttpResponse);
+
+        // Act
+        routes.cancelTask(requestBody, mockRoutingContext);
+
+        // Assert
+        verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task999"));
+        String capturedBody = bodyCaptor.getValue();
+        assertNotNull(capturedBody);
+        assertEquals(requestBody, capturedBody);
+    }
+
+    @Test
+    public void testCancelTask_WithNullBody() {
+        // Arrange
+        when(mockRoutingContext.pathParam("taskId")).thenReturn("task111");
+        HTTPRestResponse mockHttpResponse = mock(HTTPRestResponse.class);
+        when(mockHttpResponse.getStatusCode()).thenReturn(200);
+        when(mockHttpResponse.getContentType()).thenReturn("application/json");
+        when(mockHttpResponse.getBody()).thenReturn("{\"id\":\"task111\"}");
+
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString(), anyString()))
+                .thenReturn(mockHttpResponse);
+
+        // Act
+        routes.cancelTask(null, mockRoutingContext);
+
+        // Assert
+        verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task111"));
+        String capturedBody = bodyCaptor.getValue();
+        assertNull(capturedBody);
+    }
+
+    @Test
+    public void testCancelTask_WithComplexMetadata() {
+        // Arrange
+        when(mockRoutingContext.pathParam("taskId")).thenReturn("task222");
+        HTTPRestResponse mockHttpResponse = mock(HTTPRestResponse.class);
+        when(mockHttpResponse.getStatusCode()).thenReturn(200);
+        when(mockHttpResponse.getContentType()).thenReturn("application/json");
+        when(mockHttpResponse.getBody()).thenReturn("{\"id\":\"task222\"}");
+
+        String requestBody = """
+            {
+                "metadata": {
+                    "cancellation_reason": "timeout",
+                    "retry_count": 3,
+                    "user_id": "user_abc123",
+                    "timestamp": "2024-01-01T00:00:00Z",
+                    "nested": {
+                        "key1": "value1",
+                        "key2": "value2"
+                    }
+                }
+            }
+            """;
+
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+        when(mockRestHandler.cancelTask(any(ServerCallContext.class), anyString(), anyString(), anyString()))
+                .thenReturn(mockHttpResponse);
+
+        // Act
+        routes.cancelTask(requestBody, mockRoutingContext);
+
+        // Assert
+        verify(mockRestHandler).cancelTask(any(ServerCallContext.class), anyString(), bodyCaptor.capture(), eq("task222"));
+        String capturedBody = bodyCaptor.getValue();
+        assertNotNull(capturedBody);
+        assertEquals(requestBody, capturedBody);
     }
 
     @Test

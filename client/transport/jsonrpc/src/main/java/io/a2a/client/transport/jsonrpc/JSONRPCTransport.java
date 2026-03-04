@@ -39,7 +39,7 @@ import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskResponse;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
@@ -49,6 +49,7 @@ import io.a2a.spec.A2AClientException;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
@@ -152,7 +153,7 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     @Override
-    public Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(CANCEL_TASK_METHOD, ProtoUtils.ToProto.cancelTaskRequest(request),
                 agentCard, context);
@@ -228,7 +229,7 @@ public class JSONRPCTransport implements ClientTransport {
 
         try {
             String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
-            ListTaskPushNotificationConfigResponse response = unmarshalResponse(httpResponseBody, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+            ListTaskPushNotificationConfigsResponse response = unmarshalResponse(httpResponseBody, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;

@@ -5,6 +5,7 @@ import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
@@ -73,7 +74,7 @@ public class OpenTelemetryClientPropagatorTransport implements ClientTransport {
     }
 
     @Override
-    public Task cancelTask(TaskIdParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public Task cancelTask(CancelTaskParams request, @Nullable ClientCallContext context) throws A2AClientException {
         return delegate.cancelTask(request, propagateContext(context));
     }
 

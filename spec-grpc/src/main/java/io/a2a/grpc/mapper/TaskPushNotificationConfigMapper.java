@@ -22,7 +22,6 @@ public interface TaskPushNotificationConfigMapper {
      * @param domain the domain TaskPushNotificationConfig
      * @return protobuf TaskPushNotificationConfig
      */
-    @Mapping(target = "id", expression = "java(extractId(domain))")
     @Mapping(target = "taskId", source = "taskId")
     @Mapping(target = "pushNotificationConfig", source = "config")
     @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
@@ -65,7 +64,7 @@ public interface TaskPushNotificationConfigMapper {
         PushNotificationConfig result = PushNotificationConfigMapper.INSTANCE.fromProto(proto.getPushNotificationConfig());
 
         // Override ID with the id from TaskPushNotificationConfig if they differ
-        String configId = proto.getId();
+        String configId = proto.getPushNotificationConfig().getId();
         if (configId != null && !configId.isEmpty() && !configId.equals(result.id())) {
             return new PushNotificationConfig(result.url(), result.token(), result.authentication(), configId);
         }

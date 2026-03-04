@@ -13,12 +13,12 @@ import io.a2a.spec.TaskPushNotificationConfig;
  * <p>
  * If an error occurs, the error field will contain a {@link A2AError}.
  *
- * @see ListTaskPushNotificationConfigRequest for the corresponding request
+ * @see ListTaskPushNotificationConfigsRequest for the corresponding request
  * @see ListTaskPushNotificationConfigResult for the result structure
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class ListTaskPushNotificationConfigResponse extends A2AResponse<ListTaskPushNotificationConfigResult> {
+public final class ListTaskPushNotificationConfigsResponse extends A2AResponse<ListTaskPushNotificationConfigResult> {
 
     /**
      * Constructs response with all parameters.
@@ -28,7 +28,7 @@ public final class ListTaskPushNotificationConfigResponse extends A2AResponse<Li
      * @param result the result containing list of push notification configurations and pagination info
      * @param error the error (if any)
      */
-    public ListTaskPushNotificationConfigResponse(String jsonrpc, Object id, ListTaskPushNotificationConfigResult result, A2AError error) {
+    public ListTaskPushNotificationConfigsResponse(String jsonrpc, Object id, ListTaskPushNotificationConfigResult result, A2AError error) {
         super(jsonrpc, id, result, error, ListTaskPushNotificationConfigResult.class);
     }
 
@@ -38,7 +38,7 @@ public final class ListTaskPushNotificationConfigResponse extends A2AResponse<Li
      * @param id the request ID
      * @param error the error
      */
-    public ListTaskPushNotificationConfigResponse(Object id, A2AError error) {
+    public ListTaskPushNotificationConfigsResponse(Object id, A2AError error) {
         this(null, id, null, error);
     }
 
@@ -48,7 +48,7 @@ public final class ListTaskPushNotificationConfigResponse extends A2AResponse<Li
      * @param id the request ID
      * @param result the result containing list of push notification configurations and pagination info
      */
-    public ListTaskPushNotificationConfigResponse(Object id, ListTaskPushNotificationConfigResult result) {
+    public ListTaskPushNotificationConfigsResponse(Object id, ListTaskPushNotificationConfigResult result) {
         this(null, id, result, null);
     }
 

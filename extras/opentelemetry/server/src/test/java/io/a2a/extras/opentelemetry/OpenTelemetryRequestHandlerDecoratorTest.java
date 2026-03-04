@@ -163,7 +163,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     class CancelTaskTests {
         @Test
         void onCancelTask_createsSpanAndDelegatesToHandler() throws A2AError {
-            TaskIdParams params = new TaskIdParams("task-123");
+            CancelTaskParams params = new CancelTaskParams("task-123");
             Task result = Task.builder()
                     .id("task-123")
                     .contextId("ctx-1")
@@ -185,7 +185,7 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         void onCancelTask_withError_setsErrorStatus() throws A2AError {
-            TaskIdParams params = new TaskIdParams("task-123");
+            CancelTaskParams params = new CancelTaskParams("task-123");
             A2AError error = new TaskNotFoundError();
             when(delegate.onCancelTask(params, context)).thenThrow(error);
 

@@ -322,8 +322,8 @@ public class JsonMessages {
               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "result": {
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "id": "c295ea44-7543-4f78-b524-7a38915ad6e4",
               "pushNotificationConfig": {
+               "id": "c295ea44-7543-4f78-b524-7a38915ad6e4",
                "url": "https://example.com/callback",
                "authentication": {
                 "scheme": "jwt"
@@ -339,8 +339,8 @@ public class JsonMessages {
               "method":"CreateTaskPushNotificationConfig",
               "params":{
                 "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
-                "configId":"c295ea44-7543-4f78-b524-7a38915ad6e4",
                 "config":{
+                  "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
                   "url":"https://example.com/callback",
                   "authentication":{
                     "scheme":"jwt"
@@ -355,8 +355,8 @@ public class JsonMessages {
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "result": {
               "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
               "pushNotificationConfig": {
+               "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
                "url": "https://example.com/callback",
                "authentication": {
                 "scheme": "jwt"

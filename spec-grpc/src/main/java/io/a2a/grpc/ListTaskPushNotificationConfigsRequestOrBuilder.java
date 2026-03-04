@@ -6,13 +6,13 @@
 package io.a2a.grpc;
 
 @com.google.protobuf.Generated
-public interface ListTaskPushNotificationConfigRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.ListTaskPushNotificationConfigRequest)
+public interface ListTaskPushNotificationConfigsRequestOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.ListTaskPushNotificationConfigsRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
    * <code>string tenant = 4;</code>
@@ -21,7 +21,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
   java.lang.String getTenant();
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
    * <code>string tenant = 4;</code>
@@ -32,7 +32,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * The parent task resource id.
+   * The parent task resource ID.
    * </pre>
    *
    * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -41,7 +41,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
   java.lang.String getTaskId();
   /**
    * <pre>
-   * The parent task resource id.
+   * The parent task resource ID.
    * </pre>
    *
    * <code>string task_id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -62,7 +62,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
 
   /**
    * <pre>
-   * A page token received from a previous ListTaskPushNotificationConfigRequest call.
+   * A page token received from a previous `ListTaskPushNotificationConfigsRequest` call.
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -71,7 +71,7 @@ public interface ListTaskPushNotificationConfigRequestOrBuilder extends
   java.lang.String getPageToken();
   /**
    * <pre>
-   * A page token received from a previous ListTaskPushNotificationConfigRequest call.
+   * A page token received from a previous `ListTaskPushNotificationConfigsRequest` call.
    * </pre>
    *
    * <code>string page_token = 3;</code>

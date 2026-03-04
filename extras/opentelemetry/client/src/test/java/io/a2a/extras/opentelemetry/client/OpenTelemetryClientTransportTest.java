@@ -49,6 +49,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import io.a2a.spec.A2AMethods;
+import io.a2a.spec.CancelTaskParams;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -189,7 +190,7 @@ class OpenTelemetryClientTransportTest {
 
     @Test
     void testCancelTask_Success() throws A2AClientException {
-        TaskIdParams request = mock(TaskIdParams.class);
+        CancelTaskParams request = mock(CancelTaskParams.class);
         Task expectedResult = mock(Task.class);
         when(request.toString()).thenReturn("request-string");
         when(expectedResult.toString()).thenReturn("response-string");

@@ -4,7 +4,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 /**
  * <pre>
- * A2AService defines the operations of the A2A protocol.
+ * Provides operations for interacting with agents using the A2A protocol.
  * </pre>
  */
 @io.grpc.stub.annotations.GrpcGenerated
@@ -12,7 +12,7 @@ public final class A2AServiceGrpc {
 
   private A2AServiceGrpc() {}
 
-  public static final java.lang.String SERVICE_NAME = "a2a.v1.A2AService";
+  public static final java.lang.String SERVICE_NAME = "lf.a2a.v1.A2AService";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<io.a2a.grpc.SendMessageRequest,
@@ -263,35 +263,35 @@ public final class A2AServiceGrpc {
     return getGetTaskPushNotificationConfigMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<io.a2a.grpc.ListTaskPushNotificationConfigRequest,
-      io.a2a.grpc.ListTaskPushNotificationConfigResponse> getListTaskPushNotificationConfigMethod;
+  private static volatile io.grpc.MethodDescriptor<io.a2a.grpc.ListTaskPushNotificationConfigsRequest,
+      io.a2a.grpc.ListTaskPushNotificationConfigsResponse> getListTaskPushNotificationConfigsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "ListTaskPushNotificationConfig",
-      requestType = io.a2a.grpc.ListTaskPushNotificationConfigRequest.class,
-      responseType = io.a2a.grpc.ListTaskPushNotificationConfigResponse.class,
+      fullMethodName = SERVICE_NAME + '/' + "ListTaskPushNotificationConfigs",
+      requestType = io.a2a.grpc.ListTaskPushNotificationConfigsRequest.class,
+      responseType = io.a2a.grpc.ListTaskPushNotificationConfigsResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<io.a2a.grpc.ListTaskPushNotificationConfigRequest,
-      io.a2a.grpc.ListTaskPushNotificationConfigResponse> getListTaskPushNotificationConfigMethod() {
-    io.grpc.MethodDescriptor<io.a2a.grpc.ListTaskPushNotificationConfigRequest, io.a2a.grpc.ListTaskPushNotificationConfigResponse> getListTaskPushNotificationConfigMethod;
-    if ((getListTaskPushNotificationConfigMethod = A2AServiceGrpc.getListTaskPushNotificationConfigMethod) == null) {
+  public static io.grpc.MethodDescriptor<io.a2a.grpc.ListTaskPushNotificationConfigsRequest,
+      io.a2a.grpc.ListTaskPushNotificationConfigsResponse> getListTaskPushNotificationConfigsMethod() {
+    io.grpc.MethodDescriptor<io.a2a.grpc.ListTaskPushNotificationConfigsRequest, io.a2a.grpc.ListTaskPushNotificationConfigsResponse> getListTaskPushNotificationConfigsMethod;
+    if ((getListTaskPushNotificationConfigsMethod = A2AServiceGrpc.getListTaskPushNotificationConfigsMethod) == null) {
       synchronized (A2AServiceGrpc.class) {
-        if ((getListTaskPushNotificationConfigMethod = A2AServiceGrpc.getListTaskPushNotificationConfigMethod) == null) {
-          A2AServiceGrpc.getListTaskPushNotificationConfigMethod = getListTaskPushNotificationConfigMethod =
-              io.grpc.MethodDescriptor.<io.a2a.grpc.ListTaskPushNotificationConfigRequest, io.a2a.grpc.ListTaskPushNotificationConfigResponse>newBuilder()
+        if ((getListTaskPushNotificationConfigsMethod = A2AServiceGrpc.getListTaskPushNotificationConfigsMethod) == null) {
+          A2AServiceGrpc.getListTaskPushNotificationConfigsMethod = getListTaskPushNotificationConfigsMethod =
+              io.grpc.MethodDescriptor.<io.a2a.grpc.ListTaskPushNotificationConfigsRequest, io.a2a.grpc.ListTaskPushNotificationConfigsResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListTaskPushNotificationConfig"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListTaskPushNotificationConfigs"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  io.a2a.grpc.ListTaskPushNotificationConfigRequest.getDefaultInstance()))
+                  io.a2a.grpc.ListTaskPushNotificationConfigsRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  io.a2a.grpc.ListTaskPushNotificationConfigResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new A2AServiceMethodDescriptorSupplier("ListTaskPushNotificationConfig"))
+                  io.a2a.grpc.ListTaskPushNotificationConfigsResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new A2AServiceMethodDescriptorSupplier("ListTaskPushNotificationConfigs"))
               .build();
         }
       }
     }
-    return getListTaskPushNotificationConfigMethod;
+    return getListTaskPushNotificationConfigsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<io.a2a.grpc.GetExtendedAgentCardRequest,
@@ -417,14 +417,14 @@ public final class A2AServiceGrpc {
 
   /**
    * <pre>
-   * A2AService defines the operations of the A2A protocol.
+   * Provides operations for interacting with agents using the A2A protocol.
    * </pre>
    */
   public interface AsyncService {
 
     /**
      * <pre>
-     * Send a message to the agent.
+     * Sends a message to an agent.
      * </pre>
      */
     default void sendMessage(io.a2a.grpc.SendMessageRequest request,
@@ -434,7 +434,8 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * SendStreamingMessage is a streaming version of SendMessage.
+     * Sends a streaming message to an agent, allowing for real-time interaction and status updates.
+     * Streaming version of `SendMessage`
      * </pre>
      */
     default void sendStreamingMessage(io.a2a.grpc.SendMessageRequest request,
@@ -444,7 +445,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get the current state of a task from the agent.
+     * Gets the latest state of a task.
      * </pre>
      */
     default void getTask(io.a2a.grpc.GetTaskRequest request,
@@ -454,7 +455,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * List tasks with optional filtering and pagination.
+     * Lists tasks that match the specified filter.
      * </pre>
      */
     default void listTasks(io.a2a.grpc.ListTasksRequest request,
@@ -464,7 +465,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Cancel a task.
+     * Cancels a task in progress.
      * </pre>
      */
     default void cancelTask(io.a2a.grpc.CancelTaskRequest request,
@@ -474,8 +475,8 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * SubscribeToTask allows subscribing to task updates for tasks not in terminal state.
-     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, canceled, rejected).
+     * Subscribes to task updates for tasks not in a terminal state.
+     * Returns `UnsupportedOperationError` if the task is already in a terminal state (completed, failed, canceled, rejected).
      * </pre>
      */
     default void subscribeToTask(io.a2a.grpc.SubscribeToTaskRequest request,
@@ -485,7 +486,10 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Create a push notification config for a task.
+     * (-- api-linter: client-libraries::4232::required-fields=disabled
+     *     api-linter: core::0133::method-signature=disabled
+     *     aip.dev/not-precedent: method_signature preserved for backwards compatibility --)
+     * Creates a push notification config for a task.
      * </pre>
      */
     default void createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request,
@@ -495,7 +499,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get a push notification config for a task.
+     * Gets a push notification config for a task.
      * </pre>
      */
     default void getTaskPushNotificationConfig(io.a2a.grpc.GetTaskPushNotificationConfigRequest request,
@@ -508,14 +512,14 @@ public final class A2AServiceGrpc {
      * Get a list of push notifications configured for a task.
      * </pre>
      */
-    default void listTaskPushNotificationConfig(io.a2a.grpc.ListTaskPushNotificationConfigRequest request,
-        io.grpc.stub.StreamObserver<io.a2a.grpc.ListTaskPushNotificationConfigResponse> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListTaskPushNotificationConfigMethod(), responseObserver);
+    default void listTaskPushNotificationConfigs(io.a2a.grpc.ListTaskPushNotificationConfigsRequest request,
+        io.grpc.stub.StreamObserver<io.a2a.grpc.ListTaskPushNotificationConfigsResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListTaskPushNotificationConfigsMethod(), responseObserver);
     }
 
     /**
      * <pre>
-     * GetExtendedAgentCard returns the extended agent card for authenticated agents.
+     * Gets the extended agent card for the authenticated agent.
      * </pre>
      */
     default void getExtendedAgentCard(io.a2a.grpc.GetExtendedAgentCardRequest request,
@@ -525,7 +529,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Delete a push notification config for a task.
+     * Deletes a push notification config for a task.
      * </pre>
      */
     default void deleteTaskPushNotificationConfig(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest request,
@@ -537,7 +541,7 @@ public final class A2AServiceGrpc {
   /**
    * Base class for the server implementation of the service A2AService.
    * <pre>
-   * A2AService defines the operations of the A2A protocol.
+   * Provides operations for interacting with agents using the A2A protocol.
    * </pre>
    */
   public static abstract class A2AServiceImplBase
@@ -551,7 +555,7 @@ public final class A2AServiceGrpc {
   /**
    * A stub to allow clients to do asynchronous rpc calls to service A2AService.
    * <pre>
-   * A2AService defines the operations of the A2A protocol.
+   * Provides operations for interacting with agents using the A2A protocol.
    * </pre>
    */
   public static final class A2AServiceStub
@@ -569,7 +573,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Send a message to the agent.
+     * Sends a message to an agent.
      * </pre>
      */
     public void sendMessage(io.a2a.grpc.SendMessageRequest request,
@@ -580,7 +584,8 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * SendStreamingMessage is a streaming version of SendMessage.
+     * Sends a streaming message to an agent, allowing for real-time interaction and status updates.
+     * Streaming version of `SendMessage`
      * </pre>
      */
     public void sendStreamingMessage(io.a2a.grpc.SendMessageRequest request,
@@ -591,7 +596,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get the current state of a task from the agent.
+     * Gets the latest state of a task.
      * </pre>
      */
     public void getTask(io.a2a.grpc.GetTaskRequest request,
@@ -602,7 +607,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * List tasks with optional filtering and pagination.
+     * Lists tasks that match the specified filter.
      * </pre>
      */
     public void listTasks(io.a2a.grpc.ListTasksRequest request,
@@ -613,7 +618,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Cancel a task.
+     * Cancels a task in progress.
      * </pre>
      */
     public void cancelTask(io.a2a.grpc.CancelTaskRequest request,
@@ -624,8 +629,8 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * SubscribeToTask allows subscribing to task updates for tasks not in terminal state.
-     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, canceled, rejected).
+     * Subscribes to task updates for tasks not in a terminal state.
+     * Returns `UnsupportedOperationError` if the task is already in a terminal state (completed, failed, canceled, rejected).
      * </pre>
      */
     public void subscribeToTask(io.a2a.grpc.SubscribeToTaskRequest request,
@@ -636,7 +641,10 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Create a push notification config for a task.
+     * (-- api-linter: client-libraries::4232::required-fields=disabled
+     *     api-linter: core::0133::method-signature=disabled
+     *     aip.dev/not-precedent: method_signature preserved for backwards compatibility --)
+     * Creates a push notification config for a task.
      * </pre>
      */
     public void createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request,
@@ -647,7 +655,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get a push notification config for a task.
+     * Gets a push notification config for a task.
      * </pre>
      */
     public void getTaskPushNotificationConfig(io.a2a.grpc.GetTaskPushNotificationConfigRequest request,
@@ -661,15 +669,15 @@ public final class A2AServiceGrpc {
      * Get a list of push notifications configured for a task.
      * </pre>
      */
-    public void listTaskPushNotificationConfig(io.a2a.grpc.ListTaskPushNotificationConfigRequest request,
-        io.grpc.stub.StreamObserver<io.a2a.grpc.ListTaskPushNotificationConfigResponse> responseObserver) {
+    public void listTaskPushNotificationConfigs(io.a2a.grpc.ListTaskPushNotificationConfigsRequest request,
+        io.grpc.stub.StreamObserver<io.a2a.grpc.ListTaskPushNotificationConfigsResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getListTaskPushNotificationConfigMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getListTaskPushNotificationConfigsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      * <pre>
-     * GetExtendedAgentCard returns the extended agent card for authenticated agents.
+     * Gets the extended agent card for the authenticated agent.
      * </pre>
      */
     public void getExtendedAgentCard(io.a2a.grpc.GetExtendedAgentCardRequest request,
@@ -680,7 +688,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Delete a push notification config for a task.
+     * Deletes a push notification config for a task.
      * </pre>
      */
     public void deleteTaskPushNotificationConfig(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest request,
@@ -693,7 +701,7 @@ public final class A2AServiceGrpc {
   /**
    * A stub to allow clients to do synchronous rpc calls to service A2AService.
    * <pre>
-   * A2AService defines the operations of the A2A protocol.
+   * Provides operations for interacting with agents using the A2A protocol.
    * </pre>
    */
   public static final class A2AServiceBlockingV2Stub
@@ -711,7 +719,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Send a message to the agent.
+     * Sends a message to an agent.
      * </pre>
      */
     public io.a2a.grpc.SendMessageResponse sendMessage(io.a2a.grpc.SendMessageRequest request) throws io.grpc.StatusException {
@@ -721,7 +729,8 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * SendStreamingMessage is a streaming version of SendMessage.
+     * Sends a streaming message to an agent, allowing for real-time interaction and status updates.
+     * Streaming version of `SendMessage`
      * </pre>
      */
     @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/10918")
@@ -733,7 +742,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get the current state of a task from the agent.
+     * Gets the latest state of a task.
      * </pre>
      */
     public io.a2a.grpc.Task getTask(io.a2a.grpc.GetTaskRequest request) throws io.grpc.StatusException {
@@ -743,7 +752,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * List tasks with optional filtering and pagination.
+     * Lists tasks that match the specified filter.
      * </pre>
      */
     public io.a2a.grpc.ListTasksResponse listTasks(io.a2a.grpc.ListTasksRequest request) throws io.grpc.StatusException {
@@ -753,7 +762,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Cancel a task.
+     * Cancels a task in progress.
      * </pre>
      */
     public io.a2a.grpc.Task cancelTask(io.a2a.grpc.CancelTaskRequest request) throws io.grpc.StatusException {
@@ -763,8 +772,8 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * SubscribeToTask allows subscribing to task updates for tasks not in terminal state.
-     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, canceled, rejected).
+     * Subscribes to task updates for tasks not in a terminal state.
+     * Returns `UnsupportedOperationError` if the task is already in a terminal state (completed, failed, canceled, rejected).
      * </pre>
      */
     @io.grpc.ExperimentalApi("https://github.com/grpc/grpc-java/issues/10918")
@@ -776,7 +785,10 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Create a push notification config for a task.
+     * (-- api-linter: client-libraries::4232::required-fields=disabled
+     *     api-linter: core::0133::method-signature=disabled
+     *     aip.dev/not-precedent: method_signature preserved for backwards compatibility --)
+     * Creates a push notification config for a task.
      * </pre>
      */
     public io.a2a.grpc.TaskPushNotificationConfig createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request) throws io.grpc.StatusException {
@@ -786,7 +798,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get a push notification config for a task.
+     * Gets a push notification config for a task.
      * </pre>
      */
     public io.a2a.grpc.TaskPushNotificationConfig getTaskPushNotificationConfig(io.a2a.grpc.GetTaskPushNotificationConfigRequest request) throws io.grpc.StatusException {
@@ -799,14 +811,14 @@ public final class A2AServiceGrpc {
      * Get a list of push notifications configured for a task.
      * </pre>
      */
-    public io.a2a.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfig(io.a2a.grpc.ListTaskPushNotificationConfigRequest request) throws io.grpc.StatusException {
+    public io.a2a.grpc.ListTaskPushNotificationConfigsResponse listTaskPushNotificationConfigs(io.a2a.grpc.ListTaskPushNotificationConfigsRequest request) throws io.grpc.StatusException {
       return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
-          getChannel(), getListTaskPushNotificationConfigMethod(), getCallOptions(), request);
+          getChannel(), getListTaskPushNotificationConfigsMethod(), getCallOptions(), request);
     }
 
     /**
      * <pre>
-     * GetExtendedAgentCard returns the extended agent card for authenticated agents.
+     * Gets the extended agent card for the authenticated agent.
      * </pre>
      */
     public io.a2a.grpc.AgentCard getExtendedAgentCard(io.a2a.grpc.GetExtendedAgentCardRequest request) throws io.grpc.StatusException {
@@ -816,7 +828,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Delete a push notification config for a task.
+     * Deletes a push notification config for a task.
      * </pre>
      */
     public com.google.protobuf.Empty deleteTaskPushNotificationConfig(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest request) throws io.grpc.StatusException {
@@ -828,7 +840,7 @@ public final class A2AServiceGrpc {
   /**
    * A stub to allow clients to do limited synchronous rpc calls to service A2AService.
    * <pre>
-   * A2AService defines the operations of the A2A protocol.
+   * Provides operations for interacting with agents using the A2A protocol.
    * </pre>
    */
   public static final class A2AServiceBlockingStub
@@ -846,7 +858,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Send a message to the agent.
+     * Sends a message to an agent.
      * </pre>
      */
     public io.a2a.grpc.SendMessageResponse sendMessage(io.a2a.grpc.SendMessageRequest request) {
@@ -856,7 +868,8 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * SendStreamingMessage is a streaming version of SendMessage.
+     * Sends a streaming message to an agent, allowing for real-time interaction and status updates.
+     * Streaming version of `SendMessage`
      * </pre>
      */
     public java.util.Iterator<io.a2a.grpc.StreamResponse> sendStreamingMessage(
@@ -867,7 +880,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get the current state of a task from the agent.
+     * Gets the latest state of a task.
      * </pre>
      */
     public io.a2a.grpc.Task getTask(io.a2a.grpc.GetTaskRequest request) {
@@ -877,7 +890,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * List tasks with optional filtering and pagination.
+     * Lists tasks that match the specified filter.
      * </pre>
      */
     public io.a2a.grpc.ListTasksResponse listTasks(io.a2a.grpc.ListTasksRequest request) {
@@ -887,7 +900,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Cancel a task.
+     * Cancels a task in progress.
      * </pre>
      */
     public io.a2a.grpc.Task cancelTask(io.a2a.grpc.CancelTaskRequest request) {
@@ -897,8 +910,8 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * SubscribeToTask allows subscribing to task updates for tasks not in terminal state.
-     * Returns UnsupportedOperationError if task is in terminal state (completed, failed, canceled, rejected).
+     * Subscribes to task updates for tasks not in a terminal state.
+     * Returns `UnsupportedOperationError` if the task is already in a terminal state (completed, failed, canceled, rejected).
      * </pre>
      */
     public java.util.Iterator<io.a2a.grpc.StreamResponse> subscribeToTask(
@@ -909,7 +922,10 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Create a push notification config for a task.
+     * (-- api-linter: client-libraries::4232::required-fields=disabled
+     *     api-linter: core::0133::method-signature=disabled
+     *     aip.dev/not-precedent: method_signature preserved for backwards compatibility --)
+     * Creates a push notification config for a task.
      * </pre>
      */
     public io.a2a.grpc.TaskPushNotificationConfig createTaskPushNotificationConfig(io.a2a.grpc.CreateTaskPushNotificationConfigRequest request) {
@@ -919,7 +935,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get a push notification config for a task.
+     * Gets a push notification config for a task.
      * </pre>
      */
     public io.a2a.grpc.TaskPushNotificationConfig getTaskPushNotificationConfig(io.a2a.grpc.GetTaskPushNotificationConfigRequest request) {
@@ -932,14 +948,14 @@ public final class A2AServiceGrpc {
      * Get a list of push notifications configured for a task.
      * </pre>
      */
-    public io.a2a.grpc.ListTaskPushNotificationConfigResponse listTaskPushNotificationConfig(io.a2a.grpc.ListTaskPushNotificationConfigRequest request) {
+    public io.a2a.grpc.ListTaskPushNotificationConfigsResponse listTaskPushNotificationConfigs(io.a2a.grpc.ListTaskPushNotificationConfigsRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getListTaskPushNotificationConfigMethod(), getCallOptions(), request);
+          getChannel(), getListTaskPushNotificationConfigsMethod(), getCallOptions(), request);
     }
 
     /**
      * <pre>
-     * GetExtendedAgentCard returns the extended agent card for authenticated agents.
+     * Gets the extended agent card for the authenticated agent.
      * </pre>
      */
     public io.a2a.grpc.AgentCard getExtendedAgentCard(io.a2a.grpc.GetExtendedAgentCardRequest request) {
@@ -949,7 +965,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Delete a push notification config for a task.
+     * Deletes a push notification config for a task.
      * </pre>
      */
     public com.google.protobuf.Empty deleteTaskPushNotificationConfig(io.a2a.grpc.DeleteTaskPushNotificationConfigRequest request) {
@@ -961,7 +977,7 @@ public final class A2AServiceGrpc {
   /**
    * A stub to allow clients to do ListenableFuture-style rpc calls to service A2AService.
    * <pre>
-   * A2AService defines the operations of the A2A protocol.
+   * Provides operations for interacting with agents using the A2A protocol.
    * </pre>
    */
   public static final class A2AServiceFutureStub
@@ -979,7 +995,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Send a message to the agent.
+     * Sends a message to an agent.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.SendMessageResponse> sendMessage(
@@ -990,7 +1006,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get the current state of a task from the agent.
+     * Gets the latest state of a task.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.Task> getTask(
@@ -1001,7 +1017,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * List tasks with optional filtering and pagination.
+     * Lists tasks that match the specified filter.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.ListTasksResponse> listTasks(
@@ -1012,7 +1028,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Cancel a task.
+     * Cancels a task in progress.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.Task> cancelTask(
@@ -1023,7 +1039,10 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Create a push notification config for a task.
+     * (-- api-linter: client-libraries::4232::required-fields=disabled
+     *     api-linter: core::0133::method-signature=disabled
+     *     aip.dev/not-precedent: method_signature preserved for backwards compatibility --)
+     * Creates a push notification config for a task.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.TaskPushNotificationConfig> createTaskPushNotificationConfig(
@@ -1034,7 +1053,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Get a push notification config for a task.
+     * Gets a push notification config for a task.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.TaskPushNotificationConfig> getTaskPushNotificationConfig(
@@ -1048,15 +1067,15 @@ public final class A2AServiceGrpc {
      * Get a list of push notifications configured for a task.
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.ListTaskPushNotificationConfigResponse> listTaskPushNotificationConfig(
-        io.a2a.grpc.ListTaskPushNotificationConfigRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.ListTaskPushNotificationConfigsResponse> listTaskPushNotificationConfigs(
+        io.a2a.grpc.ListTaskPushNotificationConfigsRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getListTaskPushNotificationConfigMethod(), getCallOptions()), request);
+          getChannel().newCall(getListTaskPushNotificationConfigsMethod(), getCallOptions()), request);
     }
 
     /**
      * <pre>
-     * GetExtendedAgentCard returns the extended agent card for authenticated agents.
+     * Gets the extended agent card for the authenticated agent.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<io.a2a.grpc.AgentCard> getExtendedAgentCard(
@@ -1067,7 +1086,7 @@ public final class A2AServiceGrpc {
 
     /**
      * <pre>
-     * Delete a push notification config for a task.
+     * Deletes a push notification config for a task.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> deleteTaskPushNotificationConfig(
@@ -1085,7 +1104,7 @@ public final class A2AServiceGrpc {
   private static final int METHODID_SUBSCRIBE_TO_TASK = 5;
   private static final int METHODID_CREATE_TASK_PUSH_NOTIFICATION_CONFIG = 6;
   private static final int METHODID_GET_TASK_PUSH_NOTIFICATION_CONFIG = 7;
-  private static final int METHODID_LIST_TASK_PUSH_NOTIFICATION_CONFIG = 8;
+  private static final int METHODID_LIST_TASK_PUSH_NOTIFICATION_CONFIGS = 8;
   private static final int METHODID_GET_EXTENDED_AGENT_CARD = 9;
   private static final int METHODID_DELETE_TASK_PUSH_NOTIFICATION_CONFIG = 10;
 
@@ -1138,9 +1157,9 @@ public final class A2AServiceGrpc {
           serviceImpl.getTaskPushNotificationConfig((io.a2a.grpc.GetTaskPushNotificationConfigRequest) request,
               (io.grpc.stub.StreamObserver<io.a2a.grpc.TaskPushNotificationConfig>) responseObserver);
           break;
-        case METHODID_LIST_TASK_PUSH_NOTIFICATION_CONFIG:
-          serviceImpl.listTaskPushNotificationConfig((io.a2a.grpc.ListTaskPushNotificationConfigRequest) request,
-              (io.grpc.stub.StreamObserver<io.a2a.grpc.ListTaskPushNotificationConfigResponse>) responseObserver);
+        case METHODID_LIST_TASK_PUSH_NOTIFICATION_CONFIGS:
+          serviceImpl.listTaskPushNotificationConfigs((io.a2a.grpc.ListTaskPushNotificationConfigsRequest) request,
+              (io.grpc.stub.StreamObserver<io.a2a.grpc.ListTaskPushNotificationConfigsResponse>) responseObserver);
           break;
         case METHODID_GET_EXTENDED_AGENT_CARD:
           serviceImpl.getExtendedAgentCard((io.a2a.grpc.GetExtendedAgentCardRequest) request,
@@ -1225,12 +1244,12 @@ public final class A2AServiceGrpc {
               io.a2a.grpc.TaskPushNotificationConfig>(
                 service, METHODID_GET_TASK_PUSH_NOTIFICATION_CONFIG)))
         .addMethod(
-          getListTaskPushNotificationConfigMethod(),
+          getListTaskPushNotificationConfigsMethod(),
           io.grpc.stub.ServerCalls.asyncUnaryCall(
             new MethodHandlers<
-              io.a2a.grpc.ListTaskPushNotificationConfigRequest,
-              io.a2a.grpc.ListTaskPushNotificationConfigResponse>(
-                service, METHODID_LIST_TASK_PUSH_NOTIFICATION_CONFIG)))
+              io.a2a.grpc.ListTaskPushNotificationConfigsRequest,
+              io.a2a.grpc.ListTaskPushNotificationConfigsResponse>(
+                service, METHODID_LIST_TASK_PUSH_NOTIFICATION_CONFIGS)))
         .addMethod(
           getGetExtendedAgentCardMethod(),
           io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -1301,7 +1320,7 @@ public final class A2AServiceGrpc {
               .addMethod(getSubscribeToTaskMethod())
               .addMethod(getCreateTaskPushNotificationConfigMethod())
               .addMethod(getGetTaskPushNotificationConfigMethod())
-              .addMethod(getListTaskPushNotificationConfigMethod())
+              .addMethod(getListTaskPushNotificationConfigsMethod())
               .addMethod(getGetExtendedAgentCardMethod())
               .addMethod(getDeleteTaskPushNotificationConfigMethod())
               .build();

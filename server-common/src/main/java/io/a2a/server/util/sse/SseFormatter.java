@@ -9,7 +9,7 @@ import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import io.a2a.jsonrpc.common.wrappers.GetTaskResponse;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResponse;
 import io.a2a.jsonrpc.common.wrappers.SendMessageResponse;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageResponse;
@@ -120,7 +120,7 @@ public class SseFormatter {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.createTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof GetTaskPushNotificationConfigResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
-        } else if (response instanceof ListTaskPushNotificationConfigResponse r) {
+        } else if (response instanceof ListTaskPushNotificationConfigsResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof DeleteTaskPushNotificationConfigResponse) {
             // DeleteTaskPushNotificationConfig has no result body, just return empty message

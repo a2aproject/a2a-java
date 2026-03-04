@@ -7,12 +7,12 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface PushNotificationConfigOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.PushNotificationConfig)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.PushNotificationConfig)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * A unique identifier (e.g. UUID) for this push notification.
+   * A unique identifier (e.g. UUID) for this push notification configuration.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -21,7 +21,7 @@ public interface PushNotificationConfigOrBuilder extends
   java.lang.String getId();
   /**
    * <pre>
-   * A unique identifier (e.g. UUID) for this push notification.
+   * A unique identifier (e.g. UUID) for this push notification configuration.
    * </pre>
    *
    * <code>string id = 1;</code>
@@ -32,7 +32,7 @@ public interface PushNotificationConfigOrBuilder extends
 
   /**
    * <pre>
-   * Url to send the notification too
+   * The URL where the notification should be sent.
    * </pre>
    *
    * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -41,7 +41,7 @@ public interface PushNotificationConfigOrBuilder extends
   java.lang.String getUrl();
   /**
    * <pre>
-   * Url to send the notification too
+   * The URL where the notification should be sent.
    * </pre>
    *
    * <code>string url = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -52,7 +52,7 @@ public interface PushNotificationConfigOrBuilder extends
 
   /**
    * <pre>
-   * Token unique for this task/session
+   * A token unique for this task or session.
    * </pre>
    *
    * <code>string token = 3;</code>
@@ -61,7 +61,7 @@ public interface PushNotificationConfigOrBuilder extends
   java.lang.String getToken();
   /**
    * <pre>
-   * Token unique for this task/session
+   * A token unique for this task or session.
    * </pre>
    *
    * <code>string token = 3;</code>
@@ -72,28 +72,28 @@ public interface PushNotificationConfigOrBuilder extends
 
   /**
    * <pre>
-   * Authentication information required to send the notification
+   * Authentication information required to send the notification.
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
    * @return Whether the authentication field is set.
    */
   boolean hasAuthentication();
   /**
    * <pre>
-   * Authentication information required to send the notification
+   * Authentication information required to send the notification.
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
    * @return The authentication.
    */
   io.a2a.grpc.AuthenticationInfo getAuthentication();
   /**
    * <pre>
-   * Authentication information required to send the notification
+   * Authentication information required to send the notification.
    * </pre>
    *
-   * <code>.a2a.v1.AuthenticationInfo authentication = 4;</code>
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 4;</code>
    */
   io.a2a.grpc.AuthenticationInfoOrBuilder getAuthenticationOrBuilder();
 }

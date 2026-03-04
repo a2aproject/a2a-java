@@ -55,6 +55,7 @@ import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.Artifact;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.Event;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
@@ -211,7 +212,7 @@ public abstract class AbstractA2AServerTest {
     public void testCancelTaskSuccess() throws Exception {
         saveTaskInTaskStore(CANCEL_TASK);
         try {
-            Task task = getClient().cancelTask(new TaskIdParams(CANCEL_TASK.id()));
+            Task task = getClient().cancelTask(new CancelTaskParams(CANCEL_TASK.id()));
             assertEquals(CANCEL_TASK.id(), task.id());
             assertEquals(CANCEL_TASK.contextId(), task.contextId());
             assertEquals(TaskState.TASK_STATE_CANCELED, task.status().state());
@@ -226,7 +227,7 @@ public abstract class AbstractA2AServerTest {
     public void testCancelTaskNotSupported() throws Exception {
         saveTaskInTaskStore(CANCEL_TASK_NOT_SUPPORTED);
         try {
-            getClient().cancelTask(new TaskIdParams(CANCEL_TASK_NOT_SUPPORTED.id()));
+            getClient().cancelTask(new CancelTaskParams(CANCEL_TASK_NOT_SUPPORTED.id()));
             fail("Expected A2AClientException for unsupported cancel operation");
         } catch (A2AClientException e) {
             // Expected - the client should throw an exception for unsupported operations
@@ -239,7 +240,7 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testCancelTaskNotFound() {
         try {
-            getClient().cancelTask(new TaskIdParams("non-existent-task"));
+            getClient().cancelTask(new CancelTaskParams("non-existent-task"));
             fail("Expected A2AClientException for non-existent task");
         } catch (A2AClientException e) {
             // Expected - the client should throw an exception for non-existent tasks

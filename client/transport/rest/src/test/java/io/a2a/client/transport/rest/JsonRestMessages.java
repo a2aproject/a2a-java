@@ -308,8 +308,8 @@ public class JsonRestMessages {
     static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "id": "10",
               "pushNotificationConfig": {
+                "id": "10",
                 "url": "https://example.com/callback",
                 "authentication": {
                   "scheme": "jwt"
@@ -321,8 +321,8 @@ public class JsonRestMessages {
               "configs":[
                 {
                   "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                  "id": "10",
                   "pushNotificationConfig": {
+                    "id": "10",
                     "url": "https://example.com/callback",
                     "authentication": {
                       "scheme": "jwt"
@@ -331,8 +331,8 @@ public class JsonRestMessages {
                 },
                 {
                   "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                  "id": "5",
                   "pushNotificationConfig": {
+                    "id": "5",
                     "url": "https://test.com/callback"
                   }
                 }
@@ -343,8 +343,8 @@ public class JsonRestMessages {
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
             {
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "configId": "default-config-id",
               "config": {
+                "id": "default-config-id",
                 "url": "https://example.com/callback",
                 "authentication": {
                   "scheme": "jwt"
@@ -355,8 +355,8 @@ public class JsonRestMessages {
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "id": "10",
               "pushNotificationConfig": {
+                "id": "10",
                 "url": "https://example.com/callback",
                 "authentication": {
                   "scheme": "jwt"

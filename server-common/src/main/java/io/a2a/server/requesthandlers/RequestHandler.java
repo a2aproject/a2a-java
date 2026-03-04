@@ -5,6 +5,7 @@ import java.util.concurrent.Flow;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.server.ServerCallContext;
 import io.a2a.spec.A2AError;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
@@ -28,7 +29,7 @@ public interface RequestHandler {
             ServerCallContext context) throws A2AError;
 
     Task onCancelTask(
-            TaskIdParams params,
+            CancelTaskParams params,
             ServerCallContext context) throws A2AError;
 
     EventKind onMessageSend(

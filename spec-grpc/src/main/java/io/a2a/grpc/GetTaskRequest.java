@@ -7,16 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:GetTaskRequest]
  * Represents a request for the `GetTask` method.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.GetTaskRequest}
+ * Protobuf type {@code lf.a2a.v1.GetTaskRequest}
  */
 @com.google.protobuf.Generated
 public final class GetTaskRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.GetTaskRequest)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.GetTaskRequest)
     GetTaskRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -39,27 +38,27 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.GetTaskRequest.class, io.a2a.grpc.GetTaskRequest.Builder.class);
   }
 
   private int bitField0_;
-  public static final int TENANT_FIELD_NUMBER = 3;
+  public static final int TENANT_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object tenant_ = "";
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 3;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   @java.lang.Override
@@ -77,10 +76,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 3;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   @java.lang.Override
@@ -98,15 +97,15 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int ID_FIELD_NUMBER = 1;
+  public static final int ID_FIELD_NUMBER = 2;
   @SuppressWarnings("serial")
   private volatile java.lang.Object id_ = "";
   /**
    * <pre>
-   * The resource id of the task.
+   * The resource ID of the task to retrieve.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   @java.lang.Override
@@ -124,10 +123,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The resource id of the task.
+   * The resource ID of the task to retrieve.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   @java.lang.Override
@@ -145,7 +144,7 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int HISTORY_LENGTH_FIELD_NUMBER = 2;
+  public static final int HISTORY_LENGTH_FIELD_NUMBER = 3;
   private int historyLength_ = 0;
   /**
    * <pre>
@@ -155,7 +154,7 @@ private static final long serialVersionUID = 0L;
    * messages than the provided value, but MAY apply a lower limit.
    * </pre>
    *
-   * <code>optional int32 history_length = 2;</code>
+   * <code>optional int32 history_length = 3;</code>
    * @return Whether the historyLength field is set.
    */
   @java.lang.Override
@@ -170,7 +169,7 @@ private static final long serialVersionUID = 0L;
    * messages than the provided value, but MAY apply a lower limit.
    * </pre>
    *
-   * <code>optional int32 history_length = 2;</code>
+   * <code>optional int32 history_length = 3;</code>
    * @return The historyLength.
    */
   @java.lang.Override
@@ -192,14 +191,14 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, tenant_);
+    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, id_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, id_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeInt32(2, historyLength_);
-    }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 3, tenant_);
+      output.writeInt32(3, historyLength_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -210,15 +209,15 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, tenant_);
+    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, id_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, id_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(2, historyLength_);
-    }
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, tenant_);
+        .computeInt32Size(3, historyLength_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -362,25 +361,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:GetTaskRequest]
    * Represents a request for the `GetTask` method.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.GetTaskRequest}
+   * Protobuf type {@code lf.a2a.v1.GetTaskRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.GetTaskRequest)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.GetTaskRequest)
       io.a2a.grpc.GetTaskRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.GetTaskRequest.class, io.a2a.grpc.GetTaskRequest.Builder.class);
     }
@@ -408,7 +406,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskRequest_descriptor;
     }
 
     @java.lang.Override
@@ -501,20 +499,20 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
-              id_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000002;
-              break;
-            } // case 10
-            case 16: {
-              historyLength_ = input.readInt32();
-              bitField0_ |= 0x00000004;
-              break;
-            } // case 16
-            case 26: {
               tenant_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000001;
               break;
-            } // case 26
+            } // case 10
+            case 18: {
+              id_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000002;
+              break;
+            } // case 18
+            case 24: {
+              historyLength_ = input.readInt32();
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 24
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -535,10 +533,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object tenant_ = "";
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 3;</code>
+     * <code>string tenant = 1;</code>
      * @return The tenant.
      */
     public java.lang.String getTenant() {
@@ -555,10 +553,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 3;</code>
+     * <code>string tenant = 1;</code>
      * @return The bytes for tenant.
      */
     public com.google.protobuf.ByteString
@@ -576,10 +574,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 3;</code>
+     * <code>string tenant = 1;</code>
      * @param value The tenant to set.
      * @return This builder for chaining.
      */
@@ -593,10 +591,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 3;</code>
+     * <code>string tenant = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearTenant() {
@@ -607,10 +605,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 3;</code>
+     * <code>string tenant = 1;</code>
      * @param value The bytes for tenant to set.
      * @return This builder for chaining.
      */
@@ -627,10 +625,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object id_ = "";
     /**
      * <pre>
-     * The resource id of the task.
+     * The resource ID of the task to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The id.
      */
     public java.lang.String getId() {
@@ -647,10 +645,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task.
+     * The resource ID of the task to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for id.
      */
     public com.google.protobuf.ByteString
@@ -668,10 +666,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task.
+     * The resource ID of the task to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The id to set.
      * @return This builder for chaining.
      */
@@ -685,10 +683,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task.
+     * The resource ID of the task to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearId() {
@@ -699,10 +697,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the task.
+     * The resource ID of the task to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for id to set.
      * @return This builder for chaining.
      */
@@ -725,7 +723,7 @@ private static final long serialVersionUID = 0L;
      * messages than the provided value, but MAY apply a lower limit.
      * </pre>
      *
-     * <code>optional int32 history_length = 2;</code>
+     * <code>optional int32 history_length = 3;</code>
      * @return Whether the historyLength field is set.
      */
     @java.lang.Override
@@ -740,7 +738,7 @@ private static final long serialVersionUID = 0L;
      * messages than the provided value, but MAY apply a lower limit.
      * </pre>
      *
-     * <code>optional int32 history_length = 2;</code>
+     * <code>optional int32 history_length = 3;</code>
      * @return The historyLength.
      */
     @java.lang.Override
@@ -755,7 +753,7 @@ private static final long serialVersionUID = 0L;
      * messages than the provided value, but MAY apply a lower limit.
      * </pre>
      *
-     * <code>optional int32 history_length = 2;</code>
+     * <code>optional int32 history_length = 3;</code>
      * @param value The historyLength to set.
      * @return This builder for chaining.
      */
@@ -774,7 +772,7 @@ private static final long serialVersionUID = 0L;
      * messages than the provided value, but MAY apply a lower limit.
      * </pre>
      *
-     * <code>optional int32 history_length = 2;</code>
+     * <code>optional int32 history_length = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearHistoryLength() {
@@ -784,10 +782,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.GetTaskRequest)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.GetTaskRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.GetTaskRequest)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.GetTaskRequest)
   private static final io.a2a.grpc.GetTaskRequest DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.GetTaskRequest();

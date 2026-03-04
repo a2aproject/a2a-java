@@ -19,6 +19,7 @@ import io.a2a.server.ServerCallContext;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.A2AMethods;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
@@ -161,7 +162,7 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public Task onCancelTask(TaskIdParams params, ServerCallContext context) throws A2AError {
+    public Task onCancelTask(CancelTaskParams params, ServerCallContext context) throws A2AError {
         var spanBuilder = tracer.spanBuilder(A2AMethods.CANCEL_TASK_METHOD)
                 .setSpanKind(SpanKind.SERVER)
                 .setAttribute(GENAI_OPERATION_NAME, A2AMethods.CANCEL_TASK_METHOD);

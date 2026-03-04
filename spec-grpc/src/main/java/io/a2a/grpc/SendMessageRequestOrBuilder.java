@@ -7,24 +7,24 @@ package io.a2a.grpc;
 
 @com.google.protobuf.Generated
 public interface SendMessageRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:a2a.v1.SendMessageRequest)
+    // @@protoc_insertion_point(interface_extends:lf.a2a.v1.SendMessageRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 4;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   java.lang.String getTenant();
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 4;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   com.google.protobuf.ByteString
@@ -35,7 +35,7 @@ public interface SendMessageRequestOrBuilder extends
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return Whether the message field is set.
    */
   boolean hasMessage();
@@ -44,7 +44,7 @@ public interface SendMessageRequestOrBuilder extends
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The message.
    */
   io.a2a.grpc.Message getMessage();
@@ -53,7 +53,7 @@ public interface SendMessageRequestOrBuilder extends
    * The message to send to the agent.
    * </pre>
    *
-   * <code>.a2a.v1.Message message = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.Message message = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    */
   io.a2a.grpc.MessageOrBuilder getMessageOrBuilder();
 
@@ -62,7 +62,7 @@ public interface SendMessageRequestOrBuilder extends
    * Configuration for the send request.
    * </pre>
    *
-   * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+   * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
    * @return Whether the configuration field is set.
    */
   boolean hasConfiguration();
@@ -71,7 +71,7 @@ public interface SendMessageRequestOrBuilder extends
    * Configuration for the send request.
    * </pre>
    *
-   * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+   * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
    * @return The configuration.
    */
   io.a2a.grpc.SendMessageConfiguration getConfiguration();
@@ -80,7 +80,7 @@ public interface SendMessageRequestOrBuilder extends
    * Configuration for the send request.
    * </pre>
    *
-   * <code>.a2a.v1.SendMessageConfiguration configuration = 2;</code>
+   * <code>.lf.a2a.v1.SendMessageConfiguration configuration = 3;</code>
    */
   io.a2a.grpc.SendMessageConfigurationOrBuilder getConfigurationOrBuilder();
 
@@ -89,7 +89,7 @@ public interface SendMessageRequestOrBuilder extends
    * A flexible key-value map for passing additional context or parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
@@ -98,7 +98,7 @@ public interface SendMessageRequestOrBuilder extends
    * A flexible key-value map for passing additional context or parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    * @return The metadata.
    */
   com.google.protobuf.Struct getMetadata();
@@ -107,7 +107,7 @@ public interface SendMessageRequestOrBuilder extends
    * A flexible key-value map for passing additional context or parameters.
    * </pre>
    *
-   * <code>.google.protobuf.Struct metadata = 3;</code>
+   * <code>.google.protobuf.Struct metadata = 4;</code>
    */
   com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
 }

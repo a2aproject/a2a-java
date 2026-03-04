@@ -36,6 +36,7 @@ import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
@@ -144,12 +145,14 @@ public class RestHandler {
         }
     }
 
-    public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String taskId) {
+    @SuppressWarnings("unchecked")
+    public HTTPRestResponse cancelTask(ServerCallContext context, String tenant, String body, String taskId) {
         try {
             if (taskId == null || taskId.isEmpty()) {
                 throw new InvalidParamsError();
             }
-            TaskIdParams params = new TaskIdParams(taskId, tenant);
+            Map<String, Object> metadata =JsonUtil.readMetadata(body);
+            CancelTaskParams params = CancelTaskParams.builder().id(taskId).tenant(tenant).metadata(metadata).build();
             Task task = requestHandler.onCancelTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
@@ -184,7 +187,7 @@ public class RestHandler {
             if (!agentCard.capabilities().streaming()) {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
             }
-            TaskIdParams params = new TaskIdParams(taskId, tenant);
+            TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onSubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
@@ -293,7 +296,7 @@ public class RestHandler {
             }
             ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, pageSize, pageToken, tenant);
             ListTaskPushNotificationConfigResult result = requestHandler.onListTaskPushNotificationConfig(params, context);
-            return createSuccessResponse(200, io.a2a.grpc.ListTaskPushNotificationConfigResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(result)));
+            return createSuccessResponse(200, io.a2a.grpc.ListTaskPushNotificationConfigsResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {

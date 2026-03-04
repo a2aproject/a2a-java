@@ -7,15 +7,15 @@ package io.a2a.grpc;
 
 /**
  * <pre>
- * --8&lt;-- [start:GetTaskPushNotificationConfigRequest]
+ * Represents a request for the `GetTaskPushNotificationConfig` method.
  * </pre>
  *
- * Protobuf type {@code a2a.v1.GetTaskPushNotificationConfigRequest}
+ * Protobuf type {@code lf.a2a.v1.GetTaskPushNotificationConfigRequest}
  */
 @com.google.protobuf.Generated
 public final class GetTaskPushNotificationConfigRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:a2a.v1.GetTaskPushNotificationConfigRequest)
+    // @@protoc_insertion_point(message_implements:lf.a2a.v1.GetTaskPushNotificationConfigRequest)
     GetTaskPushNotificationConfigRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
@@ -39,26 +39,26 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskPushNotificationConfigRequest_descriptor;
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskPushNotificationConfigRequest_fieldAccessorTable
+    return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.a2a.grpc.GetTaskPushNotificationConfigRequest.class, io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder.class);
   }
 
-  public static final int TENANT_FIELD_NUMBER = 2;
+  public static final int TENANT_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object tenant_ = "";
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The tenant.
    */
   @java.lang.Override
@@ -76,10 +76,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Optional tenant, provided as a path parameter.
+   * Optional. Tenant ID, provided as a path parameter.
    * </pre>
    *
-   * <code>string tenant = 2;</code>
+   * <code>string tenant = 1;</code>
    * @return The bytes for tenant.
    */
   @java.lang.Override
@@ -97,15 +97,15 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int TASK_ID_FIELD_NUMBER = 3;
+  public static final int TASK_ID_FIELD_NUMBER = 2;
   @SuppressWarnings("serial")
   private volatile java.lang.Object taskId_ = "";
   /**
    * <pre>
-   * The parent task resource id.
+   * The parent task resource ID.
    * </pre>
    *
-   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The taskId.
    */
   @java.lang.Override
@@ -123,10 +123,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The parent task resource id.
+   * The parent task resource ID.
    * </pre>
    *
-   * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for taskId.
    */
   @java.lang.Override
@@ -144,15 +144,15 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int ID_FIELD_NUMBER = 1;
+  public static final int ID_FIELD_NUMBER = 3;
   @SuppressWarnings("serial")
   private volatile java.lang.Object id_ = "";
   /**
    * <pre>
-   * The resource id of the config to retrieve.
+   * The resource ID of the configuration to retrieve.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The id.
    */
   @java.lang.Override
@@ -170,10 +170,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The resource id of the config to retrieve.
+   * The resource ID of the configuration to retrieve.
    * </pre>
    *
-   * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
    * @return The bytes for id.
    */
   @java.lang.Override
@@ -205,14 +205,14 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 1, id_);
-    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 2, tenant_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 1, tenant_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(taskId_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 3, taskId_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, taskId_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, id_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -223,14 +223,14 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, id_);
-    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, tenant_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(1, tenant_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(taskId_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, taskId_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, taskId_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, id_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -369,24 +369,24 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * --8&lt;-- [start:GetTaskPushNotificationConfigRequest]
+   * Represents a request for the `GetTaskPushNotificationConfig` method.
    * </pre>
    *
-   * Protobuf type {@code a2a.v1.GetTaskPushNotificationConfigRequest}
+   * Protobuf type {@code lf.a2a.v1.GetTaskPushNotificationConfigRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:a2a.v1.GetTaskPushNotificationConfigRequest)
+      // @@protoc_insertion_point(builder_implements:lf.a2a.v1.GetTaskPushNotificationConfigRequest)
       io.a2a.grpc.GetTaskPushNotificationConfigRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskPushNotificationConfigRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskPushNotificationConfigRequest_fieldAccessorTable
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.a2a.grpc.GetTaskPushNotificationConfigRequest.class, io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder.class);
     }
@@ -414,7 +414,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return io.a2a.grpc.A2A.internal_static_a2a_v1_GetTaskPushNotificationConfigRequest_descriptor;
+      return io.a2a.grpc.A2A.internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_descriptor;
     }
 
     @java.lang.Override
@@ -506,18 +506,18 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 10: {
-              id_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000004;
-              break;
-            } // case 10
-            case 18: {
               tenant_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000001;
               break;
-            } // case 18
-            case 26: {
+            } // case 10
+            case 18: {
               taskId_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000002;
+              break;
+            } // case 18
+            case 26: {
+              id_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000004;
               break;
             } // case 26
             default: {
@@ -540,10 +540,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object tenant_ = "";
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @return The tenant.
      */
     public java.lang.String getTenant() {
@@ -560,10 +560,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @return The bytes for tenant.
      */
     public com.google.protobuf.ByteString
@@ -581,10 +581,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @param value The tenant to set.
      * @return This builder for chaining.
      */
@@ -598,10 +598,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearTenant() {
@@ -612,10 +612,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * Optional tenant, provided as a path parameter.
+     * Optional. Tenant ID, provided as a path parameter.
      * </pre>
      *
-     * <code>string tenant = 2;</code>
+     * <code>string tenant = 1;</code>
      * @param value The bytes for tenant to set.
      * @return This builder for chaining.
      */
@@ -632,10 +632,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object taskId_ = "";
     /**
      * <pre>
-     * The parent task resource id.
+     * The parent task resource ID.
      * </pre>
      *
-     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The taskId.
      */
     public java.lang.String getTaskId() {
@@ -652,10 +652,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The parent task resource id.
+     * The parent task resource ID.
      * </pre>
      *
-     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for taskId.
      */
     public com.google.protobuf.ByteString
@@ -673,10 +673,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The parent task resource id.
+     * The parent task resource ID.
      * </pre>
      *
-     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The taskId to set.
      * @return This builder for chaining.
      */
@@ -690,10 +690,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The parent task resource id.
+     * The parent task resource ID.
      * </pre>
      *
-     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearTaskId() {
@@ -704,10 +704,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The parent task resource id.
+     * The parent task resource ID.
      * </pre>
      *
-     * <code>string task_id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for taskId to set.
      * @return This builder for chaining.
      */
@@ -724,10 +724,10 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object id_ = "";
     /**
      * <pre>
-     * The resource id of the config to retrieve.
+     * The resource ID of the configuration to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The id.
      */
     public java.lang.String getId() {
@@ -744,10 +744,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the config to retrieve.
+     * The resource ID of the configuration to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return The bytes for id.
      */
     public com.google.protobuf.ByteString
@@ -765,10 +765,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the config to retrieve.
+     * The resource ID of the configuration to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The id to set.
      * @return This builder for chaining.
      */
@@ -782,10 +782,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the config to retrieve.
+     * The resource ID of the configuration to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @return This builder for chaining.
      */
     public Builder clearId() {
@@ -796,10 +796,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * The resource id of the config to retrieve.
+     * The resource ID of the configuration to retrieve.
      * </pre>
      *
-     * <code>string id = 1 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string id = 3 [(.google.api.field_behavior) = REQUIRED];</code>
      * @param value The bytes for id to set.
      * @return This builder for chaining.
      */
@@ -813,10 +813,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:a2a.v1.GetTaskPushNotificationConfigRequest)
+    // @@protoc_insertion_point(builder_scope:lf.a2a.v1.GetTaskPushNotificationConfigRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:a2a.v1.GetTaskPushNotificationConfigRequest)
+  // @@protoc_insertion_point(class_scope:lf.a2a.v1.GetTaskPushNotificationConfigRequest)
   private static final io.a2a.grpc.GetTaskPushNotificationConfigRequest DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new io.a2a.grpc.GetTaskPushNotificationConfigRequest();

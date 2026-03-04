@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 /**
- * Mapper between {@link io.a2a.grpc.ListTaskPushNotificationConfigRequest} and {@link io.a2a.spec.ListTaskPushNotificationConfigParams}.
+ * Mapper between {@link io.a2a.grpc.ListTaskPushNotificationConfigsRequest} and {@link io.a2a.spec.ListTaskPushNotificationConfigParams}.
  */
 @Mapper(config = A2AProtoMapperConfig.class)
 public interface ListTaskPushNotificationConfigParamsMapper {
@@ -15,17 +15,17 @@ public interface ListTaskPushNotificationConfigParamsMapper {
     ListTaskPushNotificationConfigParamsMapper INSTANCE = A2AMappers.getMapper(ListTaskPushNotificationConfigParamsMapper.class);
 
     /**
-     * Converts proto ListTaskPushNotificationConfigRequest to domain ListTaskPushNotificationConfigParams.
+     * Converts proto ListTaskPushNotificationConfigsRequest to domain ListTaskPushNotificationConfigParams.
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "taskId")
     @Mapping(target = "tenant", source = "tenant")
-    ListTaskPushNotificationConfigParams fromProto(io.a2a.grpc.ListTaskPushNotificationConfigRequest proto);
+    ListTaskPushNotificationConfigParams fromProto(io.a2a.grpc.ListTaskPushNotificationConfigsRequest proto);
 
     /**
-     * Converts domain ListTaskPushNotificationConfigParams to proto ListTaskPushNotificationConfigRequest.
+     * Converts domain ListTaskPushNotificationConfigParams to proto ListTaskPushNotificationConfigsRequest.
      */
     @Mapping(target = "taskId", source = "id")
     @Mapping(target = "tenant", source = "tenant")
-    io.a2a.grpc.ListTaskPushNotificationConfigRequest toProto(ListTaskPushNotificationConfigParams domain);
+    io.a2a.grpc.ListTaskPushNotificationConfigsRequest toProto(ListTaskPushNotificationConfigParams domain);
 }
