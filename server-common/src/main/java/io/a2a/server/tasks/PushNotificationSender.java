@@ -63,7 +63,6 @@ import io.a2a.spec.Task;
  * Implementations should handle errors gracefully:
  * <ul>
  *   <li>Log failures but don't throw exceptions (notifications are best-effort)</li>
- *   <li>Consider retry logic for transient failures</li>
  *   <li>Don't block on network I/O - execute asynchronously if needed</li>
  *   <li>Circuit breaker patterns for repeatedly failing endpoints</li>
  * </ul>
