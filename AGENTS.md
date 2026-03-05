@@ -41,7 +41,6 @@ Requires Java 17+. Tests output is redirected to files by default.
 - Null safety: NullAway + JSpecify annotations enforced via Error Prone
 - Reference server runtime: Quarkus
 - Testing: JUnit 5, Mockito, REST Assured, Testcontainers
-- gRPC regeneration: copy proto to `spec-grpc/`, run `mvn clean install -Dskip.protobuf.generate=false`
 
 ### Code Style
 
@@ -56,7 +55,11 @@ Requires Java 17+. Tests output is redirected to files by default.
 
 ### PR instructions
 - Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) for the commit title and message
-- Always ask if the commit is related to a GitHub issue. If that's the case, add a `This fixes #{issue}" at the end of the commit message
+- Always ask if the commit is related to a GitHub issue. If that's the case, add a `This fixes #{issue_number}` at the end of the commit message
+
+### Skills
+
+- [update-a2a-proto](skills/update-a2a-proto/SKILL.md) — Update the gRPC proto file `a2a.proto` from upstream and regenerate Java sources
 
 ### Commands
 
