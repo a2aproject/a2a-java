@@ -13,7 +13,6 @@ import static io.a2a.spec.A2AErrorCodes.TASK_NOT_CANCELABLE_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
 import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
 import static io.a2a.spec.DataPart.DATA;
-import static io.a2a.spec.FilePart.FILE;
 import static io.a2a.spec.TextPart.TEXT;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
@@ -521,11 +520,31 @@ public class JsonUtil {
      */
     static class PartTypeAdapter extends TypeAdapter<Part<?>> {
 
-        private static final Set<String> VALID_KEYS = Set.of(TEXT, FILE, DATA);
+        private static final String RAW = "raw";
+        private static final String URL = "url";
+        private static final String FILENAME = "filename";
+        private static final String MEDIA_TYPE = "mediaType";
+        // The oneOf content-type discriminator keys in the flat JSON format.
+        // Exactly one must be present (and non-null) in each Part object.
+        private static final Set<String> VALID_KEYS = Set.of(TEXT, RAW, URL, DATA);
         private static final Type MAP_TYPE = new TypeToken<Map<String, Object>>(){}.getType();
 
         // Create separate Gson instance without the Part adapter to avoid recursion
         private final Gson delegateGson = createBaseGsonBuilder().create();
+
+        private void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata) throws java.io.IOException {
+            if (metadata != null && !metadata.isEmpty()) {
+                out.name("metadata");
+                delegateGson.toJson(metadata, MAP_TYPE, out);
+            }
+        }
+
+        /** Writes a string field only when the value is non-null and non-empty. */
+        private void writeNonEmpty(JsonWriter out, String name, String value) throws java.io.IOException {
+            if (!value.isEmpty()) {
+                out.name(name).value(value);
+            }
+        }
 
         @Override
         public void write(JsonWriter out, Part<?> value) throws java.io.IOException {
@@ -533,21 +552,26 @@ public class JsonUtil {
                 out.nullValue();
                 return;
             }
-            // Write wrapper object with member name as discriminator
             out.beginObject();
 
             if (value instanceof TextPart textPart) {
-                // TextPart: { "text": "value" } - direct string value
-                out.name(TEXT);
-                out.value(textPart.text());
-                JsonUtil.writeMetadata(out, textPart.metadata());
+                out.name(TEXT).value(textPart.text());
+                writeMetadata(out, textPart.metadata());
             } else if (value instanceof FilePart filePart) {
-                // FilePart: { "file": {...} }
-                out.name(FILE);
-                delegateGson.toJson(filePart.file(), FileContent.class, out);
-                JsonUtil.writeMetadata(out, filePart.metadata());
+                if (filePart.file() instanceof FileWithBytes withBytes) {
+                    out.name(RAW).value(withBytes.bytes());
+                    writeNonEmpty(out, FILENAME, withBytes.name());
+                    writeNonEmpty(out, MEDIA_TYPE, withBytes.mimeType());
+                } else if (filePart.file() instanceof FileWithUri withUri) {
+                    out.name(URL).value(withUri.uri());
+                    writeNonEmpty(out, FILENAME, withUri.name());
+                    writeNonEmpty(out, MEDIA_TYPE, withUri.mimeType());
+                } else {
+                    throw new JsonSyntaxException("Unknown FileContent subclass: " + filePart.file().getClass().getName());
+                }
+                writeMetadata(out, filePart.metadata());
+
             } else if (value instanceof DataPart dataPart) {
-                // DataPart: { "data": <any JSON value> }
                 out.name(DATA);
                 delegateGson.toJson(dataPart.data(), Object.class, out);
                 JsonUtil.writeMetadata(out, dataPart.metadata());
@@ -566,7 +590,6 @@ public class JsonUtil {
                 return null;
             }
 
-            // Read the JSON as a tree to inspect the member name discriminator
             com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseReader(in);
             if (!jsonElement.isJsonObject()) {
                 throw new JsonSyntaxException("Part must be a JSON object");
@@ -576,33 +599,46 @@ public class JsonUtil {
 
             // Extract metadata if present
             Map<String, Object> metadata = JsonUtil.readMetadata(jsonObject);
-
-            // Check for member name discriminators (v1.0 protocol)
             Set<String> keys = jsonObject.keySet();
-            if (keys.size() < 1 || keys.size() > 2) {
-                throw new JsonSyntaxException(format("Part object must have one content key from %s and optionally 'metadata' (found: %s)", VALID_KEYS, keys));
-            }
 
-            // Find the discriminator (should be one of TEXT, FILE, DATA)
+            // Find the oneOf discriminator, skipping null/empty values to tolerate formats
+            // where multiple content keys may be present with only one populated
+            // (e.g., proto serialization with alwaysPrintFieldsWithNoPresence).
+            // Unknown extra fields are ignored.
             String discriminator = keys.stream()
                     .filter(VALID_KEYS::contains)
+                    .filter(key -> {
+                        com.google.gson.JsonElement el = jsonObject.get(key);
+                        return el != null && !el.isJsonNull();
+                    })
                     .findFirst()
                     .orElseThrow(() -> new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, keys)));
 
             return switch (discriminator) {
                 case TEXT -> new TextPart(jsonObject.get(TEXT).getAsString(), metadata);
-                case FILE -> new FilePart(delegateGson.fromJson(jsonObject.get(FILE), FileContent.class), metadata);
+                case RAW -> new FilePart(new FileWithBytes(
+                        stringOrEmpty(jsonObject, MEDIA_TYPE),
+                        stringOrEmpty(jsonObject, FILENAME),
+                        jsonObject.get(RAW).getAsString()), metadata);
+                case URL -> new FilePart(new FileWithUri(
+                        stringOrEmpty(jsonObject, MEDIA_TYPE),
+                        stringOrEmpty(jsonObject, FILENAME),
+                        jsonObject.get(URL).getAsString()), metadata);
                 case DATA -> {
-                    // DataPart supports any JSON value: object, array, primitive, or null
-                    Object data = delegateGson.fromJson(
-                            jsonObject.get(DATA),
-                            Object.class
-                    );
+                    Object data = delegateGson.fromJson(jsonObject.get(DATA), Object.class);
                     yield new DataPart(data, metadata);
                 }
-                default ->
-                        throw new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, discriminator));
+                default -> throw new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, discriminator));
             };
+        }
+
+        /** Returns the string value of the field, or an empty string if absent or null. */
+        private String stringOrEmpty(com.google.gson.JsonObject obj, String key) {
+            com.google.gson.JsonElement el = obj.get(key);
+            if (el == null || el.isJsonNull()) {
+                return "";
+            }
+            return el.getAsString();
         }
     }
 

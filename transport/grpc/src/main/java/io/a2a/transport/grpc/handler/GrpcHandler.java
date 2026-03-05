@@ -96,7 +96,7 @@ import org.jspecify.annotations.Nullable;
  *   <li>{@link #listTasks} - List tasks with filtering</li>
  *   <li>{@link #createTaskPushNotificationConfig} - Configure push notifications</li>
  *   <li>{@link #getTaskPushNotificationConfig} - Get push notification config</li>
- *   <li>{@link #listTaskPushNotificationConfig} - List push notification configs</li>
+ *   <li>{@link #listTaskPushNotificationConfigs} - List push notification configs</li>
  *   <li>{@link #deleteTaskPushNotificationConfig} - Delete push notification config</li>
  *   <li>{@link #getExtendedAgentCard} - Get extended agent capabilities</li>
  * </ul>

@@ -255,8 +255,8 @@ class TaskSerializationTest {
         // Serialize
         String json = JsonUtil.toJson(task);
 
-        // Verify JSON contains file part data (v1.0 format uses member name "file", not "kind")
-        assertTrue(json.contains("\"file\""));
+        // Verify JSON contains file part data in flat format (raw/filename/mediaType, not "file" wrapper)
+        assertTrue(json.contains("\"raw\""));
         assertFalse(json.contains("\"kind\""));
         assertTrue(json.contains("document.pdf"));
         assertTrue(json.contains("application/pdf"));
@@ -492,11 +492,9 @@ class TaskSerializationTest {
                   "artifactId": "file-artifact",
                   "parts": [
                     {
-                      "file": {
-                        "mimeType": "application/pdf",
-                        "name": "document.pdf",
-                        "bytes": "base64encodeddata"
-                      }
+                      "raw": "base64encodeddata",
+                      "filename": "document.pdf",
+                      "mediaType": "application/pdf"
                     }
                   ]
                 }
@@ -532,11 +530,9 @@ class TaskSerializationTest {
                   "artifactId": "uri-artifact",
                   "parts": [
                     {
-                      "file": {
-                        "mimeType": "image/png",
-                        "name": "photo.png",
-                        "uri": "https://example.com/photo.png"
-                      }
+                      "url": "https://example.com/photo.png",
+                      "filename": "photo.png",
+                      "mediaType": "image/png"
                     }
                   ]
                 }
