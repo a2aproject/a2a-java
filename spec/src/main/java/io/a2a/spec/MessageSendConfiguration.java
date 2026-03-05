@@ -15,14 +15,15 @@ import org.jspecify.annotations.Nullable;
  *
  * @param acceptedOutputModes list of output modes the client can handle (e.g., "text", "audio")
  * @param historyLength number of previous messages to include in conversation context (must be non-negative)
- * @param pushNotificationConfig configuration for asynchronous push notifications when task state changes
+ * @param taskPushNotificationConfig configuration for asynchronous push notifications when task state changes.
+ *        Task id should be empty when sending this configuration in a SendMessage request.
  * @param blocking whether the request should block until task completion (defaults to false)
  * @see MessageSendParams for the parameters that use this configuration
- * @see PushNotificationConfig for push notification options
+ * @see TaskPushNotificationConfig for push notification options
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record MessageSendConfiguration(@Nullable List<String> acceptedOutputModes, @Nullable Integer historyLength,
-        @Nullable PushNotificationConfig pushNotificationConfig, Boolean blocking) {
+        @Nullable TaskPushNotificationConfig taskPushNotificationConfig, Boolean blocking) {
 
     /**
      * Compact constructor for validation.
@@ -30,7 +31,7 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
      *
      * @param acceptedOutputModes list of accepted output modes
      * @param historyLength maximum number of history items
-     * @param pushNotificationConfig push notification configuration
+     * @param taskPushNotificationConfig push notification configuration
      * @param blocking whether the request should block
      * @throws IllegalArgumentException if historyLength is negative
      */
@@ -58,7 +59,7 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
 
         @Nullable List<String> acceptedOutputModes;
         @Nullable Integer historyLength;
-        @Nullable PushNotificationConfig pushNotificationConfig;
+        @Nullable TaskPushNotificationConfig taskPushNotificationConfig;
         Boolean blocking = false;
 
         /**
@@ -80,12 +81,13 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
 
         /**
          * Sets the push notification configuration.
+         * Task id should be empty when sending this configuration in a SendMessage request.
          *
-         * @param pushNotificationConfig configuration for push notifications
+         * @param taskPushNotificationConfig configuration for push notifications
          * @return this builder
          */
-        public Builder pushNotificationConfig(@Nullable PushNotificationConfig pushNotificationConfig) {
-            this.pushNotificationConfig = pushNotificationConfig;
+        public Builder taskPushNotificationConfig(@Nullable TaskPushNotificationConfig taskPushNotificationConfig) {
+            this.taskPushNotificationConfig = taskPushNotificationConfig;
             return this;
         }
 
@@ -124,7 +126,7 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
             return new MessageSendConfiguration(
                     acceptedOutputModes,
                     historyLength,
-                    pushNotificationConfig,
+                    taskPushNotificationConfig,
                     blocking);
         }
     }

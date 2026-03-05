@@ -66,7 +66,6 @@ import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -651,18 +650,21 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         taskStore.save(MINIMAL_TASK, false);
 
         TaskPushNotificationConfig taskPushConfig
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(), 
-                        PushNotificationConfig.builder().url("http://example.com")
-                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4").build(), 
-                        "tenant");
+                = TaskPushNotificationConfig.builder()
+                        .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
         CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         CreateTaskPushNotificationConfigResponse response = handler.setPushNotificationConfig(request, callContext);
         TaskPushNotificationConfig taskPushConfigResult
-                = new TaskPushNotificationConfig( MINIMAL_TASK.id(), 
-                        PushNotificationConfig.builder().url("http://example.com")
-                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4").build(),
-                        "tenant");
+                = TaskPushNotificationConfig.builder()
+                        .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
 
         Assertions.assertEquals(taskPushConfigResult, response.getResult());
     }
@@ -676,9 +678,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         TaskPushNotificationConfig taskPushConfig
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(), PushNotificationConfig.builder()
-                        .id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
+                = TaskPushNotificationConfig.builder()
+                        .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
 
         CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
@@ -689,8 +694,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         "c295ea44-7543-4f78-b524-7a38915ad6e4"));
         GetTaskPushNotificationConfigResponse getResponse = handler.getPushNotificationConfig(getRequest, callContext);
 
-        TaskPushNotificationConfig expectedConfig = new TaskPushNotificationConfig(MINIMAL_TASK.id(),
-                PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "");
+        TaskPushNotificationConfig expectedConfig = TaskPushNotificationConfig.builder()
+                .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                .taskId(MINIMAL_TASK.id())
+                .url("http://example.com")
+                .tenant("tenant")
+                .build();
 
         assertEquals(expectedConfig, getResponse.getResult());
     }
@@ -731,9 +740,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 }
             };
 
-            TaskPushNotificationConfig config = new TaskPushNotificationConfig(
-                    MINIMAL_TASK.id(),
-                    PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "tenant");
+            TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                    .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                    .taskId(MINIMAL_TASK.id())
+                    .url("http://example.com")
+                    .tenant("tenant")
+                    .build();
 
             CreateTaskPushNotificationConfigRequest stpnRequest = new CreateTaskPushNotificationConfigRequest("1", config);
             CreateTaskPushNotificationConfigResponse stpnResponse = handler.setPushNotificationConfig(stpnRequest, callContext);
@@ -1114,12 +1126,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         taskStore.save(MINIMAL_TASK, false);
 
         TaskPushNotificationConfig config
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(),
-                        PushNotificationConfig.builder()
-                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
-                                .url("http://example.com")
-                                .build(), "tenant");
+                = TaskPushNotificationConfig.builder()
+                        .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
 
         CreateTaskPushNotificationConfigRequest request = CreateTaskPushNotificationConfigRequest.builder()
                 .params(config)
@@ -1157,12 +1169,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         taskStore.save(MINIMAL_TASK, false);
 
         TaskPushNotificationConfig config
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(),
-                        PushNotificationConfig.builder()
-                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
-                                .url("http://example.com")
-                                .build(), "tenant");
+                = TaskPushNotificationConfig.builder()
+                        .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
 
         CreateTaskPushNotificationConfigRequest request = CreateTaskPushNotificationConfigRequest.builder()
                 .params(config)
@@ -1348,18 +1360,20 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         TaskPushNotificationConfig taskPushConfig
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(), PushNotificationConfig.builder()
-                        .url("http://example.com")
+                = TaskPushNotificationConfig.builder()
                         .id(MINIMAL_TASK.id())
-                        .build(), "tenant");
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
         CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
-        TaskPushNotificationConfig result = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(), PushNotificationConfig.builder()
-                        .url("http://example.com")
+        TaskPushNotificationConfig result = TaskPushNotificationConfig.builder()
                         .id(MINIMAL_TASK.id())
-                        .build(), "");
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
         ListTaskPushNotificationConfigsRequest listRequest
                 = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
         ListTaskPushNotificationConfigsResponse listResponse = handler.listPushNotificationConfig(listRequest, callContext);
@@ -1379,11 +1393,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         TaskPushNotificationConfig taskPushConfig
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(), PushNotificationConfig.builder()
-                        .url("http://example.com")
+                = TaskPushNotificationConfig.builder()
                         .id(MINIMAL_TASK.id())
-                        .build(), "tenant");
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
         CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
@@ -1442,11 +1457,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         TaskPushNotificationConfig taskPushConfig
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(), PushNotificationConfig.builder()
-                        .url("http://example.com")
+                = TaskPushNotificationConfig.builder()
                         .id(MINIMAL_TASK.id())
-                        .build(), "tenant");
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
         CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
@@ -1470,11 +1486,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         TaskPushNotificationConfig taskPushConfig
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(), PushNotificationConfig.builder()
-                        .url("http://example.com")
+                = TaskPushNotificationConfig.builder()
                         .id(MINIMAL_TASK.id())
-                        .build(), "tenant");
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
         CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 
@@ -1499,11 +1516,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         TaskPushNotificationConfig taskPushConfig
-                = new TaskPushNotificationConfig(
-                        MINIMAL_TASK.id(),  PushNotificationConfig.builder()
-                        .url("http://example.com")
+                = TaskPushNotificationConfig.builder()
                         .id(MINIMAL_TASK.id())
-                        .build(), "tenant");
+                        .taskId(MINIMAL_TASK.id())
+                        .url("http://example.com")
+                        .tenant("tenant")
+                        .build();
         CreateTaskPushNotificationConfigRequest request = new CreateTaskPushNotificationConfigRequest("1", taskPushConfig);
         handler.setPushNotificationConfig(request, callContext);
 

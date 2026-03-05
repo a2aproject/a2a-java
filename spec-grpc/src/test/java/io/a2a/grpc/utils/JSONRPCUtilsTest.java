@@ -21,7 +21,6 @@ import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.JSONParseError;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
 import org.junit.jupiter.api.Test;
 
@@ -37,12 +36,10 @@ public class JSONRPCUtilsTest {
               "params": {
                 "taskId": "task-123",
                 "tenant": "",
-                "config": {
-                  "id": "config-456",
-                  "url": "https://example.com/callback",
-                  "authentication": {
-                    "scheme": "jwt"
-                  }
+                "id": "config-456",
+                "url": "https://example.com/callback",
+                "authentication": {
+                  "scheme": "jwt"
                 }
               }
             }
@@ -60,8 +57,7 @@ public class JSONRPCUtilsTest {
         TaskPushNotificationConfig config = setRequest.getParams();
         assertNotNull(config);
         assertEquals("task-123", config.taskId());
-        assertNotNull(config.config());
-        assertEquals("https://example.com/callback", config.config().url());
+        assertEquals("https://example.com/callback", config.url());
     }
 
     @Test
@@ -142,7 +138,7 @@ public class JSONRPCUtilsTest {
             () -> JSONRPCUtils.parseRequestBody(invalidStructure, null)
         );
         assertEquals(4, exception.getId());
-        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message lf.a2a.v1.CreateTaskPushNotificationConfigRequest"), exception.getMessage());
+        assertEquals(ERROR_MESSAGE.formatted("invalid_field in message lf.a2a.v1.TaskPushNotificationConfig"), exception.getMessage());
     }
 
     @Test
@@ -300,15 +296,6 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testGenerateCreateTaskPushNotificationConfigResponse_Success() throws Exception {
-        TaskPushNotificationConfig config = new TaskPushNotificationConfig(
-            "task-123",
-            PushNotificationConfig.builder()
-                .url("https://example.com/callback")
-                .id("config-456")
-                .build(),
-                "tenant"
-        );
-
         String responseJson = """
             {
               "jsonrpc": "2.0",
@@ -316,10 +303,8 @@ public class JSONRPCUtilsTest {
               "result": {
                 "tenant": "tenant",
                 "taskId": "task-123",
-                "pushNotificationConfig": {
-                  "url": "https://example.com/callback",
-                  "id": "config-456"
-                }
+                "id": "config-456",
+                "url": "https://example.com/callback"
               }
             }
             """;
@@ -331,7 +316,7 @@ public class JSONRPCUtilsTest {
         assertEquals(1, response.getId());
         assertNotNull(response.getResult());
         assertEquals("task-123", response.getResult().taskId());
-        assertEquals("https://example.com/callback", response.getResult().config().url());
+        assertEquals("https://example.com/callback", response.getResult().url());
     }
 
     @Test
@@ -343,10 +328,8 @@ public class JSONRPCUtilsTest {
               "result": {
                 "tenant": "tenant",
                 "taskId": "task-123",
-                "pushNotificationConfig": {
-                  "url": "https://example.com/callback",
-                  "id": "config-456"
-                }
+                "id": "config-456",
+                "url": "https://example.com/callback"
               }
             }
             """;
@@ -358,7 +341,7 @@ public class JSONRPCUtilsTest {
         assertEquals(2, response.getId());
         assertNotNull(response.getResult());
         assertEquals("task-123", response.getResult().taskId());
-        assertEquals("https://example.com/callback", response.getResult().config().url());
+        assertEquals("https://example.com/callback", response.getResult().url());
     }
 
     @Test

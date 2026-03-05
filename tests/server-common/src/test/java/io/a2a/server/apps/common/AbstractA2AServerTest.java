@@ -69,7 +69,6 @@ import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.Part;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskIdParams;
@@ -553,12 +552,16 @@ public abstract class AbstractA2AServerTest {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
             TaskPushNotificationConfig taskPushConfig
-                    = new TaskPushNotificationConfig(
-                            MINIMAL_TASK.id(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "");
+                    = TaskPushNotificationConfig.builder()
+                            .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                            .taskId(MINIMAL_TASK.id())
+                            .url("http://example.com")
+                            .tenant("")
+                            .build();
             TaskPushNotificationConfig config = getClient().createTaskPushNotificationConfiguration(taskPushConfig);
             assertEquals(MINIMAL_TASK.id(), config.taskId());
-            assertEquals("http://example.com", config.config().url());
-            assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", config.config().id());
+            assertEquals("http://example.com", config.url());
+            assertEquals("c295ea44-7543-4f78-b524-7a38915ad6e4", config.id());
         } catch (A2AClientException e) {
             fail("Unexpected exception during set push notification test: " + e.getMessage(), e);
         } finally {
@@ -572,8 +575,12 @@ public abstract class AbstractA2AServerTest {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
             TaskPushNotificationConfig taskPushConfig
-                    = new TaskPushNotificationConfig(
-                            MINIMAL_TASK.id(), PushNotificationConfig.builder().id("c295ea44-7543-4f78-b524-7a38915ad6e4").url("http://example.com").build(), "");
+                    = TaskPushNotificationConfig.builder()
+                            .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                            .taskId(MINIMAL_TASK.id())
+                            .url("http://example.com")
+                            .tenant("")
+                            .build();
 
             TaskPushNotificationConfig setResult = getClient().createTaskPushNotificationConfiguration(taskPushConfig);
             assertNotNull(setResult);
@@ -581,7 +588,7 @@ public abstract class AbstractA2AServerTest {
             TaskPushNotificationConfig config = getClient().getTaskPushNotificationConfiguration(
                     new GetTaskPushNotificationConfigParams(MINIMAL_TASK.id(), "c295ea44-7543-4f78-b524-7a38915ad6e4"));
             assertEquals(MINIMAL_TASK.id(), config.taskId());
-            assertEquals("http://example.com", config.config().url());
+            assertEquals("http://example.com", config.url());
         } catch (A2AClientException e) {
             fail("Unexpected exception during get push notification test: " + e.getMessage(), e);
         } finally {
@@ -1113,13 +1120,13 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testListPushNotificationConfigWithConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
-        PushNotificationConfig notificationConfig1
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig1
+                = TaskPushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config1")
                         .build();
-        PushNotificationConfig notificationConfig2
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig2
+                = TaskPushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config2")
                         .build();
@@ -1130,8 +1137,8 @@ public abstract class AbstractA2AServerTest {
             ListTaskPushNotificationConfigResult result = getClient().listTaskPushNotificationConfigurations(
                     new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
             assertEquals(2, result.size());
-            assertEquals(new TaskPushNotificationConfig(MINIMAL_TASK.id(), notificationConfig1, null), result.configs().get(0));
-            assertEquals(new TaskPushNotificationConfig(MINIMAL_TASK.id(), notificationConfig2, null), result.configs().get(1));
+            assertEquals(TaskPushNotificationConfig.builder(notificationConfig1).taskId(MINIMAL_TASK.id()).build(), result.configs().get(0));
+            assertEquals(TaskPushNotificationConfig.builder(notificationConfig2).taskId(MINIMAL_TASK.id()).build(), result.configs().get(1));
         } catch (Exception e) {
             fail();
         } finally {
@@ -1144,13 +1151,15 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testListPushNotificationConfigWithoutConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
-        PushNotificationConfig notificationConfig1
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig1
+                = TaskPushNotificationConfig.builder()
                         .url("http://1.example.com")
+                        .id(MINIMAL_TASK.id())
                         .build();
-        PushNotificationConfig notificationConfig2
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig2
+                = TaskPushNotificationConfig.builder()
                         .url("http://2.example.com")
+                        .id(MINIMAL_TASK.id())
                         .build();
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig1);
 
@@ -1161,12 +1170,12 @@ public abstract class AbstractA2AServerTest {
                     new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
             assertEquals(1, result.size());
 
-            PushNotificationConfig expectedNotificationConfig = PushNotificationConfig.builder()
+            TaskPushNotificationConfig expectedNotificationConfig = TaskPushNotificationConfig.builder()
                     .url("http://2.example.com")
                     .id(MINIMAL_TASK.id())
+                    .taskId(MINIMAL_TASK.id())
                     .build();
-            assertEquals(new TaskPushNotificationConfig(MINIMAL_TASK.id(), expectedNotificationConfig, null),
-                    result.configs().get(0));
+            assertEquals(expectedNotificationConfig, result.configs().get(0));
         } catch (Exception e) {
             fail();
         } finally {
@@ -1209,13 +1218,13 @@ public abstract class AbstractA2AServerTest {
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build());
 
-        PushNotificationConfig notificationConfig1
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig1
+                = TaskPushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config1")
                         .build();
-        PushNotificationConfig notificationConfig2
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig2
+                = TaskPushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config2")
                         .build();
@@ -1251,13 +1260,13 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testDeletePushNotificationConfigWithNonExistingConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
-        PushNotificationConfig notificationConfig1
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig1
+                = TaskPushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config1")
                         .build();
-        PushNotificationConfig notificationConfig2
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig2
+                = TaskPushNotificationConfig.builder()
                         .url("http://example.com")
                         .id("config2")
                         .build();
@@ -1296,13 +1305,15 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testDeletePushNotificationConfigSetWithoutConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
-        PushNotificationConfig notificationConfig1
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig1
+                = TaskPushNotificationConfig.builder()
                         .url("http://1.example.com")
+                        .id(MINIMAL_TASK.id())
                         .build();
-        PushNotificationConfig notificationConfig2
-                = PushNotificationConfig.builder()
+        TaskPushNotificationConfig notificationConfig2
+                = TaskPushNotificationConfig.builder()
                         .url("http://2.example.com")
+                        .id(MINIMAL_TASK.id())
                         .build();
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig1);
 
@@ -2239,7 +2250,7 @@ public abstract class AbstractA2AServerTest {
         }
     }
 
-    protected void savePushNotificationConfigInStore(String taskId, PushNotificationConfig notificationConfig) throws Exception {
+    protected void savePushNotificationConfigInStore(String taskId, TaskPushNotificationConfig notificationConfig) throws Exception {
         HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .build();

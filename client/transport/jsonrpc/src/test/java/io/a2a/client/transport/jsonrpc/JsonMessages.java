@@ -321,13 +321,11 @@ public class JsonMessages {
              "jsonrpc": "2.0",
               "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "result": {
+              "id": "c295ea44-7543-4f78-b524-7a38915ad6e4",
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "pushNotificationConfig": {
-               "id": "c295ea44-7543-4f78-b524-7a38915ad6e4",
-               "url": "https://example.com/callback",
-               "authentication": {
+              "url": "https://example.com/callback",
+              "authentication": {
                 "scheme": "jwt"
-               }
               }
              }
             }
@@ -338,13 +336,11 @@ public class JsonMessages {
               "jsonrpc":"2.0",
               "method":"CreateTaskPushNotificationConfig",
               "params":{
+                "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
                 "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
-                "config":{
-                  "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
-                  "url":"https://example.com/callback",
-                  "authentication":{
-                    "scheme":"jwt"
-                  }
+                "url":"https://example.com/callback",
+                "authentication":{
+                  "scheme":"jwt"
                 }
               }
             }""";
@@ -354,13 +350,11 @@ public class JsonMessages {
              "jsonrpc": "2.0",
              "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
              "result": {
+              "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
               "taskId":"de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "pushNotificationConfig": {
-               "id":"c295ea44-7543-4f78-b524-7a38915ad6e4",
-               "url": "https://example.com/callback",
-               "authentication": {
+              "url": "https://example.com/callback",
+              "authentication": {
                 "scheme": "jwt"
-               }
               }
              }
             }

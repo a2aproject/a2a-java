@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.TaskPushNotificationConfig;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -79,12 +79,13 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * <b>Push notifications:</b> Configure default webhook for all task updates:
  * <pre>{@code
- * PushNotificationConfig pushConfig = new PushNotificationConfig(
- *     "https://my-app.com/webhooks/tasks",
- *     Map.of("Authorization", "Bearer my-token")
- * );
+ * TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+ *     .id("config-1")
+ *     .url("https://my-app.com/webhooks/tasks")
+ *     .authentication(new AuthenticationInfo("bearer", "my-token"))
+ *     .build();
  * ClientConfig config = new ClientConfig.Builder()
- *     .setPushNotificationConfig(pushConfig)
+ *     .setTaskPushNotificationConfig(pushConfig)
  *     .build();
  * // All sendMessage() calls will use this webhook config
  * }</pre>
@@ -125,7 +126,7 @@ import org.jspecify.annotations.Nullable;
  *   <li>useClientPreference: {@code false} (server preference)</li>
  *   <li>acceptedOutputModes: empty list (accept all)</li>
  *   <li>historyLength: {@code null} (no history)</li>
- *   <li>pushNotificationConfig: {@code null} (no push notifications)</li>
+ *   <li>taskPushNotificationConfig: {@code null} (no push notifications)</li>
  *   <li>metadata: empty map</li>
  * </ul>
  * <p>
@@ -134,7 +135,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @see io.a2a.client.Client
  * @see io.a2a.client.ClientBuilder
- * @see PushNotificationConfig
+ * @see TaskPushNotificationConfig
  */
 public class ClientConfig {
 
@@ -142,7 +143,7 @@ public class ClientConfig {
     private final Boolean polling;
     private final Boolean useClientPreference;
     private final List<String> acceptedOutputModes;
-    private final @Nullable PushNotificationConfig pushNotificationConfig;
+    private final @Nullable TaskPushNotificationConfig taskPushNotificationConfig;
     private final @Nullable Integer historyLength;
     private final Map<String, Object> metadata;
 
@@ -151,7 +152,7 @@ public class ClientConfig {
         this.polling = builder.polling == null ? false : builder.polling;
         this.useClientPreference = builder.useClientPreference == null ? false : builder.useClientPreference;
         this.acceptedOutputModes = builder.acceptedOutputModes;
-        this.pushNotificationConfig = builder.pushNotificationConfig;
+        this.taskPushNotificationConfig = builder.taskPushNotificationConfig;
         this.historyLength = builder.historyLength;
         this.metadata = builder.metadata;
     }
@@ -219,10 +220,10 @@ public class ClientConfig {
      * calls unless overridden with a different configuration.
      *
      * @return the push notification config, or {@code null} if not configured
-     * @see io.a2a.client.Client#sendMessage(io.a2a.spec.Message, io.a2a.spec.PushNotificationConfig, java.util.Map, io.a2a.client.transport.spi.interceptors.ClientCallContext)
+     * @see io.a2a.client.Client#sendMessage(io.a2a.spec.Message, io.a2a.spec.TaskPushNotificationConfig, java.util.Map, io.a2a.client.transport.spi.interceptors.ClientCallContext)
      */
-    public @Nullable PushNotificationConfig getPushNotificationConfig() {
-        return pushNotificationConfig;
+    public @Nullable TaskPushNotificationConfig getTaskPushNotificationConfig() {
+        return taskPushNotificationConfig;
     }
 
     /**
@@ -278,7 +279,7 @@ public class ClientConfig {
         private @Nullable Boolean polling;
         private @Nullable Boolean useClientPreference;
         private List<String> acceptedOutputModes = new ArrayList<>();
-        private @Nullable PushNotificationConfig pushNotificationConfig;
+        private @Nullable TaskPushNotificationConfig taskPushNotificationConfig;
         private @Nullable Integer historyLength;
         private Map<String, Object> metadata = new HashMap<>();
 
@@ -347,12 +348,12 @@ public class ClientConfig {
          * This webhook configuration will be used for all sendMessage calls
          * unless overridden. The agent will POST task update events to the specified URL.
          *
-         * @param pushNotificationConfig the push notification configuration
+         * @param taskPushNotificationConfig the push notification configuration
          * @return this builder for method chaining
-         * @see io.a2a.client.Client#sendMessage(io.a2a.spec.Message, io.a2a.spec.PushNotificationConfig, java.util.Map, io.a2a.client.transport.spi.interceptors.ClientCallContext)
+         * @see io.a2a.client.Client#sendMessage(io.a2a.spec.Message, io.a2a.spec.TaskPushNotificationConfig, java.util.Map, io.a2a.client.transport.spi.interceptors.ClientCallContext)
          */
-        public Builder setPushNotificationConfig(PushNotificationConfig pushNotificationConfig) {
-            this.pushNotificationConfig = pushNotificationConfig;
+        public Builder setTaskPushNotificationConfig(TaskPushNotificationConfig taskPushNotificationConfig) {
+            this.taskPushNotificationConfig = taskPushNotificationConfig;
             return this;
         }
 
@@ -396,7 +397,7 @@ public class ClientConfig {
          *   <li>polling: {@code false}</li>
          *   <li>useClientPreference: {@code false}</li>
          *   <li>acceptedOutputModes: empty list</li>
-         *   <li>pushNotificationConfig: {@code null}</li>
+         *   <li>taskPushNotificationConfig: {@code null}</li>
          *   <li>historyLength: {@code null}</li>
          *   <li>metadata: empty map</li>
          * </ul>

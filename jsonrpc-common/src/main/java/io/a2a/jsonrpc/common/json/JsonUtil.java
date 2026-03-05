@@ -428,7 +428,7 @@ public class JsonUtil {
                 case INTERNAL_ERROR_CODE ->
                     new io.a2a.spec.InternalError(code, message, data);
                 case TASK_NOT_FOUND_ERROR_CODE ->
-                    new TaskNotFoundError(code, message, data);
+                    new TaskNotFoundError(message, data);
                 case TASK_NOT_CANCELABLE_ERROR_CODE ->
                     new TaskNotCancelableError(code, message, data);
                 case PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE ->

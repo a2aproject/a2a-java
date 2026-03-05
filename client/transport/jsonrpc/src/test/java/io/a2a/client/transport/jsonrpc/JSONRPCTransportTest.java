@@ -58,7 +58,6 @@ import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.OpenIdConnectSecurityScheme;
 import io.a2a.spec.Part;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.SecurityRequirement;
 import io.a2a.spec.SecurityScheme;
 import io.a2a.spec.Task;
@@ -311,10 +310,9 @@ public class JSONRPCTransportTest {
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         TaskPushNotificationConfig taskPushNotificationConfig = client.getTaskPushNotificationConfiguration(
                 new GetTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64", "c295ea44-7543-4f78-b524-7a38915ad6e4"), null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.config();
-        assertNotNull(pushNotificationConfig);
-        assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+        assertNotNull(taskPushNotificationConfig);
+        assertEquals("https://example.com/callback", taskPushNotificationConfig.url());
+        AuthenticationInfo authenticationInfo = taskPushNotificationConfig.authentication();
         assertEquals("jwt", authenticationInfo.scheme());
     }
 
@@ -335,16 +333,16 @@ public class JSONRPCTransportTest {
 
         JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
         TaskPushNotificationConfig taskPushNotificationConfig = client.createTaskPushNotificationConfiguration(
-                new TaskPushNotificationConfig("de38c76d-d54c-436c-8b9f-4c2703648d64",
-                        PushNotificationConfig.builder()
-                                .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
-                                .url("https://example.com/callback")
-                                .authentication(new AuthenticationInfo("jwt", null))
-                                .build(), ""), null);
-        PushNotificationConfig pushNotificationConfig = taskPushNotificationConfig.config();
-        assertNotNull(pushNotificationConfig);
-        assertEquals("https://example.com/callback", pushNotificationConfig.url());
-        AuthenticationInfo authenticationInfo = pushNotificationConfig.authentication();
+                TaskPushNotificationConfig.builder()
+                        .id("c295ea44-7543-4f78-b524-7a38915ad6e4")
+                        .taskId("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                        .url("https://example.com/callback")
+                        .authentication(new AuthenticationInfo("jwt", null))
+                        .tenant("")
+                        .build(), null);
+        assertNotNull(taskPushNotificationConfig);
+        assertEquals("https://example.com/callback", taskPushNotificationConfig.url());
+        AuthenticationInfo authenticationInfo = taskPushNotificationConfig.authentication();
         assertEquals("jwt", authenticationInfo.scheme());
     }
 

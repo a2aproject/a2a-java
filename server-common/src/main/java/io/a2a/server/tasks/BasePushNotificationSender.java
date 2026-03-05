@@ -22,7 +22,6 @@ import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.Message;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
@@ -87,7 +86,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
         List<CompletableFuture<Boolean>> dispatchResults = configs
                 .stream()
-                .map(pushConfig -> dispatch(event, pushConfig.config()))
+                .map(pushConfig -> dispatch(event, pushConfig))
                 .toList();
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(dispatchResults.toArray(new CompletableFuture[0]));
         CompletableFuture<Boolean> dispatchResult = allFutures.thenApply(v -> dispatchResults.stream()
@@ -124,11 +123,11 @@ public class BasePushNotificationSender implements PushNotificationSender {
         throw new IllegalStateException("Unknown StreamingEventKind: " + event);
     }
 
-    private CompletableFuture<Boolean> dispatch(StreamingEventKind event, PushNotificationConfig pushInfo) {
+    private CompletableFuture<Boolean> dispatch(StreamingEventKind event, TaskPushNotificationConfig pushInfo) {
         return CompletableFuture.supplyAsync(() -> dispatchNotification(event, pushInfo));
     }
 
-    private boolean dispatchNotification(StreamingEventKind event, PushNotificationConfig pushInfo) {
+    private boolean dispatchNotification(StreamingEventKind event, TaskPushNotificationConfig pushInfo) {
         String url = pushInfo.url();
         String token = pushInfo.token();
 

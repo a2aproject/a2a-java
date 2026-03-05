@@ -23,8 +23,8 @@ import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.Message;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.StreamingEventKind;
+import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskState;
@@ -155,10 +155,10 @@ public class PushNotificationSenderTest {
     private void testSendNotificationWithInvalidToken(String token, String testName) throws InterruptedException {
         String taskId = testName;
         Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", token);
-        
+        TaskPushNotificationConfig config = createSamplePushConfig(taskId, "http://notify.me/here", "cfg1", token);
+
         // Set up the configuration in the store
-        configStore.setInfo(taskId, config);
+        configStore.setInfo(config);
         
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
@@ -194,22 +194,25 @@ public class PushNotificationSenderTest {
                 .build();
     }
 
-    private PushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
-        return PushNotificationConfig.builder()
+    private TaskPushNotificationConfig createSamplePushConfig(String taskId, String url, String configId, String token) {
+        TaskPushNotificationConfig.Builder builder = TaskPushNotificationConfig.builder()
                 .url(url)
                 .id(configId)
-                .token(token)
-                .build();
+                .taskId(taskId);
+        if (token != null) {
+            builder.token(token);
+        }
+        return builder.build();
     }
 
     @Test
     public void testSendNotificationSuccess() throws InterruptedException {
         String taskId = "task_send_success";
         Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
+        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", null);
 
         // Set up the configuration in the store
-        configStore.setInfo(taskId, config);
+        configStore.setInfo(config);
 
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
@@ -237,10 +240,10 @@ public class PushNotificationSenderTest {
     public void testSendNotificationWithTokenSuccess() throws InterruptedException {
         String taskId = "task_send_with_token";
         Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
+        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", "unique_token");
 
         // Set up the configuration in the store
-        configStore.setInfo(taskId, config);
+        configStore.setInfo(config);
 
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
@@ -295,12 +298,12 @@ public class PushNotificationSenderTest {
     public void testSendNotificationMultipleConfigs() throws InterruptedException {
         String taskId = "task_multiple_configs";
         Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        PushNotificationConfig config1 = createSamplePushConfig("http://notify.me/cfg1", "cfg1", null);
-        PushNotificationConfig config2 = createSamplePushConfig("http://notify.me/cfg2", "cfg2", null);
+        TaskPushNotificationConfig config1 = createSamplePushConfig(taskId,"http://notify.me/cfg1", "cfg1", null);
+        TaskPushNotificationConfig config2 = createSamplePushConfig(taskId,"http://notify.me/cfg2", "cfg2", null);
 
         // Set up multiple configurations in the store
-        configStore.setInfo(taskId, config1);
-        configStore.setInfo(taskId, config2);
+        configStore.setInfo(config1);
+        configStore.setInfo(config2);
 
         // Set up latch to wait for async completion (2 calls expected)
         testHttpClient.latch = new CountDownLatch(2);
@@ -329,10 +332,10 @@ public class PushNotificationSenderTest {
     public void testSendNotificationHttpError() {
         String taskId = "task_send_http_err";
         Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        PushNotificationConfig config = createSamplePushConfig("http://notify.me/http_error", "cfg1", null);
+        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/http_error", "cfg1", null);
 
         // Set up the configuration in the store
-        configStore.setInfo(taskId, config);
+        configStore.setInfo(config);
 
         // Configure the test client to throw an exception
         testHttpClient.shouldThrowException = true;
@@ -352,10 +355,10 @@ public class PushNotificationSenderTest {
                 .role(Message.Role.ROLE_AGENT)
                 .parts(new TextPart("Hello from agent"))
                 .build();
-        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
+        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", null);
 
         // Set up the configuration in the store
-        configStore.setInfo(taskId, config);
+        configStore.setInfo(config);
 
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
@@ -385,10 +388,10 @@ public class PushNotificationSenderTest {
                 .contextId("ctx456")
                 .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
                 .build();
-        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
+        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", null);
 
         // Set up the configuration in the store
-        configStore.setInfo(taskId, config);
+        configStore.setInfo(config);
 
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
@@ -424,10 +427,10 @@ public class PushNotificationSenderTest {
                 .contextId("ctx456")
                 .artifact(artifact)
                 .build();
-        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
+        TaskPushNotificationConfig config = createSamplePushConfig(taskId,"http://notify.me/here", "cfg1", null);
 
         // Set up the configuration in the store
-        configStore.setInfo(taskId, config);
+        configStore.setInfo(config);
 
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);

@@ -20,7 +20,7 @@ import jakarta.ws.rs.core.Response;
 
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.server.apps.common.TestUtilsBean;
-import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
@@ -130,7 +130,7 @@ public class A2ATestResource {
     @Path("/task/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response savePushNotificationConfigInStore(@PathParam("taskId") String taskId, String body) throws Exception {
-        PushNotificationConfig notificationConfig = JsonUtil.fromJson(body, PushNotificationConfig.class);
+        TaskPushNotificationConfig notificationConfig = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
         if (notificationConfig == null) {
             return Response.status(404).build();
         }

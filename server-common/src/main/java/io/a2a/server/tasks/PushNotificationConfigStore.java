@@ -2,7 +2,7 @@ package io.a2a.server.tasks;
 
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
-import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.TaskPushNotificationConfig;
 
 /**
  * Interface for storing and retrieving push notification configurations for tasks.
@@ -15,7 +15,7 @@ import io.a2a.spec.PushNotificationConfig;
  * <h2>Configuration ID Semantics</h2>
  * Each push notification config has an ID:
  * <ul>
- *   <li>If not provided in {@link PushNotificationConfig}, defaults to the task ID</li>
+ *   <li>If not provided in {@link TaskPushNotificationConfig}, defaults to the task ID</li>
  *   <li>Multiple configs per task require unique IDs (e.g., "webhook-1", "webhook-2")</li>
  *   <li>Used for retrieval and deletion of specific configurations</li>
  * </ul>
@@ -53,7 +53,7 @@ import io.a2a.spec.PushNotificationConfig;
  *     EntityManager em;
  *
  *     @Transactional
- *     public PushNotificationConfig setInfo(String taskId, PushNotificationConfig config) {
+ *     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig config) {
  *         // JPA persistence logic
  *     }
  * }
@@ -65,7 +65,7 @@ import io.a2a.spec.PushNotificationConfig;
  *
  * @see PushNotificationSender
  * @see InMemoryPushNotificationConfigStore
- * @see io.a2a.spec.PushNotificationConfig
+ * @see io.a2a.spec.TaskPushNotificationConfig
  */
 public interface PushNotificationConfigStore {
 
@@ -76,11 +76,10 @@ public interface PushNotificationConfigStore {
      * If a config with the same ID already exists for this task, it's replaced.
      * </p>
      *
-     * @param taskId the task ID
-     * @param notificationConfig the push notification configuration
+     * @param notificationConfig the task push notification configuration
      * @return the potentially updated configuration (with ID set if it was null)
      */
-    PushNotificationConfig setInfo(String taskId, PushNotificationConfig notificationConfig);
+    TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig);
 
     /**
      * Retrieves push notification configurations for a task with pagination support.

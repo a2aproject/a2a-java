@@ -38,19 +38,18 @@ public class TaskNotFoundError extends A2AProtocolError {
      * Constructs error with default message.
      */
     public TaskNotFoundError() {
-        this(null, null, null);
+        this(null, null);
     }
 
     /**
      * Constructs error with all parameters.
      *
-     * @param code the error code (defaults to -32001 if null)
      * @param message the error message (defaults to "Task not found" if null)
-     * @param data additional error data (optional)
+     * @param data    additional error data (optional)
      */
-    public TaskNotFoundError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+    public TaskNotFoundError(@Nullable String message, @Nullable Object data) {
         super(
-                defaultIfNull(code, TASK_NOT_FOUND_ERROR_CODE),
+                TASK_NOT_FOUND_ERROR_CODE,
                 defaultIfNull(message, "Task not found"),
                 data,
                 "https://a2a-protocol.org/errors/task-not-found");

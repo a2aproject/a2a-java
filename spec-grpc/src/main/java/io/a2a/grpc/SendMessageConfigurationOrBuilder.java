@@ -58,29 +58,32 @@ public interface SendMessageConfigurationOrBuilder extends
   /**
    * <pre>
    * Configuration for the agent to send push notifications for task updates.
+   * Task id should be empty when sending this configuration in a `SendMessage` request.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
-   * @return Whether the pushNotificationConfig field is set.
+   * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
+   * @return Whether the taskPushNotificationConfig field is set.
    */
-  boolean hasPushNotificationConfig();
+  boolean hasTaskPushNotificationConfig();
   /**
    * <pre>
    * Configuration for the agent to send push notifications for task updates.
+   * Task id should be empty when sending this configuration in a `SendMessage` request.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
-   * @return The pushNotificationConfig.
+   * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
+   * @return The taskPushNotificationConfig.
    */
-  io.a2a.grpc.PushNotificationConfig getPushNotificationConfig();
+  io.a2a.grpc.TaskPushNotificationConfig getTaskPushNotificationConfig();
   /**
    * <pre>
    * Configuration for the agent to send push notifications for task updates.
+   * Task id should be empty when sending this configuration in a `SendMessage` request.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
    */
-  io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder();
+  io.a2a.grpc.TaskPushNotificationConfigOrBuilder getTaskPushNotificationConfigOrBuilder();
 
   /**
    * <pre>

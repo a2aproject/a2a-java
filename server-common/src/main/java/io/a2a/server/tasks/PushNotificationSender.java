@@ -75,7 +75,7 @@ import io.a2a.spec.Task;
  *
  * @see PushNotificationConfigStore
  * @see BasePushNotificationSender
- * @see io.a2a.spec.PushNotificationConfig
+ * @see io.a2a.spec.TaskPushNotificationConfig
  */
 public interface PushNotificationSender {
 

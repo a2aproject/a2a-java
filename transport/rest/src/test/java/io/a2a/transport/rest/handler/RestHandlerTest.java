@@ -346,13 +346,11 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         String requestBody = """
             {
+              "id": "default-config-id",
               "taskId": "%s",
-              "config": {
-                "id": "default-config-id",
-                "url": "https://example.com/callback",
-                "authentication": {
-                  "scheme": "jwt"
-                }
+              "url": "https://example.com/callback",
+              "authentication": {
+                "scheme": "jwt"
               }
             }""".formatted(MINIMAL_TASK.id());
 
@@ -370,10 +368,9 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         String requestBody = """
             {
+                "id": "default-config-id",
                 "taskId": "%s",
-                "pushNotificationConfig": {
-                    "url": "http://example.com"
-                }
+                "url": "http://example.com"
             }
             """.formatted(MINIMAL_TASK.id());
 
@@ -391,13 +388,11 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         // First, create a push notification config
         String createRequestBody = """
             {
+              "id": "default-config-id",
               "taskId": "%s",
-              "config": {
-                "id": "default-config-id",
-                "url": "https://example.com/callback",
-                "authentication": {
-                  "scheme": "jwt"
-                }
+              "url": "https://example.com/callback",
+              "authentication": {
+                "scheme": "jwt"
               }
             }""".formatted(MINIMAL_TASK.id());
         RestHandler.HTTPRestResponse response = handler.createTaskPushNotificationConfiguration(callContext, "", createRequestBody, MINIMAL_TASK.id());

@@ -307,34 +307,28 @@ public class JsonRestMessages {
 
     static final String GET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
+              "id": "10",
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "pushNotificationConfig": {
-                "id": "10",
-                "url": "https://example.com/callback",
-                "authentication": {
-                  "scheme": "jwt"
-                }
+              "url": "https://example.com/callback",
+              "authentication": {
+                "scheme": "jwt"
               }
             }""";
     static final String LIST_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
               "configs":[
                 {
+                  "id": "10",
                   "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                  "pushNotificationConfig": {
-                    "id": "10",
-                    "url": "https://example.com/callback",
-                    "authentication": {
-                      "scheme": "jwt"
-                    }
+                  "url": "https://example.com/callback",
+                  "authentication": {
+                    "scheme": "jwt"
                   }
                 },
                 {
+                  "id": "5",
                   "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                  "pushNotificationConfig": {
-                    "id": "5",
-                    "url": "https://test.com/callback"
-                  }
+                  "url": "https://test.com/callback"
                 }
               ]
             }""";
@@ -342,25 +336,21 @@ public class JsonRestMessages {
 
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_REQUEST = """
             {
+              "id": "default-config-id",
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "config": {
-                "id": "default-config-id",
-                "url": "https://example.com/callback",
-                "authentication": {
-                  "scheme": "jwt"
-                }
+              "url": "https://example.com/callback",
+              "authentication": {
+                "scheme": "jwt"
               }
             }""";
 
     static final String SET_TASK_PUSH_NOTIFICATION_CONFIG_TEST_RESPONSE = """
             {
+              "id": "10",
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "pushNotificationConfig": {
-                "id": "10",
-                "url": "https://example.com/callback",
-                "authentication": {
-                  "scheme": "jwt"
-                }
+              "url": "https://example.com/callback",
+              "authentication": {
+                "scheme": "jwt"
               }
             }""";
 

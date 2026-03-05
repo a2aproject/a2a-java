@@ -10,12 +10,12 @@ import org.mapstruct.Mapping;
 /**
  * Mapper between {@link io.a2a.spec.MessageSendConfiguration} and {@link io.a2a.grpc.SendMessageConfiguration}.
  * <p>
- * Handles bidirectional mapping with null/empty list conversions and push notification config delegation.
+ * Handles bidirectional mapping with null/empty list conversions and task push notification config delegation.
  * Uses ADDER_PREFERRED strategy to avoid ProtocolStringList instantiation issues.
  */
 @Mapper(config = A2AProtoMapperConfig.class,
         collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
-        uses = {PushNotificationConfigMapper.class, A2ACommonFieldMapper.class})
+        uses = {TaskPushNotificationConfigMapper.class, A2ACommonFieldMapper.class})
 public interface MessageSendConfigurationMapper {
 
     MessageSendConfigurationMapper INSTANCE = A2AMappers.getMapper(MessageSendConfigurationMapper.class);
@@ -23,7 +23,7 @@ public interface MessageSendConfigurationMapper {
     /**
      * Converts domain MessageSendConfiguration to proto SendMessageConfiguration.
      */
-    @Mapping(target = "pushNotificationConfig", source = "pushNotificationConfig", conditionExpression = "java(domain.pushNotificationConfig() != null)")
+    @Mapping(target = "taskPushNotificationConfig", source = "taskPushNotificationConfig", conditionExpression = "java(domain.taskPushNotificationConfig() != null)")
     io.a2a.grpc.SendMessageConfiguration toProto(MessageSendConfiguration domain);
 
     /**

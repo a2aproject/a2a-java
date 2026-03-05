@@ -271,10 +271,8 @@ public class RestTransport implements ClientTransport {
     @Override
     public TaskPushNotificationConfig createTaskPushNotificationConfiguration(TaskPushNotificationConfig request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
-        io.a2a.grpc.CreateTaskPushNotificationConfigRequest.Builder builder
-                = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
-        builder.setConfig(ProtoUtils.ToProto.taskPushNotificationConfig(request).getPushNotificationConfig())
-                .setTaskId(request.taskId());
+        io.a2a.grpc.TaskPushNotificationConfig.Builder builder
+                = ProtoUtils.ToProto.taskPushNotificationConfig(request).toBuilder();
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, builder, agentCard, context);
         try {
             String httpResponseBody = sendPostRequest(Utils.buildBaseUrl(agentInterface, request.tenant()) + String.format("/tasks/%1s/pushNotificationConfigs", request.taskId()), payloadAndHeaders);

@@ -32,10 +32,32 @@ public interface TaskPushNotificationConfigOrBuilder extends
 
   /**
    * <pre>
+   * The push notification configuration details.
+   * A unique identifier (e.g. UUID) for this push notification configuration.
+   * </pre>
+   *
+   * <code>string id = 2;</code>
+   * @return The id.
+   */
+  java.lang.String getId();
+  /**
+   * <pre>
+   * The push notification configuration details.
+   * A unique identifier (e.g. UUID) for this push notification configuration.
+   * </pre>
+   *
+   * <code>string id = 2;</code>
+   * @return The bytes for id.
+   */
+  com.google.protobuf.ByteString
+      getIdBytes();
+
+  /**
+   * <pre>
    * The ID of the task this configuration is associated with.
    * </pre>
    *
-   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 3;</code>
    * @return The taskId.
    */
   java.lang.String getTaskId();
@@ -44,7 +66,7 @@ public interface TaskPushNotificationConfigOrBuilder extends
    * The ID of the task this configuration is associated with.
    * </pre>
    *
-   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 3;</code>
    * @return The bytes for taskId.
    */
   com.google.protobuf.ByteString
@@ -52,28 +74,68 @@ public interface TaskPushNotificationConfigOrBuilder extends
 
   /**
    * <pre>
-   * The push notification configuration details.
+   * The URL where the notification should be sent.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return Whether the pushNotificationConfig field is set.
+   * <code>string url = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The url.
    */
-  boolean hasPushNotificationConfig();
+  java.lang.String getUrl();
   /**
    * <pre>
-   * The push notification configuration details.
+   * The URL where the notification should be sent.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The pushNotificationConfig.
+   * <code>string url = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for url.
    */
-  io.a2a.grpc.PushNotificationConfig getPushNotificationConfig();
+  com.google.protobuf.ByteString
+      getUrlBytes();
+
   /**
    * <pre>
-   * The push notification configuration details.
+   * A token unique for this task or session.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string token = 5;</code>
+   * @return The token.
    */
-  io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder();
+  java.lang.String getToken();
+  /**
+   * <pre>
+   * A token unique for this task or session.
+   * </pre>
+   *
+   * <code>string token = 5;</code>
+   * @return The bytes for token.
+   */
+  com.google.protobuf.ByteString
+      getTokenBytes();
+
+  /**
+   * <pre>
+   * Authentication information required to send the notification.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
+   * @return Whether the authentication field is set.
+   */
+  boolean hasAuthentication();
+  /**
+   * <pre>
+   * Authentication information required to send the notification.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
+   * @return The authentication.
+   */
+  io.a2a.grpc.AuthenticationInfo getAuthentication();
+  /**
+   * <pre>
+   * Authentication information required to send the notification.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
+   */
+  io.a2a.grpc.AuthenticationInfoOrBuilder getAuthenticationOrBuilder();
 }

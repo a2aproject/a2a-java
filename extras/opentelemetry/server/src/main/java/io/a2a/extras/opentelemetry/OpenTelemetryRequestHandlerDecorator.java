@@ -299,8 +299,8 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         if (params.taskId() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, params.taskId());
         }
-        if (params.config() != null && params.config().id() != null) {
-            spanBuilder.setAttribute(GENAI_CONFIG_ID, params.config().id());
+        if (params.id() != null) {
+            spanBuilder.setAttribute(GENAI_CONFIG_ID, params.id());
         }
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, params.toString());

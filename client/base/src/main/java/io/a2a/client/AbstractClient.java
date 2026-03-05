@@ -19,7 +19,6 @@ import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskPushNotificationConfig;
@@ -137,7 +136,7 @@ public abstract class AbstractClient implements AutoCloseable {
      * @throws A2AClientException if sending the message fails for any reason
      */
     public void sendMessage(@NonNull Message request,
-                            @Nullable PushNotificationConfig pushNotificationConfiguration,
+                            @Nullable TaskPushNotificationConfig pushNotificationConfiguration,
                             @Nullable Map<String, Object> metadata) throws A2AClientException {
         sendMessage(request, pushNotificationConfiguration, metadata, null);
     }
@@ -158,7 +157,7 @@ public abstract class AbstractClient implements AutoCloseable {
      * @throws A2AClientException if sending the message fails for any reason
      */
     public abstract void sendMessage(@NonNull Message request,
-                                     @Nullable PushNotificationConfig pushNotificationConfiguration,
+                                     @Nullable TaskPushNotificationConfig pushNotificationConfiguration,
                                      @Nullable Map<String, Object> metadata,
                                      @Nullable ClientCallContext context) throws A2AClientException;
 

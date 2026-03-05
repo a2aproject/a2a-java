@@ -26,7 +26,6 @@ import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
@@ -132,10 +131,11 @@ import org.jspecify.annotations.Nullable;
  * <b>Push notifications:</b> Configure webhooks to receive task updates:
  * <pre>{@code
  * // Configure push notifications for a task
- * PushNotificationConfig pushConfig = new PushNotificationConfig(
- *     "https://my-app.com/webhooks/task-updates",
- *     Map.of("Authorization", "Bearer my-token")
- * );
+ * TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+ *     .id("config-1")
+ *     .url("https://my-app.com/webhooks/task-updates")
+ *     .authentication(new AuthenticationInfo("Bearer", "my-token"))
+ *     .build();
  *
  * // Send message with push notifications
  * client.sendMessage(
@@ -236,7 +236,7 @@ public class Client extends AbstractClient {
                             @NonNull List<BiConsumer<ClientEvent, AgentCard>> consumers,
                             @Nullable Consumer<Throwable> streamingErrorHandler,
                             @Nullable ClientCallContext context) throws A2AClientException {
-        MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(clientConfig.getPushNotificationConfig());
+        MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(clientConfig.getTaskPushNotificationConfig());
 
         MessageSendParams messageSendParams = MessageSendParams.builder()
                 .message(request)
@@ -267,10 +267,11 @@ public class Client extends AbstractClient {
      * <p>
      * <b>With push notifications:</b>
      * <pre>{@code
-     * PushNotificationConfig pushConfig = new PushNotificationConfig(
-     *     "https://my-app.com/webhook",
-     *     Map.of("Authorization", "Bearer token")
-     * );
+     * TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+     *     .id("config-1")
+     *     .url("https://my-app.com/webhook")
+     *     .authentication(new AuthenticationInfo("Bearer", "token"))
+     *     .build();
      * client.sendMessage(userMessage, pushConfig, null, null);
      * }</pre>
      * <p>
@@ -289,11 +290,11 @@ public class Client extends AbstractClient {
      * @param context custom call context for request interceptors (optional)
      * @throws A2AClientException if the message cannot be sent or if the agent returns an error
      * @see #sendMessage(Message, List, Consumer, ClientCallContext)
-     * @see PushNotificationConfig
+     * @see TaskPushNotificationConfig
      */
     @Override
     public void sendMessage(@NonNull Message request,
-                            @Nullable PushNotificationConfig pushNotificationConfiguration,
+                            @Nullable TaskPushNotificationConfig pushNotificationConfiguration,
                             @Nullable Map<String, Object> metadata,
                             @Nullable ClientCallContext context) throws A2AClientException {
         MessageSendConfiguration messageSendConfiguration = createMessageSendConfiguration(pushNotificationConfiguration);
@@ -459,16 +460,12 @@ public class Client extends AbstractClient {
      * <p>
      * Example:
      * <pre>{@code
-     * TaskPushNotificationConfig config = new TaskPushNotificationConfig(
-     *     "task-123",
-     *     new PushNotificationConfig(
-     *         "https://my-app.com/webhooks/task-updates",
-     *         Map.of(
-     *             "Authorization", "Bearer my-webhook-secret",
-     *             "X-App-ID", "my-app"
-     *         )
-     *     )
-     * );
+     * TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+     *     .id("config-1")
+     *     .taskId("task-123")
+     *     .url("https://my-app.com/webhooks/task-updates")
+     *     .authentication(new AuthenticationInfo("Bearer", "my-webhook-secret"))
+     *     .build();
      * client.createTaskPushNotificationConfiguration(config);
      * }</pre>
      *
@@ -477,7 +474,6 @@ public class Client extends AbstractClient {
      * @return the stored configuration (may include server-assigned IDs)
      * @throws A2AClientException if the configuration cannot be set
      * @see TaskPushNotificationConfig
-     * @see PushNotificationConfig
      */
     @Override
     public TaskPushNotificationConfig createTaskPushNotificationConfiguration(
@@ -495,7 +491,7 @@ public class Client extends AbstractClient {
      * TaskPushNotificationConfig config =
      *     client.getTaskPushNotificationConfiguration(params);
      * System.out.println("Webhook URL: " +
-     *     config.pushNotificationConfig().url());
+     *     config.url());
      * }</pre>
      *
      * @param request the parameters specifying which task's configuration to retrieve
@@ -522,7 +518,7 @@ public class Client extends AbstractClient {
      *     client.listTaskPushNotificationConfigurations(params);
      * for (TaskPushNotificationConfig config : result.configurations()) {
      *     System.out.println("Task " + config.taskId() + " -> " +
-     *         config.pushNotificationConfig().url());
+     *         config.url());
      * }
      * }</pre>
      *
@@ -697,12 +693,12 @@ public class Client extends AbstractClient {
         }
     }
 
-    private MessageSendConfiguration createMessageSendConfiguration(@Nullable PushNotificationConfig pushNotificationConfig) {
+    private MessageSendConfiguration createMessageSendConfiguration(@Nullable TaskPushNotificationConfig taskPushNotificationConfig) {
         return MessageSendConfiguration.builder()
                 .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
                 .blocking(!clientConfig.isPolling())
                 .historyLength(clientConfig.getHistoryLength())
-                .pushNotificationConfig(pushNotificationConfig)
+                .taskPushNotificationConfig(taskPushNotificationConfig)
                 .build();
     }
 

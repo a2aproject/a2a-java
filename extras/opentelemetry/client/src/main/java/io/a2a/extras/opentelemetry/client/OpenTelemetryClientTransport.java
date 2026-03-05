@@ -248,8 +248,8 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         if (request.taskId() != null) {
             spanBuilder.setAttribute(GENAI_TASK_ID, request.taskId());
         }
-        if (request.config() != null && request.config().id() != null) {
-            spanBuilder.setAttribute(GENAI_CONFIG_ID, request.config().id());
+        if (request.id() != null) {
+            spanBuilder.setAttribute(GENAI_CONFIG_ID, request.id());
         }
         if (extractRequest()) {
             spanBuilder.setAttribute(GENAI_REQUEST, request.toString());

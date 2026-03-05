@@ -57,7 +57,6 @@ import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
@@ -493,7 +492,8 @@ public class DefaultRequestHandler implements RequestHandler {
             if (mss.task() == null && kind instanceof Task createdTask && shouldAddPushInfo(params)) {
                 LOGGER.debug("Storing push notification config for new task {} (original taskId from params: {})",
                         createdTask.id(), params.message().taskId());
-                pushConfigStore.setInfo(createdTask.id(), params.configuration().pushNotificationConfig());
+                pushConfigStore.setInfo(TaskPushNotificationConfig.builder(params.configuration().taskPushNotificationConfig())
+                        .taskId(createdTask.id()).build());
             }
 
             // Check if task requires immediate return (AUTH_REQUIRED)
@@ -645,7 +645,8 @@ public class DefaultRequestHandler implements RequestHandler {
             Objects.requireNonNull(taskId.get(), "taskId was null");
             LOGGER.debug("Storing push notification config for new streaming task {} EARLY (original taskId from params: {})",
                     taskId.get(), params.message().taskId());
-            pushConfigStore.setInfo(taskId.get(), params.configuration().pushNotificationConfig());
+            pushConfigStore.setInfo(TaskPushNotificationConfig.builder(params.configuration().taskPushNotificationConfig())
+                    .taskId(taskId.get()).build());
         }
 
         ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
@@ -770,13 +771,15 @@ public class DefaultRequestHandler implements RequestHandler {
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }
+        if (params.taskId() == null) {
+            throw new InvalidParamsError("taskId is required");
+        }
         Task task = taskStore.get(params.taskId());
         if (task == null) {
             throw new TaskNotFoundError();
         }
 
-        PushNotificationConfig pushNotificationConfig = pushConfigStore.setInfo(params.taskId(), params.config());
-        return new TaskPushNotificationConfig(params.taskId(), pushNotificationConfig, params.tenant());
+        return pushConfigStore.setInfo(params);
     }
 
     @Override
@@ -796,17 +799,17 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         String configId = params.id();
-        return new TaskPushNotificationConfig(params.taskId(), getPushNotificationConfig(listTaskPushNotificationConfigResult, configId), params.tenant());
+        return getTaskPushNotificationConfig(listTaskPushNotificationConfigResult, configId);
     }
 
-    private PushNotificationConfig getPushNotificationConfig(ListTaskPushNotificationConfigResult notificationConfigList,
+    private TaskPushNotificationConfig getTaskPushNotificationConfig(ListTaskPushNotificationConfigResult notificationConfigList,
             String configId) {
         for (TaskPushNotificationConfig notificationConfig : notificationConfigList.configs()) {
-            if (configId.equals(notificationConfig.config().id())) {
-                return notificationConfig.config();
+            if (configId.equals(notificationConfig.id())) {
+                return notificationConfig;
             }
         }
-        return notificationConfigList.configs().get(0).config();
+        throw new TaskNotFoundError("Push notification config with id '" + configId + "' not found.", null);
     }
 
     @Override
@@ -875,7 +878,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     private boolean shouldAddPushInfo(MessageSendParams params) {
-        return pushConfigStore != null && params.configuration() != null && params.configuration().pushNotificationConfig() != null;
+        return pushConfigStore != null && params.configuration() != null && params.configuration().taskPushNotificationConfig() != null;
     }
 
     /**
@@ -1025,9 +1028,10 @@ public class DefaultRequestHandler implements RequestHandler {
             LOGGER.debug("Found task updating with message {}", params.message());
             task = taskManager.updateWithMessage(params.message(), task);
 
-            if (pushConfigStore != null && params.configuration() != null && params.configuration().pushNotificationConfig() != null) {
+            if (pushConfigStore != null && params.configuration() != null && params.configuration().taskPushNotificationConfig() != null) {
                 LOGGER.debug("Adding push info");
-                pushConfigStore.setInfo(task.id(), params.configuration().pushNotificationConfig());
+                pushConfigStore.setInfo(TaskPushNotificationConfig.builder(params.configuration().taskPushNotificationConfig())
+                        .taskId(task.id()).build());
             }
         }
 

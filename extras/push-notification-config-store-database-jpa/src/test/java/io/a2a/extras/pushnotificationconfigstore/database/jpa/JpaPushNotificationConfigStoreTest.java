@@ -22,7 +22,6 @@ import io.a2a.server.tasks.BasePushNotificationSender;
 import io.a2a.server.tasks.PushNotificationConfigStore;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskState;
@@ -71,8 +70,8 @@ public class JpaPushNotificationConfigStoreTest {
                 .build();
     }
 
-    private PushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
-        return PushNotificationConfig.builder()
+    private TaskPushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
+        return TaskPushNotificationConfig.builder()
                 .url(url)
                 .id(configId)
                 .token(token)
@@ -83,9 +82,9 @@ public class JpaPushNotificationConfigStoreTest {
     @Transactional
     public void testSetInfoAddsNewConfig() {
         String taskId = "task_new";
-        PushNotificationConfig config = createSamplePushConfig("http://new.url/callback", "cfg1", null);
+        TaskPushNotificationConfig config = createSamplePushConfig("http://new.url/callback", "cfg1", null);
 
-        PushNotificationConfig result = configStore.setInfo(taskId, config);
+        TaskPushNotificationConfig result = configStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
         assertNotNull(result);
         assertEquals(config.url(), result.url());
@@ -94,35 +93,33 @@ public class JpaPushNotificationConfigStoreTest {
         ListTaskPushNotificationConfigResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertNotNull(configResult);
         assertEquals(1, configResult.configs().size());
-        assertEquals(config.url(), configResult.configs().get(0).config().url());
-        assertEquals(config.id(), configResult.configs().get(0).config().id());
+        assertEquals(config.url(), configResult.configs().get(0).url());
+        assertEquals(config.id(), configResult.configs().get(0).id());
     }
 
     @Test
     @Transactional
     public void testSetInfoAppendsToExistingConfig() {
         String taskId = "task_update";
-        PushNotificationConfig initialConfig = createSamplePushConfig(
+        TaskPushNotificationConfig initialConfig = createSamplePushConfig(
                 "http://initial.url/callback", "cfg_initial", null);
-        configStore.setInfo(taskId, initialConfig);
+        configStore.setInfo(TaskPushNotificationConfig.builder(initialConfig).taskId(taskId).build());
 
-        PushNotificationConfig updatedConfig = createSamplePushConfig(
+        TaskPushNotificationConfig updatedConfig = createSamplePushConfig(
                 "http://updated.url/callback", "cfg_updated", null);
-        configStore.setInfo(taskId, updatedConfig);
+        configStore.setInfo(TaskPushNotificationConfig.builder(updatedConfig).taskId(taskId).build());
 
         ListTaskPushNotificationConfigResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertNotNull(configResult);
         assertEquals(2, configResult.configs().size());
 
         // Find the configs by ID since order might vary
-        List<PushNotificationConfig> configs = configResult.configs().stream()
-                .map(TaskPushNotificationConfig::config)
-                .toList();
-        PushNotificationConfig foundInitial = configs.stream()
+        List<TaskPushNotificationConfig> configs = configResult.configs();
+        TaskPushNotificationConfig foundInitial = configs.stream()
                 .filter(c -> "cfg_initial".equals(c.id()))
                 .findFirst()
                 .orElse(null);
-        PushNotificationConfig foundUpdated = configs.stream()
+        TaskPushNotificationConfig foundUpdated = configs.stream()
                 .filter(c -> "cfg_updated".equals(c.id()))
                 .findFirst()
                 .orElse(null);
@@ -137,41 +134,45 @@ public class JpaPushNotificationConfigStoreTest {
     @Transactional
     public void testSetInfoWithoutConfigId() {
         String taskId = "task1";
-        PushNotificationConfig initialConfig = PushNotificationConfig.builder()
+        TaskPushNotificationConfig initialConfig = TaskPushNotificationConfig.builder()
+                .id("")
                 .url("http://initial.url/callback")
-                .build(); // No ID set
+                .taskId(taskId)
+                .build();
 
-        PushNotificationConfig result = configStore.setInfo(taskId, initialConfig);
+        TaskPushNotificationConfig result = configStore.setInfo(initialConfig);
         assertEquals(taskId, result.id(), "Config ID should default to taskId when not provided");
 
         ListTaskPushNotificationConfigResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertEquals(1, configResult.configs().size());
-        assertEquals(taskId, configResult.configs().get(0).config().id());
+        assertEquals(taskId, configResult.configs().get(0).id());
 
-        PushNotificationConfig updatedConfig = PushNotificationConfig.builder()
+        TaskPushNotificationConfig updatedConfig = TaskPushNotificationConfig.builder()
+                .id("")
                 .url("http://initial.url/callback_new")
-                .build(); // No ID set
+                .taskId(taskId)
+                .build();
 
-        PushNotificationConfig updatedResult = configStore.setInfo(taskId, updatedConfig);
+        TaskPushNotificationConfig updatedResult = configStore.setInfo(updatedConfig);
         assertEquals(taskId, updatedResult.id());
 
         configResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertEquals(1, configResult.configs().size(), "Should replace existing config with same ID rather than adding new one");
-        assertEquals(updatedConfig.url(), configResult.configs().get(0).config().url());
+        assertEquals(updatedConfig.url(), configResult.configs().get(0).url());
     }
 
     @Test
     @Transactional
     public void testGetInfoExistingConfig() {
         String taskId = "task_get_exist";
-        PushNotificationConfig config = createSamplePushConfig("http://get.this/callback", "cfg1", null);
-        configStore.setInfo(taskId, config);
+        TaskPushNotificationConfig config = createSamplePushConfig("http://get.this/callback", "cfg1", null);
+        configStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
         ListTaskPushNotificationConfigResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertNotNull(configResult);
         assertEquals(1, configResult.configs().size());
-        assertEquals(config.url(), configResult.configs().get(0).config().url());
-        assertEquals(config.id(), configResult.configs().get(0).config().id());
+        assertEquals(config.url(), configResult.configs().get(0).url());
+        assertEquals(config.id(), configResult.configs().get(0).id());
     }
 
     @Test
@@ -187,8 +188,8 @@ public class JpaPushNotificationConfigStoreTest {
     @Transactional
     public void testDeleteInfoExistingConfig() {
         String taskId = "task_delete_exist";
-        PushNotificationConfig config = createSamplePushConfig("http://delete.this/callback", "cfg1", null);
-        configStore.setInfo(taskId, config);
+        TaskPushNotificationConfig config = createSamplePushConfig("http://delete.this/callback", "cfg1", null);
+        configStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
         ListTaskPushNotificationConfigResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertNotNull(configResult);
@@ -217,10 +218,12 @@ public class JpaPushNotificationConfigStoreTest {
     @Transactional
     public void testDeleteInfoWithNullConfigId() {
         String taskId = "task_delete_null_config";
-        PushNotificationConfig config = PushNotificationConfig.builder()
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .id("")
                 .url("http://delete.this/callback")
-                .build(); // No ID set, will use taskId
-        configStore.setInfo(taskId, config);
+                .taskId(taskId)
+                .build();
+        configStore.setInfo(config);
 
         // Delete with null configId should use taskId
         configStore.deleteInfo(taskId, null);
@@ -235,8 +238,8 @@ public class JpaPushNotificationConfigStoreTest {
     public void testSendNotificationSuccess() throws Exception {
         String taskId = "task_send_success";
         Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
-        configStore.setInfo(taskId, config);
+        TaskPushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", null);
+        configStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
         // Mock successful HTTP response
         when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
@@ -268,8 +271,8 @@ public class JpaPushNotificationConfigStoreTest {
     public void testSendNotificationWithToken() throws Exception {
         String taskId = "task_send_with_token";
         Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
-        PushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
-        configStore.setInfo(taskId, config);
+        TaskPushNotificationConfig config = createSamplePushConfig("http://notify.me/here", "cfg1", "unique_token");
+        configStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
         // Mock successful HTTP response
         when(mockHttpClient.createPost()).thenReturn(mockPostBuilder);
@@ -314,33 +317,30 @@ public class JpaPushNotificationConfigStoreTest {
     @Transactional
     public void testMultipleConfigsForSameTask() {
         String taskId = "task_multiple";
-        PushNotificationConfig config1 = createSamplePushConfig("http://url1.com/callback", "cfg1", null);
-        PushNotificationConfig config2 = createSamplePushConfig("http://url2.com/callback", "cfg2", null);
+        TaskPushNotificationConfig config1 = createSamplePushConfig("http://url1.com/callback", "cfg1", null);
+        TaskPushNotificationConfig config2 = createSamplePushConfig("http://url2.com/callback", "cfg2", null);
 
-        configStore.setInfo(taskId, config1);
-        configStore.setInfo(taskId, config2);
+        configStore.setInfo(TaskPushNotificationConfig.builder(config1).taskId(taskId).build());
+        configStore.setInfo(TaskPushNotificationConfig.builder(config2).taskId(taskId).build());
 
         ListTaskPushNotificationConfigResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertNotNull(configResult);
         assertEquals(2, configResult.configs().size());
 
         // Verify both configs are present
-        List<PushNotificationConfig> configs = configResult.configs().stream()
-                .map(TaskPushNotificationConfig::config)
-                .toList();
-        assertTrue(configs.stream().anyMatch(c -> "cfg1".equals(c.id())));
-        assertTrue(configs.stream().anyMatch(c -> "cfg2".equals(c.id())));
+        assertTrue(configResult.configs().stream().anyMatch(c -> "cfg1".equals(c.id())));
+        assertTrue(configResult.configs().stream().anyMatch(c -> "cfg2".equals(c.id())));
     }
 
     @Test
     @Transactional
     public void testDeleteSpecificConfigFromMultiple() {
         String taskId = "task_delete_specific";
-        PushNotificationConfig config1 = createSamplePushConfig("http://url1.com/callback", "cfg1", null);
-        PushNotificationConfig config2 = createSamplePushConfig("http://url2.com/callback", "cfg2", null);
+        TaskPushNotificationConfig config1 = createSamplePushConfig("http://url1.com/callback", "cfg1", null);
+        TaskPushNotificationConfig config2 = createSamplePushConfig("http://url2.com/callback", "cfg2", null);
 
-        configStore.setInfo(taskId, config1);
-        configStore.setInfo(taskId, config2);
+        configStore.setInfo(TaskPushNotificationConfig.builder(config1).taskId(taskId).build());
+        configStore.setInfo(TaskPushNotificationConfig.builder(config2).taskId(taskId).build());
 
         // Delete only config1
         configStore.deleteInfo(taskId, "cfg1");
@@ -348,23 +348,23 @@ public class JpaPushNotificationConfigStoreTest {
         ListTaskPushNotificationConfigResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertNotNull(configResult);
         assertEquals(1, configResult.configs().size());
-        assertEquals("cfg2", configResult.configs().get(0).config().id());
+        assertEquals("cfg2", configResult.configs().get(0).id());
     }
 
     @Test
     @Transactional
     public void testConfigStoreIntegration() {
         String taskId = "integration_test";
-        PushNotificationConfig config = createSamplePushConfig("http://example.com", "test_id", "test_token");
+        TaskPushNotificationConfig config = createSamplePushConfig("http://example.com", "test_id", "test_token");
 
         // Test that we can store and retrieve configurations
-        PushNotificationConfig storedConfig = configStore.setInfo(taskId, config);
+        TaskPushNotificationConfig storedConfig = configStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
         assertEquals(config.url(), storedConfig.url());
         assertEquals(config.token(), storedConfig.token());
 
         ListTaskPushNotificationConfigResult configResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId));
         assertEquals(1, configResult.configs().size());
-        assertEquals(config.url(), configResult.configs().get(0).config().url());
+        assertEquals(config.url(), configResult.configs().get(0).url());
 
         // Test deletion
         configStore.deleteInfo(taskId, storedConfig.id());

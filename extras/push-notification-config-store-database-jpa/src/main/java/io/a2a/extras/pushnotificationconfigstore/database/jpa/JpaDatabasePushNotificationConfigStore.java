@@ -15,10 +15,9 @@ import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.server.tasks.PushNotificationConfigStore;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.util.Assert;
 import io.a2a.util.PageToken;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,15 +35,14 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
 
     @Transactional
     @Override
-    public PushNotificationConfig setInfo(String taskId, PushNotificationConfig notificationConfig) {
+    public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig) {
+        String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
         // Ensure config has an ID - default to taskId if not provided (mirroring InMemoryPushNotificationConfigStore behavior)
-        PushNotificationConfig.Builder builder = PushNotificationConfig.builder(notificationConfig);
-        if (notificationConfig.id() == null || notificationConfig.id().isEmpty()) {
+        if (notificationConfig.id().isEmpty()) {
             // This means the taskId and configId are same. This will not allow having multiple configs for a single Task.
             // The configId is a required field in the spec and should not be empty
-            builder.id(taskId);
+            notificationConfig = TaskPushNotificationConfig.builder(notificationConfig).id(taskId).build();
         }
-        notificationConfig = builder.build();
 
         LOGGER.debug("Saving PushNotificationConfig for Task '{}' with ID: {}", taskId, notificationConfig.id());
         try {
@@ -118,10 +116,15 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
               nextPageToken = new PageToken(timestamp, lastConfig.getId().getConfigId()).toString();
             }
 
-            List<PushNotificationConfig> configs = jpaConfigsPage.stream()
+            List<TaskPushNotificationConfig> taskPushNotificationConfigs = jpaConfigsPage.stream()
                     .map(jpaConfig -> {
                         try {
-                            return jpaConfig.getConfig();
+                            TaskPushNotificationConfig config = jpaConfig.getConfig();
+                            // Set taskId and tenant from the params
+                            return TaskPushNotificationConfig.builder(config)
+                                    .taskId(params.id())
+                                    .tenant(params.tenant())
+                                    .build();
                         } catch (JsonProcessingException e) {
                             LOGGER.error("Failed to deserialize PushNotificationConfig for Task '{}' with ID: {}",
                                     taskId, jpaConfig.getId().getConfigId(), e);
@@ -131,11 +134,7 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
                     })
                     .toList();
 
-            LOGGER.debug("Successfully retrieved {} PushNotificationConfigs for Task '{}'", configs.size(), taskId);
-
-            List<TaskPushNotificationConfig> taskPushNotificationConfigs = configs.stream()
-                .map(config -> new TaskPushNotificationConfig(params.id(), config, params.tenant()))
-                .collect(Collectors.toList());
+            LOGGER.debug("Successfully retrieved {} PushNotificationConfigs for Task '{}'", taskPushNotificationConfigs.size(), taskId);
 
             return new ListTaskPushNotificationConfigResult(taskPushNotificationConfigs, nextPageToken);
         } catch (Exception e) {
