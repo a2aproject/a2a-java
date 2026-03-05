@@ -13,7 +13,7 @@ Update the A2A gRPC proto file from the upstream specification repository and re
 
 Before updating, record what we have now so we can diff later.
 
-1. Read `spec-grpc/src/main/proto/a2a.proto` to note the current commit hash.
+1. Read `spec-grpc/src/main/proto/a2a.proto` to note the current commit hash (located at the top of the file in a comment)
 2. Save a copy of the file for diffing:
 
 ## Step 2: Download the updated specification
@@ -37,9 +37,14 @@ Compare the old and new versions of the specification to identify changes:
 
 ## Step 4: Regenerate gRPC classes
 
-1. Regenerate gRPC Java classes by running:
+1. Delete all the generated gRPC Java classes (in case of resources removed from the Protobuf definitions):
    ```bash
-   cd spec-grpc && mvn clean install -Dskip.protobuf.generate=false
+   find spec-grpc/src/main/java/io/a2a/grpc -maxdepth 1 -name "*.java" -delete```
+   ```
+
+2. Regenerate gRPC Java classes by running:
+   ```bash
+   mvn generate-sources -pl spec-grpc -Dskip.protobuf.generate=false
    ```
 
 ## Step 5: Update the code
@@ -62,13 +67,13 @@ Fix any issues before proceeding.
 
 Before committing, audit all code changes.
 
-Highlight any new, modified, or removed changes in the API in the client, common and spec modules
+Highlight any new, modified, or removed changes in the API in the `client`, `common`, `server-common`, and `spec` modules
 
 Verify the build succeeds for the full project:
 
-   ```bash
-   mvn clean install
-   ```
+```bash
+mvn clean install
+```
 
 ## Step 8: Summarize
 
@@ -77,3 +82,5 @@ Present the user with a summary of:
 - What changed in the specification
 - What was updated in the code
 - Any areas that need manual review or additional test coverage
+- Impact on user API (from the `client`, `common`, `server-common`, and `spec` modules)
+  - Write a "migration summary" for breaking changes in the API

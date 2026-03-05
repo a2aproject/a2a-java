@@ -6,11 +6,13 @@ Java SDK for the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/). Multi-
 
 ## Build
 
+Requires Java 17+.
+Tests output is redirected to files by default.
+
 ```bash
 mvn clean install
 ```
 
-Requires Java 17+. Tests output is redirected to files by default.
 
 ## Project Structure
 
@@ -46,6 +48,12 @@ Requires Java 17+. Tests output is redirected to files by default.
 
 - Import statements are sorted
 - Remove any unused import statements
+- Do not use "star" imports (eg `import java.util.*`)
+- Use Java `record` for immutable data types
+- Use `@Nullable` (from org.jspecify.annotations) for optional fields
+- Use `io.a2a.util.Assert.checkNotNullParam()` in the compact constructor to validate required fields
+- Use `List.copyOf()` and `Map.copyOf()` for defensive copying of collections
+- Apply the Builder pattern for records with many fields (see `AgentCard.java` as reference)
 
 ### Code generation
 
