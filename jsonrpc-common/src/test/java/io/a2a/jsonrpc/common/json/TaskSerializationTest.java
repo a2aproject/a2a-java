@@ -2,16 +2,22 @@ package io.a2a.jsonrpc.common.json;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
 import io.a2a.spec.Artifact;
 import io.a2a.spec.DataPart;
+import io.a2a.spec.FileContent;
 import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
@@ -22,6 +28,7 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TextPart;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests for Task serialization and deserialization using Gson.
@@ -705,5 +712,75 @@ class TaskSerializationTest {
         assertTrue(parts.get(1) instanceof FilePart);
         assertTrue(parts.get(2) instanceof DataPart);
         assertTrue(parts.get(3) instanceof FilePart);
+    }
+
+    // ========== FileContentTypeAdapter tests ==========
+
+    @TempDir
+    Path tempDir;
+
+    @Test
+    void testFileWithBytesSerializationDoesNotLeakInternalFields() throws Exception {
+        FileWithBytes fwb = new FileWithBytes("application/pdf", "doc.pdf", "base64data");
+
+        String json = JsonUtil.toJson(fwb);
+
+        // Must contain the three protocol fields
+        assertTrue(json.contains("\"mimeType\""), "missing mimeType: " + json);
+        assertTrue(json.contains("\"name\""), "missing name: " + json);
+        assertTrue(json.contains("\"bytes\""), "missing bytes: " + json);
+        // Must NOT contain internal implementation fields
+        assertFalse(json.contains("\"source\""), "internal source field leaked: " + json);
+        assertFalse(json.contains("\"cachedBytes\""), "internal cachedBytes field leaked: " + json);
+    }
+
+    @Test
+    void testFileWithBytesRoundTripViaFileContentTypeAdapter() throws Exception {
+        FileWithBytes original = new FileWithBytes("image/png", "photo.png", "abc123");
+
+        String json = JsonUtil.toJson(original);
+        FileContent deserialized = JsonUtil.fromJson(json, FileContent.class);
+
+        assertInstanceOf(FileWithBytes.class, deserialized);
+        FileWithBytes result = (FileWithBytes) deserialized;
+        assertEquals("image/png", result.mimeType());
+        assertEquals("photo.png", result.name());
+        assertEquals("abc123", result.bytes());
+    }
+
+    @Test
+    void testPathBackedFileWithBytesDoesNotLeakFilePath() throws Exception {
+        byte[] content = "hello".getBytes();
+        Path file = tempDir.resolve("secret.txt");
+        Files.write(file, content);
+
+        FileWithBytes fwb = new FileWithBytes("text/plain", file);
+
+        String json = JsonUtil.toJson(fwb);
+
+        // File path must not appear in the serialized JSON
+        assertFalse(json.contains(file.toString()), "file path leaked in JSON: " + json);
+        assertFalse(json.contains(tempDir.toString()), "temp dir path leaked in JSON: " + json);
+        // Must contain the three protocol fields, not internal implementation fields
+        assertTrue(json.contains("\"bytes\""), "missing bytes field: " + json);
+        assertFalse(json.contains("\"source\""), "internal source field leaked: " + json);
+    }
+
+    @Test
+    void testPathBackedFileWithBytesRoundTrip() throws Exception {
+        byte[] content = "round-trip".getBytes();
+        Path file = tempDir.resolve("data.bin");
+        Files.write(file, content);
+
+        FileWithBytes original = new FileWithBytes("application/octet-stream", file);
+
+        String json = JsonUtil.toJson(original);
+        FileContent deserialized = JsonUtil.fromJson(json, FileContent.class);
+
+        assertInstanceOf(FileWithBytes.class, deserialized);
+        FileWithBytes result = (FileWithBytes) deserialized;
+        assertEquals("application/octet-stream", result.mimeType());
+        assertEquals("data.bin", result.name());
+        assertEquals(Base64.getEncoder().encodeToString(content), result.bytes());
     }
 }

@@ -91,6 +91,7 @@ public class JsonRestMessages {
                  },
                  {
                   "raw": "aGVsbG8=",
+                  "filename":"hello.txt",
                   "mediaType": "text/plain"
                  }
                 ],
