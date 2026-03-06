@@ -397,7 +397,7 @@ public class GrpcTransport implements ClientTransport {
             }
 
             // Set a2a-extensions header if present
-            String extensionsHeader = context.getHeaders().get(A2AHeaders.A2A_EXTENSIONS.toLowerCase());
+            String extensionsHeader = context.getHeaders().get(A2AHeaders.A2A_EXTENSIONS);
             if (extensionsHeader != null) {
                 metadata.put(EXTENSIONS_KEY, extensionsHeader);
             }
