@@ -1,8 +1,12 @@
 package io.a2a.transport.grpc.context;
 
 
+import static java.util.Locale.ROOT;
+
+import java.util.Locale;
 import java.util.Map;
 
+import io.a2a.common.A2AHeaders;
 import io.a2a.spec.A2AMethods;
 import io.grpc.Context;
 
@@ -40,18 +44,18 @@ import io.grpc.Context;
 public final class GrpcContextKeys {
 
     /**
-     * Context key for storing the X-A2A-Version header value.
+     * Context key for storing the a2a-version header value.
      * Set by server interceptors and accessed by service handlers.
      */
     public static final Context.Key<String> VERSION_HEADER_KEY =
-        Context.key("x-a2a-version");
+        Context.key(A2AHeaders.A2A_VERSION.toLowerCase(ROOT));
 
     /**
-     * Context key for storing the X-A2A-Extensions header value.
+     * Context key for storing the a2a-extensions header value.
      * Set by server interceptors and accessed by service handlers.
      */
     public static final Context.Key<String> EXTENSIONS_HEADER_KEY =
-        Context.key("x-a2a-extensions");
+        Context.key(A2AHeaders.A2A_EXTENSIONS.toLowerCase(ROOT));
 
     /**
      * Context key for storing the complete gRPC Metadata object.

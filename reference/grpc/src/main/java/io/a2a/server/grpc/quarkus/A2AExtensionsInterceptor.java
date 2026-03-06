@@ -21,8 +21,8 @@ import io.grpc.ServerInterceptor;
  *
  * <h2>Captured Information</h2>
  * <ul>
- *   <li><b>A2A Protocol Version</b>: {@code X-A2A-Version} header</li>
- *   <li><b>A2A Extensions</b>: {@code X-A2A-Extensions} header</li>
+ *   <li><b>A2A Protocol Version</b>: {@code a2a-version} header</li>
+ *   <li><b>A2A Extensions</b>: {@code a2a-extensions} header</li>
  *   <li><b>Complete Metadata</b>: All request headers via {@link io.grpc.Metadata}</li>
  *   <li><b>Method Name</b>: gRPC method being invoked</li>
  *   <li><b>Peer Information</b>: Client connection details</li>
@@ -60,6 +60,13 @@ import io.grpc.ServerInterceptor;
 @ApplicationScoped
 public class A2AExtensionsInterceptor implements ServerInterceptor {
 
+    private static final Metadata.Key<String> EXTENSIONS_KEY = Metadata.Key.of(
+            A2AHeaders.A2A_EXTENSIONS.toLowerCase(),
+            Metadata.ASCII_STRING_MARSHALLER);
+    private static final Metadata.Key<String> VERSION_KEY = Metadata.Key.of(
+            A2AHeaders.A2A_VERSION.toLowerCase(),
+            Metadata.ASCII_STRING_MARSHALLER);
+
     /**
      * Intercepts incoming gRPC calls to capture metadata and context information.
      *
@@ -68,8 +75,8 @@ public class A2AExtensionsInterceptor implements ServerInterceptor {
      *
      * <p><b>Extraction Process:</b>
      * <ol>
-     *   <li>Extract {@code X-A2A-Version} header from metadata</li>
-     *   <li>Extract {@code X-A2A-Extensions} header from metadata</li>
+     *   <li>Extract {@code a2a-version} header from metadata</li>
+     *   <li>Extract {@code a2a-extensions} header from metadata</li>
      *   <li>Capture complete {@link Metadata} object</li>
      *   <li>Capture gRPC method name from {@link ServerCall}</li>
      *   <li>Map gRPC method to A2A protocol method name</li>
@@ -92,14 +99,9 @@ public class A2AExtensionsInterceptor implements ServerInterceptor {
             ServerCallHandler<ReqT, RespT> serverCallHandler) {
 
         // Extract A2A protocol version header
-        Metadata.Key<String> versionKey =
-            Metadata.Key.of(A2AHeaders.X_A2A_VERSION, Metadata.ASCII_STRING_MARSHALLER);
-        String version = metadata.get(versionKey);
-
+        String version = metadata.get(VERSION_KEY);
         // Extract A2A extensions header
-        Metadata.Key<String> extensionsKey =
-            Metadata.Key.of(A2AHeaders.X_A2A_EXTENSIONS, Metadata.ASCII_STRING_MARSHALLER);
-        String extensions = metadata.get(extensionsKey);
+        String extensions = metadata.get(EXTENSIONS_KEY);
 
         // Create enhanced context with rich information (equivalent to Python's ServicerContext)
         Context context = Context.current()
