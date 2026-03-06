@@ -250,11 +250,11 @@ public class A2AServerRoutes {
             state.put(TENANT_KEY, extractTenant(rc));
             state.put(TRANSPORT_KEY, TransportProtocol.JSONRPC);
 
-            // Extract requested protocol version from X-A2A-Version header
-            String requestedVersion = rc.request().getHeader(A2AHeaders.X_A2A_VERSION);
+            // Extract requested protocol version from A2A-Version header
+            String requestedVersion = rc.request().getHeader(A2AHeaders.A2A_VERSION);
 
-            // Extract requested extensions from X-A2A-Extensions header
-            List<String> extensionHeaderValues = rc.request().headers().getAll(A2AHeaders.X_A2A_EXTENSIONS);
+            // Extract requested extensions from A2A-Extensions header
+            List<String> extensionHeaderValues = rc.request().headers().getAll(A2AHeaders.A2A_EXTENSIONS);
             Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
 
             return new ServerCallContext(user, state, requestedExtensions, requestedVersion);

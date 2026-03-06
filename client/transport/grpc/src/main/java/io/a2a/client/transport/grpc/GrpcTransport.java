@@ -61,10 +61,10 @@ public class GrpcTransport implements ClientTransport {
             AuthInterceptor.AUTHORIZATION,
             Metadata.ASCII_STRING_MARSHALLER);
     private static final Metadata.Key<String> EXTENSIONS_KEY = Metadata.Key.of(
-            A2AHeaders.X_A2A_EXTENSIONS,
+            A2AHeaders.A2A_EXTENSIONS.toLowerCase(),
             Metadata.ASCII_STRING_MARSHALLER);
     private static final Metadata.Key<String> VERSION_KEY = Metadata.Key.of(
-            A2AHeaders.X_A2A_VERSION,
+            A2AHeaders.A2A_VERSION.toLowerCase(),
             Metadata.ASCII_STRING_MARSHALLER);
     private final A2AServiceBlockingV2Stub blockingStub;
     private final A2AServiceStub asyncStub;
@@ -380,8 +380,8 @@ public class GrpcTransport implements ClientTransport {
 
     /**
      * Creates gRPC metadata from ClientCallContext headers.
-     * Extracts headers like X-A2A-Extensions and sets them as gRPC metadata.
-     *
+     * Extracts headers like a2a-extensions and sets them as gRPC metadata.
+     * The headers are lower-cased (compared to the HTTP headers).
      * @param context the client call context containing headers, may be null
      * @param payloadAndHeaders the payload and headers wrapper, may be null
      * @return the gRPC metadata
@@ -390,14 +390,14 @@ public class GrpcTransport implements ClientTransport {
         Metadata metadata = new Metadata();
 
         if (context != null && context.getHeaders() != null) {
-            // Set X-A2A-Version header if present
-            String versionHeader = context.getHeaders().get(A2AHeaders.X_A2A_VERSION);
+            // Set a2a-version header if present
+            String versionHeader = context.getHeaders().get(A2AHeaders.A2A_VERSION);
             if (versionHeader != null) {
                 metadata.put(VERSION_KEY, versionHeader);
             }
 
-            // Set X-A2A-Extensions header if present
-            String extensionsHeader = context.getHeaders().get(A2AHeaders.X_A2A_EXTENSIONS);
+            // Set a2a-extensions header if present
+            String extensionsHeader = context.getHeaders().get(A2AHeaders.A2A_EXTENSIONS);
             if (extensionsHeader != null) {
                 metadata.put(EXTENSIONS_KEY, extensionsHeader);
             }
