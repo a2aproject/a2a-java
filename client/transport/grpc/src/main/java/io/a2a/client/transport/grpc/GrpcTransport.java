@@ -391,7 +391,7 @@ public class GrpcTransport implements ClientTransport {
 
         if (context != null && context.getHeaders() != null) {
             // Set a2a-version header if present
-            String versionHeader = context.getHeaders().get(A2AHeaders.A2A_VERSION.toLowerCase());
+            String versionHeader = context.getHeaders().get(A2AHeaders.A2A_VERSION);
             if (versionHeader != null) {
                 metadata.put(VERSION_KEY, versionHeader);
             }
