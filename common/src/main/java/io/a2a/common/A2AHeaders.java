@@ -9,13 +9,13 @@ public final class A2AHeaders {
      * HTTP header name for A2A protocol version.
      * Used to communicate the protocol version that the client is using.
      */
-    public static final String X_A2A_VERSION = "X-A2A-Version";
+    public static final String A2A_VERSION = "A2A-Version";
 
     /**
      * HTTP header name for A2A extensions.
      * Used to communicate which extensions are requested by the client.
      */
-    public static final String X_A2A_EXTENSIONS = "X-A2A-Extensions";
+    public static final String A2A_EXTENSIONS = "A2A-Extensions";
 
     /**
      * HTTP header name for a push notification token.
