@@ -177,6 +177,8 @@ if ! kubectl get namespace kafka > /dev/null 2>&1; then
 fi
 
 if ! kubectl get crd kafkas.kafka.strimzi.io > /dev/null 2>&1; then
+#    echo "Installing Strimzi operator... at https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.1/strimzi-cluster-operator-0.50.1.yaml"
+#    kubectl create -f 'https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.1/strimzi-cluster-operator-0.50.1.yaml' -n kafka
     echo "Installing Strimzi operator..."
     kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 
