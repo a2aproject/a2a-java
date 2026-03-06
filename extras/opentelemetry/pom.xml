@@ -19,6 +19,7 @@
 
     <properties>
         <version.org.eclipse.microprofile.telemetry>2.0.1</version.org.eclipse.microprofile.telemetry>
+        <version.org.eclipse.microprofile.context-propagation>1.3</version.org.eclipse.microprofile.context-propagation>
     </properties>
     <dependencies>
         <dependency>
