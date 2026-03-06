@@ -9,7 +9,7 @@ import jakarta.persistence.Transient;
 
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.json.JsonUtil;
-import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.TaskPushNotificationConfig;
 import java.time.Instant;
 
 @Entity
@@ -25,7 +25,7 @@ public class JpaPushNotificationConfig {
     private Instant createdAt;
 
     @Transient
-    private PushNotificationConfig config;
+    private TaskPushNotificationConfig config;
 
     // Default constructor required by JPA
     public JpaPushNotificationConfig() {
@@ -55,14 +55,14 @@ public class JpaPushNotificationConfig {
         this.configJson = configJson;
     }
 
-    public PushNotificationConfig getConfig() throws JsonProcessingException {
+    public TaskPushNotificationConfig getConfig() throws JsonProcessingException {
         if (config == null) {
-            this.config = JsonUtil.fromJson(configJson, PushNotificationConfig.class);
+            this.config = JsonUtil.fromJson(configJson, TaskPushNotificationConfig.class);
         }
         return config;
     }
 
-    public void setConfig(PushNotificationConfig config) throws JsonProcessingException {
+    public void setConfig(TaskPushNotificationConfig config) throws JsonProcessingException {
         if (config.id() == null || !config.id().equals(id.getConfigId())) {
             throw new IllegalArgumentException("Mismatched config id. " +
                     "Expected '" + id.getConfigId() + "'. Got: '" + config.id() + "'");
@@ -79,7 +79,7 @@ public class JpaPushNotificationConfig {
       this.createdAt = createdAt;
     }
 
-    static JpaPushNotificationConfig createFromConfig(String taskId, PushNotificationConfig config) throws JsonProcessingException {
+    static JpaPushNotificationConfig createFromConfig(String taskId, TaskPushNotificationConfig config) throws JsonProcessingException {
         String json = JsonUtil.toJson(config);
         JpaPushNotificationConfig jpaPushNotificationConfig =
                 new JpaPushNotificationConfig(new TaskConfigId(taskId, config.id()), json);

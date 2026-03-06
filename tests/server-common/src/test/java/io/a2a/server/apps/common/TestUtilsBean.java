@@ -7,7 +7,7 @@ import io.a2a.server.events.QueueManager;
 import io.a2a.server.tasks.PushNotificationConfigStore;
 import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.Event;
-import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.Task;
 
 /**
@@ -58,8 +58,8 @@ public class TestUtilsBean {
         pushNotificationConfigStore.deleteInfo(taskId, configId);
     }
 
-    public void saveTaskPushNotificationConfig(String taskId, PushNotificationConfig notificationConfig) {
-        pushNotificationConfigStore.setInfo(taskId, notificationConfig);
+    public void saveTaskPushNotificationConfig(String taskId, TaskPushNotificationConfig notificationConfig) {
+        pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(notificationConfig).taskId(taskId).build());
     }
 
     /**

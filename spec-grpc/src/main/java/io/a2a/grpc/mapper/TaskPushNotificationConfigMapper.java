@@ -1,7 +1,7 @@
 package io.a2a.grpc.mapper;
 
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
+import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -9,9 +9,11 @@ import org.mapstruct.Mapping;
  * MapStruct mapper for TaskPushNotificationConfig.
  * <p>
  * Maps between domain TaskPushNotificationConfig and proto TaskPushNotificationConfig.
- * The proto now has direct task_id and id fields instead of a resource name.
+ * The proto has direct id, task_id, url, token, authentication, and tenant fields.
  */
-@Mapper(config = A2AProtoMapperConfig.class, uses = {PushNotificationConfigMapper.class})
+@Mapper(config = A2AProtoMapperConfig.class,
+        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
+        uses = {AuthenticationInfoMapper.class, A2ACommonFieldMapper.class})
 public interface TaskPushNotificationConfigMapper {
 
     TaskPushNotificationConfigMapper INSTANCE = A2AMappers.getMapper(TaskPushNotificationConfigMapper.class);
@@ -22,9 +24,12 @@ public interface TaskPushNotificationConfigMapper {
      * @param domain the domain TaskPushNotificationConfig
      * @return protobuf TaskPushNotificationConfig
      */
-    @Mapping(target = "taskId", source = "taskId")
-    @Mapping(target = "pushNotificationConfig", source = "config")
+    @Mapping(target = "id", source = "id", conditionExpression = "java(domain.id() != null)")
+    @Mapping(target = "taskId", source = "taskId", conditionExpression = "java(domain.taskId() != null)")
+    @Mapping(target = "url", source = "url", conditionExpression = "java(domain.url() != null)")
+    @Mapping(target = "token", source = "token", conditionExpression = "java(domain.token() != null)")
     @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
+    @Mapping(target = "authentication", source = "authentication", conditionExpression = "java(domain.authentication() != null)")
     io.a2a.grpc.TaskPushNotificationConfig toProto(TaskPushNotificationConfig domain);
 
     /**
@@ -33,42 +38,9 @@ public interface TaskPushNotificationConfigMapper {
      * @param proto the protobuf TaskPushNotificationConfig
      * @return domain TaskPushNotificationConfig
      */
-    @Mapping(target = "taskId", source = "taskId")
-    @Mapping(target = "config", expression = "java(mapPushNotificationConfigWithId(proto))")
-    @Mapping(target = "tenant", expression = "java(proto.getTenant().isEmpty() ? null : proto.getTenant())")
+    @Mapping(target = "token", source = "token", qualifiedByName = "emptyToNull")
+    @Mapping(target = "tenant", source = "tenant", qualifiedByName = "emptyToNull")
+    @Mapping(target = "taskId", source = "taskId", qualifiedByName = "emptyToNull")
+    @Mapping(target = "authentication", source = "authentication", conditionExpression = "java(proto.hasAuthentication())")
     TaskPushNotificationConfig fromProto(io.a2a.grpc.TaskPushNotificationConfig proto);
-
-    /**
-     * Extracts the config ID from the PushNotificationConfig.
-     *
-     * @param config the domain TaskPushNotificationConfig
-     * @return the config ID
-     */
-    default String extractId(TaskPushNotificationConfig config) {
-        return config.config()!= null ? config.config().id() : null;
-    }
-
-    /**
-     * Maps the protobuf PushNotificationConfig to domain, ensuring the ID matches the proto's id field.
-     *
-     * @param proto the protobuf TaskPushNotificationConfig
-     * @return domain PushNotificationConfig with correct ID
-     */
-    default PushNotificationConfig mapPushNotificationConfigWithId(io.a2a.grpc.TaskPushNotificationConfig proto) {
-        if (!proto.hasPushNotificationConfig() ||
-            proto.getPushNotificationConfig().equals(io.a2a.grpc.PushNotificationConfig.getDefaultInstance())) {
-            return null;
-        }
-
-        // Map the proto PushNotificationConfig
-        PushNotificationConfig result = PushNotificationConfigMapper.INSTANCE.fromProto(proto.getPushNotificationConfig());
-
-        // Override ID with the id from TaskPushNotificationConfig if they differ
-        String configId = proto.getPushNotificationConfig().getId();
-        if (configId != null && !configId.isEmpty() && !configId.equals(result.id())) {
-            return new PushNotificationConfig(result.url(), result.token(), result.authentication(), configId);
-        }
-
-        return result;
-    }
 }

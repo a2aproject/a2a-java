@@ -33,7 +33,10 @@ private static final long serialVersionUID = 0L;
   }
   private TaskPushNotificationConfig() {
     tenant_ = "";
+    id_ = "";
     taskId_ = "";
+    url_ = "";
+    token_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -97,7 +100,56 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int TASK_ID_FIELD_NUMBER = 2;
+  public static final int ID_FIELD_NUMBER = 2;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object id_ = "";
+  /**
+   * <pre>
+   * The push notification configuration details.
+   * A unique identifier (e.g. UUID) for this push notification configuration.
+   * </pre>
+   *
+   * <code>string id = 2;</code>
+   * @return The id.
+   */
+  @java.lang.Override
+  public java.lang.String getId() {
+    java.lang.Object ref = id_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      id_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * The push notification configuration details.
+   * A unique identifier (e.g. UUID) for this push notification configuration.
+   * </pre>
+   *
+   * <code>string id = 2;</code>
+   * @return The bytes for id.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getIdBytes() {
+    java.lang.Object ref = id_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      id_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int TASK_ID_FIELD_NUMBER = 3;
   @SuppressWarnings("serial")
   private volatile java.lang.Object taskId_ = "";
   /**
@@ -105,7 +157,7 @@ private static final long serialVersionUID = 0L;
    * The ID of the task this configuration is associated with.
    * </pre>
    *
-   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 3;</code>
    * @return The taskId.
    */
   @java.lang.Override
@@ -126,7 +178,7 @@ private static final long serialVersionUID = 0L;
    * The ID of the task this configuration is associated with.
    * </pre>
    *
-   * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string task_id = 3;</code>
    * @return The bytes for taskId.
    */
   @java.lang.Override
@@ -144,42 +196,136 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER = 3;
-  private io.a2a.grpc.PushNotificationConfig pushNotificationConfig_;
+  public static final int URL_FIELD_NUMBER = 4;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object url_ = "";
   /**
    * <pre>
-   * The push notification configuration details.
+   * The URL where the notification should be sent.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return Whether the pushNotificationConfig field is set.
+   * <code>string url = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The url.
    */
   @java.lang.Override
-  public boolean hasPushNotificationConfig() {
+  public java.lang.String getUrl() {
+    java.lang.Object ref = url_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      url_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * The URL where the notification should be sent.
+   * </pre>
+   *
+   * <code>string url = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+   * @return The bytes for url.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getUrlBytes() {
+    java.lang.Object ref = url_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      url_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int TOKEN_FIELD_NUMBER = 5;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object token_ = "";
+  /**
+   * <pre>
+   * A token unique for this task or session.
+   * </pre>
+   *
+   * <code>string token = 5;</code>
+   * @return The token.
+   */
+  @java.lang.Override
+  public java.lang.String getToken() {
+    java.lang.Object ref = token_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      token_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * A token unique for this task or session.
+   * </pre>
+   *
+   * <code>string token = 5;</code>
+   * @return The bytes for token.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getTokenBytes() {
+    java.lang.Object ref = token_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      token_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int AUTHENTICATION_FIELD_NUMBER = 6;
+  private io.a2a.grpc.AuthenticationInfo authentication_;
+  /**
+   * <pre>
+   * Authentication information required to send the notification.
+   * </pre>
+   *
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
+   * @return Whether the authentication field is set.
+   */
+  @java.lang.Override
+  public boolean hasAuthentication() {
     return ((bitField0_ & 0x00000001) != 0);
   }
   /**
    * <pre>
-   * The push notification configuration details.
+   * Authentication information required to send the notification.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
-   * @return The pushNotificationConfig.
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
+   * @return The authentication.
    */
   @java.lang.Override
-  public io.a2a.grpc.PushNotificationConfig getPushNotificationConfig() {
-    return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
+  public io.a2a.grpc.AuthenticationInfo getAuthentication() {
+    return authentication_ == null ? io.a2a.grpc.AuthenticationInfo.getDefaultInstance() : authentication_;
   }
   /**
    * <pre>
-   * The push notification configuration details.
+   * Authentication information required to send the notification.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
-    return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
+  public io.a2a.grpc.AuthenticationInfoOrBuilder getAuthenticationOrBuilder() {
+    return authentication_ == null ? io.a2a.grpc.AuthenticationInfo.getDefaultInstance() : authentication_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -199,11 +345,20 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 1, tenant_);
     }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, id_);
+    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(taskId_)) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 2, taskId_);
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, taskId_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(url_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 4, url_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(token_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 5, token_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(3, getPushNotificationConfig());
+      output.writeMessage(6, getAuthentication());
     }
     getUnknownFields().writeTo(output);
   }
@@ -217,12 +372,21 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(tenant_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(1, tenant_);
     }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(id_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, id_);
+    }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(taskId_)) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, taskId_);
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, taskId_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(url_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(4, url_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(token_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(5, token_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, getPushNotificationConfig());
+        .computeMessageSize(6, getAuthentication());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -241,12 +405,18 @@ private static final long serialVersionUID = 0L;
 
     if (!getTenant()
         .equals(other.getTenant())) return false;
+    if (!getId()
+        .equals(other.getId())) return false;
     if (!getTaskId()
         .equals(other.getTaskId())) return false;
-    if (hasPushNotificationConfig() != other.hasPushNotificationConfig()) return false;
-    if (hasPushNotificationConfig()) {
-      if (!getPushNotificationConfig()
-          .equals(other.getPushNotificationConfig())) return false;
+    if (!getUrl()
+        .equals(other.getUrl())) return false;
+    if (!getToken()
+        .equals(other.getToken())) return false;
+    if (hasAuthentication() != other.hasAuthentication()) return false;
+    if (hasAuthentication()) {
+      if (!getAuthentication()
+          .equals(other.getAuthentication())) return false;
     }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
@@ -261,11 +431,17 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + TENANT_FIELD_NUMBER;
     hash = (53 * hash) + getTenant().hashCode();
+    hash = (37 * hash) + ID_FIELD_NUMBER;
+    hash = (53 * hash) + getId().hashCode();
     hash = (37 * hash) + TASK_ID_FIELD_NUMBER;
     hash = (53 * hash) + getTaskId().hashCode();
-    if (hasPushNotificationConfig()) {
-      hash = (37 * hash) + PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER;
-      hash = (53 * hash) + getPushNotificationConfig().hashCode();
+    hash = (37 * hash) + URL_FIELD_NUMBER;
+    hash = (53 * hash) + getUrl().hashCode();
+    hash = (37 * hash) + TOKEN_FIELD_NUMBER;
+    hash = (53 * hash) + getToken().hashCode();
+    if (hasAuthentication()) {
+      hash = (37 * hash) + AUTHENTICATION_FIELD_NUMBER;
+      hash = (53 * hash) + getAuthentication().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -401,7 +577,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
-        internalGetPushNotificationConfigFieldBuilder();
+        internalGetAuthenticationFieldBuilder();
       }
     }
     @java.lang.Override
@@ -409,11 +585,14 @@ private static final long serialVersionUID = 0L;
       super.clear();
       bitField0_ = 0;
       tenant_ = "";
+      id_ = "";
       taskId_ = "";
-      pushNotificationConfig_ = null;
-      if (pushNotificationConfigBuilder_ != null) {
-        pushNotificationConfigBuilder_.dispose();
-        pushNotificationConfigBuilder_ = null;
+      url_ = "";
+      token_ = "";
+      authentication_ = null;
+      if (authenticationBuilder_ != null) {
+        authenticationBuilder_.dispose();
+        authenticationBuilder_ = null;
       }
       return this;
     }
@@ -452,13 +631,22 @@ private static final long serialVersionUID = 0L;
         result.tenant_ = tenant_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.id_ = id_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
         result.taskId_ = taskId_;
       }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.url_ = url_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.token_ = token_;
+      }
       int to_bitField0_ = 0;
-      if (((from_bitField0_ & 0x00000004) != 0)) {
-        result.pushNotificationConfig_ = pushNotificationConfigBuilder_ == null
-            ? pushNotificationConfig_
-            : pushNotificationConfigBuilder_.build();
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.authentication_ = authenticationBuilder_ == null
+            ? authentication_
+            : authenticationBuilder_.build();
         to_bitField0_ |= 0x00000001;
       }
       result.bitField0_ |= to_bitField0_;
@@ -481,13 +669,28 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000001;
         onChanged();
       }
-      if (!other.getTaskId().isEmpty()) {
-        taskId_ = other.taskId_;
+      if (!other.getId().isEmpty()) {
+        id_ = other.id_;
         bitField0_ |= 0x00000002;
         onChanged();
       }
-      if (other.hasPushNotificationConfig()) {
-        mergePushNotificationConfig(other.getPushNotificationConfig());
+      if (!other.getTaskId().isEmpty()) {
+        taskId_ = other.taskId_;
+        bitField0_ |= 0x00000004;
+        onChanged();
+      }
+      if (!other.getUrl().isEmpty()) {
+        url_ = other.url_;
+        bitField0_ |= 0x00000008;
+        onChanged();
+      }
+      if (!other.getToken().isEmpty()) {
+        token_ = other.token_;
+        bitField0_ |= 0x00000010;
+        onChanged();
+      }
+      if (other.hasAuthentication()) {
+        mergeAuthentication(other.getAuthentication());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -521,17 +724,32 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 10
             case 18: {
-              taskId_ = input.readStringRequireUtf8();
+              id_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000002;
               break;
             } // case 18
             case 26: {
-              input.readMessage(
-                  internalGetPushNotificationConfigFieldBuilder().getBuilder(),
-                  extensionRegistry);
+              taskId_ = input.readStringRequireUtf8();
               bitField0_ |= 0x00000004;
               break;
             } // case 26
+            case 34: {
+              url_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000008;
+              break;
+            } // case 34
+            case 42: {
+              token_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000010;
+              break;
+            } // case 42
+            case 50: {
+              input.readMessage(
+                  internalGetAuthenticationFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000020;
+              break;
+            } // case 50
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -641,13 +859,110 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private java.lang.Object id_ = "";
+    /**
+     * <pre>
+     * The push notification configuration details.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
+     * </pre>
+     *
+     * <code>string id = 2;</code>
+     * @return The id.
+     */
+    public java.lang.String getId() {
+      java.lang.Object ref = id_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        id_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The push notification configuration details.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
+     * </pre>
+     *
+     * <code>string id = 2;</code>
+     * @return The bytes for id.
+     */
+    public com.google.protobuf.ByteString
+        getIdBytes() {
+      java.lang.Object ref = id_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        id_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The push notification configuration details.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
+     * </pre>
+     *
+     * <code>string id = 2;</code>
+     * @param value The id to set.
+     * @return This builder for chaining.
+     */
+    public Builder setId(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      id_ = value;
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The push notification configuration details.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
+     * </pre>
+     *
+     * <code>string id = 2;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearId() {
+      id_ = getDefaultInstance().getId();
+      bitField0_ = (bitField0_ & ~0x00000002);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The push notification configuration details.
+     * A unique identifier (e.g. UUID) for this push notification configuration.
+     * </pre>
+     *
+     * <code>string id = 2;</code>
+     * @param value The bytes for id to set.
+     * @return This builder for chaining.
+     */
+    public Builder setIdBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      id_ = value;
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+
     private java.lang.Object taskId_ = "";
     /**
      * <pre>
      * The ID of the task this configuration is associated with.
      * </pre>
      *
-     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 3;</code>
      * @return The taskId.
      */
     public java.lang.String getTaskId() {
@@ -667,7 +982,7 @@ private static final long serialVersionUID = 0L;
      * The ID of the task this configuration is associated with.
      * </pre>
      *
-     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 3;</code>
      * @return The bytes for taskId.
      */
     public com.google.protobuf.ByteString
@@ -688,7 +1003,7 @@ private static final long serialVersionUID = 0L;
      * The ID of the task this configuration is associated with.
      * </pre>
      *
-     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 3;</code>
      * @param value The taskId to set.
      * @return This builder for chaining.
      */
@@ -696,7 +1011,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String value) {
       if (value == null) { throw new NullPointerException(); }
       taskId_ = value;
-      bitField0_ |= 0x00000002;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -705,12 +1020,12 @@ private static final long serialVersionUID = 0L;
      * The ID of the task this configuration is associated with.
      * </pre>
      *
-     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 3;</code>
      * @return This builder for chaining.
      */
     public Builder clearTaskId() {
       taskId_ = getDefaultInstance().getTaskId();
-      bitField0_ = (bitField0_ & ~0x00000002);
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -719,7 +1034,7 @@ private static final long serialVersionUID = 0L;
      * The ID of the task this configuration is associated with.
      * </pre>
      *
-     * <code>string task_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string task_id = 3;</code>
      * @param value The bytes for taskId to set.
      * @return This builder for chaining.
      */
@@ -728,166 +1043,350 @@ private static final long serialVersionUID = 0L;
       if (value == null) { throw new NullPointerException(); }
       checkByteStringIsUtf8(value);
       taskId_ = value;
-      bitField0_ |= 0x00000002;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
 
-    private io.a2a.grpc.PushNotificationConfig pushNotificationConfig_;
-    private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> pushNotificationConfigBuilder_;
+    private java.lang.Object url_ = "";
     /**
      * <pre>
-     * The push notification configuration details.
+     * The URL where the notification should be sent.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return Whether the pushNotificationConfig field is set.
+     * <code>string url = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The url.
      */
-    public boolean hasPushNotificationConfig() {
-      return ((bitField0_ & 0x00000004) != 0);
-    }
-    /**
-     * <pre>
-     * The push notification configuration details.
-     * </pre>
-     *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
-     * @return The pushNotificationConfig.
-     */
-    public io.a2a.grpc.PushNotificationConfig getPushNotificationConfig() {
-      if (pushNotificationConfigBuilder_ == null) {
-        return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
+    public java.lang.String getUrl() {
+      java.lang.Object ref = url_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        url_ = s;
+        return s;
       } else {
-        return pushNotificationConfigBuilder_.getMessage();
+        return (java.lang.String) ref;
       }
     }
     /**
      * <pre>
-     * The push notification configuration details.
+     * The URL where the notification should be sent.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>string url = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return The bytes for url.
      */
-    public Builder setPushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
-      if (pushNotificationConfigBuilder_ == null) {
+    public com.google.protobuf.ByteString
+        getUrlBytes() {
+      java.lang.Object ref = url_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        url_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The URL where the notification should be sent.
+     * </pre>
+     *
+     * <code>string url = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The url to set.
+     * @return This builder for chaining.
+     */
+    public Builder setUrl(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      url_ = value;
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The URL where the notification should be sent.
+     * </pre>
+     *
+     * <code>string url = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearUrl() {
+      url_ = getDefaultInstance().getUrl();
+      bitField0_ = (bitField0_ & ~0x00000008);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The URL where the notification should be sent.
+     * </pre>
+     *
+     * <code>string url = 4 [(.google.api.field_behavior) = REQUIRED];</code>
+     * @param value The bytes for url to set.
+     * @return This builder for chaining.
+     */
+    public Builder setUrlBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      url_ = value;
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object token_ = "";
+    /**
+     * <pre>
+     * A token unique for this task or session.
+     * </pre>
+     *
+     * <code>string token = 5;</code>
+     * @return The token.
+     */
+    public java.lang.String getToken() {
+      java.lang.Object ref = token_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        token_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * A token unique for this task or session.
+     * </pre>
+     *
+     * <code>string token = 5;</code>
+     * @return The bytes for token.
+     */
+    public com.google.protobuf.ByteString
+        getTokenBytes() {
+      java.lang.Object ref = token_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        token_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * A token unique for this task or session.
+     * </pre>
+     *
+     * <code>string token = 5;</code>
+     * @param value The token to set.
+     * @return This builder for chaining.
+     */
+    public Builder setToken(
+        java.lang.String value) {
+      if (value == null) { throw new NullPointerException(); }
+      token_ = value;
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A token unique for this task or session.
+     * </pre>
+     *
+     * <code>string token = 5;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearToken() {
+      token_ = getDefaultInstance().getToken();
+      bitField0_ = (bitField0_ & ~0x00000010);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A token unique for this task or session.
+     * </pre>
+     *
+     * <code>string token = 5;</code>
+     * @param value The bytes for token to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTokenBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) { throw new NullPointerException(); }
+      checkByteStringIsUtf8(value);
+      token_ = value;
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+
+    private io.a2a.grpc.AuthenticationInfo authentication_;
+    private com.google.protobuf.SingleFieldBuilder<
+        io.a2a.grpc.AuthenticationInfo, io.a2a.grpc.AuthenticationInfo.Builder, io.a2a.grpc.AuthenticationInfoOrBuilder> authenticationBuilder_;
+    /**
+     * <pre>
+     * Authentication information required to send the notification.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
+     * @return Whether the authentication field is set.
+     */
+    public boolean hasAuthentication() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     * <pre>
+     * Authentication information required to send the notification.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
+     * @return The authentication.
+     */
+    public io.a2a.grpc.AuthenticationInfo getAuthentication() {
+      if (authenticationBuilder_ == null) {
+        return authentication_ == null ? io.a2a.grpc.AuthenticationInfo.getDefaultInstance() : authentication_;
+      } else {
+        return authenticationBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Authentication information required to send the notification.
+     * </pre>
+     *
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
+     */
+    public Builder setAuthentication(io.a2a.grpc.AuthenticationInfo value) {
+      if (authenticationBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        pushNotificationConfig_ = value;
+        authentication_ = value;
       } else {
-        pushNotificationConfigBuilder_.setMessage(value);
+        authenticationBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The push notification configuration details.
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
      */
-    public Builder setPushNotificationConfig(
-        io.a2a.grpc.PushNotificationConfig.Builder builderForValue) {
-      if (pushNotificationConfigBuilder_ == null) {
-        pushNotificationConfig_ = builderForValue.build();
+    public Builder setAuthentication(
+        io.a2a.grpc.AuthenticationInfo.Builder builderForValue) {
+      if (authenticationBuilder_ == null) {
+        authentication_ = builderForValue.build();
       } else {
-        pushNotificationConfigBuilder_.setMessage(builderForValue.build());
+        authenticationBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The push notification configuration details.
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
      */
-    public Builder mergePushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
-      if (pushNotificationConfigBuilder_ == null) {
-        if (((bitField0_ & 0x00000004) != 0) &&
-          pushNotificationConfig_ != null &&
-          pushNotificationConfig_ != io.a2a.grpc.PushNotificationConfig.getDefaultInstance()) {
-          getPushNotificationConfigBuilder().mergeFrom(value);
+    public Builder mergeAuthentication(io.a2a.grpc.AuthenticationInfo value) {
+      if (authenticationBuilder_ == null) {
+        if (((bitField0_ & 0x00000020) != 0) &&
+          authentication_ != null &&
+          authentication_ != io.a2a.grpc.AuthenticationInfo.getDefaultInstance()) {
+          getAuthenticationBuilder().mergeFrom(value);
         } else {
-          pushNotificationConfig_ = value;
+          authentication_ = value;
         }
       } else {
-        pushNotificationConfigBuilder_.mergeFrom(value);
+        authenticationBuilder_.mergeFrom(value);
       }
-      if (pushNotificationConfig_ != null) {
-        bitField0_ |= 0x00000004;
+      if (authentication_ != null) {
+        bitField0_ |= 0x00000020;
         onChanged();
       }
       return this;
     }
     /**
      * <pre>
-     * The push notification configuration details.
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
      */
-    public Builder clearPushNotificationConfig() {
-      bitField0_ = (bitField0_ & ~0x00000004);
-      pushNotificationConfig_ = null;
-      if (pushNotificationConfigBuilder_ != null) {
-        pushNotificationConfigBuilder_.dispose();
-        pushNotificationConfigBuilder_ = null;
+    public Builder clearAuthentication() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      authentication_ = null;
+      if (authenticationBuilder_ != null) {
+        authenticationBuilder_.dispose();
+        authenticationBuilder_ = null;
       }
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * The push notification configuration details.
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
      */
-    public io.a2a.grpc.PushNotificationConfig.Builder getPushNotificationConfigBuilder() {
-      bitField0_ |= 0x00000004;
+    public io.a2a.grpc.AuthenticationInfo.Builder getAuthenticationBuilder() {
+      bitField0_ |= 0x00000020;
       onChanged();
-      return internalGetPushNotificationConfigFieldBuilder().getBuilder();
+      return internalGetAuthenticationFieldBuilder().getBuilder();
     }
     /**
      * <pre>
-     * The push notification configuration details.
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
      */
-    public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
-      if (pushNotificationConfigBuilder_ != null) {
-        return pushNotificationConfigBuilder_.getMessageOrBuilder();
+    public io.a2a.grpc.AuthenticationInfoOrBuilder getAuthenticationOrBuilder() {
+      if (authenticationBuilder_ != null) {
+        return authenticationBuilder_.getMessageOrBuilder();
       } else {
-        return pushNotificationConfig_ == null ?
-            io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
+        return authentication_ == null ?
+            io.a2a.grpc.AuthenticationInfo.getDefaultInstance() : authentication_;
       }
     }
     /**
      * <pre>
-     * The push notification configuration details.
+     * Authentication information required to send the notification.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 3 [(.google.api.field_behavior) = REQUIRED];</code>
+     * <code>.lf.a2a.v1.AuthenticationInfo authentication = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> 
-        internalGetPushNotificationConfigFieldBuilder() {
-      if (pushNotificationConfigBuilder_ == null) {
-        pushNotificationConfigBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-            io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder>(
-                getPushNotificationConfig(),
+        io.a2a.grpc.AuthenticationInfo, io.a2a.grpc.AuthenticationInfo.Builder, io.a2a.grpc.AuthenticationInfoOrBuilder> 
+        internalGetAuthenticationFieldBuilder() {
+      if (authenticationBuilder_ == null) {
+        authenticationBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            io.a2a.grpc.AuthenticationInfo, io.a2a.grpc.AuthenticationInfo.Builder, io.a2a.grpc.AuthenticationInfoOrBuilder>(
+                getAuthentication(),
                 getParentForChildren(),
                 isClean());
-        pushNotificationConfig_ = null;
+        authentication_ = null;
       }
-      return pushNotificationConfigBuilder_;
+      return authenticationBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:lf.a2a.v1.TaskPushNotificationConfig)

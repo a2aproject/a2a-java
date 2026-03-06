@@ -213,11 +213,10 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(1, result.size());
         TaskPushNotificationConfig response = result.get(0);
         assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), response.getTaskId());
-        PushNotificationConfig responseConfig = response.getPushNotificationConfig();
-        assertEquals("config456", responseConfig.getId());
-        assertEquals("http://example.com", responseConfig.getUrl());
-        assertEquals(AuthenticationInfo.getDefaultInstance(), responseConfig.getAuthentication());
-        Assertions.assertTrue(responseConfig.getToken().isEmpty());
+        assertEquals("config456", response.getId());
+        assertEquals("http://example.com", response.getUrl());
+        assertEquals(AuthenticationInfo.getDefaultInstance(), response.getAuthentication());
+        Assertions.assertTrue(response.getToken().isEmpty());
     }
 
     @Test
@@ -240,11 +239,10 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(1, result.size());
         TaskPushNotificationConfig response = result.get(0);
         assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), response.getTaskId());
-        PushNotificationConfig responseConfig = response.getPushNotificationConfig();
-        assertEquals("config456", responseConfig.getId());
-        assertEquals("http://example.com", responseConfig.getUrl());
-        assertEquals(AuthenticationInfo.getDefaultInstance(), responseConfig.getAuthentication());
-        Assertions.assertTrue(responseConfig.getToken().isEmpty());
+        assertEquals("config456", response.getId());
+        assertEquals("http://example.com", response.getUrl());
+        assertEquals(AuthenticationInfo.getDefaultInstance(), response.getAuthentication());
+        Assertions.assertTrue(response.getToken().isEmpty());
     }
 
     @Test
@@ -1144,12 +1142,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
 
     private StreamRecorder<TaskPushNotificationConfig> createTaskPushNotificationConfigRequest(GrpcHandler handler, String taskId, String id) throws Exception {
         taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
-        PushNotificationConfig config = PushNotificationConfig.newBuilder()
+        TaskPushNotificationConfig setRequest = TaskPushNotificationConfig.newBuilder()
                 .setUrl("http://example.com")
                 .setId("config456")
-                .build();
-        CreateTaskPushNotificationConfigRequest setRequest = CreateTaskPushNotificationConfigRequest.newBuilder()
-                .setConfig(config)
                 .setTaskId(MINIMAL_TASK.id())
                 .build();
 

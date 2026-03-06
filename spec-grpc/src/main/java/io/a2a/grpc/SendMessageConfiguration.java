@@ -107,42 +107,45 @@ private static final long serialVersionUID = 0L;
     return acceptedOutputModes_.getByteString(index);
   }
 
-  public static final int PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER = 2;
-  private io.a2a.grpc.PushNotificationConfig pushNotificationConfig_;
+  public static final int TASK_PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER = 2;
+  private io.a2a.grpc.TaskPushNotificationConfig taskPushNotificationConfig_;
   /**
    * <pre>
    * Configuration for the agent to send push notifications for task updates.
+   * Task id should be empty when sending this configuration in a `SendMessage` request.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
-   * @return Whether the pushNotificationConfig field is set.
+   * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
+   * @return Whether the taskPushNotificationConfig field is set.
    */
   @java.lang.Override
-  public boolean hasPushNotificationConfig() {
+  public boolean hasTaskPushNotificationConfig() {
     return ((bitField0_ & 0x00000001) != 0);
   }
   /**
    * <pre>
    * Configuration for the agent to send push notifications for task updates.
+   * Task id should be empty when sending this configuration in a `SendMessage` request.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
-   * @return The pushNotificationConfig.
+   * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
+   * @return The taskPushNotificationConfig.
    */
   @java.lang.Override
-  public io.a2a.grpc.PushNotificationConfig getPushNotificationConfig() {
-    return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
+  public io.a2a.grpc.TaskPushNotificationConfig getTaskPushNotificationConfig() {
+    return taskPushNotificationConfig_ == null ? io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance() : taskPushNotificationConfig_;
   }
   /**
    * <pre>
    * Configuration for the agent to send push notifications for task updates.
+   * Task id should be empty when sending this configuration in a `SendMessage` request.
    * </pre>
    *
-   * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+   * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
    */
   @java.lang.Override
-  public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
-    return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
+  public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getTaskPushNotificationConfigOrBuilder() {
+    return taskPushNotificationConfig_ == null ? io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance() : taskPushNotificationConfig_;
   }
 
   public static final int HISTORY_LENGTH_FIELD_NUMBER = 3;
@@ -213,7 +216,7 @@ private static final long serialVersionUID = 0L;
       com.google.protobuf.GeneratedMessage.writeString(output, 1, acceptedOutputModes_.getRaw(i));
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(2, getPushNotificationConfig());
+      output.writeMessage(2, getTaskPushNotificationConfig());
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeInt32(3, historyLength_);
@@ -240,7 +243,7 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getPushNotificationConfig());
+        .computeMessageSize(2, getTaskPushNotificationConfig());
     }
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
@@ -267,10 +270,10 @@ private static final long serialVersionUID = 0L;
 
     if (!getAcceptedOutputModesList()
         .equals(other.getAcceptedOutputModesList())) return false;
-    if (hasPushNotificationConfig() != other.hasPushNotificationConfig()) return false;
-    if (hasPushNotificationConfig()) {
-      if (!getPushNotificationConfig()
-          .equals(other.getPushNotificationConfig())) return false;
+    if (hasTaskPushNotificationConfig() != other.hasTaskPushNotificationConfig()) return false;
+    if (hasTaskPushNotificationConfig()) {
+      if (!getTaskPushNotificationConfig()
+          .equals(other.getTaskPushNotificationConfig())) return false;
     }
     if (hasHistoryLength() != other.hasHistoryLength()) return false;
     if (hasHistoryLength()) {
@@ -294,9 +297,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + ACCEPTED_OUTPUT_MODES_FIELD_NUMBER;
       hash = (53 * hash) + getAcceptedOutputModesList().hashCode();
     }
-    if (hasPushNotificationConfig()) {
-      hash = (37 * hash) + PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER;
-      hash = (53 * hash) + getPushNotificationConfig().hashCode();
+    if (hasTaskPushNotificationConfig()) {
+      hash = (37 * hash) + TASK_PUSH_NOTIFICATION_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getTaskPushNotificationConfig().hashCode();
     }
     if (hasHistoryLength()) {
       hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
@@ -439,7 +442,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
-        internalGetPushNotificationConfigFieldBuilder();
+        internalGetTaskPushNotificationConfigFieldBuilder();
       }
     }
     @java.lang.Override
@@ -448,10 +451,10 @@ private static final long serialVersionUID = 0L;
       bitField0_ = 0;
       acceptedOutputModes_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
-      pushNotificationConfig_ = null;
-      if (pushNotificationConfigBuilder_ != null) {
-        pushNotificationConfigBuilder_.dispose();
-        pushNotificationConfigBuilder_ = null;
+      taskPushNotificationConfig_ = null;
+      if (taskPushNotificationConfigBuilder_ != null) {
+        taskPushNotificationConfigBuilder_.dispose();
+        taskPushNotificationConfigBuilder_ = null;
       }
       historyLength_ = 0;
       blocking_ = false;
@@ -494,9 +497,9 @@ private static final long serialVersionUID = 0L;
       }
       int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.pushNotificationConfig_ = pushNotificationConfigBuilder_ == null
-            ? pushNotificationConfig_
-            : pushNotificationConfigBuilder_.build();
+        result.taskPushNotificationConfig_ = taskPushNotificationConfigBuilder_ == null
+            ? taskPushNotificationConfig_
+            : taskPushNotificationConfigBuilder_.build();
         to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
@@ -531,8 +534,8 @@ private static final long serialVersionUID = 0L;
         }
         onChanged();
       }
-      if (other.hasPushNotificationConfig()) {
-        mergePushNotificationConfig(other.getPushNotificationConfig());
+      if (other.hasTaskPushNotificationConfig()) {
+        mergeTaskPushNotificationConfig(other.getTaskPushNotificationConfig());
       }
       if (other.hasHistoryLength()) {
         setHistoryLength(other.getHistoryLength());
@@ -574,7 +577,7 @@ private static final long serialVersionUID = 0L;
             } // case 10
             case 18: {
               input.readMessage(
-                  internalGetPushNotificationConfigFieldBuilder().getBuilder(),
+                  internalGetTaskPushNotificationConfigFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000002;
               break;
@@ -762,50 +765,53 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private io.a2a.grpc.PushNotificationConfig pushNotificationConfig_;
+    private io.a2a.grpc.TaskPushNotificationConfig taskPushNotificationConfig_;
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> pushNotificationConfigBuilder_;
+        io.a2a.grpc.TaskPushNotificationConfig, io.a2a.grpc.TaskPushNotificationConfig.Builder, io.a2a.grpc.TaskPushNotificationConfigOrBuilder> taskPushNotificationConfigBuilder_;
     /**
      * <pre>
      * Configuration for the agent to send push notifications for task updates.
+     * Task id should be empty when sending this configuration in a `SendMessage` request.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
-     * @return Whether the pushNotificationConfig field is set.
+     * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
+     * @return Whether the taskPushNotificationConfig field is set.
      */
-    public boolean hasPushNotificationConfig() {
+    public boolean hasTaskPushNotificationConfig() {
       return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <pre>
      * Configuration for the agent to send push notifications for task updates.
+     * Task id should be empty when sending this configuration in a `SendMessage` request.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
-     * @return The pushNotificationConfig.
+     * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
+     * @return The taskPushNotificationConfig.
      */
-    public io.a2a.grpc.PushNotificationConfig getPushNotificationConfig() {
-      if (pushNotificationConfigBuilder_ == null) {
-        return pushNotificationConfig_ == null ? io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
+    public io.a2a.grpc.TaskPushNotificationConfig getTaskPushNotificationConfig() {
+      if (taskPushNotificationConfigBuilder_ == null) {
+        return taskPushNotificationConfig_ == null ? io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance() : taskPushNotificationConfig_;
       } else {
-        return pushNotificationConfigBuilder_.getMessage();
+        return taskPushNotificationConfigBuilder_.getMessage();
       }
     }
     /**
      * <pre>
      * Configuration for the agent to send push notifications for task updates.
+     * Task id should be empty when sending this configuration in a `SendMessage` request.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
      */
-    public Builder setPushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
-      if (pushNotificationConfigBuilder_ == null) {
+    public Builder setTaskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfig value) {
+      if (taskPushNotificationConfigBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        pushNotificationConfig_ = value;
+        taskPushNotificationConfig_ = value;
       } else {
-        pushNotificationConfigBuilder_.setMessage(value);
+        taskPushNotificationConfigBuilder_.setMessage(value);
       }
       bitField0_ |= 0x00000002;
       onChanged();
@@ -814,16 +820,17 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Configuration for the agent to send push notifications for task updates.
+     * Task id should be empty when sending this configuration in a `SendMessage` request.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
      */
-    public Builder setPushNotificationConfig(
-        io.a2a.grpc.PushNotificationConfig.Builder builderForValue) {
-      if (pushNotificationConfigBuilder_ == null) {
-        pushNotificationConfig_ = builderForValue.build();
+    public Builder setTaskPushNotificationConfig(
+        io.a2a.grpc.TaskPushNotificationConfig.Builder builderForValue) {
+      if (taskPushNotificationConfigBuilder_ == null) {
+        taskPushNotificationConfig_ = builderForValue.build();
       } else {
-        pushNotificationConfigBuilder_.setMessage(builderForValue.build());
+        taskPushNotificationConfigBuilder_.setMessage(builderForValue.build());
       }
       bitField0_ |= 0x00000002;
       onChanged();
@@ -832,23 +839,24 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Configuration for the agent to send push notifications for task updates.
+     * Task id should be empty when sending this configuration in a `SendMessage` request.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
      */
-    public Builder mergePushNotificationConfig(io.a2a.grpc.PushNotificationConfig value) {
-      if (pushNotificationConfigBuilder_ == null) {
+    public Builder mergeTaskPushNotificationConfig(io.a2a.grpc.TaskPushNotificationConfig value) {
+      if (taskPushNotificationConfigBuilder_ == null) {
         if (((bitField0_ & 0x00000002) != 0) &&
-          pushNotificationConfig_ != null &&
-          pushNotificationConfig_ != io.a2a.grpc.PushNotificationConfig.getDefaultInstance()) {
-          getPushNotificationConfigBuilder().mergeFrom(value);
+          taskPushNotificationConfig_ != null &&
+          taskPushNotificationConfig_ != io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance()) {
+          getTaskPushNotificationConfigBuilder().mergeFrom(value);
         } else {
-          pushNotificationConfig_ = value;
+          taskPushNotificationConfig_ = value;
         }
       } else {
-        pushNotificationConfigBuilder_.mergeFrom(value);
+        taskPushNotificationConfigBuilder_.mergeFrom(value);
       }
-      if (pushNotificationConfig_ != null) {
+      if (taskPushNotificationConfig_ != null) {
         bitField0_ |= 0x00000002;
         onChanged();
       }
@@ -857,16 +865,17 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Configuration for the agent to send push notifications for task updates.
+     * Task id should be empty when sending this configuration in a `SendMessage` request.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
      */
-    public Builder clearPushNotificationConfig() {
+    public Builder clearTaskPushNotificationConfig() {
       bitField0_ = (bitField0_ & ~0x00000002);
-      pushNotificationConfig_ = null;
-      if (pushNotificationConfigBuilder_ != null) {
-        pushNotificationConfigBuilder_.dispose();
-        pushNotificationConfigBuilder_ = null;
+      taskPushNotificationConfig_ = null;
+      if (taskPushNotificationConfigBuilder_ != null) {
+        taskPushNotificationConfigBuilder_.dispose();
+        taskPushNotificationConfigBuilder_ = null;
       }
       onChanged();
       return this;
@@ -874,49 +883,52 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Configuration for the agent to send push notifications for task updates.
+     * Task id should be empty when sending this configuration in a `SendMessage` request.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
      */
-    public io.a2a.grpc.PushNotificationConfig.Builder getPushNotificationConfigBuilder() {
+    public io.a2a.grpc.TaskPushNotificationConfig.Builder getTaskPushNotificationConfigBuilder() {
       bitField0_ |= 0x00000002;
       onChanged();
-      return internalGetPushNotificationConfigFieldBuilder().getBuilder();
+      return internalGetTaskPushNotificationConfigFieldBuilder().getBuilder();
     }
     /**
      * <pre>
      * Configuration for the agent to send push notifications for task updates.
+     * Task id should be empty when sending this configuration in a `SendMessage` request.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
      */
-    public io.a2a.grpc.PushNotificationConfigOrBuilder getPushNotificationConfigOrBuilder() {
-      if (pushNotificationConfigBuilder_ != null) {
-        return pushNotificationConfigBuilder_.getMessageOrBuilder();
+    public io.a2a.grpc.TaskPushNotificationConfigOrBuilder getTaskPushNotificationConfigOrBuilder() {
+      if (taskPushNotificationConfigBuilder_ != null) {
+        return taskPushNotificationConfigBuilder_.getMessageOrBuilder();
       } else {
-        return pushNotificationConfig_ == null ?
-            io.a2a.grpc.PushNotificationConfig.getDefaultInstance() : pushNotificationConfig_;
+        return taskPushNotificationConfig_ == null ?
+            io.a2a.grpc.TaskPushNotificationConfig.getDefaultInstance() : taskPushNotificationConfig_;
       }
     }
     /**
      * <pre>
      * Configuration for the agent to send push notifications for task updates.
+     * Task id should be empty when sending this configuration in a `SendMessage` request.
      * </pre>
      *
-     * <code>.lf.a2a.v1.PushNotificationConfig push_notification_config = 2;</code>
+     * <code>.lf.a2a.v1.TaskPushNotificationConfig task_push_notification_config = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
-        io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder> 
-        internalGetPushNotificationConfigFieldBuilder() {
-      if (pushNotificationConfigBuilder_ == null) {
-        pushNotificationConfigBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-            io.a2a.grpc.PushNotificationConfig, io.a2a.grpc.PushNotificationConfig.Builder, io.a2a.grpc.PushNotificationConfigOrBuilder>(
-                getPushNotificationConfig(),
+        io.a2a.grpc.TaskPushNotificationConfig, io.a2a.grpc.TaskPushNotificationConfig.Builder, io.a2a.grpc.TaskPushNotificationConfigOrBuilder> 
+        internalGetTaskPushNotificationConfigFieldBuilder() {
+      if (taskPushNotificationConfigBuilder_ == null) {
+        taskPushNotificationConfigBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            io.a2a.grpc.TaskPushNotificationConfig, io.a2a.grpc.TaskPushNotificationConfig.Builder, io.a2a.grpc.TaskPushNotificationConfigOrBuilder>(
+                getTaskPushNotificationConfig(),
                 getParentForChildren(),
                 isClean());
-        pushNotificationConfig_ = null;
+        taskPushNotificationConfig_ = null;
       }
-      return pushNotificationConfigBuilder_;
+      return taskPushNotificationConfigBuilder_;
     }
 
     private int historyLength_ ;

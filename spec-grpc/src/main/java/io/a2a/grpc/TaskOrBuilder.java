@@ -35,20 +35,20 @@ public interface TaskOrBuilder extends
   /**
    * <pre>
    * Unique identifier (e.g. UUID) for the contextual collection of interactions
-   * (tasks and messages). Created by the A2A server.
+   * (tasks and messages).
    * </pre>
    *
-   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string context_id = 2;</code>
    * @return The contextId.
    */
   java.lang.String getContextId();
   /**
    * <pre>
    * Unique identifier (e.g. UUID) for the contextual collection of interactions
-   * (tasks and messages). Created by the A2A server.
+   * (tasks and messages).
    * </pre>
    *
-   * <code>string context_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
+   * <code>string context_id = 2;</code>
    * @return The bytes for contextId.
    */
   com.google.protobuf.ByteString

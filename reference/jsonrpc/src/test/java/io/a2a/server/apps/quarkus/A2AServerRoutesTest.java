@@ -45,7 +45,6 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskState;
@@ -331,26 +330,23 @@ public class A2AServerRoutesTest {
              "method": "CreateTaskPushNotificationConfig",
              "params": {
               "taskId": "de38c76d-d54c-436c-8b9f-4c2703648d64",
-              "config": {
-                "id": "config-123",
-                "url": "https://example.com/callback",
-                "authentication": {
-                 "scheme": "jwt"
-                }
+              "id": "config-123",
+              "url": "https://example.com/callback",
+              "authentication": {
+               "scheme": "jwt"
               }
              }
             }""";
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with a TaskPushNotificationConfig
-        TaskPushNotificationConfig responseConfig = new TaskPushNotificationConfig(
-                "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                PushNotificationConfig.builder()
-                        .id("config-123")
-                        .url("https://example.com/callback")
-                        .authentication(new AuthenticationInfo("jwt", null))
-                        .build(),
-                "tenant");
+        TaskPushNotificationConfig responseConfig = TaskPushNotificationConfig.builder()
+                .id("config-123")
+                .taskId("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .url("https://example.com/callback")
+                .authentication(new AuthenticationInfo("jwt", null))
+                .tenant("tenant")
+                .build();
 
         CreateTaskPushNotificationConfigResponse realResponse = new CreateTaskPushNotificationConfigResponse("1", responseConfig);
         when(mockJsonRpcHandler.setPushNotificationConfig(any(CreateTaskPushNotificationConfigRequest.class),
@@ -385,14 +381,11 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with a TaskPushNotificationConfig
-        TaskPushNotificationConfig responseConfig = new TaskPushNotificationConfig(
-                "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                PushNotificationConfig.builder()
-                        .id("config-456")
-                        .url("https://example.com/callback")
-                        .build(),
-                null
-        );
+        TaskPushNotificationConfig responseConfig = TaskPushNotificationConfig.builder()
+                .id("config-456")
+                .taskId("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .url("https://example.com/callback")
+                .build();
         GetTaskPushNotificationConfigResponse realResponse = new GetTaskPushNotificationConfigResponse("1", responseConfig);
         when(mockJsonRpcHandler.getPushNotificationConfig(any(GetTaskPushNotificationConfigRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);
@@ -427,14 +420,11 @@ public class A2AServerRoutesTest {
         when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
 
         // Create a real response with a list of TaskPushNotificationConfig
-        TaskPushNotificationConfig config = new TaskPushNotificationConfig(
-                "de38c76d-d54c-436c-8b9f-4c2703648d64",
-                PushNotificationConfig.builder()
-                        .id("config-123")
-                        .url("https://example.com/callback")
-                        .build(),
-                null
-        );
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .id("config-123")
+                .taskId("de38c76d-d54c-436c-8b9f-4c2703648d64")
+                .url("https://example.com/callback")
+                .build();
         ListTaskPushNotificationConfigsResponse realResponse = new ListTaskPushNotificationConfigsResponse("1", new ListTaskPushNotificationConfigResult(singletonList(config)));
         when(mockJsonRpcHandler.listPushNotificationConfig(any(ListTaskPushNotificationConfigsRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);

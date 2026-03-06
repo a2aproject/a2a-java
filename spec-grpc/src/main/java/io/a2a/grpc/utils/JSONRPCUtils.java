@@ -229,12 +229,12 @@ public class JSONRPCUtils {
                 return new ListTasksRequest(version, id, ProtoUtils.FromProto.listTasksParams(builder));
             }
             case SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
-                io.a2a.grpc.CreateTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
+                io.a2a.grpc.TaskPushNotificationConfig.Builder builder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
                 if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
                     builder.setTenant(tenant);
                 }
-                return new CreateTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.CreateTaskPushNotificationConfig(builder));
+                return new CreateTaskPushNotificationConfigRequest(version, id, ProtoUtils.FromProto.createTaskPushNotificationConfig(builder));
             }
             case GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 io.a2a.grpc.GetTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.GetTaskPushNotificationConfigRequest.newBuilder();
@@ -432,7 +432,7 @@ public class JSONRPCUtils {
                 case TASK_NOT_CANCELABLE_ERROR_CODE:
                     return new TaskNotCancelableError(code, message, data);
                 case TASK_NOT_FOUND_ERROR_CODE:
-                    return new TaskNotFoundError(code, message, data);
+                    return new TaskNotFoundError(message, data);
                 default:
                     return new A2AError(code, message == null ? "": message, data);
             }

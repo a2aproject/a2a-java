@@ -12,7 +12,7 @@ import jakarta.inject.Singleton;
 
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.server.apps.common.TestUtilsBean;
-import io.a2a.spec.PushNotificationConfig;
+import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
@@ -169,7 +169,7 @@ public class A2ATestRoutes {
     @Route(path = "/test/task/:taskId", methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void saveTaskPushNotificationConfig(@Param String taskId, @Body String body, RoutingContext rc) {
         try {
-            PushNotificationConfig notificationConfig = JsonUtil.fromJson(body, PushNotificationConfig.class);
+            TaskPushNotificationConfig notificationConfig = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
             if (notificationConfig == null) {
                 rc.response()
                         .setStatusCode(404)

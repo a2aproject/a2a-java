@@ -4,7 +4,6 @@ import static io.a2a.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 
 import java.util.UUID;
 
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.TaskPushNotificationConfig;
 
 /**
@@ -18,7 +17,6 @@ import io.a2a.spec.TaskPushNotificationConfig;
  *
  * @see CreateTaskPushNotificationConfigResponse for the response
  * @see TaskPushNotificationConfig for the parameter structure
- * @see PushNotificationConfig for notification endpoint details
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public final class CreateTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {

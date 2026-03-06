@@ -67,11 +67,6 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_TaskArtifactUpdateEvent_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_lf_a2a_v1_PushNotificationConfig_descriptor;
-  static final 
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_lf_a2a_v1_PushNotificationConfig_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_AuthenticationInfo_descriptor;
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -257,11 +252,6 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_lf_a2a_v1_DeleteTaskPushNotificationConfigRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_lf_a2a_v1_CreateTaskPushNotificationConfigRequest_descriptor;
-  static final 
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_lf_a2a_v1_CreateTaskPushNotificationConfigRequest_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_lf_a2a_v1_SubscribeToTaskRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -305,255 +295,248 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
       "oogle/api/field_behavior.proto\032\033google/p" +
       "rotobuf/empty.proto\032\034google/protobuf/str" +
       "uct.proto\032\037google/protobuf/timestamp.pro" +
-      "to\"\300\001\n\030SendMessageConfiguration\022\035\n\025accep" +
-      "ted_output_modes\030\001 \003(\t\022C\n\030push_notificat" +
-      "ion_config\030\002 \001(\0132!.lf.a2a.v1.PushNotific" +
-      "ationConfig\022\033\n\016history_length\030\003 \001(\005H\000\210\001\001" +
-      "\022\020\n\010blocking\030\004 \001(\010B\021\n\017_history_length\"\324\001" +
-      "\n\004Task\022\017\n\002id\030\001 \001(\tB\003\340A\002\022\027\n\ncontext_id\030\002 " +
-      "\001(\tB\003\340A\002\022*\n\006status\030\003 \001(\0132\025.lf.a2a.v1.Tas" +
-      "kStatusB\003\340A\002\022&\n\tartifacts\030\004 \003(\0132\023.lf.a2a" +
-      ".v1.Artifact\022#\n\007history\030\005 \003(\0132\022.lf.a2a.v" +
-      "1.Message\022)\n\010metadata\030\006 \001(\0132\027.google.pro" +
-      "tobuf.Struct\"\212\001\n\nTaskStatus\022(\n\005state\030\001 \001" +
-      "(\0162\024.lf.a2a.v1.TaskStateB\003\340A\002\022#\n\007message" +
-      "\030\002 \001(\0132\022.lf.a2a.v1.Message\022-\n\ttimestamp\030" +
-      "\003 \001(\0132\032.google.protobuf.Timestamp\"\270\001\n\004Pa" +
-      "rt\022\016\n\004text\030\001 \001(\tH\000\022\r\n\003raw\030\002 \001(\014H\000\022\r\n\003url" +
-      "\030\003 \001(\tH\000\022&\n\004data\030\004 \001(\0132\026.google.protobuf" +
-      ".ValueH\000\022)\n\010metadata\030\005 \001(\0132\027.google.prot" +
-      "obuf.Struct\022\020\n\010filename\030\006 \001(\t\022\022\n\nmedia_t" +
-      "ype\030\007 \001(\tB\t\n\007content\"\353\001\n\007Message\022\027\n\nmess" +
-      "age_id\030\001 \001(\tB\003\340A\002\022\022\n\ncontext_id\030\002 \001(\t\022\017\n" +
-      "\007task_id\030\003 \001(\t\022\"\n\004role\030\004 \001(\0162\017.lf.a2a.v1" +
-      ".RoleB\003\340A\002\022#\n\005parts\030\005 \003(\0132\017.lf.a2a.v1.Pa" +
-      "rtB\003\340A\002\022)\n\010metadata\030\006 \001(\0132\027.google.proto" +
-      "buf.Struct\022\022\n\nextensions\030\007 \003(\t\022\032\n\022refere" +
-      "nce_task_ids\030\010 \003(\t\"\253\001\n\010Artifact\022\030\n\013artif" +
-      "act_id\030\001 \001(\tB\003\340A\002\022\014\n\004name\030\002 \001(\t\022\023\n\013descr" +
-      "iption\030\003 \001(\t\022#\n\005parts\030\004 \003(\0132\017.lf.a2a.v1." +
-      "PartB\003\340A\002\022)\n\010metadata\030\005 \001(\0132\027.google.pro" +
-      "tobuf.Struct\022\022\n\nextensions\030\006 \003(\t\"\235\001\n\025Tas" +
-      "kStatusUpdateEvent\022\024\n\007task_id\030\001 \001(\tB\003\340A\002" +
-      "\022\027\n\ncontext_id\030\002 \001(\tB\003\340A\002\022*\n\006status\030\003 \001(" +
-      "\0132\025.lf.a2a.v1.TaskStatusB\003\340A\002\022)\n\010metadat" +
-      "a\030\004 \001(\0132\027.google.protobuf.Struct\"\303\001\n\027Tas" +
-      "kArtifactUpdateEvent\022\024\n\007task_id\030\001 \001(\tB\003\340" +
-      "A\002\022\027\n\ncontext_id\030\002 \001(\tB\003\340A\002\022*\n\010artifact\030" +
-      "\003 \001(\0132\023.lf.a2a.v1.ArtifactB\003\340A\002\022\016\n\006appen" +
-      "d\030\004 \001(\010\022\022\n\nlast_chunk\030\005 \001(\010\022)\n\010metadata\030" +
-      "\006 \001(\0132\027.google.protobuf.Struct\"|\n\026PushNo" +
-      "tificationConfig\022\n\n\002id\030\001 \001(\t\022\020\n\003url\030\002 \001(" +
-      "\tB\003\340A\002\022\r\n\005token\030\003 \001(\t\0225\n\016authentication\030" +
-      "\004 \001(\0132\035.lf.a2a.v1.AuthenticationInfo\">\n\022" +
-      "AuthenticationInfo\022\023\n\006scheme\030\001 \001(\tB\003\340A\002\022" +
-      "\023\n\013credentials\030\002 \001(\t\"p\n\016AgentInterface\022\020" +
-      "\n\003url\030\001 \001(\tB\003\340A\002\022\035\n\020protocol_binding\030\002 \001" +
-      "(\tB\003\340A\002\022\016\n\006tenant\030\003 \001(\t\022\035\n\020protocol_vers" +
-      "ion\030\004 \001(\tB\003\340A\002\"\306\005\n\tAgentCard\022\021\n\004name\030\001 \001" +
-      "(\tB\003\340A\002\022\030\n\013description\030\002 \001(\tB\003\340A\002\022<\n\024sup" +
-      "ported_interfaces\030\003 \003(\0132\031.lf.a2a.v1.Agen" +
-      "tInterfaceB\003\340A\002\022*\n\010provider\030\004 \001(\0132\030.lf.a" +
-      "2a.v1.AgentProvider\022\024\n\007version\030\005 \001(\tB\003\340A" +
-      "\002\022\036\n\021documentation_url\030\006 \001(\tH\000\210\001\001\0227\n\014cap" +
-      "abilities\030\007 \001(\0132\034.lf.a2a.v1.AgentCapabil" +
-      "itiesB\003\340A\002\022C\n\020security_schemes\030\010 \003(\0132).l" +
-      "f.a2a.v1.AgentCard.SecuritySchemesEntry\022" +
-      "=\n\025security_requirements\030\t \003(\0132\036.lf.a2a." +
-      "v1.SecurityRequirement\022 \n\023default_input_" +
-      "modes\030\n \003(\tB\003\340A\002\022!\n\024default_output_modes" +
-      "\030\013 \003(\tB\003\340A\002\022*\n\006skills\030\014 \003(\0132\025.lf.a2a.v1." +
-      "AgentSkillB\003\340A\002\0221\n\nsignatures\030\r \003(\0132\035.lf" +
-      ".a2a.v1.AgentCardSignature\022\025\n\010icon_url\030\016" +
-      " \001(\tH\001\210\001\001\032Q\n\024SecuritySchemesEntry\022\013\n\003key" +
-      "\030\001 \001(\t\022(\n\005value\030\002 \001(\0132\031.lf.a2a.v1.Securi" +
-      "tyScheme:\0028\001B\024\n\022_documentation_urlB\013\n\t_i" +
-      "con_url\"<\n\rAgentProvider\022\020\n\003url\030\001 \001(\tB\003\340" +
-      "A\002\022\031\n\014organization\030\002 \001(\tB\003\340A\002\"\332\001\n\021AgentC" +
-      "apabilities\022\026\n\tstreaming\030\001 \001(\010H\000\210\001\001\022\037\n\022p" +
-      "ush_notifications\030\002 \001(\010H\001\210\001\001\022-\n\nextensio" +
-      "ns\030\003 \003(\0132\031.lf.a2a.v1.AgentExtension\022 \n\023e" +
-      "xtended_agent_card\030\004 \001(\010H\002\210\001\001B\014\n\n_stream" +
-      "ingB\025\n\023_push_notificationsB\026\n\024_extended_" +
-      "agent_card\"m\n\016AgentExtension\022\013\n\003uri\030\001 \001(" +
-      "\t\022\023\n\013description\030\002 \001(\t\022\020\n\010required\030\003 \001(\010" +
-      "\022\'\n\006params\030\004 \001(\0132\027.google.protobuf.Struc" +
-      "t\"\331\001\n\nAgentSkill\022\017\n\002id\030\001 \001(\tB\003\340A\002\022\021\n\004nam" +
-      "e\030\002 \001(\tB\003\340A\002\022\030\n\013description\030\003 \001(\tB\003\340A\002\022\021" +
-      "\n\004tags\030\004 \003(\tB\003\340A\002\022\020\n\010examples\030\005 \003(\t\022\023\n\013i" +
-      "nput_modes\030\006 \003(\t\022\024\n\014output_modes\030\007 \003(\t\022=" +
-      "\n\025security_requirements\030\010 \003(\0132\036.lf.a2a.v" +
-      "1.SecurityRequirement\"m\n\022AgentCardSignat" +
-      "ure\022\026\n\tprotected\030\001 \001(\tB\003\340A\002\022\026\n\tsignature" +
-      "\030\002 \001(\tB\003\340A\002\022\'\n\006header\030\003 \001(\0132\027.google.pro" +
-      "tobuf.Struct\"\214\001\n\032TaskPushNotificationCon" +
-      "fig\022\016\n\006tenant\030\001 \001(\t\022\024\n\007task_id\030\002 \001(\tB\003\340A" +
-      "\002\022H\n\030push_notification_config\030\003 \001(\0132!.lf" +
-      ".a2a.v1.PushNotificationConfigB\003\340A\002\"\032\n\nS" +
-      "tringList\022\014\n\004list\030\001 \003(\t\"\232\001\n\023SecurityRequ" +
-      "irement\022<\n\007schemes\030\001 \003(\0132+.lf.a2a.v1.Sec" +
-      "urityRequirement.SchemesEntry\032E\n\014Schemes" +
-      "Entry\022\013\n\003key\030\001 \001(\t\022$\n\005value\030\002 \001(\0132\025.lf.a" +
-      "2a.v1.StringList:\0028\001\"\200\003\n\016SecurityScheme\022" +
-      "B\n\027api_key_security_scheme\030\001 \001(\0132\037.lf.a2" +
-      "a.v1.APIKeySecuritySchemeH\000\022F\n\031http_auth" +
-      "_security_scheme\030\002 \001(\0132!.lf.a2a.v1.HTTPA" +
-      "uthSecuritySchemeH\000\022A\n\026oauth2_security_s" +
-      "cheme\030\003 \001(\0132\037.lf.a2a.v1.OAuth2SecuritySc" +
-      "hemeH\000\022Q\n\037open_id_connect_security_schem" +
-      "e\030\004 \001(\0132&.lf.a2a.v1.OpenIdConnectSecurit" +
-      "ySchemeH\000\022B\n\024mtls_security_scheme\030\005 \001(\0132" +
-      "\".lf.a2a.v1.MutualTlsSecuritySchemeH\000B\010\n" +
-      "\006scheme\"U\n\024APIKeySecurityScheme\022\023\n\013descr" +
-      "iption\030\001 \001(\t\022\025\n\010location\030\002 \001(\tB\003\340A\002\022\021\n\004n" +
-      "ame\030\003 \001(\tB\003\340A\002\"Y\n\026HTTPAuthSecurityScheme" +
-      "\022\023\n\013description\030\001 \001(\t\022\023\n\006scheme\030\002 \001(\tB\003\340" +
-      "A\002\022\025\n\rbearer_format\030\003 \001(\t\"s\n\024OAuth2Secur" +
-      "ityScheme\022\023\n\013description\030\001 \001(\t\022)\n\005flows\030" +
-      "\002 \001(\0132\025.lf.a2a.v1.OAuthFlowsB\003\340A\002\022\033\n\023oau" +
-      "th2_metadata_url\030\003 \001(\t\"T\n\033OpenIdConnectS" +
-      "ecurityScheme\022\023\n\013description\030\001 \001(\t\022 \n\023op" +
-      "en_id_connect_url\030\002 \001(\tB\003\340A\002\".\n\027MutualTl" +
-      "sSecurityScheme\022\023\n\013description\030\001 \001(\t\"\301\002\n" +
-      "\nOAuthFlows\022C\n\022authorization_code\030\001 \001(\0132" +
-      "%.lf.a2a.v1.AuthorizationCodeOAuthFlowH\000" +
-      "\022C\n\022client_credentials\030\002 \001(\0132%.lf.a2a.v1" +
-      ".ClientCredentialsOAuthFlowH\000\0224\n\010implici" +
-      "t\030\003 \001(\0132\034.lf.a2a.v1.ImplicitOAuthFlowB\002\030" +
-      "\001H\000\0224\n\010password\030\004 \001(\0132\034.lf.a2a.v1.Passwo" +
-      "rdOAuthFlowB\002\030\001H\000\0225\n\013device_code\030\005 \001(\0132\036" +
-      ".lf.a2a.v1.DeviceCodeOAuthFlowH\000B\006\n\004flow" +
-      "\"\367\001\n\032AuthorizationCodeOAuthFlow\022\036\n\021autho" +
-      "rization_url\030\001 \001(\tB\003\340A\002\022\026\n\ttoken_url\030\002 \001" +
-      "(\tB\003\340A\002\022\023\n\013refresh_url\030\003 \001(\t\022F\n\006scopes\030\004" +
-      " \003(\01321.lf.a2a.v1.AuthorizationCodeOAuthF" +
-      "low.ScopesEntryB\003\340A\002\022\025\n\rpkce_required\030\005 " +
-      "\001(\010\032-\n\013ScopesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value" +
-      "\030\002 \001(\t:\0028\001\"\300\001\n\032ClientCredentialsOAuthFlo" +
-      "w\022\026\n\ttoken_url\030\001 \001(\tB\003\340A\002\022\023\n\013refresh_url" +
-      "\030\002 \001(\t\022F\n\006scopes\030\003 \003(\01321.lf.a2a.v1.Clien" +
-      "tCredentialsOAuthFlow.ScopesEntryB\003\340A\002\032-" +
-      "\n\013ScopesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(" +
-      "\t:\0028\001\"\254\001\n\021ImplicitOAuthFlow\022\031\n\021authoriza" +
-      "tion_url\030\001 \001(\t\022\023\n\013refresh_url\030\002 \001(\t\0228\n\006s" +
-      "copes\030\003 \003(\0132(.lf.a2a.v1.ImplicitOAuthFlo" +
-      "w.ScopesEntry\032-\n\013ScopesEntry\022\013\n\003key\030\001 \001(" +
-      "\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\244\001\n\021PasswordOAuthFl" +
-      "ow\022\021\n\ttoken_url\030\001 \001(\t\022\023\n\013refresh_url\030\002 \001" +
-      "(\t\0228\n\006scopes\030\003 \003(\0132(.lf.a2a.v1.PasswordO" +
-      "AuthFlow.ScopesEntry\032-\n\013ScopesEntry\022\013\n\003k" +
-      "ey\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\331\001\n\023DeviceCo" +
-      "deOAuthFlow\022%\n\030device_authorization_url\030" +
-      "\001 \001(\tB\003\340A\002\022\026\n\ttoken_url\030\002 \001(\tB\003\340A\002\022\023\n\013re" +
-      "fresh_url\030\003 \001(\t\022?\n\006scopes\030\004 \003(\0132*.lf.a2a" +
-      ".v1.DeviceCodeOAuthFlow.ScopesEntryB\003\340A\002" +
-      "\032-\n\013ScopesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 " +
-      "\001(\t:\0028\001\"\265\001\n\022SendMessageRequest\022\016\n\006tenant" +
-      "\030\001 \001(\t\022(\n\007message\030\002 \001(\0132\022.lf.a2a.v1.Mess" +
-      "ageB\003\340A\002\022:\n\rconfiguration\030\003 \001(\0132#.lf.a2a" +
-      ".v1.SendMessageConfiguration\022)\n\010metadata" +
-      "\030\004 \001(\0132\027.google.protobuf.Struct\"a\n\016GetTa" +
-      "skRequest\022\016\n\006tenant\030\001 \001(\t\022\017\n\002id\030\002 \001(\tB\003\340" +
-      "A\002\022\033\n\016history_length\030\003 \001(\005H\000\210\001\001B\021\n\017_hist" +
-      "ory_length\"\270\002\n\020ListTasksRequest\022\016\n\006tenan" +
-      "t\030\001 \001(\t\022\022\n\ncontext_id\030\002 \001(\t\022$\n\006status\030\003 " +
-      "\001(\0162\024.lf.a2a.v1.TaskState\022\026\n\tpage_size\030\004" +
-      " \001(\005H\000\210\001\001\022\022\n\npage_token\030\005 \001(\t\022\033\n\016history" +
-      "_length\030\006 \001(\005H\001\210\001\001\022:\n\026status_timestamp_a" +
-      "fter\030\007 \001(\0132\032.google.protobuf.Timestamp\022\036" +
-      "\n\021include_artifacts\030\010 \001(\010H\002\210\001\001B\014\n\n_page_" +
-      "sizeB\021\n\017_history_lengthB\024\n\022_include_arti" +
-      "facts\"\207\001\n\021ListTasksResponse\022#\n\005tasks\030\001 \003" +
-      "(\0132\017.lf.a2a.v1.TaskB\003\340A\002\022\034\n\017next_page_to" +
-      "ken\030\002 \001(\tB\003\340A\002\022\026\n\tpage_size\030\003 \001(\005B\003\340A\002\022\027" +
-      "\n\ntotal_size\030\004 \001(\005B\003\340A\002\"_\n\021CancelTaskReq" +
-      "uest\022\016\n\006tenant\030\001 \001(\t\022\017\n\002id\030\002 \001(\tB\003\340A\002\022)\n" +
-      "\010metadata\030\003 \001(\0132\027.google.protobuf.Struct" +
-      "\"]\n$GetTaskPushNotificationConfigRequest" +
-      "\022\016\n\006tenant\030\001 \001(\t\022\024\n\007task_id\030\002 \001(\tB\003\340A\002\022\017" +
-      "\n\002id\030\003 \001(\tB\003\340A\002\"`\n\'DeleteTaskPushNotific" +
-      "ationConfigRequest\022\016\n\006tenant\030\001 \001(\t\022\024\n\007ta" +
-      "sk_id\030\002 \001(\tB\003\340A\002\022\017\n\002id\030\003 \001(\tB\003\340A\002\"\207\001\n\'Cr" +
-      "eateTaskPushNotificationConfigRequest\022\016\n" +
-      "\006tenant\030\001 \001(\t\022\024\n\007task_id\030\002 \001(\tB\003\340A\002\0226\n\006c" +
-      "onfig\030\003 \001(\0132!.lf.a2a.v1.PushNotification" +
-      "ConfigB\003\340A\002\"9\n\026SubscribeToTaskRequest\022\016\n" +
-      "\006tenant\030\001 \001(\t\022\017\n\002id\030\002 \001(\tB\003\340A\002\"u\n&ListTa" +
-      "skPushNotificationConfigsRequest\022\016\n\006tena" +
-      "nt\030\004 \001(\t\022\024\n\007task_id\030\001 \001(\tB\003\340A\002\022\021\n\tpage_s" +
-      "ize\030\002 \001(\005\022\022\n\npage_token\030\003 \001(\t\"-\n\033GetExte" +
-      "ndedAgentCardRequest\022\016\n\006tenant\030\001 \001(\t\"h\n\023" +
-      "SendMessageResponse\022\037\n\004task\030\001 \001(\0132\017.lf.a" +
-      "2a.v1.TaskH\000\022%\n\007message\030\002 \001(\0132\022.lf.a2a.v" +
-      "1.MessageH\000B\t\n\007payload\"\335\001\n\016StreamRespons" +
-      "e\022\037\n\004task\030\001 \001(\0132\017.lf.a2a.v1.TaskH\000\022%\n\007me" +
-      "ssage\030\002 \001(\0132\022.lf.a2a.v1.MessageH\000\0229\n\rsta" +
-      "tus_update\030\003 \001(\0132 .lf.a2a.v1.TaskStatusU" +
-      "pdateEventH\000\022=\n\017artifact_update\030\004 \001(\0132\"." +
-      "lf.a2a.v1.TaskArtifactUpdateEventH\000B\t\n\007p" +
-      "ayload\"z\n\'ListTaskPushNotificationConfig" +
-      "sResponse\0226\n\007configs\030\001 \003(\0132%.lf.a2a.v1.T" +
-      "askPushNotificationConfig\022\027\n\017next_page_t" +
-      "oken\030\002 \001(\t*\371\001\n\tTaskState\022\032\n\026TASK_STATE_U" +
-      "NSPECIFIED\020\000\022\030\n\024TASK_STATE_SUBMITTED\020\001\022\026" +
-      "\n\022TASK_STATE_WORKING\020\002\022\030\n\024TASK_STATE_COM" +
-      "PLETED\020\003\022\025\n\021TASK_STATE_FAILED\020\004\022\027\n\023TASK_" +
-      "STATE_CANCELED\020\005\022\035\n\031TASK_STATE_INPUT_REQ" +
-      "UIRED\020\006\022\027\n\023TASK_STATE_REJECTED\020\007\022\034\n\030TASK" +
-      "_STATE_AUTH_REQUIRED\020\010*;\n\004Role\022\024\n\020ROLE_U" +
-      "NSPECIFIED\020\000\022\r\n\tROLE_USER\020\001\022\016\n\nROLE_AGEN" +
-      "T\020\0022\256\017\n\nA2AService\022\203\001\n\013SendMessage\022\035.lf." +
-      "a2a.v1.SendMessageRequest\032\036.lf.a2a.v1.Se" +
-      "ndMessageResponse\"5\202\323\344\223\002/\"\r/message:send" +
-      ":\001*Z\033\"\026/{tenant}/message:send:\001*\022\215\001\n\024Sen" +
-      "dStreamingMessage\022\035.lf.a2a.v1.SendMessag" +
-      "eRequest\032\031.lf.a2a.v1.StreamResponse\"9\202\323\344" +
-      "\223\0023\"\017/message:stream:\001*Z\035\"\030/{tenant}/mes" +
-      "sage:stream:\001*0\001\022k\n\007GetTask\022\031.lf.a2a.v1." +
-      "GetTaskRequest\032\017.lf.a2a.v1.Task\"4\332A\002id\202\323" +
-      "\344\223\002)\022\r/tasks/{id=*}Z\030\022\026/{tenant}/tasks/{" +
-      "id=*}\022i\n\tListTasks\022\033.lf.a2a.v1.ListTasks" +
-      "Request\032\034.lf.a2a.v1.ListTasksResponse\"!\202" +
-      "\323\344\223\002\033\022\006/tasksZ\021\022\017/{tenant}/tasks\022\200\001\n\nCan" +
-      "celTask\022\034.lf.a2a.v1.CancelTaskRequest\032\017." +
-      "lf.a2a.v1.Task\"C\202\323\344\223\002=\"\024/tasks/{id=*}:ca" +
-      "ncel:\001*Z\"\"\035/{tenant}/tasks/{id=*}:cancel" +
-      ":\001*\022\226\001\n\017SubscribeToTask\022!.lf.a2a.v1.Subs" +
-      "cribeToTaskRequest\032\031.lf.a2a.v1.StreamRes" +
-      "ponse\"C\202\323\344\223\002=\022\027/tasks/{id=*}:subscribeZ\"" +
-      "\022 /{tenant}/tasks/{id=*}:subscribe0\001\022\212\002\n" +
-      " CreateTaskPushNotificationConfig\0222.lf.a" +
-      "2a.v1.CreateTaskPushNotificationConfigRe" +
-      "quest\032%.lf.a2a.v1.TaskPushNotificationCo" +
-      "nfig\"\212\001\332A\016task_id,config\202\323\344\223\002s\"*/tasks/{" +
-      "task_id=*}/pushNotificationConfigs:\006conf" +
-      "igZ=\"3/{tenant}/tasks/{task_id=*}/pushNo" +
-      "tificationConfigs:\006config\022\376\001\n\035GetTaskPus" +
-      "hNotificationConfig\022/.lf.a2a.v1.GetTaskP" +
-      "ushNotificationConfigRequest\032%.lf.a2a.v1" +
-      ".TaskPushNotificationConfig\"\204\001\332A\ntask_id" +
-      ",id\202\323\344\223\002q\0221/tasks/{task_id=*}/pushNotifi" +
-      "cationConfigs/{id=*}Z<\022:/{tenant}/tasks/" +
-      "{task_id=*}/pushNotificationConfigs/{id=" +
-      "*}\022\375\001\n\037ListTaskPushNotificationConfigs\0221" +
-      ".lf.a2a.v1.ListTaskPushNotificationConfi" +
-      "gsRequest\0322.lf.a2a.v1.ListTaskPushNotifi" +
-      "cationConfigsResponse\"s\332A\007task_id\202\323\344\223\002c\022" +
-      "*/tasks/{task_id=*}/pushNotificationConf" +
-      "igsZ5\0223/{tenant}/tasks/{task_id=*}/pushN" +
-      "otificationConfigs\022\217\001\n\024GetExtendedAgentC" +
-      "ard\022&.lf.a2a.v1.GetExtendedAgentCardRequ" +
-      "est\032\024.lf.a2a.v1.AgentCard\"9\202\323\344\223\0023\022\022/exte" +
-      "ndedAgentCardZ\035\022\033/{tenant}/extendedAgent" +
-      "Card\022\365\001\n DeleteTaskPushNotificationConfi" +
-      "g\0222.lf.a2a.v1.DeleteTaskPushNotification" +
-      "ConfigRequest\032\026.google.protobuf.Empty\"\204\001" +
-      "\332A\ntask_id,id\202\323\344\223\002q*1/tasks/{task_id=*}/" +
-      "pushNotificationConfigs/{id=*}Z<*:/{tena" +
-      "nt}/tasks/{task_id=*}/pushNotificationCo" +
-      "nfigs/{id=*}B=\n\013io.a2a.grpcB\003A2AP\001Z\033goog" +
-      "le.golang.org/lf/a2a/v1\252\002\tLf.A2a.V1b\006pro" +
-      "to3"
+      "to\"\311\001\n\030SendMessageConfiguration\022\035\n\025accep" +
+      "ted_output_modes\030\001 \003(\t\022L\n\035task_push_noti" +
+      "fication_config\030\002 \001(\0132%.lf.a2a.v1.TaskPu" +
+      "shNotificationConfig\022\033\n\016history_length\030\003" +
+      " \001(\005H\000\210\001\001\022\020\n\010blocking\030\004 \001(\010B\021\n\017_history_" +
+      "length\"\317\001\n\004Task\022\017\n\002id\030\001 \001(\tB\003\340A\002\022\022\n\ncont" +
+      "ext_id\030\002 \001(\t\022*\n\006status\030\003 \001(\0132\025.lf.a2a.v1" +
+      ".TaskStatusB\003\340A\002\022&\n\tartifacts\030\004 \003(\0132\023.lf" +
+      ".a2a.v1.Artifact\022#\n\007history\030\005 \003(\0132\022.lf.a" +
+      "2a.v1.Message\022)\n\010metadata\030\006 \001(\0132\027.google" +
+      ".protobuf.Struct\"\212\001\n\nTaskStatus\022(\n\005state" +
+      "\030\001 \001(\0162\024.lf.a2a.v1.TaskStateB\003\340A\002\022#\n\007mes" +
+      "sage\030\002 \001(\0132\022.lf.a2a.v1.Message\022-\n\ttimest" +
+      "amp\030\003 \001(\0132\032.google.protobuf.Timestamp\"\270\001" +
+      "\n\004Part\022\016\n\004text\030\001 \001(\tH\000\022\r\n\003raw\030\002 \001(\014H\000\022\r\n" +
+      "\003url\030\003 \001(\tH\000\022&\n\004data\030\004 \001(\0132\026.google.prot" +
+      "obuf.ValueH\000\022)\n\010metadata\030\005 \001(\0132\027.google." +
+      "protobuf.Struct\022\020\n\010filename\030\006 \001(\t\022\022\n\nmed" +
+      "ia_type\030\007 \001(\tB\t\n\007content\"\353\001\n\007Message\022\027\n\n" +
+      "message_id\030\001 \001(\tB\003\340A\002\022\022\n\ncontext_id\030\002 \001(" +
+      "\t\022\017\n\007task_id\030\003 \001(\t\022\"\n\004role\030\004 \001(\0162\017.lf.a2" +
+      "a.v1.RoleB\003\340A\002\022#\n\005parts\030\005 \003(\0132\017.lf.a2a.v" +
+      "1.PartB\003\340A\002\022)\n\010metadata\030\006 \001(\0132\027.google.p" +
+      "rotobuf.Struct\022\022\n\nextensions\030\007 \003(\t\022\032\n\022re" +
+      "ference_task_ids\030\010 \003(\t\"\253\001\n\010Artifact\022\030\n\013a" +
+      "rtifact_id\030\001 \001(\tB\003\340A\002\022\014\n\004name\030\002 \001(\t\022\023\n\013d" +
+      "escription\030\003 \001(\t\022#\n\005parts\030\004 \003(\0132\017.lf.a2a" +
+      ".v1.PartB\003\340A\002\022)\n\010metadata\030\005 \001(\0132\027.google" +
+      ".protobuf.Struct\022\022\n\nextensions\030\006 \003(\t\"\235\001\n" +
+      "\025TaskStatusUpdateEvent\022\024\n\007task_id\030\001 \001(\tB" +
+      "\003\340A\002\022\027\n\ncontext_id\030\002 \001(\tB\003\340A\002\022*\n\006status\030" +
+      "\003 \001(\0132\025.lf.a2a.v1.TaskStatusB\003\340A\002\022)\n\010met" +
+      "adata\030\004 \001(\0132\027.google.protobuf.Struct\"\303\001\n" +
+      "\027TaskArtifactUpdateEvent\022\024\n\007task_id\030\001 \001(" +
+      "\tB\003\340A\002\022\027\n\ncontext_id\030\002 \001(\tB\003\340A\002\022*\n\010artif" +
+      "act\030\003 \001(\0132\023.lf.a2a.v1.ArtifactB\003\340A\002\022\016\n\006a" +
+      "ppend\030\004 \001(\010\022\022\n\nlast_chunk\030\005 \001(\010\022)\n\010metad" +
+      "ata\030\006 \001(\0132\027.google.protobuf.Struct\">\n\022Au" +
+      "thenticationInfo\022\023\n\006scheme\030\001 \001(\tB\003\340A\002\022\023\n" +
+      "\013credentials\030\002 \001(\t\"p\n\016AgentInterface\022\020\n\003" +
+      "url\030\001 \001(\tB\003\340A\002\022\035\n\020protocol_binding\030\002 \001(\t" +
+      "B\003\340A\002\022\016\n\006tenant\030\003 \001(\t\022\035\n\020protocol_versio" +
+      "n\030\004 \001(\tB\003\340A\002\"\306\005\n\tAgentCard\022\021\n\004name\030\001 \001(\t" +
+      "B\003\340A\002\022\030\n\013description\030\002 \001(\tB\003\340A\002\022<\n\024suppo" +
+      "rted_interfaces\030\003 \003(\0132\031.lf.a2a.v1.AgentI" +
+      "nterfaceB\003\340A\002\022*\n\010provider\030\004 \001(\0132\030.lf.a2a" +
+      ".v1.AgentProvider\022\024\n\007version\030\005 \001(\tB\003\340A\002\022" +
+      "\036\n\021documentation_url\030\006 \001(\tH\000\210\001\001\0227\n\014capab" +
+      "ilities\030\007 \001(\0132\034.lf.a2a.v1.AgentCapabilit" +
+      "iesB\003\340A\002\022C\n\020security_schemes\030\010 \003(\0132).lf." +
+      "a2a.v1.AgentCard.SecuritySchemesEntry\022=\n" +
+      "\025security_requirements\030\t \003(\0132\036.lf.a2a.v1" +
+      ".SecurityRequirement\022 \n\023default_input_mo" +
+      "des\030\n \003(\tB\003\340A\002\022!\n\024default_output_modes\030\013" +
+      " \003(\tB\003\340A\002\022*\n\006skills\030\014 \003(\0132\025.lf.a2a.v1.Ag" +
+      "entSkillB\003\340A\002\0221\n\nsignatures\030\r \003(\0132\035.lf.a" +
+      "2a.v1.AgentCardSignature\022\025\n\010icon_url\030\016 \001" +
+      "(\tH\001\210\001\001\032Q\n\024SecuritySchemesEntry\022\013\n\003key\030\001" +
+      " \001(\t\022(\n\005value\030\002 \001(\0132\031.lf.a2a.v1.Security" +
+      "Scheme:\0028\001B\024\n\022_documentation_urlB\013\n\t_ico" +
+      "n_url\"<\n\rAgentProvider\022\020\n\003url\030\001 \001(\tB\003\340A\002" +
+      "\022\031\n\014organization\030\002 \001(\tB\003\340A\002\"\332\001\n\021AgentCap" +
+      "abilities\022\026\n\tstreaming\030\001 \001(\010H\000\210\001\001\022\037\n\022pus" +
+      "h_notifications\030\002 \001(\010H\001\210\001\001\022-\n\nextensions" +
+      "\030\003 \003(\0132\031.lf.a2a.v1.AgentExtension\022 \n\023ext" +
+      "ended_agent_card\030\004 \001(\010H\002\210\001\001B\014\n\n_streamin" +
+      "gB\025\n\023_push_notificationsB\026\n\024_extended_ag" +
+      "ent_card\"m\n\016AgentExtension\022\013\n\003uri\030\001 \001(\t\022" +
+      "\023\n\013description\030\002 \001(\t\022\020\n\010required\030\003 \001(\010\022\'" +
+      "\n\006params\030\004 \001(\0132\027.google.protobuf.Struct\"" +
+      "\331\001\n\nAgentSkill\022\017\n\002id\030\001 \001(\tB\003\340A\002\022\021\n\004name\030" +
+      "\002 \001(\tB\003\340A\002\022\030\n\013description\030\003 \001(\tB\003\340A\002\022\021\n\004" +
+      "tags\030\004 \003(\tB\003\340A\002\022\020\n\010examples\030\005 \003(\t\022\023\n\013inp" +
+      "ut_modes\030\006 \003(\t\022\024\n\014output_modes\030\007 \003(\t\022=\n\025" +
+      "security_requirements\030\010 \003(\0132\036.lf.a2a.v1." +
+      "SecurityRequirement\"m\n\022AgentCardSignatur" +
+      "e\022\026\n\tprotected\030\001 \001(\tB\003\340A\002\022\026\n\tsignature\030\002" +
+      " \001(\tB\003\340A\002\022\'\n\006header\030\003 \001(\0132\027.google.proto" +
+      "buf.Struct\"\241\001\n\032TaskPushNotificationConfi" +
+      "g\022\016\n\006tenant\030\001 \001(\t\022\n\n\002id\030\002 \001(\t\022\017\n\007task_id" +
+      "\030\003 \001(\t\022\020\n\003url\030\004 \001(\tB\003\340A\002\022\r\n\005token\030\005 \001(\t\022" +
+      "5\n\016authentication\030\006 \001(\0132\035.lf.a2a.v1.Auth" +
+      "enticationInfo\"\032\n\nStringList\022\014\n\004list\030\001 \003" +
+      "(\t\"\232\001\n\023SecurityRequirement\022<\n\007schemes\030\001 " +
+      "\003(\0132+.lf.a2a.v1.SecurityRequirement.Sche" +
+      "mesEntry\032E\n\014SchemesEntry\022\013\n\003key\030\001 \001(\t\022$\n" +
+      "\005value\030\002 \001(\0132\025.lf.a2a.v1.StringList:\0028\001\"" +
+      "\200\003\n\016SecurityScheme\022B\n\027api_key_security_s" +
+      "cheme\030\001 \001(\0132\037.lf.a2a.v1.APIKeySecuritySc" +
+      "hemeH\000\022F\n\031http_auth_security_scheme\030\002 \001(" +
+      "\0132!.lf.a2a.v1.HTTPAuthSecuritySchemeH\000\022A" +
+      "\n\026oauth2_security_scheme\030\003 \001(\0132\037.lf.a2a." +
+      "v1.OAuth2SecuritySchemeH\000\022Q\n\037open_id_con" +
+      "nect_security_scheme\030\004 \001(\0132&.lf.a2a.v1.O" +
+      "penIdConnectSecuritySchemeH\000\022B\n\024mtls_sec" +
+      "urity_scheme\030\005 \001(\0132\".lf.a2a.v1.MutualTls" +
+      "SecuritySchemeH\000B\010\n\006scheme\"U\n\024APIKeySecu" +
+      "rityScheme\022\023\n\013description\030\001 \001(\t\022\025\n\010locat" +
+      "ion\030\002 \001(\tB\003\340A\002\022\021\n\004name\030\003 \001(\tB\003\340A\002\"Y\n\026HTT" +
+      "PAuthSecurityScheme\022\023\n\013description\030\001 \001(\t" +
+      "\022\023\n\006scheme\030\002 \001(\tB\003\340A\002\022\025\n\rbearer_format\030\003" +
+      " \001(\t\"s\n\024OAuth2SecurityScheme\022\023\n\013descript" +
+      "ion\030\001 \001(\t\022)\n\005flows\030\002 \001(\0132\025.lf.a2a.v1.OAu" +
+      "thFlowsB\003\340A\002\022\033\n\023oauth2_metadata_url\030\003 \001(" +
+      "\t\"T\n\033OpenIdConnectSecurityScheme\022\023\n\013desc" +
+      "ription\030\001 \001(\t\022 \n\023open_id_connect_url\030\002 \001" +
+      "(\tB\003\340A\002\".\n\027MutualTlsSecurityScheme\022\023\n\013de" +
+      "scription\030\001 \001(\t\"\301\002\n\nOAuthFlows\022C\n\022author" +
+      "ization_code\030\001 \001(\0132%.lf.a2a.v1.Authoriza" +
+      "tionCodeOAuthFlowH\000\022C\n\022client_credential" +
+      "s\030\002 \001(\0132%.lf.a2a.v1.ClientCredentialsOAu" +
+      "thFlowH\000\0224\n\010implicit\030\003 \001(\0132\034.lf.a2a.v1.I" +
+      "mplicitOAuthFlowB\002\030\001H\000\0224\n\010password\030\004 \001(\013" +
+      "2\034.lf.a2a.v1.PasswordOAuthFlowB\002\030\001H\000\0225\n\013" +
+      "device_code\030\005 \001(\0132\036.lf.a2a.v1.DeviceCode" +
+      "OAuthFlowH\000B\006\n\004flow\"\367\001\n\032AuthorizationCod" +
+      "eOAuthFlow\022\036\n\021authorization_url\030\001 \001(\tB\003\340" +
+      "A\002\022\026\n\ttoken_url\030\002 \001(\tB\003\340A\002\022\023\n\013refresh_ur" +
+      "l\030\003 \001(\t\022F\n\006scopes\030\004 \003(\01321.lf.a2a.v1.Auth" +
+      "orizationCodeOAuthFlow.ScopesEntryB\003\340A\002\022" +
+      "\025\n\rpkce_required\030\005 \001(\010\032-\n\013ScopesEntry\022\013\n" +
+      "\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\300\001\n\032Client" +
+      "CredentialsOAuthFlow\022\026\n\ttoken_url\030\001 \001(\tB" +
+      "\003\340A\002\022\023\n\013refresh_url\030\002 \001(\t\022F\n\006scopes\030\003 \003(" +
+      "\01321.lf.a2a.v1.ClientCredentialsOAuthFlow" +
+      ".ScopesEntryB\003\340A\002\032-\n\013ScopesEntry\022\013\n\003key\030" +
+      "\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\254\001\n\021ImplicitOAu" +
+      "thFlow\022\031\n\021authorization_url\030\001 \001(\t\022\023\n\013ref" +
+      "resh_url\030\002 \001(\t\0228\n\006scopes\030\003 \003(\0132(.lf.a2a." +
+      "v1.ImplicitOAuthFlow.ScopesEntry\032-\n\013Scop" +
+      "esEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"" +
+      "\244\001\n\021PasswordOAuthFlow\022\021\n\ttoken_url\030\001 \001(\t" +
+      "\022\023\n\013refresh_url\030\002 \001(\t\0228\n\006scopes\030\003 \003(\0132(." +
+      "lf.a2a.v1.PasswordOAuthFlow.ScopesEntry\032" +
+      "-\n\013ScopesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001" +
+      "(\t:\0028\001\"\331\001\n\023DeviceCodeOAuthFlow\022%\n\030device" +
+      "_authorization_url\030\001 \001(\tB\003\340A\002\022\026\n\ttoken_u" +
+      "rl\030\002 \001(\tB\003\340A\002\022\023\n\013refresh_url\030\003 \001(\t\022?\n\006sc" +
+      "opes\030\004 \003(\0132*.lf.a2a.v1.DeviceCodeOAuthFl" +
+      "ow.ScopesEntryB\003\340A\002\032-\n\013ScopesEntry\022\013\n\003ke" +
+      "y\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\265\001\n\022SendMessa" +
+      "geRequest\022\016\n\006tenant\030\001 \001(\t\022(\n\007message\030\002 \001" +
+      "(\0132\022.lf.a2a.v1.MessageB\003\340A\002\022:\n\rconfigura" +
+      "tion\030\003 \001(\0132#.lf.a2a.v1.SendMessageConfig" +
+      "uration\022)\n\010metadata\030\004 \001(\0132\027.google.proto" +
+      "buf.Struct\"a\n\016GetTaskRequest\022\016\n\006tenant\030\001" +
+      " \001(\t\022\017\n\002id\030\002 \001(\tB\003\340A\002\022\033\n\016history_length\030" +
+      "\003 \001(\005H\000\210\001\001B\021\n\017_history_length\"\270\002\n\020ListTa" +
+      "sksRequest\022\016\n\006tenant\030\001 \001(\t\022\022\n\ncontext_id" +
+      "\030\002 \001(\t\022$\n\006status\030\003 \001(\0162\024.lf.a2a.v1.TaskS" +
+      "tate\022\026\n\tpage_size\030\004 \001(\005H\000\210\001\001\022\022\n\npage_tok" +
+      "en\030\005 \001(\t\022\033\n\016history_length\030\006 \001(\005H\001\210\001\001\022:\n" +
+      "\026status_timestamp_after\030\007 \001(\0132\032.google.p" +
+      "rotobuf.Timestamp\022\036\n\021include_artifacts\030\010" +
+      " \001(\010H\002\210\001\001B\014\n\n_page_sizeB\021\n\017_history_leng" +
+      "thB\024\n\022_include_artifacts\"\207\001\n\021ListTasksRe" +
+      "sponse\022#\n\005tasks\030\001 \003(\0132\017.lf.a2a.v1.TaskB\003" +
+      "\340A\002\022\034\n\017next_page_token\030\002 \001(\tB\003\340A\002\022\026\n\tpag" +
+      "e_size\030\003 \001(\005B\003\340A\002\022\027\n\ntotal_size\030\004 \001(\005B\003\340" +
+      "A\002\"_\n\021CancelTaskRequest\022\016\n\006tenant\030\001 \001(\t\022" +
+      "\017\n\002id\030\002 \001(\tB\003\340A\002\022)\n\010metadata\030\003 \001(\0132\027.goo" +
+      "gle.protobuf.Struct\"]\n$GetTaskPushNotifi" +
+      "cationConfigRequest\022\016\n\006tenant\030\001 \001(\t\022\024\n\007t" +
+      "ask_id\030\002 \001(\tB\003\340A\002\022\017\n\002id\030\003 \001(\tB\003\340A\002\"`\n\'De" +
+      "leteTaskPushNotificationConfigRequest\022\016\n" +
+      "\006tenant\030\001 \001(\t\022\024\n\007task_id\030\002 \001(\tB\003\340A\002\022\017\n\002i" +
+      "d\030\003 \001(\tB\003\340A\002\"9\n\026SubscribeToTaskRequest\022\016" +
+      "\n\006tenant\030\001 \001(\t\022\017\n\002id\030\002 \001(\tB\003\340A\002\"u\n&ListT" +
+      "askPushNotificationConfigsRequest\022\016\n\006ten" +
+      "ant\030\004 \001(\t\022\024\n\007task_id\030\001 \001(\tB\003\340A\002\022\021\n\tpage_" +
+      "size\030\002 \001(\005\022\022\n\npage_token\030\003 \001(\t\"-\n\033GetExt" +
+      "endedAgentCardRequest\022\016\n\006tenant\030\001 \001(\t\"h\n" +
+      "\023SendMessageResponse\022\037\n\004task\030\001 \001(\0132\017.lf." +
+      "a2a.v1.TaskH\000\022%\n\007message\030\002 \001(\0132\022.lf.a2a." +
+      "v1.MessageH\000B\t\n\007payload\"\335\001\n\016StreamRespon" +
+      "se\022\037\n\004task\030\001 \001(\0132\017.lf.a2a.v1.TaskH\000\022%\n\007m" +
+      "essage\030\002 \001(\0132\022.lf.a2a.v1.MessageH\000\0229\n\rst" +
+      "atus_update\030\003 \001(\0132 .lf.a2a.v1.TaskStatus" +
+      "UpdateEventH\000\022=\n\017artifact_update\030\004 \001(\0132\"" +
+      ".lf.a2a.v1.TaskArtifactUpdateEventH\000B\t\n\007" +
+      "payload\"z\n\'ListTaskPushNotificationConfi" +
+      "gsResponse\0226\n\007configs\030\001 \003(\0132%.lf.a2a.v1." +
+      "TaskPushNotificationConfig\022\027\n\017next_page_" +
+      "token\030\002 \001(\t*\371\001\n\tTaskState\022\032\n\026TASK_STATE_" +
+      "UNSPECIFIED\020\000\022\030\n\024TASK_STATE_SUBMITTED\020\001\022" +
+      "\026\n\022TASK_STATE_WORKING\020\002\022\030\n\024TASK_STATE_CO" +
+      "MPLETED\020\003\022\025\n\021TASK_STATE_FAILED\020\004\022\027\n\023TASK" +
+      "_STATE_CANCELED\020\005\022\035\n\031TASK_STATE_INPUT_RE" +
+      "QUIRED\020\006\022\027\n\023TASK_STATE_REJECTED\020\007\022\034\n\030TAS" +
+      "K_STATE_AUTH_REQUIRED\020\010*;\n\004Role\022\024\n\020ROLE_" +
+      "UNSPECIFIED\020\000\022\r\n\tROLE_USER\020\001\022\016\n\nROLE_AGE" +
+      "NT\020\0022\227\017\n\nA2AService\022\203\001\n\013SendMessage\022\035.lf" +
+      ".a2a.v1.SendMessageRequest\032\036.lf.a2a.v1.S" +
+      "endMessageResponse\"5\202\323\344\223\002/\"\r/message:sen" +
+      "d:\001*Z\033\"\026/{tenant}/message:send:\001*\022\215\001\n\024Se" +
+      "ndStreamingMessage\022\035.lf.a2a.v1.SendMessa" +
+      "geRequest\032\031.lf.a2a.v1.StreamResponse\"9\202\323" +
+      "\344\223\0023\"\017/message:stream:\001*Z\035\"\030/{tenant}/me" +
+      "ssage:stream:\001*0\001\022k\n\007GetTask\022\031.lf.a2a.v1" +
+      ".GetTaskRequest\032\017.lf.a2a.v1.Task\"4\332A\002id\202" +
+      "\323\344\223\002)\022\r/tasks/{id=*}Z\030\022\026/{tenant}/tasks/" +
+      "{id=*}\022i\n\tListTasks\022\033.lf.a2a.v1.ListTask" +
+      "sRequest\032\034.lf.a2a.v1.ListTasksResponse\"!" +
+      "\202\323\344\223\002\033\022\006/tasksZ\021\022\017/{tenant}/tasks\022\200\001\n\nCa" +
+      "ncelTask\022\034.lf.a2a.v1.CancelTaskRequest\032\017" +
+      ".lf.a2a.v1.Task\"C\202\323\344\223\002=\"\024/tasks/{id=*}:c" +
+      "ancel:\001*Z\"\"\035/{tenant}/tasks/{id=*}:cance" +
+      "l:\001*\022\226\001\n\017SubscribeToTask\022!.lf.a2a.v1.Sub" +
+      "scribeToTaskRequest\032\031.lf.a2a.v1.StreamRe" +
+      "sponse\"C\202\323\344\223\002=\022\027/tasks/{id=*}:subscribeZ" +
+      "\"\022 /{tenant}/tasks/{id=*}:subscribe0\001\022\363\001" +
+      "\n CreateTaskPushNotificationConfig\022%.lf." +
+      "a2a.v1.TaskPushNotificationConfig\032%.lf.a" +
+      "2a.v1.TaskPushNotificationConfig\"\200\001\332A\016ta" +
+      "sk_id,config\202\323\344\223\002i\"*/tasks/{task_id=*}/p" +
+      "ushNotificationConfigs:\001*Z8\"3/{tenant}/t" +
+      "asks/{task_id=*}/pushNotificationConfigs" +
+      ":\001*\022\376\001\n\035GetTaskPushNotificationConfig\022/." +
+      "lf.a2a.v1.GetTaskPushNotificationConfigR" +
+      "equest\032%.lf.a2a.v1.TaskPushNotificationC" +
+      "onfig\"\204\001\332A\ntask_id,id\202\323\344\223\002q\0221/tasks/{tas" +
+      "k_id=*}/pushNotificationConfigs/{id=*}Z<" +
+      "\022:/{tenant}/tasks/{task_id=*}/pushNotifi" +
+      "cationConfigs/{id=*}\022\375\001\n\037ListTaskPushNot" +
+      "ificationConfigs\0221.lf.a2a.v1.ListTaskPus" +
+      "hNotificationConfigsRequest\0322.lf.a2a.v1." +
+      "ListTaskPushNotificationConfigsResponse\"" +
+      "s\332A\007task_id\202\323\344\223\002c\022*/tasks/{task_id=*}/pu" +
+      "shNotificationConfigsZ5\0223/{tenant}/tasks" +
+      "/{task_id=*}/pushNotificationConfigs\022\217\001\n" +
+      "\024GetExtendedAgentCard\022&.lf.a2a.v1.GetExt" +
+      "endedAgentCardRequest\032\024.lf.a2a.v1.AgentC" +
+      "ard\"9\202\323\344\223\0023\022\022/extendedAgentCardZ\035\022\033/{ten" +
+      "ant}/extendedAgentCard\022\365\001\n DeleteTaskPus" +
+      "hNotificationConfig\0222.lf.a2a.v1.DeleteTa" +
+      "skPushNotificationConfigRequest\032\026.google" +
+      ".protobuf.Empty\"\204\001\332A\ntask_id,id\202\323\344\223\002q*1/" +
+      "tasks/{task_id=*}/pushNotificationConfig" +
+      "s/{id=*}Z<*:/{tenant}/tasks/{task_id=*}/" +
+      "pushNotificationConfigs/{id=*}B=\n\013io.a2a" +
+      ".grpcB\003A2AP\001Z\033google.golang.org/lf/a2a/v" +
+      "1\252\002\tLf.A2a.V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -570,7 +553,7 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
     internal_static_lf_a2a_v1_SendMessageConfiguration_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_SendMessageConfiguration_descriptor,
-        new java.lang.String[] { "AcceptedOutputModes", "PushNotificationConfig", "HistoryLength", "Blocking", });
+        new java.lang.String[] { "AcceptedOutputModes", "TaskPushNotificationConfig", "HistoryLength", "Blocking", });
     internal_static_lf_a2a_v1_Task_descriptor =
       getDescriptor().getMessageType(1);
     internal_static_lf_a2a_v1_Task_fieldAccessorTable = new
@@ -613,26 +596,20 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_TaskArtifactUpdateEvent_descriptor,
         new java.lang.String[] { "TaskId", "ContextId", "Artifact", "Append", "LastChunk", "Metadata", });
-    internal_static_lf_a2a_v1_PushNotificationConfig_descriptor =
-      getDescriptor().getMessageType(8);
-    internal_static_lf_a2a_v1_PushNotificationConfig_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_lf_a2a_v1_PushNotificationConfig_descriptor,
-        new java.lang.String[] { "Id", "Url", "Token", "Authentication", });
     internal_static_lf_a2a_v1_AuthenticationInfo_descriptor =
-      getDescriptor().getMessageType(9);
+      getDescriptor().getMessageType(8);
     internal_static_lf_a2a_v1_AuthenticationInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_AuthenticationInfo_descriptor,
         new java.lang.String[] { "Scheme", "Credentials", });
     internal_static_lf_a2a_v1_AgentInterface_descriptor =
-      getDescriptor().getMessageType(10);
+      getDescriptor().getMessageType(9);
     internal_static_lf_a2a_v1_AgentInterface_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_AgentInterface_descriptor,
         new java.lang.String[] { "Url", "ProtocolBinding", "Tenant", "ProtocolVersion", });
     internal_static_lf_a2a_v1_AgentCard_descriptor =
-      getDescriptor().getMessageType(11);
+      getDescriptor().getMessageType(10);
     internal_static_lf_a2a_v1_AgentCard_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_AgentCard_descriptor,
@@ -644,49 +621,49 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
         internal_static_lf_a2a_v1_AgentCard_SecuritySchemesEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_lf_a2a_v1_AgentProvider_descriptor =
-      getDescriptor().getMessageType(12);
+      getDescriptor().getMessageType(11);
     internal_static_lf_a2a_v1_AgentProvider_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_AgentProvider_descriptor,
         new java.lang.String[] { "Url", "Organization", });
     internal_static_lf_a2a_v1_AgentCapabilities_descriptor =
-      getDescriptor().getMessageType(13);
+      getDescriptor().getMessageType(12);
     internal_static_lf_a2a_v1_AgentCapabilities_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_AgentCapabilities_descriptor,
         new java.lang.String[] { "Streaming", "PushNotifications", "Extensions", "ExtendedAgentCard", });
     internal_static_lf_a2a_v1_AgentExtension_descriptor =
-      getDescriptor().getMessageType(14);
+      getDescriptor().getMessageType(13);
     internal_static_lf_a2a_v1_AgentExtension_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_AgentExtension_descriptor,
         new java.lang.String[] { "Uri", "Description", "Required", "Params", });
     internal_static_lf_a2a_v1_AgentSkill_descriptor =
-      getDescriptor().getMessageType(15);
+      getDescriptor().getMessageType(14);
     internal_static_lf_a2a_v1_AgentSkill_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_AgentSkill_descriptor,
         new java.lang.String[] { "Id", "Name", "Description", "Tags", "Examples", "InputModes", "OutputModes", "SecurityRequirements", });
     internal_static_lf_a2a_v1_AgentCardSignature_descriptor =
-      getDescriptor().getMessageType(16);
+      getDescriptor().getMessageType(15);
     internal_static_lf_a2a_v1_AgentCardSignature_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_AgentCardSignature_descriptor,
         new java.lang.String[] { "Protected", "Signature", "Header", });
     internal_static_lf_a2a_v1_TaskPushNotificationConfig_descriptor =
-      getDescriptor().getMessageType(17);
+      getDescriptor().getMessageType(16);
     internal_static_lf_a2a_v1_TaskPushNotificationConfig_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_TaskPushNotificationConfig_descriptor,
-        new java.lang.String[] { "Tenant", "TaskId", "PushNotificationConfig", });
+        new java.lang.String[] { "Tenant", "Id", "TaskId", "Url", "Token", "Authentication", });
     internal_static_lf_a2a_v1_StringList_descriptor =
-      getDescriptor().getMessageType(18);
+      getDescriptor().getMessageType(17);
     internal_static_lf_a2a_v1_StringList_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_StringList_descriptor,
         new java.lang.String[] { "List", });
     internal_static_lf_a2a_v1_SecurityRequirement_descriptor =
-      getDescriptor().getMessageType(19);
+      getDescriptor().getMessageType(18);
     internal_static_lf_a2a_v1_SecurityRequirement_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_SecurityRequirement_descriptor,
@@ -698,49 +675,49 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
         internal_static_lf_a2a_v1_SecurityRequirement_SchemesEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_lf_a2a_v1_SecurityScheme_descriptor =
-      getDescriptor().getMessageType(20);
+      getDescriptor().getMessageType(19);
     internal_static_lf_a2a_v1_SecurityScheme_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_SecurityScheme_descriptor,
         new java.lang.String[] { "ApiKeySecurityScheme", "HttpAuthSecurityScheme", "Oauth2SecurityScheme", "OpenIdConnectSecurityScheme", "MtlsSecurityScheme", "Scheme", });
     internal_static_lf_a2a_v1_APIKeySecurityScheme_descriptor =
-      getDescriptor().getMessageType(21);
+      getDescriptor().getMessageType(20);
     internal_static_lf_a2a_v1_APIKeySecurityScheme_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_APIKeySecurityScheme_descriptor,
         new java.lang.String[] { "Description", "Location", "Name", });
     internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_descriptor =
-      getDescriptor().getMessageType(22);
+      getDescriptor().getMessageType(21);
     internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_HTTPAuthSecurityScheme_descriptor,
         new java.lang.String[] { "Description", "Scheme", "BearerFormat", });
     internal_static_lf_a2a_v1_OAuth2SecurityScheme_descriptor =
-      getDescriptor().getMessageType(23);
+      getDescriptor().getMessageType(22);
     internal_static_lf_a2a_v1_OAuth2SecurityScheme_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_OAuth2SecurityScheme_descriptor,
         new java.lang.String[] { "Description", "Flows", "Oauth2MetadataUrl", });
     internal_static_lf_a2a_v1_OpenIdConnectSecurityScheme_descriptor =
-      getDescriptor().getMessageType(24);
+      getDescriptor().getMessageType(23);
     internal_static_lf_a2a_v1_OpenIdConnectSecurityScheme_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_OpenIdConnectSecurityScheme_descriptor,
         new java.lang.String[] { "Description", "OpenIdConnectUrl", });
     internal_static_lf_a2a_v1_MutualTlsSecurityScheme_descriptor =
-      getDescriptor().getMessageType(25);
+      getDescriptor().getMessageType(24);
     internal_static_lf_a2a_v1_MutualTlsSecurityScheme_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_MutualTlsSecurityScheme_descriptor,
         new java.lang.String[] { "Description", });
     internal_static_lf_a2a_v1_OAuthFlows_descriptor =
-      getDescriptor().getMessageType(26);
+      getDescriptor().getMessageType(25);
     internal_static_lf_a2a_v1_OAuthFlows_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_OAuthFlows_descriptor,
         new java.lang.String[] { "AuthorizationCode", "ClientCredentials", "Implicit", "Password", "DeviceCode", "Flow", });
     internal_static_lf_a2a_v1_AuthorizationCodeOAuthFlow_descriptor =
-      getDescriptor().getMessageType(27);
+      getDescriptor().getMessageType(26);
     internal_static_lf_a2a_v1_AuthorizationCodeOAuthFlow_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_AuthorizationCodeOAuthFlow_descriptor,
@@ -752,7 +729,7 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
         internal_static_lf_a2a_v1_AuthorizationCodeOAuthFlow_ScopesEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_lf_a2a_v1_ClientCredentialsOAuthFlow_descriptor =
-      getDescriptor().getMessageType(28);
+      getDescriptor().getMessageType(27);
     internal_static_lf_a2a_v1_ClientCredentialsOAuthFlow_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_ClientCredentialsOAuthFlow_descriptor,
@@ -764,7 +741,7 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
         internal_static_lf_a2a_v1_ClientCredentialsOAuthFlow_ScopesEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_lf_a2a_v1_ImplicitOAuthFlow_descriptor =
-      getDescriptor().getMessageType(29);
+      getDescriptor().getMessageType(28);
     internal_static_lf_a2a_v1_ImplicitOAuthFlow_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_ImplicitOAuthFlow_descriptor,
@@ -776,7 +753,7 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
         internal_static_lf_a2a_v1_ImplicitOAuthFlow_ScopesEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_lf_a2a_v1_PasswordOAuthFlow_descriptor =
-      getDescriptor().getMessageType(30);
+      getDescriptor().getMessageType(29);
     internal_static_lf_a2a_v1_PasswordOAuthFlow_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_PasswordOAuthFlow_descriptor,
@@ -788,7 +765,7 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
         internal_static_lf_a2a_v1_PasswordOAuthFlow_ScopesEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_lf_a2a_v1_DeviceCodeOAuthFlow_descriptor =
-      getDescriptor().getMessageType(31);
+      getDescriptor().getMessageType(30);
     internal_static_lf_a2a_v1_DeviceCodeOAuthFlow_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_DeviceCodeOAuthFlow_descriptor,
@@ -800,85 +777,79 @@ public final class A2A extends com.google.protobuf.GeneratedFile {
         internal_static_lf_a2a_v1_DeviceCodeOAuthFlow_ScopesEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_lf_a2a_v1_SendMessageRequest_descriptor =
-      getDescriptor().getMessageType(32);
+      getDescriptor().getMessageType(31);
     internal_static_lf_a2a_v1_SendMessageRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_SendMessageRequest_descriptor,
         new java.lang.String[] { "Tenant", "Message", "Configuration", "Metadata", });
     internal_static_lf_a2a_v1_GetTaskRequest_descriptor =
-      getDescriptor().getMessageType(33);
+      getDescriptor().getMessageType(32);
     internal_static_lf_a2a_v1_GetTaskRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_GetTaskRequest_descriptor,
         new java.lang.String[] { "Tenant", "Id", "HistoryLength", });
     internal_static_lf_a2a_v1_ListTasksRequest_descriptor =
-      getDescriptor().getMessageType(34);
+      getDescriptor().getMessageType(33);
     internal_static_lf_a2a_v1_ListTasksRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_ListTasksRequest_descriptor,
         new java.lang.String[] { "Tenant", "ContextId", "Status", "PageSize", "PageToken", "HistoryLength", "StatusTimestampAfter", "IncludeArtifacts", });
     internal_static_lf_a2a_v1_ListTasksResponse_descriptor =
-      getDescriptor().getMessageType(35);
+      getDescriptor().getMessageType(34);
     internal_static_lf_a2a_v1_ListTasksResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_ListTasksResponse_descriptor,
         new java.lang.String[] { "Tasks", "NextPageToken", "PageSize", "TotalSize", });
     internal_static_lf_a2a_v1_CancelTaskRequest_descriptor =
-      getDescriptor().getMessageType(36);
+      getDescriptor().getMessageType(35);
     internal_static_lf_a2a_v1_CancelTaskRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_CancelTaskRequest_descriptor,
         new java.lang.String[] { "Tenant", "Id", "Metadata", });
     internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_descriptor =
-      getDescriptor().getMessageType(37);
+      getDescriptor().getMessageType(36);
     internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_GetTaskPushNotificationConfigRequest_descriptor,
         new java.lang.String[] { "Tenant", "TaskId", "Id", });
     internal_static_lf_a2a_v1_DeleteTaskPushNotificationConfigRequest_descriptor =
-      getDescriptor().getMessageType(38);
+      getDescriptor().getMessageType(37);
     internal_static_lf_a2a_v1_DeleteTaskPushNotificationConfigRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_DeleteTaskPushNotificationConfigRequest_descriptor,
         new java.lang.String[] { "Tenant", "TaskId", "Id", });
-    internal_static_lf_a2a_v1_CreateTaskPushNotificationConfigRequest_descriptor =
-      getDescriptor().getMessageType(39);
-    internal_static_lf_a2a_v1_CreateTaskPushNotificationConfigRequest_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_lf_a2a_v1_CreateTaskPushNotificationConfigRequest_descriptor,
-        new java.lang.String[] { "Tenant", "TaskId", "Config", });
     internal_static_lf_a2a_v1_SubscribeToTaskRequest_descriptor =
-      getDescriptor().getMessageType(40);
+      getDescriptor().getMessageType(38);
     internal_static_lf_a2a_v1_SubscribeToTaskRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_SubscribeToTaskRequest_descriptor,
         new java.lang.String[] { "Tenant", "Id", });
     internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsRequest_descriptor =
-      getDescriptor().getMessageType(41);
+      getDescriptor().getMessageType(39);
     internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsRequest_descriptor,
         new java.lang.String[] { "Tenant", "TaskId", "PageSize", "PageToken", });
     internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_descriptor =
-      getDescriptor().getMessageType(42);
+      getDescriptor().getMessageType(40);
     internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_GetExtendedAgentCardRequest_descriptor,
         new java.lang.String[] { "Tenant", });
     internal_static_lf_a2a_v1_SendMessageResponse_descriptor =
-      getDescriptor().getMessageType(43);
+      getDescriptor().getMessageType(41);
     internal_static_lf_a2a_v1_SendMessageResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_SendMessageResponse_descriptor,
         new java.lang.String[] { "Task", "Message", "Payload", });
     internal_static_lf_a2a_v1_StreamResponse_descriptor =
-      getDescriptor().getMessageType(44);
+      getDescriptor().getMessageType(42);
     internal_static_lf_a2a_v1_StreamResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_StreamResponse_descriptor,
         new java.lang.String[] { "Task", "Message", "StatusUpdate", "ArtifactUpdate", "Payload", });
     internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_descriptor =
-      getDescriptor().getMessageType(45);
+      getDescriptor().getMessageType(43);
     internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_lf_a2a_v1_ListTaskPushNotificationConfigsResponse_descriptor,

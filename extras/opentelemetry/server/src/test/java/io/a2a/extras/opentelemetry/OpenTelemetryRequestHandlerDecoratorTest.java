@@ -297,9 +297,10 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     class SetTaskPushNotificationConfigTests {
         @Test
         void onSetTaskPushNotificationConfig_createsSpanAndDelegatesToHandler() throws A2AError {
-            PushNotificationConfig config = new PushNotificationConfig("http://example.com", null, null, "config-1");
-            TaskPushNotificationConfig params = new TaskPushNotificationConfig("task-123", config, null);
-            TaskPushNotificationConfig result = new TaskPushNotificationConfig("task-123", config, null);
+            TaskPushNotificationConfig params = TaskPushNotificationConfig.builder()
+                    .id("config-1").taskId("task-123").url("http://example.com").build();
+            TaskPushNotificationConfig result = TaskPushNotificationConfig.builder()
+                    .id("config-1").taskId("task-123").url("http://example.com").build();
             when(delegate.onCreateTaskPushNotificationConfig(params, context)).thenReturn(result);
 
             TaskPushNotificationConfig actualResult = decorator.onCreateTaskPushNotificationConfig(params, context);
@@ -314,8 +315,8 @@ class OpenTelemetryRequestHandlerDecoratorTest {
 
         @Test
         void onSetTaskPushNotificationConfig_withError_setsErrorStatus() throws A2AError {
-            PushNotificationConfig config = new PushNotificationConfig("http://example.com", null, null, "config-1");
-            TaskPushNotificationConfig params = new TaskPushNotificationConfig("task-123", config, null);
+            TaskPushNotificationConfig params = TaskPushNotificationConfig.builder()
+                    .id("config-1").taskId("task-123").url("http://example.com").build();
             A2AError error = new InvalidRequestError("Invalid config");
             when(delegate.onCreateTaskPushNotificationConfig(params, context)).thenThrow(error);
 
@@ -332,8 +333,8 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         @Test
         void onGetTaskPushNotificationConfig_createsSpanAndDelegatesToHandler() throws A2AError {
             GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams("task-123", "config-1");
-            PushNotificationConfig config = new PushNotificationConfig("http://example.com", null, null, "config-1");
-            TaskPushNotificationConfig result = new TaskPushNotificationConfig("task-123", config, null);
+            TaskPushNotificationConfig result = TaskPushNotificationConfig.builder()
+                    .id("config-1").taskId("task-123").url("http://example.com").build();
             when(delegate.onGetTaskPushNotificationConfig(params, context)).thenReturn(result);
 
             TaskPushNotificationConfig actualResult = decorator.onGetTaskPushNotificationConfig(params, context);

@@ -77,7 +77,7 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
      * Example usage:
      * <pre>{@code
      * SendMessageRequest request = SendMessageRequest.builder()
-     *     .params(new MessageSendParams(message, taskId, pushNotificationConfig))
+     *     .params(new MessageSendParams(message, taskId, taskPushNotificationConfig))
      *     .build();
      * }</pre>
      */

@@ -25,7 +25,6 @@ import io.a2a.spec.HTTPAuthSecurityScheme;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskPushNotificationConfig;
@@ -209,36 +208,31 @@ public class ToProtoTest {
 
     @Test
     public void convertTaskPushNotificationConfig() {
-        TaskPushNotificationConfig taskPushConfig = new TaskPushNotificationConfig("push-task-123",
-                PushNotificationConfig.builder()
-                        .url("http://example.com")
-                        .id("xyz")
-                        .build(), null);
+        TaskPushNotificationConfig taskPushConfig = TaskPushNotificationConfig.builder()
+                .id("xyz")
+                .taskId("push-task-123")
+                .url("http://example.com")
+                .build();
         io.a2a.grpc.TaskPushNotificationConfig result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
         assertEquals("push-task-123", result.getTaskId());
-        assertNotNull(result.getPushNotificationConfig());
-        assertEquals("xyz", result.getPushNotificationConfig().getId());
-        assertEquals("http://example.com", result.getPushNotificationConfig().getUrl());
-        assertEquals("xyz", result.getPushNotificationConfig().getId());
-        assertEquals(false, result.getPushNotificationConfig().hasAuthentication());
-        taskPushConfig
-                = new TaskPushNotificationConfig("push-task-123",
-                        PushNotificationConfig.builder()
-                                .token("AAAAAA")
-                                .authentication(new AuthenticationInfo("jwt", "credentials"))
-                                .url("http://example.com")
-                                .id("xyz")
-                                .build(), null);
+        assertEquals("xyz", result.getId());
+        assertEquals("http://example.com", result.getUrl());
+        assertEquals(false, result.hasAuthentication());
+        taskPushConfig = TaskPushNotificationConfig.builder()
+                .id("xyz")
+                .taskId("push-task-123")
+                .url("http://example.com")
+                .token("AAAAAA")
+                .authentication(new AuthenticationInfo("jwt", "credentials"))
+                .build();
         result = ProtoUtils.ToProto.taskPushNotificationConfig(taskPushConfig);
         assertEquals("push-task-123", result.getTaskId());
-        assertNotNull(result.getPushNotificationConfig());
-        assertEquals("xyz", result.getPushNotificationConfig().getId());
-        assertEquals("http://example.com", result.getPushNotificationConfig().getUrl());
-        assertEquals("xyz", result.getPushNotificationConfig().getId());
-        assertEquals("AAAAAA", result.getPushNotificationConfig().getToken());
-        assertEquals(true, result.getPushNotificationConfig().hasAuthentication());
-        assertEquals("credentials", result.getPushNotificationConfig().getAuthentication().getCredentials());
-        assertEquals("jwt", result.getPushNotificationConfig().getAuthentication().getScheme());
+        assertEquals("xyz", result.getId());
+        assertEquals("http://example.com", result.getUrl());
+        assertEquals("AAAAAA", result.getToken());
+        assertEquals(true, result.hasAuthentication());
+        assertEquals("credentials", result.getAuthentication().getCredentials());
+        assertEquals("jwt", result.getAuthentication().getScheme());
     }
 
     @Test

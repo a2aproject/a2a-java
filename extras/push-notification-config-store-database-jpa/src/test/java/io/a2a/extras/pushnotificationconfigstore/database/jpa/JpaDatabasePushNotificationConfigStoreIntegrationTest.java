@@ -28,7 +28,6 @@ import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.Message;
-import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TextPart;
@@ -117,13 +116,13 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         assertTrue(createLatch.await(10, TimeUnit.SECONDS), "Timeout waiting for task creation");
 
         // Step 2: Set the push notification configuration
-        PushNotificationConfig pushConfig = PushNotificationConfig.builder()
+        TaskPushNotificationConfig taskPushConfig = TaskPushNotificationConfig.builder()
+            .id("test-config-1")
+            .taskId(taskId)
             .url("http://localhost:9999/mock-endpoint")
             .token("test-token-123")
-            .id("test-config-1")
+            .tenant("")
             .build();
-
-        TaskPushNotificationConfig taskPushConfig = new TaskPushNotificationConfig(taskId, pushConfig, "");
         TaskPushNotificationConfig setResult = client.createTaskPushNotificationConfiguration(taskPushConfig);
         assertNotNull(setResult);
 
@@ -133,9 +132,9 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         assertNotNull(storedConfig);
         assertEquals(taskId, storedConfig.taskId());
-        assertEquals("test-config-1", storedConfig.config().id());
-        assertEquals("http://localhost:9999/mock-endpoint", storedConfig.config().url());
-        assertEquals("test-token-123", storedConfig.config().token());
+        assertEquals("test-config-1", storedConfig.id());
+        assertEquals("http://localhost:9999/mock-endpoint", storedConfig.url());
+        assertEquals("test-token-123", storedConfig.token());
 
         // Step 4: Update the task to trigger the notification
         Message updateMessage = Message.builder()
@@ -193,8 +192,8 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         }, "Getting a deleted config should throw an A2AClientException");
     }
 
-    private PushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
-        return PushNotificationConfig.builder()
+    private TaskPushNotificationConfig createSamplePushConfig(String url, String configId, String token) {
+        return TaskPushNotificationConfig.builder()
                 .url(url)
                 .id(configId)
                 .token(token)
@@ -239,10 +238,10 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
         // Verify NO overlap between pages - collect all IDs from both pages
         List<String> firstPageIds = firstPage.configs().stream()
-                .map(c -> c.config().id())
+                .map(c -> c.id())
                 .toList();
         List<String> secondPageIds = secondPage.configs().stream()
-                .map(c -> c.config().id())
+                .map(c -> c.id())
                 .toList();
 
         // Check that no ID from first page appears in second page
@@ -471,10 +470,10 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
       assertEquals(2, result2.configs().size(), "Task2 should have 2 configs");
 
       List<String> task1Ids = result1.configs().stream()
-          .map(c -> taskId1 + c.config().id())
+          .map(c -> taskId1 + c.id())
           .toList();
       List<String> task2Ids = result2.configs().stream()
-          .map(c -> taskId2 + c.config().id())
+          .map(c -> taskId2 + c.id())
           .toList();
 
       for (String id : task1Ids) {
@@ -505,9 +504,9 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
       String taskId = "task_tenant_" + System.currentTimeMillis();
       String tenant = "test-tenant-123";
 
-      PushNotificationConfig config = createSamplePushConfig(
+      TaskPushNotificationConfig config = createSamplePushConfig(
           "http://url.com/callback", "cfg1", "token");
-      pushNotificationConfigStore.setInfo(taskId, config);
+      pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
       ListTaskPushNotificationConfigParams params =
           new ListTaskPushNotificationConfigParams(taskId, 0, "", tenant);
@@ -535,7 +534,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
         ListTaskPushNotificationConfigResult result = pushNotificationConfigStore.getInfo(params);
 
         result.configs().forEach(c ->
-            allConfigIds.add(c.config().id()));
+            allConfigIds.add(c.id()));
         pageToken = result.nextPageToken();
         pageCount++;
 
@@ -555,9 +554,9 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
   private void createSamples(String taskId, int size) {
         // Create configs with slight delays to ensure unique timestamps for deterministic ordering
         for (int i = 0; i < size; i++) {
-            PushNotificationConfig config = createSamplePushConfig(
+            TaskPushNotificationConfig config = createSamplePushConfig(
                     "http://url" + i + ".com/callback", "cfg" + i, "token" + i);
-            pushNotificationConfigStore.setInfo(taskId, config);
+            pushNotificationConfigStore.setInfo(TaskPushNotificationConfig.builder(config).taskId(taskId).build());
 
             // Sleep briefly to ensure each config gets a unique timestamp
             // This prevents non-deterministic ordering in pagination tests

@@ -17,7 +17,7 @@ import io.a2a.util.Assert;
  * @param scheme security scheme name for authentication (required)
  * @param credentials optional credentials string (format depends on scheme, e.g., base64-encoded for Basic auth)
  * @see AgentCard#securitySchemes() for available security schemes
- * @see PushNotificationConfig for push notification configuration
+ * @see TaskPushNotificationConfig for push notification configuration
  * @see SecurityScheme for security scheme definitions
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
