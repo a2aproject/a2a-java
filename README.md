@@ -219,11 +219,9 @@ public class WeatherAgentExecutorProducer {
 
         private String extractTextFromMessage(Message message) {
             StringBuilder textBuilder = new StringBuilder();
-            if (message.getParts() != null) {
-                for (Part part : message.getParts()) {
-                    if (part instanceof TextPart textPart) {
-                        textBuilder.append(textPart.getText());
-                    }
+            for (Part<?> part : message.parts()) {
+                if (part instanceof TextPart textPart) {
+                    textBuilder.append(textPart.text());
                 }
             }
             return textBuilder.toString();
