@@ -177,12 +177,13 @@ if ! kubectl get namespace kafka > /dev/null 2>&1; then
 fi
 
 if ! kubectl get crd kafkas.kafka.strimzi.io > /dev/null 2>&1; then
-    echo "Installing Strimzi operator... at https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.1/strimzi-cluster-operator-0.50.1.yaml"
-    curl -sL 'https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.1/strimzi-cluster-operator-0.50.1.yaml' \
-        | sed 's/namespace: .*/namespace: kafka/' \
-        | kubectl apply -f - -n kafka
-#    echo "Installing Strimzi operator..."
-#    kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+# Keep this around in case we need to hardcode operator version again in the future
+#    echo "Installing Strimzi operator... at https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.1/strimzi-cluster-operator-0.50.1.yaml"
+#    curl -sL 'https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.50.1/strimzi-cluster-operator-0.50.1.yaml' \
+#        | sed 's/namespace: .*/namespace: kafka/' \
+#        | kubectl apply -f - -n kafka
+    echo "Installing Strimzi operator..."
+    kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 
     echo "Waiting for Strimzi operator deployment to be created..."
     for i in {1..30}; do
