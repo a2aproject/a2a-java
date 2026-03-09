@@ -205,6 +205,8 @@ public class RestHandler {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
             }
             throw new TaskNotFoundError();
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(new InvalidParamsError(e.getMessage()));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
