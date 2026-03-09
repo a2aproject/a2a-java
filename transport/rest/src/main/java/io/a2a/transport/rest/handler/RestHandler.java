@@ -199,14 +199,17 @@ public class RestHandler {
 
     public HTTPRestResponse getTask(ServerCallContext context, String tenant, String taskId, @Nullable Integer historyLength) {
         try {
-            TaskQueryParams params = new TaskQueryParams(taskId, historyLength, tenant);
+            TaskQueryParams params;
+            try {
+                params = new TaskQueryParams(taskId, historyLength, tenant);
+            } catch (IllegalArgumentException e) {
+                return createErrorResponse(new InvalidParamsError(e.getMessage()));
+            }
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
             }
             throw new TaskNotFoundError();
-        } catch (IllegalArgumentException e) {
-            return createErrorResponse(new InvalidParamsError(e.getMessage()));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
