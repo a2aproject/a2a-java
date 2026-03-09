@@ -65,7 +65,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), -1);
 
         Assertions.assertEquals(422, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("InvalidParamsError"));
     }
 

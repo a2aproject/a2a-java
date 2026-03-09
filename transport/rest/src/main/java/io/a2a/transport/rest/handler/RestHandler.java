@@ -203,7 +203,7 @@ public class RestHandler {
             try {
                 params = new TaskQueryParams(taskId, historyLength, tenant);
             } catch (IllegalArgumentException e) {
-                return createErrorResponse(new InvalidParamsError(e.getMessage()));
+                return createProblemErrorResponse(new InvalidParamsError(e.getMessage()));
             }
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
@@ -364,6 +364,12 @@ public class RestHandler {
     private HTTPRestResponse createErrorResponse(int statusCode, A2AError error) {
         String jsonBody = new HTTPRestErrorResponse(error).toJson();
         return new HTTPRestResponse(statusCode, "application/json", jsonBody);
+    }
+
+    private HTTPRestResponse createProblemErrorResponse(A2AError error) {
+        int statusCode = mapErrorToHttpStatus(error);
+        String jsonBody = new HTTPRestErrorResponse(error).toJson();
+        return new HTTPRestResponse(statusCode, "application/problem+json", jsonBody);
     }
 
     private HTTPRestStreamingResponse createStreamingResponse(Flow.Publisher<StreamingEventKind> publisher) {
