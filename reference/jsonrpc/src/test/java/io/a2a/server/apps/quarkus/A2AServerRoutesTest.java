@@ -1,11 +1,21 @@
 package io.a2a.server.apps.quarkus;
 
+import static io.a2a.common.MediaType.APPLICATION_PROBLEM_JSON;
+import static io.a2a.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.GET_TASK_METHOD;
+import static io.a2a.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.SEND_MESSAGE_METHOD;
+import static io.a2a.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static io.a2a.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
 import static java.util.Collections.singletonList;
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,14 +68,6 @@ import io.vertx.ext.web.RoutingContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-
-import static io.a2a.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static io.a2a.spec.A2AMethods.GET_TASK_METHOD;
-import static io.a2a.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static io.a2a.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static io.a2a.spec.A2AMethods.SEND_MESSAGE_METHOD;
-import static io.a2a.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
-import static io.a2a.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 
 /**
  * Unit test for JSON-RPC A2AServerRoutes that verifies the method names are properly set
@@ -166,6 +168,7 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(SEND_MESSAGE_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     @Test
@@ -250,6 +253,7 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(GET_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     @Test
@@ -286,6 +290,7 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(CANCEL_TASK_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     @Test
@@ -363,6 +368,7 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     @Test
@@ -401,6 +407,7 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     @Test
@@ -440,6 +447,7 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     @Test
@@ -473,6 +481,7 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     @Test
@@ -509,6 +518,7 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(GET_EXTENDED_AGENT_CARD_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     @Test
@@ -705,6 +715,38 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals("myTenant/api", capturedContext.getState().get(TENANT_KEY));
+    }
+
+    @Test
+    public void testJsonParseError_ContentTypeIsProblemJson() {
+        // Arrange - invalid JSON
+        String invalidJson = "not valid json {{{";
+        when(mockRequestBody.asString()).thenReturn(invalidJson);
+
+        // Act
+        routes.invokeJSONRPCHandler(invalidJson, mockRoutingContext);
+
+        // Assert
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_PROBLEM_JSON);
+    }
+
+    @Test
+    public void testMethodNotFound_ContentTypeIsProblemJson() {
+        // Arrange - unknown method
+        String jsonRpcRequest = """
+            {
+             "jsonrpc": "2.0",
+             "id": "cd4c76de-d54c-436c-8b9f-4c2703648d64",
+             "method": "UnknownMethod",
+             "params": {}
+            }""";
+        when(mockRequestBody.asString()).thenReturn(jsonRpcRequest);
+
+        // Act
+        routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
+
+        // Assert
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_PROBLEM_JSON);
     }
 
     /**
