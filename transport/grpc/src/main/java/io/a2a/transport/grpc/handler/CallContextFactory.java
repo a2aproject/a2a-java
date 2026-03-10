@@ -18,8 +18,8 @@ import io.grpc.stub.StreamObserver;
  *   <li>User authentication from security context</li>
  *   <li>gRPC metadata (headers)</li>
  *   <li>Method name and peer information</li>
- *   <li>A2A protocol version from {@code X-A2A-Version} header</li>
- *   <li>Required extensions from {@code X-A2A-Extensions} header</li>
+ *   <li>A2A protocol version from {@code A2A-Version} header</li>
+ *   <li>Required extensions from {@code A2A-Extensions} header</li>
  *   <li>Response observer for gRPC streaming</li>
  * </ul>
  *
