@@ -419,7 +419,7 @@ public class RestHandler {
             try {
                 params = new TaskQueryParams(taskId, historyLength, tenant);
             } catch (IllegalArgumentException e) {
-                return createProblemErrorResponse(new InvalidParamsError(e.getMessage()));
+                throw new InvalidParamsError(e.getMessage());
             }
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
