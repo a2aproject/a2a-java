@@ -54,7 +54,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", "nonexistent", 0);
 
         Assertions.assertEquals(404, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("TaskNotFoundError"));
     }
 
@@ -79,7 +79,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 null, null, null);
 
         Assertions.assertEquals(422, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("InvalidParamsError"));
     }
 
@@ -122,7 +122,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", invalidBody);
 
         Assertions.assertEquals(400, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("JSONParseError"),response.getBody());
     }
 
@@ -146,7 +146,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
 
         Assertions.assertEquals(422, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("InvalidParamsError"));
     }
 
@@ -157,7 +157,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", "");
 
         Assertions.assertEquals(400, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("InvalidRequestError"));
     }
 
@@ -190,7 +190,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, "nonexistent");
 
         Assertions.assertEquals(404, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("TaskNotFoundError"));
     }
 
@@ -564,7 +564,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
 
         Assertions.assertEquals(400, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("ExtensionSupportRequiredError"));
         Assertions.assertTrue(response.getBody().contains("https://example.com/test-extension"));
     }
@@ -764,7 +764,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(contextWithVersion, "", requestBody);
 
         Assertions.assertEquals(501, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("VersionNotSupportedError"));
         Assertions.assertTrue(response.getBody().contains("2.0"));
     }
@@ -969,7 +969,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 null, "-1", null);
 
         Assertions.assertEquals(422, response.getStatusCode());
-        Assertions.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
         Assertions.assertTrue(response.getBody().contains("InvalidParamsError"));
     }
 

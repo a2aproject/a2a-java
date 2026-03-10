@@ -1,5 +1,7 @@
 package io.a2a.transport.rest.handler;
 
+import static io.a2a.common.MediaType.APPLICATION_JSON;
+import static io.a2a.common.MediaType.APPLICATION_PROBLEM_JSON;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
 
@@ -114,6 +116,7 @@ public class RestHandler {
 
     private static final Logger log = Logger.getLogger(RestHandler.class.getName());
     private static final String TASK_STATE_PREFIX = "TASK_STATE_";
+
 
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
@@ -589,7 +592,7 @@ public class RestHandler {
             }
             DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(taskId, configId, tenant);
             requestHandler.onDeleteTaskPushNotificationConfig(params, context);
-            return new HTTPRestResponse(204, "application/json", "");
+            return new HTTPRestResponse(204, APPLICATION_JSON, "");
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -622,8 +625,8 @@ public class RestHandler {
     private HTTPRestResponse createSuccessResponse(int statusCode, com.google.protobuf.Message.Builder builder) {
         try {
             // Include default value fields to ensure empty arrays, zeros, etc. are present in JSON
-            String jsonBody = JsonFormat.printer().includingDefaultValueFields().print(builder);
-            return new HTTPRestResponse(statusCode, "application/json", jsonBody);
+            String jsonBody = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().print(builder);
+            return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
         } catch (InvalidProtocolBufferException e) {
             return createErrorResponse(new InternalError("Failed to serialize response: " + e.getMessage()));
         }
@@ -642,7 +645,7 @@ public class RestHandler {
 
     private HTTPRestResponse createErrorResponse(int statusCode, A2AError error) {
         String jsonBody = new HTTPRestErrorResponse(error).toJson();
-        return new HTTPRestResponse(statusCode, "application/json", jsonBody);
+        return new HTTPRestResponse(statusCode, APPLICATION_PROBLEM_JSON, jsonBody);
     }
 
     private HTTPRestStreamingResponse createStreamingResponse(Flow.Publisher<StreamingEventKind> publisher) {
@@ -789,7 +792,7 @@ public class RestHandler {
             if (!agentCard.capabilities().extendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
                 throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
             }
-            return new HTTPRestResponse(200, "application/json", JsonUtil.toJson(extendedAgentCard.get()));
+            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(extendedAgentCard.get()));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable t) {
@@ -831,7 +834,7 @@ public class RestHandler {
      */
     public HTTPRestResponse getAgentCard() {
         try {
-            return new HTTPRestResponse(200, "application/json", JsonUtil.toJson(agentCard));
+            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(agentCard));
         } catch (Throwable t) {
             return createErrorResponse(500, new InternalError(t.getMessage()));
         }
