@@ -600,8 +600,8 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      *   <li>HTTP headers extracted from metadata</li>
      *   <li>gRPC method name</li>
      *   <li>Peer information (client connection details)</li>
-     *   <li>A2A protocol version from {@code X-A2A-Version} header (via context)</li>
-     *   <li>Required extensions from {@code X-A2A-Extensions} header (via context)</li>
+     *   <li>A2A protocol version from {@code A2A-Version} header (via context)</li>
+     *   <li>Required extensions from {@code A2A-Extensions} header (via context)</li>
      * </ul>
      *
      * <p><b>Custom Context Creation:</b>
@@ -901,7 +901,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     protected abstract Executor getExecutor();
 
     /**
-     * Attempts to extract the X-A2A-Version header from the current gRPC context.
+     * Attempts to extract the A2A-Version header from the current gRPC context.
      * This will only work if a server interceptor has been configured to capture
      * the metadata and store it in the context.
      *
@@ -917,7 +917,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     }
 
     /**
-     * Attempts to extract the X-A2A-Extensions header from the current gRPC context.
+     * Attempts to extract the A2A-Extensions header from the current gRPC context.
      * This will only work if a server interceptor has been configured to capture
      * the metadata and store it in the context.
      *

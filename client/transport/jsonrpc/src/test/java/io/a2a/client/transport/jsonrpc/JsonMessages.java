@@ -1,7 +1,5 @@
 package io.a2a.client.transport.jsonrpc;
 
-import static io.a2a.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
-
 /**
  * Request and response messages used by the tests. These have been created following examples from
  * the <a href="https://google.github.io/A2A/specification/sample-messages">A2A sample messages</a>.
@@ -266,7 +264,8 @@ public class JsonMessages {
                       },
                       {
                         "raw":"aGVsbG8=",
-                        "filename":"hello.txt"
+                        "filename":"hello.txt",
+                        "mediaType": "text/plain"
                       }
                     ],
                     "messageId":"message-123"

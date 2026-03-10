@@ -746,9 +746,11 @@ public class JsonUtil {
      */
     static class FileContentTypeAdapter extends TypeAdapter<FileContent> {
 
-        // Create separate Gson instance without the FileContent adapter to avoid recursion
+        // Create separate Gson instance without the FileContent adapter to avoid recursion,
+        // but with an explicit FileWithBytes adapter to prevent field/path leakage.
         private final Gson delegateGson = new GsonBuilder()
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
+                .registerTypeAdapter(FileWithBytes.class, new FileWithBytesTypeAdapter())
                 .create();
 
         @Override
@@ -785,6 +787,56 @@ public class JsonUtil {
             } else {
                 throw new JsonSyntaxException("FileContent must have either 'bytes' or 'uri' field");
             }
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link FileWithBytes}.
+     * <p>
+     * Explicitly maps only the three protocol fields ({@code mimeType}, {@code name}, {@code bytes})
+     * to and from JSON. This prevents internal implementation fields (such as the lazy-loading
+     * {@code source} or the {@code cachedBytes} soft reference) from leaking into serialized output,
+     * and ensures correct round-trip deserialization via the canonical
+     * {@link FileWithBytes#FileWithBytes(String, String, String)} constructor.
+     */
+    static class FileWithBytesTypeAdapter extends TypeAdapter<FileWithBytes> {
+
+        @Override
+        public void write(JsonWriter out, FileWithBytes value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            out.beginObject();
+            out.name("mimeType").value(value.mimeType());
+            out.name("name").value(value.name());
+            out.name("bytes").value(value.bytes());
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable FileWithBytes read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String mimeType = null;
+            String name = null;
+            String bytes = null;
+            in.beginObject();
+            while (in.hasNext()) {
+                switch (in.nextName()) {
+                    case "mimeType" -> mimeType = in.nextString();
+                    case "name" -> name = in.nextString();
+                    case "bytes" -> bytes = in.nextString();
+                    default -> in.skipValue();
+                }
+            }
+            in.endObject();
+            return new FileWithBytes(
+                    mimeType != null ? mimeType : "",
+                    name != null ? name : "",
+                    bytes != null ? bytes : "");
         }
     }
 

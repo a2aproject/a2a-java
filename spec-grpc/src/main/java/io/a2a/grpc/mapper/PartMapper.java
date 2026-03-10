@@ -95,8 +95,8 @@ public interface PartMapper {
         } else if (proto.hasRaw()) {
             // raw bytes → FilePart(FileWithBytes)
             String bytes = Base64.getEncoder().encodeToString(proto.getRaw().toByteArray());
-            String mimeType = proto.getMediaType().isEmpty() ? null : proto.getMediaType();
-            String name = proto.getFilename().isEmpty() ? null : proto.getFilename();
+            String mimeType = proto.getMediaType().isEmpty() ? "" : proto.getMediaType();
+            String name = proto.getFilename().isEmpty() ? "" : proto.getFilename();
             return new FilePart(new FileWithBytes(mimeType, name, bytes), metadata);
         } else if (proto.hasUrl()) {
             // url → FilePart(FileWithUri)

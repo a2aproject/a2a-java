@@ -17,7 +17,7 @@ import java.util.List;
 public class AgentCardProducer {
 
     @ConfigProperty(name = "quarkus.agentcard.protocol", defaultValue = "JSONRPC")
-    TransportProtocol protocol;
+    String protocolStr;
 
     @Produces
     @PublicAgentCard
@@ -48,6 +48,7 @@ public class AgentCardProducer {
     }
 
     private AgentInterface getAgentInterface() {
+        TransportProtocol protocol = TransportProtocol.fromString(protocolStr);
         String url = switch (protocol) {
             case GRPC -> "localhost:9000";
             case JSONRPC, HTTP_JSON -> "http://localhost:9999";
