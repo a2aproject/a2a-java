@@ -22,11 +22,18 @@ import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
 import io.a2a.spec.Part;
 import io.a2a.spec.TextPart;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 
 public class PartTypeAdapterTest {
+
+    @TempDir
+    Path tempDir;
 
     // -------------------------------------------------------------------------
     // TextPart
@@ -132,6 +139,36 @@ public class PartTypeAdapterTest {
         assertEquals("application/pdf", bytes.mimeType());
         assertEquals("report.pdf", bytes.name());
         assertEquals("AAEC", bytes.bytes());
+    }
+
+    @Test
+    public void shouldRoundTripFilePartWithBytesFromRealFile() throws JsonProcessingException, IOException {
+        // Create a temporary file with some content
+        Path testFile = tempDir.resolve("test-file.txt");
+        String fileContent = "This is test content for lazy loading verification";
+        Files.writeString(testFile, fileContent);
+        
+        // Create FileWithBytes from the file path (lazy loading)
+        FileWithBytes fileWithBytes = new FileWithBytes("text/plain", testFile);
+        FilePart original = new FilePart(fileWithBytes);
+        
+        // Serialize to JSON (this triggers lazy loading)
+        String json = JsonUtil.toJson(original);
+        
+        // Deserialize and verify
+        Part<?> deserialized = JsonUtil.fromJson(json, Part.class);
+        assertInstanceOf(FilePart.class, deserialized);
+        FilePart result = (FilePart) deserialized;
+        assertInstanceOf(FileWithBytes.class, result.file());
+        FileWithBytes bytes = (FileWithBytes) result.file();
+        
+        assertEquals("text/plain", bytes.mimeType());
+        assertEquals("test-file.txt", bytes.name());
+        
+        // Verify the content by decoding the base64
+        byte[] decodedBytes = Base64.getDecoder().decode(bytes.bytes());
+        String decodedContent = new String(decodedBytes);
+        assertEquals(fileContent, decodedContent);
     }
 
     // -------------------------------------------------------------------------
