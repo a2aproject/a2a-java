@@ -653,12 +653,6 @@ public class RestHandler {
         return new HTTPRestResponse(statusCode, APPLICATION_PROBLEM_JSON, jsonBody);
     }
 
-    private HTTPRestResponse createProblemErrorResponse(A2AError error) {
-        int statusCode = mapErrorToHttpStatus(error);
-        String jsonBody = new HTTPRestErrorResponse(error).toJson();
-        return new HTTPRestResponse(statusCode, "application/problem+json", jsonBody);
-    }
-
     private HTTPRestStreamingResponse createStreamingResponse(Flow.Publisher<StreamingEventKind> publisher) {
         return new HTTPRestStreamingResponse(convertToSendStreamingMessageResponse(publisher));
     }
