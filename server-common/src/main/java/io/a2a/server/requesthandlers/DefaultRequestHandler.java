@@ -447,8 +447,8 @@ public class DefaultRequestHandler implements RequestHandler {
 
         // Log return behavior from client request
         if (params.configuration() != null && params.configuration().returnImmediately() != null) {
-            LOGGER.debug("DefaultRequestHandler: Client requested returnImmediately={} for task {}",
-                params.configuration().returnImmediately(), taskId.get());
+            LOGGER.debug("DefaultRequestHandler: Client requested returnImmediately={}, using blocking={} for task {}",
+                params.configuration().returnImmediately(), blocking, taskId.get());
         } else if (params.configuration() != null) {
             LOGGER.debug("DefaultRequestHandler: Client sent configuration but returnImmediately=null, using default blocking={} for task {}", blocking, taskId.get());
         } else {
