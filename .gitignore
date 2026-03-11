@@ -7,8 +7,6 @@ release.properties
 .flattened-pom.xml
 *.args
 
-#Claude
-CLAUDE.md
 
 # Eclipse
 .project
@@ -51,7 +49,7 @@ nbproject/
 .certs/
 
 # Private Claude config
-.claude/
+.claude/settings.local.json
 .serena/
 .bob/
 claudedocs
