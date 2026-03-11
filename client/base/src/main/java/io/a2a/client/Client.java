@@ -20,8 +20,8 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
@@ -512,9 +512,9 @@ public class Client extends AbstractClient {
      * Example:
      * <pre>{@code
      * // List all configurations for a context
-     * ListTaskPushNotificationConfigParams params =
-     *     new ListTaskPushNotificationConfigParams("session-123", null, 10, null);
-     * ListTaskPushNotificationConfigResult result =
+     * ListTaskPushNotificationConfigsParams params =
+     *     new ListTaskPushNotificationConfigsParams("session-123", null, 10, null);
+     * ListTaskPushNotificationConfigsResult result =
      *     client.listTaskPushNotificationConfigurations(params);
      * for (TaskPushNotificationConfig config : result.configurations()) {
      *     System.out.println("Task " + config.taskId() + " -> " +
@@ -526,11 +526,11 @@ public class Client extends AbstractClient {
      * @param context custom call context for request interceptors (optional)
      * @return the list of push notification configurations
      * @throws A2AClientException if the configurations cannot be retrieved
-     * @see ListTaskPushNotificationConfigParams
+     * @see ListTaskPushNotificationConfigsParams
      */
     @Override
-    public ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(
-            ListTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(
+            ListTaskPushNotificationConfigsParams request, @Nullable ClientCallContext context) throws A2AClientException {
         return clientTransport.listTaskPushNotificationConfigurations(request, context);
     }
 

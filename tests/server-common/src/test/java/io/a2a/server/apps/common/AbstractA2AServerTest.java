@@ -62,8 +62,8 @@ import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONParseError;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
@@ -1118,7 +1118,7 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
-    public void testListPushNotificationConfigWithConfigId() throws Exception {
+    public void testListPushNotificationConfigsWithConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         TaskPushNotificationConfig notificationConfig1
                 = TaskPushNotificationConfig.builder()
@@ -1134,8 +1134,8 @@ public abstract class AbstractA2AServerTest {
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig2);
 
         try {
-            ListTaskPushNotificationConfigResult result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+            ListTaskPushNotificationConfigsResult result = getClient().listTaskPushNotificationConfigurations(
+                    new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
             assertEquals(2, result.size());
             assertEquals(TaskPushNotificationConfig.builder(notificationConfig1).taskId(MINIMAL_TASK.id()).build(), result.configs().get(0));
             assertEquals(TaskPushNotificationConfig.builder(notificationConfig2).taskId(MINIMAL_TASK.id()).build(), result.configs().get(1));
@@ -1149,7 +1149,7 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
-    public void testListPushNotificationConfigWithoutConfigId() throws Exception {
+    public void testListPushNotificationConfigsWithoutConfigId() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         TaskPushNotificationConfig notificationConfig1
                 = TaskPushNotificationConfig.builder()
@@ -1166,8 +1166,8 @@ public abstract class AbstractA2AServerTest {
         // will overwrite the previous one
         savePushNotificationConfigInStore(MINIMAL_TASK.id(), notificationConfig2);
         try {
-            ListTaskPushNotificationConfigResult result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+            ListTaskPushNotificationConfigsResult result = getClient().listTaskPushNotificationConfigurations(
+                    new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
             assertEquals(1, result.size());
 
             TaskPushNotificationConfig expectedNotificationConfig = TaskPushNotificationConfig.builder()
@@ -1185,10 +1185,10 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
-    public void testListPushNotificationConfigTaskNotFound() {
+    public void testListPushNotificationConfigsTaskNotFound() {
         try {
-            ListTaskPushNotificationConfigResult result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams("non-existent-task"));
+            ListTaskPushNotificationConfigsResult result = getClient().listTaskPushNotificationConfigurations(
+                    new ListTaskPushNotificationConfigsParams("non-existent-task"));
             fail();
         } catch (A2AClientException e) {
             assertInstanceOf(TaskNotFoundError.class, e.getCause());
@@ -1196,11 +1196,11 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
-    public void testListPushNotificationConfigEmptyList() throws Exception {
+    public void testListPushNotificationConfigsEmptyList() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {
-            ListTaskPushNotificationConfigResult result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+            ListTaskPushNotificationConfigsResult result = getClient().listTaskPushNotificationConfigurations(
+                    new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
             assertEquals(0, result.size());
         } catch (Exception e) {
             fail(e.getMessage());
@@ -1238,13 +1238,13 @@ public abstract class AbstractA2AServerTest {
                     new DeleteTaskPushNotificationConfigParams(MINIMAL_TASK.id(), "config1"));
 
             // should now be 1 left
-            ListTaskPushNotificationConfigResult result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+            ListTaskPushNotificationConfigsResult result = getClient().listTaskPushNotificationConfigurations(
+                    new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
             assertEquals(1, result.size());
 
             // should remain unchanged, this is a different task
             result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams("task-456"));
+                    new ListTaskPushNotificationConfigsParams("task-456"));
             assertEquals(1, result.size());
         } catch (Exception e) {
             fail(e.getMessage());
@@ -1278,8 +1278,8 @@ public abstract class AbstractA2AServerTest {
                     new DeleteTaskPushNotificationConfigParams(MINIMAL_TASK.id(), "non-existent-config-id"));
 
             // should remain unchanged
-            ListTaskPushNotificationConfigResult result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+            ListTaskPushNotificationConfigsResult result = getClient().listTaskPushNotificationConfigurations(
+                    new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
             assertEquals(2, result.size());
         } catch (Exception e) {
             fail();
@@ -1325,8 +1325,8 @@ public abstract class AbstractA2AServerTest {
                     new DeleteTaskPushNotificationConfigParams(MINIMAL_TASK.id(), MINIMAL_TASK.id()));
 
             // should now be 0
-            ListTaskPushNotificationConfigResult result = getClient().listTaskPushNotificationConfigurations(
-                    new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()), null);
+            ListTaskPushNotificationConfigsResult result = getClient().listTaskPushNotificationConfigurations(
+                    new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()), null);
             assertEquals(0, result.size());
         } catch (Exception e) {
             fail();

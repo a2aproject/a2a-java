@@ -1,24 +1,24 @@
 package io.a2a.jsonrpc.common.wrappers;
 
 import io.a2a.spec.A2AError;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.TaskPushNotificationConfig;
 
 /**
  * JSON-RPC response containing all push notification configurations for a task with pagination support.
  * <p>
- * This response returns a {@link ListTaskPushNotificationConfigResult} containing
+ * This response returns a {@link ListTaskPushNotificationConfigsResult} containing
  * {@link TaskPushNotificationConfig} entries configured for the requested task,
  * showing all active notification endpoints with optional pagination information.
  * <p>
  * If an error occurs, the error field will contain a {@link A2AError}.
  *
  * @see ListTaskPushNotificationConfigsRequest for the corresponding request
- * @see ListTaskPushNotificationConfigResult for the result structure
+ * @see ListTaskPushNotificationConfigsResult for the result structure
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class ListTaskPushNotificationConfigsResponse extends A2AResponse<ListTaskPushNotificationConfigResult> {
+public final class ListTaskPushNotificationConfigsResponse extends A2AResponse<ListTaskPushNotificationConfigsResult> {
 
     /**
      * Constructs response with all parameters.
@@ -28,8 +28,8 @@ public final class ListTaskPushNotificationConfigsResponse extends A2AResponse<L
      * @param result the result containing list of push notification configurations and pagination info
      * @param error the error (if any)
      */
-    public ListTaskPushNotificationConfigsResponse(String jsonrpc, Object id, ListTaskPushNotificationConfigResult result, A2AError error) {
-        super(jsonrpc, id, result, error, ListTaskPushNotificationConfigResult.class);
+    public ListTaskPushNotificationConfigsResponse(String jsonrpc, Object id, ListTaskPushNotificationConfigsResult result, A2AError error) {
+        super(jsonrpc, id, result, error, ListTaskPushNotificationConfigsResult.class);
     }
 
     /**
@@ -48,7 +48,7 @@ public final class ListTaskPushNotificationConfigsResponse extends A2AResponse<L
      * @param id the request ID
      * @param result the result containing list of push notification configurations and pagination info
      */
-    public ListTaskPushNotificationConfigsResponse(Object id, ListTaskPushNotificationConfigResult result) {
+    public ListTaskPushNotificationConfigsResponse(Object id, ListTaskPushNotificationConfigsResult result) {
         this(null, id, result, null);
     }
 

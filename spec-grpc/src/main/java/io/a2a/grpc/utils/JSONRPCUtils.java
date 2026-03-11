@@ -258,7 +258,7 @@ public class JSONRPCUtils {
                 if (tenant != null && !tenant.isBlank() && (builder.getTenant() == null || builder.getTenant().isBlank())) {
                     builder.setTenant(tenant);
                 }
-                return new ListTaskPushNotificationConfigsRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigParams(builder));
+                return new ListTaskPushNotificationConfigsRequest(version, id, ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(builder));
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.Builder builder = io.a2a.grpc.DeleteTaskPushNotificationConfigRequest.newBuilder();
@@ -352,7 +352,7 @@ public class JSONRPCUtils {
             case LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 io.a2a.grpc.ListTaskPushNotificationConfigsResponse.Builder builder = io.a2a.grpc.ListTaskPushNotificationConfigsResponse.newBuilder();
                 parseRequestBody(paramsNode, builder, id);
-                return new ListTaskPushNotificationConfigsResponse(id, ProtoUtils.FromProto.listTaskPushNotificationConfigResult(builder));
+                return new ListTaskPushNotificationConfigsResponse(id, ProtoUtils.FromProto.listTaskPushNotificationConfigsResult(builder));
             }
             case DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD -> {
                 return new DeleteTaskPushNotificationConfigResponse(id);

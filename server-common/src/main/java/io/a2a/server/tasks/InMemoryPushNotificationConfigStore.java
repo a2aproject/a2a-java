@@ -11,8 +11,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import io.a2a.util.Assert;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.TaskPushNotificationConfig;
 
 /**
@@ -53,13 +53,13 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
     }
 
     @Override
-    public ListTaskPushNotificationConfigResult getInfo(ListTaskPushNotificationConfigParams params) {
+    public ListTaskPushNotificationConfigsResult getInfo(ListTaskPushNotificationConfigsParams params) {
         List<TaskPushNotificationConfig> configs = pushNotificationInfos.get(params.id());
         if (configs == null) {
-            return new ListTaskPushNotificationConfigResult(Collections.emptyList());
+            return new ListTaskPushNotificationConfigsResult(Collections.emptyList());
         }
         if (params.pageSize() <= 0) {
-            return new ListTaskPushNotificationConfigResult(new ArrayList<>(configs), null);
+            return new ListTaskPushNotificationConfigsResult(new ArrayList<>(configs), null);
         }
         if (params.pageToken() != null && !params.pageToken().isBlank()) {
             //find first index
@@ -69,10 +69,10 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
             }
         }
         if (configs.size() <= params.pageSize()) {
-            return new ListTaskPushNotificationConfigResult(new ArrayList<>(configs), null);
+            return new ListTaskPushNotificationConfigsResult(new ArrayList<>(configs), null);
         }
         String newToken = configs.get(params.pageSize()).id();
-        return new ListTaskPushNotificationConfigResult(new ArrayList<>(configs.subList(0, params.pageSize())), newToken);
+        return new ListTaskPushNotificationConfigsResult(new ArrayList<>(configs.subList(0, params.pageSize())), newToken);
     }
 
     private int findFirstIndex(List<TaskPushNotificationConfig> configs, String id) {

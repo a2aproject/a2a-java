@@ -52,8 +52,8 @@ import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidParamsError;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
@@ -794,16 +794,16 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new TaskNotFoundError();
         }
 
-        ListTaskPushNotificationConfigResult listTaskPushNotificationConfigResult = pushConfigStore.getInfo(new ListTaskPushNotificationConfigParams(params.taskId()));
-        if (listTaskPushNotificationConfigResult == null || listTaskPushNotificationConfigResult.isEmpty()) {
+        ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigsResult = pushConfigStore.getInfo(new ListTaskPushNotificationConfigsParams(params.taskId()));
+        if (listTaskPushNotificationConfigsResult == null || listTaskPushNotificationConfigsResult.isEmpty()) {
             throw new InternalError("No push notification config found");
         }
 
         String configId = params.id();
-        return getTaskPushNotificationConfig(listTaskPushNotificationConfigResult, configId);
+        return getTaskPushNotificationConfig(listTaskPushNotificationConfigsResult, configId);
     }
 
-    private TaskPushNotificationConfig getTaskPushNotificationConfig(ListTaskPushNotificationConfigResult notificationConfigList,
+    private TaskPushNotificationConfig getTaskPushNotificationConfig(ListTaskPushNotificationConfigsResult notificationConfigList,
             String configId) {
         for (TaskPushNotificationConfig notificationConfig : notificationConfigList.configs()) {
             if (configId.equals(notificationConfig.id())) {
@@ -851,8 +851,8 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     @Override
-    public ListTaskPushNotificationConfigResult onListTaskPushNotificationConfig(
-            ListTaskPushNotificationConfigParams params, ServerCallContext context) throws A2AError {
+    public ListTaskPushNotificationConfigsResult onListTaskPushNotificationConfigs(
+            ListTaskPushNotificationConfigsParams params, ServerCallContext context) throws A2AError {
         if (pushConfigStore == null) {
             throw new UnsupportedOperationError();
         }

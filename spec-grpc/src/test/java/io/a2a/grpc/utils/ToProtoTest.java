@@ -22,7 +22,7 @@ import io.a2a.spec.Artifact;
 import io.a2a.spec.AuthenticationInfo;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.HTTPAuthSecurityScheme;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.Task;
@@ -323,16 +323,16 @@ public class ToProtoTest {
 
     @Test
     public void convertListTaskPushNotificationConfigsRequest() {
-        ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams("task-789");
+        ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams("task-789");
 
         io.a2a.grpc.ListTaskPushNotificationConfigsRequest result =
-                ProtoUtils.ToProto.listTaskPushNotificationConfigRequest(params);
+                ProtoUtils.ToProto.listTaskPushNotificationConfigsRequest(params);
 
         assertEquals("task-789", result.getTaskId());
 
         // Test round-trip conversion
-        ListTaskPushNotificationConfigParams convertedBack =
-                ProtoUtils.FromProto.listTaskPushNotificationConfigParams(result);
+        ListTaskPushNotificationConfigsParams convertedBack =
+                ProtoUtils.FromProto.listTaskPushNotificationConfigsParams(result);
         assertEquals("task-789", convertedBack.id());
     }
 }

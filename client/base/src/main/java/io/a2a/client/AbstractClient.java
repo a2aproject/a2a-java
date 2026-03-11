@@ -14,8 +14,8 @@ import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
@@ -299,8 +299,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the result containing the list of task push notification configs and pagination information
      * @throws A2AClientException if getting the task push notification configs fails for any reason
      */
-    public ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(
-            ListTaskPushNotificationConfigParams request) throws A2AClientException {
+    public ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(
+            ListTaskPushNotificationConfigsParams request) throws A2AClientException {
         return listTaskPushNotificationConfigurations(request, null);
     }
 
@@ -312,8 +312,8 @@ public abstract class AbstractClient implements AutoCloseable {
      * @return the result containing the list of task push notification configs and pagination information
      * @throws A2AClientException if getting the task push notification configs fails for any reason
      */
-    public abstract ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(
-            ListTaskPushNotificationConfigParams request,
+    public abstract ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(
+            ListTaskPushNotificationConfigsParams request,
             @Nullable ClientCallContext context) throws A2AClientException;
 
     /**

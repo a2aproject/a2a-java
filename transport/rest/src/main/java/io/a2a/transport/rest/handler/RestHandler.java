@@ -49,8 +49,8 @@ import io.a2a.spec.InvalidAgentResponseError;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONParseError;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.PushNotificationNotSupportedError;
@@ -571,9 +571,9 @@ public class RestHandler {
             if (!agentCard.capabilities().pushNotifications()) {
                 throw new PushNotificationNotSupportedError();
             }
-            ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId, pageSize, pageToken, tenant);
-            ListTaskPushNotificationConfigResult result = requestHandler.onListTaskPushNotificationConfig(params, context);
-            return createSuccessResponse(200, io.a2a.grpc.ListTaskPushNotificationConfigsResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(result)));
+            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams(taskId, pageSize, pageToken, tenant);
+            ListTaskPushNotificationConfigsResult result = requestHandler.onListTaskPushNotificationConfigs(params, context);
+            return createSuccessResponse(200, io.a2a.grpc.ListTaskPushNotificationConfigsResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigsResponse(result)));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {

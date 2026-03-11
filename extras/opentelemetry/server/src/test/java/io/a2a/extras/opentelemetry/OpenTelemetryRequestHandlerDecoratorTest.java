@@ -393,14 +393,14 @@ class OpenTelemetryRequestHandlerDecoratorTest {
     }
 
     @Nested
-    class ListTaskPushNotificationConfigTests {
+    class ListTaskPushNotificationConfigsTests {
         @Test
-        void onListTaskPushNotificationConfig_createsSpanAndDelegatesToHandler() throws A2AError {
-            ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams("task-123");
-            ListTaskPushNotificationConfigResult result = new ListTaskPushNotificationConfigResult(Collections.emptyList(), null);
-            when(delegate.onListTaskPushNotificationConfig(params, context)).thenReturn(result);
+        void onListTaskPushNotificationConfigs_createsSpanAndDelegatesToHandler() throws A2AError {
+            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams("task-123");
+            ListTaskPushNotificationConfigsResult result = new ListTaskPushNotificationConfigsResult(Collections.emptyList(), null);
+            when(delegate.onListTaskPushNotificationConfigs(params, context)).thenReturn(result);
 
-            ListTaskPushNotificationConfigResult actualResult = decorator.onListTaskPushNotificationConfig(params, context);
+            ListTaskPushNotificationConfigsResult actualResult = decorator.onListTaskPushNotificationConfigs(params, context);
 
             assertEquals(result, actualResult);
             verify(tracer).spanBuilder(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
@@ -411,12 +411,12 @@ class OpenTelemetryRequestHandlerDecoratorTest {
         }
 
         @Test
-        void onListTaskPushNotificationConfig_withError_setsErrorStatus() throws A2AError {
-            ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams("task-123");
+        void onListTaskPushNotificationConfigs_withError_setsErrorStatus() throws A2AError {
+            ListTaskPushNotificationConfigsParams params = new ListTaskPushNotificationConfigsParams("task-123");
             A2AError error = new InvalidRequestError("Invalid request");
-            when(delegate.onListTaskPushNotificationConfig(params, context)).thenThrow(error);
+            when(delegate.onListTaskPushNotificationConfigs(params, context)).thenThrow(error);
 
-            assertThrows(InvalidRequestError.class, () -> decorator.onListTaskPushNotificationConfig(params, context));
+            assertThrows(InvalidRequestError.class, () -> decorator.onListTaskPushNotificationConfigs(params, context));
 
             verify(span).setAttribute(ERROR_TYPE, error.getMessage());
             verify(span).setStatus(StatusCode.ERROR, error.getMessage());

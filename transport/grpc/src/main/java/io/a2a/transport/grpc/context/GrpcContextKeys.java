@@ -102,7 +102,7 @@ public final class GrpcContextKeys {
      *   <li>SubscribeToTask → SubscribeToTask</li>
      *   <li>CreateTaskPushNotification → CreateTaskPushNotificationConfig</li>
      *   <li>GetTaskPushNotification → GetTaskPushNotificationConfig</li>
-     *   <li>ListTaskPushNotification → ListTaskPushNotificationConfig</li>
+     *   <li>ListTaskPushNotification → ListTaskPushNotificationConfigs</li>
      *   <li>DeleteTaskPushNotification → DeleteTaskPushNotificationConfig</li>
      * </ul>
      *

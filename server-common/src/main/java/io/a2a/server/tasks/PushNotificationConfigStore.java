@@ -1,7 +1,7 @@
 package io.a2a.server.tasks;
 
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.TaskPushNotificationConfig;
 
 /**
@@ -21,12 +21,12 @@ import io.a2a.spec.TaskPushNotificationConfig;
  * </ul>
  *
  * <h2>Pagination Support</h2>
- * {@link #getInfo(ListTaskPushNotificationConfigParams)} supports pagination for tasks
+ * {@link #getInfo(ListTaskPushNotificationConfigsParams)} supports pagination for tasks
  * with many push notification configurations:
  * <ul>
  *   <li><b>pageSize:</b> Maximum number of configs to return (0 = unlimited)</li>
  *   <li><b>pageToken:</b> Continuation token from previous response</li>
- *   <li>Returns {@link ListTaskPushNotificationConfigResult} with configs and next page token</li>
+ *   <li>Returns {@link ListTaskPushNotificationConfigsResult} with configs and next page token</li>
  * </ul>
  *
  * <h2>Default Implementation</h2>
@@ -90,13 +90,13 @@ public interface PushNotificationConfigStore {
      * <b>Pagination Example:</b>
      * <pre>{@code
      * // First page
-     * ListTaskPushNotificationConfigParams params =
-     *     new ListTaskPushNotificationConfigParams(taskId, 10, null, tenant);
-     * ListTaskPushNotificationConfigResult result = store.getInfo(params);
+     * ListTaskPushNotificationConfigsParams params =
+     *     new ListTaskPushNotificationConfigsParams(taskId, 10, null, tenant);
+     * ListTaskPushNotificationConfigsResult result = store.getInfo(params);
      *
      * // Next page
      * if (result.nextPageToken() != null) {
-     *     params = new ListTaskPushNotificationConfigParams(
+     *     params = new ListTaskPushNotificationConfigsParams(
      *         taskId, 10, result.nextPageToken(), tenant);
      *     result = store.getInfo(params);
      * }
@@ -105,7 +105,7 @@ public interface PushNotificationConfigStore {
      * @param params the query parameters including task ID, page size, and page token
      * @return the configurations for this task (empty list if none found)
      */
-    ListTaskPushNotificationConfigResult getInfo(ListTaskPushNotificationConfigParams params);
+    ListTaskPushNotificationConfigsResult getInfo(ListTaskPushNotificationConfigsParams params);
 
     /**
      * Deletes a push notification configuration for a task.

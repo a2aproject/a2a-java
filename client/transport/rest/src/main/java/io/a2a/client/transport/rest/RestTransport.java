@@ -48,8 +48,8 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
@@ -326,7 +326,7 @@ public class RestTransport implements ClientTransport {
     }
 
     @Override
-    public ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
+    public ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigsParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         io.a2a.grpc.ListTaskPushNotificationConfigsRequest.Builder builder
                 = io.a2a.grpc.ListTaskPushNotificationConfigsRequest.newBuilder();
@@ -348,7 +348,7 @@ public class RestTransport implements ClientTransport {
             String httpResponseBody = response.body();
             io.a2a.grpc.ListTaskPushNotificationConfigsResponse.Builder responseBuilder = io.a2a.grpc.ListTaskPushNotificationConfigsResponse.newBuilder();
             JsonFormat.parser().merge(httpResponseBody, responseBuilder);
-            return ProtoUtils.FromProto.listTaskPushNotificationConfigResult(responseBuilder);
+            return ProtoUtils.FromProto.listTaskPushNotificationConfigsResult(responseBuilder);
         } catch (A2AClientException e) {
             throw e;
         } catch (IOException | InterruptedException e) {

@@ -23,8 +23,8 @@ import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
@@ -396,7 +396,7 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
     }
 
     @Override
-    public ListTaskPushNotificationConfigResult onListTaskPushNotificationConfig(ListTaskPushNotificationConfigParams params, ServerCallContext context) throws A2AError {
+    public ListTaskPushNotificationConfigsResult onListTaskPushNotificationConfigs(ListTaskPushNotificationConfigsParams params, ServerCallContext context) throws A2AError {
         var spanBuilder = tracer.spanBuilder(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD)
                 .setSpanKind(SpanKind.SERVER)
                 .setAttribute(GENAI_OPERATION_NAME, A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
@@ -411,7 +411,7 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         Span span = spanBuilder.startSpan();
 
         try (Scope scope = span.makeCurrent()) {
-            ListTaskPushNotificationConfigResult result = delegate.onListTaskPushNotificationConfig(params, context);
+            ListTaskPushNotificationConfigsResult result = delegate.onListTaskPushNotificationConfigs(params, context);
 
             if (result != null && extractResponse()) {
                 span.setAttribute(GENAI_RESPONSE, result.toString());

@@ -14,8 +14,8 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendParams;
@@ -262,16 +262,16 @@ class OpenTelemetryClientTransportTest {
 
     @Test
     void testListTaskPushNotificationConfigurations_Success() throws A2AClientException {
-        ListTaskPushNotificationConfigParams request = mock(ListTaskPushNotificationConfigParams.class);
+        ListTaskPushNotificationConfigsParams request = mock(ListTaskPushNotificationConfigsParams.class);
         TaskPushNotificationConfig config1 = mock(TaskPushNotificationConfig.class);
         TaskPushNotificationConfig config2 = mock(TaskPushNotificationConfig.class);
         when(config1.toString()).thenReturn("config1");
         when(config2.toString()).thenReturn("config2");
-        ListTaskPushNotificationConfigResult expectedResult = new ListTaskPushNotificationConfigResult(List.of(config1, config2));
+        ListTaskPushNotificationConfigsResult expectedResult = new ListTaskPushNotificationConfigsResult(List.of(config1, config2));
         when(request.toString()).thenReturn("request-string");
         when(delegate.listTaskPushNotificationConfigurations(eq(request), any(ClientCallContext.class))).thenReturn(expectedResult);
 
-        ListTaskPushNotificationConfigResult result = transport.listTaskPushNotificationConfigurations(request, context);
+        ListTaskPushNotificationConfigsResult result = transport.listTaskPushNotificationConfigurations(request, context);
 
         assertEquals(expectedResult, result);
         verify(tracer).spanBuilder(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
