@@ -259,7 +259,7 @@ public class RestTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(false)
+                .returnImmediately(true)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)
@@ -577,7 +577,7 @@ public class RestTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(false)
+                .returnImmediately(true)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)

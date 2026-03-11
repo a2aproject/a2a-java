@@ -111,7 +111,7 @@ public class JSONRPCTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(true)
+                .returnImmediately(false)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)
@@ -159,7 +159,7 @@ public class JSONRPCTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(true)
+                .returnImmediately(false)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)
@@ -201,7 +201,7 @@ public class JSONRPCTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(true)
+                .returnImmediately(false)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)
@@ -446,7 +446,7 @@ public class JSONRPCTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(true)
+                .returnImmediately(false)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)
@@ -506,7 +506,7 @@ public class JSONRPCTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(true)
+                .returnImmediately(false)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)
@@ -564,7 +564,7 @@ public class JSONRPCTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(true)
+                .returnImmediately(false)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)
@@ -625,7 +625,7 @@ public class JSONRPCTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(true)
+                .returnImmediately(false)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)
@@ -681,7 +681,7 @@ public class JSONRPCTransportTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(true)
+                .returnImmediately(false)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)

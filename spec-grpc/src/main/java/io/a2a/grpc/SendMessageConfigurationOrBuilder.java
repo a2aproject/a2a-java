@@ -112,13 +112,15 @@ public interface SendMessageConfigurationOrBuilder extends
 
   /**
    * <pre>
-   * If `true`, the operation MUST wait until the task reaches a terminal state
-   * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
-   * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
+   * If `true`, the operation returns immediately after creating the task,
+   * even if processing is still in progress.
+   * If `false` (default), the operation MUST wait until the task reaches a
+   * terminal (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or interrupted
+   * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) state before returning.
    * </pre>
    *
-   * <code>bool blocking = 4;</code>
-   * @return The blocking.
+   * <code>bool return_immediately = 4;</code>
+   * @return The returnImmediately.
    */
-  boolean getBlocking();
+  boolean getReturnImmediately();
 }

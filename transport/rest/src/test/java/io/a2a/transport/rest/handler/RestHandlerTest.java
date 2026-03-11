@@ -104,7 +104,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
               },
               "configuration":
                 {
-                  "blocking": true
+                  "returnImmediately": false
               }
             }""";
 
@@ -557,7 +557,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 "metadata": {}
               },
               "configuration": {
-                "blocking": true
+                "returnImmediately": false
               }
             }""";
 
@@ -706,7 +706,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 "metadata": {}
               },
               "configuration": {
-                "blocking": true
+                "returnImmediately": false
               }
             }""";
 
@@ -757,7 +757,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 "metadata": {}
               },
               "configuration": {
-                "blocking": true
+                "returnImmediately": false
               }
             }""";
 
@@ -900,7 +900,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 "metadata": {}
               },
               "configuration": {
-                "blocking": true
+                "returnImmediately": false
               }
             }""";
 
@@ -948,7 +948,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 "metadata": {}
               },
               "configuration": {
-                "blocking": true
+                "returnImmediately": false
               }
             }""";
 

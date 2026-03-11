@@ -62,7 +62,7 @@ public class JSONRPCTransportStreamingTest {
 
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(false)
+                .returnImmediately(true)
                 .build();
 
         MessageSendParams params = MessageSendParams.builder()
@@ -102,7 +102,7 @@ public class JSONRPCTransportStreamingTest {
                 .build();
         MessageSendConfiguration configuration = MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of("text"))
-                .blocking(false)
+                .returnImmediately(true)
                 .build();
         MessageSendParams params = MessageSendParams.builder()
                 .message(message)

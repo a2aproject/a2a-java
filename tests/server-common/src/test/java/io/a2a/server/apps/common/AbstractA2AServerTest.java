@@ -2348,7 +2348,7 @@ public abstract class AbstractA2AServerTest {
         AgentCard agentCard = createTestAgentCard();
         ClientConfig clientConfig = new ClientConfig.Builder()
                 .setStreaming(false) // Non-streaming
-                .setPolling(true) // Polling mode (translates to blocking=false on server)
+                .setPolling(true) // Polling mode (translates to returnImmediately=true on server)
                 .build();
 
         ClientBuilder clientBuilder = Client

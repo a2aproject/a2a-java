@@ -96,7 +96,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     private static MessageSendConfiguration defaultConfiguration() {
         return MessageSendConfiguration.builder()
                 .acceptedOutputModes(List.of())
-                .blocking(false)
+                .returnImmediately(true)
                 .build();
     }
 

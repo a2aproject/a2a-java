@@ -696,7 +696,7 @@ public class Client extends AbstractClient {
     private MessageSendConfiguration createMessageSendConfiguration(@Nullable TaskPushNotificationConfig taskPushNotificationConfig) {
         return MessageSendConfiguration.builder()
                 .acceptedOutputModes(clientConfig.getAcceptedOutputModes())
-                .blocking(!clientConfig.isPolling())
+                .returnImmediately(clientConfig.isPolling())
                 .historyLength(clientConfig.getHistoryLength())
                 .taskPushNotificationConfig(taskPushNotificationConfig)
                 .build();

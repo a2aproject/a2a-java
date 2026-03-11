@@ -278,7 +278,7 @@ public class ToProtoTest {
                 .acceptedOutputModes(List.of("text"))
                 .build();
         SendMessageConfiguration result = ProtoUtils.ToProto.messageSendConfiguration(configuration);
-        assertFalse(result.getBlocking());
+        assertFalse(result.getReturnImmediately());
         assertEquals(1, result.getAcceptedOutputModesCount());
         assertEquals("text", result.getAcceptedOutputModesBytes(0).toStringUtf8());
     }

@@ -189,7 +189,7 @@ private static final long serialVersionUID = 0L;
    *
    * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
    * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
-   *     See a2a.proto;l=567
+   *     See a2a.proto;l=569
    * @return Whether the implicit field is set.
    */
   @java.lang.Override
@@ -203,7 +203,7 @@ private static final long serialVersionUID = 0L;
    *
    * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
    * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
-   *     See a2a.proto;l=567
+   *     See a2a.proto;l=569
    * @return The implicit.
    */
   @java.lang.Override
@@ -236,7 +236,7 @@ private static final long serialVersionUID = 0L;
    *
    * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
    * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
-   *     See a2a.proto;l=569
+   *     See a2a.proto;l=571
    * @return Whether the password field is set.
    */
   @java.lang.Override
@@ -250,7 +250,7 @@ private static final long serialVersionUID = 0L;
    *
    * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
    * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
-   *     See a2a.proto;l=569
+   *     See a2a.proto;l=571
    * @return The password.
    */
   @java.lang.Override
@@ -1159,7 +1159,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
-     *     See a2a.proto;l=567
+     *     See a2a.proto;l=569
      * @return Whether the implicit field is set.
      */
     @java.lang.Override
@@ -1173,7 +1173,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>.lf.a2a.v1.ImplicitOAuthFlow implicit = 3 [deprecated = true];</code>
      * @deprecated lf.a2a.v1.OAuthFlows.implicit is deprecated.
-     *     See a2a.proto;l=567
+     *     See a2a.proto;l=569
      * @return The implicit.
      */
     @java.lang.Override
@@ -1341,7 +1341,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
-     *     See a2a.proto;l=569
+     *     See a2a.proto;l=571
      * @return Whether the password field is set.
      */
     @java.lang.Override
@@ -1355,7 +1355,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>.lf.a2a.v1.PasswordOAuthFlow password = 4 [deprecated = true];</code>
      * @deprecated lf.a2a.v1.OAuthFlows.password is deprecated.
-     *     See a2a.proto;l=569
+     *     See a2a.proto;l=571
      * @return The password.
      */
     @java.lang.Override

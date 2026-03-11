@@ -181,21 +181,23 @@ private static final long serialVersionUID = 0L;
     return historyLength_;
   }
 
-  public static final int BLOCKING_FIELD_NUMBER = 4;
-  private boolean blocking_ = false;
+  public static final int RETURN_IMMEDIATELY_FIELD_NUMBER = 4;
+  private boolean returnImmediately_ = false;
   /**
    * <pre>
-   * If `true`, the operation MUST wait until the task reaches a terminal state
-   * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
-   * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
+   * If `true`, the operation returns immediately after creating the task,
+   * even if processing is still in progress.
+   * If `false` (default), the operation MUST wait until the task reaches a
+   * terminal (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or interrupted
+   * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) state before returning.
    * </pre>
    *
-   * <code>bool blocking = 4;</code>
-   * @return The blocking.
+   * <code>bool return_immediately = 4;</code>
+   * @return The returnImmediately.
    */
   @java.lang.Override
-  public boolean getBlocking() {
-    return blocking_;
+  public boolean getReturnImmediately() {
+    return returnImmediately_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -221,8 +223,8 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeInt32(3, historyLength_);
     }
-    if (blocking_ != false) {
-      output.writeBool(4, blocking_);
+    if (returnImmediately_ != false) {
+      output.writeBool(4, returnImmediately_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -249,9 +251,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(3, historyLength_);
     }
-    if (blocking_ != false) {
+    if (returnImmediately_ != false) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(4, blocking_);
+        .computeBoolSize(4, returnImmediately_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -280,8 +282,8 @@ private static final long serialVersionUID = 0L;
       if (getHistoryLength()
           != other.getHistoryLength()) return false;
     }
-    if (getBlocking()
-        != other.getBlocking()) return false;
+    if (getReturnImmediately()
+        != other.getReturnImmediately()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -305,9 +307,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + HISTORY_LENGTH_FIELD_NUMBER;
       hash = (53 * hash) + getHistoryLength();
     }
-    hash = (37 * hash) + BLOCKING_FIELD_NUMBER;
+    hash = (37 * hash) + RETURN_IMMEDIATELY_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getBlocking());
+        getReturnImmediately());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -457,7 +459,7 @@ private static final long serialVersionUID = 0L;
         taskPushNotificationConfigBuilder_ = null;
       }
       historyLength_ = 0;
-      blocking_ = false;
+      returnImmediately_ = false;
       return this;
     }
 
@@ -507,7 +509,7 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000002;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
-        result.blocking_ = blocking_;
+        result.returnImmediately_ = returnImmediately_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -540,8 +542,8 @@ private static final long serialVersionUID = 0L;
       if (other.hasHistoryLength()) {
         setHistoryLength(other.getHistoryLength());
       }
-      if (other.getBlocking() != false) {
-        setBlocking(other.getBlocking());
+      if (other.getReturnImmediately() != false) {
+        setReturnImmediately(other.getReturnImmediately());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -588,7 +590,7 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 24
             case 32: {
-              blocking_ = input.readBool();
+              returnImmediately_ = input.readBool();
               bitField0_ |= 0x00000008;
               break;
             } // case 32
@@ -999,52 +1001,58 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private boolean blocking_ ;
+    private boolean returnImmediately_ ;
     /**
      * <pre>
-     * If `true`, the operation MUST wait until the task reaches a terminal state
-     * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
-     * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
+     * If `true`, the operation returns immediately after creating the task,
+     * even if processing is still in progress.
+     * If `false` (default), the operation MUST wait until the task reaches a
+     * terminal (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or interrupted
+     * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) state before returning.
      * </pre>
      *
-     * <code>bool blocking = 4;</code>
-     * @return The blocking.
+     * <code>bool return_immediately = 4;</code>
+     * @return The returnImmediately.
      */
     @java.lang.Override
-    public boolean getBlocking() {
-      return blocking_;
+    public boolean getReturnImmediately() {
+      return returnImmediately_;
     }
     /**
      * <pre>
-     * If `true`, the operation MUST wait until the task reaches a terminal state
-     * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
-     * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
+     * If `true`, the operation returns immediately after creating the task,
+     * even if processing is still in progress.
+     * If `false` (default), the operation MUST wait until the task reaches a
+     * terminal (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or interrupted
+     * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) state before returning.
      * </pre>
      *
-     * <code>bool blocking = 4;</code>
-     * @param value The blocking to set.
+     * <code>bool return_immediately = 4;</code>
+     * @param value The returnImmediately to set.
      * @return This builder for chaining.
      */
-    public Builder setBlocking(boolean value) {
+    public Builder setReturnImmediately(boolean value) {
 
-      blocking_ = value;
+      returnImmediately_ = value;
       bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * If `true`, the operation MUST wait until the task reaches a terminal state
-     * (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or an interrupted state
-     * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) before returning. Default is `false`.
+     * If `true`, the operation returns immediately after creating the task,
+     * even if processing is still in progress.
+     * If `false` (default), the operation MUST wait until the task reaches a
+     * terminal (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or interrupted
+     * (`INPUT_REQUIRED`, `AUTH_REQUIRED`) state before returning.
      * </pre>
      *
-     * <code>bool blocking = 4;</code>
+     * <code>bool return_immediately = 4;</code>
      * @return This builder for chaining.
      */
-    public Builder clearBlocking() {
+    public Builder clearReturnImmediately() {
       bitField0_ = (bitField0_ & ~0x00000008);
-      blocking_ = false;
+      returnImmediately_ = false;
       onChanged();
       return this;
     }
