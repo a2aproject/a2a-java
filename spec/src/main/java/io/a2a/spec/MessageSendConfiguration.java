@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
  * Configuration options for {@code message/send} and {@code message/stream} requests.
  * <p>
  * This record defines how the agent should process a message request, including output format
- * preferences, conversation history context, push notification settings, and blocking behavior.
+ * preferences, conversation history context, push notification settings, and return behavior.
  * <p>
  * All fields are optional and have sensible defaults when not specified.
  *
@@ -17,13 +17,13 @@ import org.jspecify.annotations.Nullable;
  * @param historyLength number of previous messages to include in conversation context (must be non-negative)
  * @param taskPushNotificationConfig configuration for asynchronous push notifications when task state changes.
  *        Task id should be empty when sending this configuration in a SendMessage request.
- * @param blocking whether the request should block until task completion (defaults to false)
+ * @param returnImmediately whether the operation should return immediately after creating the task (defaults to false)
  * @see MessageSendParams for the parameters that use this configuration
  * @see TaskPushNotificationConfig for push notification options
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
 public record MessageSendConfiguration(@Nullable List<String> acceptedOutputModes, @Nullable Integer historyLength,
-        @Nullable TaskPushNotificationConfig taskPushNotificationConfig, Boolean blocking) {
+        @Nullable TaskPushNotificationConfig taskPushNotificationConfig, Boolean returnImmediately) {
 
     /**
      * Compact constructor for validation.
@@ -32,7 +32,7 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
      * @param acceptedOutputModes list of accepted output modes
      * @param historyLength maximum number of history items
      * @param taskPushNotificationConfig push notification configuration
-     * @param blocking whether the request should block
+     * @param returnImmediately whether to return immediately
      * @throws IllegalArgumentException if historyLength is negative
      */
     public MessageSendConfiguration {
@@ -60,7 +60,7 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
         @Nullable List<String> acceptedOutputModes;
         @Nullable Integer historyLength;
         @Nullable TaskPushNotificationConfig taskPushNotificationConfig;
-        Boolean blocking = false;
+        Boolean returnImmediately = false;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -107,13 +107,13 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
         }
 
         /**
-         * Sets whether the request should block until completion.
+         * Sets whether the operation should return immediately after creating the task.
          *
-         * @param blocking true to block until task completes, false for fire-and-forget
+         * @param returnImmediately true to return immediately, false to wait for task completion
          * @return this builder
          */
-        public Builder blocking(@NonNull Boolean blocking) {
-            this.blocking = blocking;
+        public Builder returnImmediately(@NonNull Boolean returnImmediately) {
+            this.returnImmediately = returnImmediately;
             return this;
         }
 
@@ -127,7 +127,7 @@ public record MessageSendConfiguration(@Nullable List<String> acceptedOutputMode
                     acceptedOutputModes,
                     historyLength,
                     taskPushNotificationConfig,
-                    blocking);
+                    returnImmediately);
         }
     }
 }

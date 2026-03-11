@@ -57,7 +57,7 @@ public class A2ACommonFieldMapperTest {
                 "    }\n" +
                 "  },\n" +
                 "  \"configuration\": {\n" +
-                "    \"blocking\": true\n" +
+                "    \"returnImmediately\": false\n" +
                 "  },\n" +
                 "  \"metadata\": {\n" +
                 "  }\n" +

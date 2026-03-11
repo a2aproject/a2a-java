@@ -141,7 +141,7 @@ public class A2AServerRoutesTest {
               },
               "configuration": {
                 "acceptedOutputModes": ["text"],
-                 "blocking": true
+                 "returnImmediately": false
               },
               "metadata": {}
              }
@@ -193,7 +193,7 @@ public class A2AServerRoutesTest {
               },
               "configuration": {
                 "acceptedOutputModes": ["text"],
-                "blocking": true
+                "returnImmediately": false
               },
               "metadata": {}
              }
@@ -692,7 +692,7 @@ public class A2AServerRoutesTest {
               },
               "configuration": {
                 "acceptedOutputModes": ["text"],
-                "blocking": true
+                "returnImmediately": false
               },
               "metadata": {}
              }

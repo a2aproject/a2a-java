@@ -55,7 +55,7 @@ import org.junit.jupiter.api.Test;
 public class DefaultRequestHandlerTest {
 
     private static final MessageSendConfiguration DEFAULT_CONFIG = MessageSendConfiguration.builder()
-        .blocking(false)
+        .returnImmediately(true)
         .acceptedOutputModes(List.of())
         .build();
 

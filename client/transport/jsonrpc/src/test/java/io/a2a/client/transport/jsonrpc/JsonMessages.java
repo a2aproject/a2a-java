@@ -151,7 +151,7 @@ public class JsonMessages {
               "acceptedOutputModes":[
                 "text"
               ],
-              "blocking":true
+              "returnImmediately":false
             },
             "metadata":{
 
@@ -201,7 +201,7 @@ public class JsonMessages {
                   "acceptedOutputModes":[
                     "text"
                   ],
-                  "blocking":true
+                  "returnImmediately":false
                 },
                 "metadata":{
                   
@@ -385,7 +385,7 @@ public class JsonMessages {
                    "acceptedOutputModes":[
                      "text"
                    ],
-                   "blocking":true
+                   "returnImmediately":false
                  },
                  "metadata":{
                    
@@ -452,7 +452,7 @@ public class JsonMessages {
                   "acceptedOutputModes":[
                     "text"
                   ],
-                  "blocking":true
+                  "returnImmediately":false
                 },
                 "metadata":{
                   
@@ -523,7 +523,7 @@ public class JsonMessages {
                   "acceptedOutputModes":[
                     "text"
                   ],
-                  "blocking":true
+                  "returnImmediately":false
                 },
                 "metadata":{
                   

@@ -441,15 +441,16 @@ public class DefaultRequestHandler implements RequestHandler {
         final java.util.concurrent.atomic.AtomicReference<@NonNull String> taskId = new java.util.concurrent.atomic.AtomicReference<>(queueTaskId);
         ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
 
-        // Default to blocking=false per A2A spec (return after task creation)
-        boolean blocking = params.configuration() != null && Boolean.TRUE.equals(params.configuration().blocking());
+        // Default to blocking per A2A spec (returnImmediately defaults to false, meaning wait for completion)
+        boolean returnImmediately = params.configuration() != null && Boolean.TRUE.equals(params.configuration().returnImmediately());
+        boolean blocking = !returnImmediately;
 
-        // Log blocking behavior from client request
-        if (params.configuration() != null && params.configuration().blocking() != null) {
-            LOGGER.debug("DefaultRequestHandler: Client requested blocking={} for task {}",
-                params.configuration().blocking(), taskId.get());
+        // Log return behavior from client request
+        if (params.configuration() != null && params.configuration().returnImmediately() != null) {
+            LOGGER.debug("DefaultRequestHandler: Client requested returnImmediately={}, using blocking={} for task {}",
+                params.configuration().returnImmediately(), blocking, taskId.get());
         } else if (params.configuration() != null) {
-            LOGGER.debug("DefaultRequestHandler: Client sent configuration but blocking=null, using default blocking={} for task {}", blocking, taskId.get());
+            LOGGER.debug("DefaultRequestHandler: Client sent configuration but returnImmediately=null, using default blocking={} for task {}", blocking, taskId.get());
         } else {
             LOGGER.debug("DefaultRequestHandler: Client sent no configuration, using default blocking={} for task {}", blocking, taskId.get());
         }

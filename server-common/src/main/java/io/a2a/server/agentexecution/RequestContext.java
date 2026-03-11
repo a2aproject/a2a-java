@@ -51,7 +51,7 @@ import org.jspecify.annotations.Nullable;
  *
  *     // Access configuration if needed
  *     MessageSendConfiguration config = context.getConfiguration();
- *     boolean isBlocking = config != null && config.blocking();
+ *     boolean returnImmediately = config != null && Boolean.TRUE.equals(config.returnImmediately());
  *
  *     // Process and respond...
  * }
