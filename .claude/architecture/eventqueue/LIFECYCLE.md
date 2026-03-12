@@ -130,17 +130,32 @@ cleanup(queue, task, true);  // Background cleanup after streaming completes
 ### Cleanup Implementation
 
 ```java
-private void cleanup(EventQueue queue, Task task, boolean async) {
-    Runnable cleanupTask = () -> {
-        agentFuture.join();  // Wait for agent to finish
-        queue.close();       // Close ChildQueue (triggers Level 2 check)
-    };
+private CompletableFuture<Void> cleanupProducer(
+        @Nullable CompletableFuture<Void> agentFuture,
+        @Nullable CompletableFuture<Void> consumptionFuture,
+        String taskId,
+        EventQueue queue,
+        boolean isStreaming) {
 
-    if (async) {
-        CompletableFuture.runAsync(cleanupTask, executor);
-    } else {
-        cleanupTask.run();
+    if (agentFuture == null) {
+        return CompletableFuture.completedFuture(null);
     }
+
+    // Wait for BOTH agent AND consumption to complete before cleanup
+    CompletableFuture<Void> bothComplete = agentFuture;
+    if (consumptionFuture != null) {
+        bothComplete = CompletableFuture.allOf(agentFuture, consumptionFuture);
+    }
+
+    return bothComplete.whenComplete((v, t) -> {
+        if (isStreaming) {
+            // EventConsumer manages queue lifecycle via agentCompleted flag
+            LOGGER.debug("Streaming: queue lifecycle managed by EventConsumer");
+        } else {
+            // Close ChildQueue directly (triggers Level 2 check)
+            queue.close(false, true);
+        }
+    });
 }
 ```
 

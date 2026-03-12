@@ -164,21 +164,26 @@ Bridges EventConsumer and DefaultRequestHandler with three consumption modes:
 
 ## Cleanup Integration
 
-### Non-Streaming Cleanup Decision
+### Actual Implementation: Always Asynchronous
+
+**Reality**: Cleanup is ALWAYS asynchronous in both streaming and non-streaming flows. The cleanup happens in the `finally` block via `cleanupProducer()`, which runs in a background thread.
 
 ```java
-if (event instanceof Message || isFinalEvent(event)) {
-    if (!interrupted) {
-        cleanup(queue, task, false);  // Immediate: wait for agent, close queue
-    } else {
-        cleanup(queue, task, true);   // Async: close in background (AUTH_REQUIRED case)
-    }
-}
+// Both flows (in finally block):
+cleanupProducer(agentFuture, consumptionFuture, taskId, queue, isStreaming)
+    .whenComplete((res, err) -> {
+        if (err != null) {
+            LOGGER.error("Error during async cleanup for task {}", taskId, err);
+        }
+    });
 ```
 
-**Logic**:
-- Terminal event + not interrupted → Immediate cleanup (wait for agent, close queue)
-- Terminal event + interrupted (AUTH_REQUIRED) → Async cleanup (agent still running)
+**Key Points**:
+- Cleanup is initiated in `finally` block regardless of flow outcome
+- `cleanupProducer()` waits for both agent and consumption futures to complete
+- Queue closure happens in background, never blocking the request thread
+- For streaming: EventConsumer manages queue lifecycle via `agentCompleted` flag
+- For non-streaming: Queue is closed directly after agent completes
 
 ### Streaming Cleanup
 

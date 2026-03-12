@@ -105,13 +105,19 @@ EventQueue mainQueue = queueManager.createOrTap(taskId);
 // Second client taps into existing MainQueue
 EventQueue childQueue = queueManager.tap(taskId);
 
-// Event distribution (MainQueue.enqueueEvent)
+// Event distribution (ASYNCHRONOUS via MainEventBus)
+// NOTE: Distribution is NOT immediate!
 public void enqueueEvent(Event event) {
-    super.enqueueEvent(event);  // Enqueue to MainEventBus
-    children.forEach(child -> child.internalEnqueueEvent(event));  // Copy to ChildQueues
-    if (enqueueHook != null) {
-        enqueueHook.onEnqueue(event);  // Replication hook
-    }
+    // Step 1: Submit to MainEventBus (async processing)
+    mainEventBus.submit(event);
+
+    // Step 2: MainEventBusProcessor thread (separate background thread):
+    //   - Persists event to TaskStore
+    //   - Distributes to all ChildQueues via child.internalEnqueueItem(item)
+    //   - Invokes replication hook if configured
+
+    // Key Point: Events are NOT immediately in ChildQueues!
+    // There's a delay while MainEventBusProcessor persists and distributes.
 }
 ```
 
