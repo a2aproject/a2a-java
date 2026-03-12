@@ -1,7 +1,11 @@
-# Fix A2A TCK Compatibility Issue
+---
+name: fix-tck-issue
+description: Analyzes and fixes A2A Transport Compatibility Kit (TCK) issues by understanding the specification, reproducing the failure, implementing the fix, and validating it works.
+compatibility: Requires gh CLI and mvn
+allowed-tools: Bash(gh:*) Bash(mvn:*) Bash(git:*) Bash(curl:*) Read Edit Write Glob Grep WebFetch
+---
 
-## Description
-Analyzes and fixes A2A Transport Compatibility Kit (TCK) issues by understanding the specification, reproducing the failure, implementing the fix, and validating it works.
+# Fix A2A TCK Compatibility Issue
 
 ## Triggers
 - Issue references TCK, compatibility, or transport-specific behavior
