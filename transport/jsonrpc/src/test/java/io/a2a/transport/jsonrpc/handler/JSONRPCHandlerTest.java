@@ -1541,7 +1541,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         GetExtendedAgentCardRequest request = new GetExtendedAgentCardRequest("1");
         GetExtendedAgentCardResponse response = handler.onGetExtendedCardRequest(request, callContext);
         assertEquals(request.getId(), response.getId());
-        assertInstanceOf(ExtendedAgentCardNotConfiguredError.class, response.getError());
+        assertInstanceOf(UnsupportedOperationError.class, response.getError());
         assertNull(response.getResult());
     }
 
