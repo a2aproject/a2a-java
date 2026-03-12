@@ -221,6 +221,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-test-utils-docker</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-bom</artifactId>
                 <version>${grpc.version}</version>
@@ -566,6 +571,7 @@
         <module>spec</module>
         <module>spec-grpc</module>
         <module>tck</module>
+        <module>test-utils-docker</module>
         <module>tests/server-common</module>
         <module>transport/jsonrpc</module>
         <module>transport/grpc</module>

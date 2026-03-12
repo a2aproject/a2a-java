@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import jakarta.inject.Inject;
 
 import io.a2a.extras.queuemanager.replicated.core.ReplicatedQueueManager;
+import io.a2a.testutils.docker.RequiresDocker;
 import io.a2a.server.events.QueueManager;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
  * For full integration testing with Kafka replication, see KafkaReplicationIntegrationTest.
  */
 @QuarkusTest
+@RequiresDocker
 public class ReplicatedQueueManagerTest {
 
     @Inject

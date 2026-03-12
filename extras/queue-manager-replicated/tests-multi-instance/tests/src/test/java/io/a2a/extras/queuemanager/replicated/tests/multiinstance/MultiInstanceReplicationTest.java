@@ -31,6 +31,7 @@ import io.a2a.spec.TaskIdParams;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TransportProtocol;
+import io.a2a.testutils.docker.RequiresDocker;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,7 +48,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Multi-instance replication test that validates event queue replication
  * between two running Quarkus instances using Testcontainers.
- * 
+ *
  * Test Architecture:
  * - Shared KafkaContainer for event replication
  * - Shared PostgreSQLContainer for task persistence
@@ -55,6 +56,7 @@ import org.testcontainers.utility.DockerImageName;
  * - A2A Client instances to interact with both applications
  */
 @Testcontainers
+@RequiresDocker
 public class MultiInstanceReplicationTest {
 
     private static final String KAFKA_IMAGE = "confluentinc/cp-kafka:7.6.1";
