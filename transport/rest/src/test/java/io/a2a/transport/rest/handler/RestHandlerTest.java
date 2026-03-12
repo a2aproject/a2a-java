@@ -59,6 +59,17 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     @Test
+    public void testGetTaskNegativeHistoryLengthReturns422() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+
+        RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), -1);
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertEquals("application/problem+json", response.getContentType());
+        Assertions.assertTrue(response.getBody().contains("InvalidParamsError"));
+    }
+
+    @Test
     public void testListTasksStatusWireString() {
         RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
