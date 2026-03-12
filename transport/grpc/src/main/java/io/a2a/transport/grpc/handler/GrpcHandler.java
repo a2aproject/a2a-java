@@ -158,6 +158,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
     private static final Logger LOGGER = Logger.getLogger(GrpcHandler.class.getName());
 
+    private static final io.grpc.Metadata.Key<com.google.rpc.Status> GRPC_STATUS_DETAILS_KEY =
+            io.grpc.Metadata.Key.of("grpc-status-details-bin",
+                    io.grpc.protobuf.ProtoUtils.metadataMarshaller(com.google.rpc.Status.getDefaultInstance()));
+
     /**
      * Constructs a new GrpcHandler.
      */
@@ -769,7 +773,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             errorReason = "INVALID_AGENT_RESPONSE";
         } else if (error instanceof ExtendedAgentCardNotConfiguredError) {
             status = Status.FAILED_PRECONDITION;
-            description = "ExtendedCardNotConfiguredError: " + error.getMessage();
+            description = "ExtendedAgentCardNotConfiguredError: " + error.getMessage();
             errorReason = "EXTENDED_AGENT_CARD_NOT_CONFIGURED";
         } else if (error instanceof ExtensionSupportRequiredError) {
             status = Status.FAILED_PRECONDITION;
@@ -800,10 +804,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         // Create metadata with grpc-status-details-bin
         io.grpc.Metadata trailers = new io.grpc.Metadata();
-        io.grpc.Metadata.Key<com.google.rpc.Status> statusKey =
-                io.grpc.Metadata.Key.of("grpc-status-details-bin",
-                        io.grpc.protobuf.ProtoUtils.metadataMarshaller(com.google.rpc.Status.getDefaultInstance()));
-        trailers.put(statusKey, rpcStatus);
+        trailers.put(GRPC_STATUS_DETAILS_KEY, rpcStatus);
 
         // Send error with ErrorInfo in metadata
         responseObserver.onError(status.withDescription(description).asRuntimeException(trailers));
