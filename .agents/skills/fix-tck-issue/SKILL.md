@@ -28,9 +28,12 @@ Parse issue to identify:
 - Expected behavior from specification
 - Actual behavior (error message, reproducer)
 - Specification section references
+- **Spec commit checksum** (TCK issues include this in spec URLs)
 
 ### 2. Read Specification (if needed)
-Fetch from https://github.com/a2aproject/A2A with specified ref (default: main):
+TCK issues contain the spec checksum, but reading the spec is helpful if TCK lags behind or for additional context.
+
+Fetch from https://github.com/a2aproject/A2A with specified ref (use checksum from issue or default to main):
 - `specification/grpc/a2a.proto` - for proto definitions and HTTP transcoding
 - `docs/specification.md` - for detailed protocol requirements
 
@@ -267,6 +270,7 @@ reference/
 Issue #732: CreateTaskPushNotificationConfig required taskId in body (HTTP+JSON only)
 
 1. ✅ Fetched issue - HTTP+JSON transport, expects taskId from URL
+   - Issue references spec @ `0833a5f5fd1b715519c0aecf9e3055e3f9f38089`
 2. ✅ Read spec - `body: "*"` means taskId from path
 3. ✅ Found root cause - RestHandler wasn't setting taskId from path param
 4. ✅ Issue specifies HTTP+JSON only - test only that transport
@@ -282,6 +286,7 @@ Issue #732: CreateTaskPushNotificationConfig required taskId in body (HTTP+JSON 
 Issue #733: GetExtendedAgentCard returns wrong error when capability disabled
 
 1. ✅ Fetched issue - affects all transports (not specified which)
+   - Issue references spec @ `0833a5f5fd1b715519c0aecf9e3055e3f9f38089`
 2. ✅ Read spec - should return UnsupportedOperationError when capability=false
 3. ✅ Found root cause - handlers check config before capability
 4. ✅ **Issue affects all transports - must test all three**
