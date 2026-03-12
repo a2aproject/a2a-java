@@ -352,6 +352,7 @@ public class RestHandler {
             io.a2a.grpc.TaskPushNotificationConfig.Builder builder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
             parseRequestBody(body, builder);
             builder.setTenant(tenant);
+            builder.setTaskId(taskId);
             TaskPushNotificationConfig result = requestHandler.onCreateTaskPushNotificationConfig(ProtoUtils.FromProto.createTaskPushNotificationConfig(builder), context);
             return createSuccessResponse(201, io.a2a.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(result)));
         } catch (A2AError e) {
