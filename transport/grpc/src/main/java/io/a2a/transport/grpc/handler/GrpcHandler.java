@@ -721,53 +721,92 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     private <V> void handleError(StreamObserver<V> responseObserver, A2AError error) {
         Status status;
         String description;
+        String errorReason;
+
         if (error instanceof InvalidRequestError) {
             status = Status.INVALID_ARGUMENT;
             description = "InvalidRequestError: " + error.getMessage();
+            errorReason = "INVALID_REQUEST";
         } else if (error instanceof MethodNotFoundError) {
             status = Status.NOT_FOUND;
             description = "MethodNotFoundError: " + error.getMessage();
+            errorReason = "METHOD_NOT_FOUND";
         } else if (error instanceof InvalidParamsError) {
             status = Status.INVALID_ARGUMENT;
             description = "InvalidParamsError: " + error.getMessage();
+            errorReason = "INVALID_PARAMS";
         } else if (error instanceof InternalError) {
             status = Status.INTERNAL;
             description = "InternalError: " + error.getMessage();
+            errorReason = "INTERNAL";
         } else if (error instanceof TaskNotFoundError) {
             status = Status.NOT_FOUND;
             description = "TaskNotFoundError: " + error.getMessage();
+            errorReason = "TASK_NOT_FOUND";
         } else if (error instanceof TaskNotCancelableError) {
             status = Status.FAILED_PRECONDITION;
             description = "TaskNotCancelableError: " + error.getMessage();
+            errorReason = "TASK_NOT_CANCELABLE";
         } else if (error instanceof PushNotificationNotSupportedError) {
             status = Status.UNIMPLEMENTED;
             description = "PushNotificationNotSupportedError: " + error.getMessage();
+            errorReason = "PUSH_NOTIFICATION_NOT_SUPPORTED";
         } else if (error instanceof UnsupportedOperationError) {
             status = Status.UNIMPLEMENTED;
             description = "UnsupportedOperationError: " + error.getMessage();
+            errorReason = "UNSUPPORTED_OPERATION";
         } else if (error instanceof JSONParseError) {
             status = Status.INTERNAL;
             description = "JSONParseError: " + error.getMessage();
+            errorReason = "JSON_PARSE";
         } else if (error instanceof ContentTypeNotSupportedError) {
             status = Status.INVALID_ARGUMENT;
             description = "ContentTypeNotSupportedError: " + error.getMessage();
+            errorReason = "CONTENT_TYPE_NOT_SUPPORTED";
         } else if (error instanceof InvalidAgentResponseError) {
             status = Status.INTERNAL;
             description = "InvalidAgentResponseError: " + error.getMessage();
+            errorReason = "INVALID_AGENT_RESPONSE";
         } else if (error instanceof ExtendedAgentCardNotConfiguredError) {
             status = Status.FAILED_PRECONDITION;
             description = "ExtendedCardNotConfiguredError: " + error.getMessage();
+            errorReason = "EXTENDED_AGENT_CARD_NOT_CONFIGURED";
         } else if (error instanceof ExtensionSupportRequiredError) {
             status = Status.FAILED_PRECONDITION;
             description = "ExtensionSupportRequiredError: " + error.getMessage();
+            errorReason = "EXTENSION_SUPPORT_REQUIRED";
         } else if (error instanceof VersionNotSupportedError) {
             status = Status.UNIMPLEMENTED;
             description = "VersionNotSupportedError: " + error.getMessage();
+            errorReason = "VERSION_NOT_SUPPORTED";
         } else {
             status = Status.UNKNOWN;
             description = "Unknown error type: " + error.getMessage();
+            errorReason = "UNKNOWN";
         }
-        responseObserver.onError(status.withDescription(description).asRuntimeException());
+
+        // Create ErrorInfo per GRPC-ERR-001 specification requirement
+        com.google.rpc.ErrorInfo errorInfo = com.google.rpc.ErrorInfo.newBuilder()
+                .setReason(errorReason)
+                .setDomain("a2a-protocol.org")
+                .build();
+
+        // Create Status with ErrorInfo in details
+        com.google.rpc.Status rpcStatus = com.google.rpc.Status.newBuilder()
+                .setCode(status.getCode().value())
+                .setMessage(description)
+                .addDetails(com.google.protobuf.Any.pack(errorInfo))
+                .build();
+
+        // Create metadata with grpc-status-details-bin
+        io.grpc.Metadata trailers = new io.grpc.Metadata();
+        io.grpc.Metadata.Key<com.google.rpc.Status> statusKey =
+                io.grpc.Metadata.Key.of("grpc-status-details-bin",
+                        io.grpc.protobuf.ProtoUtils.metadataMarshaller(com.google.rpc.Status.getDefaultInstance()));
+        trailers.put(statusKey, rpcStatus);
+
+        // Send error with ErrorInfo in metadata
+        responseObserver.onError(status.withDescription(description).asRuntimeException(trailers));
     }
 
     /**
