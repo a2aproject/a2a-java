@@ -19,8 +19,8 @@ import java.util.concurrent.ExecutionException;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.jsonrpc.common.json.JsonUtil;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.Message;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -76,7 +76,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
         List<TaskPushNotificationConfig> configs = new ArrayList<>();
         String nextPageToken = null;
         do {
-          ListTaskPushNotificationConfigResult pageResult = configStore.getInfo(new ListTaskPushNotificationConfigParams(taskId,
+          ListTaskPushNotificationConfigsResult pageResult = configStore.getInfo(new ListTaskPushNotificationConfigsParams(taskId,
               DEFAULT_PAGE_SIZE, nextPageToken == null ? "" : nextPageToken, ""));
           if (!pageResult.configs().isEmpty()) {
             configs.addAll(pageResult.configs());

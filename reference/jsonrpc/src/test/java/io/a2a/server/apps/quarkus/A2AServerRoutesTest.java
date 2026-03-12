@@ -54,7 +54,7 @@ import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentInterface;
 import io.a2a.spec.AuthenticationInfo;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskState;
@@ -411,7 +411,7 @@ public class A2AServerRoutesTest {
     }
 
     @Test
-    public void testListTaskPushNotificationConfig_MethodNameSetInContext() {
+    public void testListTaskPushNotificationConfigs_MethodNameSetInContext() {
         // Arrange - using protobuf JSON format
         String jsonRpcRequest = """
             {
@@ -432,8 +432,8 @@ public class A2AServerRoutesTest {
                 .taskId("de38c76d-d54c-436c-8b9f-4c2703648d64")
                 .url("https://example.com/callback")
                 .build();
-        ListTaskPushNotificationConfigsResponse realResponse = new ListTaskPushNotificationConfigsResponse("1", new ListTaskPushNotificationConfigResult(singletonList(config)));
-        when(mockJsonRpcHandler.listPushNotificationConfig(any(ListTaskPushNotificationConfigsRequest.class),
+        ListTaskPushNotificationConfigsResponse realResponse = new ListTaskPushNotificationConfigsResponse("1", new ListTaskPushNotificationConfigsResult(singletonList(config)));
+        when(mockJsonRpcHandler.listPushNotificationConfigs(any(ListTaskPushNotificationConfigsRequest.class),
                 any(ServerCallContext.class))).thenReturn(realResponse);
 
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
@@ -442,7 +442,7 @@ public class A2AServerRoutesTest {
         routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
 
         // Assert
-        verify(mockJsonRpcHandler).listPushNotificationConfig(any(ListTaskPushNotificationConfigsRequest.class),
+        verify(mockJsonRpcHandler).listPushNotificationConfigs(any(ListTaskPushNotificationConfigsRequest.class),
                 contextCaptor.capture());
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);

@@ -109,7 +109,7 @@ import org.slf4j.LoggerFactory;
  *   <li>{@code listTasks} - List tasks with filtering</li>
  *   <li>{@code setTaskPushNotificationConfig} - Configure push notifications</li>
  *   <li>{@code getTaskPushNotificationConfig} - Get push notification config</li>
- *   <li>{@code listTaskPushNotificationConfig} - List push notification configs</li>
+ *   <li>{@code listTaskPushNotificationConfigs} - List push notification configs</li>
  *   <li>{@code deleteTaskPushNotificationConfig} - Delete push notification config</li>
  *   <li>{@code getExtendedAgentCard} - Get extended agent capabilities</li>
  * </ul>
@@ -366,7 +366,7 @@ public class A2AServerRoutes {
      *   <li>{@link SendMessageRequest} → {@link JSONRPCHandler#onMessageSend}</li>
      *   <li>{@link CreateTaskPushNotificationConfigRequest} → {@link JSONRPCHandler#setPushNotificationConfig}</li>
      *   <li>{@link GetTaskPushNotificationConfigRequest} → {@link JSONRPCHandler#getPushNotificationConfig}</li>
-     *   <li>{@link ListTaskPushNotificationConfigRequest} → {@link JSONRPCHandler#listPushNotificationConfig}</li>
+     *   <li>{@link ListTaskPushNotificationConfigsRequest} → {@link JSONRPCHandler#listPushNotificationConfigs}</li>
      *   <li>{@link DeleteTaskPushNotificationConfigRequest} → {@link JSONRPCHandler#deletePushNotificationConfig}</li>
      *   <li>{@link GetExtendedAgentCardRequest} → {@link JSONRPCHandler#onGetExtendedCardRequest}</li>
      * </ul>
@@ -395,7 +395,7 @@ public class A2AServerRoutes {
             return jsonRpcHandler.onMessageSend(req, context);
         }
         if (request instanceof ListTaskPushNotificationConfigsRequest req) {
-            return jsonRpcHandler.listPushNotificationConfig(req, context);
+            return jsonRpcHandler.listPushNotificationConfigs(req, context);
         }
         if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.deletePushNotificationConfig(req, context);
@@ -618,7 +618,7 @@ public class A2AServerRoutes {
      *   <li>{@link ListTasksResponse} → ListTasksResult protobuf message</li>
      *   <li>{@link CreateTaskPushNotificationConfigResponse} → CreateTaskPushNotificationConfigResponse protobuf message</li>
      *   <li>{@link GetTaskPushNotificationConfigResponse} → GetTaskPushNotificationConfigResponse protobuf message</li>
-     *   <li>{@link ListTaskPushNotificationConfigResponse} → ListTaskPushNotificationConfigResponse protobuf message</li>
+     *   <li>{@link ListTaskPushNotificationConfigsResponse} → ListTaskPushNotificationConfigsResponse protobuf message</li>
      *   <li>{@link DeleteTaskPushNotificationConfigResponse} → Empty protobuf message</li>
      *   <li>{@link GetExtendedAgentCardResponse} → GetExtendedCardResponse protobuf message</li>
      *   <li>{@link SendStreamingMessageResponse} → TaskOrMessageStream protobuf message</li>
@@ -643,7 +643,7 @@ public class A2AServerRoutes {
         } else if (response instanceof GetTaskPushNotificationConfigResponse r) {
             return io.a2a.grpc.utils.ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof ListTaskPushNotificationConfigsResponse r) {
-            return io.a2a.grpc.utils.ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(r.getResult());
+            return io.a2a.grpc.utils.ProtoUtils.ToProto.listTaskPushNotificationConfigsResponse(r.getResult());
         } else if (response instanceof DeleteTaskPushNotificationConfigResponse) {
             // DeleteTaskPushNotificationConfig has no result body, just return empty message
             return com.google.protobuf.Empty.getDefaultInstance();

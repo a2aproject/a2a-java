@@ -3,7 +3,7 @@ package io.a2a.jsonrpc.common.wrappers;
 
 import java.util.UUID;
 
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
 import io.a2a.spec.TaskPushNotificationConfig;
 
 import static io.a2a.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
@@ -17,11 +17,11 @@ import static io.a2a.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
  * This class implements the JSON-RPC {@code tasks/pushNotificationConfig/list} method.
  *
  * @see ListTaskPushNotificationConfigsResponse for the response
- * @see ListTaskPushNotificationConfigParams for the parameter structure
+ * @see ListTaskPushNotificationConfigsParams for the parameter structure
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public final class ListTaskPushNotificationConfigsRequest extends NonStreamingJSONRPCRequest<ListTaskPushNotificationConfigParams> {
+public final class ListTaskPushNotificationConfigsRequest extends NonStreamingJSONRPCRequest<ListTaskPushNotificationConfigsParams> {
 
     /**
      * Constructs request with all parameters.
@@ -30,7 +30,7 @@ public final class ListTaskPushNotificationConfigsRequest extends NonStreamingJS
      * @param id the request ID
      * @param params the request parameters
      */
-    public ListTaskPushNotificationConfigsRequest(String jsonrpc, Object id, ListTaskPushNotificationConfigParams params) {
+    public ListTaskPushNotificationConfigsRequest(String jsonrpc, Object id, ListTaskPushNotificationConfigsParams params) {
         super(jsonrpc, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, id, params);
     }
 
@@ -40,7 +40,7 @@ public final class ListTaskPushNotificationConfigsRequest extends NonStreamingJS
      * @param id the request ID
      * @param params the request parameters
      */
-    public ListTaskPushNotificationConfigsRequest(String id, ListTaskPushNotificationConfigParams params) {
+    public ListTaskPushNotificationConfigsRequest(String id, ListTaskPushNotificationConfigsParams params) {
         this(null, id, params);
     }
 
@@ -59,7 +59,7 @@ public final class ListTaskPushNotificationConfigsRequest extends NonStreamingJS
     public static class Builder {
         private String jsonrpc;
         private Object id;
-        private ListTaskPushNotificationConfigParams params;
+        private ListTaskPushNotificationConfigsParams params;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -95,7 +95,7 @@ public final class ListTaskPushNotificationConfigsRequest extends NonStreamingJS
          * @param params the params
          * @return this builder for method chaining
          */
-        public Builder params(ListTaskPushNotificationConfigParams params) {
+        public Builder params(ListTaskPushNotificationConfigsParams params) {
             this.params = params;
             return this;
         }

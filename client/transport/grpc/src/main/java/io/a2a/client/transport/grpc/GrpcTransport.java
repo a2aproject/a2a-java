@@ -38,8 +38,8 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
@@ -271,8 +271,8 @@ public class GrpcTransport implements ClientTransport {
     }
 
     @Override
-    public ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(
-            ListTaskPushNotificationConfigParams request,
+    public ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(
+            ListTaskPushNotificationConfigsParams request,
             @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
 
@@ -288,9 +288,9 @@ public class GrpcTransport implements ClientTransport {
         try {
             A2AServiceBlockingV2Stub stubWithMetadata = createBlockingStubWithMetadata(context, payloadAndHeaders);
             io.a2a.grpc.ListTaskPushNotificationConfigsResponse grpcResponse = stubWithMetadata.listTaskPushNotificationConfigs(grpcRequest);
-            return FromProto.listTaskPushNotificationConfigResult(grpcResponse);
+            return FromProto.listTaskPushNotificationConfigsResult(grpcResponse);
         } catch (StatusRuntimeException | StatusException e) {
-            throw GrpcErrorMapper.mapGrpcError(e, "Failed to list task push notification config: ");
+            throw GrpcErrorMapper.mapGrpcError(e, "Failed to list task push notification configs: ");
         }
     }
 

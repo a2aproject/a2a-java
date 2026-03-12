@@ -24,8 +24,8 @@ import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
@@ -306,7 +306,7 @@ public class OpenTelemetryClientTransport implements ClientTransport {
     }
 
     @Override
-    public ListTaskPushNotificationConfigResult listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigParams request,
+    public ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigurations(ListTaskPushNotificationConfigsParams request,
             @Nullable ClientCallContext context) throws A2AClientException {
         ClientCallContext clientContext = createContext(context);
         SpanBuilder spanBuilder = tracer.spanBuilder(A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD).setSpanKind(SpanKind.CLIENT);
@@ -319,7 +319,7 @@ public class OpenTelemetryClientTransport implements ClientTransport {
         }
         Span span = spanBuilder.startSpan();
         try (Scope scope = span.makeCurrent()) {
-            ListTaskPushNotificationConfigResult result = delegate.listTaskPushNotificationConfigurations(request, clientContext);
+            ListTaskPushNotificationConfigsResult result = delegate.listTaskPushNotificationConfigurations(request, clientContext);
             if (result != null && extractResponse()) {
                 String responseValue = result.configs().stream()
                         .map(TaskPushNotificationConfig::toString)

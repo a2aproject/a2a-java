@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * @see TaskPushNotificationConfig for the configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record ListTaskPushNotificationConfigParams(String id, int pageSize, String pageToken, String tenant) {
+public record ListTaskPushNotificationConfigsParams(String id, int pageSize, String pageToken, String tenant) {
 
     /**
      * Compact constructor for validation.
@@ -28,7 +28,7 @@ public record ListTaskPushNotificationConfigParams(String id, int pageSize, Stri
      * @param tenant the tenant identifier
      * @throws IllegalArgumentException if id or tenant is null
      */
-    public ListTaskPushNotificationConfigParams {
+    public ListTaskPushNotificationConfigsParams {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("tenant", tenant);
     }
@@ -38,7 +38,7 @@ public record ListTaskPushNotificationConfigParams(String id, int pageSize, Stri
      *
      * @param id the task identifier (required)
      */
-    public ListTaskPushNotificationConfigParams(String id) {
+    public ListTaskPushNotificationConfigsParams(String id) {
         this(id, 0, "", "");
     }
 
@@ -123,13 +123,13 @@ public record ListTaskPushNotificationConfigParams(String id, int pageSize, Stri
         }
 
         /**
-         * Builds the ListTaskPushNotificationConfigParams.
+         * Builds the ListTaskPushNotificationConfigsParams.
          *
-         * @return a new ListTaskPushNotificationConfigParams instance
+         * @return a new ListTaskPushNotificationConfigsParams instance
          * @throws IllegalArgumentException if id is null
          */
-        public ListTaskPushNotificationConfigParams build() {
-            return new ListTaskPushNotificationConfigParams(
+        public ListTaskPushNotificationConfigsParams build() {
+            return new ListTaskPushNotificationConfigsParams(
                 Assert.checkNotNullParam("id", id),
                 pageSize != null ? pageSize : 0,
                 pageToken != null ? pageToken : "",

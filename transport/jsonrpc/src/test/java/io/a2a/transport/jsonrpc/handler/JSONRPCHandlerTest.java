@@ -61,7 +61,7 @@ import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidRequestError;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
@@ -1375,8 +1375,8 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                         .tenant("tenant")
                         .build();
         ListTaskPushNotificationConfigsRequest listRequest
-                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
-        ListTaskPushNotificationConfigsResponse listResponse = handler.listPushNotificationConfig(listRequest, callContext);
+                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
+        ListTaskPushNotificationConfigsResponse listResponse = handler.listPushNotificationConfigs(listRequest, callContext);
 
         assertEquals("111", listResponse.getId());
         assertEquals(1, listResponse.getResult().size());
@@ -1403,9 +1403,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         handler.setPushNotificationConfig(request, callContext);
 
         ListTaskPushNotificationConfigsRequest listRequest
-                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
         ListTaskPushNotificationConfigsResponse listResponse
-                = handler.listPushNotificationConfig(listRequest, callContext);
+                = handler.listPushNotificationConfigs(listRequest, callContext);
 
         assertEquals("111", listResponse.getId());
         assertNull(listResponse.getResult());
@@ -1422,9 +1422,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         ListTaskPushNotificationConfigsRequest listRequest
-                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
         ListTaskPushNotificationConfigsResponse listResponse
-                = handler.listPushNotificationConfig(listRequest, callContext);
+                = handler.listPushNotificationConfigs(listRequest, callContext);
 
         assertEquals("111", listResponse.getId());
         assertNull(listResponse.getResult());
@@ -1439,9 +1439,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         };
 
         ListTaskPushNotificationConfigsRequest listRequest
-                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigParams(MINIMAL_TASK.id()));
+                = new ListTaskPushNotificationConfigsRequest("111", new ListTaskPushNotificationConfigsParams(MINIMAL_TASK.id()));
         ListTaskPushNotificationConfigsResponse listResponse
-                = handler.listPushNotificationConfig(listRequest, callContext);
+                = handler.listPushNotificationConfigs(listRequest, callContext);
 
         assertEquals("111", listResponse.getId());
         assertNull(listResponse.getResult());

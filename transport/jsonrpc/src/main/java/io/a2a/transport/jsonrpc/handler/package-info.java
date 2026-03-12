@@ -23,7 +23,7 @@
  *   <li>{@code cancelTask} - Cancel task execution</li>
  *   <li>{@code getTaskPushNotificationConfig} - Get push notification config</li>
  *   <li>{@code setTaskPushNotificationConfig} - Create push notification config</li>
- *   <li>{@code listTaskPushNotificationConfig} - List push notification configs</li>
+ *   <li>{@code listTaskPushNotificationConfigs} - List push notification configs</li>
  *   <li>{@code deleteTaskPushNotificationConfig} - Delete push notification config</li>
  * </ul>
  *

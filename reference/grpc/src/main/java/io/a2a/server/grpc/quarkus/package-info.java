@@ -41,7 +41,7 @@
  *   <li>{@code CancelTask} - Cancel task execution</li>
  *   <li>{@code CreateTaskPushNotificationConfig} - Configure push notifications</li>
  *   <li>{@code GetTaskPushNotificationConfig} - Get push notification config</li>
- *   <li>{@code ListTaskPushNotificationConfig} - List push notification configs</li>
+ *   <li>{@code ListTaskPushNotificationConfigs} - List push notification configs</li>
  *   <li>{@code DeleteTaskPushNotificationConfig} - Delete push notification config</li>
  *   <li>{@code GetExtendedAgentCard} - Get extended agent card</li>
  * </ul>

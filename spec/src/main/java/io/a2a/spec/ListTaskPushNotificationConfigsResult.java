@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
  * @param configs List of push notification configurations for the task
  * @param nextPageToken Token for retrieving the next page of results (null if no more results)
  */
-public record ListTaskPushNotificationConfigResult(List<TaskPushNotificationConfig> configs,
+public record ListTaskPushNotificationConfigsResult(List<TaskPushNotificationConfig> configs,
         @Nullable String nextPageToken) {
     /**
      * Compact constructor for validation.
@@ -21,7 +21,7 @@ public record ListTaskPushNotificationConfigResult(List<TaskPushNotificationConf
      * @param nextPageToken token for next page
      * @throws IllegalArgumentException if validation fails
      */
-    public ListTaskPushNotificationConfigResult {
+    public ListTaskPushNotificationConfigsResult {
         Assert.checkNotNullParam("configs", configs);
         // Make defensive copy
         configs = List.copyOf(configs);
@@ -32,7 +32,7 @@ public record ListTaskPushNotificationConfigResult(List<TaskPushNotificationConf
      *
      * @param configs the list of push notification configurations
      */
-    public ListTaskPushNotificationConfigResult(List<TaskPushNotificationConfig> configs) {
+    public ListTaskPushNotificationConfigsResult(List<TaskPushNotificationConfig> configs) {
         this(configs, null);
     }
 

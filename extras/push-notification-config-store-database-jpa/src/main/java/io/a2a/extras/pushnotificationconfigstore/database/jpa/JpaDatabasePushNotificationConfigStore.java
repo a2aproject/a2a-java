@@ -13,8 +13,8 @@ import jakarta.transaction.Transactional;
 
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.server.tasks.PushNotificationConfigStore;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.util.Assert;
 import io.a2a.util.PageToken;
 import io.a2a.spec.TaskPushNotificationConfig;
@@ -74,7 +74,7 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
 
     @Transactional
     @Override
-    public ListTaskPushNotificationConfigResult getInfo(ListTaskPushNotificationConfigParams params) {
+    public ListTaskPushNotificationConfigsResult getInfo(ListTaskPushNotificationConfigsParams params) {
         String taskId = params.id();
         LOGGER.debug("Retrieving PushNotificationConfigs for Task '{}' with params: pageSize={}, pageToken={}",
             taskId, params.pageSize(), params.pageToken());
@@ -136,7 +136,7 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
 
             LOGGER.debug("Successfully retrieved {} PushNotificationConfigs for Task '{}'", taskPushNotificationConfigs.size(), taskId);
 
-            return new ListTaskPushNotificationConfigResult(taskPushNotificationConfigs, nextPageToken);
+            return new ListTaskPushNotificationConfigsResult(taskPushNotificationConfigs, nextPageToken);
         } catch (Exception e) {
             LOGGER.error("Failed to retrieve PushNotificationConfigs for Task '{}'", taskId, e);
             throw e;

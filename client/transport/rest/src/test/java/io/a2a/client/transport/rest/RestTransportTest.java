@@ -46,8 +46,8 @@ import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
 import io.a2a.spec.FileWithUri;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
@@ -357,8 +357,8 @@ public class RestTransportTest {
                 );
 
         RestTransport client = new RestTransport(CARD);
-        ListTaskPushNotificationConfigResult result = client.listTaskPushNotificationConfigurations(
-                new ListTaskPushNotificationConfigParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
+        ListTaskPushNotificationConfigsResult result = client.listTaskPushNotificationConfigurations(
+                new ListTaskPushNotificationConfigsParams("de38c76d-d54c-436c-8b9f-4c2703648d64"), null);
         assertEquals(2, result.configs().size());
         TaskPushNotificationConfig config0 = result.configs().get(0);
         assertNotNull(config0);

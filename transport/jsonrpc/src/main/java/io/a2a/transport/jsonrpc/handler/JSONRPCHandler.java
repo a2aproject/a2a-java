@@ -48,7 +48,7 @@ import io.a2a.spec.EventKind;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.UnsupportedOperationError;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
@@ -571,7 +571,7 @@ public class JSONRPCHandler {
      * {
      *   "jsonrpc": "2.0",
      *   "id": "list-config-123",
-     *   "method": "listTaskPushNotificationConfig",
+     *   "method": "listTaskPushNotificationConfigs",
      *   "params": {
      *     "taskId": "task-456",
      *     "pageSize": 10
@@ -582,17 +582,17 @@ public class JSONRPCHandler {
      * @param request the JSON-RPC request containing task ID and pagination params
      * @param context the server call context containing authentication and metadata
      * @return JSON-RPC response with list of configurations
-     * @see RequestHandler#onListTaskPushNotificationConfig
+     * @see RequestHandler#onListTaskPushNotificationConfigs
      */
-    public ListTaskPushNotificationConfigsResponse listPushNotificationConfig(
+    public ListTaskPushNotificationConfigsResponse listPushNotificationConfigs(
             ListTaskPushNotificationConfigsRequest request, ServerCallContext context) {
         if ( !agentCard.capabilities().pushNotifications()) {
             return new ListTaskPushNotificationConfigsResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
         try {
-            ListTaskPushNotificationConfigResult result =
-                    requestHandler.onListTaskPushNotificationConfig(request.getParams(), context);
+            ListTaskPushNotificationConfigsResult result =
+                    requestHandler.onListTaskPushNotificationConfigs(request.getParams(), context);
             return new ListTaskPushNotificationConfigsResponse(request.getId(), result);
         } catch (A2AError e) {
             return new ListTaskPushNotificationConfigsResponse(request.getId(), e);

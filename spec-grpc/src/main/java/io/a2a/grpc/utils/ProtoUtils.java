@@ -8,7 +8,7 @@ import io.a2a.grpc.StreamResponse;
 import io.a2a.grpc.mapper.AgentCardMapper;
 import io.a2a.grpc.mapper.DeleteTaskPushNotificationConfigParamsMapper;
 import io.a2a.grpc.mapper.GetTaskPushNotificationConfigParamsMapper;
-import io.a2a.grpc.mapper.ListTaskPushNotificationConfigParamsMapper;
+import io.a2a.grpc.mapper.ListTaskPushNotificationConfigsParamsMapper;
 import io.a2a.grpc.mapper.ListTasksParamsMapper;
 import io.a2a.grpc.mapper.ListTasksResultMapper;
 import io.a2a.grpc.mapper.MessageMapper;
@@ -30,8 +30,8 @@ import io.a2a.spec.EventKind;
 import io.a2a.spec.GetExtendedAgentCardParams;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InvalidParamsError;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
@@ -88,8 +88,8 @@ public class ProtoUtils {
             return DeleteTaskPushNotificationConfigParamsMapper.INSTANCE.toProto(params);
         }
 
-        public static io.a2a.grpc.ListTaskPushNotificationConfigsRequest listTaskPushNotificationConfigRequest(ListTaskPushNotificationConfigParams params) {
-            return ListTaskPushNotificationConfigParamsMapper.INSTANCE.toProto(params);
+        public static io.a2a.grpc.ListTaskPushNotificationConfigsRequest listTaskPushNotificationConfigsRequest(ListTaskPushNotificationConfigsParams params) {
+            return ListTaskPushNotificationConfigsParamsMapper.INSTANCE.toProto(params);
         }
 
         public static io.a2a.grpc.Task task(Task task) {
@@ -132,7 +132,7 @@ public class ProtoUtils {
             return MessageSendParamsMapper.INSTANCE.toProto(request);
         }
 
-        public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse listTaskPushNotificationConfigResponse(ListTaskPushNotificationConfigResult result) {
+        public static io.a2a.grpc.ListTaskPushNotificationConfigsResponse listTaskPushNotificationConfigsResponse(ListTaskPushNotificationConfigsResult result) {
             List<io.a2a.grpc.TaskPushNotificationConfig> confs = new ArrayList<>(result.configs().size());
             for (TaskPushNotificationConfig config : result.configs()) {
                 confs.add(taskPushNotificationConfig(config));
@@ -264,7 +264,7 @@ public class ProtoUtils {
             return convert(() -> TaskIdParamsMapper.INSTANCE.fromProtoSubscribeToTaskRequest(reqProto));
         }
 
-        public static ListTaskPushNotificationConfigResult listTaskPushNotificationConfigResult(io.a2a.grpc.ListTaskPushNotificationConfigsResponseOrBuilder response) {
+        public static ListTaskPushNotificationConfigsResult listTaskPushNotificationConfigsResult(io.a2a.grpc.ListTaskPushNotificationConfigsResponseOrBuilder response) {
             List<io.a2a.grpc.TaskPushNotificationConfig> configs = response.getConfigsList();
             List<TaskPushNotificationConfig> result = new ArrayList<>(configs.size());
             for (io.a2a.grpc.TaskPushNotificationConfig config : configs) {
@@ -274,14 +274,14 @@ public class ProtoUtils {
             if (nextPageToken != null && nextPageToken.isEmpty()) {
                 nextPageToken = null;
             }
-            return new ListTaskPushNotificationConfigResult(result, nextPageToken);
+            return new ListTaskPushNotificationConfigsResult(result, nextPageToken);
         }
 
-        public static ListTaskPushNotificationConfigParams listTaskPushNotificationConfigParams(io.a2a.grpc.ListTaskPushNotificationConfigsRequestOrBuilder request) {
+        public static ListTaskPushNotificationConfigsParams listTaskPushNotificationConfigsParams(io.a2a.grpc.ListTaskPushNotificationConfigsRequestOrBuilder request) {
             io.a2a.grpc.ListTaskPushNotificationConfigsRequest reqProto = request instanceof io.a2a.grpc.ListTaskPushNotificationConfigsRequest
                     ? (io.a2a.grpc.ListTaskPushNotificationConfigsRequest) request
                     : ((io.a2a.grpc.ListTaskPushNotificationConfigsRequest.Builder) request).build();
-            return convert(() -> ListTaskPushNotificationConfigParamsMapper.INSTANCE.fromProto(reqProto));
+            return convert(() -> ListTaskPushNotificationConfigsParamsMapper.INSTANCE.fromProto(reqProto));
         }
 
         public static DeleteTaskPushNotificationConfigParams deleteTaskPushNotificationConfigParams(io.a2a.grpc.DeleteTaskPushNotificationConfigRequestOrBuilder request) {

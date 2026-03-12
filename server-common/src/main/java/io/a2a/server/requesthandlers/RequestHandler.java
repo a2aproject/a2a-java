@@ -9,8 +9,8 @@ import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
@@ -52,8 +52,8 @@ public interface RequestHandler {
             TaskIdParams params,
             ServerCallContext context) throws A2AError;
 
-    ListTaskPushNotificationConfigResult onListTaskPushNotificationConfig(
-            ListTaskPushNotificationConfigParams params,
+    ListTaskPushNotificationConfigsResult onListTaskPushNotificationConfigs(
+            ListTaskPushNotificationConfigsParams params,
             ServerCallContext context) throws A2AError;
 
     void onDeleteTaskPushNotificationConfig(
