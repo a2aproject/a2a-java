@@ -351,7 +351,14 @@ public class RestHandler {
             }
             io.a2a.grpc.TaskPushNotificationConfig.Builder builder = io.a2a.grpc.TaskPushNotificationConfig.newBuilder();
             parseRequestBody(body, builder);
+
+            String taskIdFromBody = builder.getTaskId();
+            if (!taskIdFromBody.isEmpty() && !taskIdFromBody.equals(taskId)) {
+                throw new InvalidParamsError("Task ID in request body (" + taskIdFromBody + ") does not match task ID in URL path (" + taskId + ").");
+            }
+            
             builder.setTenant(tenant);
+            builder.setTaskId(taskId);
             TaskPushNotificationConfig result = requestHandler.onCreateTaskPushNotificationConfig(ProtoUtils.FromProto.createTaskPushNotificationConfig(builder), context);
             return createSuccessResponse(201, io.a2a.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(result)));
         } catch (A2AError e) {
