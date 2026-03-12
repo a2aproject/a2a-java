@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -30,6 +31,7 @@ import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.Event;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
@@ -508,5 +510,73 @@ public class DefaultRequestHandlerTest {
         assertEquals(TaskState.TASK_STATE_COMPLETED,
             ((TaskStatusUpdateEvent) completionEvent).status().state(),
             "Task should be completed");
+    }
+
+    /**
+     * Test: Mismatching contextId and taskId on non-streaming send is rejected.
+     * Verifies:
+     * - Sending a message with an existing taskId but a different contextId throws InvalidParamsError
+     */
+    @Test
+    void testContextIdMismatch_NonStreaming_ThrowsInvalidParamsError() throws Exception {
+        // Arrange: Save a task with a known contextId
+        Task existingTask = Task.builder()
+            .id("ctx-mismatch-task-1")
+            .contextId("correct-context-id")
+            .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+            .build();
+        taskStore.save(existingTask, false);
+
+        // Act & Assert: Send message with correct taskId but wrong contextId
+        Message mismatchMessage = Message.builder()
+            .messageId("mismatch-001")
+            .role(Message.Role.ROLE_USER)
+            .parts(new TextPart("mismatched context test"))
+            .taskId(existingTask.id())
+            .contextId("wrong-context-does-not-exist")
+            .build();
+
+        MessageSendParams mismatchParams = MessageSendParams.builder()
+            .message(mismatchMessage)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        assertThrows(InvalidParamsError.class,
+            () -> requestHandler.onMessageSend(mismatchParams, NULL_CONTEXT),
+            "Should reject message with mismatching contextId and taskId");
+    }
+
+    /**
+     * Test: Mismatching contextId and taskId on streaming send is rejected.
+     * Verifies:
+     * - Sending a streaming message with an existing taskId but a different contextId throws InvalidParamsError
+     */
+    @Test
+    void testContextIdMismatch_Streaming_ThrowsInvalidParamsError() throws Exception {
+        // Arrange: Save a task with a known contextId
+        Task existingTask = Task.builder()
+            .id("ctx-mismatch-task-2")
+            .contextId("correct-context-id")
+            .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
+            .build();
+        taskStore.save(existingTask, false);
+
+        // Act & Assert: Send streaming message with correct taskId but wrong contextId
+        Message mismatchMessage = Message.builder()
+            .messageId("mismatch-002")
+            .role(Message.Role.ROLE_USER)
+            .parts(new TextPart("mismatched context test"))
+            .taskId(existingTask.id())
+            .contextId("wrong-context-does-not-exist")
+            .build();
+
+        MessageSendParams mismatchParams = MessageSendParams.builder()
+            .message(mismatchMessage)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        assertThrows(InvalidParamsError.class,
+            () -> requestHandler.onMessageSendStream(mismatchParams, NULL_CONTEXT),
+            "Should reject streaming message with mismatching contextId and taskId");
     }
 }

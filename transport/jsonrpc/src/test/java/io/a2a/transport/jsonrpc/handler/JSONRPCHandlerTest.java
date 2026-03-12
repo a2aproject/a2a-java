@@ -60,6 +60,7 @@ import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
+import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.ListTaskPushNotificationConfigParams;
 import io.a2a.spec.ListTasksParams;
@@ -1349,6 +1350,84 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertNull(error.get());
         Assertions.assertEquals(1, results.size());
         Assertions.assertInstanceOf(InternalError.class, results.get(0).getError());
+    }
+
+    @Test
+    public void testOnMessageSendContextIdMismatch() {
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+
+        // Send message with existing taskId but wrong contextId
+        Message mismatchMessage = Message.builder(MESSAGE)
+                .taskId(MINIMAL_TASK.id())
+                .contextId("wrong-context-does-not-exist")
+                .build();
+        SendMessageRequest request = new SendMessageRequest("1",
+                new MessageSendParams(mismatchMessage, defaultConfiguration(), null));
+        SendMessageResponse response = handler.onMessageSend(request, callContext);
+        assertInstanceOf(InvalidParamsError.class, response.getError());
+    }
+
+    @Test
+    public void testOnMessageStreamContextIdMismatch() throws InterruptedException {
+        JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+
+        // Send streaming message with existing taskId but wrong contextId
+        Message mismatchMessage = Message.builder(MESSAGE)
+                .taskId(MINIMAL_TASK.id())
+                .contextId("wrong-context-does-not-exist")
+                .build();
+        SendStreamingMessageRequest request = new SendStreamingMessageRequest("1",
+                new MessageSendParams(mismatchMessage, defaultConfiguration(), null));
+        Flow.Publisher<SendStreamingMessageResponse> response = handler.onMessageSendStream(request, callContext);
+
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        List<SendStreamingMessageResponse> results = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        response.subscribe(new Flow.Subscriber<SendStreamingMessageResponse>() {
+            private Flow.Subscription subscription;
+
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(SendStreamingMessageResponse item) {
+                results.add(item);
+                subscription.request(1);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                error.set(throwable);
+                subscription.cancel();
+                future.completeExceptionally(throwable);
+            }
+
+            @Override
+            public void onComplete() {
+                subscription.cancel();
+                future.complete(null);
+            }
+        });
+
+        future.join();
+
+        Assertions.assertNull(error.get());
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertInstanceOf(InvalidParamsError.class, results.get(0).getError());
     }
 
     @Test

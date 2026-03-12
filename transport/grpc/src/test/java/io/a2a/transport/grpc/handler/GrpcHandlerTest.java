@@ -1236,6 +1236,66 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertNotNull(response.getNextPageToken());
     }
 
+    @Test
+    public void testSendMessageContextIdMismatch() throws Exception {
+        GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
+
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+
+        // Send message with existing taskId but wrong contextId
+        Message mismatchMessage = Message.newBuilder()
+                .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setContextId("wrong-context-does-not-exist")
+                .setMessageId("mismatch-001")
+                .setRole(Role.ROLE_USER)
+                .addParts(Part.newBuilder()
+                        .setText("mismatched context test")
+                        .build())
+                .build();
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setMessage(mismatchMessage)
+                .build();
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
+    }
+
+    @Test
+    public void testSendStreamingMessageContextIdMismatch() throws Exception {
+        GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
+
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+
+        // Send streaming message with existing taskId but wrong contextId
+        Message mismatchMessage = Message.newBuilder()
+                .setTaskId(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id())
+                .setContextId("wrong-context-does-not-exist")
+                .setMessageId("mismatch-002")
+                .setRole(Role.ROLE_USER)
+                .addParts(Part.newBuilder()
+                        .setText("mismatched context test")
+                        .build())
+                .build();
+
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setMessage(mismatchMessage)
+                .build();
+        StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
+        handler.sendStreamingMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+
+        assertGrpcError(streamRecorder, Status.Code.INVALID_ARGUMENT);
+    }
+
     private static class TestGrpcHandler extends GrpcHandler {
 
         private final AgentCard card;

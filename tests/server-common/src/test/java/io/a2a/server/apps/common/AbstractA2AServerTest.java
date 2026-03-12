@@ -548,6 +548,77 @@ public abstract class AbstractA2AServerTest {
     }
 
     @Test
+    public void testSendMessageContextIdMismatch() throws Exception {
+        saveTaskInTaskStore(MINIMAL_TASK);
+        try {
+            // Send message with existing taskId but wrong contextId
+            Message mismatchMessage = Message.builder(MESSAGE)
+                    .taskId(MINIMAL_TASK.id())
+                    .contextId("wrong-context-does-not-exist")
+                    .build();
+
+            getNonStreamingClient().sendMessage(mismatchMessage);
+            fail("Expected A2AClientException for mismatching contextId and taskId");
+        } catch (A2AClientException e) {
+            assertInstanceOf(InvalidParamsError.class, e.getCause());
+        } finally {
+            deleteTaskInTaskStore(MINIMAL_TASK.id());
+        }
+    }
+
+    @Test
+    public void testSendStreamingMessageContextIdMismatch() throws Exception {
+        saveTaskInTaskStore(MINIMAL_TASK);
+        try {
+            // Send streaming message with existing taskId but wrong contextId
+            Message mismatchMessage = Message.builder(MESSAGE)
+                    .taskId(MINIMAL_TASK.id())
+                    .contextId("wrong-context-does-not-exist")
+                    .build();
+
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+            BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
+                // Should not receive any successful events
+                fail("Should not receive a successful event for mismatching contextId");
+            };
+
+            Consumer<Throwable> errorHandler = error -> {
+                // Only capture non-null errors (null signals stream completion)
+                if (error != null && errorRef.compareAndSet(null, error)) {
+                    latch.countDown();
+                }
+            };
+
+            getClient().sendMessage(mismatchMessage, List.of(consumer), errorHandler);
+
+            assertTrue(latch.await(10, TimeUnit.SECONDS), "Should receive error response");
+
+            Throwable error = errorRef.get();
+            assertNotNull(error, "Should receive an error for mismatching contextId");
+
+            // Walk the cause chain to find InvalidParamsError
+            Throwable cause = error;
+            boolean foundInvalidParams = false;
+            while (cause != null && !foundInvalidParams) {
+                if (cause instanceof InvalidParamsError) {
+                    foundInvalidParams = true;
+                } else if (cause instanceof A2AClientException && cause.getCause() instanceof InvalidParamsError) {
+                    foundInvalidParams = true;
+                }
+                cause = cause.getCause();
+            }
+            assertTrue(foundInvalidParams,
+                    "Should receive InvalidParamsError for mismatching contextId and taskId");
+        } catch (A2AClientException e) {
+            assertInstanceOf(InvalidParamsError.class, e.getCause());
+        } finally {
+            deleteTaskInTaskStore(MINIMAL_TASK.id());
+        }
+    }
+
+    @Test
     public void testSetPushNotificationSuccess() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
         try {

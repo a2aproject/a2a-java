@@ -1031,4 +1031,101 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertTrue(body.contains("\"tasks\":[]") || body.contains("\"tasks\": []"),
                 "tasks should be empty array");
     }
+
+    @Test
+    public void testSendMessageContextIdMismatch() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+
+        // Send message with existing taskId but wrong contextId
+        String mismatchBody = """
+            {
+              "message": {
+                "messageId": "mismatch-001",
+                "role": "ROLE_USER",
+                "parts": [{"text": "mismatched context test"}],
+                "taskId": "%s",
+                "contextId": "wrong-context-does-not-exist"
+              },
+              "configuration": {
+                "returnImmediately": false
+              }
+            }""".formatted(MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse mismatchResponse = handler.sendMessage(callContext, "", mismatchBody);
+
+        Assertions.assertEquals(422, mismatchResponse.getStatusCode());
+        Assertions.assertEquals("application/problem+json", mismatchResponse.getContentType());
+        Assertions.assertTrue(mismatchResponse.getBody().contains("InvalidParamsError"));
+    }
+
+    @Test
+    public void testSendStreamingMessageContextIdMismatch() {
+        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
+
+        agentExecutorExecute = (context, agentEmitter) -> {
+            agentEmitter.sendMessage(context.getMessage());
+        };
+
+        // Send streaming message with existing taskId but wrong contextId
+        String mismatchBody = """
+            {
+              "message": {
+                "messageId": "mismatch-002",
+                "role": "ROLE_USER",
+                "parts": [{"text": "mismatched context test"}],
+                "taskId": "%s",
+                "contextId": "wrong-context-does-not-exist"
+              },
+              "configuration": {
+                "acceptedOutputModes": ["text"]
+              }
+            }""".formatted(MINIMAL_TASK.id());
+        RestHandler.HTTPRestResponse mismatchResponse = handler.sendStreamingMessage(callContext, "", mismatchBody);
+
+        // Streaming responses embed errors in the stream with status 200
+        Assertions.assertEquals(200, mismatchResponse.getStatusCode());
+        Assertions.assertInstanceOf(RestHandler.HTTPRestStreamingResponse.class, mismatchResponse);
+
+        RestHandler.HTTPRestStreamingResponse streamingResponse = (RestHandler.HTTPRestStreamingResponse) mismatchResponse;
+        Flow.Publisher<String> publisher = streamingResponse.getPublisher();
+
+        AtomicBoolean errorFound = new AtomicBoolean(false);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        publisher.subscribe(new Flow.Subscriber<String>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(String item) {
+                if (item.contains("InvalidParamsError")) {
+                    errorFound.set(true);
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                latch.countDown();
+            }
+        });
+
+        try {
+            Assertions.assertTrue(latch.await(5, TimeUnit.SECONDS));
+            Assertions.assertTrue(errorFound.get(), "Error should contain InvalidParamsError in streaming response");
+        } catch (InterruptedException e) {
+            Assertions.fail("Test interrupted");
+        }
+    }
 }
