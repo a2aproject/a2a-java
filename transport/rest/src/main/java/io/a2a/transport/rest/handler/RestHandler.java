@@ -789,7 +789,10 @@ public class RestHandler {
      */
     public HTTPRestResponse getExtendedAgentCard(ServerCallContext context, String tenant) {
         try {
-            if (!agentCard.capabilities().extendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
+            if (!agentCard.capabilities().extendedAgentCard()) {
+                throw new UnsupportedOperationError();
+            }
+            if (extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
                 throw new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null);
             }
             return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(extendedAgentCard.get()));

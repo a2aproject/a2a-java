@@ -47,6 +47,7 @@ import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidRequestError;
+import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.spec.ListTaskPushNotificationConfigResult;
 import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.StreamingEventKind;
@@ -667,7 +668,10 @@ public class JSONRPCHandler {
     // TODO: Add authentication (https://github.com/a2aproject/a2a-java/issues/77)
     public GetExtendedAgentCardResponse onGetExtendedCardRequest(
             GetExtendedAgentCardRequest request, ServerCallContext context) {
-        if (!agentCard.capabilities().extendedAgentCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
+        if (!agentCard.capabilities().extendedAgentCard()) {
+            return new GetExtendedAgentCardResponse(request.getId(), new UnsupportedOperationError());
+        }
+        if (extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
             return new GetExtendedAgentCardResponse(request.getId(),
                     new ExtendedAgentCardNotConfiguredError(null, "Extended Card not configured", null));
         }

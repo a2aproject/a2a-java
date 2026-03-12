@@ -546,6 +546,10 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
     public void getExtendedAgentCard(io.a2a.grpc.GetExtendedAgentCardRequest request,
                            StreamObserver<io.a2a.grpc.AgentCard> responseObserver) {
         try {
+            if (!getAgentCard().capabilities().extendedAgentCard()) {
+                handleError(responseObserver, new UnsupportedOperationError());
+                return;
+            }
             AgentCard extendedAgentCard = getExtendedAgentCard();
             if (extendedAgentCard != null) {
                 responseObserver.onNext(ToProto.agentCard(extendedAgentCard));
