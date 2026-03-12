@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -30,6 +31,7 @@ import io.a2a.server.tasks.TaskStore;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.Event;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.Message;
 import io.a2a.spec.MessageSendConfiguration;
 import io.a2a.spec.MessageSendParams;
@@ -508,5 +510,56 @@ public class DefaultRequestHandlerTest {
         assertEquals(TaskState.TASK_STATE_COMPLETED,
             ((TaskStatusUpdateEvent) completionEvent).status().state(),
             "Task should be completed");
+    }
+
+    /**
+     * Test: Reject SendMessage with mismatching contextId and taskId.
+     * When a message references an existing task but provides a different contextId,
+     * the request must be rejected with an InvalidParamsError.
+     */
+    @Test
+    void testRejectMismatchingContextId() throws Exception {
+        // Arrange: Create an initial task to get valid identifiers
+        CountDownLatch agentCompleted = new CountDownLatch(1);
+
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.complete();
+            agentCompleted.countDown();
+        };
+
+        Message initialMessage = Message.builder()
+            .messageId("msg-1")
+            .role(Message.Role.ROLE_USER)
+            .contextId("original-context")
+            .parts(new TextPart("initial message"))
+            .build();
+
+        MessageSendParams initialParams = MessageSendParams.builder()
+            .message(initialMessage)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        EventKind result = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
+        assertInstanceOf(Task.class, result);
+        Task task = (Task) result;
+        assertTrue(agentCompleted.await(5, TimeUnit.SECONDS));
+
+        // Act & Assert: Send a follow-up message with matching taskId but wrong contextId
+        Message mismatchedMessage = Message.builder()
+            .messageId("msg-2")
+            .role(Message.Role.ROLE_USER)
+            .taskId(task.id())
+            .contextId("wrong-context-does-not-exist")
+            .parts(new TextPart("follow-up message"))
+            .build();
+
+        MessageSendParams mismatchedParams = MessageSendParams.builder()
+            .message(mismatchedMessage)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        InvalidParamsError error = assertThrows(InvalidParamsError.class,
+            () -> requestHandler.onMessageSend(mismatchedParams, NULL_CONTEXT));
+        assertTrue(error.getMessage().contains(task.id()));
     }
 }

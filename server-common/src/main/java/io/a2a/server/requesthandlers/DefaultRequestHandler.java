@@ -1026,6 +1026,14 @@ public class DefaultRequestHandler implements RequestHandler {
 
         Task task = taskManager.getTask();
         if (task != null) {
+            // Validate contextId matches the existing task's contextId
+            String messageContextId = params.message().contextId();
+            if (messageContextId != null && !messageContextId.equals(task.contextId())) {
+                throw new InvalidParamsError(String.format(
+                        "Message has a mismatched context ID (Task %s has contextId %s but message has contextId %s)",
+                        task.id(), task.contextId(), messageContextId));
+            }
+
             LOGGER.debug("Found task updating with message {}", params.message());
             task = taskManager.updateWithMessage(params.message(), task);
 
