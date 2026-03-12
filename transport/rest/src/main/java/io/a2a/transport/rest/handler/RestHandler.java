@@ -26,6 +26,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.a2a.grpc.utils.ProtoUtils;
+import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.server.AgentCardValidator;
@@ -71,12 +72,14 @@ import org.jspecify.annotations.Nullable;
 /**
  * REST transport handler for processing A2A protocol requests over HTTP.
  *
- * <p>This handler converts HTTP REST requests into A2A protocol operations and
+ * <p>
+ * This handler converts HTTP REST requests into A2A protocol operations and
  * manages the lifecycle of agent interactions including message sending, task
  * management, and push notification configurations.
  *
  * <h2>Request Flow</h2>
- * <p>HTTP REST requests flow through this handler to the underlying {@link RequestHandler},
+ * <p>
+ * HTTP REST requests flow through this handler to the underlying {@link RequestHandler},
  * which coordinates with the agent executor and event queue system:
  * <pre>
  * HTTP Request → RestHandler → RequestHandler → AgentExecutor
@@ -86,24 +89,26 @@ import org.jspecify.annotations.Nullable;
  *
  * <h2>Supported Operations</h2>
  * <ul>
- *   <li>Message sending (blocking and streaming)</li>
- *   <li>Task management (get, list, cancel, subscribe)</li>
- *   <li>Push notification configurations (create, get, list, delete)</li>
- *   <li>Agent card retrieval (public and extended)</li>
+ * <li>Message sending (blocking and streaming)</li>
+ * <li>Task management (get, list, cancel, subscribe)</li>
+ * <li>Push notification configurations (create, get, list, delete)</li>
+ * <li>Agent card retrieval (public and extended)</li>
  * </ul>
  *
  * <h2>Error Handling</h2>
- * <p>All A2A protocol errors are caught and converted to appropriate HTTP status codes
+ * <p>
+ * All A2A protocol errors are caught and converted to appropriate HTTP status codes
  * via {@link #mapErrorToHttpStatus(A2AError)}. Protocol version and required extensions
  * are validated before processing requests.
  *
  * <h2>CDI Integration</h2>
- * <p>This handler is an {@code @ApplicationScoped} CDI bean that requires:
+ * <p>
+ * This handler is an {@code @ApplicationScoped} CDI bean that requires:
  * <ul>
- *   <li>{@link AgentCard} qualified with {@code @PublicAgentCard}</li>
- *   <li>{@link RequestHandler} for processing A2A operations</li>
- *   <li>{@link Executor} qualified with {@code @Internal} for async operations</li>
- *   <li>Optional {@link AgentCard} qualified with {@code @ExtendedAgentCard}</li>
+ * <li>{@link AgentCard} qualified with {@code @PublicAgentCard}</li>
+ * <li>{@link RequestHandler} for processing A2A operations</li>
+ * <li>{@link Executor} qualified with {@code @Internal} for async operations</li>
+ * <li>Optional {@link AgentCard} qualified with {@code @ExtendedAgentCard}</li>
  * </ul>
  *
  * @see RequestHandler
@@ -116,7 +121,6 @@ public class RestHandler {
 
     private static final Logger log = Logger.getLogger(RestHandler.class.getName());
     private static final String TASK_STATE_PREFIX = "TASK_STATE_";
-
 
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
@@ -173,12 +177,14 @@ public class RestHandler {
     /**
      * Handles a blocking message send request.
      *
-     * <p>This method processes an HTTP POST request containing a message to be sent to the agent.
+     * <p>
+     * This method processes an HTTP POST request containing a message to be sent to the agent.
      * The request is validated for protocol version and required extensions before being forwarded
      * to the {@link RequestHandler}. The method blocks until the agent produces a terminal event
      * or requires authentication/input.
      *
-     * <p><b>Example Request:</b></p>
+     * <p>
+     * <b>Example Request:</b></p>
      * <pre>{@code
      * POST /v1/tenants/{tenant}/messages
      * Content-Type: application/json
@@ -192,7 +198,8 @@ public class RestHandler {
      * }
      * }</pre>
      *
-     * <p><b>Example Response:</b></p>
+     * <p>
+     * <b>Example Response:</b></p>
      * <pre>{@code
      * HTTP/1.1 200 OK
      * Content-Type: application/json
@@ -233,13 +240,16 @@ public class RestHandler {
     /**
      * Handles a streaming message send request.
      *
-     * <p>This method processes an HTTP POST request for streaming responses from the agent.
+     * <p>
+     * This method processes an HTTP POST request for streaming responses from the agent.
      * The response is returned as Server-Sent Events (SSE) via {@link HTTPRestStreamingResponse},
      * allowing clients to receive task updates and artifacts as they are produced by the agent.
      *
-     * <p>This method requires the agent card to have {@code capabilities.streaming = true}.
+     * <p>
+     * This method requires the agent card to have {@code capabilities.streaming = true}.
      *
-     * <p><b>Example Request:</b></p>
+     * <p>
+     * <b>Example Request:</b></p>
      * <pre>{@code
      * POST /v1/tenants/{tenant}/messages/stream
      * Content-Type: application/json
@@ -253,7 +263,8 @@ public class RestHandler {
      * }
      * }</pre>
      *
-     * <p><b>Example Streaming Response:</b></p>
+     * <p>
+     * <b>Example Streaming Response:</b></p>
      * <pre>{@code
      * HTTP/1.1 200 OK
      * Content-Type: text/event-stream
@@ -297,11 +308,13 @@ public class RestHandler {
     /**
      * Handles a task cancellation request.
      *
-     * <p>Attempts to cancel a running task identified by the task ID. The cancellation
+     * <p>
+     * Attempts to cancel a running task identified by the task ID. The cancellation
      * request is forwarded to the {@link RequestHandler}, which signals the agent executor
      * to stop processing. The agent should transition the task to {@code CANCELED} state.
      *
-     * <p><b>Example Request:</b></p>
+     * <p>
+     * <b>Example Request:</b></p>
      * <pre>{@code
      * POST /v1/tenants/{tenant}/tasks/{taskId}/cancel
      * }</pre>
@@ -312,7 +325,7 @@ public class RestHandler {
      * @param taskId the ID of the task to cancel
      * @return the HTTP response containing the cancelled task
      * @throws InvalidParamsError if taskId is null or empty
-     * @see RequestHandler#onCancelTask(CancelTaskParams, ServerCallContext) 
+     * @see RequestHandler#onCancelTask(CancelTaskParams, ServerCallContext)
      * @see io.a2a.server.agentexecution.AgentExecutor#cancel
      */
     @SuppressWarnings("unchecked")
@@ -321,7 +334,7 @@ public class RestHandler {
             if (taskId == null || taskId.isEmpty()) {
                 throw new InvalidParamsError();
             }
-            Map<String, Object> metadata =JsonUtil.readMetadata(body);
+            Map<String, Object> metadata = JsonUtil.readMetadata(body);
             CancelTaskParams params = CancelTaskParams.builder().id(taskId).tenant(tenant).metadata(metadata).build();
             Task task = requestHandler.onCancelTask(params, context);
             if (task != null) {
@@ -364,22 +377,26 @@ public class RestHandler {
     /**
      * Subscribes to task updates via a streaming connection.
      *
-     * <p>Creates a Server-Sent Events (SSE) stream that delivers real-time updates for an
+     * <p>
+     * Creates a Server-Sent Events (SSE) stream that delivers real-time updates for an
      * existing task. This allows clients to reconnect to ongoing or completed tasks and
      * receive their event history and future updates.
      *
-     * <p>This method requires the agent card to have {@code capabilities.streaming = true}.
+     * <p>
+     * This method requires the agent card to have {@code capabilities.streaming = true}.
      *
-     * <p><b>Example Request:</b></p>
+     * <p>
+     * <b>Example Request:</b></p>
      * <pre>{@code
      * GET /v1/tenants/{tenant}/tasks/{taskId}/subscribe
      * }</pre>
      *
-     * <p><b>Use Cases:</b></p>
+     * <p>
+     * <b>Use Cases:</b></p>
      * <ul>
-     *   <li>Reconnecting to a task after network interruption</li>
-     *   <li>Monitoring long-running tasks from multiple clients</li>
-     *   <li>Viewing historical events for completed tasks</li>
+     * <li>Reconnecting to a task after network interruption</li>
+     * <li>Monitoring long-running tasks from multiple clients</li>
+     * <li>Viewing historical events for completed tasks</li>
      * </ul>
      *
      * @param context the server call context containing authentication and metadata
@@ -415,17 +432,14 @@ public class RestHandler {
      */
     public HTTPRestResponse getTask(ServerCallContext context, String tenant, String taskId, @Nullable Integer historyLength) {
         try {
-            TaskQueryParams params;
-            try {
-                params = new TaskQueryParams(taskId, historyLength, tenant);
-            } catch (IllegalArgumentException e) {
-                throw new InvalidParamsError(e.getMessage());
-            }
+            TaskQueryParams params = new TaskQueryParams(taskId, historyLength, tenant);
             Task task = requestHandler.onGetTask(params, context);
             if (task != null) {
                 return createSuccessResponse(200, io.a2a.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
             }
             throw new TaskNotFoundError();
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(new InvalidParamsError(e.getMessage()));
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -436,24 +450,27 @@ public class RestHandler {
     /**
      * Lists tasks with optional filtering and pagination.
      *
-     * <p>Retrieves a list of tasks with support for filtering by context, status, and timestamp,
+     * <p>
+     * Retrieves a list of tasks with support for filtering by context, status, and timestamp,
      * along with pagination controls. This method is useful for task management dashboards,
      * monitoring systems, and task history retrieval.
      *
-     * <p><b>Example Request:</b></p>
+     * <p>
+     * <b>Example Request:</b></p>
      * <pre>{@code
      * GET /v1/tenants/{tenant}/tasks?status=COMPLETED&pageSize=10&includeArtifacts=true
      * }</pre>
      *
-     * <p><b>Query Parameters:</b></p>
+     * <p>
+     * <b>Query Parameters:</b></p>
      * <ul>
-     *   <li>{@code contextId} - Filter tasks by conversation context</li>
-     *   <li>{@code status} - Filter by task state (SUBMITTED, WORKING, COMPLETED, etc.)</li>
-     *   <li>{@code pageSize} - Maximum tasks to return (for pagination)</li>
-     *   <li>{@code pageToken} - Token for retrieving next page of results</li>
-     *   <li>{@code historyLength} - Maximum history entries to include per task</li>
-     *   <li>{@code statusTimestampAfter} - ISO-8601 timestamp for filtering recent tasks</li>
-     *   <li>{@code includeArtifacts} - Whether to include task artifacts in response</li>
+     * <li>{@code contextId} - Filter tasks by conversation context</li>
+     * <li>{@code status} - Filter by task state (SUBMITTED, WORKING, COMPLETED, etc.)</li>
+     * <li>{@code pageSize} - Maximum tasks to return (for pagination)</li>
+     * <li>{@code pageToken} - Token for retrieving next page of results</li>
+     * <li>{@code historyLength} - Maximum history entries to include per task</li>
+     * <li>{@code statusTimestampAfter} - ISO-8601 timestamp for filtering recent tasks</li>
+     * <li>{@code includeArtifacts} - Whether to include task artifacts in response</li>
      * </ul>
      *
      * @param context the server call context containing authentication and metadata
@@ -471,10 +488,10 @@ public class RestHandler {
      * @see TaskState
      */
     public HTTPRestResponse listTasks(ServerCallContext context, String tenant,
-                                       @Nullable String contextId, @Nullable String status,
-                                       @Nullable Integer pageSize, @Nullable String pageToken,
-                                       @Nullable Integer historyLength, @Nullable String statusTimestampAfter,
-                                       @Nullable Boolean includeArtifacts) {
+            @Nullable String contextId, @Nullable String status,
+            @Nullable Integer pageSize, @Nullable String pageToken,
+            @Nullable Integer historyLength, @Nullable String statusTimestampAfter,
+            @Nullable Boolean includeArtifacts) {
         try {
             // Build params
             ListTasksParams.Builder paramsBuilder = ListTasksParams.builder();
@@ -723,22 +740,23 @@ public class RestHandler {
     /**
      * Maps A2A protocol errors to HTTP status codes.
      *
-     * <p>This method ensures consistent HTTP status code mapping for all A2A errors:
+     * <p>
+     * This method ensures consistent HTTP status code mapping for all A2A errors:
      * <ul>
-     *   <li>400 - Invalid request, JSON parse errors, missing extensions</li>
-     *   <li>404 - Method not found, task not found</li>
-     *   <li>409 - Task not cancelable (conflict)</li>
-     *   <li>415 - Unsupported content type</li>
-     *   <li>422 - Invalid parameters (unprocessable entity)</li>
-     *   <li>500 - Internal errors</li>
-     *   <li>501 - Not implemented (unsupported operations, version)</li>
-     *   <li>502 - Bad gateway (invalid agent response)</li>
+     * <li>400 - Invalid request, JSON parse errors, missing extensions</li>
+     * <li>404 - Method not found, task not found</li>
+     * <li>409 - Task not cancelable (conflict)</li>
+     * <li>415 - Unsupported content type</li>
+     * <li>422 - Invalid parameters (unprocessable entity)</li>
+     * <li>500 - Internal errors</li>
+     * <li>501 - Not implemented (unsupported operations, version)</li>
+     * <li>502 - Bad gateway (invalid agent response)</li>
      * </ul>
      *
      * @param error the A2A error to map
      * @return the corresponding HTTP status code
      */
-    private int mapErrorToHttpStatus(A2AError error) {
+    private static int mapErrorToHttpStatus(A2AError error) {
         if (error instanceof InvalidRequestError || error instanceof JSONParseError) {
             return 400;
         }
@@ -773,14 +791,73 @@ public class RestHandler {
     }
 
     /**
+     * Maps A2A protocol errors to RFC 7807 Problem Details type URIs.
+     *
+     * <p>
+     * This method provides a unique URI for each A2A error type, which is used in the "type"
+     * field of RFC 7807 error responses. For example:
+     * <ul>
+     * <li>{@link InvalidRequestError} -> "https://a2a-protocol.org/errors/invalid-request"</li>
+     * <li>{@link TaskNotFoundError} -> "https://a2a-protocol.org/errors/task-not-found"</li>
+     * </ul>
+     *
+     * @param error the A2A error to map
+     * @return the corresponding RFC 7807 type URI
+     */
+    private static String mapErrorToURI(A2AError error) {
+        if (error instanceof InvalidRequestError || error instanceof JSONParseError) {
+            return "https://a2a-protocol.org/errors/invalid-request";
+        }
+        if (error instanceof InvalidParamsError) {
+            return "https://a2a-protocol.org/errors/invalid-params";
+        }
+        if (error instanceof MethodNotFoundError) {
+            return "https://a2a-protocol.org/errors/method-not-found";
+        }
+        if (error instanceof TaskNotFoundError) {
+            return "https://a2a-protocol.org/errors/task-not-found";
+        }
+        if (error instanceof TaskNotCancelableError) {
+            return "https://a2a-protocol.org/errors/task-not-cancelable";
+        }
+        if (error instanceof PushNotificationNotSupportedError) {
+            return "https://a2a-protocol.org/errors/push-notification-not-supported";
+        }
+        if (error instanceof UnsupportedOperationError) {
+            return "https://a2a-protocol.org/errors/unsupported-operation";
+        }
+        if (error instanceof VersionNotSupportedError) {
+            return "https://a2a-protocol.org/errors/version-not-supported";
+        }
+        if (error instanceof ContentTypeNotSupportedError) {
+            return "https://a2a-protocol.org/errors/content-type-not-supported";
+        }
+        if (error instanceof InvalidAgentResponseError) {
+            return "https://a2a-protocol.org/errors/invalid-agent-response";
+        }
+        if (error instanceof ExtendedAgentCardNotConfiguredError) {
+            return "https://a2a-protocol.org/errors/extended-agent-card-not-configured";
+        }
+        if (error instanceof ExtensionSupportRequiredError) {
+            return "https://a2a-protocol.org/errors/extension-support-required";
+        }
+        if (error instanceof InternalError) {
+            return "https://a2a-protocol.org/errors/internal-error";
+        }
+        return "https://a2a-protocol.org/errors/internal-error";
+    }
+
+    /**
      * Retrieves the extended agent card if configured.
      *
-     * <p>The extended agent card provides additional metadata beyond the public agent card,
+     * <p>
+     * The extended agent card provides additional metadata beyond the public agent card,
      * such as tenant-specific configurations or private capabilities. This endpoint requires
      * the agent card to have {@code capabilities.extendedAgentCard = true} and a CDI-produced
      * {@code @ExtendedAgentCard} instance.
      *
-     * <p><b>Example Request:</b></p>
+     * <p>
+     * <b>Example Request:</b></p>
      * <pre>{@code
      * GET /v1/tenants/{tenant}/extended-agent-card
      * }</pre>
@@ -811,17 +888,20 @@ public class RestHandler {
     /**
      * Retrieves the public agent card.
      *
-     * <p>The agent card is a self-describing manifest that provides essential metadata about
+     * <p>
+     * The agent card is a self-describing manifest that provides essential metadata about
      * the agent, including its capabilities, supported skills, communication methods, and
      * security requirements. This is the primary discovery endpoint for clients to understand
      * what the agent can do and how to interact with it.
      *
-     * <p><b>Example Request:</b></p>
+     * <p>
+     * <b>Example Request:</b></p>
      * <pre>{@code
      * GET /v1/agent-card
      * }</pre>
      *
-     * <p><b>Example Response:</b></p>
+     * <p>
+     * <b>Example Response:</b></p>
      * <pre>{@code
      * {
      *   "name": "Weather Agent",
@@ -935,9 +1015,11 @@ public class RestHandler {
      */
     private static class HTTPRestErrorResponse {
 
-        private final String error;
-        private final @Nullable
-        String message;
+        private final String title;
+        private final String details;
+        private final int status;
+        private final String type;
+
 
         /**
          * Creates an error response from an A2A error.
@@ -945,17 +1027,25 @@ public class RestHandler {
          * @param jsonRpcError the A2A error
          */
         private HTTPRestErrorResponse(A2AError jsonRpcError) {
-            this.error = jsonRpcError.getClass().getName();
-            this.message = jsonRpcError.getMessage();
+            this.title = jsonRpcError.getMessage() == null ? jsonRpcError.getClass().getName() : jsonRpcError.getMessage();
+            this.details = jsonRpcError.getData() == null ? "" : jsonRpcError.getData().toString();
+            this.type = mapErrorToURI(jsonRpcError);
+            this.status = mapErrorToHttpStatus(jsonRpcError);
         }
 
         private String toJson() {
-            return "{\"error\": \"" + error + "\", \"message\": \"" + message + "\"}";
+            try {
+                return JsonUtil.toJson(this);
+            } catch (JsonProcessingException ex) {
+                log.log(Level.SEVERE, "Failed to serialize HTTPRestErrorResponse to JSON", ex);
+                return "{\"title\":\"Internal Server Error\",\"details\":\"Failed to serialize error response.\",\"status\":500,\"type\":\"https://a2a-protocol.org/errors/internal-error\"}";
+            }
         }
 
         @Override
         public String toString() {
-            return "HTTPRestErrorResponse{" + "error=" + error + ", message=" + message + '}';
+            return "HTTPRestErrorResponse{" + "title=" + title + ", details=" + details + ", status=" + status + ", type=" + type + '}';
         }
+
     }
 }
