@@ -34,14 +34,16 @@ Focus on sections referenced in the issue.
 
 ### 3. Analyze Code
 Locate relevant code based on transport:
-- **HTTP+JSON**: `transport/rest/src/main/java/io/a2a/transport/rest/handler/RestHandler.java`
-- **gRPC**: `transport/grpc/`
-- **JSON-RPC**: `transport/jsonrpc/`
+- **HTTP+JSON**: `transport/rest`
+- **gRPC**: `transport/grpc`
+- **JSON-RPC**: `transport/jsonrpc`
 
 Identify root cause by comparing:
 - What the spec says should happen
 - What the code currently does
 - Why they differ
+
+**Optional**: If issue includes a curl/grpcurl reproducer, run it manually to validate the issue is genuine.
 
 ### 4. Determine Affected Transports
 **CRITICAL**: If issue doesn't specify a single transport, you MUST create reproducers for ALL affected transports.
@@ -172,18 +174,16 @@ If you created a new test file:
 - Delete the entire file (e.g., `Issue733ReproducerTest.java`)
 
 ### 11. Commit
-Add only the handler files (NOT the temporary reproducers):
+Add only the impacted files (NOT the temporary reproducers):
 ```bash
-git add <changed-handler-files>
+git add <changed-files>
 git commit -m "fix: <concise description>
 
 <explanation of spec requirement and how code was fixed>
 
 Applied to <list transports if multiple>.
 
-Fixes #<issue-number>
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+Fixes #<issue-number>"
 ```
 
 Example for multi-transport fix:
@@ -195,9 +195,7 @@ git commit -m "fix: Return UnsupportedOperationError when capability is disabled
 
 Applied to all three transports: HTTP+JSON, JSON-RPC, and gRPC.
 
-Fixes #733
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+Fixes #733"
 ```
 
 ## Common Root Causes
@@ -239,13 +237,10 @@ builder.setTaskId(taskId);
 - Faster test execution
 - More control over test setup
 
-**Structure**:
-```
-transport/
-├── rest/src/test/java/io/a2a/transport/rest/handler/RestHandlerTest.java
-├── grpc/src/test/java/io/a2a/transport/grpc/handler/GrpcHandlerTest.java
-└── jsonrpc/src/test/java/io/a2a/transport/jsonrpc/handler/JSONRPCHandlerTest.java
-```
+**Test file locations**:
+- `transport/rest/src/test/java/io/a2a/transport/rest/handler/RestHandlerTest.java`
+- `transport/grpc/src/test/java/io/a2a/transport/grpc/handler/GrpcHandlerTest.java`
+- `transport/jsonrpc/src/test/java/io/a2a/transport/jsonrpc/handler/JSONRPCHandlerTest.java`
 
 ### reference/* modules (Integration Tests)
 **Best for**:
@@ -304,12 +299,12 @@ Issue #733: GetExtendedAgentCard returns wrong error when capability disabled
 - ✅ **Delete all reproducers** - Keep test suites clean
 
 ### Best Practices
-- TCK is source of truth for compatibility
+- a2a.proto and spec are source of truth for compatibility
 - Reproducers prove understanding before fixing
 - Minimal, targeted fixes are better than broad changes
 - Choose test location (transport/* vs reference/*) based on requirements
 - Run full test suite to ensure no regressions
-- Commit only handler changes, never temporary reproducers
+- Commit only code changes, never temporary reproducers
 
 ### Common Pitfalls
 - ❌ Fixing without running reproducer first
