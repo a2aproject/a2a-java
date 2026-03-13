@@ -35,14 +35,14 @@ public class ClientTaskManager {
         this.contextId = null;
     }
 
-    public Task getCurrentTask() throws A2AClientInvalidStateError {
+    public synchronized Task getCurrentTask() throws A2AClientInvalidStateError {
         if (currentTask == null) {
             throw new A2AClientInvalidStateError("No current task");
         }
         return currentTask;
     }
 
-    public Task saveTaskEvent(Task task) throws A2AClientInvalidArgsError {
+    public synchronized Task saveTaskEvent(Task task) throws A2AClientInvalidArgsError {
         if (currentTask != null) {
             throw new A2AClientInvalidArgsError("Task is already set, create new manager for new tasks.");
         }
@@ -50,7 +50,7 @@ public class ClientTaskManager {
         return task;
     }
 
-    public Task saveTaskEvent(TaskStatusUpdateEvent taskStatusUpdateEvent) throws A2AClientError {
+    public synchronized Task saveTaskEvent(TaskStatusUpdateEvent taskStatusUpdateEvent) throws A2AClientError {
         if (taskId == null) {
             taskId = taskStatusUpdateEvent.taskId();
         }
@@ -86,7 +86,7 @@ public class ClientTaskManager {
         return currentTask;
     }
 
-    public Task saveTaskEvent(TaskArtifactUpdateEvent taskArtifactUpdateEvent) {
+    public synchronized Task saveTaskEvent(TaskArtifactUpdateEvent taskArtifactUpdateEvent) {
         if (taskId == null) {
             taskId = taskArtifactUpdateEvent.taskId();
         }
@@ -113,7 +113,7 @@ public class ClientTaskManager {
      * @param task the task to update
      * @return the updated task
      */
-    public Task updateWithMessage(Message message, Task task) {
+    public synchronized Task updateWithMessage(Message message, Task task) {
         Task.Builder taskBuilder = Task.builder(task);
         List<Message> history = new ArrayList<>(task.history());
         if (task.status().message() != null) {
