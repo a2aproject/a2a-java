@@ -12,10 +12,11 @@ import java.util.Set;
 public class ReferenceBomVerifier extends DynamicBomVerifier {
 
     private static final Set<String> REFERENCE_EXCLUSIONS = Set.of(
-        "boms/",       // BOM test modules themselves
-        "examples/",   // Example applications
-        "tck/",        // TCK test suite
-        "tests/"       // Integration tests
+        "boms/",            // BOM test modules themselves
+        "examples/",        // Example applications
+        "tck/",             // TCK test suite
+        "tests/",           // Integration tests
+        "test-utils-docker/" // Test utilities for Docker-based tests
         // Note: reference/ is NOT in this list - we want to verify those classes load
     );
 

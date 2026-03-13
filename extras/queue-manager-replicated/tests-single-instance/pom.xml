@@ -84,6 +84,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Docker test utilities -->
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-test-utils-docker</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <profiles>

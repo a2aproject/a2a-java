@@ -12,10 +12,11 @@ import java.util.Set;
 public class SdkBomVerifier extends DynamicBomVerifier {
 
     private static final Set<String> SDK_EXCLUSIONS = Set.of(
-        "boms/",       // BOM test modules themselves
-        "examples/",   // Example applications
-        "tck/",        // TCK test suite
-        "tests/"       // Integration tests
+        "boms/",            // BOM test modules themselves
+        "examples/",        // Example applications
+        "tck/",             // TCK test suite
+        "tests/",           // Integration tests
+        "test-utils-docker/" // Test utilities for Docker-based tests
     );
 
     private static final Set<String> SDK_FORBIDDEN = Set.of(

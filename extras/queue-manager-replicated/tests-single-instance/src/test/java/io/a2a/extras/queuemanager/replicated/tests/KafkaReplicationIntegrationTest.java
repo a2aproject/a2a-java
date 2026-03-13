@@ -42,6 +42,7 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
+import io.a2a.testutils.docker.RequiresDocker;
 import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -56,6 +57,7 @@ import org.slf4j.LoggerFactory;
  * Tests the full A2A message flow with Kafka replication verification.
  */
 @QuarkusTest
+@RequiresDocker
 public class KafkaReplicationIntegrationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaReplicationIntegrationTest.class);

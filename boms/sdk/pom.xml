@@ -111,6 +111,12 @@
             <!-- Test utilities -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-test-utils-docker</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-tests-server-common</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>

@@ -12,10 +12,11 @@ import java.util.Set;
 public class ExtrasBomVerifier extends DynamicBomVerifier {
 
     private static final Set<String> EXTRAS_EXCLUSIONS = Set.of(
-        "boms/",       // BOM test modules themselves
-        "examples/",   // Example applications
-        "tck/",        // TCK test suite
-        "tests/",      // Integration tests
+        "boms/",            // BOM test modules themselves
+        "examples/",        // Example applications
+        "tck/",             // TCK test suite
+        "tests/",           // Integration tests
+        "test-utils-docker/", // Test utilities for Docker-based tests
         "extras/queue-manager-replicated/tests-multi-instance/",   // Test harness applications
         "extras/queue-manager-replicated/tests-single-instance/",   // Test harness applications
         "extras/opentelemetry/integration-tests/"   // Test harness applications
