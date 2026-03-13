@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +27,7 @@ import java.util.concurrent.Executor;
 import jakarta.enterprise.inject.Instance;
 
 import io.a2a.server.ServerCallContext;
+import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.transport.rest.handler.RestHandler;
 import io.a2a.transport.rest.handler.RestHandler.HTTPRestResponse;
 import io.vertx.core.Future;
@@ -80,6 +82,7 @@ public class A2AServerRoutesTest {
         when(mockRoutingContext.user()).thenReturn(null);
         when(mockRequest.headers()).thenReturn(mockHeaders);
         when(mockRequest.params()).thenReturn(mockParams);
+        when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("application/json");
         when(mockRoutingContext.body()).thenReturn(mockRequestBody);
         when(mockRequestBody.asString()).thenReturn("{}");
         when(mockResponse.setStatusCode(any(Integer.class))).thenReturn(mockResponse);
@@ -358,7 +361,7 @@ public class A2AServerRoutesTest {
         ArgumentCaptor<ServerCallContext> contextCaptor = ArgumentCaptor.forClass(ServerCallContext.class);
 
         // Act
-        routes.CreateTaskPushNotificationConfiguration("{}", mockRoutingContext);
+        routes.createTaskPushNotificationConfiguration("{}", mockRoutingContext);
 
         // Assert
         verify(mockRestHandler).createTaskPushNotificationConfiguration(contextCaptor.capture(), anyString(), eq("{}"), eq("task123"));
@@ -436,6 +439,61 @@ public class A2AServerRoutesTest {
         ServerCallContext capturedContext = contextCaptor.getValue();
         assertNotNull(capturedContext);
         assertEquals(DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD, capturedContext.getState().get(METHOD_NAME_KEY));
+    }
+
+    @Test
+    public void testSendMessage_UnsupportedContentType_ReturnsContentTypeNotSupportedError() {
+        // Arrange
+        HTTPRestResponse mockErrorResponse = mock(HTTPRestResponse.class);
+        when(mockErrorResponse.getStatusCode()).thenReturn(415);
+        when(mockErrorResponse.getContentType()).thenReturn("application/problem+json");
+        when(mockErrorResponse.getBody()).thenReturn("{\"type\":\"https://a2a-protocol.org/errors/content-type-not-supported\"}");
+        when(mockRestHandler.createErrorResponse(any(ContentTypeNotSupportedError.class))).thenReturn(mockErrorResponse);
+        when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("text/plain");
+
+        // Act
+        routes.sendMessage("{}", mockRoutingContext);
+
+        // Assert: createErrorResponse called with ContentTypeNotSupportedError, sendMessage NOT called
+        verify(mockRestHandler).createErrorResponse(any(ContentTypeNotSupportedError.class));
+        verify(mockRestHandler, never()).sendMessage(any(ServerCallContext.class), anyString(), anyString());
+    }
+
+    @Test
+    public void testSendMessageStreaming_UnsupportedContentType_ReturnsContentTypeNotSupportedError() {
+        // Arrange
+        HTTPRestResponse mockErrorResponse = mock(HTTPRestResponse.class);
+        when(mockErrorResponse.getStatusCode()).thenReturn(415);
+        when(mockErrorResponse.getContentType()).thenReturn("application/problem+json");
+        when(mockErrorResponse.getBody()).thenReturn("{\"type\":\"https://a2a-protocol.org/errors/content-type-not-supported\"}");
+        when(mockRestHandler.createErrorResponse(any(ContentTypeNotSupportedError.class))).thenReturn(mockErrorResponse);
+        when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("text/plain");
+
+        // Act
+        routes.sendMessageStreaming("{}", mockRoutingContext);
+
+        // Assert: createErrorResponse called with ContentTypeNotSupportedError, sendStreamingMessage NOT called
+        verify(mockRestHandler).createErrorResponse(any(ContentTypeNotSupportedError.class));
+        verify(mockRestHandler, never()).sendStreamingMessage(any(ServerCallContext.class), anyString(), anyString());
+    }
+
+    @Test
+    public void testSendMessage_UnsupportedProtocolVersion_ReturnsVersionNotSupportedError() {
+        // Arrange: content type is OK, but RestHandler returns a VersionNotSupportedError response
+        HTTPRestResponse mockErrorResponse = mock(HTTPRestResponse.class);
+        when(mockErrorResponse.getStatusCode()).thenReturn(400);
+        when(mockErrorResponse.getContentType()).thenReturn("application/problem+json");
+        when(mockErrorResponse.getBody()).thenReturn("{\"type\":\"https://a2a-protocol.org/errors/version-not-supported\"}");
+        when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("application/json");
+        when(mockRestHandler.sendMessage(any(ServerCallContext.class), anyString(), anyString()))
+                .thenReturn(mockErrorResponse);
+
+        // Act
+        routes.sendMessage("{}", mockRoutingContext);
+
+        // Assert: sendMessage was called and error response forwarded
+        verify(mockRestHandler).sendMessage(any(ServerCallContext.class), anyString(), eq("{}"));
+        verify(mockResponse).setStatusCode(400);
     }
 
     /**

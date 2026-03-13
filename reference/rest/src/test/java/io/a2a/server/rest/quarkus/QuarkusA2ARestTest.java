@@ -31,6 +31,39 @@ public abstract class QuarkusA2ARestTest extends AbstractA2AServerTest {
     protected abstract void configureTransport(ClientBuilder builder);
 
     @Test
+    public void testSendMessageWithUnsupportedContentType() throws Exception {
+        HttpClient client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + serverPort + "/message:send"))
+                .POST(HttpRequest.BodyPublishers.ofString("test body"))
+                .header("Content-Type", "text/plain")
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        Assertions.assertEquals(415, response.statusCode());
+        Assertions.assertTrue(response.body().contains("content-type-not-supported"),
+                "Expected content-type-not-supported in response body: " + response.body());
+    }
+
+    @Test
+    public void testSendMessageWithUnsupportedProtocolVersion() throws Exception {
+        HttpClient client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + serverPort + "/message:send"))
+                .POST(HttpRequest.BodyPublishers.ofString("{}"))
+                .header("Content-Type", APPLICATION_JSON)
+                .header("A2A-Version", "0.4.0")
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        Assertions.assertEquals(400, response.statusCode());
+        Assertions.assertTrue(response.body().contains("version-not-supported"),
+                "Expected version-not-supported in response body: " + response.body());
+    }
+
+    @Test
     public void testMethodNotFound() throws Exception {
         // Create the client
         HttpClient client = HttpClient.newBuilder()
