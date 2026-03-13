@@ -40,6 +40,9 @@ import org.jspecify.annotations.Nullable;
  */
 public class ContentTypeNotSupportedError extends A2AProtocolError {
 
+    public ContentTypeNotSupportedError() {
+        this(null, null, null);
+    }
     /**
      * Constructs a content type not supported error.
      *

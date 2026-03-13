@@ -777,7 +777,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         RestHandler.HTTPRestResponse response = handler.sendMessage(contextWithVersion, "", requestBody);
 
-        assertProblemDetail(response, 501,
+        assertProblemDetail(response, 400,
                 "https://a2a-protocol.org/errors/version-not-supported",
                 "Protocol version '2.0' is not supported. Supported versions: [1.0]");
     }

@@ -31,6 +31,7 @@ import io.a2a.server.auth.User;
 import io.a2a.server.extensions.A2AExtensions;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
+import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.MethodNotFoundError;
@@ -165,8 +166,11 @@ public class A2AServerRoutes {
      * @param body the JSON request body
      * @param rc the Vert.x routing context
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)message:send$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)message:send$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void sendMessage(@Body String body, RoutingContext rc) {
+        if(!validateContentType(rc)) {
+            return;
+        }
         ServerCallContext context = createCallContext(rc, SEND_MESSAGE_METHOD);
         HTTPRestResponse response = null;
         try {
@@ -198,8 +202,11 @@ public class A2AServerRoutes {
      * @param body the JSON request body
      * @param rc the Vert.x routing context
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)message:stream$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)message:stream$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void sendMessageStreaming(@Body String body, RoutingContext rc) {
+        if(!validateContentType(rc)) {
+            return;
+        }
         ServerCallContext context = createCallContext(rc, SEND_STREAMING_MESSAGE_METHOD);
         HTTPRestStreamingResponse streamingResponse = null;
         HTTPRestResponse error = null;
@@ -339,6 +346,9 @@ public class A2AServerRoutes {
      */
     @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void cancelTask(@Body String body, RoutingContext rc) {
+        if (!validateContentType(rc)) {
+            return;
+        }
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, CANCEL_TASK_METHOD);
         HTTPRestResponse response = null;
@@ -443,8 +453,11 @@ public class A2AServerRoutes {
      * @param body the JSON request body with notification configuration
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$", order = 1, methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
-    public void CreateTaskPushNotificationConfiguration(@Body String body, RoutingContext rc) {
+    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
+    public void createTaskPushNotificationConfiguration(@Body String body, RoutingContext rc) {
+        if(!validateContentType(rc)) {
+            return;
+        }
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         HTTPRestResponse response = null;
@@ -595,6 +608,20 @@ public class A2AServerRoutes {
             tenantPath = tenantPath.substring(0, tenantPath.length() - 1);
         }
         return tenantPath;
+    }
+
+    /**
+     * Check if the request content type is application/json.
+     * @param rc
+     * @return true if the content type is application/json - false otherwise.
+     */
+    private boolean validateContentType(RoutingContext rc) {
+        String contentType = rc.request().getHeader(CONTENT_TYPE);
+        if (contentType == null || !contentType.trim().startsWith(APPLICATION_JSON)) {
+            sendResponse(rc, jsonRestHandler.createErrorResponse(new ContentTypeNotSupportedError(null, null, null)));
+            return false;
+        }
+        return true;
     }
 
     /**

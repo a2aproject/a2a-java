@@ -770,8 +770,7 @@ public class RestHandler {
             return 409;
         }
         if (error instanceof PushNotificationNotSupportedError
-                || error instanceof UnsupportedOperationError
-                || error instanceof VersionNotSupportedError) {
+                || error instanceof UnsupportedOperationError) {
             return 501;
         }
         if (error instanceof ContentTypeNotSupportedError) {
@@ -781,7 +780,8 @@ public class RestHandler {
             return 502;
         }
         if (error instanceof ExtendedAgentCardNotConfiguredError
-                || error instanceof ExtensionSupportRequiredError) {
+                || error instanceof ExtensionSupportRequiredError
+                || error instanceof VersionNotSupportedError) {
             return 400;
         }
         if (error instanceof InternalError) {

@@ -323,7 +323,7 @@ All error responses use [RFC 7807 Problem Details](https://tools.ietf.org/html/r
 | `https://a2a-protocol.org/errors/content-type-not-supported`   | 415         | The requested content type is not supported.               |
 | `https://a2a-protocol.org/errors/push-notification-not-supported` | 501      | Push notifications are not configured for this agent.      |
 | `https://a2a-protocol.org/errors/unsupported-operation`        | 501         | The operation is not implemented or not applicable (e.g., subscribing to a finalized task). |
-| `https://a2a-protocol.org/errors/version-not-supported`        | 501         | The requested protocol version is not supported.           |
+| `https://a2a-protocol.org/errors/version-not-supported`        | 400         | The requested protocol version is not supported.           |
 | `https://a2a-protocol.org/errors/invalid-agent-response`       | 502         | The agent produced an invalid response.                    |
 | `https://a2a-protocol.org/errors/extended-agent-card-not-configured` | 400   | The agent does not have an extended agent card configured. |
 | `https://a2a-protocol.org/errors/internal-error`               | 500         | An unexpected server-side error occurred.                  |
