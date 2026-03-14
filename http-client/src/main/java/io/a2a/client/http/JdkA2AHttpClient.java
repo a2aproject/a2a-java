@@ -1,5 +1,6 @@
 package io.a2a.client.http;
 
+import static io.a2a.util.Assert.checkNotNullParam;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_MULT_CHOICE;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -61,10 +62,20 @@ public class JdkA2AHttpClient implements A2AHttpClient {
      * </ul>
      */
     public JdkA2AHttpClient() {
-        httpClient = HttpClient.newBuilder()
+        this(HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
+                .build());
+    }
+
+    /**
+     * Creates a new JDK-based HTTP client using a caller-provided JDK {@link HttpClient}.
+     *
+     * @param httpClient the JDK HTTP client to delegate requests to
+     * @throws IllegalArgumentException if {@code httpClient} is {@code null}
+     */
+    public JdkA2AHttpClient(HttpClient httpClient) {
+        this.httpClient = checkNotNullParam("httpClient", httpClient);
     }
 
     @Override
