@@ -1001,7 +1001,7 @@ public class DefaultRequestHandler implements RequestHandler {
         });
     }
 
-    private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) {
+    private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
         // Build RequestContext FIRST to get the real taskId (auto-generated if not provided)
         // This eliminates the need for temporary IDs - we use the same UUID throughout
         RequestContext requestContext = requestContextBuilder.get()
@@ -1026,6 +1026,17 @@ public class DefaultRequestHandler implements RequestHandler {
 
         Task task = taskManager.getTask();
         if (task != null) {
+            // Reject messages to tasks that are in a terminal state (completed, canceled, rejected, failed).
+            // Per A2A spec section 3.1.1 (CORE-SEND-002): the SDK MUST return UnsupportedOperationError
+            // before forwarding the message to the AgentExecutor.
+            if (task.status().state().isFinal()) {
+                throw new UnsupportedOperationError(
+                        null,
+                        "Cannot send message to task " + task.id() +
+                        " - task is in a terminal state: " + task.status().state(),
+                        null);
+            }
+
             // Validate contextId matches the existing task's contextId
             String messageContextId = params.message().contextId();
             if (messageContextId != null && !messageContextId.equals(task.contextId())) {
