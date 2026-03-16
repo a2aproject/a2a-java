@@ -545,23 +545,23 @@ From `pom.xml`:
 ```xml
 <!-- A2A SDK with JSON-RPC transport -->
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
 </dependency>
 
 <!-- Database task storage -->
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
 </dependency>
 
 <!-- Replicated event queue manager -->
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-queue-manager-replicated-core</artifactId>
 </dependency>
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-queue-manager-replication-mp-reactive</artifactId>
 </dependency>
 

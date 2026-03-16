@@ -12,7 +12,7 @@ Add the dependency to your test module:
 
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-test-utils-docker</artifactId>
     <scope>test</scope>
 </dependency>

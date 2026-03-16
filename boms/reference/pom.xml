@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.a2asdk</groupId>
+        <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-parent</artifactId>
         <version>1.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
@@ -97,7 +97,7 @@
                     <invokerPropertiesFile>invoker.properties</invokerPropertiesFile>
                     <!-- Install test-utils module before running integration tests -->
                     <extraArtifacts>
-                        <extraArtifact>io.github.a2asdk:a2a-java-bom-test-utils:${project.version}:jar</extraArtifact>
+                        <extraArtifact>org.a2aproject.sdk:a2a-java-bom-test-utils:${project.version}:jar</extraArtifact>
                     </extraArtifacts>
                 </configuration>
                 <executions>

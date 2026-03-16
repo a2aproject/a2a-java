@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Java SDK for the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/). Multi-module Maven project (`io.github.a2asdk` group) providing client and server libraries for A2A agent communication over JSON-RPC, gRPC, and REST transports.
+Java SDK for the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/). Multi-module Maven project (`org.a2aproject.sdk` group) providing client and server libraries for A2A agent communication over JSON-RPC, gRPC, and REST transports.
 
 ## Build
 

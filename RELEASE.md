@@ -16,7 +16,7 @@ The release process involves:
 
 ### Required Accounts & Access
 - GitHub repository write access to `a2aproject/a2a-java`
-- Maven Central account: namespace: `io.github.a2asdk`
+- Maven Central account: namespace: `org.a2aproject.sdk`
 
 ### Required Secrets (Repository Maintainers)
 The following secrets must be configured in GitHub repository settings:
@@ -140,7 +140,7 @@ Check that artifacts are available:
 
 **Maven Central**:
 ```
-https://central.sonatype.com/artifact/io.github.a2asdk/a2a-java-sdk-parent/0.4.0.Alpha1
+https://central.sonatype.com/artifact/org.a2aproject.sdk/a2a-java-sdk-parent/0.4.0.Alpha1
 ```
 
 **GitHub Release**:
@@ -184,7 +184,7 @@ Open PR, wait for CI, and merge.
 ./update-version.sh OLD_VERSION NEW_VERSION
 
 # Or manually check:
-grep -r "//DEPS io.github.a2asdk:" examples/
+grep -r "//DEPS org.a2aproject.sdk:" examples/
 ```
 
 ### GPG signing fails in workflow

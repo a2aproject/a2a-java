@@ -44,7 +44,7 @@ echo ""
 
 # Find all files to update
 POM_FILES=$(find . -type f -name "pom.xml" | sort)
-JBANG_FILES=$(find . -type f -name "*.java" -path "*/examples/*" -exec grep -l "//DEPS io.github.a2asdk:" {} \; | sort)
+JBANG_FILES=$(find . -type f -name "*.java" -path "*/examples/*" -exec grep -l "//DEPS org.a2aproject.sdk:" {} \; | sort)
 
 POM_COUNT=$(echo "$POM_FILES" | wc -l | tr -d ' ')
 JBANG_COUNT=$(echo "$JBANG_FILES" | wc -l | tr -d ' ')
@@ -69,9 +69,9 @@ if [ "$DRY_RUN" = true ]; then
 
     echo "=== JBang files with version $FROM_VERSION ==="
     for file in $JBANG_FILES; do
-        if grep -q "//DEPS io.github.a2asdk:.*:$FROM_VERSION" "$file"; then
+        if grep -q "//DEPS org.a2aproject.sdk:.*:$FROM_VERSION" "$file"; then
             echo "  📝 $file"
-            grep -n "//DEPS io.github.a2asdk:.*:$FROM_VERSION" "$file" | sed 's/^/      /'
+            grep -n "//DEPS org.a2aproject.sdk:.*:$FROM_VERSION" "$file" | sed 's/^/      /'
         fi
     done
     echo ""
@@ -107,13 +107,13 @@ echo ""
 # Update JBang files
 echo "Updating JBang script files..."
 for file in $JBANG_FILES; do
-    if grep -q "//DEPS io.github.a2asdk:.*:$FROM_VERSION" "$file"; then
+    if grep -q "//DEPS org.a2aproject.sdk:.*:$FROM_VERSION" "$file"; then
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # macOS requires empty string after -i
-            sed -i "" -e "s/\(\/\/DEPS io.github.a2asdk:.*:\)$FROM_VERSION/\1$TO_VERSION/g" "$file"
+            sed -i "" -e "s/\(\/\/DEPS org.a2aproject.sdk:.*:\)$FROM_VERSION/\1$TO_VERSION/g" "$file"
         else
             # Linux doesn't need it
-            sed -i "s/\(\/\/DEPS io.github.a2asdk:.*:\)$FROM_VERSION/\1$TO_VERSION/g" "$file"
+            sed -i "s/\(\/\/DEPS org.a2aproject.sdk:.*:\)$FROM_VERSION/\1$TO_VERSION/g" "$file"
         fi
         echo "  ✅ $file"
         UPDATED_JBANGS=$((UPDATED_JBANGS + 1))
