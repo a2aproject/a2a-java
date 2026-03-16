@@ -18,7 +18,7 @@ This module provides `MicroProfileConfigProvider`, which integrates with MicroPr
 
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-microprofile-config</artifactId>
     <version>${io.a2a.sdk.version}</version>
 </dependency>

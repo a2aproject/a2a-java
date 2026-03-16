@@ -62,7 +62,7 @@ Add this module to your project's `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-http-client-vertx</artifactId>
     <version>${a2a.version}</version>
 </dependency>

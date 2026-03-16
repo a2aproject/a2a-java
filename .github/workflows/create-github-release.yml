@@ -60,19 +60,19 @@ jobs:
             // Add Maven Central installation instructions
             releaseNotes += `### Installation\n\n`;
             releaseNotes += `**Maven**:\n\`\`\`xml\n<dependency>\n`;
-            releaseNotes += `    <groupId>io.github.a2asdk</groupId>\n`;
+            releaseNotes += `    <groupId>org.a2aproject.sdk</groupId>\n`;
             releaseNotes += `    <artifactId>a2a-java-sdk-client</artifactId>\n`;
             releaseNotes += `    <version>${version}</version>\n`;
             releaseNotes += `</dependency>\n\`\`\`\n\n`;
 
             releaseNotes += `**Gradle**:\n\`\`\`gradle\n`;
-            releaseNotes += `implementation 'io.github.a2asdk:a2a-java-sdk-client:${version}'\n`;
+            releaseNotes += `implementation 'org.a2aproject.sdk:a2a-java-sdk-client:${version}'\n`;
             releaseNotes += `\`\`\`\n\n`;
 
             // Add links
             releaseNotes += `### Links\n\n`;
-            releaseNotes += `- [Maven Central](https://central.sonatype.com/artifact/io.github.a2asdk/a2a-java-sdk-parent/${version})\n`;
-            releaseNotes += `- [JavaDoc](https://javadoc.io/doc/io.github.a2asdk/a2a-java-sdk-parent/${version})\n`;
+            releaseNotes += `- [Maven Central](https://central.sonatype.com/artifact/org.a2aproject.sdk/a2a-java-sdk-parent/${version})\n`;
+            releaseNotes += `- [JavaDoc](https://javadoc.io/doc/org.a2aproject.sdk/a2a-java-sdk-parent/${version})\n`;
             releaseNotes += `- [GitHub](https://github.com/a2aproject/a2a-java/tree/v${version})\n\n`;
 
             // Add changelog header
@@ -115,7 +115,7 @@ jobs:
               core.summary
                 .addHeading(`Release v${version} Created`)
                 .addLink('View Release', release.html_url)
-                .addLink('Maven Central', `https://central.sonatype.com/artifact/io.github.a2asdk/a2a-java-sdk-parent/${version}`)
+                .addLink('Maven Central', `https://central.sonatype.com/artifact/org.a2aproject.sdk/a2a-java-sdk-parent/${version}`)
                 .write();
 
             } catch (error) {

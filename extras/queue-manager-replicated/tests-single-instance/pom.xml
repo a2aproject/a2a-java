@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>io.github.a2asdk</groupId>
+        <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-queue-manager-replicated-parent</artifactId>
         <version>1.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -16,30 +16,30 @@
     <dependencies>
         <!-- Project Modules -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-queue-manager-replicated-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-queue-manager-replication-mp-reactive</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-jsonrpc-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- A2A Reference Impl for a runnable app -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
         </dependency>
 
         <!-- JPA TaskStore for testing poison pill generation -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -57,12 +57,12 @@
 
         <!-- A2A Client for testing -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
             <scope>test</scope>
         </dependency>
@@ -86,7 +86,7 @@
 
         <!-- Docker test utilities -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-test-utils-docker</artifactId>
             <scope>test</scope>
         </dependency>

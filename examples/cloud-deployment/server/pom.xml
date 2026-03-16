@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.a2asdk</groupId>
+        <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-parent</artifactId>
         <version>1.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
@@ -19,35 +19,35 @@
     <dependencies>
         <!-- Core A2A SDK with JSON-RPC transport. This pulls in the rest of the needed a2a-java dependencies -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- Database-backed task store -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- Database-backed push notification config store -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-extras-push-notification-config-store-database-jpa</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- Replicated queue manager core -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-queue-manager-replicated-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- Provides the MicroProfile Reactive Messaging ReplicationStrategy for the replicated queue manager-->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-queue-manager-replication-mp-reactive</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -80,7 +80,7 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-client</artifactId>
             <scope>test</scope>
         </dependency>

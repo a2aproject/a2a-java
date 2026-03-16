@@ -25,7 +25,7 @@ Add the core replicated queue manager module to your project's `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-queue-manager-replicated-core</artifactId>
     <version>${a2a.version}</version>
 </dependency>
@@ -39,7 +39,7 @@ You must also include a replication strategy implementation. Currently, we provi
 
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-queue-manager-replication-mp-reactive</artifactId>
     <version>${a2a.version}</version>
 </dependency>

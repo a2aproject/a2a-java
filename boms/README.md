@@ -14,7 +14,7 @@ The A2A Java SDK provides three BOMs for different use cases:
 
 ### SDK BOM (`boms/sdk`)
 
-**Artifact:** `io.github.a2asdk:a2a-java-sdk-bom`
+**Artifact:** `org.a2aproject.sdk:a2a-java-sdk-bom`
 
 The SDK BOM includes:
 - All A2A SDK core modules (spec, server, client, transport)
@@ -26,7 +26,7 @@ The SDK BOM includes:
 
 ### Extras BOM (`boms/extras`)
 
-**Artifact:** `io.github.a2asdk:a2a-java-sdk-extras-bom`
+**Artifact:** `org.a2aproject.sdk:a2a-java-sdk-extras-bom`
 
 The Extras BOM includes:
 - Everything from `a2a-java-sdk-bom` (via import)
@@ -36,7 +36,7 @@ The Extras BOM includes:
 
 ### Reference BOM (`boms/reference`)
 
-**Artifact:** `io.github.a2asdk:a2a-java-sdk-reference-bom`
+**Artifact:** `org.a2aproject.sdk:a2a-java-sdk-reference-bom`
 
 The Reference BOM includes:
 - Everything from `a2a-java-sdk-bom` (via import)
@@ -56,7 +56,7 @@ Add to your project's `pom.xml`:
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-bom</artifactId>
             <version>${io.a2a.sdk.version}</version>
             <type>pom</type>
@@ -68,11 +68,11 @@ Add to your project's `pom.xml`:
 <dependencies>
     <!-- No version needed - managed by BOM -->
     <dependency>
-        <groupId>io.github.a2asdk</groupId>
+        <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-server-common</artifactId>
     </dependency>
     <dependency>
-        <groupId>io.github.a2asdk</groupId>
+        <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
     </dependency>
 </dependencies>
@@ -86,7 +86,7 @@ Add to your project's `pom.xml`:
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-extras-bom</artifactId>
             <version>${io.a2a.sdk.version}</version>
             <type>pom</type>
@@ -98,11 +98,11 @@ Add to your project's `pom.xml`:
 <dependencies>
     <!-- No version needed - managed by BOM -->
     <dependency>
-        <groupId>io.github.a2asdk</groupId>
+        <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-server-common</artifactId>
     </dependency>
     <dependency>
-        <groupId>io.github.a2asdk</groupId>
+        <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
     </dependency>
 </dependencies>
@@ -116,7 +116,7 @@ Add to your project's `pom.xml`:
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-reference-bom</artifactId>
             <version>${io.a2a.sdk.version}</version>
             <type>pom</type>
@@ -128,7 +128,7 @@ Add to your project's `pom.xml`:
 <dependencies>
     <!-- A2A SDK and Quarkus versions both managed -->
     <dependency>
-        <groupId>io.github.a2asdk</groupId>
+        <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
     </dependency>
     <dependency>

@@ -14,7 +14,7 @@ if (!jbangFile.exists()) {
 }
 
 def expectedVersion = project.version
-def groupPrefix = "//DEPS io.github.a2asdk:"
+def groupPrefix = "//DEPS org.a2aproject.sdk:"
 def success = true
 
 jbangFile.eachLine { line ->

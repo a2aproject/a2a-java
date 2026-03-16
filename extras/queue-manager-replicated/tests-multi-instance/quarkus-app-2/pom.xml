@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.a2asdk</groupId>
+        <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-queue-manager-replicated-tests-multi-instance-parent</artifactId>
         <version>1.0.0.Alpha4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -17,32 +17,32 @@
     <dependencies>
         <!-- Common test code -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-queue-manager-replicated-tests-multi-instance-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- Replicated Queue Manager -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-queue-manager-replicated-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-queue-manager-replication-mp-reactive</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- A2A Reference Implementation -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
         </dependency>
 
         <!-- JPA TaskStore for shared database -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-extras-task-store-database-jpa</artifactId>
             <version>${project.version}</version>
         </dependency>

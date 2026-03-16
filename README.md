@@ -58,11 +58,9 @@ The A2A Java SDK Reference Server implementations support the following transpor
 
 To use the reference implementation with the JSON-RPC protocol, add the following dependency to your project:
 
-> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
-
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
     <version>${io.a2a.sdk.version}</version>
@@ -71,11 +69,9 @@ To use the reference implementation with the JSON-RPC protocol, add the followin
 
 To use the reference implementation with the gRPC protocol, add the following dependency to your project:
 
-> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
-
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-reference-grpc</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
     <version>${io.a2a.sdk.version}</version>
@@ -84,11 +80,9 @@ To use the reference implementation with the gRPC protocol, add the following de
 
 To use the reference implementation with the HTTP+JSON/REST protocol, add the following dependency to your project:
 
-> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
-
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-reference-rest</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
     <version>${io.a2a.sdk.version}</version>
@@ -291,13 +285,9 @@ To make use of the Java `Client`:
 Adding a dependency on `a2a-java-sdk-client` will provide access to a `ClientBuilder`
 that you can use to create your A2A `Client`.
 
-----
-> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
-----
-
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-client</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
     <version>${io.a2a.sdk.version}</version>
@@ -311,13 +301,9 @@ By default, the `sdk-client` artifact includes the JSONRPC transport dependency.
 
 If you want to use the gRPC transport, you'll need to add a relevant dependency:
 
-----
-> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
-----
-
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
     <version>${io.a2a.sdk.version}</version>
@@ -327,13 +313,10 @@ If you want to use the gRPC transport, you'll need to add a relevant dependency:
 
 If you want to use the HTTP+JSON/REST transport, you'll need to add a relevant dependency:
 
-----
-> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
-----
 
 ```xml
 <dependency>
-    <groupId>io.github.a2asdk</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
     <version>${io.a2a.sdk.version}</version>

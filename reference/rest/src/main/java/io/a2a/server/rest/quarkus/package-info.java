@@ -47,7 +47,7 @@
  * <p>Add this module as a dependency to your Quarkus project:
  * <pre>{@code
  * <dependency>
- *   <groupId>io.github.a2asdk</groupId>
+ *   <groupId>org.a2aproject.sdk</groupId>
  *   <artifactId>a2a-java-sdk-reference-rest</artifactId>
  *   <version>${a2a.version}</version>
  * </dependency>
