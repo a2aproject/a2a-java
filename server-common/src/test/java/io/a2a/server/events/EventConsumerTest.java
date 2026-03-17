@@ -238,26 +238,32 @@ public class EventConsumerTest {
 
     @Test
     public void testConsumeTaskInputRequired() {
+        // Per A2A Protocol Specification 3.1.6 (SubscribeToTask):
+        // "The stream MUST terminate when the task reaches a terminal state
+        // (completed, failed, canceled, or rejected)."
+        //
+        // INPUT_REQUIRED is an interrupted state, NOT a terminal state.
+        // The stream should remain open to deliver future state updates.
         Task task = Task.builder()
             .id(TASK_ID)
             .contextId("session-xyz")
             .status(new TaskStatus(TaskState.TASK_STATE_INPUT_REQUIRED))
             .build();
-        List<Event> events = List.of(
-            task,
-            TaskArtifactUpdateEvent.builder()
+        TaskArtifactUpdateEvent artifactEvent = TaskArtifactUpdateEvent.builder()
                 .taskId(TASK_ID)
                 .contextId("session-xyz")
                 .artifact(Artifact.builder()
                     .artifactId("11")
                     .parts(new TextPart("text"))
                     .build())
-                .build(),
-            TaskStatusUpdateEvent.builder()
+                .build();
+        TaskStatusUpdateEvent completedEvent = TaskStatusUpdateEvent.builder()
                 .taskId(TASK_ID)
                 .contextId("session-xyz")
                 .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
-                .build());
+                .build();
+        List<Event> events = List.of(task, artifactEvent, completedEvent);
+
         for (Event event : events) {
             eventQueue.enqueueEvent(event);
         }
@@ -269,9 +275,12 @@ public class EventConsumerTest {
         publisher.subscribe(getSubscriber(receivedEvents, error));
 
         assertNull(error.get());
-        // The stream is closed after the input_required task
-        assertEquals(1, receivedEvents.size());
+        // Stream should remain open for INPUT_REQUIRED and deliver all events
+        // until the terminal COMPLETED state is reached
+        assertEquals(3, receivedEvents.size());
         assertSame(task, receivedEvents.get(0));
+        assertSame(artifactEvent, receivedEvents.get(1));
+        assertSame(completedEvent, receivedEvents.get(2));
     }
 
     private Flow.Subscriber<EventQueueItem> getSubscriber(List<Event> receivedEvents, AtomicReference<Throwable> error) {

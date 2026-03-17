@@ -875,6 +875,125 @@ public abstract class AbstractA2AServerTest {
         }
     }
 
+    /**
+     * Tests that SubscribeToTask stream stays open for interrupted states (INPUT_REQUIRED, AUTH_REQUIRED)
+     * and only terminates on terminal states.
+     * <p>
+     * Per A2A Protocol Specification 3.1.6 (SubscribeToTask):
+     * "The stream MUST terminate when the task reaches a terminal state (completed, failed, canceled, or rejected)."
+     * <p>
+     * Interrupted states are NOT terminal - the stream should remain open to deliver future state updates.
+     * <p>
+     * This test addresses issue #754: Stream was incorrectly closing immediately for INPUT_REQUIRED state.
+     */
+    @Test
+    @Timeout(value = 3, unit = TimeUnit.MINUTES)
+    public void testSubscribeToTaskWithInterruptedStateKeepsStreamOpen() throws Exception {
+        // Create task in INPUT_REQUIRED state (interrupted, not terminal)
+        Task inputRequiredTask = Task.builder()
+                .id("task-input-required-" + UUID.randomUUID())
+                .contextId("session-xyz")
+                .status(new TaskStatus(TaskState.TASK_STATE_INPUT_REQUIRED))
+                .build();
+
+        saveTaskInTaskStore(inputRequiredTask);
+        try {
+            ensureQueueForTask(inputRequiredTask.id());
+
+            // Track events received through the stream
+            CopyOnWriteArrayList<io.a2a.spec.UpdateEvent> receivedEvents = new CopyOnWriteArrayList<>();
+            AtomicBoolean receivedInitialTask = new AtomicBoolean(false);
+            AtomicBoolean streamClosedPrematurely = new AtomicBoolean(false);
+            AtomicReference<Throwable> errorRef = new AtomicReference<>();
+            CountDownLatch completionLatch = new CountDownLatch(1);
+
+            // Consumer to track all events
+            BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
+                if (event instanceof TaskEvent taskEvent) {
+                    if (!receivedInitialTask.get()) {
+                        receivedInitialTask.set(true);
+                        // First event should be the initial task snapshot
+                        return;
+                    }
+                } else if (event instanceof TaskUpdateEvent taskUpdateEvent) {
+                    io.a2a.spec.UpdateEvent updateEvent = taskUpdateEvent.getUpdateEvent();
+                    receivedEvents.add(updateEvent);
+
+                    // Check if this is the final terminal state
+                    if (updateEvent instanceof TaskStatusUpdateEvent tue && tue.isFinal()) {
+                        completionLatch.countDown();
+                    }
+                }
+            };
+
+            // Error handler to detect premature stream closure
+            Consumer<Throwable> errorHandler = error -> {
+                if (!isStreamClosedError(error)) {
+                    errorRef.set(error);
+                }
+                // If completion latch hasn't been counted down yet, stream closed prematurely
+                if (completionLatch.getCount() > 0) {
+                    streamClosedPrematurely.set(true);
+                }
+                completionLatch.countDown();
+            };
+
+            // Subscribe to the task
+            CountDownLatch subscriptionLatch = new CountDownLatch(1);
+            awaitStreamingSubscription()
+                    .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
+
+            getClient().subscribeToTask(new TaskIdParams(inputRequiredTask.id()), List.of(consumer), errorHandler);
+
+            // Wait for subscription to be established
+            assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS), "Subscription should be established");
+
+            // Wait a bit to ensure stream doesn't close prematurely
+            Thread.sleep(500);
+
+            // Verify stream is still open (no premature closure)
+            assertFalse(streamClosedPrematurely.get(),
+                    "Stream should NOT close for INPUT_REQUIRED state (interrupted, not terminal)");
+
+            // Send status update to WORKING (still non-terminal)
+            enqueueEventOnServer(TaskStatusUpdateEvent.builder()
+                    .taskId(inputRequiredTask.id())
+                    .contextId(inputRequiredTask.contextId())
+                    .status(new TaskStatus(TaskState.TASK_STATE_WORKING))
+                    .build());
+
+            // Wait a bit and verify stream is still open
+            Thread.sleep(500);
+            assertFalse(streamClosedPrematurely.get(),
+                    "Stream should remain open after transitioning to WORKING");
+
+            // Send terminal status update to COMPLETED
+            enqueueEventOnServer(TaskStatusUpdateEvent.builder()
+                    .taskId(inputRequiredTask.id())
+                    .contextId(inputRequiredTask.contextId())
+                    .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                    .build());
+
+            // Now stream should close
+            assertTrue(completionLatch.await(30, TimeUnit.SECONDS),
+                    "Stream should close after terminal state");
+
+            // Verify we received both updates before stream closed
+            assertEquals(2, receivedEvents.size(),
+                    "Should receive both status updates before stream closes");
+
+            TaskStatusUpdateEvent firstUpdate = (TaskStatusUpdateEvent) receivedEvents.get(0);
+            assertEquals(TaskState.TASK_STATE_WORKING, firstUpdate.status().state());
+
+            TaskStatusUpdateEvent secondUpdate = (TaskStatusUpdateEvent) receivedEvents.get(1);
+            assertEquals(TaskState.TASK_STATE_COMPLETED, secondUpdate.status().state());
+
+            assertNull(errorRef.get(), "Should not have any errors");
+        } finally {
+            deleteTaskInTaskStore(inputRequiredTask.id());
+        }
+    }
+
     @Test
     public void testSubscribeNoExistingTaskError() throws Exception {
         CountDownLatch errorLatch = new CountDownLatch(1);

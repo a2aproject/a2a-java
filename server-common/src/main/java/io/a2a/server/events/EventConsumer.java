@@ -195,17 +195,21 @@ public class EventConsumer {
 
     /**
      * Determines if a task is in a state for terminating the stream.
-     * <p>A task is terminating if:</p>
-     * <ul>
-     *   <li>Its state is final (e.g., completed, canceled, rejected, failed), OR</li>
-     *   <li>Its state is interrupted (e.g., input-required)</li>
-     * </ul>
+     * <p>
+     * Per A2A Protocol Specification 3.1.6 (SubscribeToTask):
+     * "The stream MUST terminate when the task reaches a terminal state
+     * (completed, failed, canceled, or rejected)."
+     * <p>
+     * Interrupted states (INPUT_REQUIRED, AUTH_REQUIRED) are NOT terminal.
+     * The stream should remain open to deliver future state updates when
+     * the task resumes after receiving the required input or authorization.
+     *
      * @param task the task to check
-     * @return true if the task has a final state or an interrupted state, false otherwise
+     * @return true if the task has a terminal/final state, false otherwise
      */
     private boolean isStreamTerminatingTask(Task task) {
         TaskState state = task.status().state();
-        return state.isFinal() || state == TaskState.TASK_STATE_INPUT_REQUIRED;
+        return state.isFinal();
     }
 
     public EnhancedRunnable.DoneCallback createAgentRunnableDoneCallback() {
