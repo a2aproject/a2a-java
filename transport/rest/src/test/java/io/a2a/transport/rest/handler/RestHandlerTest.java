@@ -388,7 +388,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
         RestHandler.HTTPRestResponse response = handler.createTaskPushNotificationConfiguration(callContext, "", requestBody, MINIMAL_TASK.id());
 
-        assertProblemDetail(response, 501,
+        assertProblemDetail(response, 400,
                 "https://a2a-protocol.org/errors/push-notification-not-supported",
                 "Push Notification is not supported");
     }
