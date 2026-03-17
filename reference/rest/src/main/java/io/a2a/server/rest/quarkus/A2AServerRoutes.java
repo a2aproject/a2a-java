@@ -346,7 +346,7 @@ public class A2AServerRoutes {
      */
     @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
     public void cancelTask(@Body String body, RoutingContext rc) {
-        if (!validateContentType(rc)) {
+        if (!validateContentTypeForOptionalBody(rc, body)) {
             return;
         }
         String taskId = rc.pathParam("taskId");
@@ -622,6 +622,25 @@ public class A2AServerRoutes {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Check if the request content type is application/json when body content is present.
+     * Per RFC 9110 §8.3, Content-Type is only meaningful when a message body is present.
+     * Use this for endpoints where the body is optional.
+     *
+     * @param rc the routing context
+     * @param body the request body (may be null or empty)
+     * @return true if validation passes, false if Content-Type error should be returned
+     */
+    private boolean validateContentTypeForOptionalBody(RoutingContext rc, @Nullable String body) {
+        // If body is null or empty, Content-Type is not required
+        if (body == null || body.trim().isEmpty()) {
+            return true;
+        }
+
+        // Body has content - validate Content-Type
+        return validateContentType(rc);
     }
 
     /**
