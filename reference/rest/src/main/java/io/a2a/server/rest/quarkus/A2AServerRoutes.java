@@ -635,7 +635,7 @@ public class A2AServerRoutes {
      */
     private boolean validateContentTypeForOptionalBody(RoutingContext rc, @Nullable String body) {
         // If body is null or empty, Content-Type is not required
-        if (body == null || body.trim().isEmpty()) {
+        if (body == null || body.isBlank()) {
             return true;
         }
 
