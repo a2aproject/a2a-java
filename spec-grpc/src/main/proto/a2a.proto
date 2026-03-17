@@ -9,7 +9,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
-// From commit 601c408
+// From tag v1.0.0
 
 option csharp_namespace = "Lf.A2a.V1";
 option go_package = "google.golang.org/lf/a2a/v1";
