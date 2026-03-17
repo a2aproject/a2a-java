@@ -380,10 +380,14 @@ public class A2AServerRoutes {
      */
     private void sendResponse(RoutingContext rc, @Nullable HTTPRestResponse response) {
         if (response != null) {
-            rc.response()
+            var httpResponse = rc.response()
                     .setStatusCode(response.getStatusCode())
-                    .putHeader(CONTENT_TYPE, response.getContentType())
-                    .end(response.getBody());
+                    .putHeader(CONTENT_TYPE, response.getContentType());
+
+            // Add any additional headers from the response
+            response.getHeaders().forEach(httpResponse::putHeader);
+
+            httpResponse.end(response.getBody());
         } else {
             rc.response().end();
         }

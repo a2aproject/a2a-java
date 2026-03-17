@@ -14,8 +14,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.protobuf.InvalidProtocolBufferException;
+import io.a2a.server.AgentCardCacheMetadata;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
+import io.a2a.server.config.DefaultValuesConfigProvider;
 import io.a2a.server.requesthandlers.AbstractA2ARequestHandlerTest;
 import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
@@ -31,9 +33,17 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     private final ServerCallContext callContext = new ServerCallContext(UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>());
 
+    private static AgentCardCacheMetadata createCacheMetadata() {
+        return createCacheMetadata(CARD);
+    }
+
+    private static AgentCardCacheMetadata createCacheMetadata(AgentCard card) {
+        return new AgentCardCacheMetadata(card, new DefaultValuesConfigProvider());
+    }
+
     @Test
     public void testGetTaskSuccess() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), 0);
@@ -51,7 +61,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetTaskNotFound() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", "nonexistent", 0);
 
@@ -61,7 +71,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetTaskNegativeHistoryLengthReturns422() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), -1);
 
@@ -71,7 +81,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksStatusWireString() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "TASK_STATE_SUBMITTED", null, null,
@@ -84,7 +94,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksInvalidStatus() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, "not-a-status", null, null,
                 null, null, null);
@@ -95,7 +105,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessage() throws InvalidProtocolBufferException {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         agentExecutorExecute = (context, agentEmitter) -> {
             agentEmitter.sendMessage(context.getMessage());
         };
@@ -126,7 +136,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessageInvalidBody() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         String invalidBody = "invalid json";
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", invalidBody);
@@ -137,7 +147,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessageWrongValueBody() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         String requestBody = """
                     {
                       "message":
@@ -165,7 +175,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendMessageEmptyBody() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", "");
 
@@ -175,7 +185,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskSuccess() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         agentExecutorCancel = (context, agentEmitter) -> {
@@ -196,7 +206,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskNotFound() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         String requestBody = "{\"id\":\"nonexistent\"}";
         RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, "nonexistent");
@@ -207,7 +217,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskWithMetadata() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         agentExecutorCancel = (context, agentEmitter) -> {
@@ -238,7 +248,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskWithEmptyMetadata() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         agentExecutorCancel = (context, agentEmitter) -> {
@@ -262,7 +272,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskWithNoMetadata() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         agentExecutorCancel = (context, agentEmitter) -> {
@@ -282,7 +292,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testCancelTaskWithNullBody() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         agentExecutorCancel = (context, agentEmitter) -> {
@@ -300,7 +310,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testSendStreamingMessageSuccess() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         agentExecutorExecute = (context, agentEmitter) -> {
             agentEmitter.sendMessage(context.getMessage());
         };
@@ -332,7 +342,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testSendStreamingMessageNotSupported() {
         AgentCard card = createAgentCard(false, true);
-        RestHandler handler = new RestHandler(card, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
 
         String requestBody = """
             {
@@ -353,7 +363,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testPushNotificationConfigSuccess() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         String requestBody = """
@@ -376,7 +386,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testPushNotificationConfigNotSupported() {
         AgentCard card = createAgentCard(true, false);
-        RestHandler handler = new RestHandler(card, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(card, createCacheMetadata(card), requestHandler, internalExecutor);
 
         String requestBody = """
             {
@@ -395,7 +405,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testGetPushNotificationConfig() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         // First, create a push notification config
@@ -419,7 +429,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testDeletePushNotificationConfig() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
         RestHandler.HTTPRestResponse response = handler.deleteTaskPushNotificationConfiguration(callContext, "", MINIMAL_TASK.id(), "default-config-id");
         Assertions.assertEquals(204, response.getStatusCode());
@@ -427,7 +437,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListPushNotificationConfigs() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         RestHandler.HTTPRestResponse response = handler.listTaskPushNotificationConfigurations(callContext, "", MINIMAL_TASK.id(), 0, "");
@@ -439,7 +449,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testHttpStatusCodeMapping() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         // Test 400 for invalid request
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", "");
@@ -452,7 +462,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testStreamingDoesNotBlockMainThread() throws Exception {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         // Track if the main thread gets blocked during streaming
         AtomicBoolean eventReceived = new AtomicBoolean(false);
@@ -556,7 +566,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .skills(List.of())
                 .build();
 
-        RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(cardWithExtension, createCacheMetadata(cardWithExtension), requestHandler, internalExecutor);
 
         String requestBody = """
             {
@@ -604,7 +614,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .skills(List.of())
                 .build();
 
-        RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(cardWithExtension, createCacheMetadata(cardWithExtension), requestHandler, internalExecutor);
 
         String requestBody = """
             {
@@ -693,7 +703,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .skills(List.of())
                 .build();
 
-        RestHandler handler = new RestHandler(cardWithExtension, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(cardWithExtension, createCacheMetadata(cardWithExtension), requestHandler, internalExecutor);
 
         // Create context WITH the required extension
         Set<String> requestedExtensions = new HashSet<>();
@@ -749,7 +759,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .skills(List.of())
                 .build();
 
-        RestHandler handler = new RestHandler(agentCard, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
 
         // Create context with incompatible version 2.0
         ServerCallContext contextWithVersion = new ServerCallContext(
@@ -799,7 +809,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .skills(List.of())
                 .build();
 
-        RestHandler handler = new RestHandler(agentCard, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
 
         // Create context with incompatible version 2.0
         ServerCallContext contextWithVersion = new ServerCallContext(
@@ -889,7 +899,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .skills(List.of())
                 .build();
 
-        RestHandler handler = new RestHandler(agentCard, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
 
         // Create context with compatible version 1.1
         ServerCallContext contextWithVersion = new ServerCallContext(
@@ -944,7 +954,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 .skills(List.of())
                 .build();
 
-        RestHandler handler = new RestHandler(agentCard, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(agentCard, createCacheMetadata(agentCard), requestHandler, internalExecutor);
 
         // Use default callContext (no version - should default to 1.0)
         agentExecutorExecute = (context, agentEmitter) -> {
@@ -977,7 +987,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksNegativeTimestampReturns422() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         // Negative timestamp should return 422 (Invalid params)
         RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, null, null, null,
@@ -989,7 +999,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksUnixMillisecondsTimestamp() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         // Unix milliseconds timestamp are no longer accepted
         RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", null, null, null, null,
                 null, "1234567", null);
@@ -998,7 +1008,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksProtobufEnumStatus() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         // Protobuf enum format (TASK_STATE_SUBMITTED) should be accepted
@@ -1012,7 +1022,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksEnumConstantStatus() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
         taskStore.save(MINIMAL_TASK, false);
 
         // Enum constant format (TASK_STATE_SUBMITTED) should be accepted
@@ -1026,7 +1036,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
     @Test
     public void testListTasksEmptyResultIncludesAllFields() {
-        RestHandler handler = new RestHandler(CARD, requestHandler, internalExecutor);
+        RestHandler handler = new RestHandler(CARD, createCacheMetadata(), requestHandler, internalExecutor);
 
         // Query for a context that doesn't exist - should return empty result with all fields
         RestHandler.HTTPRestResponse response = handler.listTasks(callContext, "", "nonexistent-context-id", null, null, null,

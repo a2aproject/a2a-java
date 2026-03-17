@@ -636,6 +636,48 @@ public abstract class AbstractA2AServerTest {
         assertTrue(agentCard.skills().isEmpty());
     }
 
+    /**
+     * Tests that the Agent Card endpoint returns HTTP caching headers.
+     *
+     * <p>Per A2A specification section 8.6, Agent Card HTTP endpoints SHOULD include:
+     * <ul>
+     *   <li>Cache-Control header with max-age directive (CARD-CACHE-001)</li>
+     *   <li>ETag header for conditional request support (CARD-CACHE-002)</li>
+     *   <li>Last-Modified header (CARD-CACHE-003, MAY requirement)</li>
+     * </ul>
+     *
+     * @throws Exception if HTTP request fails
+     */
+    @Test
+    public void testAgentCardHeaders() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + serverPort + "/.well-known/agent-card.json"))
+                .GET()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+
+        // Verify Cache-Control header with max-age directive (CARD-CACHE-001)
+        Optional<String> cacheControl = response.headers().firstValue("Cache-Control");
+        assertTrue(cacheControl.isPresent(), "Cache-Control header should be present");
+        assertTrue(cacheControl.get().contains("max-age"),
+                "Cache-Control should contain max-age directive, got: " + cacheControl.get());
+
+        // Verify ETag header (CARD-CACHE-002)
+        Optional<String> etag = response.headers().firstValue("ETag");
+        assertTrue(etag.isPresent(), "ETag header should be present");
+        assertTrue(etag.get().startsWith("\"") && etag.get().endsWith("\""),
+                "ETag should be quoted per HTTP specification, got: " + etag.get());
+
+        // Verify Last-Modified header in RFC 1123 format (CARD-CACHE-003)
+        Optional<String> lastModified = response.headers().firstValue("Last-Modified");
+        assertTrue(lastModified.isPresent(), "Last-Modified header should be present");
+        assertTrue(lastModified.get().contains("GMT"),
+                "Last-Modified should be in RFC 1123 format (containing GMT), got: " + lastModified.get());
+    }
+
     @Test
     public void testSendMessageStreamNewMessageSuccess() throws Exception {
         testSendStreamingMessage(false);
