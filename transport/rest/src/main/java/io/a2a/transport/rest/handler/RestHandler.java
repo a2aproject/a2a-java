@@ -776,8 +776,7 @@ public class RestHandler {
         if (error instanceof TaskNotCancelableError) {
             return 409;
         }
-        if (error instanceof PushNotificationNotSupportedError
-                || error instanceof UnsupportedOperationError) {
+        if (error instanceof UnsupportedOperationError) {
             return 501;
         }
         if (error instanceof ContentTypeNotSupportedError) {
@@ -788,7 +787,8 @@ public class RestHandler {
         }
         if (error instanceof ExtendedAgentCardNotConfiguredError
                 || error instanceof ExtensionSupportRequiredError
-                || error instanceof VersionNotSupportedError) {
+                || error instanceof VersionNotSupportedError
+                || error instanceof PushNotificationNotSupportedError) {
             return 400;
         }
         if (error instanceof InternalError) {
