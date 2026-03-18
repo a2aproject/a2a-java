@@ -1045,6 +1045,13 @@ public class DefaultRequestHandler implements RequestHandler {
                         task.id(), task.contextId(), messageContextId));
             }
 
+            // Per spec CORE-SEND-002: Reject messages to tasks in terminal states
+            if (task.status().state().isFinal()) {
+                throw new UnsupportedOperationError(null, String.format(
+                        "Cannot send message to task %s: task is in terminal state %s and cannot accept further messages",
+                        task.id(), task.status().state()), null);
+            }
+
             LOGGER.debug("Found task updating with message {}", params.message());
             task = taskManager.updateWithMessage(params.message(), task);
 
