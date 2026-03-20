@@ -395,6 +395,23 @@ Client client = Client
         .build();
 ```
 
+To customize the default JDK HTTP client without replacing the SDK implementation, provide
+your own `java.net.http.HttpClient` to `JdkA2AHttpClient`:
+
+```java
+HttpClient jdkHttpClient = HttpClient.newBuilder()
+        .connectTimeout(Duration.ofSeconds(5))
+        .followRedirects(HttpClient.Redirect.NORMAL)
+        .version(HttpClient.Version.HTTP_2)
+        .build();
+
+Client client = Client
+        .builder(agentCard)
+        .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig(
+                new JdkA2AHttpClient(jdkHttpClient)))
+        .build();
+```
+
 ##### gRPC Transport Configuration
 
 For the gRPC transport, you must configure a channel factory:
