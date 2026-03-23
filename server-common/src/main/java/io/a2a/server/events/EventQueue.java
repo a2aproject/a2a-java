@@ -820,6 +820,15 @@ public abstract class EventQueue implements AutoCloseable {
             LOGGER.debug("ChildQueue {} now awaiting final event", System.identityHashCode(this));
         }
 
+        /**
+         * Called by EventConsumer when it has waited too long for the final event.
+         * This allows normal timeout logic to proceed if the final event never arrives.
+         */
+        void clearAwaitingFinalEvent() {
+            awaitingFinalEvent = false;
+            LOGGER.debug("ChildQueue {} cleared awaitingFinalEvent flag (timeout)", System.identityHashCode(this));
+        }
+
         @Override
         public void close() {
             close(false);
