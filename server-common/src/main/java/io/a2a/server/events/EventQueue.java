@@ -305,6 +305,25 @@ public abstract class EventQueue implements AutoCloseable {
     public abstract int size();
 
     /**
+     * Returns whether this queue is awaiting a final event to be delivered.
+     * <p>
+     * This is used by EventConsumer to determine if it should keep polling even when
+     * the queue is empty. A final event may still be in-transit through MainEventBusProcessor.
+     * </p>
+     * <p>
+     * For MainQueue: always returns false (MainQueue cannot be consumed).
+     * For ChildQueue: returns true if {@link ChildQueue#expectFinalEvent()} was called
+     * but the final event hasn't been received yet.
+     * </p>
+     *
+     * @return true if awaiting a final event, false otherwise
+     */
+    public boolean isAwaitingFinalEvent() {
+        // Default implementation - overridden by ChildQueue
+        return false;
+    }
+
+    /**
      * Closes this event queue gracefully, allowing pending events to be consumed.
      */
     public abstract void close();
@@ -735,6 +754,12 @@ public abstract class EventQueue implements AutoCloseable {
                 if (item != null) {
                     Event event = item.getEvent();
                     LOGGER.debug("Dequeued event item (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
+                    // Clear the awaiting flag only if this is a final event
+                    // This allows EventConsumer grace period logic to proceed correctly
+                    if (awaitingFinalEvent && isFinalEvent(event)) {
+                        awaitingFinalEvent = false;
+                        LOGGER.debug("ChildQueue {} received final event while awaiting - flag cleared", System.identityHashCode(this));
+                    }
                 } else {
                     LOGGER.trace("Dequeue timeout (null) from ChildQueue {}", System.identityHashCode(this));
                 }
@@ -755,6 +780,11 @@ public abstract class EventQueue implements AutoCloseable {
         public int size() {
             // Return size of local consumption queue
             return queue.size();
+        }
+
+        @Override
+        public boolean isAwaitingFinalEvent() {
+            return awaitingFinalEvent;
         }
 
         @Override

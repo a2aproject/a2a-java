@@ -82,8 +82,9 @@ public class EventConsumer {
                         item = queue.dequeueEventItem(QUEUE_WAIT_MILLISECONDS);
                         if (item == null) {
                             int queueSize = queue.size();
-                            LOGGER.debug("EventConsumer poll timeout (null item), agentCompleted={}, queue.size()={}, timeoutCount={}",
-                                agentCompleted, queueSize, pollTimeoutsAfterAgentCompleted);
+                            boolean awaitingFinal = queue.isAwaitingFinalEvent();
+                            LOGGER.debug("EventConsumer poll timeout (null item), agentCompleted={}, queue.size()={}, awaitingFinalEvent={}, timeoutCount={}",
+                                agentCompleted, queueSize, awaitingFinal, pollTimeoutsAfterAgentCompleted);
                             // If agent completed, a poll timeout means no more events are coming
                             // MainEventBusProcessor has 500ms to distribute events from MainEventBus
                             // If we timeout with agentCompleted=true, all events have been distributed
@@ -94,8 +95,12 @@ public class EventConsumer {
                             // CRITICAL: Do NOT close if task is in interrupted state (INPUT_REQUIRED, AUTH_REQUIRED)
                             // Per A2A spec, interrupted states are NOT terminal - the stream must stay open
                             // for future state updates even after agent completes (agent will be re-invoked later).
+                            //
+                            // CRITICAL: Don't start timeout counter if we're awaiting a final event.
+                            // The awaitingFinalEvent flag is set when MainQueue enqueues a final event
+                            // but it hasn't been distributed to this ChildQueue yet.
                             boolean isInterruptedState = lastSeenTaskState != null && lastSeenTaskState.isInterrupted();
-                            if (agentCompleted && queueSize == 0 && !isInterruptedState) {
+                            if (agentCompleted && queueSize == 0 && !isInterruptedState && !awaitingFinal) {
                                 pollTimeoutsAfterAgentCompleted++;
                                 if (pollTimeoutsAfterAgentCompleted >= MAX_POLL_TIMEOUTS_AFTER_AGENT_COMPLETED) {
                                     LOGGER.debug("Agent completed with {} consecutive poll timeouts and empty queue, closing for graceful completion (queue={})",
@@ -112,10 +117,10 @@ public class EventConsumer {
                                 LOGGER.debug("Agent completed but task is in interrupted state ({}), stream must remain open (queue={})",
                                     lastSeenTaskState, System.identityHashCode(queue));
                                 pollTimeoutsAfterAgentCompleted = 0; // Reset counter
-                            } else if (agentCompleted && queueSize > 0) {
-                                LOGGER.debug("Agent completed but queue has {} pending events, resetting timeout counter and continuing to poll (queue={})",
-                                    queueSize, System.identityHashCode(queue));
-                                pollTimeoutsAfterAgentCompleted = 0; // Reset counter when events arrive
+                            } else if (agentCompleted && (queueSize > 0 || awaitingFinal)) {
+                                LOGGER.debug("Agent completed but queue has {} pending events or awaitingFinalEvent={}, resetting timeout counter and continuing to poll (queue={})",
+                                    queueSize, awaitingFinal, System.identityHashCode(queue));
+                                pollTimeoutsAfterAgentCompleted = 0; // Reset counter when events arrive or awaiting final
                             }
                             continue;
                         }
