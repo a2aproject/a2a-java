@@ -213,10 +213,11 @@ public class EventConsumer {
                             // the stream-end signal can reach the client BEFORE the buffered final event,
                             // causing the client to close the connection and never receive the final event.
                             // This is especially important in replicated scenarios where events arrive via Kafka
-                            // and timing is less deterministic. A small delay ensures the buffer flushes.
+                            // and timing is less deterministic. A delay ensures the buffer flushes.
+                            // Increased to 150ms to account for CI environment latency and JVM scheduling delays.
                             if (isFinalSent) {
                                 try {
-                                    Thread.sleep(50);  // 50ms to allow SSE buffer flush
+                                    Thread.sleep(150);  // 150ms to allow SSE buffer flush in CI environments
                                 } catch (InterruptedException e) {
                                     Thread.currentThread().interrupt();
                                 }
