@@ -24,6 +24,7 @@ public class EventConsumer {
     private volatile boolean agentCompleted = false;
     private volatile int pollTimeoutsAfterAgentCompleted = 0;
     private volatile @Nullable TaskState lastSeenTaskState = null;
+    private volatile int pollTimeoutsWhileAwaitingFinal = 0;
 
     private static final String ERROR_MSG = "Agent did not return any response";
     private static final int NO_WAIT = -1;
@@ -32,6 +33,10 @@ public class EventConsumer {
     // Grace period allows Kafka replication to deliver late-arriving events
     // 3 timeouts * 500ms = 1500ms grace period for replication delays
     private static final int MAX_POLL_TIMEOUTS_AFTER_AGENT_COMPLETED = 3;
+    // Maximum time to wait for final event when awaitingFinalEvent is set
+    // If event doesn't arrive after this many timeouts, assume it won't arrive
+    // 6 timeouts * 500ms = 3000ms maximum wait for final event arrival
+    private static final int MAX_POLL_TIMEOUTS_AWAITING_FINAL = 6;
 
     public EventConsumer(EventQueue queue) {
         this.queue = queue;
@@ -83,8 +88,8 @@ public class EventConsumer {
                         if (item == null) {
                             int queueSize = queue.size();
                             boolean awaitingFinal = queue.isAwaitingFinalEvent();
-                            LOGGER.debug("EventConsumer poll timeout (null item), agentCompleted={}, queue.size()={}, awaitingFinalEvent={}, timeoutCount={}",
-                                agentCompleted, queueSize, awaitingFinal, pollTimeoutsAfterAgentCompleted);
+                            LOGGER.debug("EventConsumer poll timeout (null item), agentCompleted={}, queue.size()={}, awaitingFinalEvent={}, timeoutCount={}, awaitingTimeoutCount={}",
+                                agentCompleted, queueSize, awaitingFinal, pollTimeoutsAfterAgentCompleted, pollTimeoutsWhileAwaitingFinal);
                             // If agent completed, a poll timeout means no more events are coming
                             // MainEventBusProcessor has 500ms to distribute events from MainEventBus
                             // If we timeout with agentCompleted=true, all events have been distributed
@@ -99,7 +104,22 @@ public class EventConsumer {
                             // CRITICAL: Don't start timeout counter if we're awaiting a final event.
                             // The awaitingFinalEvent flag is set when MainQueue enqueues a final event
                             // but it hasn't been distributed to this ChildQueue yet.
+                            // HOWEVER: If we've been waiting too long for the final event (>3s), give up and
+                            // proceed with normal timeout logic to prevent infinite waiting.
                             boolean isInterruptedState = lastSeenTaskState != null && lastSeenTaskState.isInterrupted();
+
+                            // Track how long we've been waiting for the final event
+                            if (awaitingFinal && queueSize == 0) {
+                                pollTimeoutsWhileAwaitingFinal++;
+                                if (pollTimeoutsWhileAwaitingFinal >= MAX_POLL_TIMEOUTS_AWAITING_FINAL) {
+                                    LOGGER.debug("Waited {} timeouts for final event but it hasn't arrived - proceeding with normal timeout logic (queue={})",
+                                        pollTimeoutsWhileAwaitingFinal, System.identityHashCode(queue));
+                                    awaitingFinal = false; // Give up waiting, let normal timeout logic proceed
+                                }
+                            } else {
+                                pollTimeoutsWhileAwaitingFinal = 0; // Reset when event arrives or queue not awaiting
+                            }
+
                             if (agentCompleted && queueSize == 0 && !isInterruptedState && !awaitingFinal) {
                                 pollTimeoutsAfterAgentCompleted++;
                                 if (pollTimeoutsAfterAgentCompleted >= MAX_POLL_TIMEOUTS_AFTER_AGENT_COMPLETED) {
@@ -117,15 +137,20 @@ public class EventConsumer {
                                 LOGGER.debug("Agent completed but task is in interrupted state ({}), stream must remain open (queue={})",
                                     lastSeenTaskState, System.identityHashCode(queue));
                                 pollTimeoutsAfterAgentCompleted = 0; // Reset counter
-                            } else if (agentCompleted && (queueSize > 0 || awaitingFinal)) {
-                                LOGGER.debug("Agent completed but queue has {} pending events or awaitingFinalEvent={}, resetting timeout counter and continuing to poll (queue={})",
-                                    queueSize, awaitingFinal, System.identityHashCode(queue));
-                                pollTimeoutsAfterAgentCompleted = 0; // Reset counter when events arrive or awaiting final
+                            } else if (agentCompleted && queueSize > 0) {
+                                LOGGER.debug("Agent completed but queue has {} pending events, resetting timeout counter and continuing to poll (queue={})",
+                                    queueSize, System.identityHashCode(queue));
+                                pollTimeoutsAfterAgentCompleted = 0; // Reset counter when events arrive
+                            } else if (agentCompleted && awaitingFinal) {
+                                LOGGER.debug("Agent completed, awaiting final event (timeout {}/{}), continuing to poll (queue={})",
+                                    pollTimeoutsWhileAwaitingFinal, MAX_POLL_TIMEOUTS_AWAITING_FINAL, System.identityHashCode(queue));
+                                pollTimeoutsAfterAgentCompleted = 0; // Reset counter while awaiting final
                             }
                             continue;
                         }
-                        // Event received - reset timeout counter
+                        // Event received - reset timeout counters
                         pollTimeoutsAfterAgentCompleted = 0;
+                        pollTimeoutsWhileAwaitingFinal = 0;
                         event = item.getEvent();
                         LOGGER.debug("EventConsumer received event: {} (queue={})",
                             event.getClass().getSimpleName(), System.identityHashCode(queue));
