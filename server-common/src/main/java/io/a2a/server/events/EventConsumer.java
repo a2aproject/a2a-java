@@ -23,6 +23,7 @@ public class EventConsumer {
     private volatile boolean cancelled = false;
     private volatile boolean agentCompleted = false;
     private volatile int pollTimeoutsAfterAgentCompleted = 0;
+    private volatile @Nullable TaskState lastSeenTaskState = null;
 
     private static final String ERROR_MSG = "Agent did not return any response";
     private static final int NO_WAIT = -1;
@@ -89,7 +90,12 @@ public class EventConsumer {
                             //
                             // IMPORTANT: In replicated scenarios, remote events may arrive AFTER local agent completes!
                             // Use grace period to allow for Kafka replication delays (can be 400-500ms)
-                            if (agentCompleted && queueSize == 0) {
+                            //
+                            // CRITICAL: Do NOT close if task is in interrupted state (INPUT_REQUIRED, AUTH_REQUIRED)
+                            // Per A2A spec, interrupted states are NOT terminal - the stream must stay open
+                            // for future state updates even after agent completes (agent will be re-invoked later).
+                            boolean isInterruptedState = lastSeenTaskState != null && lastSeenTaskState.isInterrupted();
+                            if (agentCompleted && queueSize == 0 && !isInterruptedState) {
                                 pollTimeoutsAfterAgentCompleted++;
                                 if (pollTimeoutsAfterAgentCompleted >= MAX_POLL_TIMEOUTS_AFTER_AGENT_COMPLETED) {
                                     LOGGER.debug("Agent completed with {} consecutive poll timeouts and empty queue, closing for graceful completion (queue={})",
@@ -102,6 +108,10 @@ public class EventConsumer {
                                     LOGGER.debug("Agent completed but grace period active ({}/{} timeouts), continuing to poll (queue={})",
                                         pollTimeoutsAfterAgentCompleted, MAX_POLL_TIMEOUTS_AFTER_AGENT_COMPLETED, System.identityHashCode(queue));
                                 }
+                            } else if (agentCompleted && isInterruptedState) {
+                                LOGGER.debug("Agent completed but task is in interrupted state ({}), stream must remain open (queue={})",
+                                    lastSeenTaskState, System.identityHashCode(queue));
+                                pollTimeoutsAfterAgentCompleted = 0; // Reset counter
                             } else if (agentCompleted && queueSize > 0) {
                                 LOGGER.debug("Agent completed but queue has {} pending events, resetting timeout counter and continuing to poll (queue={})",
                                     queueSize, System.identityHashCode(queue));
@@ -114,6 +124,13 @@ public class EventConsumer {
                         event = item.getEvent();
                         LOGGER.debug("EventConsumer received event: {} (queue={})",
                             event.getClass().getSimpleName(), System.identityHashCode(queue));
+
+                        // Track the latest task state for grace period logic
+                        if (event instanceof Task task) {
+                            lastSeenTaskState = task.status().state();
+                        } else if (event instanceof TaskStatusUpdateEvent tue) {
+                            lastSeenTaskState = tue.status().state();
+                        }
 
                         // Defensive logging for error handling
                         if (event instanceof Throwable thr) {
@@ -195,17 +212,21 @@ public class EventConsumer {
 
     /**
      * Determines if a task is in a state for terminating the stream.
-     * <p>A task is terminating if:</p>
-     * <ul>
-     *   <li>Its state is final (e.g., completed, canceled, rejected, failed), OR</li>
-     *   <li>Its state is interrupted (e.g., input-required)</li>
-     * </ul>
+     * <p>
+     * Per A2A Protocol Specification 3.1.6 (SubscribeToTask):
+     * "The stream MUST terminate when the task reaches a terminal state
+     * (completed, failed, canceled, or rejected)."
+     * <p>
+     * Interrupted states (INPUT_REQUIRED, AUTH_REQUIRED) are NOT terminal.
+     * The stream should remain open to deliver future state updates when
+     * the task resumes after receiving the required input or authorization.
+     *
      * @param task the task to check
-     * @return true if the task has a final state or an interrupted state, false otherwise
+     * @return true if the task has a terminal/final state, false otherwise
      */
     private boolean isStreamTerminatingTask(Task task) {
         TaskState state = task.status().state();
-        return state.isFinal() || state == TaskState.TASK_STATE_INPUT_REQUIRED;
+        return state.isFinal();
     }
 
     public EnhancedRunnable.DoneCallback createAgentRunnableDoneCallback() {

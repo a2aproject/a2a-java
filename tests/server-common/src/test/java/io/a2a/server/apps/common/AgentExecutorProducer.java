@@ -74,27 +74,23 @@ public class AgentExecutorProducer {
 
                 // Special handling for input-required test
                 if (taskId != null && taskId.startsWith("input-required-test")) {
-                    // First call: context.getTask() == null (new task)
-                    if (context.getTask() == null) {
-                        // Go directly to INPUT_REQUIRED without intermediate WORKING state
-                        // This avoids race condition where blocking call interrupts on WORKING
-                        // before INPUT_REQUIRED is persisted to TaskStore
-                        agentEmitter.requiresInput(agentEmitter.newAgentMessage(
-                                List.of(new TextPart("Please provide additional information")),
-                                context.getMessage().metadata()));
-                        // Return immediately - queue stays open because task is in INPUT_REQUIRED state
-                        return;
-                    } else {
-                        String input = extractTextFromMessage(context.getMessage());
-                        if(! "User input".equals(input)) {
-                            throw new InvalidParamsError("We didn't get the expected input");
-                        }
-                        // Second call: context.getTask() != null (input provided)
+                    String input = extractTextFromMessage(context.getMessage());
+                    // Second call: user provided the required input - complete the task
+                    if ("User input".equals(input)) {
                         // Go directly to COMPLETED without intermediate WORKING state
-                        // This avoids the same race condition as the first call
+                        // This avoids race condition where blocking call interrupts on WORKING
                         agentEmitter.complete();
                         return;
                     }
+                    // First call: any other message - emit INPUT_REQUIRED
+                    // Go directly to INPUT_REQUIRED without intermediate WORKING state
+                    // This avoids race condition where blocking call interrupts on WORKING
+                    // before INPUT_REQUIRED is persisted to TaskStore
+                    agentEmitter.requiresInput(agentEmitter.newAgentMessage(
+                            List.of(new TextPart("Please provide additional information")),
+                            context.getMessage().metadata()));
+                    // Return immediately - queue stays open because task is in INPUT_REQUIRED state
+                    return;
                 }
 
                 // Special handling for auth-required test

@@ -875,6 +875,163 @@ public abstract class AbstractA2AServerTest {
         }
     }
 
+    /**
+     * Tests that SubscribeToTask stream stays open for interrupted states (INPUT_REQUIRED, AUTH_REQUIRED)
+     * and only terminates on terminal states.
+     * <p>
+     * Per A2A Protocol Specification 3.1.6 (SubscribeToTask):
+     * "The stream MUST terminate when the task reaches a terminal state (completed, failed, canceled, or rejected)."
+     * <p>
+     * Interrupted states are NOT terminal - the stream should remain open to deliver future state updates.
+     * <p>
+     * This test addresses issue #754: Stream was incorrectly closing immediately for INPUT_REQUIRED state.
+     * The bug had two parts:
+     * 1. isStreamTerminatingTask() incorrectly treated INPUT_REQUIRED as terminating
+     * 2. Grace period logic closed queue after agent completion, even for interrupted states
+     */
+    @Test
+    @Timeout(value = 3, unit = TimeUnit.MINUTES)
+    public void testSubscribeToTaskWithInterruptedStateKeepsStreamOpen() throws Exception {
+        // Use a taskId with the pattern the test agent recognizes
+        // When we send a message with a taskId to a non-existent task, it creates
+        // a new task with that ID, and context.getTask() is still null on first invocation
+        String taskId = "input-required-test-" + UUID.randomUUID();
+
+        try {
+            // Create initial message with the special taskId pattern
+            // Use non-streaming client so agent can emit INPUT_REQUIRED and return immediately
+            // This ensures context.getTask() == null on first agent invocation
+            Message message = Message.builder(MESSAGE)
+                    .taskId(taskId)
+                    .contextId("test-context")
+                    .parts(new TextPart("Trigger INPUT_REQUIRED"))
+                    .build();
+
+            // Send message with non-streaming client - agent will emit INPUT_REQUIRED and complete
+            AtomicReference<TaskState> finalStateRef = new AtomicReference<>();
+            AtomicReference<Throwable> sendErrorRef = new AtomicReference<>();
+            CountDownLatch sendLatch = new CountDownLatch(1);
+
+            getNonStreamingClient().sendMessage(message, List.of((event, agentCard) -> {
+                if (event instanceof TaskEvent te) {
+                    finalStateRef.set(te.getTask().status().state());
+                    sendLatch.countDown();
+                } else if (event instanceof TaskUpdateEvent tue) {
+                    if (tue.getUpdateEvent() instanceof TaskStatusUpdateEvent statusUpdate) {
+                        finalStateRef.set(statusUpdate.status().state());
+                    }
+                }
+            }), error -> {
+                if (!isStreamClosedError(error)) {
+                    sendErrorRef.set(error);
+                }
+                sendLatch.countDown();
+            });
+
+            assertTrue(sendLatch.await(15, TimeUnit.SECONDS), "SendMessage should complete");
+            assertNull(sendErrorRef.get(), "SendMessage should not error");
+            TaskState finalState = finalStateRef.get();
+            assertNotNull(finalState, "Final state should be captured");
+            assertEquals(TaskState.TASK_STATE_INPUT_REQUIRED, finalState,
+                    "Task should be in INPUT_REQUIRED state after agent completes");
+
+            // CRITICAL: At this point the agent has completed with INPUT_REQUIRED state
+            // The grace period logic should NOT close the queue because INPUT_REQUIRED
+            // is an interrupted state, not a terminal state
+
+            // Wait 2 seconds - longer than the grace period (1.5 seconds)
+            // Before fix: queue would close after grace period
+            // After fix: queue stays open because task is in interrupted state
+            Thread.sleep(2000);
+
+            // Track events received through subscription stream
+            CopyOnWriteArrayList<io.a2a.spec.UpdateEvent> receivedEvents = new CopyOnWriteArrayList<>();
+            AtomicBoolean receivedInitialTask = new AtomicBoolean(false);
+            AtomicBoolean streamClosedPrematurely = new AtomicBoolean(false);
+            AtomicReference<Throwable> subscribeErrorRef = new AtomicReference<>();
+            CountDownLatch completionLatch = new CountDownLatch(1);
+
+            // Consumer to track all events from subscription
+            BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
+                if (event instanceof TaskEvent taskEvent) {
+                    if (!receivedInitialTask.get()) {
+                        receivedInitialTask.set(true);
+                        // First event should be the initial task snapshot in INPUT_REQUIRED state
+                        assertEquals(TaskState.TASK_STATE_INPUT_REQUIRED,
+                            taskEvent.getTask().status().state(),
+                            "Initial task should be in INPUT_REQUIRED state");
+                        return;
+                    }
+                } else if (event instanceof TaskUpdateEvent taskUpdateEvent) {
+                    io.a2a.spec.UpdateEvent updateEvent = taskUpdateEvent.getUpdateEvent();
+                    receivedEvents.add(updateEvent);
+
+                    // Check if this is the final terminal state
+                    if (updateEvent instanceof TaskStatusUpdateEvent tue && tue.isFinal()) {
+                        completionLatch.countDown();
+                    }
+                }
+            };
+
+            // Error handler to detect premature stream closure
+            Consumer<Throwable> errorHandler = error -> {
+                if (!isStreamClosedError(error)) {
+                    subscribeErrorRef.set(error);
+                }
+                // If completion latch hasn't been counted down yet, stream closed prematurely
+                if (completionLatch.getCount() > 0) {
+                    streamClosedPrematurely.set(true);
+                }
+                completionLatch.countDown();
+            };
+
+            // Subscribe to the task - this is AFTER agent completed with INPUT_REQUIRED
+            CountDownLatch subscriptionLatch = new CountDownLatch(1);
+            awaitStreamingSubscription()
+                    .whenComplete((unused, throwable) -> subscriptionLatch.countDown());
+
+            getClient().subscribeToTask(new TaskIdParams(taskId), List.of(consumer), errorHandler);
+
+            // Wait for subscription to be established
+            assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS), "Subscription should be established");
+
+            // Verify stream received initial task and is still open
+            assertTrue(receivedInitialTask.get(), "Should receive initial task snapshot");
+            assertFalse(streamClosedPrematurely.get(),
+                    "Stream should NOT close for INPUT_REQUIRED state (interrupted, not terminal)");
+
+            // Send a follow-up message to provide the required input
+            // This will trigger the agent again, which will emit COMPLETED
+            Message followUpMessage = Message.builder()
+                    .messageId("input-response-" + UUID.randomUUID())
+                    .role(Message.Role.ROLE_USER)
+                    .parts(new TextPart("User input"))
+                    .taskId(taskId)
+                    .build();
+
+            getClient().sendMessage(followUpMessage, List.of(), error -> {});
+
+            // Stream should now close after receiving COMPLETED event
+            assertTrue(completionLatch.await(30, TimeUnit.SECONDS),
+                    "Stream should close after terminal state");
+
+            // Verify we received the COMPLETED update
+            assertTrue(receivedEvents.size() >= 1,
+                    "Should receive at least COMPLETED status update");
+
+            // Find the COMPLETED event
+            boolean foundCompleted = receivedEvents.stream()
+                    .filter(e -> e instanceof TaskStatusUpdateEvent)
+                    .map(e -> (TaskStatusUpdateEvent) e)
+                    .anyMatch(tue -> tue.status().state() == TaskState.TASK_STATE_COMPLETED);
+            assertTrue(foundCompleted, "Should receive COMPLETED status update");
+
+            assertNull(subscribeErrorRef.get(), "Should not have any errors");
+        } finally {
+            deleteTaskInTaskStore(taskId);
+        }
+    }
+
     @Test
     public void testSubscribeNoExistingTaskError() throws Exception {
         CountDownLatch errorLatch = new CountDownLatch(1);
