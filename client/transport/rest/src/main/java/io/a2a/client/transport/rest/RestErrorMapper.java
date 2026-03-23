@@ -1,5 +1,7 @@
 package io.a2a.client.transport.rest;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -8,8 +10,9 @@ import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.spec.A2AClientException;
-import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
+import io.a2a.spec.A2AErrorCodes;
 import io.a2a.spec.ContentTypeNotSupportedError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidAgentResponseError;
@@ -28,6 +31,25 @@ import io.a2a.spec.VersionNotSupportedError;
  */
 public class RestErrorMapper {
 
+    private record ReasonAndMetadata(String reason, @org.jspecify.annotations.Nullable Map<String, Object> metadata) {}
+
+    private static final Map<String, A2AErrorCodes> REASON_MAP = Map.ofEntries(
+            Map.entry("TASK_NOT_FOUND", A2AErrorCodes.TASK_NOT_FOUND),
+            Map.entry("TASK_NOT_CANCELABLE", A2AErrorCodes.TASK_NOT_CANCELABLE),
+            Map.entry("PUSH_NOTIFICATION_NOT_SUPPORTED", A2AErrorCodes.PUSH_NOTIFICATION_NOT_SUPPORTED),
+            Map.entry("UNSUPPORTED_OPERATION", A2AErrorCodes.UNSUPPORTED_OPERATION),
+            Map.entry("CONTENT_TYPE_NOT_SUPPORTED", A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED),
+            Map.entry("INVALID_AGENT_RESPONSE", A2AErrorCodes.INVALID_AGENT_RESPONSE),
+            Map.entry("EXTENDED_AGENT_CARD_NOT_CONFIGURED", A2AErrorCodes.EXTENDED_AGENT_CARD_NOT_CONFIGURED),
+            Map.entry("EXTENSION_SUPPORT_REQUIRED", A2AErrorCodes.EXTENSION_SUPPORT_REQUIRED),
+            Map.entry("VERSION_NOT_SUPPORTED", A2AErrorCodes.VERSION_NOT_SUPPORTED),
+            Map.entry("INVALID_REQUEST", A2AErrorCodes.INVALID_REQUEST),
+            Map.entry("METHOD_NOT_FOUND", A2AErrorCodes.METHOD_NOT_FOUND),
+            Map.entry("INVALID_PARAMS", A2AErrorCodes.INVALID_PARAMS),
+            Map.entry("INTERNAL", A2AErrorCodes.INTERNAL),
+            Map.entry("JSON_PARSE", A2AErrorCodes.JSON_PARSE)
+    );
+
     public static A2AClientException mapRestError(A2AHttpResponse response) {
         return RestErrorMapper.mapRestError(response.body(), response.status());
     }
@@ -36,13 +58,17 @@ public class RestErrorMapper {
         try {
             if (body != null && !body.isBlank()) {
                 JsonObject node = JsonUtil.fromJson(body, JsonObject.class);
-                // Support RFC 7807 Problem Details format (type, title, details, status)
-                if (node.has("type")) {
-                    String type = node.get("type").getAsString();
-                    String errorMessage = node.has("title") ? node.get("title").getAsString() : "";
-                    return mapRestErrorByType(type, errorMessage, code);
+                // Google Cloud API error format: { "error": { "code", "status", "message", "details" } }
+                if (node.has("error") && node.get("error").isJsonObject()) {
+                    JsonObject errorObj = node.getAsJsonObject("error");
+                    String errorMessage = errorObj.has("message") ? errorObj.get("message").getAsString() : "";
+                    ReasonAndMetadata reasonAndMetadata = extractReasonAndMetadata(errorObj);
+                    if (reasonAndMetadata != null) {
+                        return mapRestErrorByReason(reasonAndMetadata.reason(), errorMessage, reasonAndMetadata.metadata());
+                    }
+                    return new A2AClientException(errorMessage);
                 }
-                // Legacy format (error, message)
+                // Legacy format (error class name, message)
                 String className = node.has("error") ? node.get("error").getAsString() : "";
                 String errorMessage = node.has("message") ? node.get("message").getAsString() : "";
                 return mapRestErrorByClassName(className, errorMessage, code);
@@ -59,36 +85,59 @@ public class RestErrorMapper {
     }
 
     /**
-     * Maps RFC 7807 Problem Details error type URIs to A2A exceptions.
-     * <p>
-     * Note: Error constructors receive null for code and data parameters because:
-     * <ul>
-     *   <li>Error codes are defaulted by each error class (e.g., -32007 for ExtendedAgentCardNotConfiguredError)</li>
-     *   <li>The message comes from the RFC 7807 "title" field</li>
-     *   <li>The data field is optional and not included in basic RFC 7807 responses</li>
-     * </ul>
+     * Extracts the "reason" and "metadata" fields from the first entry in the "details" array.
+     */
+    private static @org.jspecify.annotations.Nullable ReasonAndMetadata extractReasonAndMetadata(JsonObject errorObj) {
+        if (errorObj.has("details") && errorObj.get("details").isJsonArray()) {
+            var details = errorObj.getAsJsonArray("details");
+            if (!details.isEmpty() && details.get(0).isJsonObject()) {
+                JsonObject detail = details.get(0).getAsJsonObject();
+                if (detail.has("reason")) {
+                    String reason = detail.get("reason").getAsString();
+                    Map<String, Object> metadata = null;
+                    if (detail.has("metadata") && detail.get("metadata").isJsonObject()) {
+                        JsonObject metaObj = detail.getAsJsonObject("metadata");
+                        Map<String, Object> metaMap = new HashMap<>();
+                        for (var entry : metaObj.entrySet()) {
+                            metaMap.put(entry.getKey(), JsonUtil.OBJECT_MAPPER.fromJson(entry.getValue(), Object.class));
+                        }
+                        metadata = metaMap;
+                    }
+                    return new ReasonAndMetadata(reason, metadata);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Maps error reason strings to A2A exceptions.
      *
-     * @param type the RFC 7807 error type URI (e.g., "https://a2a-protocol.org/errors/task-not-found")
-     * @param errorMessage the error message from the "title" field
-     * @param code the HTTP status code (currently unused, kept for consistency)
+     * @param reason the error reason (e.g., "TASK_NOT_FOUND")
+     * @param errorMessage the error message
+     * @param metadata additional metadata extracted from the error details
      * @return an A2AClientException wrapping the appropriate A2A error
      */
-    private static A2AClientException mapRestErrorByType(String type, String errorMessage, int code) {
-        return switch (type) {
-            case "https://a2a-protocol.org/errors/task-not-found" -> new A2AClientException(errorMessage, new TaskNotFoundError());
-            case "https://a2a-protocol.org/errors/extended-agent-card-not-configured" -> new A2AClientException(errorMessage, new ExtendedAgentCardNotConfiguredError(null, errorMessage, null));
-            case "https://a2a-protocol.org/errors/content-type-not-supported" -> new A2AClientException(errorMessage, new ContentTypeNotSupportedError(null, errorMessage, null));
-            case "https://a2a-protocol.org/errors/internal-error" -> new A2AClientException(errorMessage, new InternalError(errorMessage));
-            case "https://a2a-protocol.org/errors/invalid-agent-response" -> new A2AClientException(errorMessage, new InvalidAgentResponseError(null, errorMessage, null));
-            case "https://a2a-protocol.org/errors/invalid-params" -> new A2AClientException(errorMessage, new InvalidParamsError());
-            case "https://a2a-protocol.org/errors/invalid-request" -> new A2AClientException(errorMessage, new InvalidRequestError());
-            case "https://a2a-protocol.org/errors/method-not-found" -> new A2AClientException(errorMessage, new MethodNotFoundError());
-            case "https://a2a-protocol.org/errors/push-notification-not-supported" -> new A2AClientException(errorMessage, new PushNotificationNotSupportedError());
-            case "https://a2a-protocol.org/errors/task-not-cancelable" -> new A2AClientException(errorMessage, new TaskNotCancelableError());
-            case "https://a2a-protocol.org/errors/unsupported-operation" -> new A2AClientException(errorMessage, new UnsupportedOperationError());
-            case "https://a2a-protocol.org/errors/extension-support-required" -> new A2AClientException(errorMessage, new ExtensionSupportRequiredError(null, errorMessage, null));
-            case "https://a2a-protocol.org/errors/version-not-supported" -> new A2AClientException(errorMessage, new VersionNotSupportedError(null, errorMessage, null));
-            default -> new A2AClientException(errorMessage);
+    private static A2AClientException mapRestErrorByReason(String reason, String errorMessage, @org.jspecify.annotations.Nullable Map<String, Object> metadata) {
+        A2AErrorCodes errorCode = REASON_MAP.get(reason);
+        if (errorCode == null) {
+            return new A2AClientException(errorMessage);
+        }
+        return switch (errorCode) {
+            case TASK_NOT_FOUND -> new A2AClientException(errorMessage, new TaskNotFoundError(errorMessage, metadata));
+            case TASK_NOT_CANCELABLE -> new A2AClientException(errorMessage, new TaskNotCancelableError(null, errorMessage, metadata));
+            case PUSH_NOTIFICATION_NOT_SUPPORTED -> new A2AClientException(errorMessage, new PushNotificationNotSupportedError(null, errorMessage, metadata));
+            case UNSUPPORTED_OPERATION -> new A2AClientException(errorMessage, new UnsupportedOperationError(null, errorMessage, metadata));
+            case CONTENT_TYPE_NOT_SUPPORTED -> new A2AClientException(errorMessage, new ContentTypeNotSupportedError(null, errorMessage, metadata));
+            case INVALID_AGENT_RESPONSE -> new A2AClientException(errorMessage, new InvalidAgentResponseError(null, errorMessage, metadata));
+            case EXTENDED_AGENT_CARD_NOT_CONFIGURED -> new A2AClientException(errorMessage, new ExtendedAgentCardNotConfiguredError(null, errorMessage, metadata));
+            case EXTENSION_SUPPORT_REQUIRED -> new A2AClientException(errorMessage, new ExtensionSupportRequiredError(null, errorMessage, metadata));
+            case VERSION_NOT_SUPPORTED -> new A2AClientException(errorMessage, new VersionNotSupportedError(null, errorMessage, metadata));
+            case INVALID_REQUEST -> new A2AClientException(errorMessage, new InvalidRequestError(null, errorMessage, metadata));
+            case JSON_PARSE -> new A2AClientException(errorMessage, new JSONParseError(null, errorMessage, metadata));
+            case METHOD_NOT_FOUND -> new A2AClientException(errorMessage, new MethodNotFoundError(null, errorMessage, metadata));
+            case INVALID_PARAMS -> new A2AClientException(errorMessage, new InvalidParamsError(null, errorMessage, metadata));
+            case INTERNAL -> new A2AClientException(errorMessage, new InternalError(null, errorMessage, metadata));
         };
     }
 
@@ -96,9 +145,9 @@ public class RestErrorMapper {
         return switch (className) {
             case "io.a2a.spec.TaskNotFoundError" -> new A2AClientException(errorMessage, new TaskNotFoundError());
             case "io.a2a.spec.ExtendedCardNotConfiguredError" -> new A2AClientException(errorMessage, new ExtendedAgentCardNotConfiguredError(null, errorMessage, null));
-            case "io.a2a.spec.ContentTypeNotSupportedError" -> new A2AClientException(errorMessage, new ContentTypeNotSupportedError(null, null, errorMessage));
+            case "io.a2a.spec.ContentTypeNotSupportedError" -> new A2AClientException(errorMessage, new ContentTypeNotSupportedError(null, errorMessage, null));
             case "io.a2a.spec.InternalError" -> new A2AClientException(errorMessage, new InternalError(errorMessage));
-            case "io.a2a.spec.InvalidAgentResponseError" -> new A2AClientException(errorMessage, new InvalidAgentResponseError(null, null, errorMessage));
+            case "io.a2a.spec.InvalidAgentResponseError" -> new A2AClientException(errorMessage, new InvalidAgentResponseError(null, errorMessage, null));
             case "io.a2a.spec.InvalidParamsError" -> new A2AClientException(errorMessage, new InvalidParamsError());
             case "io.a2a.spec.InvalidRequestError" -> new A2AClientException(errorMessage, new InvalidRequestError());
             case "io.a2a.spec.JSONParseError" -> new A2AClientException(errorMessage, new JSONParseError());

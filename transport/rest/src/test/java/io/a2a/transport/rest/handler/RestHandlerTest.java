@@ -56,7 +56,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", "nonexistent", 0);
 
         assertProblemDetail(response, 404,
-                "https://a2a-protocol.org/errors/task-not-found", "Task not found");
+                "TASK_NOT_FOUND", "Task not found");
     }
 
     @Test
@@ -66,7 +66,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.getTask(callContext, "", MINIMAL_TASK.id(), -1);
 
         assertProblemDetail(response, 422,
-                "https://a2a-protocol.org/errors/invalid-params", "Invalid history length");
+                "INVALID_PARAMS", "Invalid history length");
     }
 
     @Test
@@ -90,7 +90,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 null, null, null);
 
         assertProblemDetail(response, 422,
-                "https://a2a-protocol.org/errors/invalid-params", "Invalid params");
+                "INVALID_PARAMS", "Invalid params");
     }
 
     @Test
@@ -132,7 +132,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", invalidBody);
 
         assertProblemDetail(response, 400,
-                "https://a2a-protocol.org/errors/invalid-request", "Failed to parse json");
+                "JSON_PARSE", "Failed to parse json");
     }
 
     @Test
@@ -157,10 +157,11 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         Assertions.assertEquals(422, response.getStatusCode());
         Assertions.assertEquals("application/problem+json", response.getContentType());
         JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
-        Assertions.assertEquals(422, body.get("status").getAsInt());
-        Assertions.assertEquals("https://a2a-protocol.org/errors/invalid-params", body.get("type").getAsString());
-        Assertions.assertTrue(body.get("title").getAsString().startsWith("Failed to parse request body:"),
-                "title should indicate parse failure: " + body.get("title").getAsString());
+        JsonObject error = body.getAsJsonObject("error");
+        Assertions.assertEquals(422, error.get("code").getAsInt());
+        Assertions.assertEquals("INVALID_PARAMS", error.getAsJsonArray("details").get(0).getAsJsonObject().get("reason").getAsString());
+        Assertions.assertTrue(error.get("message").getAsString().startsWith("Failed to parse request body:"),
+                "message should indicate parse failure: " + error.get("message").getAsString());
     }
 
     @Test
@@ -170,7 +171,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", "");
 
         assertProblemDetail(response, 400,
-                "https://a2a-protocol.org/errors/invalid-request", "Request body is required");
+                "INVALID_REQUEST", "Request body is required");
     }
 
     @Test
@@ -202,7 +203,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.cancelTask(callContext, "", requestBody, "nonexistent");
 
         assertProblemDetail(response, 404,
-                "https://a2a-protocol.org/errors/task-not-found", "Task not found");
+                "TASK_NOT_FOUND", "Task not found");
     }
 
     @Test
@@ -347,7 +348,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendStreamingMessage(callContext, "", requestBody);
 
         assertProblemDetail(response, 400,
-                "https://a2a-protocol.org/errors/invalid-request",
+                "INVALID_REQUEST",
                 "Streaming is not supported by the agent");
     }
 
@@ -389,7 +390,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.createTaskPushNotificationConfiguration(callContext, "", requestBody, MINIMAL_TASK.id());
 
         assertProblemDetail(response, 400,
-                "https://a2a-protocol.org/errors/push-notification-not-supported",
+                "PUSH_NOTIFICATION_NOT_SUPPORTED",
                 "Push Notification is not supported");
     }
 
@@ -577,7 +578,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
 
         assertProblemDetail(response, 400,
-                "https://a2a-protocol.org/errors/extension-support-required",
+                "EXTENSION_SUPPORT_REQUIRED",
                 "Required extension 'https://example.com/test-extension' was not requested by the client");
     }
 
@@ -642,11 +643,17 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
             @Override
             public void onNext(String item) {
-                JsonObject error = JsonParser.parseString(item).getAsJsonObject();
-                if ("https://a2a-protocol.org/errors/extension-support-required".equals(
-                        error.has("type") ? error.get("type").getAsString() : null) &&
-                    item.contains("https://example.com/streaming-extension")) {
-                    errorFound.set(true);
+                JsonObject body = JsonParser.parseString(item).getAsJsonObject();
+                if (body.has("error")) {
+                    JsonObject error = body.getAsJsonObject("error");
+                    var details = error.has("details") ? error.getAsJsonArray("details") : null;
+                    if (details != null && !details.isEmpty()) {
+                        String reason = details.get(0).getAsJsonObject().get("reason").getAsString();
+                        if ("EXTENSION_SUPPORT_REQUIRED".equals(reason) &&
+                            item.contains("https://example.com/streaming-extension")) {
+                            errorFound.set(true);
+                        }
+                    }
                 }
                 latch.countDown();
             }
@@ -778,7 +785,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(contextWithVersion, "", requestBody);
 
         assertProblemDetail(response, 400,
-                "https://a2a-protocol.org/errors/version-not-supported",
+                "VERSION_NOT_SUPPORTED",
                 "Protocol version '2.0' is not supported. Supported versions: [1.0]");
     }
 
@@ -845,11 +852,17 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
 
             @Override
             public void onNext(String item) {
-                JsonObject error = JsonParser.parseString(item).getAsJsonObject();
-                if ("https://a2a-protocol.org/errors/version-not-supported".equals(
-                        error.has("type") ? error.get("type").getAsString() : null) &&
-                    error.has("title") && error.get("title").getAsString().contains("2.0")) {
-                    errorFound.set(true);
+                JsonObject body = JsonParser.parseString(item).getAsJsonObject();
+                if (body.has("error")) {
+                    JsonObject error = body.getAsJsonObject("error");
+                    var details = error.has("details") ? error.getAsJsonArray("details") : null;
+                    if (details != null && !details.isEmpty()) {
+                        String reason = details.get(0).getAsJsonObject().get("reason").getAsString();
+                        if ("VERSION_NOT_SUPPORTED".equals(reason) &&
+                            error.has("message") && error.get("message").getAsString().contains("2.0")) {
+                            errorFound.set(true);
+                        }
+                    }
                 }
             }
 
@@ -984,7 +997,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
                 null, "-1", null);
 
         assertProblemDetail(response, 422,
-                "https://a2a-protocol.org/errors/invalid-params", "Invalid params");
+                "INVALID_PARAMS", "Invalid params");
     }
 
     @Test
@@ -1047,13 +1060,21 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     private static void assertProblemDetail(RestHandler.HTTPRestResponse response,
-                                            int expectedStatus, String expectedType, String expectedTitle) {
+                                            int expectedStatus, String expectedReason, String expectedMessage) {
         Assertions.assertEquals(expectedStatus, response.getStatusCode());
         Assertions.assertEquals("application/problem+json", response.getContentType());
         JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
-        Assertions.assertEquals(expectedStatus, body.get("status").getAsInt(), "status field mismatch");
-        Assertions.assertEquals(expectedType, body.get("type").getAsString(), "type field mismatch");
-        Assertions.assertEquals(expectedTitle, body.get("title").getAsString(), "title field mismatch");
-        Assertions.assertTrue(body.has("details"), "details field should be present");
+        Assertions.assertTrue(body.has("error"), "error wrapper should be present");
+        JsonObject error = body.getAsJsonObject("error");
+        Assertions.assertEquals(expectedStatus, error.get("code").getAsInt(), "code field mismatch");
+        Assertions.assertEquals(expectedMessage, error.get("message").getAsString(), "message field mismatch");
+        Assertions.assertTrue(error.has("status"), "status field should be present");
+        Assertions.assertTrue(error.has("details"), "details field should be present");
+        var details = error.getAsJsonArray("details");
+        Assertions.assertFalse(details.isEmpty(), "details array should not be empty");
+        JsonObject detail = details.get(0).getAsJsonObject();
+        Assertions.assertEquals("type.googleapis.com/google.rpc.ErrorInfo", detail.get("@type").getAsString(), "@type field mismatch");
+        Assertions.assertEquals(expectedReason, detail.get("reason").getAsString(), "reason field mismatch");
+        Assertions.assertEquals("a2a-protocol.org", detail.get("domain").getAsString(), "domain field mismatch");
     }
 }

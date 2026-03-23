@@ -212,7 +212,7 @@ public class JSONRPCTransportTest {
             client.sendMessage(params, null);
             fail(); // should not reach here
         } catch (A2AClientException e) {
-            assertTrue(e.getMessage().contains("Invalid parameters: \"Hello world\""),e.getMessage());
+            assertTrue(e.getMessage().contains("Invalid parameters: {info=Hello world}"),e.getMessage());
         }
     }
 

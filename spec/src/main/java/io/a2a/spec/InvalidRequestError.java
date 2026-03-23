@@ -1,7 +1,8 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.A2AErrorCodes.INVALID_REQUEST_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
+
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -45,13 +46,13 @@ public class InvalidRequestError extends A2AError {
      *
      * @param code the error code
      * @param message the error message
-     * @param data additional error data
+     * @param details additional error details
      */
-    public InvalidRequestError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+    public InvalidRequestError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
         super(
-                defaultIfNull(code, INVALID_REQUEST_ERROR_CODE),
+                defaultIfNull(code, A2AErrorCodes.INVALID_REQUEST.code()),
                 defaultIfNull(message, "Request payload validation error"),
-                data);
+                details);
     }
 
     /**

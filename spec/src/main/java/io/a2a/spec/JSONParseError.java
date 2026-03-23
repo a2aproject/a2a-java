@@ -1,7 +1,8 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
+
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -51,12 +52,12 @@ public class JSONParseError extends A2AError {
      *
      * @param code the error code
      * @param message the error message
-     * @param data additional error data
+     * @param details additional error details
      */
-    public JSONParseError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+    public JSONParseError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
         super(
-                defaultIfNull(code, JSON_PARSE_ERROR_CODE),
+                defaultIfNull(code, A2AErrorCodes.JSON_PARSE.code()),
                 defaultIfNull(message, "Invalid JSON payload"),
-                data);
+                details);
     }
 }

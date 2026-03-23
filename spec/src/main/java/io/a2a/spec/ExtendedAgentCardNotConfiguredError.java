@@ -1,7 +1,8 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.A2AErrorCodes.EXTENDED_AGENT_CARD_NOT_CONFIGURED_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
+
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -36,13 +37,12 @@ public class ExtendedAgentCardNotConfiguredError extends A2AProtocolError {
      *
      * @param code the error code
      * @param message the error message
-     * @param data additional error data
+     * @param details additional error details
      */
-    public ExtendedAgentCardNotConfiguredError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+    public ExtendedAgentCardNotConfiguredError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
         super(
-                defaultIfNull(code, EXTENDED_AGENT_CARD_NOT_CONFIGURED_ERROR_CODE),
+                defaultIfNull(code, A2AErrorCodes.EXTENDED_AGENT_CARD_NOT_CONFIGURED.code()),
                 defaultIfNull(message, "Extended Card not configured"),
-                data,
-                "https://a2a-protocol.org/errors/extended-agent-card-not-configured");
+                details);
     }
 }

@@ -364,7 +364,7 @@ public class JSONRPCTransport implements ClientTransport {
         A2AResponse<?> value = JSONRPCUtils.parseResponseBody(response, method);
         A2AError error = value.getError();
         if (error != null) {
-            throw new A2AClientException(error.getMessage() + (error.getData() != null ? ": " + error.getData() : ""), error);
+            throw new A2AClientException(error.getMessage() + (!error.getDetails().isEmpty() ? ": " + error.getDetails() : ""), error);
         }
         // Safe cast: JSONRPCUtils.parseResponseBody returns the correct concrete type based on method
         return (T) value;

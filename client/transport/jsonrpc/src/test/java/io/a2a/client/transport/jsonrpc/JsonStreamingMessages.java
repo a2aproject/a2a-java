@@ -99,7 +99,7 @@ public class JsonStreamingMessages {
                   "error": {
                     "code": -32602,
                     "message": "Invalid parameters",
-                    "data": "Missing required field"
+                    "details": {"info": "Missing required field"}
                   }
              }""";
 

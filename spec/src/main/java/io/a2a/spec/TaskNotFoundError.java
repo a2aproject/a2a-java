@@ -1,7 +1,8 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
+
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -45,13 +46,12 @@ public class TaskNotFoundError extends A2AProtocolError {
      * Constructs error with all parameters.
      *
      * @param message the error message (defaults to "Task not found" if null)
-     * @param data    additional error data (optional)
+     * @param details additional error details (optional)
      */
-    public TaskNotFoundError(@Nullable String message, @Nullable Object data) {
+    public TaskNotFoundError(@Nullable String message, @Nullable Map<String, Object> details) {
         super(
-                TASK_NOT_FOUND_ERROR_CODE,
+                A2AErrorCodes.TASK_NOT_FOUND.code(),
                 defaultIfNull(message, "Task not found"),
-                data,
-                "https://a2a-protocol.org/errors/task-not-found");
+                details);
     }
 }
