@@ -1,6 +1,5 @@
 package io.a2a.server.apps.quarkus;
 
-import static io.a2a.common.MediaType.APPLICATION_PROBLEM_JSON;
 import static io.a2a.server.ServerCallContext.TRANSPORT_KEY;
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
 import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
@@ -245,7 +244,7 @@ public class A2AServerRoutes {
      *
      * <p><b>Processing Flow:</b>
      * <ol>
-     *   <li>Parse JSON-RPC request body using {@link JSONRPCUtils#parseRequestBody}</li>
+     *   <li>Parse JSON-RPC request body using {@link JSONRPCUtils#parseRequestBody(String, String)}</li>
      *   <li>Create {@link ServerCallContext} from routing context</li>
      *   <li>Route to streaming or non-streaming handler</li>
      *   <li>Handle errors with appropriate JSON-RPC error codes</li>
@@ -294,7 +293,7 @@ public class A2AServerRoutes {
             if (error != null) {
                 rc.response()
                         .setStatusCode(200)
-                        .putHeader(CONTENT_TYPE, APPLICATION_PROBLEM_JSON)
+                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .end(serializeResponse(error));
             } else if (streaming) {
                 final Multi<? extends A2AResponse<?>> finalStreamingResponse = streamingResponse;
@@ -310,7 +309,7 @@ public class A2AServerRoutes {
             } else {
                 rc.response()
                         .setStatusCode(200)
-                        .putHeader(CONTENT_TYPE, nonStreamingResponse.getError() != null ? APPLICATION_PROBLEM_JSON : APPLICATION_JSON)
+                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .end(serializeResponse(nonStreamingResponse));
             }
         }

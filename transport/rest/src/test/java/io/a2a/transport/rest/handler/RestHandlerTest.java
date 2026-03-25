@@ -155,7 +155,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
         RestHandler.HTTPRestResponse response = handler.sendMessage(callContext, "", requestBody);
 
         Assertions.assertEquals(422, response.getStatusCode());
-        Assertions.assertEquals("application/problem+json", response.getContentType());
+        Assertions.assertEquals("application/json", response.getContentType());
         JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
         JsonObject error = body.getAsJsonObject("error");
         Assertions.assertEquals(422, error.get("code").getAsInt());
@@ -1062,7 +1062,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     private static void assertProblemDetail(RestHandler.HTTPRestResponse response,
                                             int expectedStatus, String expectedReason, String expectedMessage) {
         Assertions.assertEquals(expectedStatus, response.getStatusCode());
-        Assertions.assertEquals("application/problem+json", response.getContentType());
+        Assertions.assertEquals("application/json", response.getContentType());
         JsonObject body = JsonParser.parseString(response.getBody()).getAsJsonObject();
         Assertions.assertTrue(body.has("error"), "error wrapper should be present");
         JsonObject error = body.getAsJsonObject("error");
