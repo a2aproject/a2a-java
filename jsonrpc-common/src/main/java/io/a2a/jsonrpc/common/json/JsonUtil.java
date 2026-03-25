@@ -1,23 +1,12 @@
 package io.a2a.jsonrpc.common.json;
 
-import static io.a2a.jsonrpc.common.json.JsonUtil.A2AErrorTypeAdapter.THROWABLE_MARKER_FIELD;
-import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.INTERNAL_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.INVALID_AGENT_RESPONSE_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.INVALID_PARAMS_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.INVALID_REQUEST_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.METHOD_NOT_FOUND_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.TASK_NOT_CANCELABLE_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
+import static io.a2a.jsonrpc.common.json.JsonUtil.ThrowableTypeAdapter.THROWABLE_MARKER_FIELD;
+import io.a2a.spec.A2AErrorCodes;
 import static io.a2a.spec.DataPart.DATA;
 import static io.a2a.spec.TextPart.TEXT;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 
-import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +33,8 @@ import io.a2a.spec.A2AError;
 import io.a2a.spec.APIKeySecurityScheme;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DataPart;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
+import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.FileContent;
 import io.a2a.spec.FilePart;
 import io.a2a.spec.FileWithBytes;
@@ -70,6 +61,7 @@ import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.spec.VersionNotSupportedError;
 
 import org.jspecify.annotations.Nullable;
 
@@ -218,6 +210,8 @@ public class JsonUtil {
      */
     static class ThrowableTypeAdapter extends TypeAdapter<Throwable> {
 
+        static final String THROWABLE_MARKER_FIELD = "__throwable";
+
         @Override
         public void write(JsonWriter out, Throwable value) throws java.io.IOException {
             if (value == null) {
@@ -305,10 +299,8 @@ public class JsonUtil {
      */
     static class A2AErrorTypeAdapter extends TypeAdapter<A2AError> {
 
-        private static final ThrowableTypeAdapter THROWABLE_ADAPTER = new ThrowableTypeAdapter();
-        static final String THROWABLE_MARKER_FIELD = "__throwable";
         private static final String CODE_FIELD = "code";
-        private static final String DATA_FIELD = "data";
+        private static final String DETAILS_FIELD = "details";
         private static final String MESSAGE_FIELD = "message";
         private static final String TYPE_FIELD = "type";
 
@@ -321,15 +313,9 @@ public class JsonUtil {
             out.beginObject();
             out.name(CODE_FIELD).value(value.getCode());
             out.name(MESSAGE_FIELD).value(value.getMessage());
-            if (value.getData() != null) {
-                out.name(DATA_FIELD);
-                // If data is a Throwable, use ThrowableTypeAdapter to avoid reflection issues
-                if (value.getData() instanceof Throwable throwable) {
-                    THROWABLE_ADAPTER.write(out, throwable);
-                } else {
-                    // Use Gson to serialize the data field for non-Throwable types
-                    OBJECT_MAPPER.toJson(value.getData(), Object.class, out);
-                }
+            if (!value.getDetails().isEmpty()) {
+                out.name(DETAILS_FIELD);
+                OBJECT_MAPPER.toJson(value.getDetails(), Map.class, out);
             }
             out.endObject();
         }
@@ -344,7 +330,7 @@ public class JsonUtil {
 
             Integer code = null;
             String message = null;
-            Object data = null;
+            Map<String, Object> details = null;
 
             in.beginObject();
             while (in.hasNext()) {
@@ -354,9 +340,9 @@ public class JsonUtil {
                         code = in.nextInt();
                     case MESSAGE_FIELD ->
                         message = in.nextString();
-                    case DATA_FIELD -> {
-                        // Read data as a generic object (could be string, number, object, etc.)
-                        data = readDataValue(in);
+                    case DETAILS_FIELD -> {
+                        // Read details as a map
+                        details = readDetailsValue(in);
                     }
                     default ->
                         in.skipValue();
@@ -365,82 +351,53 @@ public class JsonUtil {
             in.endObject();
 
             // Create the appropriate subclass based on the error code
-            return createErrorInstance(code, message, data);
+            return createErrorInstance(code, message, details);
         }
 
         /**
-         * Reads the data field value, which can be of any JSON type.
+         * Reads the details field value as a map.
          */
+        @SuppressWarnings("unchecked")
         private @Nullable
-        Object readDataValue(JsonReader in) throws java.io.IOException {
-            return switch (in.peek()) {
-                case STRING ->
-                    in.nextString();
-                case NUMBER ->
-                    in.nextDouble();
-                case BOOLEAN ->
-                    in.nextBoolean();
-                case NULL -> {
-                    in.nextNull();
-                    yield null;
-                }
-                case BEGIN_OBJECT -> {
-                    // Parse as JsonElement to check if it's a Throwable
-                    com.google.gson.JsonElement element = com.google.gson.JsonParser.parseReader(in);
-                    if (element.isJsonObject()) {
-                        com.google.gson.JsonObject obj = element.getAsJsonObject();
-                        // Check if it has the structure of a serialized Throwable (type + message)
-                        if (obj.has(TYPE_FIELD) && obj.has(MESSAGE_FIELD) && obj.has(THROWABLE_MARKER_FIELD)) {
-                            // Deserialize as Throwable using ThrowableTypeAdapter
-                            yield THROWABLE_ADAPTER.read(new JsonReader(new StringReader(element.toString())));
-                        }
-                    }
-                    // Otherwise, deserialize as generic object
-                    yield OBJECT_MAPPER.fromJson(element, Object.class);
-                }
-                case BEGIN_ARRAY ->
-                    // For arrays, read as raw JSON using Gson
-                    OBJECT_MAPPER.fromJson(in, Object.class);
-                default -> {
-                    in.skipValue();
-                    yield null;
-                }
-            };
+        Map<String, Object> readDetailsValue(JsonReader in) throws java.io.IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            if (in.peek() == com.google.gson.stream.JsonToken.BEGIN_OBJECT) {
+                return (Map<String, Object>) OBJECT_MAPPER.fromJson(in, Map.class);
+            }
+            in.skipValue();
+            return null;
         }
 
         /**
          * Creates the appropriate A2AError subclass based on the error code.
          */
-        private A2AError createErrorInstance(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+        private A2AError createErrorInstance(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
             if (code == null) {
                 throw new JsonSyntaxException("A2AError must have a code field");
             }
 
-            return switch (code) {
-                case JSON_PARSE_ERROR_CODE ->
-                    new JSONParseError(code, message, data);
-                case INVALID_REQUEST_ERROR_CODE ->
-                    new InvalidRequestError(code, message, data);
-                case METHOD_NOT_FOUND_ERROR_CODE ->
-                    new MethodNotFoundError(code, message, data);
-                case INVALID_PARAMS_ERROR_CODE ->
-                    new InvalidParamsError(code, message, data);
-                case INTERNAL_ERROR_CODE ->
-                    new io.a2a.spec.InternalError(code, message, data);
-                case TASK_NOT_FOUND_ERROR_CODE ->
-                    new TaskNotFoundError(message, data);
-                case TASK_NOT_CANCELABLE_ERROR_CODE ->
-                    new TaskNotCancelableError(code, message, data);
-                case PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE ->
-                    new PushNotificationNotSupportedError(code, message, data);
-                case UNSUPPORTED_OPERATION_ERROR_CODE ->
-                    new UnsupportedOperationError(code, message, data);
-                case CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE ->
-                    new ContentTypeNotSupportedError(code, message, data);
-                case INVALID_AGENT_RESPONSE_ERROR_CODE ->
-                    new InvalidAgentResponseError(code, message, data);
-                default ->
-                    new A2AError(code, message == null ? "" : message, data);
+            A2AErrorCodes errorCode = A2AErrorCodes.fromCode(code);
+            if (errorCode == null) {
+                return new A2AError(code, message == null ? "" : message, details);
+            }
+            return switch (errorCode) {
+                case JSON_PARSE -> new JSONParseError(code, message, details);
+                case INVALID_REQUEST -> new InvalidRequestError(code, message, details);
+                case METHOD_NOT_FOUND -> new MethodNotFoundError(code, message, details);
+                case INVALID_PARAMS -> new InvalidParamsError(code, message, details);
+                case INTERNAL -> new io.a2a.spec.InternalError(code, message, details);
+                case TASK_NOT_FOUND -> new TaskNotFoundError(message, details);
+                case TASK_NOT_CANCELABLE -> new TaskNotCancelableError(code, message, details);
+                case PUSH_NOTIFICATION_NOT_SUPPORTED -> new PushNotificationNotSupportedError(code, message, details);
+                case UNSUPPORTED_OPERATION -> new UnsupportedOperationError(code, message, details);
+                case CONTENT_TYPE_NOT_SUPPORTED -> new ContentTypeNotSupportedError(code, message, details);
+                case INVALID_AGENT_RESPONSE -> new InvalidAgentResponseError(code, message, details);
+                case EXTENDED_AGENT_CARD_NOT_CONFIGURED -> new ExtendedAgentCardNotConfiguredError(code, message, details);
+                case EXTENSION_SUPPORT_REQUIRED -> new ExtensionSupportRequiredError(code, message, details);
+                case VERSION_NOT_SUPPORTED -> new VersionNotSupportedError(code, message, details);
             };
         }
     }

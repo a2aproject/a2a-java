@@ -42,8 +42,8 @@ public abstract class QuarkusA2ARestTest extends AbstractA2AServerTest {
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         Assertions.assertEquals(415, response.statusCode());
-        Assertions.assertTrue(response.body().contains("content-type-not-supported"),
-                "Expected content-type-not-supported in response body: " + response.body());
+        Assertions.assertTrue(response.body().contains("CONTENT_TYPE_NOT_SUPPORTED"),
+                "Expected CONTENT_TYPE_NOT_SUPPORTED in response body: " + response.body());
     }
 
     @Test
@@ -59,8 +59,8 @@ public abstract class QuarkusA2ARestTest extends AbstractA2AServerTest {
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         Assertions.assertEquals(400, response.statusCode());
-        Assertions.assertTrue(response.body().contains("version-not-supported"),
-                "Expected version-not-supported in response body: " + response.body());
+        Assertions.assertTrue(response.body().contains("VERSION_NOT_SUPPORTED"),
+                "Expected VERSION_NOT_SUPPORTED in response body: " + response.body());
     }
 
     @Test

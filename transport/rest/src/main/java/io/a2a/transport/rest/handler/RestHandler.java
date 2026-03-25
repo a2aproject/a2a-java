@@ -3,12 +3,14 @@ package io.a2a.transport.rest.handler;
 import static io.a2a.common.MediaType.APPLICATION_JSON;
 import static io.a2a.common.MediaType.APPLICATION_PROBLEM_JSON;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
-import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
+
+import io.a2a.spec.A2AErrorCodes;
 
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -40,10 +42,11 @@ import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskParams;
-import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.ContentTypeNotSupportedError;
+import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidAgentResponseError;
@@ -64,7 +67,6 @@ import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.UnsupportedOperationError;
-import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.VersionNotSupportedError;
 import mutiny.zero.ZeroPublisher;
 import org.jspecify.annotations.Nullable;
@@ -647,7 +649,7 @@ public class RestHandler {
         try {
             JsonParser.parseString(json);
         } catch (JsonSyntaxException e) {
-            throw new JSONParseError(JSON_PARSE_ERROR_CODE, "Failed to parse json", e.getMessage());
+            throw new JSONParseError(A2AErrorCodes.JSON_PARSE.code(), "Failed to parse json", null);
         }
     }
 
@@ -745,27 +747,15 @@ public class RestHandler {
     }
 
     /**
-     * Maps A2A protocol errors to HTTP status codes.
-     *
-     * <p>
-     * This method ensures consistent HTTP status code mapping for all A2A errors:
-     * <ul>
-     * <li>400 - Invalid request, JSON parse errors, missing extensions</li>
-     * <li>404 - Method not found, task not found</li>
-     * <li>409 - Task not cancelable (conflict)</li>
-     * <li>415 - Unsupported content type</li>
-     * <li>422 - Invalid parameters (unprocessable entity)</li>
-     * <li>500 - Internal errors</li>
-     * <li>501 - Not implemented (unsupported operations, version)</li>
-     * <li>502 - Bad gateway (invalid agent response)</li>
-     * </ul>
+     * Maps A2A protocol errors to HTTP status codes using {@link A2AErrorCodes}.
      *
      * @param error the A2A error to map
      * @return the corresponding HTTP status code
      */
     private static int mapErrorToHttpStatus(A2AError error) {
-        if (error instanceof InvalidRequestError || error instanceof JSONParseError) {
-            return 400;
+        A2AErrorCodes errorCode = A2AErrorCodes.fromCode(error.getCode());
+        if (errorCode != null) {
+            return errorCode.httpCode();
         }
         if (error instanceof InvalidParamsError) {
             return 422;
@@ -795,63 +785,6 @@ public class RestHandler {
             return 500;
         }
         return 500;
-    }
-
-    /**
-     * Maps A2A protocol errors to RFC 7807 Problem Details type URIs.
-     *
-     * <p>
-     * This method provides a unique URI for each A2A error type, which is used in the "type"
-     * field of RFC 7807 error responses. For example:
-     * <ul>
-     * <li>{@link InvalidRequestError} -> "https://a2a-protocol.org/errors/invalid-request"</li>
-     * <li>{@link TaskNotFoundError} -> "https://a2a-protocol.org/errors/task-not-found"</li>
-     * </ul>
-     *
-     * @param error the A2A error to map
-     * @return the corresponding RFC 7807 type URI
-     */
-    private static String mapErrorToURI(A2AError error) {
-        if (error instanceof InvalidRequestError || error instanceof JSONParseError) {
-            return "https://a2a-protocol.org/errors/invalid-request";
-        }
-        if (error instanceof InvalidParamsError) {
-            return "https://a2a-protocol.org/errors/invalid-params";
-        }
-        if (error instanceof MethodNotFoundError) {
-            return "https://a2a-protocol.org/errors/method-not-found";
-        }
-        if (error instanceof TaskNotFoundError) {
-            return "https://a2a-protocol.org/errors/task-not-found";
-        }
-        if (error instanceof TaskNotCancelableError) {
-            return "https://a2a-protocol.org/errors/task-not-cancelable";
-        }
-        if (error instanceof PushNotificationNotSupportedError) {
-            return "https://a2a-protocol.org/errors/push-notification-not-supported";
-        }
-        if (error instanceof UnsupportedOperationError) {
-            return "https://a2a-protocol.org/errors/unsupported-operation";
-        }
-        if (error instanceof VersionNotSupportedError) {
-            return "https://a2a-protocol.org/errors/version-not-supported";
-        }
-        if (error instanceof ContentTypeNotSupportedError) {
-            return "https://a2a-protocol.org/errors/content-type-not-supported";
-        }
-        if (error instanceof InvalidAgentResponseError) {
-            return "https://a2a-protocol.org/errors/invalid-agent-response";
-        }
-        if (error instanceof ExtendedAgentCardNotConfiguredError) {
-            return "https://a2a-protocol.org/errors/extended-agent-card-not-configured";
-        }
-        if (error instanceof ExtensionSupportRequiredError) {
-            return "https://a2a-protocol.org/errors/extension-support-required";
-        }
-        if (error instanceof InternalError) {
-            return "https://a2a-protocol.org/errors/internal-error";
-        }
-        return "https://a2a-protocol.org/errors/internal-error";
     }
 
     /**
@@ -1017,27 +950,46 @@ public class RestHandler {
         }
     }
 
+    private static final String ERROR_INFO_TYPE = "type.googleapis.com/google.rpc.ErrorInfo";
+    private static final String ERROR_DOMAIN = "a2a-protocol.org";
+
     /**
-     * Represents an HTTP error response containing A2A error details.
+     * Represents an HTTP error response containing A2A error details in the Google Cloud API error format.
+     * <p>
+     * Produces JSON of the form:
+     * <pre>{@code
+     * {
+     *   "error": {
+     *     "code": 404,
+     *     "status": "NOT_FOUND",
+     *     "message": "Task not found",
+     *     "details": [
+     *       {
+     *         "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+     *         "reason": "TASK_NOT_FOUND",
+     *         "domain": "a2a-protocol.org",
+     *         "metadata": { ... }
+     *       }
+     *     ]
+     *   }
+     * }
+     * }</pre>
      */
     private static class HTTPRestErrorResponse {
 
-        private final String title;
-        private final String details;
-        private final int status;
-        private final String type;
+        private final ErrorBody error;
 
+        private HTTPRestErrorResponse(A2AError a2aError) {
+            A2AErrorCodes errorCode = A2AErrorCodes.fromCode(a2aError.getCode());
+            int httpCode = mapErrorToHttpStatus(a2aError);
+            String status = errorCode != null
+                    ? errorCode.grpcStatus()
+                    : A2AErrorCodes.INTERNAL.grpcStatus();
+            String reason = errorCode != null ? errorCode.name() : "INTERNAL";
+            String message = a2aError.getMessage() == null ? a2aError.getClass().getName() : a2aError.getMessage();
 
-        /**
-         * Creates an error response from an A2A error.
-         *
-         * @param jsonRpcError the A2A error
-         */
-        private HTTPRestErrorResponse(A2AError jsonRpcError) {
-            this.title = jsonRpcError.getMessage() == null ? jsonRpcError.getClass().getName() : jsonRpcError.getMessage();
-            this.details = jsonRpcError.getData() == null ? "" : jsonRpcError.getData().toString();
-            this.type = mapErrorToURI(jsonRpcError);
-            this.status = mapErrorToHttpStatus(jsonRpcError);
+            ErrorDetail detail = new ErrorDetail(ERROR_INFO_TYPE, reason, ERROR_DOMAIN, a2aError.getDetails());
+            this.error = new ErrorBody(httpCode, status, message, List.of(detail));
         }
 
         private String toJson() {
@@ -1045,14 +997,21 @@ public class RestHandler {
                 return JsonUtil.toJson(this);
             } catch (JsonProcessingException ex) {
                 log.log(Level.SEVERE, "Failed to serialize HTTPRestErrorResponse to JSON", ex);
-                return "{\"title\":\"Internal Server Error\",\"details\":\"Failed to serialize error response.\",\"status\":500,\"type\":\"https://a2a-protocol.org/errors/internal-error\"}";
+                return "{\"error\":{\"code\":500,\"status\":\"INTERNAL\",\"message\":\"Internal Server Error\",\"details\":[]}}";
             }
         }
 
         @Override
         public String toString() {
-            return "HTTPRestErrorResponse{" + "title=" + title + ", details=" + details + ", status=" + status + ", type=" + type + '}';
+            return "HTTPRestErrorResponse{error=" + error + '}';
         }
 
+        private record ErrorBody(int code, String status, String message, List<ErrorDetail> details) {}
+
+        private record ErrorDetail(
+                @com.google.gson.annotations.SerializedName("@type") String type,
+                String reason,
+                String domain,
+                Map<String, Object> metadata) {}
     }
 }

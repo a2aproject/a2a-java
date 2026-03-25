@@ -447,7 +447,7 @@ public class A2AServerRoutesTest {
         HTTPRestResponse mockErrorResponse = mock(HTTPRestResponse.class);
         when(mockErrorResponse.getStatusCode()).thenReturn(415);
         when(mockErrorResponse.getContentType()).thenReturn("application/problem+json");
-        when(mockErrorResponse.getBody()).thenReturn("{\"type\":\"https://a2a-protocol.org/errors/content-type-not-supported\"}");
+        when(mockErrorResponse.getBody()).thenReturn("{\"error\":{\"code\":415,\"status\":\"INVALID_ARGUMENT\",\"message\":\"Incompatible content types\",\"details\":[{\"reason\":\"CONTENT_TYPE_NOT_SUPPORTED\",\"domain\":\"a2a-protocol.org\"}]}}");
         when(mockRestHandler.createErrorResponse(any(ContentTypeNotSupportedError.class))).thenReturn(mockErrorResponse);
         when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("text/plain");
 
@@ -465,7 +465,7 @@ public class A2AServerRoutesTest {
         HTTPRestResponse mockErrorResponse = mock(HTTPRestResponse.class);
         when(mockErrorResponse.getStatusCode()).thenReturn(415);
         when(mockErrorResponse.getContentType()).thenReturn("application/problem+json");
-        when(mockErrorResponse.getBody()).thenReturn("{\"type\":\"https://a2a-protocol.org/errors/content-type-not-supported\"}");
+        when(mockErrorResponse.getBody()).thenReturn("{\"error\":{\"code\":415,\"status\":\"INVALID_ARGUMENT\",\"message\":\"Incompatible content types\",\"details\":[{\"reason\":\"CONTENT_TYPE_NOT_SUPPORTED\",\"domain\":\"a2a-protocol.org\"}]}}");
         when(mockRestHandler.createErrorResponse(any(ContentTypeNotSupportedError.class))).thenReturn(mockErrorResponse);
         when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("text/plain");
 
@@ -483,7 +483,7 @@ public class A2AServerRoutesTest {
         HTTPRestResponse mockErrorResponse = mock(HTTPRestResponse.class);
         when(mockErrorResponse.getStatusCode()).thenReturn(400);
         when(mockErrorResponse.getContentType()).thenReturn("application/problem+json");
-        when(mockErrorResponse.getBody()).thenReturn("{\"type\":\"https://a2a-protocol.org/errors/version-not-supported\"}");
+        when(mockErrorResponse.getBody()).thenReturn("{\"error\":{\"code\":400,\"status\":\"UNIMPLEMENTED\",\"message\":\"Protocol version not supported\",\"details\":[{\"reason\":\"VERSION_NOT_SUPPORTED\",\"domain\":\"a2a-protocol.org\"}]}}");
         when(mockRequest.getHeader(any(CharSequence.class))).thenReturn("application/json");
         when(mockRestHandler.sendMessage(any(ServerCallContext.class), anyString(), anyString()))
                 .thenReturn(mockErrorResponse);

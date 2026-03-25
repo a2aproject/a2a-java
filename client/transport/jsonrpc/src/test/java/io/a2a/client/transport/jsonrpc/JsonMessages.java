@@ -216,7 +216,7 @@ public class JsonMessages {
              "error": {
                 "code": -32702,
                 "message": "Invalid parameters",
-                "data": "Hello world"
+                "details": {"info": "Hello world"}
              }
             }""";
 

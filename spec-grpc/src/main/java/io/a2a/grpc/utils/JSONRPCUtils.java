@@ -1,25 +1,13 @@
 package io.a2a.grpc.utils;
 
-import static io.a2a.spec.A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.EXTENDED_AGENT_CARD_NOT_CONFIGURED_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.EXTENSION_SUPPORT_REQUIRED_ERROR;
-import static io.a2a.spec.A2AErrorCodes.INTERNAL_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.INVALID_AGENT_RESPONSE_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.INVALID_PARAMS_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.INVALID_REQUEST_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.JSON_PARSE_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.METHOD_NOT_FOUND_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.TASK_NOT_CANCELABLE_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.UNSUPPORTED_OPERATION_ERROR_CODE;
-import static io.a2a.spec.A2AErrorCodes.VERSION_NOT_SUPPORTED_ERROR_CODE;
+import io.a2a.spec.A2AErrorCodes;
 import static io.a2a.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static io.a2a.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -399,45 +387,37 @@ public class JSONRPCUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static A2AError processError(JsonObject error) {
         String message = error.has("message") ? error.get("message").getAsString() : null;
         Integer code = error.has("code") ? error.get("code").getAsInt() : null;
-        String data = error.has("data") ? error.get("data").toString() : null;
-        if (code != null) {
-            switch (code) {
-                case JSON_PARSE_ERROR_CODE:
-                    return new JSONParseError(code, message, data);
-                case INVALID_REQUEST_ERROR_CODE:
-                    return new InvalidRequestError(code, message, data);
-                case METHOD_NOT_FOUND_ERROR_CODE:
-                    return new MethodNotFoundError(code, message, data);
-                case INVALID_PARAMS_ERROR_CODE:
-                    return new InvalidParamsError(code, message, data);
-                case INTERNAL_ERROR_CODE:
-                    return new io.a2a.spec.InternalError(code, message, data);
-                case PUSH_NOTIFICATION_NOT_SUPPORTED_ERROR_CODE:
-                    return new PushNotificationNotSupportedError(code, message, data);
-                case UNSUPPORTED_OPERATION_ERROR_CODE:
-                    return new UnsupportedOperationError(code, message, data);
-                case CONTENT_TYPE_NOT_SUPPORTED_ERROR_CODE:
-                    return new ContentTypeNotSupportedError(code, message, data);
-                case INVALID_AGENT_RESPONSE_ERROR_CODE:
-                    return new InvalidAgentResponseError(code, message, data);
-                case EXTENDED_AGENT_CARD_NOT_CONFIGURED_ERROR_CODE:
-                    return new ExtendedAgentCardNotConfiguredError(code, message, data);
-                case EXTENSION_SUPPORT_REQUIRED_ERROR:
-                    return new ExtensionSupportRequiredError(code, message, data);
-                case VERSION_NOT_SUPPORTED_ERROR_CODE:
-                    return new VersionNotSupportedError(code, message, data);
-                case TASK_NOT_CANCELABLE_ERROR_CODE:
-                    return new TaskNotCancelableError(code, message, data);
-                case TASK_NOT_FOUND_ERROR_CODE:
-                    return new TaskNotFoundError(message, data);
-                default:
-                    return new A2AError(code, message == null ? "": message, data);
-            }
+        Map<String, Object> details = null;
+        if (error.has("details") && error.get("details").isJsonObject()) {
+            details =GSON.fromJson(error.get("details"), Map.class);
         }
-        return new A2AError(INTERNAL_ERROR_CODE, message == null ? "": message, data);
+        if (code != null) {
+            A2AErrorCodes errorCode = A2AErrorCodes.fromCode(code);
+            if (errorCode != null) {
+                return switch (errorCode) {
+                    case JSON_PARSE -> new JSONParseError(code, message, details);
+                    case INVALID_REQUEST -> new InvalidRequestError(code, message, details);
+                    case METHOD_NOT_FOUND -> new MethodNotFoundError(code, message, details);
+                    case INVALID_PARAMS -> new InvalidParamsError(code, message, details);
+                    case INTERNAL -> new io.a2a.spec.InternalError(code, message, details);
+                    case PUSH_NOTIFICATION_NOT_SUPPORTED -> new PushNotificationNotSupportedError(code, message, details);
+                    case UNSUPPORTED_OPERATION -> new UnsupportedOperationError(code, message, details);
+                    case CONTENT_TYPE_NOT_SUPPORTED -> new ContentTypeNotSupportedError(code, message, details);
+                    case INVALID_AGENT_RESPONSE -> new InvalidAgentResponseError(code, message, details);
+                    case EXTENDED_AGENT_CARD_NOT_CONFIGURED -> new ExtendedAgentCardNotConfiguredError(code, message, details);
+                    case EXTENSION_SUPPORT_REQUIRED -> new ExtensionSupportRequiredError(code, message, details);
+                    case VERSION_NOT_SUPPORTED -> new VersionNotSupportedError(code, message, details);
+                    case TASK_NOT_CANCELABLE -> new TaskNotCancelableError(code, message, details);
+                    case TASK_NOT_FOUND -> new TaskNotFoundError(message, details);
+                };
+            }
+            return new A2AError(code, message == null ? "" : message, details);
+        }
+        return new A2AError(A2AErrorCodes.INTERNAL.code(), message == null ? "" : message, details);
     }
 
     protected static void parseRequestBody(JsonElement jsonRpc, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
@@ -625,8 +605,9 @@ public class JSONRPCUtils {
             output.beginObject();
             output.name("code").value(error.getCode());
             output.name("message").value(error.getMessage());
-            if (error.getData() != null) {
-                output.name("data").value(error.getData().toString());
+            if (!error.getDetails().isEmpty()) {
+                output.name("details");
+                GSON.toJson(error.getDetails(), Map.class, output);
             }
             output.endObject();
             output.endObject();

@@ -1,5 +1,7 @@
 package io.a2a.spec;
 
+import java.util.Map;
+
 import io.a2a.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -35,24 +37,24 @@ public class A2AError extends RuntimeException implements Event {
     private final Integer code;
 
     /**
-     * Additional error information (structure defined by the error code).
+     * Additional error details as key-value pairs.
      */
-    private final @Nullable Object data;
+    private final Map<String, Object> details;
 
     /**
-     * Constructs a JSON-RPC error with the specified code, message, and optional data.
+     * Constructs a JSON-RPC error with the specified code, message, and optional details.
      * <p>
      * This constructor is used by Jackson for JSON deserialization.
      *
      * @param code the numeric error code (required, see JSON-RPC 2.0 spec for standard codes)
      * @param message the human-readable error message (required)
-     * @param data additional error information, structure defined by the error code (optional)
+     * @param details additional error details as key-value pairs (defaults to empty map if null)
      * @throws IllegalArgumentException if code or message is null
      */
-    public A2AError(Integer code, String message, @Nullable Object data) {
+    public A2AError(Integer code, String message, @Nullable Map<String, Object> details) {
         super(Assert.checkNotNullParam("message", message));
         this.code = Assert.checkNotNullParam("code", code);
-        this.data = data;
+        this.details = details == null ? Map.of() : Map.copyOf(details);
     }
 
     /**
@@ -75,15 +77,11 @@ public class A2AError extends RuntimeException implements Event {
     }
 
     /**
-     * Gets additional information about the error.
-     * <p>
-     * The structure and type of the data field is defined by the specific error code.
-     * It may contain detailed debugging information, validation errors, or other
-     * context-specific data to help diagnose the error.
+     * Gets additional details about the error as key-value pairs.
      *
-     * @return the error data, or null if not provided
+     * @return the error details, never null (empty map if no details provided)
      */
-    public @Nullable Object getData() {
-        return data;
+    public Map<String, Object> getDetails() {
+        return details;
     }
 }

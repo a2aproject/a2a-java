@@ -1,7 +1,8 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.A2AErrorCodes.INVALID_PARAMS_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
+
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -37,13 +38,13 @@ public class InvalidParamsError extends A2AError {
      *
      * @param code the error code
      * @param message the error message
-     * @param data additional error data
+     * @param details additional error details
      */
-    public InvalidParamsError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+    public InvalidParamsError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
         super(
-                defaultIfNull(code, INVALID_PARAMS_ERROR_CODE),
+                defaultIfNull(code, A2AErrorCodes.INVALID_PARAMS.code()),
                 defaultIfNull(message, "Invalid parameters"),
-                data);
+                details);
     }
 
     /**

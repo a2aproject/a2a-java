@@ -1,7 +1,8 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.A2AErrorCodes.METHOD_NOT_FOUND_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
+
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -29,19 +30,19 @@ public class MethodNotFoundError extends A2AError {
      *
      * @param code the error code (defaults to -32601 if null)
      * @param message the error message (defaults to "Method not found" if null)
-     * @param data additional error data (optional)
+     * @param details additional error details (optional)
      */
-    public MethodNotFoundError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+    public MethodNotFoundError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
         super(
-                defaultIfNull(code, METHOD_NOT_FOUND_ERROR_CODE),
+                defaultIfNull(code, A2AErrorCodes.METHOD_NOT_FOUND.code()),
                 defaultIfNull(message, "Method not found"),
-                data);
+                details);
     }
 
     /**
      * Constructs error with default message.
      */
     public MethodNotFoundError() {
-        this(METHOD_NOT_FOUND_ERROR_CODE, null, null);
+        this(A2AErrorCodes.METHOD_NOT_FOUND.code(), null, null);
     }
 }

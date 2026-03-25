@@ -1,7 +1,8 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.A2AErrorCodes.TASK_NOT_CANCELABLE_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
+
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -45,14 +46,13 @@ public class TaskNotCancelableError extends A2AProtocolError {
      *
      * @param code the error code (defaults to -32002 if null)
      * @param message the error message (defaults to "Task cannot be canceled" if null)
-     * @param data additional error data (optional)
+     * @param details additional error details (optional)
      */
-    public TaskNotCancelableError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+    public TaskNotCancelableError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
         super(
-                defaultIfNull(code, TASK_NOT_CANCELABLE_ERROR_CODE),
+                defaultIfNull(code, A2AErrorCodes.TASK_NOT_CANCELABLE.code()),
                 defaultIfNull(message, "Task cannot be canceled"),
-                data,
-                "https://a2a-protocol.org/errors/task-not-cancelable");
+                details);
     }
 
     /**

@@ -161,7 +161,7 @@ public class SSEEventListenerTest {
         A2AError jsonrpcError = (A2AError) receivedError.get();
         assertEquals(-32602, jsonrpcError.getCode());
         assertEquals("Invalid parameters", jsonrpcError.getMessage());
-        assertEquals("\"Missing required field\"", jsonrpcError.getData());
+        assertEquals("Missing required field", jsonrpcError.getDetails().get("info"));
     }
 
     @Test

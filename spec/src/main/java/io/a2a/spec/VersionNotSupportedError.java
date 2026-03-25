@@ -1,7 +1,8 @@
 package io.a2a.spec;
 
-import static io.a2a.spec.A2AErrorCodes.VERSION_NOT_SUPPORTED_ERROR_CODE;
 import static io.a2a.util.Utils.defaultIfNull;
+
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -35,13 +36,12 @@ public class VersionNotSupportedError extends A2AProtocolError {
      *
      * @param code the error code (defaults to -32009 if null)
      * @param message the error message (defaults to standard message if null)
-     * @param data additional error data (optional)
+     * @param details additional error details (optional)
      */
-    public VersionNotSupportedError(@Nullable Integer code, @Nullable String message, @Nullable Object data) {
+    public VersionNotSupportedError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
         super(
-                defaultIfNull(code, VERSION_NOT_SUPPORTED_ERROR_CODE),
+                defaultIfNull(code, A2AErrorCodes.VERSION_NOT_SUPPORTED.code()),
                 defaultIfNull(message, "Protocol version not supported"),
-                data,
-                "https://a2a-protocol.org/errors/version-not-supported");
+                details);
     }
 }
