@@ -37,9 +37,9 @@ jobs:
         java-version: [17, 21, 25]
     steps:
       - name: Checkout a2a-java
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Checkout a2a-tck
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: a2aproject/a2a-tck
           path: tck/a2a-tck
@@ -157,7 +157,7 @@ jobs:
           sleep 2
       - name: Upload TCK Diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: tck-diagnostics-java-${{ matrix.java-version }}
           path: |
@@ -167,7 +167,7 @@ jobs:
           if-no-files-found: warn
       - name: Upload TCK Compliance Report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: tck-compliance-report-java-${{ matrix.java-version }}
           path: tck/a2a-tck/report.json
