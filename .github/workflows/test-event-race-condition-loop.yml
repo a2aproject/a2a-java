@@ -1,0 +1,75 @@
+name: Test Event Race Condition (Loop 100x)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-loop:
+    name: Test Loop (${{ matrix.transport }}, JDK ${{ matrix.java }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['17', '21', '25']
+        transport: ['rest', 'jsonrpc', 'grpc']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build project (skip tests)
+        run: mvn clean install -DskipTests -B -V
+
+      - name: Run tests in loop (100 iterations)
+        run: |
+          MODULE="reference/${{ matrix.transport }}"
+          TEST_CLASS="QuarkusA2ARestJdkTest"
+
+          # Different test class names for different transports
+          if [ "${{ matrix.transport }}" == "jsonrpc" ]; then
+            TEST_CLASS="QuarkusA2AJSONRPCJdkTest"
+          elif [ "${{ matrix.transport }}" == "grpc" ]; then
+            TEST_CLASS="QuarkusA2AGrpcTest"
+          fi
+
+          TESTS="${TEST_CLASS}#testAgentToAgentLocalHandling+testNonBlockingWithMultipleMessages+testAuthRequiredWorkflow"
+
+          echo "Module: ${MODULE}"
+          echo "Test class: ${TEST_CLASS}"
+          echo "Running tests: ${TESTS}"
+
+          for i in {1..100}; do
+            echo "==================================================================="
+            echo "Iteration $i/100"
+            echo "==================================================================="
+
+            mvn test -pl "${MODULE}" -Dtest="${TESTS}" -B
+
+            if [ $? -ne 0 ]; then
+              echo "❌ Test failed on iteration $i"
+              exit 1
+            fi
+
+            echo "✅ Iteration $i passed"
+          done
+
+          echo "==================================================================="
+          echo "✅ All 100 iterations passed!"
+          echo "==================================================================="
+
+      - name: Upload surefire reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ matrix.transport }}-jdk${{ matrix.java }}
+          path: reference/${{ matrix.transport }}/target/surefire-reports/
+          retention-days: 7
