@@ -328,15 +328,16 @@ public class ClientBuilder {
         return wrap(clientTransportProvider.create(clientTransportConfig, agentCard, agentInterface), clientTransportConfig);
     }
 
-    private Map<String, String> getServerPreferredTransports() throws A2AClientException {
-        Map<String, String> serverPreferredTransports = new LinkedHashMap<>();
-        if(agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {
+    private Map<String, AgentInterface> getServerInterfacesMap() throws A2AClientException {
+        List<AgentInterface> serverInterfaces = agentCard.supportedInterfaces();
+        if (serverInterfaces == null || serverInterfaces.isEmpty()) {
             throw new A2AClientException("No server interface available in the AgentCard");
         }
-        for (AgentInterface agentInterface : agentCard.supportedInterfaces()) {
-            serverPreferredTransports.putIfAbsent(agentInterface.protocolBinding(), agentInterface.url());
+        Map<String, AgentInterface> serverInterfacesMap = new LinkedHashMap<>();
+        for (AgentInterface iface : serverInterfaces) {
+            serverInterfacesMap.putIfAbsent(iface.protocolBinding(), iface);
         }
-        return serverPreferredTransports;
+        return serverInterfacesMap;
     }
 
     private List<String> getClientPreferredTransports() {
@@ -351,40 +352,38 @@ public class ClientBuilder {
         return supportedClientTransports;
     }
 
-    private AgentInterface findBestClientTransport() throws A2AClientException {
-        // Retrieve transport supported by the A2A server
-        Map<String, String> serverPreferredTransports = getServerPreferredTransports();
-
-        // Retrieve transport configured for this client (using withTransport methods)
+    // Package-private for testing
+    AgentInterface findBestClientTransport() throws A2AClientException {
+        Map<String, AgentInterface> serverInterfacesMap = getServerInterfacesMap();
         List<String> clientPreferredTransports = getClientPreferredTransports();
 
-        String transportProtocol = null;
-        String transportUrl = null;
+        AgentInterface matchedInterface = null;
         if (clientConfig.isUseClientPreference()) {
+            // Client preference: iterate client transports first, find first server match
             for (String clientPreferredTransport : clientPreferredTransports) {
-                if (serverPreferredTransports.containsKey(clientPreferredTransport)) {
-                    transportProtocol = clientPreferredTransport;
-                    transportUrl = serverPreferredTransports.get(transportProtocol);
+                if (serverInterfacesMap.containsKey(clientPreferredTransport)) {
+                    matchedInterface = serverInterfacesMap.get(clientPreferredTransport);
                     break;
                 }
             }
         } else {
-            for (Map.Entry<String, String> transport : serverPreferredTransports.entrySet()) {
-                if (clientPreferredTransports.contains(transport.getKey())) {
-                    transportProtocol = transport.getKey();
-                    transportUrl = transport.getValue();
+            // Server preference: iterate server interfaces first, find first client match
+            for (AgentInterface iface : serverInterfacesMap.values()) {
+                if (clientPreferredTransports.contains(iface.protocolBinding())) {
+                    matchedInterface = iface;
                     break;
                 }
             }
         }
-        if (transportProtocol == null || transportUrl == null) {
+
+        if (matchedInterface == null) {
             throw new A2AClientException("No compatible transport found");
         }
-        if (!transportProviderRegistry.containsKey(transportProtocol)) {
-            throw new A2AClientException("No client available for " + transportProtocol);
+        if (!transportProviderRegistry.containsKey(matchedInterface.protocolBinding())) {
+            throw new A2AClientException("No client available for " + matchedInterface.protocolBinding());
         }
 
-        return new AgentInterface(transportProtocol, transportUrl);
+        return matchedInterface;
     }
 
     /**
