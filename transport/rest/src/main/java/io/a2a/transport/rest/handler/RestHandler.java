@@ -31,6 +31,7 @@ import io.a2a.grpc.utils.ProtoUtils;
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
 import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
+import io.a2a.server.AgentCardCacheMetadata;
 import io.a2a.server.AgentCardValidator;
 import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.PublicAgentCard;
@@ -129,6 +130,7 @@ public class RestHandler {
     // final, is not proxyable in all runtimes
     private AgentCard agentCard;
     private @Nullable Instance<AgentCard> extendedAgentCard;
+    private AgentCardCacheMetadata cacheMetadata;
     private RequestHandler requestHandler;
     private Executor executor;
 
@@ -148,14 +150,16 @@ public class RestHandler {
      *
      * @param agentCard the public agent card containing agent capabilities
      * @param extendedAgentCard optional extended agent card instance
+     * @param cacheMetadata the agent card caching metadata
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
      */
     @Inject
     public RestHandler(@PublicAgentCard AgentCard agentCard, @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-            RequestHandler requestHandler, @Internal Executor executor) {
+            AgentCardCacheMetadata cacheMetadata, RequestHandler requestHandler, @Internal Executor executor) {
         this.agentCard = agentCard;
         this.extendedAgentCard = extendedAgentCard;
+        this.cacheMetadata = cacheMetadata;
         this.requestHandler = requestHandler;
         this.executor = executor;
 
@@ -167,11 +171,14 @@ public class RestHandler {
      * Creates a REST handler with basic dependencies.
      *
      * @param agentCard the agent card containing agent capabilities
+     * @param cacheMetadata the agent card caching metadata
      * @param requestHandler the handler for processing A2A requests
      * @param executor the executor for asynchronous operations
      */
-    public RestHandler(AgentCard agentCard, RequestHandler requestHandler, Executor executor) {
+    public RestHandler(AgentCard agentCard, AgentCardCacheMetadata cacheMetadata,
+            RequestHandler requestHandler, Executor executor) {
         this.agentCard = agentCard;
+        this.cacheMetadata = cacheMetadata;
         this.requestHandler = requestHandler;
         this.executor = executor;
     }
@@ -862,7 +869,8 @@ public class RestHandler {
      */
     public HTTPRestResponse getAgentCard() {
         try {
-            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(agentCard));
+            return new HTTPRestResponse(200, APPLICATION_JSON, JsonUtil.toJson(agentCard),
+                    cacheMetadata.getHttpHeadersMap());
         } catch (Throwable t) {
             return createErrorResponse(500, new InternalError(t.getMessage()));
         }
@@ -876,6 +884,7 @@ public class RestHandler {
         private final int statusCode;
         private final String contentType;
         private final String body;
+        private final Map<String, String> headers;
 
         /**
          * Creates an HTTP REST response.
@@ -885,9 +894,22 @@ public class RestHandler {
          * @param body the response body
          */
         public HTTPRestResponse(int statusCode, String contentType, String body) {
+            this(statusCode, contentType, body, Map.of());
+        }
+
+        /**
+         * Creates an HTTP REST response with custom headers.
+         *
+         * @param statusCode the HTTP status code
+         * @param contentType the content type of the response
+         * @param body the response body
+         * @param headers additional HTTP headers
+         */
+        public HTTPRestResponse(int statusCode, String contentType, String body, Map<String, String> headers) {
             this.statusCode = statusCode;
             this.contentType = contentType;
             this.body = body;
+            this.headers = Map.copyOf(headers);
         }
 
         /**
@@ -917,9 +939,18 @@ public class RestHandler {
             return body;
         }
 
+        /**
+         * Returns additional HTTP headers.
+         *
+         * @return the headers map
+         */
+        public Map<String, String> getHeaders() {
+            return headers;
+        }
+
         @Override
         public String toString() {
-            return "HTTPRestResponse{" + "statusCode=" + statusCode + ", contentType=" + contentType + ", body=" + body + '}';
+            return "HTTPRestResponse{" + "statusCode=" + statusCode + ", contentType=" + contentType + ", body=" + body + ", headers=" + headers + '}';
         }
     }
 

@@ -50,4 +50,10 @@ public class QuarkusA2AGrpcTest extends AbstractA2AServerTest {
             Thread.currentThread().interrupt();
         }
     }
+
+    @Override
+    public void testAgentCardHeaders() {
+        // Skip - gRPC doesn't use HTTP caching headers for Agent Card
+        // The A2A spec section 8.6 caching requirements apply only to HTTP endpoints
+    }
 }
