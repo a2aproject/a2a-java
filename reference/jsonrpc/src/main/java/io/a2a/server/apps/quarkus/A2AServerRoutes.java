@@ -172,6 +172,9 @@ public class A2AServerRoutes {
     @Inject
     JSONRPCHandler jsonRpcHandler;
 
+    @Inject
+    io.a2a.server.AgentCardCacheMetadata cacheMetadata;
+
     // Hook so testing can wait until the MultiSseSupport is subscribed.
     // Without this we get intermittent failures
     private static volatile Runnable streamingMultiSseSupportSubscribedRunnable;
@@ -321,6 +324,13 @@ public class A2AServerRoutes {
      * <p>Returns the agent's capabilities and metadata in JSON format according to the
      * A2A protocol specification. This endpoint is publicly accessible (no authentication).
      *
+     * <p>Includes HTTP caching headers per A2A specification section 8.6:
+     * <ul>
+     *   <li>{@code Cache-Control} - with max-age directive</li>
+     *   <li>{@code ETag} - content hash for validation</li>
+     *   <li>{@code Last-Modified} - timestamp when agent card was initialized</li>
+     * </ul>
+     *
      * <p><b>Request:</b>
      * <pre>{@code
      * GET /.well-known/agent-card.json
@@ -330,6 +340,9 @@ public class A2AServerRoutes {
      * <pre>{@code
      * HTTP/1.1 200 OK
      * Content-Type: application/json
+     * Cache-Control: public, max-age=3600
+     * ETag: "a1b2c3d4..."
+     * Last-Modified: Mon, 17 Mar 2025 10:00:00 GMT
      *
      * {
      *   "name": "My Agent",
@@ -342,12 +355,15 @@ public class A2AServerRoutes {
      * }
      * }</pre>
      *
+     * @param rc the Vert.x routing context
      * @return the agent card as a JSON string
      * @throws JsonProcessingException if serialization fails
      * @see JSONRPCHandler#getAgentCard()
      */
     @Route(path = "/.well-known/agent-card.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
-    public String getAgentCard() throws JsonProcessingException {
+    public String getAgentCard(RoutingContext rc) throws JsonProcessingException {
+        // Add caching headers per A2A specification section 8.6
+        cacheMetadata.getHttpHeadersMap().forEach((k, v) -> rc.response().putHeader(k, v));
         return JsonUtil.toJson(jsonRpcHandler.getAgentCard());
     }
 

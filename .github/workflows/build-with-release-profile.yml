@@ -43,7 +43,7 @@ jobs:
           cat pr_info/*
 
       - name: Upload PR info
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: pr-info
           path: pr_info/

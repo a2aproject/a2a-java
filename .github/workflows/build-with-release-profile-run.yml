@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Download PR info
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pr-info
           github-token: ${{ github.token }}
@@ -68,7 +68,7 @@ jobs:
             });
 
       - name: Checkout PR code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Checkout the exact commit from the PR (or push)
           # This is safe because the workflow code (this file) is always from main
