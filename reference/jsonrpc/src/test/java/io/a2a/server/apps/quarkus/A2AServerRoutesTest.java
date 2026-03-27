@@ -1,6 +1,5 @@
 package io.a2a.server.apps.quarkus;
 
-import static io.a2a.common.MediaType.APPLICATION_PROBLEM_JSON;
 import static io.a2a.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static io.a2a.spec.A2AMethods.GET_TASK_METHOD;
 import static io.a2a.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
@@ -718,7 +717,7 @@ public class A2AServerRoutesTest {
     }
 
     @Test
-    public void testJsonParseError_ContentTypeIsProblemJson() {
+    public void testJsonParseError_ContentTypeIsApplicationJson() {
         // Arrange - invalid JSON
         String invalidJson = "not valid json {{{";
         when(mockRequestBody.asString()).thenReturn(invalidJson);
@@ -727,11 +726,11 @@ public class A2AServerRoutesTest {
         routes.invokeJSONRPCHandler(invalidJson, mockRoutingContext);
 
         // Assert
-        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_PROBLEM_JSON);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     @Test
-    public void testMethodNotFound_ContentTypeIsProblemJson() {
+    public void testMethodNotFound_ContentTypeIsApplicationJson() {
         // Arrange - unknown method
         String jsonRpcRequest = """
             {
@@ -746,7 +745,7 @@ public class A2AServerRoutesTest {
         routes.invokeJSONRPCHandler(jsonRpcRequest, mockRoutingContext);
 
         // Assert
-        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_PROBLEM_JSON);
+        verify(mockHttpResponse).putHeader(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     /**

@@ -1,7 +1,6 @@
 package io.a2a.transport.rest.handler;
 
 import static io.a2a.common.MediaType.APPLICATION_JSON;
-import static io.a2a.common.MediaType.APPLICATION_PROBLEM_JSON;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 
 import io.a2a.spec.A2AErrorCodes;
@@ -683,7 +682,7 @@ public class RestHandler {
 
     private HTTPRestResponse createErrorResponse(int statusCode, A2AError error) {
         String jsonBody = new HTTPRestErrorResponse(error).toJson();
-        return new HTTPRestResponse(statusCode, APPLICATION_PROBLEM_JSON, jsonBody);
+        return new HTTPRestResponse(statusCode, APPLICATION_JSON, jsonBody);
     }
 
     private HTTPRestStreamingResponse createStreamingResponse(Flow.Publisher<StreamingEventKind> publisher) {
