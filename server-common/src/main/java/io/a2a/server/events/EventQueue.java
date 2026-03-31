@@ -324,6 +324,17 @@ public abstract class EventQueue implements AutoCloseable {
     }
 
     /**
+     * Clears the awaiting final event flag.
+     * <p>
+     * Default implementation is a no-op for queues that don't track this state.
+     * ChildQueue overrides this to actually clear the flag.
+     * </p>
+     */
+    public void clearAwaitingFinalEvent() {
+        // Default no-op implementation - overridden by ChildQueue
+    }
+
+    /**
      * Closes this event queue gracefully, allowing pending events to be consumed.
      */
     public abstract void close();
@@ -754,12 +765,6 @@ public abstract class EventQueue implements AutoCloseable {
                 if (item != null) {
                     Event event = item.getEvent();
                     LOGGER.debug("Dequeued event item (waiting) {} {}", this, event instanceof Throwable ? event.toString() : event);
-                    // Clear the awaiting flag only if this is a final event
-                    // This allows EventConsumer grace period logic to proceed correctly
-                    if (awaitingFinalEvent && isFinalEvent(event)) {
-                        awaitingFinalEvent = false;
-                        LOGGER.debug("ChildQueue {} received final event while awaiting - flag cleared", System.identityHashCode(this));
-                    }
                 } else {
                     LOGGER.trace("Dequeue timeout (null) from ChildQueue {}", System.identityHashCode(this));
                 }
@@ -824,7 +829,8 @@ public abstract class EventQueue implements AutoCloseable {
          * Called by EventConsumer when it has waited too long for the final event.
          * This allows normal timeout logic to proceed if the final event never arrives.
          */
-        void clearAwaitingFinalEvent() {
+        @Override
+        public void clearAwaitingFinalEvent() {
             awaitingFinalEvent = false;
             LOGGER.debug("ChildQueue {} cleared awaitingFinalEvent flag (timeout)", System.identityHashCode(this));
         }

@@ -115,9 +115,7 @@ public class EventConsumer {
                                     LOGGER.debug("Waited {} timeouts for final event but it hasn't arrived - proceeding with normal timeout logic (queue={})",
                                         pollTimeoutsWhileAwaitingFinal, System.identityHashCode(queue));
                                     // Clear the flag on the queue itself, not just the local variable
-                                    if (queue instanceof EventQueue.ChildQueue) {
-                                        ((EventQueue.ChildQueue) queue).clearAwaitingFinalEvent();
-                                    }
+                                    queue.clearAwaitingFinalEvent();
                                     awaitingFinal = false; // Also update local variable for this iteration
                                 }
                             } else {
