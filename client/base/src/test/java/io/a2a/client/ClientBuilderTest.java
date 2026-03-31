@@ -21,72 +21,38 @@ import org.junit.jupiter.api.Test;
 
 public class ClientBuilderTest {
 
-    private AgentCard card = AgentCard.builder()
-            .name("Hello World Agent")
-            .description("Just a hello world agent")
-            .version("1.0.0")
-            .documentationUrl("http://example.com/docs")
-            .capabilities(AgentCapabilities.builder()
-                    .streaming(true)
-                    .pushNotifications(true)
-                    .build())
-            .defaultInputModes(Collections.singletonList("text"))
-            .defaultOutputModes(Collections.singletonList("text"))
-            .skills(Collections.singletonList(AgentSkill.builder()
-                    .id("hello_world")
-                    .name("Returns hello world")
-                    .description("just returns hello world")
-                    .tags(Collections.singletonList("hello world"))
-                    .examples(List.of("hi", "hello world"))
-                    .build()))
-            .supportedInterfaces(List.of(
-                    new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")))
-            .build();
+    private static AgentCard buildCard(List<AgentInterface> interfaces) {
+        return AgentCard.builder()
+                .name("Hello World Agent")
+                .description("Just a hello world agent")
+                .version("1.0.0")
+                .documentationUrl("http://example.com/docs")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(true)
+                        .pushNotifications(true)
+                        .build())
+                .defaultInputModes(Collections.singletonList("text"))
+                .defaultOutputModes(Collections.singletonList("text"))
+                .skills(Collections.singletonList(AgentSkill.builder()
+                        .id("hello_world")
+                        .name("Returns hello world")
+                        .description("just returns hello world")
+                        .tags(Collections.singletonList("hello world"))
+                        .examples(List.of("hi", "hello world"))
+                        .build()))
+                .supportedInterfaces(interfaces)
+                .build();
+    }
 
-    private AgentCard cardWithTenant = AgentCard.builder()
-            .name("Hello World Agent")
-            .description("Just a hello world agent")
-            .version("1.0.0")
-            .documentationUrl("http://example.com/docs")
-            .capabilities(AgentCapabilities.builder()
-                    .streaming(true)
-                    .pushNotifications(true)
-                    .build())
-            .defaultInputModes(Collections.singletonList("text"))
-            .defaultOutputModes(Collections.singletonList("text"))
-            .skills(Collections.singletonList(AgentSkill.builder()
-                    .id("hello_world")
-                    .name("Returns hello world")
-                    .description("just returns hello world")
-                    .tags(Collections.singletonList("hello world"))
-                    .examples(List.of("hi", "hello world"))
-                    .build()))
-            .supportedInterfaces(List.of(
-                    new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999", "/default-tenant")))
-            .build();
+    private final AgentCard card = buildCard(List.of(
+            new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999")));
 
-    private AgentCard cardWithMultipleInterfaces = AgentCard.builder()
-            .name("Multi-Interface Agent")
-            .description("Agent with multiple interfaces")
-            .version("1.0.0")
-            .documentationUrl("http://example.com/docs")
-            .capabilities(AgentCapabilities.builder()
-                    .streaming(true)
-                    .pushNotifications(true)
-                    .build())
-            .defaultInputModes(Collections.singletonList("text"))
-            .defaultOutputModes(Collections.singletonList("text"))
-            .skills(Collections.singletonList(AgentSkill.builder()
-                    .id("hello_world")
-                    .name("Returns hello world")
-                    .description("just returns hello world")
-                    .tags(Collections.singletonList("hello world"))
-                    .examples(List.of("hi", "hello world"))
-                    .build()))
-            .supportedInterfaces(List.of(
-                    new AgentInterface(TransportProtocol.GRPC.asString(), "http://localhost:9998", "/grpc-tenant", "1.0"),
-                    new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999", "/jsonrpc-tenant", "1.0")))
-            .build();
+    private final AgentCard cardWithTenant = buildCard(List.of(
+            new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999", "/default-tenant")));
+
+    private final AgentCard cardWithMultipleInterfaces = buildCard(List.of(
+            new AgentInterface(TransportProtocol.GRPC.asString(), "http://localhost:9998", "/grpc-tenant", "1.0"),
+            new AgentInterface(TransportProtocol.JSONRPC.asString(), "http://localhost:9999", "/jsonrpc-tenant", "1.0")));
 
     @Test
     public void shouldNotFindCompatibleTransport() throws A2AClientException {

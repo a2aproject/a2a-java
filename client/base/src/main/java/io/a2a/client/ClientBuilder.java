@@ -333,6 +333,7 @@ public class ClientBuilder {
         if (serverInterfaces == null || serverInterfaces.isEmpty()) {
             throw new A2AClientException("No server interface available in the AgentCard");
         }
+        // If there are multiple interfaces with the same protocol binding, only the first is considered
         Map<String, AgentInterface> serverInterfacesMap = new LinkedHashMap<>();
         for (AgentInterface iface : serverInterfaces) {
             serverInterfacesMap.putIfAbsent(iface.protocolBinding(), iface);
