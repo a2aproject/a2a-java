@@ -33,5 +33,16 @@ public record DeviceCodeOAuthFlow(String deviceAuthorizationUrl, String tokenUrl
         Assert.checkNotNullParam("deviceAuthorizationUrl", deviceAuthorizationUrl);
         Assert.checkNotNullParam("tokenUrl", tokenUrl);
         Assert.checkNotNullParam("scopes", scopes);
+        scopes = Map.copyOf(scopes);
+    }
+
+    /**
+     * Returns an unmodifiable copy of the scopes map.
+     *
+     * @return unmodifiable map of available OAuth scopes to their descriptions
+     */
+    @Override
+    public Map<String, String> scopes() {
+        return Map.copyOf(scopes);
     }
 }
