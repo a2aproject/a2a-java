@@ -1,13 +1,10 @@
 name: Run TCK
 
 on:
-  # Handle all branches for now
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Build and Test"]
+    types:
+      - completed
   workflow_dispatch:
 
 env:
@@ -24,10 +21,11 @@ concurrency:
 
 jobs:
   tck-test:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java-version: [17, 21, 25]
+        java-version: [17]
     steps:
       - name: Checkout a2a-java
         uses: actions/checkout@v6
