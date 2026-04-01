@@ -2,6 +2,7 @@ package io.a2a.server.requesthandlers;
 
 import static io.a2a.server.util.async.AsyncUtils.convertingProcessor;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
+import static io.a2a.server.util.async.AsyncUtils.insertingProcessor;
 import static io.a2a.server.util.async.AsyncUtils.processor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -67,7 +68,6 @@ import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.UnsupportedOperationError;
-
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -380,6 +380,9 @@ public class DefaultRequestHandler implements RequestHandler {
         ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor);
 
         EventQueue queue = queueManager.createOrTap(task.id());
+        EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
+
+        // Call agentExecutor.cancel() to enqueue the CANCELED event
         RequestContext cancelRequestContext = requestContextBuilder.get()
                 .setTaskId(task.id())
                 .setContextId(task.contextId())
@@ -387,29 +390,20 @@ public class DefaultRequestHandler implements RequestHandler {
                 .setServerCallContext(context)
                 .build();
         AgentEmitter emitter = new AgentEmitter(cancelRequestContext, queue);
-        try {
-            agentExecutor.cancel(cancelRequestContext, emitter);
-        } catch (TaskNotCancelableError e) {
-            // Expected error - log at INFO level
-            LOGGER.info("Task {} is not cancelable", task.id());
-            throw e;
-        } catch (A2AError e) {
-            // Other A2A errors - log at WARN level with stack trace
-            LOGGER.warn("Agent cancellation threw A2AError for task {}: {} - {}", 
-                task.id(), e.getClass().getSimpleName(), e.getMessage(), e);
-            throw e;
-        } catch (Exception e) {
-            // Unexpected errors - log at ERROR level
-            LOGGER.error("Agent cancellation threw unexpected exception for task {}", task.id(), e);
-            throw new io.a2a.spec.InternalError("Agent cancellation failed: " + e.getMessage());
-        }
 
+        agentExecutor.cancel(cancelRequestContext, emitter);
+
+        // Cancel any running agent future
         Optional.ofNullable(runningAgents.get(task.id()))
                 .ifPresent(cf -> cf.cancel(true));
 
-        EventConsumer consumer = new EventConsumer(queue);
-        EventKind type = resultAggregator.consumeAll(consumer);
-        if (!(type instanceof Task tempTask)) {
+        // Consume events with blocking=true to wait for CANCELED state
+        // The latch in consumeAndBreakOnInterrupt ensures EventConsumer starts before we wait
+        // CANCELED is a final state, so loop will break naturally when event arrives
+        // If agentExecutor.cancel() threw TaskNotCancelableError, that A2AError event will also break the loop
+        ResultAggregator.EventTypeAndInterrupt etai = resultAggregator.consumeAndBreakOnInterrupt(consumer, true);
+
+        if (!(etai.eventType() instanceof Task tempTask)) {
             throw new InternalError("Agent did not return valid response for cancel");
         }
 
@@ -459,7 +453,7 @@ public class DefaultRequestHandler implements RequestHandler {
         boolean interruptedOrNonBlocking = false;
 
         // Create consumer BEFORE starting agent - callback is registered inside registerAndExecuteAgentAsync
-        EventConsumer consumer = new EventConsumer(queue);
+        EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
 
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(queueTaskId, mss.requestContext, queue, consumer.createAgentRunnableDoneCallback());
 
@@ -653,7 +647,7 @@ public class DefaultRequestHandler implements RequestHandler {
         ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
 
         // Create consumer BEFORE starting agent - callback is registered inside registerAndExecuteAgentAsync
-        EventConsumer consumer = new EventConsumer(queue);
+        EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
 
         EnhancedRunnable producerRunnable = registerAndExecuteAgentAsync(queueTaskId, mss.requestContext, queue, consumer.createAgentRunnableDoneCallback());
 
@@ -840,14 +834,15 @@ public class DefaultRequestHandler implements RequestHandler {
         // Per A2A Protocol Spec 3.1.6 (Subscribe to Task):
         // "The operation MUST return a Task object as the first event in the stream,
         // representing the current state of the task at the time of subscription."
-        // Enqueue the current task state directly to this ChildQueue only (already persisted, no need for MainEventBus)
-        queue.enqueueEventLocalOnly(task);
-        LOGGER.debug("onSubscribeToTask - enqueued current task state as first event for taskId: {}", params.id());
-
-        EventConsumer consumer = new EventConsumer(queue);
+        // Instead of enqueuing and hoping EventConsumer polls it in time, we prepend it
+        // directly to the Publisher stream, ensuring synchronous delivery to subscriber
+        EventConsumer consumer = new EventConsumer(queue, eventConsumerExecutor);
         Flow.Publisher<EventQueueItem> results = resultAggregator.consumeAndEmit(consumer);
-        LOGGER.debug("onSubscribeToTask - returning publisher for taskId: {}", params.id());
-        return convertingProcessor(results, item -> (StreamingEventKind) item.getEvent());
+        LOGGER.debug("onSubscribeToTask - prepending initial task snapshot to stream, taskId: {}", params.id());
+        return insertingProcessor(
+            convertingProcessor(results, item -> (StreamingEventKind) item.getEvent()),
+            task
+        );
     }
 
     @Override

@@ -305,6 +305,36 @@ public abstract class EventQueue implements AutoCloseable {
     public abstract int size();
 
     /**
+     * Returns whether this queue is awaiting a final event to be delivered.
+     * <p>
+     * This is used by EventConsumer to determine if it should keep polling even when
+     * the queue is empty. A final event may still be in-transit through MainEventBusProcessor.
+     * </p>
+     * <p>
+     * For MainQueue: always returns false (MainQueue cannot be consumed).
+     * For ChildQueue: returns true if {@link ChildQueue#expectFinalEvent()} was called
+     * but the final event hasn't been received yet.
+     * </p>
+     *
+     * @return true if awaiting a final event, false otherwise
+     */
+    public boolean isAwaitingFinalEvent() {
+        // Default implementation - overridden by ChildQueue
+        return false;
+    }
+
+    /**
+     * Clears the awaiting final event flag.
+     * <p>
+     * Default implementation is a no-op for queues that don't track this state.
+     * ChildQueue overrides this to actually clear the flag.
+     * </p>
+     */
+    public void clearAwaitingFinalEvent() {
+        // Default no-op implementation - overridden by ChildQueue
+    }
+
+    /**
      * Closes this event queue gracefully, allowing pending events to be consumed.
      */
     public abstract void close();
@@ -758,6 +788,11 @@ public abstract class EventQueue implements AutoCloseable {
         }
 
         @Override
+        public boolean isAwaitingFinalEvent() {
+            return awaitingFinalEvent;
+        }
+
+        @Override
         public void awaitQueuePollerStart() throws InterruptedException {
             parent.awaitQueuePollerStart();
         }
@@ -788,6 +823,16 @@ public abstract class EventQueue implements AutoCloseable {
         void expectFinalEvent() {
             awaitingFinalEvent = true;
             LOGGER.debug("ChildQueue {} now awaiting final event", System.identityHashCode(this));
+        }
+
+        /**
+         * Called by EventConsumer when it has waited too long for the final event.
+         * This allows normal timeout logic to proceed if the final event never arrives.
+         */
+        @Override
+        public void clearAwaitingFinalEvent() {
+            awaitingFinalEvent = false;
+            LOGGER.debug("ChildQueue {} cleared awaitingFinalEvent flag (timeout)", System.identityHashCode(this));
         }
 
         @Override

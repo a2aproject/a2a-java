@@ -1921,7 +1921,11 @@ public abstract class AbstractA2AServerTest {
                 }
             };
 
-            Consumer<Throwable> errorHandler = errorRef::set;
+            Consumer<Throwable> errorHandler = error -> {
+                if (!isStreamClosedError(error)) {
+                    errorRef.set(error);
+                }
+            };
 
             // Wait for subscription to be established
             CountDownLatch subscriptionLatch = new CountDownLatch(1);

@@ -91,6 +91,54 @@ public class AsyncUtils {
         return new Transform<>(source, converterFunction);
     }
 
+    /**
+     * Creates a publisher that first emits the given items, then emits all items from the source publisher.
+     * <p>
+     * This is useful for prepending initial items to a stream, ensuring they are delivered
+     * synchronously when the subscriber subscribes, before any items from the source publisher.
+     * </p>
+     *
+     * @param source the source publisher whose items will be emitted after the inserted items
+     * @param inserted the items to emit first (in order)
+     * @param <T> the type of items
+     * @return a new publisher that emits inserted items first, then source items
+     */
+    @SafeVarargs
+    public static <T> Flow.Publisher<T> insertingProcessor(Flow.Publisher<T> source, T... inserted) {
+        return ZeroPublisher.create(createTubeConfig(), tube -> {
+            // 1. Emit all inserted items FIRST (synchronously)
+            for (T item : inserted) {
+                tube.send(item);
+            }
+
+            // 2. Then subscribe to source publisher and forward all its items
+            source.subscribe(new Flow.Subscriber<T>() {
+                private Flow.@Nullable Subscription subscription;
+
+                @Override
+                public void onSubscribe(Flow.Subscription subscription) {
+                    this.subscription = subscription;
+                    subscription.request(Long.MAX_VALUE);  // Request all items
+                }
+
+                @Override
+                public void onNext(T item) {
+                    tube.send(item);  // Forward to our tube
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    tube.fail(throwable);
+                }
+
+                @Override
+                public void onComplete() {
+                    tube.complete();
+                }
+            });
+        });
+    }
+
 
     private static abstract class AbstractSubscriber<T> implements Flow.Subscriber<T> {
         private Flow.@Nullable Subscription subscription;
