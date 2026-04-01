@@ -1,6 +1,10 @@
 package io.a2a.spec;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.ToNumberPolicy;
 import io.a2a.util.Assert;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
@@ -77,4 +81,59 @@ public record DataPart(Object data, @Nullable Map<String, Object> metadata) impl
     public DataPart(Object data) {
         this(data, null);
     }
+
+    /**
+     * Creates a DataPart by parsing a JSON string into its corresponding Java type.
+     * <p>
+     * The JSON string is parsed using Gson with {@code ToNumberPolicy.LONG_OR_DOUBLE},
+     * producing the following mappings:
+     * <ul>
+     *   <li>JSON objects → {@code Map<String, Object>}</li>
+     *   <li>JSON arrays → {@code List<Object>}</li>
+     *   <li>JSON strings → {@code String}</li>
+     *   <li>JSON integers → {@code Long}</li>
+     *   <li>JSON decimals → {@code Double}</li>
+     *   <li>JSON booleans → {@code Boolean}</li>
+     * </ul>
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * DataPart dataPart = DataPart.fromJson("""
+     *     {
+     *         "temperature": 22.5,
+     *         "humidity": 65
+     *     }""");
+     * }</pre>
+     *
+     * @param json the JSON string to parse (must not be null or the JSON literal "null")
+     * @return a new DataPart containing the parsed data
+     * @throws IllegalArgumentException if json is null, parses to null, or is not valid
+     */
+    public static DataPart fromJson(String json) {
+        return fromJson(json, null);
+    }
+
+    /**
+     * Creates a DataPart by parsing a JSON string into its corresponding Java type,
+     * with optional metadata.
+     *
+     * @param json the JSON string to parse (must not be null or the JSON literal "null")
+     * @param metadata additional metadata for the part
+     * @return a new DataPart containing the parsed data and metadata
+     * @throws IllegalArgumentException if json is null, parses to null, or is not valid
+     * @see #fromJson(String)
+     */
+    public static DataPart fromJson(String json, @Nullable Map<String, Object> metadata) {
+        Assert.checkNotNullParam("json", json);
+        try {
+            Object data = JSON_PARSER.fromJson(json, Object.class);
+            return new DataPart(data, metadata);
+        } catch (JsonSyntaxException e) {
+            throw new IllegalArgumentException("Invalid JSON: " + json, e);
+        }
+    }
+
+    private static final Gson JSON_PARSER = new GsonBuilder()
+            .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+            .create();
 }
