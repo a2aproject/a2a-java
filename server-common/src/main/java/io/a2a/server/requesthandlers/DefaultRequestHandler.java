@@ -391,7 +391,24 @@ public class DefaultRequestHandler implements RequestHandler {
                 .build();
         AgentEmitter emitter = new AgentEmitter(cancelRequestContext, queue);
 
-        agentExecutor.cancel(cancelRequestContext, emitter);
+        // Call agentExecutor.cancel() with error handling
+        // AgentExecutor is user-provided, so catch all exceptions
+        try {
+            agentExecutor.cancel(cancelRequestContext, emitter);
+        } catch (TaskNotCancelableError e) {
+            // Expected error - log and enqueue
+            LOGGER.info("Task {} is not cancelable, agent threw: {}", task.id(), e.getMessage());
+            emitter.fail(e);
+        } catch (A2AError e) {
+            // Other A2A errors - log and enqueue
+            LOGGER.warn("Agent cancellation threw A2AError for task {}: {} - {}",
+                task.id(), e.getClass().getSimpleName(), e.getMessage(), e);
+            emitter.fail(e);
+        } catch (Exception e) {
+            // Unexpected errors - log and enqueue as InternalError
+            LOGGER.error("Agent cancellation threw unexpected exception for task {}", task.id(), e);
+            emitter.fail(new io.a2a.spec.InternalError("Agent cancellation failed: " + e.getMessage()));
+        }
 
         // Cancel any running agent future
         Optional.ofNullable(runningAgents.get(task.id()))

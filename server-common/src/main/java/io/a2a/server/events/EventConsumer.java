@@ -37,10 +37,16 @@ public class EventConsumer {
     private static final int MAX_POLL_TIMEOUTS_AFTER_AGENT_COMPLETED = 3;
     // Maximum time to wait for final event when awaitingFinalEvent is set
     // If event doesn't arrive after this many timeouts, assume it won't arrive
-    // Calculation: MAX_POLL_TIMEOUTS_AWAITING_FINAL * QUEUE_WAIT_MILLISECONDS = 3000ms
+    // Calculation uses ceiling division to ensure timeout is at least MAX_AWAITING_FINAL_TIMEOUT_MS
     private static final int MAX_AWAITING_FINAL_TIMEOUT_MS = 3000;
-    private static final int MAX_POLL_TIMEOUTS_AWAITING_FINAL = 
-        MAX_AWAITING_FINAL_TIMEOUT_MS / QUEUE_WAIT_MILLISECONDS;
+    private static final int MAX_POLL_TIMEOUTS_AWAITING_FINAL =
+        (MAX_AWAITING_FINAL_TIMEOUT_MS + QUEUE_WAIT_MILLISECONDS - 1) / QUEUE_WAIT_MILLISECONDS;
+    // WORKAROUND: Sleep delay to allow SSE buffer flush before stream completion
+    // This is a temporary workaround for a race condition where tube.complete() can arrive
+    // before the final event is flushed from the SSE buffer. Ideally, this should be handled
+    // at the transport layer (e.g., MultiSseSupport) with proper write completion callbacks.
+    // TODO: Move buffer flush handling to transport layer to avoid this latency penalty
+    private static final int BUFFER_FLUSH_DELAY_MS = 150;
 
     public EventConsumer(EventQueue queue, Executor executor) {
         this.queue = queue;
@@ -66,7 +72,7 @@ public class EventConsumer {
             executor.execute(() -> {
                 boolean completed = false;
                 try {
-                    while (true) {
+                    while (!Thread.currentThread().isInterrupted()) {
                     // Check if cancelled by client disconnect
                     if (cancelled) {
                         LOGGER.debug("EventConsumer detected cancellation, exiting polling loop for queue {}", System.identityHashCode(queue));
@@ -228,11 +234,10 @@ public class EventConsumer {
                             // the stream-end signal can reach the client BEFORE the buffered final event,
                             // causing the client to close the connection and never receive the final event.
                             // This is especially important in replicated scenarios where events arrive via Kafka
-                            // and timing is less deterministic. A delay ensures the buffer flushes.
-                            // Increased to 150ms to account for CI environment latency and JVM scheduling delays.
+                            // and timing is less deterministic.
                             if (isFinalSent) {
                                 try {
-                                    Thread.sleep(150);  // 150ms to allow SSE buffer flush in CI environments
+                                    Thread.sleep(BUFFER_FLUSH_DELAY_MS);
                                 } catch (InterruptedException e) {
                                     Thread.currentThread().interrupt();
                                 }
@@ -244,6 +249,7 @@ public class EventConsumer {
                         tube.complete();
                         return;
                     } catch (Throwable t) {
+                        completed = true;
                         tube.fail(t);
                         return;
                     }
