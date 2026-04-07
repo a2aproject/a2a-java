@@ -972,10 +972,12 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
 
         future.join();
 
-        // The Python implementation has several events emitted since it uses mocks.
-        //
-        // See testOnMessageStreamNewMessageExistingTaskSuccessMocks() for a test more similar to the Python implementation
-        assertEquals(events, results);
+        // Per A2A Protocol Spec 3.1.6: First event must be initial Task snapshot
+        // insertingProcessor prepends MINIMAL_TASK, then mock events follow
+        assertEquals(3, results.size());
+        assertInstanceOf(Task.class, results.get(0), "First event must be initial Task snapshot");
+        assertEquals(events.get(0), results.get(1), "Second event should be TaskArtifactUpdateEvent");
+        assertEquals(events.get(1), results.get(2), "Third event should be TaskStatusUpdateEvent");
     }
 
     @Test

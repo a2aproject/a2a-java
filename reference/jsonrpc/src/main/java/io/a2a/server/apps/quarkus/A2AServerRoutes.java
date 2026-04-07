@@ -299,15 +299,15 @@ public class A2AServerRoutes {
                         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .end(serializeResponse(error));
             } else if (streaming) {
-                final Multi<? extends A2AResponse<?>> finalStreamingResponse = streamingResponse;
-                executor.execute(() -> {
-                    // Convert Multi<A2AResponse> to Multi<String> with SSE formatting
-                    AtomicLong eventIdCounter = new AtomicLong(0);
-                    Multi<String> sseEvents = finalStreamingResponse
-                            .map(response -> SseFormatter.formatResponseAsSSE(response, eventIdCounter.getAndIncrement()));
-                    // Write SSE-formatted strings to HTTP response
-                    MultiSseSupport.writeSseStrings(sseEvents, rc, context);
-                });
+                // Convert Multi<A2AResponse> to Multi<String> with SSE formatting
+                // CRITICAL: Subscribe synchronously to avoid race condition where EventConsumer
+                // starts emitting events before MultiSseSupport subscribes. The executor.execute()
+                // wrapper caused 100-600ms delays before subscription, causing events to be lost.
+                AtomicLong eventIdCounter = new AtomicLong(0);
+                Multi<String> sseEvents = streamingResponse
+                        .map(response -> SseFormatter.formatResponseAsSSE(response, eventIdCounter.getAndIncrement()));
+                // Write SSE-formatted strings to HTTP response
+                MultiSseSupport.writeSseStrings(sseEvents, rc, context);
 
             } else {
                 rc.response()
@@ -783,7 +783,17 @@ public class A2AServerRoutes {
                         if (headers.get(CONTENT_TYPE) == null) {
                             headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
                         }
+                        // Additional SSE headers to prevent buffering
+                        headers.set("Cache-Control", "no-cache");
+                        headers.set("X-Accel-Buffering", "no");  // Disable nginx buffering
                         response.setChunked(true);
+
+                        // CRITICAL: Disable write queue max size to prevent buffering
+                        // Vert.x buffers writes by default - we need immediate flushing for SSE
+                        response.setWriteQueueMaxSize(1);
+
+                        // Send initial SSE comment to kickstart the stream
+                        response.write(": SSE stream started\n\n");
                     }
 
                     // Write SSE-formatted string to response
