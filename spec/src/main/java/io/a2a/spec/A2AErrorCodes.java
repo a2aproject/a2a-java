@@ -20,19 +20,19 @@ public enum A2AErrorCodes {
     TASK_NOT_FOUND(-32001, "NOT_FOUND", 404),
 
     /** Error code indicating the task cannot be canceled in its current state (-32002). */
-    TASK_NOT_CANCELABLE(-32002, "FAILED_PRECONDITION", 409),
+    TASK_NOT_CANCELABLE(-32002, "FAILED_PRECONDITION", 400),
 
     /** Error code indicating push notifications are not supported by this agent (-32003). */
-    PUSH_NOTIFICATION_NOT_SUPPORTED(-32003, "UNIMPLEMENTED", 400),
+    PUSH_NOTIFICATION_NOT_SUPPORTED(-32003, "FAILED_PRECONDITION", 400),
 
     /** Error code indicating the requested operation is not supported (-32004). */
-    UNSUPPORTED_OPERATION(-32004, "UNIMPLEMENTED", 400),
+    UNSUPPORTED_OPERATION(-32004, "UNIMPLEMENTED", 501),
 
     /** Error code indicating the content type is not supported (-32005). */
-    CONTENT_TYPE_NOT_SUPPORTED(-32005, "INVALID_ARGUMENT", 415),
+    CONTENT_TYPE_NOT_SUPPORTED(-32005, "INVALID_ARGUMENT", 400),
 
     /** Error code indicating the agent returned an invalid response (-32006). */
-    INVALID_AGENT_RESPONSE(-32006, "INTERNAL", 502),
+    INVALID_AGENT_RESPONSE(-32006, "INTERNAL", 500),
 
     /** Error code indicating extended agent card is not configured (-32007). */
     EXTENDED_AGENT_CARD_NOT_CONFIGURED(-32007, "FAILED_PRECONDITION", 400),
@@ -43,7 +43,7 @@ public enum A2AErrorCodes {
 
     /** Error code indicating the A2A protocol version specified in the request (via A2A-Version service parameter)
      * is not supported by the agent (-32009). */
-    VERSION_NOT_SUPPORTED(-32009, "UNIMPLEMENTED", 400),
+    VERSION_NOT_SUPPORTED(-32009, "UNIMPLEMENTED", 501),
 
     /** JSON-RPC error code for invalid request structure (-32600). */
     INVALID_REQUEST(-32600, "INVALID_ARGUMENT", 400),

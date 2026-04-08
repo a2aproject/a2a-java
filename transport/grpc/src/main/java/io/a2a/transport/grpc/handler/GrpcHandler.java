@@ -706,7 +706,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
      *   <li>{@link InternalError} → {@code INTERNAL}</li>
      *   <li>{@link TaskNotFoundError} → {@code NOT_FOUND}</li>
      *   <li>{@link TaskNotCancelableError} → {@code FAILED_PRECONDITION}</li>
-     *   <li>{@link PushNotificationNotSupportedError} → {@code UNIMPLEMENTED}</li>
+     *   <li>{@link PushNotificationNotSupportedError} → {@code FAILED_PRECONDITION}</li>
      *   <li>{@link UnsupportedOperationError} → {@code UNIMPLEMENTED}</li>
      *   <li>{@link JSONParseError} → {@code INTERNAL}</li>
      *   <li>{@link ContentTypeNotSupportedError} → {@code INVALID_ARGUMENT}</li>

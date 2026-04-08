@@ -392,8 +392,8 @@ public class JSONRPCUtils {
         String message = error.has("message") ? error.get("message").getAsString() : null;
         Integer code = error.has("code") ? error.get("code").getAsInt() : null;
         Map<String, Object> details = null;
-        if (error.has("details") && error.get("details").isJsonObject()) {
-            details =GSON.fromJson(error.get("details"), Map.class);
+        if (error.has("data") && error.get("data").isJsonObject()) {
+            details = GSON.fromJson(error.get("data"), Map.class);
         }
         if (code != null) {
             A2AErrorCodes errorCode = A2AErrorCodes.fromCode(code);
@@ -606,7 +606,7 @@ public class JSONRPCUtils {
             output.name("code").value(error.getCode());
             output.name("message").value(error.getMessage());
             if (!error.getDetails().isEmpty()) {
-                output.name("details");
+                output.name("data");
                 GSON.toJson(error.getDetails(), Map.class, output);
             }
             output.endObject();
