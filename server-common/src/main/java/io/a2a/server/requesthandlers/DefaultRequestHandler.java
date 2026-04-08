@@ -827,8 +827,8 @@ public class DefaultRequestHandler implements RequestHandler {
         if (task.status().state().isFinal()) {
             throw new UnsupportedOperationError(
                     null,
-                    "Cannot subscribe to task " + task.id() +
-                    " - task is in terminal state: " + task.status().state(),
+                    String.format("Cannot subscribe to task %s - task is in terminal state: %s",
+                            task.id(), task.status().state()),
                     null);
         }
 
