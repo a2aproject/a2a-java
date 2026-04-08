@@ -3,7 +3,6 @@ package io.a2a.transport.rest.handler;
 import static io.a2a.common.MediaType.APPLICATION_JSON;
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 
-import io.a2a.spec.A2AErrorCodes;
 
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
@@ -40,6 +39,7 @@ import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.server.version.A2AVersionValidator;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
+import io.a2a.spec.A2AErrorCodes;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.ContentTypeNotSupportedError;
@@ -122,13 +122,13 @@ import org.jspecify.annotations.Nullable;
 public class RestHandler {
 
     private static final Logger log = Logger.getLogger(RestHandler.class.getName());
-    private static final String TASK_STATE_PREFIX = "TASK_STATE_";
 
     // Fields set by constructor injection cannot be final. We need a noargs constructor for
     // Jakarta compatibility, and it seems that making fields set by constructor injection
     // final, is not proxyable in all runtimes
     private AgentCard agentCard;
-    private @Nullable Instance<AgentCard> extendedAgentCard;
+    private @Nullable
+    Instance<AgentCard> extendedAgentCard;
     private AgentCardCacheMetadata cacheMetadata;
     private RequestHandler requestHandler;
     private Executor executor;
@@ -377,7 +377,7 @@ public class RestHandler {
             if (!taskIdFromBody.isEmpty() && !taskIdFromBody.equals(taskId)) {
                 throw new InvalidParamsError("Task ID in request body (" + taskIdFromBody + ") does not match task ID in URL path (" + taskId + ").");
             }
-            
+
             builder.setTenant(tenant);
             builder.setTaskId(taskId);
             TaskPushNotificationConfig result = requestHandler.onCreateTaskPushNotificationConfig(ProtoUtils.FromProto.createTaskPushNotificationConfig(builder), context);
@@ -766,29 +766,38 @@ public class RestHandler {
         if (error instanceof InvalidParamsError) {
             return 422;
         }
-        if (error instanceof MethodNotFoundError || error instanceof TaskNotFoundError) {
-            return 404;
+        if (error instanceof MethodNotFoundError) {
+            return A2AErrorCodes.METHOD_NOT_FOUND.httpCode();
+        }
+        if (error instanceof TaskNotFoundError) {
+            return A2AErrorCodes.TASK_NOT_FOUND.httpCode();
         }
         if (error instanceof TaskNotCancelableError) {
-            return 409;
+            return A2AErrorCodes.TASK_NOT_CANCELABLE.httpCode();
         }
         if (error instanceof UnsupportedOperationError) {
-            return 501;
+            return A2AErrorCodes.UNSUPPORTED_OPERATION.httpCode();
         }
         if (error instanceof ContentTypeNotSupportedError) {
-            return 415;
+            return A2AErrorCodes.CONTENT_TYPE_NOT_SUPPORTED.httpCode();
         }
         if (error instanceof InvalidAgentResponseError) {
-            return 502;
+            return A2AErrorCodes.INVALID_AGENT_RESPONSE.httpCode();
         }
-        if (error instanceof ExtendedAgentCardNotConfiguredError
-                || error instanceof ExtensionSupportRequiredError
-                || error instanceof VersionNotSupportedError
-                || error instanceof PushNotificationNotSupportedError) {
-            return 400;
+        if (error instanceof ExtendedAgentCardNotConfiguredError) {
+            return A2AErrorCodes.EXTENDED_AGENT_CARD_NOT_CONFIGURED.httpCode();
+        }
+        if (error instanceof ExtensionSupportRequiredError) {
+            return A2AErrorCodes.EXTENSION_SUPPORT_REQUIRED.httpCode();
+        }
+        if (error instanceof VersionNotSupportedError) {
+            return A2AErrorCodes.VERSION_NOT_SUPPORTED.httpCode();
+        }
+        if (error instanceof PushNotificationNotSupportedError) {
+            return A2AErrorCodes.PUSH_NOTIFICATION_NOT_SUPPORTED.httpCode();
         }
         if (error instanceof InternalError) {
-            return 500;
+            return A2AErrorCodes.INTERNAL.httpCode();
         }
         return 500;
     }
@@ -827,7 +836,7 @@ public class RestHandler {
         } catch (A2AError e) {
             return createErrorResponse(e);
         } catch (Throwable t) {
-            return createErrorResponse(500, new InternalError(t.getMessage()));
+            return createErrorResponse(A2AErrorCodes.INTERNAL.httpCode(), new InternalError(t.getMessage()));
         }
     }
 
@@ -1036,12 +1045,16 @@ public class RestHandler {
             return "HTTPRestErrorResponse{error=" + error + '}';
         }
 
-        private record ErrorBody(int code, String status, String message, List<ErrorDetail> details) {}
+        private record ErrorBody(int code, String status, String message, List<ErrorDetail> details) {
+
+        }
 
         private record ErrorDetail(
                 @com.google.gson.annotations.SerializedName("@type") String type,
                 String reason,
                 String domain,
-                Map<String, Object> metadata) {}
+                Map<String, Object> metadata) {
+
+        }
     }
 }
