@@ -430,6 +430,8 @@ public class RestHandler {
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onSubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
+            // For streaming endpoints: wrap ALL errors (including TaskNotFoundError, UnsupportedOperationError)
+            // in SSE stream format so client's SSE parser can process them and deliver to error handler
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(new InternalError(throwable.getMessage())).toJson()));

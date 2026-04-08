@@ -821,16 +821,23 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new TaskNotFoundError();
         }
 
+        // Per A2A spec: subscription to tasks in terminal state (completed, failed, canceled,
+        // rejected) MUST return UnsupportedOperationError.
+        // Check BEFORE any queue operations to ensure immediate error response.
+        if (task.status().state().isFinal()) {
+            throw new UnsupportedOperationError(
+                    null,
+                    "Cannot subscribe to task " + task.id() +
+                    " - task is in terminal state: " + task.status().state(),
+                    null);
+        }
+
         TaskManager taskManager = new TaskManager(task.id(), task.contextId(), taskStore, null);
         ResultAggregator resultAggregator = new ResultAggregator(taskManager, null, executor, eventConsumerExecutor);
         EventQueue queue = queueManager.tap(task.id());
         LOGGER.debug("onSubscribeToTask - tapped queue: {}", queue != null ? System.identityHashCode(queue) : "null");
 
         if (queue == null) {
-            // If task is in final state, queue legitimately doesn't exist anymore
-            if (task.status().state().isFinal()) {
-                throw new TaskNotFoundError();
-            }
             // For non-final tasks, recreate the queue so client can receive future events
             // (Note: historical events from before queue closed are not available)
             LOGGER.debug("Queue not found for active task {}, creating new queue for future events", task.id());

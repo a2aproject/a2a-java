@@ -389,7 +389,8 @@ public class JSONRPCHandler {
             // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
         } catch (A2AError e) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
+            // Let routing layer catch TaskNotFoundError and UnsupportedOperationError to wrap in SSE format
+            throw e;
         } catch (Throwable throwable) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(throwable.getMessage())));
         }

@@ -983,41 +983,14 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
 
         SubscribeToTaskRequest request = new SubscribeToTaskRequest("1", new TaskIdParams(MINIMAL_TASK.id()));
-        Flow.Publisher<SendStreamingMessageResponse> response = handler.onSubscribeToTask(request, callContext);
 
-        List<SendStreamingMessageResponse> results = new ArrayList<>();
-        AtomicReference<Throwable> error = new AtomicReference<>();
+        // Per spec: TaskNotFoundError should be thrown immediately for non-existent tasks
+        // The routing layer will catch this and convert to JSON-RPC error response
+        TaskNotFoundError thrown = Assertions.assertThrows(
+                TaskNotFoundError.class,
+                () -> handler.onSubscribeToTask(request, callContext));
 
-        response.subscribe(new Flow.Subscriber<>() {
-            private Flow.Subscription subscription;
-
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
-
-            @Override
-            public void onNext(SendStreamingMessageResponse item) {
-                results.add(item);
-                subscription.request(1);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                error.set(throwable);
-                subscription.cancel();
-            }
-
-            @Override
-            public void onComplete() {
-                subscription.cancel();
-            }
-        });
-
-        assertEquals(1, results.size());
-        assertNull(results.get(0).getResult());
-        assertInstanceOf(TaskNotFoundError.class, results.get(0).getError());
+        Assertions.assertNotNull(thrown);
     }
 
     @Test
