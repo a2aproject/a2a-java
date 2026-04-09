@@ -39,8 +39,6 @@ The compatibility layer must bridge the following differences:
 | Aspect | v0.3 | v1.0 |
 |--------|------|------|
 | Package | `a2a.v1` | `lf.a2a.v1` |
-| C# namespace | `A2a.V1` | `Lf.A2a.V1` |
-| Go package | `google.golang.org/a2a/v1` | `google.golang.org/lf/a2a/v1` |
 
 ### 2. RPC Method Changes
 | v0.3 | v1.0 | Change |
@@ -267,6 +265,102 @@ The compat layer **does** need to handle:
 - Error translation (see Error Mapping above)
 - `kind` discriminator: v0.3 JSON includes `kind` field; v1.0 does not — the compat JSON-RPC and REST transports must add/strip this field
 - `blocking` ↔ `returnImmediately` semantic inversion at the request parsing boundary
+
+---
+
+## User Experience
+
+### Server: Serving Both v0.3 and v1.0
+
+A server operator that wants to accept both v0.3 and v1.0 clients needs to:
+
+**1. Add the compat Maven dependency alongside their existing reference dependency:**
+
+```xml
+<!-- Existing v1.0 transport -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
+</dependency>
+
+<!-- Add v0.3 compatibility -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-reference-jsonrpc</artifactId>
+</dependency>
+```
+
+The same pattern applies for gRPC and REST transports.
+
+**2. Declare both protocol versions in the AgentCard with separate URLs:**
+
+Each protocol version should use a distinct URL to avoid any dispatch ambiguity. The recommended pattern is to use a `/v0.3` path prefix for compat endpoints:
+
+```java
+@Produces @PublicAgentCard
+public AgentCard agentCard() {
+    return AgentCard.builder()
+            .name("My Agent")
+            .supportedInterfaces(List.of(
+                new AgentInterface("JSONRPC", "http://localhost:9999", "", "1.0"),
+                new AgentInterface("JSONRPC", "http://localhost:9999/v0.3", "", "0.3")
+            ))
+            // ... rest of agent card
+            .build();
+}
+```
+
+Separate URLs are **recommended** because they cleanly isolate the two protocol versions without relying on request-body inspection or method-name dispatch to differentiate them. The compat reference module registers its routes under the `/v0.3` prefix automatically via Quarkus CDI.
+
+> **Note:** Using the same URL for both versions is technically possible (REST paths don't collide since v0.3 uses `/v1/...`; gRPC service packages differ: `a2a.v1` vs `lf.a2a.v1`) but is not recommended — it creates ambiguity for JSON-RPC where both versions share `POST /` and differ only by method names in the request body.
+
+**3. No changes to AgentExecutor:**
+
+The existing `AgentExecutor` implementation works unchanged. The compat reference module registers v0.3 transport endpoints via Quarkus CDI auto-discovery and delegates to the same `AgentExecutor` through the v1.0 server pipeline.
+
+### Client: Talking to a v0.3 Agent
+
+A client application that needs to communicate with a v0.3 agent:
+
+**1. Add the compat client dependency:**
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-client-base</artifactId>
+</dependency>
+<!-- Plus the desired transport -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
+</dependency>
+```
+
+**2. Check the agent card and choose the right client:**
+
+The client must inspect the agent card's `supportedInterfaces` to determine which protocol version the agent offers, then instantiate the appropriate client. There is **no automatic version detection** — the user explicitly selects the client based on the advertised protocol version.
+
+```java
+AgentCard card = // ... fetch agent card from /.well-known/agent-card.json
+
+for (AgentInterface iface : card.supportedInterfaces()) {
+    if ("0.3".equals(iface.protocolVersion())) {
+        // Use the compat client for v0.3 agents
+        Compat03Client client = Compat03ClientBuilder.forUrl(iface.url())
+                .transport("JSONRPC")
+                .build();
+    } else if ("1.0".equals(iface.protocolVersion())) {
+        // Use the standard client for v1.0 agents
+        Client client = ClientBuilder.forUrl(iface.url())
+                .transport("JSONRPC")
+                .build();
+    }
+}
+```
+
+**3. Use the v0.3 client API:**
+
+`Compat03Client` exposes only operations available in v0.3 (no `listTasks()`, etc.). The return types are the standard v1.0 `io.a2a.spec` domain objects — the transport layer handles wire-format translation transparently.
 
 ---
 
