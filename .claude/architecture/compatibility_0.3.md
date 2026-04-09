@@ -103,6 +103,23 @@ Users must explicitly check the `protocolVersion` field from the agent card and 
 
 `TASK_STATE_REJECTED` (v1.0-only) is mapped to `TASK_STATE_FAILED` when converting to v0.3 wire format. The original state is preserved in metadata (`"original_state": "REJECTED"`) so information is not entirely lost. Both are terminal states, so v0.3 clients can handle the result correctly.
 
+### Agent Card: v1.0 Only
+
+The agent card (`/.well-known/agent-card.json`) is produced only using the v1.0 format. The compat layer does not produce a v0.3-format agent card, nor does it serve a separate v0.3 agent card endpoint.
+
+A server that supports both versions advertises this via a single v1.0 agent card containing multiple `AgentInterface` entries — one per version — each with its own URL and `protocolVersion` field. v0.3 clients must be able to parse the v1.0 agent card format to discover their endpoint.
+
+**Pros:**
+- **Single source of truth**: one agent card at one well-known URL describes all supported versions and transports. No risk of agent cards drifting out of sync.
+- **Simpler server implementation**: no need for a separate v0.3 agent card endpoint, serializer, or CDI producer.
+- **Forward-looking**: encourages v0.3 clients to understand the v1.0 discovery format, which eases future migration.
+- **Reduced module scope**: the compat layer stays focused on runtime protocol translation, not discovery.
+
+**Cons:**
+- **v0.3 clients must parse v1.0 agent card**: a pure v0.3 client that only understands the v0.3 agent card structure (`url`, `preferred_transport`, `additional_interfaces`) cannot directly consume the v1.0 format (`supportedInterfaces` with `protocolBinding`). These clients need updating to parse the new format or use an adapter.
+- **No standalone v0.3 discovery**: a v0.3-only client cannot discover the agent without understanding v1.0 agent card fields. There is no `/.well-known/agent-card.json` that speaks pure v0.3.
+- **Asymmetric compatibility**: the compat layer supports v0.3 wire protocol but not v0.3 discovery — the client must bridge the gap at the agent card level.
+
 ### BOM Inclusion
 
 The compat-0.3 modules are included in the SDK BOM as **separate optional dependencies**, so users opt in explicitly.
