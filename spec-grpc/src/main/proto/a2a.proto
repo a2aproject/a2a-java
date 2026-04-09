@@ -15,7 +15,7 @@ option csharp_namespace = "Lf.A2a.V1";
 option go_package = "google.golang.org/lf/a2a/v1";
 option java_multiple_files = true;
 option java_outer_classname = "A2A";
-option java_package = "io.a2a.grpc";
+option java_package = "org.a2aproject.sdk.grpc";
 
 // Provides operations for interacting with agents using the A2A protocol.
 service A2AService {

@@ -8,7 +8,7 @@ Then the project page itself needs to contain the following information as a min
 
 * How to use the integration.
    * Ideally there should be a sample demonstrating how to use it 
-* The integration should have tests, extending [AbstractA2AServerTest](tests/server-common/src/test/java/io/a2a/server/apps/common/AbstractA2AServerTest.java)
+* The integration should have tests, extending [AbstractA2AServerTest](tests/server-common/src/test/java/org/a2aproject/sdk/server/apps/common/AbstractA2AServerTest.java)
 * The integration should pass the [TCK](https://github.com/a2aproject/a2a-tck), and make it obvious how to see that it has passed.
 * Ideally, the integration should be deployed in Maven Central. If that is not possible, provide clear instructions for how to build it.
 

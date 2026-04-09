@@ -8,10 +8,10 @@ The replication works by intercepting events as they are enqueued and sending th
 
 The main components in the replicated queue manager are:
 
-- **[`ReplicatedQueueManager`](./core/src/main/java/io/a2a/extras/queuemanager/replicated/core/ReplicatedQueueManager.java)**: Core queue manager that wraps the default `InMemoryQueueManager` and handles event replication.
-- **[`ReplicationStrategy`](./core/src/main/java/io/a2a/extras/queuemanager/replicated/core/ReplicationStrategy.java)**: Interface for different replication implementations. If `ReplicatedQueueManager` is used, a `ReplicationStrategy` **must** be provided.
+- **[`ReplicatedQueueManager`](./core/src/main/java/org/a2aproject/sdk/extras/queuemanager/replicated/core/ReplicatedQueueManager.java)**: Core queue manager that wraps the default `InMemoryQueueManager` and handles event replication.
+- **[`ReplicationStrategy`](./core/src/main/java/org/a2aproject/sdk/extras/queuemanager/replicated/core/ReplicationStrategy.java)**: Interface for different replication implementations. If `ReplicatedQueueManager` is used, a `ReplicationStrategy` **must** be provided.
 
-Currently, one implementation is provided: [`ReactiveMessagingReplicationStrategy`](./replication-mp-reactive/src/main/java/io/a2a/extras/queuemanager/replicated/mp_reactive/ReactiveMessagingReplicationStrategy.java), which uses MicroProfile Reactive Messaging with message brokers like Apache Kafka.
+Currently, one implementation is provided: [`ReactiveMessagingReplicationStrategy`](./replication-mp-reactive/src/main/java/org/a2aproject/sdk/extras/queuemanager/replicated/mp_reactive/ReactiveMessagingReplicationStrategy.java), which uses MicroProfile Reactive Messaging with message brokers like Apache Kafka.
 
 ## Quick Start
 
@@ -310,8 +310,8 @@ No configuration is required for the poison pill mechanism - it works automatica
 Enable debug logging to monitor poison pill delivery:
 
 ```properties
-quarkus.log.category."io.a2a.extras.queuemanager.replicated".level=DEBUG
-quarkus.log.category."io.a2a.extras.taskstore.database.jpa".level=DEBUG
+quarkus.log.category."org.a2aproject.sdk.extras.queuemanager.replicated".level=DEBUG
+quarkus.log.category."org.a2aproject.sdk.extras.taskstore.database.jpa".level=DEBUG
 ```
 
 You should see log entries like:
@@ -347,7 +347,7 @@ a2a.replication.grace-period-seconds=15
 
 **Monitoring**:
 ```properties
-quarkus.log.category."io.a2a.extras.queuemanager.replicated".level=DEBUG
+quarkus.log.category."org.a2aproject.sdk.extras.queuemanager.replicated".level=DEBUG
 ```
 
 Watch for:
@@ -396,7 +396,7 @@ Enable debug logging to monitor replication activity:
 
 ```properties
 # For Quarkus
-quarkus.log.category."io.a2a.extras.queuemanager.replicated".level=DEBUG
+quarkus.log.category."org.a2aproject.sdk.extras.queuemanager.replicated".level=DEBUG
 
 # For other servers, configure your logging framework accordingly
 ```

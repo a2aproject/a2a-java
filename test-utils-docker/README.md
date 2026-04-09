@@ -21,7 +21,7 @@ Add the dependency to your test module:
 Annotate test classes that require Docker:
 
 ```java
-import io.a2a.testutils.docker.RequiresDocker;
+import org.a2aproject.sdk.testutils.docker.RequiresDocker;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 

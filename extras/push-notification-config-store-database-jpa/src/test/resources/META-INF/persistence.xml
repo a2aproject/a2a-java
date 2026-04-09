@@ -10,7 +10,7 @@
         <description>A2A Java SDK JPA TaskStore Test Configuration</description>
         
         <!-- Include our JPA entities -->
-        <class>io.a2a.extras.pushnotificationconfigstore.database.jpa.JpaPushNotificationConfig</class>
+        <class>org.a2aproject.sdk.extras.pushnotificationconfigstore.database.jpa.JpaPushNotificationConfig</class>
         
         <!-- Exclude unlisted classes to avoid scanning issues in tests -->
         <exclude-unlisted-classes>true</exclude-unlisted-classes>

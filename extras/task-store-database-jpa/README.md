@@ -49,7 +49,7 @@ Create or update your `persistence.xml`:
     <persistence-unit name="a2a-java" transaction-type="JTA">
         <jta-data-source>java:jboss/datasources/A2ADataSource</jta-data-source>
         
-        <class>io.a2a.extras.taskstore.database.jpa.JpaTask</class>
+        <class>org.a2aproject.sdk.extras.taskstore.database.jpa.JpaTask</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         
         <properties>

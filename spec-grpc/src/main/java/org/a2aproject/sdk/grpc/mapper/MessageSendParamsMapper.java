@@ -1,0 +1,35 @@
+package org.a2aproject.sdk.grpc.mapper;
+
+import org.a2aproject.sdk.spec.MessageSendParams;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Builder;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
+/**
+ * Mapper between {@link org.a2aproject.sdk.spec.MessageSendParams} and {@link org.a2aproject.sdk.grpc.SendMessageRequest}.
+ * <p>
+ * Handles bidirectional mapping with message/request field name difference and Struct conversions.
+ */
+@Mapper(config = A2AProtoMapperConfig.class, uses = {MessageMapper.class, MessageSendConfigurationMapper.class, A2ACommonFieldMapper.class})
+public interface MessageSendParamsMapper {
+
+    MessageSendParamsMapper INSTANCE = A2AMappers.getMapper(MessageSendParamsMapper.class);
+
+    /**
+     * Converts domain MessageSendParams to proto SendMessageRequest.
+     * Maps domain "message" field to proto "message" field.
+     */
+    @Mapping(target = "configuration", source = "configuration", conditionExpression = "java(domain.configuration() != null)")
+    @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
+    org.a2aproject.sdk.grpc.SendMessageRequest toProto(MessageSendParams domain);
+
+    /**
+     * Converts proto SendMessageRequest to domain MessageSendParams.
+     * Maps proto "message" field to domain "message" field.
+     * Uses Builder pattern for record construction.
+     */
+    @BeanMapping(builder = @Builder(buildMethod = "build"))
+    @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
+    MessageSendParams fromProto(org.a2aproject.sdk.grpc.SendMessageRequest proto);
+}

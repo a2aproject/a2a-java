@@ -1,0 +1,48 @@
+package org.a2aproject.sdk.spec;
+
+import static org.a2aproject.sdk.util.Utils.defaultIfNull;
+
+import java.util.Map;
+
+import org.jspecify.annotations.Nullable;
+
+/**
+ * JSON-RPC error indicating that the requested method does not exist or is not available.
+ * <p>
+ * This error is returned when a client attempts to invoke a JSON-RPC method that is not
+ * implemented by the agent. In the A2A Protocol context, this typically means calling
+ * an unsupported protocol method.
+ * <p>
+ * Corresponds to JSON-RPC 2.0 error code {@code -32601}.
+ * <p>
+ * Usage example:
+ * <pre>{@code
+ * // Standard error for unknown method
+ * throw new MethodNotFoundError();
+ * }</pre>
+ *
+ * @see <a href="https://www.jsonrpc.org/specification#error_object">JSON-RPC 2.0 Error Codes</a>
+ */
+public class MethodNotFoundError extends A2AError {
+
+    /**
+     * Constructs error with all parameters.
+     *
+     * @param code the error code (defaults to -32601 if null)
+     * @param message the error message (defaults to "Method not found" if null)
+     * @param details additional error details (optional)
+     */
+    public MethodNotFoundError(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+        super(
+                defaultIfNull(code, A2AErrorCodes.METHOD_NOT_FOUND.code()),
+                defaultIfNull(message, "Method not found"),
+                details);
+    }
+
+    /**
+     * Constructs error with default message.
+     */
+    public MethodNotFoundError() {
+        this(A2AErrorCodes.METHOD_NOT_FOUND.code(), null, null);
+    }
+}

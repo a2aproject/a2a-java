@@ -22,9 +22,9 @@ mvn clean install
 ### Regeneration of gRPC files
 We copy https://github.com/a2aproject/A2A/blob/main/specification/grpc/a2a.proto to the [`spec-grpc/`](./spec-grpc) project, and adjust the `java_package` option to be as follows:
 ```
-option java_package = "io.a2a.grpc";
+option java_package = "org.a2aproject.sdk.grpc";
 ```
-Then build the `spec-grpc` module with `mvn clean install  -Dskip.protobuf.generate=false` to regenerate the gRPC classes in the `io.a2a.grpc` package.
+Then build the `spec-grpc` module with `mvn clean install  -Dskip.protobuf.generate=false` to regenerate the gRPC classes in the `org.a2aproject.sdk.grpc` package.
 
 ## Examples
 
@@ -63,7 +63,7 @@ To use the reference implementation with the JSON-RPC protocol, add the followin
     <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
-    <version>${io.a2a.sdk.version}</version>
+    <version>${org.a2aproject.sdk.version}</version>
 </dependency>
 ```
 
@@ -74,7 +74,7 @@ To use the reference implementation with the gRPC protocol, add the following de
     <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-reference-grpc</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
-    <version>${io.a2a.sdk.version}</version>
+    <version>${org.a2aproject.sdk.version}</version>
 </dependency>
 ```
 
@@ -85,7 +85,7 @@ To use the reference implementation with the HTTP+JSON/REST protocol, add the fo
     <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-reference-rest</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
-    <version>${io.a2a.sdk.version}</version>
+    <version>${org.a2aproject.sdk.version}</version>
 </dependency>
 ```
 
@@ -95,12 +95,12 @@ you'd like to support.
 ### 2. Add a class that creates an A2A Agent Card
 
 ```java
-import io.a2a.server.PublicAgentCard;
-import io.a2a.spec.AgentCapabilities;
-import io.a2a.spec.AgentCard;
-import io.a2a.spec.AgentInterface;
-import io.a2a.spec.AgentSkill;
-import io.a2a.spec.TransportProtocol;
+import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.spec.AgentCapabilities;
+import org.a2aproject.sdk.spec.AgentCard;
+import org.a2aproject.sdk.spec.AgentInterface;
+import org.a2aproject.sdk.spec.AgentSkill;
+import org.a2aproject.sdk.spec.TransportProtocol;
 ...
 
 @ApplicationScoped
@@ -138,17 +138,17 @@ public class WeatherAgentCardProducer {
 ### 3. Add a class that creates an A2A Agent Executor
 
 ```java
-import io.a2a.server.agentexecution.AgentExecutor;
-import io.a2a.server.agentexecution.RequestContext;
-import io.a2a.server.events.EventQueue;
-import io.a2a.server.tasks.AgentEmitter;
-import io.a2a.spec.JSONRPCError;
-import io.a2a.spec.Message;
-import io.a2a.spec.Part;
-import io.a2a.spec.Task;
-import io.a2a.spec.TaskNotCancelableError;
-import io.a2a.spec.TaskState;
-import io.a2a.spec.TextPart;
+import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
+import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.server.events.EventQueue;
+import org.a2aproject.sdk.server.tasks.AgentEmitter;
+import org.a2aproject.sdk.spec.JSONRPCError;
+import org.a2aproject.sdk.spec.Message;
+import org.a2aproject.sdk.spec.Part;
+import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskNotCancelableError;
+import org.a2aproject.sdk.spec.TaskState;
+import org.a2aproject.sdk.spec.TextPart;
 ...
 
 @ApplicationScoped
@@ -290,7 +290,7 @@ that you can use to create your A2A `Client`.
     <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-client</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
-    <version>${io.a2a.sdk.version}</version>
+    <version>${org.a2aproject.sdk.version}</version>
 </dependency>
 ```
 
@@ -306,7 +306,7 @@ If you want to use the gRPC transport, you'll need to add a relevant dependency:
     <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
-    <version>${io.a2a.sdk.version}</version>
+    <version>${org.a2aproject.sdk.version}</version>
 </dependency>
 ```
 
@@ -319,7 +319,7 @@ If you want to use the HTTP+JSON/REST transport, you'll need to add a relevant d
     <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
-    <version>${io.a2a.sdk.version}</version>
+    <version>${org.a2aproject.sdk.version}</version>
 </dependency>
 ```
 

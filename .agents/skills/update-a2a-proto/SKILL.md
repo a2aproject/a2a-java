@@ -22,7 +22,7 @@ Before updating, record what we have now so we can diff later.
 2. Download the latest `a2a.proto` from the upstream A2A repository at https://github.com/a2aproject/A2A/blob/main/specification/a2a.proto and save it to `spec-grpc/src/main/proto/a2a.proto`.
 3. Update the `java_package` option in the downloaded proto file to:
    ```
-   option java_package = "io.a2a.grpc";
+   option java_package = "org.a2aproject.sdk.grpc";
    ```
 4. Update the comment tracking the upstream commit hash (line starting with `// From commit`) to the commit hash / tag of the downloaded proto file.
 
@@ -39,7 +39,7 @@ Compare the old and new versions of the specification to identify changes:
 
 1. Delete all the generated gRPC Java classes (in case of resources removed from the Protobuf definitions):
    ```bash
-   find spec-grpc/src/main/java/io/a2a/grpc -maxdepth 1 -name "*.java" -delete```
+   find spec-grpc/src/main/java/org/a2aproject/sdk/grpc -maxdepth 1 -name "*.java" -delete```
    ```
 
 2. Regenerate gRPC Java classes by running:

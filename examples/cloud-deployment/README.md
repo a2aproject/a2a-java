@@ -149,7 +149,7 @@ This approach provides the same round-robin load balancing as a real LoadBalance
 ```bash
 cd ../server
 mvn test-compile exec:java \
-  -Dexec.mainClass="io.a2a.examples.cloud.A2ACloudExampleClient" \
+  -Dexec.mainClass="org.a2aproject.sdk.examples.cloud.A2ACloudExampleClient" \
   -Dexec.classpathScope=test \
   -Dagent.url="http://localhost:8080"
 ```
@@ -515,12 +515,12 @@ Then re-run `./deploy.sh` to start fresh.
 ```
 cloud-deployment/
 ├── server/
-│   ├── src/main/java/io/a2a/examples/cloud/
+│   ├── src/main/java/org/a2aproject/sdk/examples/cloud/
 │   │   ├── CloudAgentCardProducer.java       # Agent card configuration
 │   │   └── CloudAgentExecutorProducer.java   # Agent business logic
 │   ├── src/main/resources/
 │   │   └── application.properties            # Application configuration
-│   ├── src/test/java/io/a2a/examples/cloud/
+│   ├── src/test/java/org/a2aproject/sdk/examples/cloud/
 │   │   └── A2ACloudExampleClient.java        # Test client
 │   ├── pom.xml                               # Maven dependencies
 │   └── Dockerfile                            # Container image

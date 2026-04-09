@@ -131,7 +131,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>io.a2a.test.ReferenceBomVerifier</mainClass>
+                            <mainClass>org.a2aproject.sdk.test.ReferenceBomVerifier</mainClass>
                         </configuration>
                     </execution>
                 </executions>

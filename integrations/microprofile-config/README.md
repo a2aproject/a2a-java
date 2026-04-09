@@ -20,7 +20,7 @@ This module provides `MicroProfileConfigProvider`, which integrates with MicroPr
 <dependency>
     <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-java-sdk-microprofile-config</artifactId>
-    <version>${io.a2a.sdk.version}</version>
+    <version>${org.a2aproject.sdk.version}</version>
 </dependency>
 ```
 
@@ -94,8 +94,8 @@ This module works with any MicroProfile Config implementation:
 If you're using a different framework (Spring, Micronaut, etc.), you can implement your own `A2AConfigProvider`:
 
 ```java
-import io.a2a.server.config.A2AConfigProvider;
-import io.a2a.server.config.DefaultValuesConfigProvider;
+import org.a2aproject.sdk.server.config.A2AConfigProvider;
+import org.a2aproject.sdk.server.config.DefaultValuesConfigProvider;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
 import jakarta.annotation.Priority;
@@ -135,7 +135,7 @@ public class OtherEnvironmentConfigProvider implements A2AConfigProvider {
 
 ## Implementation Details
 
-- **Package**: `io.a2a.integrations.microprofile`
+- **Package**: `org.a2aproject.sdk.integrations.microprofile`
 - **Class**: `MicroProfileConfigProvider`
 - **Priority**: 50 (can be overridden)
 - **Scope**: `@ApplicationScoped`

@@ -1,2 +1,0 @@
-# Add a test TransportMetadata so we pass AgentCard validation
-io.a2a.transport.rest.handler.RestTestTransportMetadata

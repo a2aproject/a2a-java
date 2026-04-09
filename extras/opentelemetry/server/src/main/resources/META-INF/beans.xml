@@ -4,6 +4,6 @@
        xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
        bean-discovery-mode="annotated">
     <decorators>
-        <class>io.a2a.extras.opentelemetry.OpenTelemetryRequestHandlerDecorator</class>
+        <class>org.a2aproject.sdk.extras.opentelemetry.OpenTelemetryRequestHandlerDecorator</class>
     </decorators>
 </beans>
