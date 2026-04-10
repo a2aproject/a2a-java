@@ -91,6 +91,65 @@ public class AsyncUtils {
         return new Transform<>(source, converterFunction);
     }
 
+    /**
+     * Creates a publisher that first emits the given items, then emits all items from the source publisher.
+     * <p>
+     * This is useful for prepending initial items to a stream, ensuring they are delivered
+     * synchronously when the subscriber subscribes, before any items from the source publisher.
+     * </p>
+     * <p>
+     * The inserted items are sent after the source publisher's onSubscribe is called, ensuring
+     * proper reactive streams semantics where items are only sent after subscription is established.
+     * </p>
+     *
+     * @param source the source publisher whose items will be emitted after the inserted items
+     * @param inserted the items to emit first (in order)
+     * @param <T> the type of items
+     * @return a new publisher that emits inserted items first, then source items
+     */
+    @SafeVarargs
+    public static <T> Flow.Publisher<T> insertingProcessor(Flow.Publisher<T> source, T... inserted) {
+        return ZeroPublisher.create(createTubeConfig(), tube -> {
+            // Subscribe to source publisher and intercept the subscription flow
+            source.subscribe(new Flow.Subscriber<T>() {
+                private Flow.@Nullable Subscription subscription;
+                private boolean insertedItemsSent = false;
+
+                @Override
+                public void onSubscribe(Flow.Subscription subscription) {
+                    this.subscription = subscription;
+
+                    // CRITICAL: Send inserted items BEFORE requesting from source
+                    // This ensures they are emitted first, after subscription is established
+                    if (!insertedItemsSent) {
+                        insertedItemsSent = true;
+                        for (T item : inserted) {
+                            tube.send(item);
+                        }
+                    }
+
+                    // Now request all items from source
+                    subscription.request(Long.MAX_VALUE);
+                }
+
+                @Override
+                public void onNext(T item) {
+                    tube.send(item);  // Forward source items to our tube
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    tube.fail(throwable);
+                }
+
+                @Override
+                public void onComplete() {
+                    tube.complete();
+                }
+            });
+        });
+    }
+
 
     private static abstract class AbstractSubscriber<T> implements Flow.Subscriber<T> {
         private Flow.@Nullable Subscription subscription;

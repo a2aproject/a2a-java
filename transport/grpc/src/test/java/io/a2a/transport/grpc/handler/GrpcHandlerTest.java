@@ -575,15 +575,20 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
             streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         }
         List<StreamResponse> result = streamRecorder.getValues();
-        Assertions.assertEquals(events.size(), result.size());
+        // Per A2A Protocol Spec 3.1.6: First event must be initial Task snapshot
+        // insertingProcessor prepends MINIMAL_TASK, then mock events follow
+        Assertions.assertEquals(3, result.size());
         StreamResponse first = result.get(0);
-        Assertions.assertTrue(first.hasArtifactUpdate());
-        io.a2a.grpc.TaskArtifactUpdateEvent event = first.getArtifactUpdate();
+        Assertions.assertTrue(first.hasTask(), "First event must be initial Task snapshot");
+        assertEquals(AbstractA2ARequestHandlerTest.MINIMAL_TASK.id(), first.getTask().getId());
+        StreamResponse second = result.get(1);
+        Assertions.assertTrue(second.hasArtifactUpdate());
+        io.a2a.grpc.TaskArtifactUpdateEvent event = second.getArtifactUpdate();
         assertEquals("11", event.getArtifact().getArtifactId());
         assertEquals("text", (event.getArtifact().getParts(0)).getText());
-        StreamResponse second = result.get(1);
-        Assertions.assertTrue(second.hasStatusUpdate());
-        assertEquals(TaskState.TASK_STATE_WORKING, second.getStatusUpdate().getStatus().getState());
+        StreamResponse third = result.get(2);
+        Assertions.assertTrue(third.hasStatusUpdate());
+        assertEquals(TaskState.TASK_STATE_WORKING, third.getStatusUpdate().getStatus().getState());
     }
 
     @Test

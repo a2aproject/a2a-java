@@ -992,6 +992,7 @@ public abstract class AbstractA2AServerTest {
             AtomicBoolean streamClosedPrematurely = new AtomicBoolean(false);
             AtomicReference<Throwable> subscribeErrorRef = new AtomicReference<>();
             CountDownLatch completionLatch = new CountDownLatch(1);
+            CountDownLatch initialTaskLatch = new CountDownLatch(1);
 
             // Consumer to track all events from subscription
             BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
@@ -1002,6 +1003,7 @@ public abstract class AbstractA2AServerTest {
                         assertEquals(TaskState.TASK_STATE_INPUT_REQUIRED,
                             taskEvent.getTask().status().state(),
                             "Initial task should be in INPUT_REQUIRED state");
+                        initialTaskLatch.countDown();
                         return;
                     }
                 } else if (event instanceof TaskUpdateEvent taskUpdateEvent) {
@@ -1037,8 +1039,11 @@ public abstract class AbstractA2AServerTest {
             // Wait for subscription to be established
             assertTrue(subscriptionLatch.await(15, TimeUnit.SECONDS), "Subscription should be established");
 
+            // Wait for initial task to be received
+            assertTrue(initialTaskLatch.await(5, TimeUnit.SECONDS), "Should receive initial task snapshot");
+
             // Verify stream received initial task and is still open
-            assertTrue(receivedInitialTask.get(), "Should receive initial task snapshot");
+            assertTrue(receivedInitialTask.get(), "Should have received initial task snapshot");
             assertFalse(streamClosedPrematurely.get(),
                     "Stream should NOT close for INPUT_REQUIRED state (interrupted, not terminal)");
 
@@ -1634,6 +1639,7 @@ public abstract class AbstractA2AServerTest {
                 .build();
 
         CountDownLatch streamEventLatch = new CountDownLatch(2);  // artifact-2 + completion
+        CountDownLatch streamConsumerReadyLatch = new CountDownLatch(1);
         List<io.a2a.spec.UpdateEvent> streamReceivedEvents = new CopyOnWriteArrayList<>();
         AtomicBoolean streamUnexpectedEvent = new AtomicBoolean(false);
 
@@ -1642,6 +1648,7 @@ public abstract class AbstractA2AServerTest {
             if (event instanceof TaskUpdateEvent tue) {
                 streamReceivedEvents.add(tue.getUpdateEvent());
                 streamEventLatch.countDown();
+                streamConsumerReadyLatch.countDown();  // Signal that consumer is receiving events
             } else {
                 streamUnexpectedEvent.set(true);
             }
@@ -1658,6 +1665,10 @@ public abstract class AbstractA2AServerTest {
         // Ensure subscription is established before agent sends events
         assertTrue(streamSubscriptionLatch.await(15, TimeUnit.SECONDS),
                 "Stream subscription should be established");
+
+        // Wait for stream consumer to start receiving events
+        assertTrue(streamConsumerReadyLatch.await(5, TimeUnit.SECONDS),
+                "Stream consumer should start receiving events");
 
         // 4. Verify both consumers received artifact-2 and completion
         assertTrue(resubEventLatch.await(15, TimeUnit.SECONDS));
@@ -1921,7 +1932,11 @@ public abstract class AbstractA2AServerTest {
                 }
             };
 
-            Consumer<Throwable> errorHandler = errorRef::set;
+            Consumer<Throwable> errorHandler = error -> {
+                if (!isStreamClosedError(error)) {
+                    errorRef.set(error);
+                }
+            };
 
             // Wait for subscription to be established
             CountDownLatch subscriptionLatch = new CountDownLatch(1);
