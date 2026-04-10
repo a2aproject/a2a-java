@@ -13,7 +13,7 @@
     <artifactId>a2a-java-sdk-compat-0.3-client-transport-rest</artifactId>
     <packaging>jar</packaging>
 
-    <name>Java SDK A2A Client Transport: JSON+HTTP/REST</name>
+    <name>Java SDK A2A Compat 0.3 Client Transport: JSON+HTTP/REST</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - JSON+HTTP/REST Client Transport</description>
 
     <dependencies>

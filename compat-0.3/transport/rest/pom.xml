@@ -14,7 +14,7 @@
 
     <packaging>jar</packaging>
 
-    <name>Java SDK A2A Transport: JSON+HTTP/REST</name>
+    <name>Java SDK A2A Compat 0.3 Transport: JSON+HTTP/REST</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - JSON+HTTP/REST Transport</description>
 
     <dependencies>

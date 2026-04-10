@@ -14,7 +14,7 @@
 
     <packaging>jar</packaging>
 
-    <name>Java SDK A2A Client</name>
+    <name>Java SDK A2A Compat 0.3 Client</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - Client</description>
 
     <dependencies>

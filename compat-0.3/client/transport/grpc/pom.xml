@@ -13,7 +13,7 @@
     <artifactId>a2a-java-sdk-compat-0.3-client-transport-grpc</artifactId>
     <packaging>jar</packaging>
 
-    <name>Java SDK A2A Client Transport: gRPC</name>
+    <name>Java SDK A2A Compat 0.3 Client Transport: gRPC</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - gRPC Client Transport</description>
 
     <dependencies>

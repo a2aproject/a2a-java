@@ -14,7 +14,7 @@
 
     <packaging>jar</packaging>
 
-    <name>Java A2A Reference Server: Common</name>
+    <name>Java A2A Compat 0.3 Reference Server: Common</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - Common classes for A2A Reference Servers (based on Quarkus)</description>
 
     <dependencies>
