@@ -8,31 +8,21 @@
         <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-compat-0.3-parent</artifactId>
         <version>1.0.0.Beta1-SNAPSHOT</version>
-        <relativePath>../../..</relativePath>
+        <relativePath>..</relativePath>
     </parent>
-    <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
+    <artifactId>a2a-java-sdk-compat-0.3-http-client</artifactId>
+
     <packaging>jar</packaging>
 
-    <name>Java SDK A2A Compat 0.3 Client Transport: JSONRPC</name>
-    <description>Java SDK for the Agent2Agent Protocol (A2A) - JSONRPC Client Transport</description>
+    <name>Java SDK A2A Compat 0.3 HTTP Client</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - HTTP Client (0.3 compat)</description>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-compat-0.3-http-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-compat-0.3-client-transport-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-compat-0.3-spec</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
