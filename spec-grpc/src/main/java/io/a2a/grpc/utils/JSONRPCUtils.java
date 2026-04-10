@@ -171,6 +171,9 @@ public class JSONRPCUtils {
     private static final Pattern EXTRACT_WRONG_TYPE = Pattern.compile("Expected (.*) but found \".*\"");
     static final String ERROR_MESSAGE = "Invalid request content: %s. Please verify the request matches the expected schema for this method.";
 
+    private static final JsonFormat.Printer REQUEST_PRINTER = JsonFormat.printer().omittingInsignificantWhitespace();
+    private static final JsonFormat.Printer RESPONSE_PRINTER = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace();
+
     public static A2ARequest<?> parseRequestBody(String body, @Nullable String tenant) throws JsonMappingException, JsonProcessingException {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
@@ -556,7 +559,7 @@ public class JSONRPCUtils {
                 output.name("method").value(method);
             }
             if (payload != null) {
-                String resultValue = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace().print(payload);
+                String resultValue = REQUEST_PRINTER.print(payload);
                 output.name("params").jsonValue(resultValue);
             }
             output.endObject();
@@ -579,7 +582,7 @@ public class JSONRPCUtils {
                     output.name("id").value(number.longValue());
                 }
             }
-            String resultValue = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace().print(builder);
+            String resultValue = RESPONSE_PRINTER.print(builder);
             output.name("result").jsonValue(resultValue);
             output.endObject();
             return result.toString();
