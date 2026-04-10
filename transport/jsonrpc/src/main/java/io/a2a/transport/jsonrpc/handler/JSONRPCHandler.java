@@ -388,7 +388,11 @@ public class JSONRPCHandler {
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
             // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
+        } catch (TaskNotFoundError | UnsupportedOperationError e) {
+            // Re-throw initial validation errors for routing layer to wrap in SSE format
+            throw e;
         } catch (A2AError e) {
+            // Other A2AError types - wrap inline as part of the stream
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
         } catch (Throwable throwable) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(throwable.getMessage())));

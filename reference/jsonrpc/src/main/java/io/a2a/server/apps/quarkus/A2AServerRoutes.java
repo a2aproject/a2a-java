@@ -439,15 +439,21 @@ public class A2AServerRoutes {
      */
     private Multi<? extends A2AResponse<?>> processStreamingRequest(
             A2ARequest<?> request, ServerCallContext context) {
-        Flow.Publisher<? extends A2AResponse<?>> publisher;
-        if (request instanceof SendStreamingMessageRequest req) {
-            publisher = jsonRpcHandler.onMessageSendStream(req, context);
-        } else if (request instanceof SubscribeToTaskRequest req) {
-            publisher = jsonRpcHandler.onSubscribeToTask(req, context);
-        } else {
-            return Multi.createFrom().item(generateErrorResponse(request, new UnsupportedOperationError()));
+        try {
+            Flow.Publisher<? extends A2AResponse<?>> publisher;
+            if (request instanceof SendStreamingMessageRequest req) {
+                publisher = jsonRpcHandler.onMessageSendStream(req, context);
+            } else if (request instanceof SubscribeToTaskRequest req) {
+                publisher = jsonRpcHandler.onSubscribeToTask(req, context);
+            } else {
+                return Multi.createFrom().item(generateErrorResponse(request, new UnsupportedOperationError()));
+            }
+            return Multi.createFrom().publisher(publisher);
+        } catch (A2AError error) {
+            // For streaming endpoints, wrap immediate errors (like TaskNotFoundError,
+            // UnsupportedOperationError) in error response and send as first SSE event
+            return Multi.createFrom().item(generateErrorResponse(request, error));
         }
-        return Multi.createFrom().publisher(publisher);
     }
 
     /**

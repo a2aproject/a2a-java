@@ -1130,6 +1130,66 @@ public abstract class AbstractA2AServerTest {
         }
     }
 
+    @Test
+    public void testSubscribeToTerminalTaskError() throws Exception {
+        // Create a task in terminal state (COMPLETED)
+        Task completedTask = Task.builder()
+                .id("terminal-task-test")
+                .contextId("session-xyz")
+                .status(new TaskStatus(TaskState.TASK_STATE_COMPLETED))
+                .build();
+        saveTaskInTaskStore(completedTask);
+
+        try {
+            CountDownLatch errorLatch = new CountDownLatch(1);
+            AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+            // Create error handler to capture the UnsupportedOperationError
+            Consumer<Throwable> errorHandler = error -> {
+                if (error == null) {
+                    // Stream completed successfully - ignore, we're waiting for an error
+                    return;
+                }
+                if (!isStreamClosedError(error)) {
+                    errorRef.set(error);
+                }
+                errorLatch.countDown();
+            };
+
+            getClient().subscribeToTask(new TaskIdParams(completedTask.id()), List.of(), errorHandler);
+
+            // Wait for error to be captured
+            boolean errorReceived = errorLatch.await(10, TimeUnit.SECONDS);
+
+            if (errorReceived) {
+                // Error came via error handler
+                Throwable error = errorRef.get();
+                assertNotNull(error, "Should receive an error when subscribing to terminal task");
+
+                // Per spec STREAM-SUB-003: should return UnsupportedOperationError for terminal tasks
+                if (error instanceof A2AClientException) {
+                    assertInstanceOf(UnsupportedOperationError.class, ((A2AClientException) error).getCause(),
+                            "Error should be UnsupportedOperationError for terminal task");
+                } else {
+                    // Check if it's directly an UnsupportedOperationError or walk the cause chain
+                    Throwable cause = error;
+                    boolean foundUnsupportedOperation = false;
+                    while (cause != null && !foundUnsupportedOperation) {
+                        if (cause instanceof UnsupportedOperationError) {
+                            foundUnsupportedOperation = true;
+                        }
+                        cause = cause.getCause();
+                    }
+                    assertTrue(foundUnsupportedOperation, "Expected UnsupportedOperationError in error chain");
+                }
+            } else {
+                fail("Expected UnsupportedOperationError when subscribing to terminal task");
+            }
+        } finally {
+            deleteTaskInTaskStore(completedTask.id());
+        }
+    }
+
     /**
      * Regression test for race condition where MainQueue closed when first ChildQueue closed,
      * preventing resubscription. With reference counting, MainQueue stays alive while any
