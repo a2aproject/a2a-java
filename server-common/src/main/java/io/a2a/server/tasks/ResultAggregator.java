@@ -9,6 +9,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.a2a.server.events.EventConsumer;
@@ -58,54 +59,12 @@ public class ResultAggregator {
             return true;
         });
 
-        // Wrap the publisher to ensure subscription happens on eventConsumerExecutor
-        // This prevents EventConsumer polling loop from running on AgentExecutor threads
-        // which caused thread accumulation when those threads didn't timeout
-        return new Flow.Publisher<EventQueueItem>() {
-            @Override
-            public void subscribe(Flow.Subscriber<? super EventQueueItem> subscriber) {
-                // Submit subscription to eventConsumerExecutor to isolate polling work
-                eventConsumerExecutor.execute(() -> processed.subscribe(subscriber));
-            }
-        };
+        // No wrapper needed - EventConsumer.consumeAll() now handles thread offloading internally
+        // This ensures subscription happens immediately without delay, preventing race condition
+        // where EventConsumer starts emitting before subscriber is ready
+        return processed;
     }
 
-    public EventKind consumeAll(EventConsumer consumer) throws A2AError {
-        AtomicReference<EventKind> returnedEvent = new AtomicReference<>();
-        Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();
-        AtomicReference<Throwable> error = new AtomicReference<>();
-        consumer(
-                createTubeConfig(),
-                allItems,
-                (item) -> {
-                    Event event = item.getEvent();
-                    if (event instanceof Message msg) {
-                        message = msg;
-                        if (returnedEvent.get() == null) {
-                            returnedEvent.set(msg);
-                            return false;
-                        }
-                    }
-                    // TaskStore update moved to MainEventBusProcessor
-                    return true;
-                },
-                error::set);
-
-        Throwable err = error.get();
-        if (err != null) {
-            Utils.rethrow(err);
-        }
-
-        EventKind result = returnedEvent.get();
-        if (result != null) {
-            return result;
-        }
-        Task task = taskManager.getTask();
-        if (task == null) {
-            throw new io.a2a.spec.InternalError("No task or message available after consuming all events");
-        }
-        return task;
-    }
 
     public EventTypeAndInterrupt consumeAndBreakOnInterrupt(EventConsumer consumer, boolean blocking) throws A2AError {
         Flow.Publisher<EventQueueItem> allItems = consumer.consumeAll();

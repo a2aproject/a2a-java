@@ -221,15 +221,15 @@ public class A2AServerRoutes {
             if (error != null) {
                 sendResponse(rc, error);
             } else if (streamingResponse != null) {
-                final HTTPRestStreamingResponse finalStreamingResponse = streamingResponse;
-                executor.execute(() -> {
-                    // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
-                    AtomicLong eventIdCounter = new AtomicLong(0);
-                    Multi<String> sseEvents = Multi.createFrom().publisher(finalStreamingResponse.getPublisher())
-                            .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
-                    // Write SSE-formatted strings to HTTP response
-                    MultiSseSupport.writeSseStrings(sseEvents, rc, context);
-                });
+                // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
+                // CRITICAL: Subscribe synchronously to avoid race condition where EventConsumer
+                // starts emitting events before MultiSseSupport subscribes. The executor.execute()
+                // wrapper caused 100-600ms delays before subscription, causing events to be lost.
+                AtomicLong eventIdCounter = new AtomicLong(0);
+                Multi<String> sseEvents = Multi.createFrom().publisher(streamingResponse.getPublisher())
+                        .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
+                // Write SSE-formatted strings to HTTP response
+                MultiSseSupport.writeSseStrings(sseEvents, rc, context);
             }
         }
     }
@@ -431,15 +431,15 @@ public class A2AServerRoutes {
             if (error != null) {
                 sendResponse(rc, error);
             } else if (streamingResponse != null) {
-                final HTTPRestStreamingResponse finalStreamingResponse = streamingResponse;
-                executor.execute(() -> {
-                    // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
-                    AtomicLong eventIdCounter = new AtomicLong(0);
-                    Multi<String> sseEvents = Multi.createFrom().publisher(finalStreamingResponse.getPublisher())
-                            .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
-                    // Write SSE-formatted strings to HTTP response
-                    MultiSseSupport.writeSseStrings(sseEvents, rc, context);
-                });
+                // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
+                // CRITICAL: Subscribe synchronously to avoid race condition where EventConsumer
+                // starts emitting events before MultiSseSupport subscribes. The executor.execute()
+                // wrapper caused 100-600ms delays before subscription, causing events to be lost.
+                AtomicLong eventIdCounter = new AtomicLong(0);
+                Multi<String> sseEvents = Multi.createFrom().publisher(streamingResponse.getPublisher())
+                        .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
+                // Write SSE-formatted strings to HTTP response
+                MultiSseSupport.writeSseStrings(sseEvents, rc, context);
             }
         }
     }

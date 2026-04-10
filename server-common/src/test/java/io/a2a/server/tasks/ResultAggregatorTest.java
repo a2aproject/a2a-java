@@ -258,7 +258,7 @@ public class ResultAggregatorTest {
 
         // Create real EventConsumer with the queue
         EventConsumer eventConsumer =
-            new EventConsumer(queue);
+            new EventConsumer(queue, Runnable::run);
 
         // Close queue after first event to simulate stream ending after processing
         queue.close();
@@ -306,7 +306,7 @@ public class ResultAggregatorTest {
             waitForEventProcessing(processor, () -> queue.enqueueEvent(authRequiredTask));
 
             // Create EventConsumer
-            EventConsumer eventConsumer = new EventConsumer(queue);
+            EventConsumer eventConsumer = new EventConsumer(queue, Runnable::run);
 
             // Call consumeAndBreakOnInterrupt with blocking=true
             ResultAggregator.EventTypeAndInterrupt result =
@@ -348,7 +348,7 @@ public class ResultAggregatorTest {
             waitForEventProcessing(processor, () -> queue.enqueueEvent(authRequiredTask));
 
             // Create EventConsumer
-            EventConsumer eventConsumer = new EventConsumer(queue);
+            EventConsumer eventConsumer = new EventConsumer(queue, Runnable::run);
 
             // Call consumeAndBreakOnInterrupt with blocking=false
             ResultAggregator.EventTypeAndInterrupt result =
@@ -396,7 +396,7 @@ public class ResultAggregatorTest {
             waitForEventProcessing(processor, () -> queue.enqueueEvent(authRequiredEvent));
 
             // Create EventConsumer
-            EventConsumer eventConsumer = new EventConsumer(queue);
+            EventConsumer eventConsumer = new EventConsumer(queue, Runnable::run);
 
             // Call consumeAndBreakOnInterrupt
             ResultAggregator.EventTypeAndInterrupt result =
@@ -442,7 +442,7 @@ public class ResultAggregatorTest {
             waitForEventProcessing(processor, () -> queue.enqueueEvent(authRequiredTask));
 
             // Create EventConsumer
-            EventConsumer eventConsumer = new EventConsumer(queue);
+            EventConsumer eventConsumer = new EventConsumer(queue, Runnable::run);
 
             // Call consumeAndBreakOnInterrupt
             ResultAggregator.EventTypeAndInterrupt result =

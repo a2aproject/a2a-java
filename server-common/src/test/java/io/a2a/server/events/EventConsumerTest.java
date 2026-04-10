@@ -72,7 +72,7 @@ public class EventConsumerTest {
                 .taskId(TASK_ID)
                 .mainEventBus(mainEventBus)
                 .build().tap();
-        eventConsumer = new EventConsumer(eventQueue);
+        eventConsumer = new EventConsumer(eventQueue, Runnable::run);
     }
 
     @AfterEach
@@ -397,7 +397,7 @@ public class EventConsumerTest {
         EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
                 .mainEventBus(mainEventBus)
                 .build().tap();
-        EventConsumer consumer = new EventConsumer(queue);
+        EventConsumer consumer = new EventConsumer(queue, Runnable::run);
 
         // Close the queue immediately
         queue.close();
@@ -445,7 +445,7 @@ public class EventConsumerTest {
         EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
                 .mainEventBus(mainEventBus)
                 .build().tap();
-        EventConsumer consumer = new EventConsumer(queue);
+        EventConsumer consumer = new EventConsumer(queue, Runnable::run);
 
         // Add a message event (which will complete the stream)
         Event message = fromJson(MESSAGE_PAYLOAD, Message.class);
@@ -499,7 +499,7 @@ public class EventConsumerTest {
         EventQueue queue = EventQueueUtil.getEventQueueBuilder(mainEventBus)
                 .mainEventBus(mainEventBus)
                 .build().tap();
-        EventConsumer consumer = new EventConsumer(queue);
+        EventConsumer consumer = new EventConsumer(queue, Runnable::run);
 
         // Enqueue a QueueClosedEvent (poison pill)
         QueueClosedEvent queueClosedEvent = new QueueClosedEvent(TASK_ID);
