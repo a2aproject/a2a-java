@@ -130,19 +130,14 @@ public class KafkaReplicationIntegrationTest {
 
     @Test
     public void testA2AMessageReplicatedToKafka() throws Exception {
-        String taskId = "kafka-replication-test-" + System.currentTimeMillis();
-        String contextId = "test-context-" + System.currentTimeMillis();
-
         // Clear any previous events
         testConsumer.clear();
 
-        // Send A2A message that should trigger events and replication
+        // Send A2A message that should trigger events and replication (no client-provided taskId)
         Message message = Message.builder()
                 .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("create")))
-                .taskId(taskId)
                 .messageId("test-msg-" + System.currentTimeMillis())
-                .contextId(contextId)
                 .build();
 
         CountDownLatch a2aLatch = new CountDownLatch(1);
@@ -166,7 +161,9 @@ public class KafkaReplicationIntegrationTest {
 
         Task task = createdTask.get();
         assertNotNull(task, "Task should be created");
-        assertEquals(taskId, task.id());
+        String taskId = task.id();
+        String contextId = task.contextId();
+        assertNotNull(taskId, "Server-generated task ID should not be null");
         assertEquals(TaskState.TASK_STATE_SUBMITTED, task.status().state());
 
         // Wait for the event to be replicated to Kafka
@@ -193,19 +190,14 @@ public class KafkaReplicationIntegrationTest {
 
     @Test
     public void testKafkaEventReceivedByA2AServer() throws Exception {
-        String taskId = "kafka-to-a2a-test-" + System.currentTimeMillis();
-        String contextId = "test-context-" + System.currentTimeMillis();
-
         // Clear any previous events
         testConsumer.clear();
 
-        // First create a task in the A2A system using non-streaming client
+        // First create a task in the A2A system using non-streaming client (no client-provided taskId)
         Message createMessage = Message.builder()
                 .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("create")))
-                .taskId(taskId)
                 .messageId("create-msg-" + System.currentTimeMillis())
-                .contextId(contextId)
                 .build();
 
         CountDownLatch createLatch = new CountDownLatch(1);
@@ -223,6 +215,9 @@ public class KafkaReplicationIntegrationTest {
         assertTrue(createLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
         Task initialTask = createdTask.get();
         assertNotNull(initialTask, "Task should be created");
+        String taskId = initialTask.id();
+        String contextId = initialTask.contextId();
+        assertNotNull(taskId, "Server-generated task ID should not be null");
         assertEquals(TaskState.TASK_STATE_SUBMITTED, initialTask.status().state(), "Initial task should be in SUBMITTED state");
 
         // Add a small delay to ensure the task is fully processed before resubscription
@@ -312,20 +307,15 @@ public class KafkaReplicationIntegrationTest {
 
     @Test
     public void testQueueClosedEventTerminatesRemoteSubscribers() throws Exception {
-        String taskId = "queue-closed-test-" + System.currentTimeMillis();
-        String contextId = "test-context-" + System.currentTimeMillis();
-
         // Clear any previous events
         testConsumer.clear();
 
-        // Use polling (non-blocking) client with "working" command
+        // Use polling (non-blocking) client with "working" command (no client-provided taskId)
         // This creates task in WORKING state (non-final) and keeps queue alive
         Message workingMessage = Message.builder()
                 .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("working")))
-                .taskId(taskId)
                 .messageId("working-msg-" + System.currentTimeMillis())
-                .contextId(contextId)
                 .build();
 
         CountDownLatch workingLatch = new CountDownLatch(1);
@@ -348,7 +338,7 @@ public class KafkaReplicationIntegrationTest {
         assertTrue(workingLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
         String createdTaskId = taskIdRef.get();
         assertNotNull(createdTaskId, "Task should be created");
-        assertEquals(taskId, createdTaskId);
+        String taskId = createdTaskId;
 
         // Set up streaming resubscription to listen for the QueueClosedEvent
         CountDownLatch streamCompletedLatch = new CountDownLatch(1);
@@ -408,19 +398,14 @@ public class KafkaReplicationIntegrationTest {
 
     @Test
     public void testPoisonPillGenerationOnTaskFinalization() throws Exception {
-        String taskId = "poison-pill-gen-test-" + System.currentTimeMillis();
-        String contextId = "test-context-" + System.currentTimeMillis();
-
         // Clear any previous events
         testConsumer.clear();
 
-        // Create a task that will be completed (finalized)
+        // Create a task that will be completed (finalized) - no client-provided taskId
         Message completeMessage = Message.builder()
                 .role(Message.Role.ROLE_USER)
                 .parts(List.of(new TextPart("complete")))
-                .taskId(taskId)
                 .messageId("complete-msg-" + System.currentTimeMillis())
-                .contextId(contextId)
                 .build();
 
         CountDownLatch completeLatch = new CountDownLatch(1);
@@ -439,6 +424,8 @@ public class KafkaReplicationIntegrationTest {
         assertTrue(completeLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
         Task createdTask = finalTask.get();
         assertNotNull(createdTask, "Task should be created");
+        String taskId = createdTask.id();
+        assertNotNull(taskId, "Server-generated task ID should not be null");
 
         // The task should complete very quickly since it's a simple operation
         // Wait a moment to ensure all events have been enqueued

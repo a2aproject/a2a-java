@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,6 +21,7 @@ import java.util.function.Consumer;
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientEvent;
+import org.a2aproject.sdk.client.TaskEvent;
 import org.a2aproject.sdk.client.config.ClientConfig;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransport;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfig;
@@ -254,15 +257,13 @@ public class MultiInstanceReplicationTest {
      */
     @Test
     public void testMultiInstanceEventReplication() throws Exception {
-        final String taskId = "replication-test-task-" + System.currentTimeMillis();
-        final String contextId = "replication-test-context";
-
         Throwable testFailure = null;
+        final String[] taskIdHolder = {null};
+        final String[] contextIdHolder = {null};
+
         try {
-            // Step 1: Send initial message NON-streaming to create task
+            // Step 1: Send initial message NON-streaming to create task (no client-provided taskId)
             Message initialMessage = Message.builder(A2A.toUserMessage("Initial test message"))
-                    .taskId(taskId)
-                .contextId(contextId)
                 .build();
 
         // Use NON-streaming client to create the task
@@ -272,13 +273,22 @@ public class MultiInstanceReplicationTest {
                 .withTransport(JSONRPCTransport.class, new JSONRPCTransportConfig())
                 .build();
 
-        Task createdTask = null;
         try {
-            nonStreamingClient.sendMessage(initialMessage, null);
+            CountDownLatch createLatch = new CountDownLatch(1);
+            AtomicReference<Task> taskRef = new AtomicReference<>();
+            nonStreamingClient.sendMessage(initialMessage, List.of((ClientEvent event, AgentCard card) -> {
+                if (event instanceof TaskEvent te) {
+                    taskRef.set(te.getTask());
+                }
+                createLatch.countDown();
+            }), (Throwable err) -> createLatch.countDown());
+            assertTrue(createLatch.await(15, TimeUnit.SECONDS), "Task creation timed out");
 
-            // Retrieve the task to verify it was created
-            createdTask = nonStreamingClient.getTask(new TaskQueryParams(taskId), null);
+            Task createdTask = taskRef.get();
             assertNotNull(createdTask, "Task should be created");
+            taskIdHolder[0] = createdTask.id();
+            contextIdHolder[0] = createdTask.contextId();
+            assertNotNull(taskIdHolder[0], "Server-generated task ID should not be null");
 
             // Task should be in a non-final state (SUBMITTED or WORKING are both valid)
             TaskState state = createdTask.status().state();
@@ -296,6 +306,9 @@ public class MultiInstanceReplicationTest {
 
             throw e;
         }
+
+        final String taskId = taskIdHolder[0];
+        final String contextId = contextIdHolder[0];
 
         // Step 2: Subscribe from both app1 and app2 with proper latches
 

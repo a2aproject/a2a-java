@@ -11,11 +11,14 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import org.a2aproject.sdk.client.Client;
+import org.a2aproject.sdk.client.TaskEvent;
+import org.a2aproject.sdk.client.TaskUpdateEvent;
 import org.a2aproject.sdk.client.config.ClientConfig;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransport;
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
@@ -98,22 +101,32 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
 
     @Test
     public void testJpaDatabasePushNotificationConfigStoreIntegration() throws Exception {
-        final String taskId = "push-notify-test-" + System.currentTimeMillis();
-        final String contextId = "test-context";
-
-        // Step 1: Create the task
+        // Step 1: Create the task (no client-provided taskId — server generates it)
         Message createMessage = Message.builder()
             .role(Message.Role.ROLE_USER)
             .parts(List.of(new TextPart("create"))) // Send the "create" command
-            .taskId(taskId)
             .messageId("test-msg-1")
-            .contextId(contextId)
             .build();
 
-        // Use a latch to wait for the first operation to complete
+        // Use a latch to wait for the first operation to complete and capture server-generated ids
         CountDownLatch createLatch = new CountDownLatch(1);
-        client.sendMessage(createMessage, List.of((event, card) -> createLatch.countDown()), (e) -> createLatch.countDown());
+        AtomicReference<Task> createdTaskRef = new AtomicReference<>();
+        client.sendMessage(createMessage, List.of((event, card) -> {
+            if (event instanceof TaskEvent taskEvent) {
+                createdTaskRef.set(taskEvent.getTask());
+                createLatch.countDown();
+                return;
+            }
+            if (event instanceof TaskUpdateEvent taskUpdateEvent) {
+                createdTaskRef.set(taskUpdateEvent.getTask());
+                createLatch.countDown();
+            }
+        }), (e) -> createLatch.countDown());
         assertTrue(createLatch.await(10, TimeUnit.SECONDS), "Timeout waiting for task creation");
+
+        assertNotNull(createdTaskRef.get(), "Task should have been created");
+        final String taskId = createdTaskRef.get().id();
+        final String contextId = createdTaskRef.get().contextId();
 
         // Step 2: Set the push notification configuration
         TaskPushNotificationConfig taskPushConfig = TaskPushNotificationConfig.builder()

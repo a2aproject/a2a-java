@@ -1021,56 +1021,26 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
-        // Build RequestContext FIRST to get the real taskId (auto-generated if not provided)
-        // This eliminates the need for temporary IDs - we use the same UUID throughout
+        Task task = validateRequestedTask(params);
+        MessageSendParams requestParams = task == null ? params : normalizeRequestParamsForTask(params, task);
+
         RequestContext requestContext = requestContextBuilder.get()
-                .setParams(params)
-                .setTaskId(params.message().taskId())  // Use client's ID or let RequestContext generate
-                .setContextId(params.message().contextId())
-                .setTask(null)  // Will be set below after TaskManager retrieves it
+                .setParams(requestParams)
+                .setTaskId(requestParams.message().taskId())
+                .setContextId(task != null ? task.contextId() : requestParams.message().contextId())
+                .setTask(task)
                 .setServerCallContext(context)
                 .build();
 
-        // Get the actual taskId from RequestContext (either from client or auto-generated)
-        // RequestContext.build() guarantees taskId is non-null via checkOrGenerateTaskId()
-        String taskId = java.util.Objects.requireNonNull(
-                requestContext.getTaskId(), "TaskId must be non-null after RequestContext.build()");
+        String taskId = Objects.requireNonNull(requestContext.getTaskId());
 
-        // Create TaskManager with the real taskId
         TaskManager taskManager = new TaskManager(
                 taskId,
-                params.message().contextId(),
+                requestContext.getContextId(),
                 taskStore,
-                params.message());
+                requestParams.message());
 
-        Task task = taskManager.getTask();
         if (task != null) {
-            // Reject messages to tasks that are in a terminal state (completed, canceled, rejected, failed).
-            // Per A2A spec section 3.1.1 (CORE-SEND-002): the SDK MUST return UnsupportedOperationError
-            // before forwarding the message to the AgentExecutor.
-            if (task.status().state().isFinal()) {
-                throw new UnsupportedOperationError(
-                        null,
-                        "Cannot send message to task " + task.id() +
-                        " - task is in a terminal state: " + task.status().state(),
-                        null);
-            }
-
-            // Validate contextId matches the existing task's contextId
-            String messageContextId = params.message().contextId();
-            if (messageContextId != null && !messageContextId.equals(task.contextId())) {
-                throw new InvalidParamsError(String.format(
-                        "Message has a mismatched context ID (Task %s has contextId %s but message has contextId %s)",
-                        task.id(), task.contextId(), messageContextId));
-            }
-
-            // Per spec CORE-SEND-002: Reject messages to tasks in terminal states
-            if (task.status().state().isFinal()) {
-                throw new UnsupportedOperationError(null, String.format(
-                        "Cannot send message to task %s: task is in terminal state %s and cannot accept further messages",
-                        task.id(), task.status().state()), null);
-            }
-
             LOGGER.debug("Found task updating with message {}", params.message());
             task = taskManager.updateWithMessage(params.message(), task);
 
@@ -1079,39 +1049,61 @@ public class DefaultRequestHandler implements RequestHandler {
                 pushConfigStore.setInfo(TaskPushNotificationConfig.builder(params.configuration().taskPushNotificationConfig())
                         .taskId(task.id()).build());
             }
-        }
-
-        // Only rebuild RequestContext if we have a task to add, or if taskId was auto-generated
-        // and doesn't match the original message (to update params with generated taskId)
-        boolean taskIdChanged = !taskId.equals(params.message().taskId());
-
-        if (task != null || taskIdChanged) {
-            MessageSendParams paramsToUse;
-
-            if (taskIdChanged) {
-                // Update message to include the taskId (handles auto-generated case)
-                // This prevents "bad task id" validation errors
-                Message updatedMessage = Message.builder(params.message())
-                        .taskId(taskId)
-                        .build();
-                paramsToUse = new MessageSendParams(
-                        updatedMessage,
-                        params.configuration(),
-                        params.metadata());
-            } else {
-                // TaskId matches, reuse original params to preserve Message object identity
-                paramsToUse = params;
-            }
 
             requestContext = requestContextBuilder.get()
-                    .setParams(paramsToUse)
+                    .setParams(requestParams)
                     .setTask(task)
+                    .setContextId(task.contextId())
                     .setServerCallContext(context)
                     .build();
         }
-        // else: task is null and taskId matches - use the original requestContext
 
         return new MessageSendSetup(taskManager, task, requestContext);
+    }
+
+    private @Nullable Task validateRequestedTask(MessageSendParams params) throws A2AError {
+        String requestedTaskId = params.message().taskId();
+        if (requestedTaskId == null) {
+            return null;
+        }
+
+        Task task = taskStore.get(requestedTaskId);
+        if (task == null) {
+            throw new TaskNotFoundError();
+        }
+
+        String messageContextId = params.message().contextId();
+        if (messageContextId != null && !messageContextId.equals(task.contextId())) {
+            throw new InvalidParamsError(String.format(
+                    "Message has a mismatched context ID (Task %s has contextId %s but message has contextId %s)",
+                    task.id(), task.contextId(), messageContextId));
+        }
+
+        if (task.status().state().isFinal()) {
+            throw new UnsupportedOperationError(null, String.format(
+                    "Cannot send message to task %s: task is in terminal state %s and cannot accept further messages",
+                    task.id(), task.status().state()), null);
+        }
+
+        return task;
+    }
+
+    private MessageSendParams normalizeRequestParamsForTask(MessageSendParams params, Task task) {
+        if (Objects.equals(params.message().taskId(), task.id())
+                && Objects.equals(params.message().contextId(), task.contextId())) {
+            return params;
+        }
+
+        Message updatedMessage = Message.builder(params.message())
+                .taskId(task.id())
+                .contextId(task.contextId())
+                .build();
+        return MessageSendParams.builder()
+                .message(updatedMessage)
+                .configuration(params.configuration())
+                .metadata(params.metadata())
+                .tenant(params.tenant())
+                .build();
     }
 
     /**

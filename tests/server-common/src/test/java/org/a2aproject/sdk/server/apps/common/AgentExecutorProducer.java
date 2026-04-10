@@ -48,92 +48,72 @@ public class AgentExecutorProducer {
             @Override
             public void execute(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
                 String taskId = context.getTaskId();
+                String input = context.getMessage() != null ? extractTextFromMessage(context.getMessage()) : "";
 
-                // Agent-to-agent communication test
-                if (taskId != null && taskId.startsWith("agent-to-agent-test")) {
+                // Agent-to-agent communication test (routed by message content prefix)
+                if (input.startsWith("delegate:") || input.startsWith("a2a-local:")) {
                     handleAgentToAgentTest(context, agentEmitter);
                     return;
                 }
 
-                // Special handling for multi-event test
-                if (taskId != null && taskId.startsWith("multi-event-test")) {
-                    // First call: context.getTask() == null (new task)
-                    if (context.getTask() == null) {
-                        agentEmitter.startWork();
-                        // Return immediately - queue stays open because task is in WORKING state
-                        return;
-                    } else {
-                        // Second call: context.getTask() != null (existing task)
-                        agentEmitter.addArtifact(
-                            List.of(new TextPart("Second message artifact")),
-                            "artifact-2", "Second Artifact", null);
-                        agentEmitter.complete();
-                        return;
-                    }
+                // Special handling for multi-event test (routed by message content)
+                if (input.startsWith("multi-event:first")) {
+                    agentEmitter.startWork();
+                    // Return immediately - queue stays open because task is in WORKING state
+                    return;
                 }
-
-                // Special handling for input-required test
-                if (taskId != null && taskId.startsWith("input-required-test")) {
-                    String input = extractTextFromMessage(context.getMessage());
-                    // Second call: user provided the required input - complete the task
-                    if ("User input".equals(input)) {
-                        // Go directly to COMPLETED without intermediate WORKING state
-                        // This avoids race condition where blocking call interrupts on WORKING
-                        agentEmitter.complete();
-                        return;
-                    }
-                    // First call: any other message - emit INPUT_REQUIRED
-                    // Go directly to INPUT_REQUIRED without intermediate WORKING state
-                    // This avoids race condition where blocking call interrupts on WORKING
-                    // before INPUT_REQUIRED is persisted to TaskStore
-                    agentEmitter.requiresInput(agentEmitter.newAgentMessage(
-                            List.of(new TextPart("Please provide additional information")),
-                            context.getMessage().metadata()));
-                    // Return immediately - queue stays open because task is in INPUT_REQUIRED state
+                if (input.startsWith("multi-event:second")) {
+                    agentEmitter.addArtifact(
+                        List.of(new TextPart("Second message artifact")),
+                        "artifact-2", "Second Artifact", null);
+                    agentEmitter.complete();
                     return;
                 }
 
-                // Special handling for auth-required test
-                if (taskId != null && taskId.startsWith("auth-required-test")) {
-                    // AUTH_REQUIRED workflow: agent emits AUTH_REQUIRED, simulates out-of-band auth delay, then completes
-                    // Go directly to AUTH_REQUIRED without intermediate WORKING state
-                    // This avoids race condition where blocking call interrupts on WORKING
-                    // before AUTH_REQUIRED is persisted to TaskStore
+                // Special handling for input-required test (routed by message content)
+                if (input.startsWith("input-required:")) {
+                    String payload = input.substring("input-required:".length());
+                    // Second call: user provided the required input - complete the task
+                    if ("User input".equals(payload)) {
+                        agentEmitter.complete();
+                        return;
+                    }
+                    // First call: emit INPUT_REQUIRED
+                    agentEmitter.requiresInput(agentEmitter.newAgentMessage(
+                            List.of(new TextPart("Please provide additional information")),
+                            context.getMessage().metadata()));
+                    return;
+                }
+
+                // Special handling for auth-required test (routed by message content)
+                if (input.startsWith("auth-required:")) {
                     agentEmitter.requiresAuth(agentEmitter.newAgentMessage(
                             List.of(new TextPart("Please authenticate with OAuth provider")),
                             context.getMessage().metadata()));
 
                     try {
-                        // Simulate out-of-band authentication delay (user authenticates externally)
-                        // Sleep long enough for test to establish subscription and wait for completion
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         throw new InternalError("Auth simulation interrupted: " + e.getMessage());
                     }
 
-                    // Complete task (auth "received" out-of-band)
-                    // Agent continues after AUTH_REQUIRED without new request
                     agentEmitter.complete();
                     return;
                 }
 
-                if (context.getTaskId().equals("task-not-supported-123")) {
+                if ("task-not-supported-123".equals(taskId)) {
                     throw new UnsupportedOperationError();
                 }
 
                 // Check for delegated agent-to-agent messages (marked with special prefix)
-                if (context.getMessage() != null) {
-                    String userInput = extractTextFromMessage(context.getMessage());
-                    if (userInput.startsWith("#a2a-delegated#")) {
-                        // This is a delegated message from agent-to-agent test - complete it
-                        String actualContent = userInput.substring("#a2a-delegated#".length());
-                        agentEmitter.startWork();
-                        String response = "Handled locally: " + actualContent;
-                        agentEmitter.addArtifact(List.of(new TextPart(response)));
-                        agentEmitter.complete();
-                        return;
-                    }
+                if (input.startsWith("#a2a-delegated#")) {
+                    String actualContent = input.substring("#a2a-delegated#".length());
+                    agentEmitter.startWork();
+                    String response = "Handled locally: " + actualContent;
+                    agentEmitter.addArtifact(List.of(new TextPart(response)));
+                    agentEmitter.complete();
+                    return;
                 }
 
                 // Default handler: echo back message or task
@@ -182,6 +162,8 @@ public class AgentExecutorProducer {
                     // Check for delegation pattern
                     if (userInput.startsWith("delegate:")) {
                         handleDelegation(userInput, transportProtocol, agentEmitter);
+                    } else if (userInput.startsWith("a2a-local:")) {
+                        handleLocally(userInput.substring("a2a-local:".length()), agentEmitter);
                     } else {
                         handleLocally(userInput, agentEmitter);
                     }
