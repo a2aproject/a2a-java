@@ -113,7 +113,7 @@ A JBang script is provided for running the client without Maven:
 
 3. Run the client using the JBang script:
    ```bash
-   jbang examples/helloworld/client/src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java
+   jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java
    ```
 
 #### Transport Protocol Selection with JBang
@@ -122,29 +122,29 @@ Select the transport protocol using the same `-Dquarkus.agentcard.protocol` prop
 
 **Using JSONRPC (default)**:
 ```bash
-jbang examples/helloworld/client/src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java
+jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java
 ```
 
 **Using GRPC**:
 ```bash
-jbang examples/helloworld/client/src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java -Dquarkus.agentcard.protocol=GRPC 
+jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java -Dquarkus.agentcard.protocol=GRPC 
 ```
 
 **Using HTTP+JSON**:
 ```bash
-jbang examples/helloworld/client/src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java -Dquarkus.agentcard.protocol=HTTP+JSON
+jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java -Dquarkus.agentcard.protocol=HTTP+JSON
 ```
 
 #### Enabling OpenTelemetry with JBang
 
 To enable OpenTelemetry with JBang:
 ```bash
-jbang examples/helloworld/client/src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java -Dopentelemetry=true
+jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java -Dopentelemetry=true
 ```
 
 You can combine protocol selection with OpenTelemetry:
 ```bash
-jbang examples/helloworld/client/src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java -Dquarkus.agentcard.protocol=GRPC -Dopentelemetry=true
+jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java -Dquarkus.agentcard.protocol=GRPC -Dopentelemetry=true
 ```
 
 ## What the Example Does
@@ -194,12 +194,12 @@ Instead of the Python server, use the Java server example which has built-in Ope
 
    Or using JBang:
    ```bash
-   jbang examples/helloworld/client/src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java -Dopentelemetry=true 
+   jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java -Dopentelemetry=true 
    ```
 
    With specific protocol:
    ```bash
-   jbang examples/helloworld/client/src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java -Dquarkus.agentcard.protocol=HTTP+JSON -Dopentelemetry=true
+   jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java -Dquarkus.agentcard.protocol=HTTP+JSON -Dopentelemetry=true
    ```
 
 3. **View traces in Grafana**:
@@ -225,7 +225,7 @@ If you want to use the Python server with OpenTelemetry:
 
    Or with JBang:
    ```bash
-   jbang examples/helloworld/client/src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java -Dopentelemetry=true
+   jbang examples/helloworld/client/src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java -Dopentelemetry=true
    ```
 
    With specific protocol:

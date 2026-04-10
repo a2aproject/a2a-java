@@ -16,7 +16,7 @@
     <description>Examples for the Java SDK for the Agent2Agent Protocol (A2A)</description>
 
     <properties>
-        <jbang.script.name>src/main/java/io/a2a/examples/helloworld/HelloWorldRunner.java</jbang.script.name>
+        <jbang.script.name>src/main/java/org/a2aproject/sdk/examples/helloworld/HelloWorldRunner.java</jbang.script.name>
     </properties>
 
     <dependencies>
@@ -93,7 +93,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <mainClass>io.a2a.examples.helloworld.HelloWorldClient</mainClass>
+                    <mainClass>org.a2aproject.sdk.examples.helloworld.HelloWorldClient</mainClass>
                     <systemProperties>
                         <systemProperty>
                             <key>opentelemetry</key>

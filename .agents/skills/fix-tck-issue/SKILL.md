@@ -65,9 +65,9 @@ Create test in appropriate module. Choose location based on test complexity:
 - Testing handler logic directly
 - Need custom AgentCard configuration (e.g., capability flags)
 - Simpler to set up specific test conditions
-- **HTTP+JSON** → `transport/rest/src/test/java/io/a2a/transport/rest/handler/RestHandlerTest.java`
-- **gRPC** → `transport/grpc/src/test/java/io/a2a/transport/grpc/handler/GrpcHandlerTest.java`
-- **JSON-RPC** → `transport/jsonrpc/src/test/java/io/a2a/transport/jsonrpc/handler/JSONRPCHandlerTest.java`
+- **HTTP+JSON** → `transport/rest/src/test/java/org/a2aproject/sdk/transport/rest/handler/RestHandlerTest.java`
+- **gRPC** → `transport/grpc/src/test/java/org/a2aproject/sdk/transport/grpc/handler/GrpcHandlerTest.java`
+- **JSON-RPC** → `transport/jsonrpc/src/test/java/org/a2aproject/sdk/transport/jsonrpc/handler/JSONRPCHandlerTest.java`
 
 **Option B: reference/* modules (Integration Tests)** - Use when:
 - Testing full request/response cycle
@@ -195,9 +195,9 @@ Fixes #<issue-number>"
 
 Example for multi-transport fix:
 ```bash
-git add transport/rest/src/main/java/io/a2a/transport/rest/handler/RestHandler.java \
-        transport/jsonrpc/src/main/java/io/a2a/transport/jsonrpc/handler/JSONRPCHandler.java \
-        transport/grpc/src/main/java/io/a2a/transport/grpc/handler/GrpcHandler.java
+git add transport/rest/src/main/java/org/a2aproject/sdk/transport/rest/handler/RestHandler.java \
+        transport/jsonrpc/src/main/java/org/a2aproject/sdk/transport/jsonrpc/handler/JSONRPCHandler.java \
+        transport/grpc/src/main/java/org/a2aproject/sdk/transport/grpc/handler/GrpcHandler.java
 git commit -m "fix: Return UnsupportedOperationError when capability is disabled
 
 Applied to all three transports: HTTP+JSON, JSON-RPC, and gRPC.
@@ -245,9 +245,9 @@ builder.setTaskId(taskId);
 - More control over test setup
 
 **Test file locations**:
-- `transport/rest/src/test/java/io/a2a/transport/rest/handler/RestHandlerTest.java`
-- `transport/grpc/src/test/java/io/a2a/transport/grpc/handler/GrpcHandlerTest.java`
-- `transport/jsonrpc/src/test/java/io/a2a/transport/jsonrpc/handler/JSONRPCHandlerTest.java`
+- `transport/rest/src/test/java/org/a2aproject/sdk/transport/rest/handler/RestHandlerTest.java`
+- `transport/grpc/src/test/java/org/a2aproject/sdk/transport/grpc/handler/GrpcHandlerTest.java`
+- `transport/jsonrpc/src/test/java/org/a2aproject/sdk/transport/jsonrpc/handler/JSONRPCHandlerTest.java`
 
 ### reference/* modules (Integration Tests)
 **Best for**:

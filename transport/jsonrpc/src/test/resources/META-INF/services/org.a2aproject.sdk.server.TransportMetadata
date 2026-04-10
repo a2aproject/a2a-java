@@ -1,0 +1,2 @@
+# Add a test TransportMetadata so we pass AgentCard validation
+org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCTestTransportMetadata

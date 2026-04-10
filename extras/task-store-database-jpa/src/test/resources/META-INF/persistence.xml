@@ -10,7 +10,7 @@
         <description>A2A Java SDK JPA TaskStore Test Configuration</description>
         
         <!-- Include our JPA entities -->
-        <class>io.a2a.extras.taskstore.database.jpa.JpaTask</class>
+        <class>org.a2aproject.sdk.extras.taskstore.database.jpa.JpaTask</class>
         
         <!-- Exclude unlisted classes to avoid scanning issues in tests -->
         <exclude-unlisted-classes>true</exclude-unlisted-classes>

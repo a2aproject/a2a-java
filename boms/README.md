@@ -58,7 +58,7 @@ Add to your project's `pom.xml`:
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-bom</artifactId>
-            <version>${io.a2a.sdk.version}</version>
+            <version>${org.a2aproject.sdk.version}</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -88,7 +88,7 @@ Add to your project's `pom.xml`:
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-extras-bom</artifactId>
-            <version>${io.a2a.sdk.version}</version>
+            <version>${org.a2aproject.sdk.version}</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -118,7 +118,7 @@ Add to your project's `pom.xml`:
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-reference-bom</artifactId>
-            <version>${io.a2a.sdk.version}</version>
+            <version>${org.a2aproject.sdk.version}</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

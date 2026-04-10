@@ -4,6 +4,6 @@
        xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
        version="4.0" bean-discovery-mode="all">
     <alternatives>
-        <class>io.a2a.extras.opentelemetry.it.InstrumentedRequestHandler</class>
+        <class>org.a2aproject.sdk.extras.opentelemetry.it.InstrumentedRequestHandler</class>
     </alternatives>
 </beans>

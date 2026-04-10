@@ -49,7 +49,7 @@ Create or update your `persistence.xml`:
     <persistence-unit name="a2a-java" transaction-type="JTA">
         <jta-data-source>java:jboss/datasources/A2ADataSource</jta-data-source>
         
-        <class>io.a2a.extras.pushnotificationconfigstore.database.jpa.JpaPushNotificationConfig</class>
+        <class>org.a2aproject.sdk.extras.pushnotificationconfigstore.database.jpa.JpaPushNotificationConfig</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         
         <properties>

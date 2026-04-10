@@ -55,7 +55,7 @@ jobs:
         working-directory: examples/cloud-deployment/server
         run: |
           mvn test-compile exec:java \
-            -Dexec.mainClass="io.a2a.examples.cloud.A2ACloudExampleClient" \
+            -Dexec.mainClass="org.a2aproject.sdk.examples.cloud.A2ACloudExampleClient" \
             -Dexec.classpathScope=test \
             -Dagent.url=http://localhost:8080 \
             -Dci.mode=true

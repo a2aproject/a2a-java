@@ -1,0 +1,1066 @@
+package org.a2aproject.sdk.jsonrpc.common.json;
+
+import static org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.ThrowableTypeAdapter.THROWABLE_MARKER_FIELD;
+import org.a2aproject.sdk.spec.A2AErrorCodes;
+import static org.a2aproject.sdk.spec.DataPart.DATA;
+import static org.a2aproject.sdk.spec.TextPart.TEXT;
+import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
+
+import java.lang.reflect.Type;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.ToNumberPolicy;
+import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
+
+import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.APIKeySecurityScheme;
+import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
+import org.a2aproject.sdk.spec.DataPart;
+import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
+import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
+import org.a2aproject.sdk.spec.FileContent;
+import org.a2aproject.sdk.spec.FilePart;
+import org.a2aproject.sdk.spec.FileWithBytes;
+import org.a2aproject.sdk.spec.FileWithUri;
+import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
+import org.a2aproject.sdk.spec.InvalidAgentResponseError;
+import org.a2aproject.sdk.spec.InvalidParamsError;
+import org.a2aproject.sdk.spec.InvalidRequestError;
+import org.a2aproject.sdk.spec.JSONParseError;
+import org.a2aproject.sdk.spec.Message;
+import org.a2aproject.sdk.spec.MethodNotFoundError;
+import org.a2aproject.sdk.spec.MutualTLSSecurityScheme;
+import org.a2aproject.sdk.spec.OAuth2SecurityScheme;
+import org.a2aproject.sdk.spec.OpenIdConnectSecurityScheme;
+import org.a2aproject.sdk.spec.Part;
+import org.a2aproject.sdk.spec.PushNotificationNotSupportedError;
+import org.a2aproject.sdk.spec.SecurityRequirement;
+import org.a2aproject.sdk.spec.SecurityScheme;
+import org.a2aproject.sdk.spec.StreamingEventKind;
+import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
+import org.a2aproject.sdk.spec.TaskNotCancelableError;
+import org.a2aproject.sdk.spec.TaskNotFoundError;
+import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
+import org.a2aproject.sdk.spec.TextPart;
+import org.a2aproject.sdk.spec.UnsupportedOperationError;
+import org.a2aproject.sdk.spec.VersionNotSupportedError;
+
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Utility class for JSON operations.
+ */
+public class JsonUtil {
+
+    private static GsonBuilder createBaseGsonBuilder() {
+        return new GsonBuilder()
+                .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+                .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
+                .registerTypeAdapter(SecurityRequirement.class, new SecurityRequirementTypeAdapter())
+                .registerTypeHierarchyAdapter(A2AError.class, new A2AErrorTypeAdapter())
+                .registerTypeHierarchyAdapter(FileContent.class, new FileContentTypeAdapter());
+
+    }
+
+    /**
+     * Pre-configured {@link Gson} instance for JSON operations.
+     * <p>
+     * This mapper is configured with strict parsing mode and all necessary custom TypeAdapters
+     * for A2A Protocol types including polymorphic types, enums, and date/time types.
+     * <p>
+     * Used throughout the SDK for consistent JSON serialization and deserialization.
+     *
+     * @see JsonUtil#createBaseGsonBuilder()
+     */
+    public static final Gson OBJECT_MAPPER = createBaseGsonBuilder()
+            .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
+            .registerTypeHierarchyAdapter(StreamingEventKind.class, new StreamingEventKindTypeAdapter())
+            .registerTypeHierarchyAdapter(SecurityScheme.class, new SecuritySchemeTypeAdapter())
+            .create();
+
+    /**
+     * Deserializes JSON string to an object of the specified class.
+     *
+     * @param <T> the type of the object to deserialize to
+     * @param json the JSON string to parse
+     * @param classOfT the class of the object to deserialize to
+     * @return the deserialized object
+     * @throws JsonProcessingException if JSON parsing fails
+     */
+    public static <T> T fromJson(String json, Class<T> classOfT) throws JsonProcessingException {
+        try {
+            return OBJECT_MAPPER.fromJson(json, classOfT);
+        } catch (JsonSyntaxException e) {
+            throw new JsonProcessingException("Failed to parse JSON", e);
+        }
+    }
+
+    /**
+     * Deserializes JSON string to an object of the specified type.
+     *
+     * @param <T> the type of the object to deserialize to
+     * @param json the JSON string to parse
+     * @param type the type of the object to deserialize to (supports generics)
+     * @return the deserialized object
+     * @throws JsonProcessingException if JSON parsing fails
+     */
+    public static <T> T fromJson(String json, Type type) throws JsonProcessingException {
+        try {
+            return OBJECT_MAPPER.fromJson(json, type);
+        } catch (JsonSyntaxException e) {
+            throw new JsonProcessingException("Failed to parse JSON", e);
+        }
+    }
+
+    /**
+     * Serializes an object to a JSON string using Gson.
+     * <p>
+     * This method uses the pre-configured {@link #OBJECT_MAPPER} to produce
+     * JSON representation of the provided object.
+     *
+     * @param data the object to serialize
+     * @return JSON string representation of the object
+     * @throws JsonProcessingException if conversion fails
+     */
+    public static String toJson(Object data) throws JsonProcessingException {
+        try {
+            return OBJECT_MAPPER.toJson(data);
+        } catch (JsonSyntaxException e) {
+            throw new JsonProcessingException("Failed to generate JSON", e);
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link OffsetDateTime} to/from ISO-8601 format.
+     * <p>
+     * This adapter ensures that OffsetDateTime instances are serialized to ISO-8601 formatted strings
+     * (e.g., "2023-10-01T12:00:00.234-05:00") and deserialized from the same format.
+     * This is necessary because Gson cannot access private fields of java.time classes via reflection
+     * in Java 17+ due to module system restrictions.
+     * <p>
+     * The adapter uses {@link DateTimeFormatter#ISO_OFFSET_DATE_TIME} for both serialization and
+     * deserialization, which ensures proper handling of timezone offsets.
+     *
+     * @see OffsetDateTime
+     * @see DateTimeFormatter#ISO_OFFSET_DATE_TIME
+     */
+    static class OffsetDateTimeTypeAdapter extends TypeAdapter<OffsetDateTime> {
+
+        @Override
+        public void write(JsonWriter out, OffsetDateTime value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            }
+        }
+
+        @Override
+        public @Nullable
+        OffsetDateTime read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String dateTimeString = in.nextString();
+            try {
+                return OffsetDateTime.parse(dateTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            } catch (DateTimeParseException e) {
+                throw new JsonSyntaxException("Failed to parse OffsetDateTime: " + dateTimeString, e);
+            }
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link Throwable} and its subclasses.
+     * <p>
+     * This adapter avoids reflection into {@link Throwable}'s private fields, which is not allowed
+     * in Java 17+ due to module system restrictions. Instead, it serializes Throwables as simple
+     * objects containing only the type (fully qualified class name) and message.
+     * <p>
+     * <b>Serialization:</b> Converts a Throwable to a JSON object with:
+     * <ul>
+     * <li>"type": The fully qualified class name (e.g., "java.lang.IllegalArgumentException")</li>
+     * <li>"message": The exception message</li>
+     * </ul>
+     * <p>
+     * <b>Deserialization:</b> Reads the JSON and reconstructs the Throwable using reflection to find
+     * a constructor that accepts a String message parameter. If no such constructor exists or if
+     * instantiation fails, returns a generic {@link RuntimeException} with the message.
+     *
+     * @see Throwable
+     */
+    static class ThrowableTypeAdapter extends TypeAdapter<Throwable> {
+
+        static final String THROWABLE_MARKER_FIELD = "__throwable";
+
+        @Override
+        public void write(JsonWriter out, Throwable value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            out.beginObject();
+            out.name("type").value(value.getClass().getName());
+            out.name("message").value(value.getMessage());
+            out.name(THROWABLE_MARKER_FIELD).value(true);
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable
+        Throwable read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            String type = null;
+            String message = null;
+
+            in.beginObject();
+            while (in.hasNext()) {
+                String fieldName = in.nextName();
+                switch (fieldName) {
+                    case "type" ->
+                        type = in.nextString();
+                    case "message" ->
+                        message = in.nextString();
+                    default ->
+                        in.skipValue();
+                }
+            }
+            in.endObject();
+
+            // Try to reconstruct the Throwable
+            if (type != null) {
+                try {
+                    Class<?> throwableClass = Class.forName(type);
+                    if (Throwable.class.isAssignableFrom(throwableClass)) {
+                        // Try to find a constructor that takes a String message
+                        try {
+                            var constructor = throwableClass.getConstructor(String.class);
+                            return (Throwable) constructor.newInstance(message);
+                        } catch (NoSuchMethodException e) {
+                            // No String constructor, return a generic RuntimeException
+                            return new RuntimeException(message);
+                        }
+                    }
+                } catch (Exception e) {
+                    // If we can't reconstruct the exact type, return a generic RuntimeException
+                    return new RuntimeException(message);
+                }
+            }
+            return new RuntimeException(message);
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link A2AError} and its subclasses.
+     * <p>
+     * This adapter handles polymorphic deserialization based on the error code, creating the
+     * appropriate subclass instance.
+     * <p>
+     * The adapter maps error codes to their corresponding error classes:
+     * <ul>
+     * <li>-32700: {@link JSONParseError}</li>
+     * <li>-32600: {@link InvalidRequestError}</li>
+     * <li>-32601: {@link MethodNotFoundError}</li>
+     * <li>-32602: {@link InvalidParamsError}</li>
+     * <li>-32603: {@link InternalError}</li>
+     * <li>-32001: {@link TaskNotFoundError}</li>
+     * <li>-32002: {@link TaskNotCancelableError}</li>
+     * <li>-32003: {@link PushNotificationNotSupportedError}</li>
+     * <li>-32004: {@link UnsupportedOperationError}</li>
+     * <li>-32005: {@link ContentTypeNotSupportedError}</li>
+     * <li>-32006: {@link InvalidAgentResponseError}</li>
+     * <li>Other codes: {@link A2AError}</li>
+     * </ul>
+     *
+     * @see A2AError
+     */
+    static class A2AErrorTypeAdapter extends TypeAdapter<A2AError> {
+
+        private static final String CODE_FIELD = "code";
+        private static final String DETAILS_FIELD = "details";
+        private static final String MESSAGE_FIELD = "message";
+        private static final String TYPE_FIELD = "type";
+
+        @Override
+        public void write(JsonWriter out, A2AError value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            out.beginObject();
+            out.name(CODE_FIELD).value(value.getCode());
+            out.name(MESSAGE_FIELD).value(value.getMessage());
+            if (!value.getDetails().isEmpty()) {
+                out.name(DETAILS_FIELD);
+                OBJECT_MAPPER.toJson(value.getDetails(), Map.class, out);
+            }
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable
+        A2AError read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            Integer code = null;
+            String message = null;
+            Map<String, Object> details = null;
+
+            in.beginObject();
+            while (in.hasNext()) {
+                String fieldName = in.nextName();
+                switch (fieldName) {
+                    case CODE_FIELD ->
+                        code = in.nextInt();
+                    case MESSAGE_FIELD ->
+                        message = in.nextString();
+                    case DETAILS_FIELD -> {
+                        // Read details as a map
+                        details = readDetailsValue(in);
+                    }
+                    default ->
+                        in.skipValue();
+                }
+            }
+            in.endObject();
+
+            // Create the appropriate subclass based on the error code
+            return createErrorInstance(code, message, details);
+        }
+
+        /**
+         * Reads the details field value as a map.
+         */
+        @SuppressWarnings("unchecked")
+        private @Nullable
+        Map<String, Object> readDetailsValue(JsonReader in) throws java.io.IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            if (in.peek() == com.google.gson.stream.JsonToken.BEGIN_OBJECT) {
+                return (Map<String, Object>) OBJECT_MAPPER.fromJson(in, Map.class);
+            }
+            in.skipValue();
+            return null;
+        }
+
+        /**
+         * Creates the appropriate A2AError subclass based on the error code.
+         */
+        private A2AError createErrorInstance(@Nullable Integer code, @Nullable String message, @Nullable Map<String, Object> details) {
+            if (code == null) {
+                throw new JsonSyntaxException("A2AError must have a code field");
+            }
+
+            A2AErrorCodes errorCode = A2AErrorCodes.fromCode(code);
+            if (errorCode == null) {
+                return new A2AError(code, message == null ? "" : message, details);
+            }
+            return switch (errorCode) {
+                case JSON_PARSE -> new JSONParseError(code, message, details);
+                case INVALID_REQUEST -> new InvalidRequestError(code, message, details);
+                case METHOD_NOT_FOUND -> new MethodNotFoundError(code, message, details);
+                case INVALID_PARAMS -> new InvalidParamsError(code, message, details);
+                case INTERNAL -> new org.a2aproject.sdk.spec.InternalError(code, message, details);
+                case TASK_NOT_FOUND -> new TaskNotFoundError(message, details);
+                case TASK_NOT_CANCELABLE -> new TaskNotCancelableError(code, message, details);
+                case PUSH_NOTIFICATION_NOT_SUPPORTED -> new PushNotificationNotSupportedError(code, message, details);
+                case UNSUPPORTED_OPERATION -> new UnsupportedOperationError(code, message, details);
+                case CONTENT_TYPE_NOT_SUPPORTED -> new ContentTypeNotSupportedError(code, message, details);
+                case INVALID_AGENT_RESPONSE -> new InvalidAgentResponseError(code, message, details);
+                case EXTENDED_AGENT_CARD_NOT_CONFIGURED -> new ExtendedAgentCardNotConfiguredError(code, message, details);
+                case EXTENSION_SUPPORT_REQUIRED -> new ExtensionSupportRequiredError(code, message, details);
+                case VERSION_NOT_SUPPORTED -> new VersionNotSupportedError(code, message, details);
+            };
+        }
+    }
+
+    /**
+     * Writes a metadata map as a "metadata" JSON field to the given writer.
+     * Does nothing if the metadata is null or empty.
+     *
+     * @param out the JSON writer to write to
+     * @param metadata the metadata map to write
+     * @throws java.io.IOException if an I/O error occurs
+     */
+    public static void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata) throws java.io.IOException {
+        if (metadata != null && !metadata.isEmpty()) {
+            out.name("metadata");
+            OBJECT_MAPPER.toJson(metadata, new TypeToken<Map<String, Object>>(){}.getType(), out);
+        }
+    }
+
+    /**
+     * Serializes a metadata map to a JSON string.
+     *
+     * @param metadata the metadata map to serialize
+     * @return JSON string representation of the metadata, or an empty string if the map is null or empty
+     */
+    public static String writeMetadata(@Nullable Map<String, Object> metadata) {
+        if (metadata == null || metadata.isEmpty()) {
+            return "";
+        }
+        return OBJECT_MAPPER.toJson(metadata, new TypeToken<Map<String, Object>>(){}.getType());
+    }
+
+    /**
+     * Reads the "metadata" field from a JSON object, if present.
+     *
+     * @param jsonObject the JSON object to read from
+     * @return the metadata map, or {@code null} if no "metadata" field is present
+     */
+    public static Map<String, Object> readMetadata(com.google.gson.JsonObject jsonObject) {
+        if (jsonObject.has("metadata")) {
+            return OBJECT_MAPPER.fromJson(jsonObject.get("metadata"), new TypeToken<Map<String, Object>>(){}.getType());
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Reads the "metadata" field from a JSON body string, if present.
+     *
+     * @param json the JSON body string to parse
+     * @return the metadata map, or an empty map if the input is null, blank, or has no "metadata" field
+     * @throws JsonProcessingException if the JSON is invalid
+     */
+    public static Map<String, Object> readMetadata(@Nullable String json) throws JsonProcessingException {
+        if (json == null || json.isBlank()) {
+            return Collections.emptyMap();
+        }
+        try {
+            return readMetadata(JsonParser.parseString(json).getAsJsonObject());
+        } catch (JsonSyntaxException e) {
+            throw new JsonProcessingException("Failed to parse metadata JSON", e);
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link Part} and its subclasses.
+     * <p>
+     * This adapter handles polymorphic deserialization, creating the
+     * appropriate subclass instance (TextPart, FilePart, or DataPart) based on available fields.
+     * <p>
+     * The adapter uses a two-pass approach: first reads the JSON as a tree to inspect the "kind"
+     * field, then deserializes to the appropriate concrete type.
+     *
+     * @see Part
+     * @see TextPart
+     * @see FilePart
+     * @see DataPart
+     */
+    static class PartTypeAdapter extends TypeAdapter<Part<?>> {
+
+        private static final String RAW = "raw";
+        private static final String URL = "url";
+        private static final String FILENAME = "filename";
+        private static final String MEDIA_TYPE = "mediaType";
+        // The oneOf content-type discriminator keys in the flat JSON format.
+        // Exactly one must be present (and non-null) in each Part object.
+        private static final Set<String> VALID_KEYS = Set.of(TEXT, RAW, URL, DATA);
+        private static final Type MAP_TYPE = new TypeToken<Map<String, Object>>(){}.getType();
+
+        // Create separate Gson instance without the Part adapter to avoid recursion
+        private final Gson delegateGson = createBaseGsonBuilder().create();
+
+        private void writeMetadata(JsonWriter out, @Nullable Map<String, Object> metadata) throws java.io.IOException {
+            if (metadata != null && !metadata.isEmpty()) {
+                out.name("metadata");
+                delegateGson.toJson(metadata, MAP_TYPE, out);
+            }
+        }
+
+        /** Writes a string field only when the value is non-null and non-empty. */
+        private void writeNonEmpty(JsonWriter out, String name, String value) throws java.io.IOException {
+            if (!value.isEmpty()) {
+                out.name(name).value(value);
+            }
+        }
+
+        @Override
+        public void write(JsonWriter out, Part<?> value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            out.beginObject();
+
+            if (value instanceof TextPart textPart) {
+                out.name(TEXT).value(textPart.text());
+                writeMetadata(out, textPart.metadata());
+            } else if (value instanceof FilePart filePart) {
+                if (filePart.file() instanceof FileWithBytes withBytes) {
+                    out.name(RAW).value(withBytes.bytes());
+                    writeNonEmpty(out, FILENAME, withBytes.name());
+                    writeNonEmpty(out, MEDIA_TYPE, withBytes.mimeType());
+                } else if (filePart.file() instanceof FileWithUri withUri) {
+                    out.name(URL).value(withUri.uri());
+                    writeNonEmpty(out, FILENAME, withUri.name());
+                    writeNonEmpty(out, MEDIA_TYPE, withUri.mimeType());
+                } else {
+                    throw new JsonSyntaxException("Unknown FileContent subclass: " + filePart.file().getClass().getName());
+                }
+                writeMetadata(out, filePart.metadata());
+
+            } else if (value instanceof DataPart dataPart) {
+                out.name(DATA);
+                delegateGson.toJson(dataPart.data(), Object.class, out);
+                JsonUtil.writeMetadata(out, dataPart.metadata());
+            } else {
+                throw new JsonSyntaxException("Unknown Part subclass: " + value.getClass().getName());
+            }
+
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable
+        Part<?> read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseReader(in);
+            if (!jsonElement.isJsonObject()) {
+                throw new JsonSyntaxException("Part must be a JSON object");
+            }
+
+            com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+            // Extract metadata if present
+            Map<String, Object> metadata = JsonUtil.readMetadata(jsonObject);
+            Set<String> keys = jsonObject.keySet();
+
+            // Find the oneOf discriminator, skipping null/empty values to tolerate formats
+            // where multiple content keys may be present with only one populated
+            // (e.g., proto serialization with alwaysPrintFieldsWithNoPresence).
+            // Unknown extra fields are ignored.
+            String discriminator = keys.stream()
+                    .filter(VALID_KEYS::contains)
+                    .filter(key -> {
+                        com.google.gson.JsonElement el = jsonObject.get(key);
+                        return el != null && !el.isJsonNull();
+                    })
+                    .findFirst()
+                    .orElseThrow(() -> new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, keys)));
+
+            return switch (discriminator) {
+                case TEXT -> new TextPart(jsonObject.get(TEXT).getAsString(), metadata);
+                case RAW -> new FilePart(new FileWithBytes(
+                        stringOrEmpty(jsonObject, MEDIA_TYPE),
+                        stringOrEmpty(jsonObject, FILENAME),
+                        jsonObject.get(RAW).getAsString()), metadata);
+                case URL -> new FilePart(new FileWithUri(
+                        stringOrEmpty(jsonObject, MEDIA_TYPE),
+                        stringOrEmpty(jsonObject, FILENAME),
+                        jsonObject.get(URL).getAsString()), metadata);
+                case DATA -> {
+                    Object data = delegateGson.fromJson(jsonObject.get(DATA), Object.class);
+                    yield new DataPart(data, metadata);
+                }
+                default -> throw new JsonSyntaxException(format("Part must have one of: %s (found: %s)", VALID_KEYS, discriminator));
+            };
+        }
+
+        /** Returns the string value of the field, or an empty string if absent or null. */
+        private String stringOrEmpty(com.google.gson.JsonObject obj, String key) {
+            com.google.gson.JsonElement el = obj.get(key);
+            if (el == null || el.isJsonNull()) {
+                return "";
+            }
+            return el.getAsString();
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link StreamingEventKind} and its implementations.
+     * <p>
+     * This adapter handles polymorphic deserialization based on the "kind" field, creating the
+     * appropriate implementation instance (Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent).
+     * <p>
+     * The adapter uses a two-pass approach: first reads the JSON as a tree to inspect the "kind"
+     * field, then deserializes to the appropriate concrete type.
+     *
+     * @see StreamingEventKind
+     * @see Task
+     * @see Message
+     * @see TaskStatusUpdateEvent
+     * @see TaskArtifactUpdateEvent
+     */
+    static class StreamingEventKindTypeAdapter extends TypeAdapter<StreamingEventKind> {
+
+        // Create separate Gson instance without the StreamingEventKind adapter to avoid recursion
+        private final Gson delegateGson = createBaseGsonBuilder()
+                .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
+                .create();
+
+        @Override
+        public void write(JsonWriter out, StreamingEventKind value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            // Write wrapper object with member name as discriminator
+            out.beginObject();
+            out.name(value.kind());
+            delegateGson.toJson(value, value.getClass(), out);
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable
+        StreamingEventKind read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            // Read the JSON as a tree to inspect the member name discriminator
+            com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseReader(in);
+            if (!jsonElement.isJsonObject()) {
+                throw new JsonSyntaxException("StreamingEventKind must be a JSON object");
+            }
+
+            com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+            // Check for wrapped member name discriminators (v1.0 protocol - streaming format)
+            if (jsonObject.has(Task.STREAMING_EVENT_ID)) {
+                return delegateGson.fromJson(jsonObject.get(Task.STREAMING_EVENT_ID), Task.class);
+            } else if (jsonObject.has(Message.STREAMING_EVENT_ID)) {
+                return delegateGson.fromJson(jsonObject.get(Message.STREAMING_EVENT_ID), Message.class);
+            } else if (jsonObject.has(TaskStatusUpdateEvent.STREAMING_EVENT_ID)) {
+                return delegateGson.fromJson(
+                        jsonObject.get(TaskStatusUpdateEvent.STREAMING_EVENT_ID), TaskStatusUpdateEvent.class);
+            } else if (jsonObject.has(TaskArtifactUpdateEvent.STREAMING_EVENT_ID)) {
+                return delegateGson.fromJson(
+                        jsonObject.get(TaskArtifactUpdateEvent.STREAMING_EVENT_ID), TaskArtifactUpdateEvent.class);
+            }
+
+            // Check for unwrapped format (direct Task/Message deserialization)
+            // Task objects have "id" and "contextId" fields
+            // Message objects have "role" and "messageId" fields
+            if (jsonObject.has("role") && jsonObject.has("messageId")) {
+                // This is an unwrapped Message
+                return delegateGson.fromJson(jsonObject, Message.class);
+            } else if (jsonObject.has("id") && jsonObject.has("contextId")) {
+                // This is an unwrapped Task
+                return delegateGson.fromJson(jsonObject, Task.class);
+            } else if (jsonObject.has("taskId") && jsonObject.has("status")) {
+                // This is an unwrapped TaskStatusUpdateEvent
+                return delegateGson.fromJson(jsonObject, TaskStatusUpdateEvent.class);
+            } else if (jsonObject.has("taskId") && jsonObject.has("artifact")) {
+                // This is an unwrapped TaskArtifactUpdateEvent
+                return delegateGson.fromJson(jsonObject, TaskArtifactUpdateEvent.class);
+            } else {
+                throw new JsonSyntaxException("StreamingEventKind must have wrapper (task/message/statusUpdate/artifactUpdate) or recognizable unwrapped fields (found: " + jsonObject.keySet() + ")");
+            }
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link FileContent} and its implementations.
+     * <p>
+     * This adapter handles polymorphic deserialization for the sealed FileContent interface,
+     * which permits two implementations:
+     * <ul>
+     * <li>{@link FileWithBytes} - File content embedded as base64-encoded bytes</li>
+     * <li>{@link FileWithUri} - File content referenced by URI</li>
+     * </ul>
+     * <p>
+     * The adapter distinguishes between the two types by checking for the presence of
+     * "bytes" or "uri" fields in the JSON object.
+     *
+     * @see FileContent
+     * @see FileWithBytes
+     * @see FileWithUri
+     */
+    static class FileContentTypeAdapter extends TypeAdapter<FileContent> {
+
+        // Create separate Gson instance without the FileContent adapter to avoid recursion,
+        // but with an explicit FileWithBytes adapter to prevent field/path leakage.
+        private final Gson delegateGson = new GsonBuilder()
+                .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
+                .registerTypeAdapter(FileWithBytes.class, new FileWithBytesTypeAdapter())
+                .create();
+
+        @Override
+        public void write(JsonWriter out, FileContent value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            // Delegate to Gson's default serialization for the concrete type
+            delegateGson.toJson(value, value.getClass(), out);
+        }
+
+        @Override
+        public @Nullable
+        FileContent read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            // Read the JSON as a tree to inspect the fields
+            com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseReader(in);
+            if (!jsonElement.isJsonObject()) {
+                throw new JsonSyntaxException("FileContent must be a JSON object");
+            }
+
+            com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+            // Distinguish between FileWithBytes and FileWithUri by checking for "bytes" or "uri" field
+            if (jsonObject.has("bytes")) {
+                return delegateGson.fromJson(jsonElement, FileWithBytes.class);
+            } else if (jsonObject.has("uri")) {
+                return delegateGson.fromJson(jsonElement, FileWithUri.class);
+            } else {
+                throw new JsonSyntaxException("FileContent must have either 'bytes' or 'uri' field");
+            }
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link FileWithBytes}.
+     * <p>
+     * Explicitly maps only the three protocol fields ({@code mimeType}, {@code name}, {@code bytes})
+     * to and from JSON. This prevents internal implementation fields (such as the lazy-loading
+     * {@code source} or the {@code cachedBytes} soft reference) from leaking into serialized output,
+     * and ensures correct round-trip deserialization via the canonical
+     * {@link FileWithBytes#FileWithBytes(String, String, String)} constructor.
+     */
+    static class FileWithBytesTypeAdapter extends TypeAdapter<FileWithBytes> {
+
+        @Override
+        public void write(JsonWriter out, FileWithBytes value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            out.beginObject();
+            out.name("mimeType").value(value.mimeType());
+            out.name("name").value(value.name());
+            out.name("bytes").value(value.bytes());
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable FileWithBytes read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String mimeType = null;
+            String name = null;
+            String bytes = null;
+            in.beginObject();
+            while (in.hasNext()) {
+                switch (in.nextName()) {
+                    case "mimeType" -> mimeType = in.nextString();
+                    case "name" -> name = in.nextString();
+                    case "bytes" -> bytes = in.nextString();
+                    default -> in.skipValue();
+                }
+            }
+            in.endObject();
+            return new FileWithBytes(
+                    mimeType != null ? mimeType : "",
+                    name != null ? name : "",
+                    bytes != null ? bytes : "");
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link APIKeySecurityScheme.Location} enum.
+     * <p>
+     * This adapter ensures that Location enum values are serialized using their
+     * wire format string representation (e.g., "header") rather than
+     * the Java enum constant name (e.g., "HEADER").
+     * <p>
+     * For serialization, it uses {@link APIKeySecurityScheme.Location#asString()} to get the wire format.
+     * For deserialization, it uses {@link APIKeySecurityScheme.Location#fromString(String)} to parse the
+     * wire format back to the enum constant.
+     *
+     * @see APIKeySecurityScheme.Location
+     */
+    static class APIKeyLocationTypeAdapter extends TypeAdapter<APIKeySecurityScheme.Location> {
+
+        @Override
+        public void write(JsonWriter out, APIKeySecurityScheme.Location value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            out.value(value.asString());
+        }
+
+        @Override
+        public APIKeySecurityScheme.@Nullable Location read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String locationString = in.nextString();
+            try {
+                return APIKeySecurityScheme.Location.fromString(locationString);
+            } catch (IllegalArgumentException e) {
+                throw new JsonSyntaxException("Invalid APIKeySecurityScheme.Location: " + locationString, e);
+            }
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link SecurityScheme} and its implementations.
+     * <p>
+     * This adapter handles polymorphic deserialization for the sealed SecurityScheme interface,
+     * which permits five implementations:
+     * <ul>
+     * <li>{@link APIKeySecurityScheme} - API key authentication</li>
+     * <li>{@link HTTPAuthSecurityScheme} - HTTP authentication (basic or bearer)</li>
+     * <li>{@link OAuth2SecurityScheme} - OAuth 2.0 flows</li>
+     * <li>{@link OpenIdConnectSecurityScheme} - OpenID Connect discovery</li>
+     * <li>{@link MutualTLSSecurityScheme} - Client certificate authentication</li>
+     * </ul>
+     * <p>
+     * The adapter uses a wrapper object with the security scheme type as the discriminator field.
+     * Each SecurityScheme is serialized as a JSON object with a single field whose name identifies
+     * the security scheme type.
+     * <p>
+     * Serialization format examples:
+     * <pre>{@code
+     * // HTTPAuthSecurityScheme
+     * {
+     *   "httpAuthSecurityScheme": {
+     *     "scheme": "bearer",
+     *     "bearerFormat": "JWT",
+     *     "description": "..."
+     *   }
+     * }
+     *
+     * // APIKeySecurityScheme
+     * {
+     *   "apiKeySecurityScheme": {
+     *     "location": "header",
+     *     "name": "X-API-Key",
+     *     "description": "..."
+     *   }
+     * }
+     * }</pre>
+     *
+     * @see SecurityScheme
+     * @see APIKeySecurityScheme
+     * @see HTTPAuthSecurityScheme
+     * @see OAuth2SecurityScheme
+     * @see OpenIdConnectSecurityScheme
+     * @see MutualTLSSecurityScheme
+     */
+    static class SecuritySchemeTypeAdapter extends TypeAdapter<SecurityScheme> {
+
+        private static final Set<String> VALID_KEYS = Set.of(APIKeySecurityScheme.TYPE,
+                HTTPAuthSecurityScheme.TYPE,
+                OAuth2SecurityScheme.TYPE,
+                OpenIdConnectSecurityScheme.TYPE,
+                MutualTLSSecurityScheme.TYPE);
+
+        // Create separate Gson instance without the SecurityScheme adapter to avoid recursion
+        // Register custom adapter for APIKeySecurityScheme.Location enum
+        private final Gson delegateGson = createBaseGsonBuilder()
+                .registerTypeAdapter(APIKeySecurityScheme.Location.class, new APIKeyLocationTypeAdapter())
+                .create();
+
+        @Override
+        public void write(JsonWriter out, SecurityScheme value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+
+            // Write wrapper object with member name as discriminator
+            out.beginObject();
+            out.name(value.type());
+            delegateGson.toJson(value, value.getClass(), out);
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable
+        SecurityScheme read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            // Read the JSON as a tree to inspect the member name discriminator
+            com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseReader(in);
+            if (!jsonElement.isJsonObject()) {
+                throw new JsonSyntaxException("SecurityScheme must be a JSON object");
+            }
+
+            com.google.gson.JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+            // Check for member name discriminators
+            Set<String> keys = jsonObject.keySet();
+            if (keys.size() != 1) {
+                throw new JsonSyntaxException(format("A SecurityScheme object must have exactly one key, which must be one of: %s (found: %s)", VALID_KEYS, keys));
+            }
+
+            String discriminator = keys.iterator().next();
+            com.google.gson.JsonElement nestedObject = jsonObject.get(discriminator);
+
+            return switch (discriminator) {
+                case APIKeySecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, APIKeySecurityScheme.class);
+                case HTTPAuthSecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, HTTPAuthSecurityScheme.class);
+                case OAuth2SecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, OAuth2SecurityScheme.class);
+                case OpenIdConnectSecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, OpenIdConnectSecurityScheme.class);
+                case MutualTLSSecurityScheme.TYPE -> delegateGson.fromJson(nestedObject, MutualTLSSecurityScheme.class);
+                default -> throw new JsonSyntaxException(format("Unknown SecurityScheme type. Must be one of: %s (found: %s)", VALID_KEYS, discriminator));
+            };
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link SecurityRequirement}.
+     * <p>
+     * This adapter handles the JSON structure where a SecurityRequirement is represented
+     * as an object with a "schemes" field containing a map of security scheme names to
+     * StringList objects (matching the protobuf representation).
+     * <p>
+     * Serialization format:
+     * <pre>{@code
+     * {
+     *   "schemes": {
+     *     "oauth2": { "list": ["read", "write"] },
+     *     "apiKey": { "list": [] }
+     *   }
+     * }
+     * }</pre>
+     *
+     * @see SecurityRequirement
+     */
+    static class SecurityRequirementTypeAdapter extends TypeAdapter<SecurityRequirement> {
+
+        private static final String SCHEMES_FIELD = "schemes";
+        private static final String LIST_FIELD = "list";
+
+        @Override
+        public void write(JsonWriter out, SecurityRequirement value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+
+            out.beginObject();
+            out.name(SCHEMES_FIELD);
+
+            Map<String, List<String>> schemes = value.schemes();
+            if (schemes == null || schemes.isEmpty()) {
+                out.beginObject();
+                out.endObject();
+            } else {
+                out.beginObject();
+                for (Map.Entry<String, List<String>> entry : schemes.entrySet()) {
+                    out.name(entry.getKey());
+                    out.beginObject();
+                    out.name(LIST_FIELD);
+                    out.beginArray();
+                    List<String> scopes = entry.getValue();
+                    if (scopes != null) {
+                        for (String scope : scopes) {
+                            out.value(scope);
+                        }
+                    }
+                    out.endArray();
+                    out.endObject();
+                }
+                out.endObject();
+            }
+
+            out.endObject();
+        }
+
+        @Override
+        public @Nullable SecurityRequirement read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            Map<String, List<String>> schemes = emptyMap();
+
+            in.beginObject();
+            while (in.hasNext()) {
+                String fieldName = in.nextName();
+                if (SCHEMES_FIELD.equals(fieldName)) {
+                    schemes = readSchemesMap(in);
+                } else {
+                    in.skipValue();
+                }
+            }
+            in.endObject();
+
+            return new SecurityRequirement(schemes);
+        }
+
+        private Map<String, List<String>> readSchemesMap(JsonReader in) throws java.io.IOException {
+            Map<String, List<String>> schemes = new LinkedHashMap<>();
+
+            in.beginObject();
+            while (in.hasNext()) {
+                String schemeName = in.nextName();
+                List<String> scopes = readStringList(in);
+                schemes.put(schemeName, scopes);
+            }
+            in.endObject();
+
+            return schemes;
+        }
+
+        private List<String> readStringList(JsonReader in) throws java.io.IOException {
+            List<String> scopes = new ArrayList<>();
+
+            in.beginObject();
+            while (in.hasNext()) {
+                String fieldName = in.nextName();
+                if (LIST_FIELD.equals(fieldName)) {
+                    in.beginArray();
+                    while (in.hasNext()) {
+                        scopes.add(in.nextString());
+                    }
+                    in.endArray();
+                } else {
+                    in.skipValue();
+                }
+            }
+            in.endObject();
+
+            return scopes;
+        }
+    }
+}

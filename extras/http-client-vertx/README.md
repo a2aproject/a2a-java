@@ -129,9 +129,9 @@ client.sendMessage(message);
 If you need direct access to the HTTP client (rare):
 
 ```java
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.A2AHttpClientFactory;
-import io.a2a.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
+import org.a2aproject.sdk.client.http.A2AHttpResponse;
 
 // Get the client via factory (returns VertxA2AHttpClient if available)
 try (A2AHttpClient client = A2AHttpClientFactory.create()) {
@@ -216,7 +216,7 @@ The `VertxA2AHttpClient` constructor automatically checks for a CDI-managed `Ver
 If you're not using CDI but want to share a Vert.x instance:
 
 ```java
-import io.a2a.client.http.VertxA2AHttpClient;
+import org.a2aproject.sdk.client.http.VertxA2AHttpClient;
 import io.vertx.core.Vertx;
 
 // Create Vertx instance once
@@ -241,8 +241,8 @@ try {
 For advanced use cases requiring custom Vert.x WebClient configuration, you can create your own provider:
 
 ```java
-import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.VertxA2AHttpClient;
+import org.a2aproject.sdk.client.http.A2AHttpClient;
+import org.a2aproject.sdk.client.http.VertxA2AHttpClient;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -261,9 +261,9 @@ Vertx vertx = Vertx.vertx();
 
 The module uses Java's `ServiceLoader` mechanism for automatic discovery:
 
-1. **Provider Registration**: `META-INF/services/io.a2a.client.http.A2AHttpClientProvider` contains:
+1. **Provider Registration**: `META-INF/services/org.a2aproject.sdk.client.http.A2AHttpClientProvider` contains:
    ```
-   io.a2a.client.http.VertxA2AHttpClientProvider
+   org.a2aproject.sdk.client.http.VertxA2AHttpClientProvider
    ```
 
 2. **Priority System**: Each provider has a priority:

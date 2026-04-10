@@ -34,7 +34,7 @@ Add the OpenTelemetry server module to your dependencies:
 
 ```xml
 <dependency>
-    <groupId>io.a2a</groupId>
+    <groupId>org.a2aproject.sdk</groupId>
     <artifactId>a2a-extras-opentelemetry-server</artifactId>
     <version>${a2a.version}</version>
 </dependency>

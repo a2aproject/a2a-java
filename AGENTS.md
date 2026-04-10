@@ -38,7 +38,7 @@ mvn clean install
 
 ## Key Conventions
 
-- Package root: `io.a2a`
+- Package root: `org.a2aproject.sdk`
 - Serialization: Gson (see `gson.version` in parent POM)
 - Null safety: NullAway + JSpecify annotations enforced via Error Prone
 - Reference server runtime: Quarkus
@@ -51,7 +51,7 @@ mvn clean install
 - Do not use "star" imports (eg `import java.util.*`)
 - Use Java `record` for immutable data types
 - Use `@Nullable` (from org.jspecify.annotations) for optional fields
-- Use `io.a2a.util.Assert.checkNotNullParam()` in the compact constructor to validate required fields
+- Use `org.a2aproject.sdk.util.Assert.checkNotNullParam()` in the compact constructor to validate required fields
 - Use `List.copyOf()` and `Map.copyOf()` for defensive copying of collections
 - Apply the Builder pattern for records with many fields (see `AgentCard.java` as reference)
 

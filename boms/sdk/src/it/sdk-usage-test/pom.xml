@@ -150,7 +150,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>io.a2a.test.SdkBomVerifier</mainClass>
+                            <mainClass>org.a2aproject.sdk.test.SdkBomVerifier</mainClass>
                         </configuration>
                     </execution>
                 </executions>
