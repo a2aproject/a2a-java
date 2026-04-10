@@ -1,0 +1,37 @@
+package org.a2aproject.sdk.compat03.spec;
+
+
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Defines parameters for querying a task, with an option to limit history length.
+ *
+ * @param id the ID for the task to be queried
+ * @param historyLength the maximum number of items of history for the task to include in the response
+ * @param metadata additional properties
+ */
+
+@JsonInclude(JsonInclude.Include.NON_ABSENT)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record TaskQueryParams(String id, int historyLength, @Nullable Map<String, Object> metadata) {
+
+    public TaskQueryParams {
+        Assert.checkNotNullParam("id", id);
+        if (historyLength < 0) {
+            throw new IllegalArgumentException("Invalid history length");
+        }
+    }
+
+    public TaskQueryParams(String id) {
+        this(id, 0, null);
+    }
+
+    public TaskQueryParams(String id, int historyLength) {
+        this(id, historyLength, null);
+    }
+}
