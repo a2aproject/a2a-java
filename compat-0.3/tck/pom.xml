@@ -13,7 +13,7 @@
 
     <artifactId>a2a-compat-0.3-tck-server</artifactId>
 
-    <name>Java SDK A2A TCK Server</name>
+    <name>Java SDK A2A Compat 0.3 TCK Server</name>
     <description>Server example to use with the A2A TCK</description>
 
     <dependencies>
