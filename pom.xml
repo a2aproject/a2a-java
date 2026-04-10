@@ -577,6 +577,9 @@
         <module>transport/grpc</module>
         <module>transport/rest</module>
 
+        <!-- A2A Protocol v0.3 backward compatibility layer -->
+        <module>compat-0.3</module>
+
         <!-- BOMs - build order automatically determined by reactor based on dependencies -->
         <module>boms/extras</module>
         <module>boms/reference</module>
