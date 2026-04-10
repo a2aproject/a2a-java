@@ -42,32 +42,26 @@ import io.a2a.server.util.async.Internal;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskParams;
-import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.ExtendedAgentCardNotConfiguredError;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
-import io.a2a.spec.ExtensionSupportRequiredError;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
 import io.a2a.spec.InternalError;
-import io.a2a.spec.InvalidAgentResponseError;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.ListTaskPushNotificationConfigsParams;
 import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
-import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.PushNotificationNotSupportedError;
 import io.a2a.spec.StreamingEventKind;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskIdParams;
-import io.a2a.spec.TaskNotCancelableError;
 import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.TaskState;
 import io.a2a.spec.UnsupportedOperationError;
-import io.a2a.spec.VersionNotSupportedError;
 import mutiny.zero.ZeroPublisher;
 import org.jspecify.annotations.Nullable;
 
@@ -763,34 +757,7 @@ public class RestHandler {
         if (errorCode != null) {
             return errorCode.httpCode();
         }
-        if (error instanceof InvalidParamsError) {
-            return 422;
-        }
-        if (error instanceof MethodNotFoundError || error instanceof TaskNotFoundError) {
-            return 404;
-        }
-        if (error instanceof TaskNotCancelableError) {
-            return 409;
-        }
-        if (error instanceof UnsupportedOperationError) {
-            return 501;
-        }
-        if (error instanceof ContentTypeNotSupportedError) {
-            return 415;
-        }
-        if (error instanceof InvalidAgentResponseError) {
-            return 502;
-        }
-        if (error instanceof ExtendedAgentCardNotConfiguredError
-                || error instanceof ExtensionSupportRequiredError
-                || error instanceof VersionNotSupportedError
-                || error instanceof PushNotificationNotSupportedError) {
-            return 400;
-        }
-        if (error instanceof InternalError) {
-            return 500;
-        }
-        return 500;
+        return A2AErrorCodes.INTERNAL.httpCode();
     }
 
     /**
