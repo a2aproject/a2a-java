@@ -224,7 +224,7 @@ public class RestHandler {
      * @see RequestHandler#onMessageSend(org.a2aproject.sdk.spec.MessageSendParams, ServerCallContext)
      */
     public HTTPRestResponse sendMessage(ServerCallContext context, String tenant, String body) {
-
+        log.warning("DEBUG: Received request body: " + body);
         try {
             A2AVersionValidator.validateProtocolVersion(agentCard, context);
             A2AExtensions.validateRequiredExtensions(agentCard, context);
