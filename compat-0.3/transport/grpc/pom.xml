@@ -6,9 +6,9 @@
 
     <parent>
         <groupId>org.a2aproject.sdk</groupId>
-        <artifactId>a2a-java-sdk-parent</artifactId>
-        <version>0.3.3.Final</version>
-        <relativePath>../../pom.xml</relativePath>
+        <artifactId>a2a-java-sdk-compat-0.3-parent</artifactId>
+        <version>1.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
     </parent>
     <artifactId>a2a-java-sdk-compat-0.3-transport-grpc</artifactId>
 
