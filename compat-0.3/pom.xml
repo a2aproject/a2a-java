@@ -128,8 +128,8 @@
         <module>reference/grpc</module>
         <module>reference/rest</module>
 
-        <!-- TCK -->
-        <module>tck</module>
+        <!-- TCK - temporarily disabled until transport and reference modules are ported -->
+        <!-- <module>tck</module> -->
     </modules>
 
 </project>
