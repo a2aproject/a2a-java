@@ -1,0 +1,54 @@
+package org.a2aproject.sdk.compat03.spec;
+
+import static org.a2aproject.sdk.compat03.spec.DataPart.DATA;
+
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.a2aproject.sdk.util.Assert;
+
+/**
+ * Represents a structured data segment (e.g., JSON) within a message or artifact.
+ */
+@JsonTypeName(DATA)
+@JsonInclude(JsonInclude.Include.NON_ABSENT)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class DataPart extends Part<Map<String, Object>> {
+
+    public static final String DATA = "data";
+    private final Map<String, Object> data;
+    private final Map<String, Object> metadata;
+    private final Kind kind;
+
+    public DataPart(Map<String, Object> data) {
+        this(data, null);
+    }
+
+    @JsonCreator
+    public DataPart(@JsonProperty("data") Map<String, Object> data,
+                    @JsonProperty("metadata") Map<String, Object> metadata) {
+        Assert.checkNotNullParam("data", data);
+        this.data = data;
+        this.metadata = metadata;
+        this.kind = Kind.DATA;
+    }
+
+    @Override
+    public Kind getKind() {
+        return kind;
+    }
+
+    public Map<String, Object> getData() {
+        return data;
+    }
+
+    @Override
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+}
