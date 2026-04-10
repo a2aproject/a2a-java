@@ -13,7 +13,7 @@
     <artifactId>a2a-java-sdk-compat-0.3-client-transport-spi</artifactId>
     <packaging>jar</packaging>
 
-    <name>Java SDK A2A Client Transport: SPI</name>
+    <name>Java SDK A2A Compat 0.3 Client Transport: SPI</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - Client Transport SPI</description>
 
     <dependencies>

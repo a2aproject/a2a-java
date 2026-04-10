@@ -14,7 +14,7 @@
 
     <packaging>jar</packaging>
 
-    <name>Java A2A Reference Server: JSON+HTTP/REST</name>
+    <name>Java A2A Compat 0.3 Reference Server: JSON+HTTP/REST</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - A2A JSON+HTTP/REST Reference Server (based on Quarkus)</description>
 
     <dependencies>
