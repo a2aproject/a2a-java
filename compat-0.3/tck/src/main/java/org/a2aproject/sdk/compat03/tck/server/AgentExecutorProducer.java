@@ -4,16 +4,16 @@ import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
-import io.a2a.server.agentexecution.AgentExecutor;
-import io.a2a.server.agentexecution.RequestContext;
-import io.a2a.server.events.EventQueue;
-import io.a2a.server.tasks.TaskUpdater;
-import io.a2a.spec.JSONRPCError;
-import io.a2a.spec.Task;
-import io.a2a.spec.TaskNotCancelableError;
-import io.a2a.spec.TaskState;
-import io.a2a.spec.TaskStatus;
-import io.a2a.spec.TaskStatusUpdateEvent;
+import org.a2aproject.sdk.compat03.server.agentexecution.AgentExecutor;
+import org.a2aproject.sdk.compat03.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.compat03.server.events.EventQueue;
+import org.a2aproject.sdk.compat03.server.tasks.TaskUpdater;
+import org.a2aproject.sdk.compat03.spec.JSONRPCError;
+import org.a2aproject.sdk.compat03.spec.Task;
+import org.a2aproject.sdk.compat03.spec.TaskNotCancelableError;
+import org.a2aproject.sdk.compat03.spec.TaskState;
+import org.a2aproject.sdk.compat03.spec.TaskStatus;
+import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent;
 
 @ApplicationScoped
 public class AgentExecutorProducer {

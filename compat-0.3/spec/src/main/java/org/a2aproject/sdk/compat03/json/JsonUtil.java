@@ -86,8 +86,6 @@ public class JsonUtil {
      * for A2A Protocol types including polymorphic types, enums, and date/time types.
      * <p>
      * Used throughout the SDK for consistent JSON serialization and deserialization.
-     *
-     * @see GsonFactory#createGson()
      */
     public static final Gson OBJECT_MAPPER = createBaseGsonBuilder()
             .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())

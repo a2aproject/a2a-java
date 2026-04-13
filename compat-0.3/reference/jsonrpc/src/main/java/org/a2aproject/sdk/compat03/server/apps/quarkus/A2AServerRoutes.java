@@ -1,10 +1,10 @@
 package org.a2aproject.sdk.compat03.server.apps.quarkus;
 
-import static org.a2aproject.sdk.compat03.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
-import static org.a2aproject.sdk.compat03.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.SERVER_SENT_EVENTS;
+import static org.a2aproject.sdk.compat03.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
+import static org.a2aproject.sdk.compat03.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,18 +19,21 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import org.a2aproject.sdk.compat03.json.JsonProcessingException;
-import org.a2aproject.sdk.compat03.json.JsonUtil;
-import org.a2aproject.sdk.common.A2AHeaders;
+import io.quarkus.security.Authenticated;
+import io.quarkus.vertx.web.Body;
+import io.quarkus.vertx.web.ReactiveRoutes;
+import io.quarkus.vertx.web.Route;
+import io.smallrye.mutiny.Multi;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.RoutingContext;
 import org.a2aproject.sdk.compat03.common.A2ACompat03Headers;
-import org.a2aproject.sdk.server.ServerCallContext;
-import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
-import org.a2aproject.sdk.server.auth.User;
-import org.a2aproject.sdk.server.extensions.A2AExtensions;
-import org.a2aproject.sdk.server.util.async.Internal;
+import org.a2aproject.sdk.compat03.json.JsonUtil;
 import org.a2aproject.sdk.compat03.spec.AgentCard;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest;
@@ -57,17 +60,11 @@ import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCHandler;
 import org.a2aproject.sdk.compat03.util.Utils;
-import io.quarkus.security.Authenticated;
-import io.quarkus.vertx.web.Body;
-import io.quarkus.vertx.web.ReactiveRoutes;
-import io.quarkus.vertx.web.Route;
-import io.smallrye.mutiny.Multi;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.RoutingContext;
+import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
+import org.a2aproject.sdk.server.auth.User;
+import org.a2aproject.sdk.server.extensions.A2AExtensions;
+import org.a2aproject.sdk.server.util.async.Internal;
 
 @Singleton
 public class A2AServerRoutes {
