@@ -12,9 +12,10 @@ public interface ClientTransportProvider<T extends ClientTransport, C extends Cl
      * Create a client transport.
      *
      * @param clientTransportConfig the client transport config to use
+     * @param agentCard the remote agent's agent card
      * @param agentUrl the remote agent's URL
      * @return the client transport
-     * @throws io.a2a.spec.A2AClientException if an error occurs trying to create the client
+     * @throws A2AClientException if an error occurs trying to create the client
      */
     T create(C clientTransportConfig, AgentCard agentCard,
                            String agentUrl) throws A2AClientException;

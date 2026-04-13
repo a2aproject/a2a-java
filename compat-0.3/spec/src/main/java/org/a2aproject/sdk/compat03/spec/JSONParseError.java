@@ -16,7 +16,7 @@ import static org.a2aproject.sdk.compat03.util.Utils.defaultIfNull;
  * <pre>{@code
  * try {
  *     objectMapper.readValue(payload, JSONRPCRequest.class);
- * } catch (io.a2a.json.JsonProcessingException e) {
+ * } catch (org.a2aproject.sdk.compat03.json.JsonProcessingException e) {
  *     throw new JSONParseError("Malformed JSON: " + e.getMessage());
  * }
  * }</pre>
