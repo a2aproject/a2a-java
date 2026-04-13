@@ -6,12 +6,12 @@ import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
-import io.a2a.server.PublicAgentCard;
-import io.a2a.spec.AgentCapabilities;
-import io.a2a.spec.AgentCard;
-import io.a2a.spec.AgentInterface;
-import io.a2a.spec.AgentSkill;
-import io.a2a.spec.TransportProtocol;
+import org.a2aproject.sdk.compat03.server.PublicAgentCard;
+import org.a2aproject.sdk.compat03.spec.AgentCapabilities;
+import org.a2aproject.sdk.compat03.spec.AgentCard;
+import org.a2aproject.sdk.compat03.spec.AgentInterface;
+import org.a2aproject.sdk.compat03.spec.AgentSkill;
+import org.a2aproject.sdk.compat03.spec.TransportProtocol;
 
 @ApplicationScoped
 public class AgentCardProducer {

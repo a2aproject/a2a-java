@@ -17,7 +17,7 @@ package org.a2aproject.sdk.compat03.spec;
  * <pre>{@code
  * try {
  *     AgentCard card = objectMapper.readValue(json, AgentCard.class);
- * } catch (io.a2a.json.JsonProcessingException e) {
+ * } catch (org.a2aproject.sdk.compat03.json.JsonProcessingException e) {
  *     throw new A2AClientJSONError("Failed to parse agent card", e);
  * }
  * }</pre>
