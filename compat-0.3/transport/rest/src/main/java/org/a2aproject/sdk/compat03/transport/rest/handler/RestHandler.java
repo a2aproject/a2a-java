@@ -41,6 +41,8 @@ import org.a2aproject.sdk.compat03.spec.TaskQueryParams;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.compat03.json.JsonUtil;
+import org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler;
+import org.a2aproject.sdk.spec.A2AError;
 import jakarta.enterprise.inject.Instance;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -56,8 +58,7 @@ public class RestHandler {
     private AgentCard agentCard;
     private @Nullable
     Instance<AgentCard> extendedAgentCard;
-    // TODO: Translation layer - translate from v0.3 types to current SDK types before calling requestHandler
-    // private RequestHandler requestHandler;
+    private Convert03To10RequestHandler requestHandler;
     private final Executor executor;
 
     @SuppressWarnings("NullAway")
@@ -68,29 +69,30 @@ public class RestHandler {
 
     @Inject
     public RestHandler(@PublicAgentCard AgentCard agentCard, @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-            @Internal Executor executor) {
+            @Internal Executor executor, Convert03To10RequestHandler requestHandler) {
         this.agentCard = agentCard;
         this.extendedAgentCard = extendedAgentCard;
-        // this.requestHandler = requestHandler;
+        this.requestHandler = requestHandler;
         this.executor = executor;
 
         // TODO: Port AgentCardValidator for v0.3 AgentCard or skip validation in compat layer
         // AgentCardValidator.validateTransportConfiguration(agentCard);
     }
 
-    public RestHandler(AgentCard agentCard, Executor executor) {
+    public RestHandler(AgentCard agentCard, Executor executor, Convert03To10RequestHandler requestHandler) {
         this.agentCard = agentCard;
         this.executor = executor;
+        this.requestHandler = requestHandler;
     }
 
     public HTTPRestResponse sendMessage(String body, ServerCallContext context) {
         try {
             org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
-            // TODO: Translate v0.3 request to current SDK types, call requestHandler.onMessageSend(), translate response back
-            // EventKind result = requestHandler.onMessageSend(ProtoUtils.FromProto.messageSendParams(request), context);
-            // return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.SendMessageResponse.newBuilder(ProtoUtils.ToProto.taskOrMessage(result)));
-            return createErrorResponse(new InternalError("Not yet implemented - translation layer pending"));
+            EventKind result = requestHandler.onMessageSend(ProtoUtils.FromProto.messageSendParams(request), context);
+            return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.SendMessageResponse.newBuilder(ProtoUtils.ToProto.taskOrMessage(result)));
+        } catch (A2AError e) {
+            return createErrorResponse(convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -105,10 +107,10 @@ public class RestHandler {
             }
             org.a2aproject.sdk.compat03.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.compat03.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
-            // TODO: Translate v0.3 request to current SDK types, call requestHandler.onMessageSendStream(), translate response back
-            // Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(ProtoUtils.FromProto.messageSendParams(request), context);
-            // return createStreamingResponse(publisher);
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(new InternalError("Not yet implemented - translation layer pending")).toJson()));
+            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(ProtoUtils.FromProto.messageSendParams(request), context);
+            return createStreamingResponse(publisher);
+        } catch (A2AError e) {
+            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(convertA2AError(e)).toJson()));
         } catch (JSONRPCError e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
@@ -122,13 +124,13 @@ public class RestHandler {
                 throw new InvalidParamsError();
             }
             TaskIdParams params = new TaskIdParams(taskId);
-            // TODO: Translate v0.3 params to current SDK types, call requestHandler.onCancelTask(), translate Task response back
-            // Task task = requestHandler.onCancelTask(params, context);
-            // if (task != null) {
-            //     return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
-            // }
-            // throw new UnsupportedOperationError();
-            return createErrorResponse(new InternalError("Not yet implemented - translation layer pending"));
+            Task task = requestHandler.onCancelTask(params, context);
+            if (task != null) {
+                return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
+            }
+            throw new UnsupportedOperationError();
+        } catch (A2AError e) {
+            return createErrorResponse(convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -143,10 +145,10 @@ public class RestHandler {
             }
             org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.Builder builder = org.a2aproject.sdk.compat03.grpc.CreateTaskPushNotificationConfigRequest.newBuilder();
             parseRequestBody(body, builder);
-            // TODO: Translate v0.3 request to current SDK types, call requestHandler.onSetTaskPushNotificationConfig(), translate response back
-            // TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils.FromProto.taskPushNotificationConfig(builder), context);
-            // return createSuccessResponse(201, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(result)));
-            return createErrorResponse(new InternalError("Not yet implemented - translation layer pending"));
+            TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils.FromProto.taskPushNotificationConfig(builder), context);
+            return createSuccessResponse(201, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(result)));
+        } catch (A2AError e) {
+            return createErrorResponse(convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -160,10 +162,10 @@ public class RestHandler {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
             }
             TaskIdParams params = new TaskIdParams(taskId);
-            // TODO: Translate v0.3 params to current SDK types, call requestHandler.onResubscribeToTask(), translate response back
-            // Flow.Publisher<StreamingEventKind> publisher = requestHandler.onResubscribeToTask(params, context);
-            // return createStreamingResponse(publisher);
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(new InternalError("Not yet implemented - translation layer pending")).toJson()));
+            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onResubscribeToTask(params, context);
+            return createStreamingResponse(publisher);
+        } catch (A2AError e) {
+            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(convertA2AError(e)).toJson()));
         } catch (JSONRPCError e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
@@ -174,13 +176,13 @@ public class RestHandler {
     public HTTPRestResponse getTask(String taskId, int historyLength, ServerCallContext context) {
         try {
             TaskQueryParams params = new TaskQueryParams(taskId, historyLength);
-            // TODO: Translate v0.3 params to current SDK types, call requestHandler.onGetTask(), translate Task response back
-            // Task task = requestHandler.onGetTask(params, context);
-            // if (task != null) {
-            //     return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
-            // }
-            // throw new TaskNotFoundError();
-            return createErrorResponse(new InternalError("Not yet implemented - translation layer pending"));
+            Task task = requestHandler.onGetTask(params, context);
+            if (task != null) {
+                return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.Task.newBuilder(ProtoUtils.ToProto.task(task)));
+            }
+            throw new TaskNotFoundError();
+        } catch (A2AError e) {
+            return createErrorResponse(convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -194,10 +196,10 @@ public class RestHandler {
                 throw new PushNotificationNotSupportedError();
             }
             GetTaskPushNotificationConfigParams params = new GetTaskPushNotificationConfigParams(taskId, configId);
-            // TODO: Translate v0.3 params to current SDK types, call requestHandler.onGetTaskPushNotificationConfig(), translate response back
-            // TaskPushNotificationConfig config = requestHandler.onGetTaskPushNotificationConfig(params, context);
-            // return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(config)));
-            return createErrorResponse(new InternalError("Not yet implemented - translation layer pending"));
+            TaskPushNotificationConfig config = requestHandler.onGetTaskPushNotificationConfig(params, context);
+            return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(config)));
+        } catch (A2AError e) {
+            return createErrorResponse(convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -211,10 +213,10 @@ public class RestHandler {
                 throw new PushNotificationNotSupportedError();
             }
             ListTaskPushNotificationConfigParams params = new ListTaskPushNotificationConfigParams(taskId);
-            // TODO: Translate v0.3 params to current SDK types, call requestHandler.onListTaskPushNotificationConfig(), translate response back
-            // List<TaskPushNotificationConfig> configs = requestHandler.onListTaskPushNotificationConfig(params, context);
-            // return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(configs)));
-            return createErrorResponse(new InternalError("Not yet implemented - translation layer pending"));
+            List<TaskPushNotificationConfig> configs = requestHandler.onListTaskPushNotificationConfig(params, context);
+            return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(configs)));
+        } catch (A2AError e) {
+            return createErrorResponse(convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -228,15 +230,26 @@ public class RestHandler {
                 throw new PushNotificationNotSupportedError();
             }
             DeleteTaskPushNotificationConfigParams params = new DeleteTaskPushNotificationConfigParams(taskId, configId);
-            // TODO: Translate v0.3 params to current SDK types, call requestHandler.onDeleteTaskPushNotificationConfig()
-            // requestHandler.onDeleteTaskPushNotificationConfig(params, context);
-            // return new HTTPRestResponse(204, "application/json", "");
-            return createErrorResponse(new InternalError("Not yet implemented - translation layer pending"));
+            requestHandler.onDeleteTaskPushNotificationConfig(params, context);
+            return new HTTPRestResponse(204, "application/json", "");
+        } catch (A2AError e) {
+            return createErrorResponse(convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
             return createErrorResponse(new InternalError(throwable.getMessage()));
         }
+    }
+
+    /**
+     * Converts a v1.0 A2AError to a v0.3 JSONRPCError.
+     * Since A2AError in v0.3 is an interface and JSONRPCError is the concrete implementation,
+     * we need to convert the v1.0 A2AError to the v0.3 JSONRPCError type.
+     */
+    private JSONRPCError convertA2AError(A2AError v10Error) {
+        // A2AError from v1.0 has: code, message (via getMessage()), details
+        // JSONRPCError from v0.3 has: code, message (via getMessage()), data
+        return new JSONRPCError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
     }
 
     private void parseRequestBody(String body, com.google.protobuf.Message.Builder builder) throws JSONRPCError {
