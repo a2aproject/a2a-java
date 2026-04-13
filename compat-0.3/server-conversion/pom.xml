@@ -63,6 +63,35 @@
             <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- HTTP client for TestHttpClient -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-http-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Server common test utilities (EventQueueUtil) -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-server-common</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JSONRPC common for JsonUtil -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-jsonrpc-common</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Quarkus Arc for @IfBuildProfile -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
