@@ -45,6 +45,8 @@ import org.a2aproject.sdk.compat03.spec.TaskNotFoundError;
 import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest;
 import org.a2aproject.sdk.server.util.async.Internal;
+import org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler;
+import org.a2aproject.sdk.spec.A2AError;
 import mutiny.zero.ZeroPublisher;
 
 @ApplicationScoped
@@ -52,8 +54,7 @@ public class JSONRPCHandler {
 
     private AgentCard agentCard;
     private Instance<AgentCard> extendedAgentCard;
-    // TODO: Translation layer - translate from v0.3 types to current SDK types before calling requestHandler
-    // private RequestHandler requestHandler;
+    private Convert03To10RequestHandler requestHandler;
     private final Executor executor;
 
     protected JSONRPCHandler() {
@@ -62,23 +63,29 @@ public class JSONRPCHandler {
 
     @Inject
     public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, @ExtendedAgentCard Instance<AgentCard> extendedAgentCard,
-                          @Internal Executor executor) {
+                          @Internal Executor executor, Convert03To10RequestHandler requestHandler) {
         this.agentCard = agentCard;
         this.extendedAgentCard = extendedAgentCard;
-        // this.requestHandler = requestHandler;
+        this.requestHandler = requestHandler;
         this.executor = executor;
 
         // TODO: Port AgentCardValidator for v0.3 AgentCard or skip validation in compat layer
         // AgentCardValidator.validateTransportConfiguration(agentCard);
     }
 
-    public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, Executor executor) {
-        this(agentCard, null, executor);
+    public JSONRPCHandler(@PublicAgentCard AgentCard agentCard, Executor executor, Convert03To10RequestHandler requestHandler) {
+        this(agentCard, null, executor, requestHandler);
     }
 
     public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
-        // TODO: Translate v0.3 request.getParams() to current SDK types, call requestHandler, translate response back
-        return new SendMessageResponse(request.getId(), new InternalError("Not yet implemented - translation layer pending"));
+        try {
+            EventKind result = requestHandler.onMessageSend(request.getParams(), context);
+            return new SendMessageResponse(request.getId(), result);
+        } catch (A2AError e) {
+            return new SendMessageResponse(request.getId(), convertA2AError(e));
+        } catch (Throwable t) {
+            return new SendMessageResponse(request.getId(), new InternalError(t.getMessage()));
+        }
     }
 
     public Flow.Publisher<SendStreamingMessageResponse> onMessageSendStream(
@@ -90,15 +97,25 @@ public class JSONRPCHandler {
                             new InvalidRequestError("Streaming is not supported by the agent")));
         }
 
-        // TODO: Translate v0.3 request.getParams() to current SDK types, call requestHandler.onMessageSendStream(),
-        // translate StreamingEventKind responses back to v0.3 types
-        return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(),
-                new InternalError("Not yet implemented - translation layer pending")));
+        try {
+            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(request.getParams(), context);
+            return convertToSendStreamingMessageResponse(request.getId(), publisher);
+        } catch (A2AError e) {
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), convertA2AError(e)));
+        } catch (Throwable t) {
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(t.getMessage())));
+        }
     }
 
     public CancelTaskResponse onCancelTask(CancelTaskRequest request, ServerCallContext context) {
-        // TODO: Translate v0.3 request.getParams() to current SDK types, call requestHandler, translate Task response back
-        return new CancelTaskResponse(request.getId(), new InternalError("Not yet implemented - translation layer pending"));
+        try {
+            Task result = requestHandler.onCancelTask(request.getParams(), context);
+            return new CancelTaskResponse(request.getId(), result);
+        } catch (A2AError e) {
+            return new CancelTaskResponse(request.getId(), convertA2AError(e));
+        } catch (Throwable t) {
+            return new CancelTaskResponse(request.getId(), new InternalError(t.getMessage()));
+        }
     }
 
     public Flow.Publisher<SendStreamingMessageResponse> onResubscribeToTask(
@@ -110,10 +127,14 @@ public class JSONRPCHandler {
                             new InvalidRequestError("Streaming is not supported by the agent")));
         }
 
-        // TODO: Translate v0.3 request.getParams() to current SDK types, call requestHandler.onResubscribeToTask(),
-        // translate StreamingEventKind responses back to v0.3 types
-        return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(),
-                new InternalError("Not yet implemented - translation layer pending")));
+        try {
+            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onResubscribeToTask(request.getParams(), context);
+            return convertToSendStreamingMessageResponse(request.getId(), publisher);
+        } catch (A2AError e) {
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), convertA2AError(e)));
+        } catch (Throwable t) {
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(t.getMessage())));
+        }
     }
 
     public GetTaskPushNotificationConfigResponse getPushNotificationConfig(
@@ -122,9 +143,14 @@ public class JSONRPCHandler {
             return new GetTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
-        // TODO: Translate v0.3 request.getParams() to current SDK types, call requestHandler, translate config back
-        return new GetTaskPushNotificationConfigResponse(request.getId(),
-                new InternalError("Not yet implemented - translation layer pending"));
+        try {
+            TaskPushNotificationConfig result = requestHandler.onGetTaskPushNotificationConfig(request.getParams(), context);
+            return new GetTaskPushNotificationConfigResponse(request.getId(), result);
+        } catch (A2AError e) {
+            return new GetTaskPushNotificationConfigResponse(request.getId(), convertA2AError(e));
+        } catch (Throwable t) {
+            return new GetTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+        }
     }
 
     public SetTaskPushNotificationConfigResponse setPushNotificationConfig(
@@ -133,14 +159,25 @@ public class JSONRPCHandler {
             return new SetTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
-        // TODO: Translate v0.3 request.getParams() to current SDK types, call requestHandler, translate config back
-        return new SetTaskPushNotificationConfigResponse(request.getId(),
-                new InternalError("Not yet implemented - translation layer pending"));
+        try {
+            TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(request.getParams(), context);
+            return new SetTaskPushNotificationConfigResponse(request.getId(), result);
+        } catch (A2AError e) {
+            return new SetTaskPushNotificationConfigResponse(request.getId(), convertA2AError(e));
+        } catch (Throwable t) {
+            return new SetTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+        }
     }
 
     public GetTaskResponse onGetTask(GetTaskRequest request, ServerCallContext context) {
-        // TODO: Translate v0.3 request.getParams() to current SDK types, call requestHandler, translate Task back
-        return new GetTaskResponse(request.getId(), new InternalError("Not yet implemented - translation layer pending"));
+        try {
+            Task result = requestHandler.onGetTask(request.getParams(), context);
+            return new GetTaskResponse(request.getId(), result);
+        } catch (A2AError e) {
+            return new GetTaskResponse(request.getId(), convertA2AError(e));
+        } catch (Throwable t) {
+            return new GetTaskResponse(request.getId(), new InternalError(t.getMessage()));
+        }
     }
 
     public ListTaskPushNotificationConfigResponse listPushNotificationConfig(
@@ -149,9 +186,15 @@ public class JSONRPCHandler {
             return new ListTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
-        // TODO: Translate v0.3 request.getParams() to current SDK types, call requestHandler, translate configs back
-        return new ListTaskPushNotificationConfigResponse(request.getId(),
-                new InternalError("Not yet implemented - translation layer pending"));
+        try {
+            List<TaskPushNotificationConfig> pushNotificationConfigList =
+                    requestHandler.onListTaskPushNotificationConfig(request.getParams(), context);
+            return new ListTaskPushNotificationConfigResponse(request.getId(), pushNotificationConfigList);
+        } catch (A2AError e) {
+            return new ListTaskPushNotificationConfigResponse(request.getId(), convertA2AError(e));
+        } catch (Throwable t) {
+            return new ListTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+        }
     }
 
     public DeleteTaskPushNotificationConfigResponse deletePushNotificationConfig(
@@ -160,9 +203,14 @@ public class JSONRPCHandler {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(),
                     new PushNotificationNotSupportedError());
         }
-        // TODO: Translate v0.3 request.getParams() to current SDK types, call requestHandler
-        return new DeleteTaskPushNotificationConfigResponse(request.getId(),
-                new InternalError("Not yet implemented - translation layer pending"));
+        try {
+            requestHandler.onDeleteTaskPushNotificationConfig(request.getParams(), context);
+            return new DeleteTaskPushNotificationConfigResponse(request.getId());
+        } catch (A2AError e) {
+            return new DeleteTaskPushNotificationConfigResponse(request.getId(), convertA2AError(e));
+        } catch (Throwable t) {
+            return new DeleteTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
+        }
     }
 
     // TODO: Add authentication (https://github.com/a2aproject/a2a-java/issues/77)
@@ -183,6 +231,17 @@ public class JSONRPCHandler {
 
     public AgentCard getAgentCard() {
         return agentCard;
+    }
+
+    /**
+     * Converts a v1.0 A2AError to a v0.3 JSONRPCError.
+     * Since A2AError in v0.3 is an interface and JSONRPCError is the concrete implementation,
+     * we need to convert the v1.0 A2AError to the v0.3 JSONRPCError type.
+     */
+    private JSONRPCError convertA2AError(A2AError v10Error) {
+        // A2AError from v1.0 has: code, message (via getMessage()), details
+        // JSONRPCError from v0.3 has: code, message (via getMessage()), data
+        return new JSONRPCError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
     }
 
     private Flow.Publisher<SendStreamingMessageResponse> convertToSendStreamingMessageResponse(
