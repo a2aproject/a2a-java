@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.compat03.transport.jsonrpc.handler;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 // TODO: Uncomment entire test class when server-common is ported
 // This file has been temporarily stubbed out because it depends on server-common classes
@@ -13,5 +14,10 @@ import org.junit.jupiter.api.Disabled;
  */
 @Disabled("Disabled until server-common is ported")
 public class JSONRPCHandlerTest {
-    // Full test implementation commented out - awaiting server-common port
+
+    @Test
+    public void placeholderTest() {
+        // This test exists only to make the test class show up as skipped
+        // Full test implementation commented out - awaiting server-common port
+    }
 }

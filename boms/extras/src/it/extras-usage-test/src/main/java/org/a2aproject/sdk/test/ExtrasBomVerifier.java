@@ -17,6 +17,7 @@ public class ExtrasBomVerifier extends DynamicBomVerifier {
         "tck/",             // TCK test suite
         "tests/",           // Integration tests
         "test-utils-docker/", // Test utilities for Docker-based tests
+        "compat-0.3/",      // Compat 0.3 modules (part of SDK BOM, not extras BOM)
         "extras/queue-manager-replicated/tests-multi-instance/",   // Test harness applications
         "extras/queue-manager-replicated/tests-single-instance/",   // Test harness applications
         "extras/opentelemetry/integration-tests/"   // Test harness applications

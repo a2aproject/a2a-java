@@ -1,4 +1,4 @@
-package io.a2a.tck.server;
+package org.a2aproject.sdk.compat03.tck.server;
 
 import java.util.Collections;
 import java.util.List;

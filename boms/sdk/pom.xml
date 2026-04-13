@@ -108,6 +108,91 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <!-- Compat 0.3 Spec modules -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-spec</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-spec-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Compat 0.3 HTTP Client -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-http-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Compat 0.3 Client modules -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-transport-spi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-transport-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-transport-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Compat 0.3 Transport modules -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-transport-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-transport-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-transport-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Compat 0.3 Reference modules -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-reference-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-reference-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-reference-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-reference-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Test utilities -->
             <dependency>
                 <groupId>${project.groupId}</groupId>

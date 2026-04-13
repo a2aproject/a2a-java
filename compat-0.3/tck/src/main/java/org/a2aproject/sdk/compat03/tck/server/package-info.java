@@ -1,5 +1,5 @@
 @NullMarked
-package io.a2a.tck.server;
+package org.a2aproject.sdk.compat03.tck.server;
 
 import org.jspecify.annotations.NullMarked;
 
