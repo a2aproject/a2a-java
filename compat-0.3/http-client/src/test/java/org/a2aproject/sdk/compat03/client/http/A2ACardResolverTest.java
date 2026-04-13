@@ -1,7 +1,5 @@
 package org.a2aproject.sdk.compat03.client.http;
 
-import static org.a2aproject.sdk.compat03.util.Utils.OBJECT_MAPPER;
-import static org.a2aproject.sdk.compat03.util.Utils.unmarshalFrom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,7 +8,7 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import org.a2aproject.sdk.compat03.json.JsonUtil;
 import org.a2aproject.sdk.compat03.spec.A2AClientError;
 import org.a2aproject.sdk.compat03.spec.A2AClientJSONError;
 import org.a2aproject.sdk.compat03.spec.AgentCard;
@@ -20,7 +18,6 @@ import org.junit.jupiter.api.Test;
 public class A2ACardResolverTest {
 
     private static final String AGENT_CARD_PATH = "/.well-known/agent-card.json";
-    private static final TypeReference<AgentCard> AGENT_CARD_TYPE_REFERENCE = new TypeReference<>() {};
 
     @Test
     public void testConstructorStripsSlashes() throws Exception {
@@ -72,10 +69,10 @@ public class A2ACardResolverTest {
         A2ACardResolver resolver = new A2ACardResolver(client, "http://example.com/");
         AgentCard card = resolver.getAgentCard();
 
-        AgentCard expectedCard = unmarshalFrom(JsonMessages.AGENT_CARD, AGENT_CARD_TYPE_REFERENCE);
-        String expected = OBJECT_MAPPER.writeValueAsString(expectedCard);
+        AgentCard expectedCard = JsonUtil.fromJson(JsonMessages.AGENT_CARD, AgentCard.class);
+        String expected = JsonUtil.toJson(expectedCard);
 
-        String requestCardString = OBJECT_MAPPER.writeValueAsString(card);
+        String requestCardString = JsonUtil.toJson(card);
         assertEquals(expected, requestCardString);
     }
 

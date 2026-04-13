@@ -2,16 +2,11 @@ package org.a2aproject.sdk.compat03.spec;
 
 import static org.a2aproject.sdk.compat03.util.Utils.defaultIfNull;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * Represents a JSONRPC response.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permits SendStreamingMessageResponse,
         GetTaskResponse, CancelTaskResponse, SetTaskPushNotificationConfigResponse, GetTaskPushNotificationConfigResponse,
         SendMessageResponse, DeleteTaskPushNotificationConfigResponse, ListTaskPushNotificationConfigResponse, JSONRPCErrorResponse,

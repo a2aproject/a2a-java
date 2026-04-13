@@ -1,27 +1,16 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import static org.a2aproject.sdk.compat03.spec.Task.TASK;
-
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.a2aproject.sdk.util.Assert;
+
+import static org.a2aproject.sdk.compat03.spec.Task.TASK;
 
 /**
  * Represents a single, stateful operation or conversation between a client and an agent.
  */
-@JsonTypeName(TASK)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class Task implements EventKind, StreamingEventKind {
-
-    public static final TypeReference<Task> TYPE_REFERENCE = new TypeReference<>() {};
 
     public static final String TASK = "task";
     private final String id;
@@ -37,10 +26,9 @@ public final class Task implements EventKind, StreamingEventKind {
         this(id, contextId, status, artifacts, history, metadata, TASK);
     }
 
-    @JsonCreator
-    public Task(@JsonProperty("id") String id, @JsonProperty("contextId") String contextId, @JsonProperty("status") TaskStatus status,
-                @JsonProperty("artifacts") List<Artifact> artifacts, @JsonProperty("history") List<Message> history,
-                @JsonProperty("metadata") Map<String, Object> metadata, @JsonProperty("kind") String kind) {
+    public Task(String id, String contextId, TaskStatus status,
+                List<Artifact> artifacts, List<Message> history,
+                Map<String, Object> metadata, String kind) {
         Assert.checkNotNullParam("id", id);
         Assert.checkNotNullParam("contextId", contextId);
         Assert.checkNotNullParam("status", status);

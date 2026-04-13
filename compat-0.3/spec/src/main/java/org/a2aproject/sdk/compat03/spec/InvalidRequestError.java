@@ -2,31 +2,45 @@ package org.a2aproject.sdk.compat03.spec;
 
 import static org.a2aproject.sdk.compat03.util.Utils.defaultIfNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * An error indicating that the JSON sent is not a valid Request object.
+ * JSON-RPC error indicating that the request payload is not a valid JSON-RPC Request object.
+ * <p>
+ * This error is returned when the JSON-RPC request fails structural validation.
+ * Common causes include:
+ * <ul>
+ * <li>Missing required JSON-RPC fields (jsonrpc, method, id)</li>
+ * <li>Invalid JSON-RPC version (must be "2.0")</li>
+ * <li>Malformed request structure</li>
+ * <li>Type mismatches in required fields</li>
+ * </ul>
+ * <p>
+ * Corresponds to JSON-RPC 2.0 error code {@code -32600}.
+ * <p>
+ * Usage example:
+ * <pre>{@code
+ * // Default error with standard message
+ * throw new InvalidRequestError();
+ *
+ * // Custom error message
+ * throw new InvalidRequestError("Missing 'method' field in request");
+ * }</pre>
+ *
+ * @see JSONRPCError for the base error class
+ * @see A2AError for the error marker interface
+ * @see <a href="https://www.jsonrpc.org/specification#error_object">JSON-RPC 2.0 Error Codes</a>
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class InvalidRequestError extends JSONRPCError {
 
-    public final static Integer DEFAULT_CODE = -32600;
+    public final static Integer DEFAULT_CODE = A2AErrorCodes.INVALID_REQUEST_ERROR_CODE;
 
     public InvalidRequestError() {
         this(null, null, null);
     }
 
-    @JsonCreator
-    public InvalidRequestError(
-            @JsonProperty("code") Integer code,
-            @JsonProperty("message") String message,
-            @JsonProperty("data") Object data) {
+    public InvalidRequestError(Integer code, String message, Object data) {
         super(
-                defaultIfNull(code, DEFAULT_CODE),
+                defaultIfNull(code, A2AErrorCodes.INVALID_REQUEST_ERROR_CODE),
                 defaultIfNull(message, "Request payload validation error"),
                 data);
     }

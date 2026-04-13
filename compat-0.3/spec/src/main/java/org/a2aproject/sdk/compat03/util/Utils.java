@@ -2,29 +2,63 @@ package org.a2aproject.sdk.compat03.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.gson.Gson;
+import org.a2aproject.sdk.compat03.json.JsonProcessingException;
+import org.a2aproject.sdk.compat03.json.JsonUtil;
 
 import org.a2aproject.sdk.compat03.spec.Artifact;
-import org.a2aproject.sdk.compat03.spec.Part;
 import org.a2aproject.sdk.compat03.spec.Task;
 import org.a2aproject.sdk.compat03.spec.TaskArtifactUpdateEvent;
+import org.a2aproject.sdk.compat03.spec.Part;
+import java.util.logging.Logger;
 
+
+
+/**
+ * Utility class providing common helper methods for A2A Protocol operations.
+ * <p>
+ * This class contains static utility methods for JSON serialization/deserialization,
+ * null-safe operations, artifact management, and other common tasks used throughout
+ * the A2A Java SDK.
+ * <p>
+ * Key capabilities:
+ * <ul>
+ * <li>JSON processing with pre-configured {@link Gson}</li>
+ * <li>Null-safe value defaults via {@link #defaultIfNull(Object, Object)}</li>
+ * <li>Artifact streaming support via {@link #appendArtifactToTask(Task, TaskArtifactUpdateEvent, String)}</li>
+ * <li>Type-safe exception rethrowing via {@link #rethrow(Throwable)}</li>
+ * </ul>
+ *
+ * @see Gson for JSON processing
+ * @see TaskArtifactUpdateEvent for streaming artifact updates
+ */
 public class Utils {
 
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private static final Logger log = Logger.getLogger(Utils.class.getName());
-    static {
-        // needed for date/time types
-        OBJECT_MAPPER.registerModule(new JavaTimeModule());
+
+    /**
+     * Deserializes JSON string into a typed object using Gson.
+     * <p>
+     * This method uses the pre-configured {@link #OBJECT_MAPPER} to parse JSON.
+     *
+     * @param <T> the target type
+     * @param data JSON string to deserialize
+     * @param typeRef class reference specifying the target type
+     * @return deserialized object of type T
+     * @throws JsonProcessingException if JSON parsing fails
+     */
+    public static <T> T unmarshalFrom(String data, Class<T> typeRef) throws JsonProcessingException {
+        return JsonUtil.fromJson(data, typeRef);
     }
 
-    public static <T> T unmarshalFrom(String data, TypeReference<T> typeRef) throws JsonProcessingException {
-        return OBJECT_MAPPER.readValue(data, typeRef);
+    public static String toJsonString(Object data) {
+        try {
+            return JsonUtil.toJson(data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize to JSON", e);
+        }
     }
 
     public static <T> T defaultIfNull(T value, T defaultValue) {
@@ -38,6 +72,29 @@ public class Utils {
         throw (T) t;
     }
 
+    /**
+     * Appends or updates an artifact in a task based on a {@link TaskArtifactUpdateEvent}.
+     * <p>
+     * This method handles streaming artifact updates, supporting both:
+     * <ul>
+     * <li>Adding new artifacts to the task</li>
+     * <li>Replacing existing artifacts (when {@code append=false})</li>
+     * <li>Appending parts to existing artifacts (when {@code append=true})</li>
+     * </ul>
+     * <p>
+     * The {@code append} flag in the event determines the behavior:
+     * <ul>
+     * <li>{@code false} or {@code null}: Replace/add the entire artifact</li>
+     * <li>{@code true}: Append the new artifact's parts to an existing artifact with matching {@code artifactId}</li>
+     * </ul>
+     *
+     * @param task the current task to update
+     * @param event the artifact update event containing the new/updated artifact
+     * @param taskId the task ID (for logging purposes)
+     * @return a new Task instance with the updated artifacts list
+     * @see TaskArtifactUpdateEvent for streaming artifact updates
+     * @see Artifact for artifact structure
+     */
     public static Task appendArtifactToTask(Task task, TaskArtifactUpdateEvent event, String taskId) {
         // Append artifacts
         List<Artifact> artifacts = task.getArtifacts() == null ? new ArrayList<>() : new ArrayList<>(task.getArtifacts());
@@ -94,12 +151,18 @@ public class Utils {
 
     }
 
-    public static String toJsonString(Object o) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(o);
-        } catch (JsonProcessingException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    /**
+     * Get the first defined URL in the supported interaces of the agent card.
+     *
+     * @param agentCard the agentcard where the interfaces are defined.
+     * @return the first defined URL in the supported interaces of the agent card.
+     * @throws A2AClientException
+     */
+//    public static String getFavoriteInterface(AgentCard agentCard) throws A2AClientException {
+//        if (agentCard.supportedInterfaces() == null || agentCard.supportedInterfaces().isEmpty()) {
+//            throw new A2AClientException("No server interface available in the AgentCard");
+//        }
+//        return agentCard.supportedInterfaces().get(0).url();
+//    }
 
 }

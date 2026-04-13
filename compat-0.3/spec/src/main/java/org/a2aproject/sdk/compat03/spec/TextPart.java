@@ -1,22 +1,14 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import static org.a2aproject.sdk.compat03.spec.TextPart.TEXT;
-
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.a2aproject.sdk.util.Assert;
+
+import static org.a2aproject.sdk.compat03.spec.TextPart.TEXT;
 
 /**
  * Represents a text segment within a message or artifact.
  */
-@JsonTypeName(TEXT)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class TextPart extends Part<String> {
 
     public static final String TEXT = "text";
@@ -28,8 +20,7 @@ public class TextPart extends Part<String> {
         this(text, null);
     }
 
-    @JsonCreator
-    public TextPart(@JsonProperty("text") String text, @JsonProperty("metadata") Map<String, Object> metadata) {
+    public TextPart(String text, Map<String, Object> metadata) {
         Assert.checkNotNullParam("text", text);
         this.text = text;
         this.metadata = metadata;
