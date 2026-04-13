@@ -1,12 +1,5 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
@@ -14,9 +7,6 @@ import static io.a2a.spec.APIKeySecurityScheme.API_KEY;
 /**
  * Defines a security scheme using an API key.
  */
-@JsonTypeName(API_KEY)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class APIKeySecurityScheme implements SecurityScheme {
 
     public static final String API_KEY = "apiKey";
@@ -39,12 +29,10 @@ public final class APIKeySecurityScheme implements SecurityScheme {
             this.location = location;
         }
 
-        @JsonValue
         public String asString() {
             return location;
         }
 
-        @JsonCreator
         public static Location fromString(String location) {
             switch (location) {
                 case "cookie" -> {
@@ -65,9 +53,8 @@ public final class APIKeySecurityScheme implements SecurityScheme {
         this(in, name, description, API_KEY);
     }
 
-    @JsonCreator
-    public APIKeySecurityScheme(@JsonProperty("in") String in, @JsonProperty("name") String name,
-                                @JsonProperty("description") String description, @JsonProperty("type") String type) {
+    public APIKeySecurityScheme(String in, String name,
+                                String description, String type) {
         Assert.checkNotNullParam("in", in);
         Assert.checkNotNullParam("name", name);
         Assert.checkNotNullParam("type", type);
