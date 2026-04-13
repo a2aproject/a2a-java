@@ -4,16 +4,15 @@ import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
-import org.a2aproject.sdk.compat03.server.agentexecution.AgentExecutor;
-import org.a2aproject.sdk.compat03.server.agentexecution.RequestContext;
-import org.a2aproject.sdk.compat03.server.events.EventQueue;
-import org.a2aproject.sdk.compat03.server.tasks.TaskUpdater;
-import org.a2aproject.sdk.compat03.spec.JSONRPCError;
-import org.a2aproject.sdk.compat03.spec.Task;
-import org.a2aproject.sdk.compat03.spec.TaskNotCancelableError;
-import org.a2aproject.sdk.compat03.spec.TaskState;
-import org.a2aproject.sdk.compat03.spec.TaskStatus;
-import org.a2aproject.sdk.compat03.spec.TaskStatusUpdateEvent;
+import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
+import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.server.tasks.AgentEmitter;
+import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.Message;
+import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskNotCancelableError;
+import org.a2aproject.sdk.spec.TaskState;
+import org.a2aproject.sdk.util.Assert;
 
 @ApplicationScoped
 public class AgentExecutorProducer {
@@ -22,24 +21,19 @@ public class AgentExecutorProducer {
     public AgentExecutor agentExecutor() {
         return new FireAndForgetAgentExecutor();
     }
-    
+
     private static class FireAndForgetAgentExecutor implements AgentExecutor {
         @Override
-        public void execute(RequestContext context, EventQueue eventQueue) throws JSONRPCError {
+        public void execute(RequestContext context, AgentEmitter emitter) throws A2AError {
             Task task = context.getTask();
 
             if (task == null) {
-                task = new Task.Builder()
-                        .id(context.getTaskId())
-                        .contextId(context.getContextId())
-                        .status(new TaskStatus(TaskState.SUBMITTED))
-                        .history(context.getMessage())
-                        .build();
-                eventQueue.enqueueEvent(task);
+                emitter.submit();
             }
 
             // Sleep to allow task state persistence before TCK resubscribe test
-            if (context.getMessage().getMessageId().startsWith("test-resubscribe-message-id")) {
+            Message message = context.getMessage();
+            if (message != null && message.messageId().startsWith("test-resubscribe-message-id")) {
                 int timeoutMs = Integer.parseInt(System.getenv().getOrDefault("RESUBSCRIBE_TIMEOUT_MS", "3000"));
                 System.out.println("====> task id starts with test-resubscribe-message-id, sleeping for " + timeoutMs + " ms");
                 try {
@@ -48,40 +42,32 @@ public class AgentExecutorProducer {
                     Thread.currentThread().interrupt();
                 }
             }
-            TaskUpdater updater = new TaskUpdater(context, eventQueue);
 
             // Immediately set to WORKING state
-            updater.startWork();
+            emitter.startWork();
             System.out.println("====> task set to WORKING, starting background execution");
-            
+
             // Method returns immediately - task continues in background
             System.out.println("====> execute() method returning immediately, task running in background");
         }
 
         @Override
-        public void cancel(RequestContext context, EventQueue eventQueue) throws JSONRPCError {
+        public void cancel(RequestContext context, AgentEmitter emitter) throws A2AError {
             System.out.println("====> task cancel request received");
-            Task task = context.getTask();
+            Task task = Assert.checkNotNullParam("task", context.getTask());
 
-            if (task.getStatus().state() == TaskState.CANCELED) {
+            if (task.status().state() == TaskState.TASK_STATE_CANCELED) {
                 System.out.println("====> task already canceled");
                 throw new TaskNotCancelableError();
             }
-            
-            if (task.getStatus().state() == TaskState.COMPLETED) {
+
+            if (task.status().state() == TaskState.TASK_STATE_COMPLETED) {
                 System.out.println("====> task already completed");
                 throw new TaskNotCancelableError();
             }
 
-            TaskUpdater updater = new TaskUpdater(context, eventQueue);
-            updater.cancel();
-            eventQueue.enqueueEvent(new TaskStatusUpdateEvent.Builder()
-                    .taskId(task.getId())
-                    .contextId(task.getContextId())
-                    .status(new TaskStatus(TaskState.CANCELED))
-                    .isFinal(true)
-                    .build());
-            
+            emitter.cancel();
+
             System.out.println("====> task canceled");
         }
 

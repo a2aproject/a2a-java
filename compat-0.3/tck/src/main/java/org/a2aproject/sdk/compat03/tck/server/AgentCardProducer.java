@@ -6,7 +6,7 @@ import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 
-import org.a2aproject.sdk.compat03.server.PublicAgentCard;
+import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.compat03.spec.AgentCapabilities;
 import org.a2aproject.sdk.compat03.spec.AgentCard;
 import org.a2aproject.sdk.compat03.spec.AgentInterface;
