@@ -336,6 +336,34 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
     private JSONRPCError convertA2AError(A2AError v10Error) {
         // A2AError from v1.0 has: code, message (via getMessage()), details
         // JSONRPCError from v0.3 has: code, message (via getMessage()), data
+        // Preserve exact error code, message, and details from v1.0 error
+
+        // Preserve specific error types by mapping v1.0 errors to v0.3 equivalents
+        if (v10Error instanceof org.a2aproject.sdk.spec.TaskNotFoundError) {
+            return new TaskNotFoundError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.UnsupportedOperationError) {
+            return new UnsupportedOperationError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.TaskNotCancelableError) {
+            return new TaskNotCancelableError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidParamsError) {
+            return new InvalidParamsError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidRequestError) {
+            return new InvalidRequestError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.InternalError) {
+            return new InternalError(v10Error.getMessage());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidAgentResponseError) {
+            return new InvalidAgentResponseError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.ContentTypeNotSupportedError) {
+            return new ContentTypeNotSupportedError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.PushNotificationNotSupportedError) {
+            return new PushNotificationNotSupportedError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.MethodNotFoundError) {
+            return new MethodNotFoundError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        } else if (v10Error instanceof org.a2aproject.sdk.spec.JSONParseError) {
+            return new JSONParseError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
+        }
+
+        // Fallback to generic JSONRPCError for unmapped types
         return new JSONRPCError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
     }
 
