@@ -1,17 +1,11 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * Defines the configuration for setting up push notifications for task updates.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record PushNotificationConfig(String url, String token, PushNotificationAuthenticationInfo authentication, String id) {
-    public static final TypeReference<PushNotificationConfig> TYPE_REFERENCE = new TypeReference<>() {};
 
     public PushNotificationConfig {
         Assert.checkNotNullParam("url", url);

@@ -2,16 +2,12 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * Parameters for removing pushNotificationConfiguration associated with a Task.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record DeleteTaskPushNotificationConfigParams(String id, String pushNotificationConfigId, Map<String, Object> metadata) {
 
     public DeleteTaskPushNotificationConfigParams {

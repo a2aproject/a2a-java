@@ -1,8 +1,5 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
 /**
  * Supported A2A transport protocols.
  */
@@ -17,12 +14,26 @@ public enum TransportProtocol {
         this.transport = transport;
     }
 
-    @JsonValue
+    /**
+     * Returns the string representation of this transport protocol.
+     * <p>
+     * Used for JSON serialization.
+     *
+     * @return the transport protocol name as a string
+     */
     public String asString() {
         return transport;
     }
 
-    @JsonCreator
+    /**
+     * Parses a string into a {@link TransportProtocol} enum constant.
+     * <p>
+     * Used for JSON deserialization.
+     *
+     * @param transport the transport protocol string (e.g., "JSONRPC", "GRPC", "HTTP+JSON")
+     * @return the corresponding TransportProtocol enum constant
+     * @throws IllegalArgumentException if the transport string is not recognized
+     */
     public static TransportProtocol fromString(String transport) {
         return switch (transport) {
             case "JSONRPC" -> JSONRPC;

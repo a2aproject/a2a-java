@@ -2,14 +2,9 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 /**
  * Defines optional capabilities supported by an agent.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record AgentCapabilities(boolean streaming, boolean pushNotifications, boolean stateTransitionHistory,
                                 List<AgentExtension> extensions) {
 

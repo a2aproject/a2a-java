@@ -2,16 +2,12 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Defines configuration options for a `message/send` or `message/stream` request.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record MessageSendConfiguration(List<String> acceptedOutputModes, Integer historyLength,
         PushNotificationConfig pushNotificationConfig, Boolean blocking) {
 

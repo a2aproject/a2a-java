@@ -1,8 +1,5 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
 /**
  * Defines the lifecycle states of a Task.
  */
@@ -29,7 +26,14 @@ public enum TaskState {
         this.isFinal = isFinal;
     }
 
-    @JsonValue
+    /**
+     * Returns the string representation of this task state for JSON serialization.
+     * <p>
+     * This method is used to serialize TaskState values to their
+     * wire format (e.g., "working", "completed").
+     *
+     * @return the string representation of this state
+     */
     public String asString() {
         return state;
     }
@@ -38,7 +42,16 @@ public enum TaskState {
         return isFinal;
     }
 
-    @JsonCreator
+    /**
+     * Deserializes a string value into a TaskState enum constant.
+     * <p>
+     * This method is used to deserialize TaskState values from their
+     * wire format during JSON parsing.
+     *
+     * @param state the string representation of the state
+     * @return the corresponding TaskState enum constant
+     * @throws IllegalArgumentException if the state string is not recognized
+     */
     public static TaskState fromString(String state) {
         return switch (state) {
             case "submitted" -> SUBMITTED;
