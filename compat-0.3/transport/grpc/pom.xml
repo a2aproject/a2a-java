@@ -37,6 +37,10 @@
             <artifactId>a2a-java-sdk-compat-0.3-spec-grpc</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-server-conversion</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
         </dependency>
