@@ -2,32 +2,20 @@ package org.a2aproject.sdk.compat03.spec;
 
 import static org.a2aproject.sdk.compat03.util.Utils.defaultIfNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * An A2A-specific error indicating that the requested task ID was not found.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class TaskNotFoundError extends JSONRPCError {
 
-    public final static Integer DEFAULT_CODE = -32001;
+    public final static Integer DEFAULT_CODE = A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE;
 
     public TaskNotFoundError() {
         this(null, null, null);
     }
 
-    @JsonCreator
-
-    public TaskNotFoundError(
-            @JsonProperty("code") Integer code,
-            @JsonProperty("message") String message,
-            @JsonProperty("data") Object data) {
+    public TaskNotFoundError(Integer code, String message, Object data) {
         super(
-                defaultIfNull(code, DEFAULT_CODE),
+                defaultIfNull(code, A2AErrorCodes.TASK_NOT_FOUND_ERROR_CODE),
                 defaultIfNull(message, "Task not found"),
                 data);
     }

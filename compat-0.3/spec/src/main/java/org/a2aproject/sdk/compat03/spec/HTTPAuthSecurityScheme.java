@@ -1,20 +1,12 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import static org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme.HTTP;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.a2aproject.sdk.util.Assert;
+
+import static org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme.HTTP;
 
 /**
  * Defines a security scheme using HTTP authentication.
  */
-@JsonTypeName(HTTP)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class HTTPAuthSecurityScheme implements SecurityScheme {
 
     public static final String HTTP = "http";
@@ -27,12 +19,10 @@ public final class HTTPAuthSecurityScheme implements SecurityScheme {
         this(bearerFormat, scheme, description, HTTP);
     }
 
-    @JsonCreator
-    public HTTPAuthSecurityScheme(@JsonProperty("bearerFormat") String bearerFormat, @JsonProperty("scheme") String scheme,
-                                  @JsonProperty("description") String description, @JsonProperty("type") String type) {
+    public HTTPAuthSecurityScheme(String bearerFormat, String scheme, String description, String type) {
         Assert.checkNotNullParam("scheme", scheme);
         Assert.checkNotNullParam("type", type);
-        if (! type.equals(HTTP)) {
+        if (! HTTP.equals(type)) {
             throw new IllegalArgumentException("Invalid type for HTTPAuthSecurityScheme");
         }
         this.bearerFormat = bearerFormat;

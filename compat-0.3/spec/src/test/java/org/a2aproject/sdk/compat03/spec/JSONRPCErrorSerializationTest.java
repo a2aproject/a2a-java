@@ -1,18 +1,19 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+
+import org.a2aproject.sdk.compat03.json.JsonProcessingException;
+import org.a2aproject.sdk.compat03.json.JsonUtil;
+
 
 public class JSONRPCErrorSerializationTest {
     @Test
-    public void shouldDeserializeToCorrectJSONRPCErrorSubclass() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public void shouldDeserializeToCorrectJSONRPCErrorSubclass() throws JsonProcessingException {
         String jsonTemplate = """
                 {"code": %s, "message": "error", "data": "anything"}
                 """;
@@ -36,12 +37,7 @@ public class JSONRPCErrorSerializationTest {
 
         for (ErrorCase errorCase : cases) {
             String json = jsonTemplate.formatted(errorCase.code());
-            JSONRPCError error;
-            try {
-                error = objectMapper.readValue(json, JSONRPCError.class);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            JSONRPCError error = JsonUtil.fromJson(json, JSONRPCError.class);
             assertInstanceOf(errorCase.clazz(), error);
             assertEquals("error", error.getMessage());
             assertEquals("anything", error.getData().toString());

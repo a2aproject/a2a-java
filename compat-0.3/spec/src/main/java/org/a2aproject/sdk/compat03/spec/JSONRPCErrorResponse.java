@@ -1,22 +1,24 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import org.a2aproject.sdk.util.Assert;
 
 /**
  * A JSON RPC error response.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class JSONRPCErrorResponse extends JSONRPCResponse<Void> {
 
-    @JsonCreator
-    public JSONRPCErrorResponse(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                                @JsonProperty("result") Void result, @JsonProperty("error") JSONRPCError error) {
+    /**
+     * Constructs a JSON-RPC error response with all fields.
+     * <p>
+     * This constructor is used for JSON deserialization.
+     *
+     * @param jsonrpc the JSON-RPC version (must be "2.0")
+     * @param id the request ID, or null if the ID could not be determined from the request
+     * @param result must be null for error responses
+     * @param error the error object describing what went wrong (required)
+     * @throws IllegalArgumentException if error is null
+     */
+    public JSONRPCErrorResponse(String jsonrpc, Object id, Void result, JSONRPCError error) {
         super(jsonrpc, id, result, error, Void.class);
         Assert.checkNotNullParam("error", error);
     }

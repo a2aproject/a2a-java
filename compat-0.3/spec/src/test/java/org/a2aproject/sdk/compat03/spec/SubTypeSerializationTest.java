@@ -1,19 +1,15 @@
 package org.a2aproject.sdk.compat03.spec;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.a2aproject.sdk.compat03.json.JsonProcessingException;
+import org.a2aproject.sdk.compat03.json.JsonUtil;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SubTypeSerializationTest {
 
@@ -23,24 +19,12 @@ public class SubTypeSerializationTest {
             .status(new TaskStatus(TaskState.SUBMITTED))
             .build();
 
-    private static final TypeReference<Map<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<>() {
-    };
-
-    private static final ObjectMapper OBJECT_MAPPER;
-
-    static {
-        OBJECT_MAPPER = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addAbstractTypeMapping(Map.class, SingleKeyHashMap.class);
-        OBJECT_MAPPER.registerModule(module);
-        OBJECT_MAPPER.registerModule(new JavaTimeModule());
-    }
-
     @ParameterizedTest
     @MethodSource("serializationTestCases")
     void testSubtypeSerialization(Object objectToSerialize, String typePropertyName, String expectedTypeValue) throws JsonProcessingException {
-        Map<String, Object> map = OBJECT_MAPPER.readValue(OBJECT_MAPPER.writeValueAsString(objectToSerialize),
-                MAP_TYPE_REFERENCE);
+        String json = JsonUtil.toJson(objectToSerialize);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> map = JsonUtil.fromJson(json, Map.class);
         assertEquals(expectedTypeValue, map.get(typePropertyName));
     }
 
@@ -113,17 +97,6 @@ public class SubTypeSerializationTest {
                         "type", MutualTLSSecurityScheme.MUTUAL_TLS
                 )
         );
-    }
-
-    private static class SingleKeyHashMap <K, V> extends HashMap<K, V> {
-        @Override
-        public V put(K key, V value) {
-            if (containsKey(key)) {
-                throw new IllegalArgumentException("duplicate key " + key
-                        + " with value " + get(key) + " and new value " + value);
-            }
-            return super.put(key, value);
-        }
     }
 
 }

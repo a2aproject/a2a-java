@@ -2,26 +2,18 @@ package org.a2aproject.sdk.compat03.spec;
 
 import static org.a2aproject.sdk.compat03.util.Utils.defaultIfNull;
 
-import java.util.UUID;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.a2aproject.sdk.util.Assert;
+
+import java.util.UUID;
 
 /**
  * Used to resubscribe to a task.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class TaskResubscriptionRequest extends StreamingJSONRPCRequest<TaskIdParams> {
 
     public static final String METHOD = "tasks/resubscribe";
 
-    @JsonCreator
-    public TaskResubscriptionRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                                     @JsonProperty("method") String method, @JsonProperty("params") TaskIdParams params) {
+    public TaskResubscriptionRequest(String jsonrpc, Object id, String method, TaskIdParams params) {
         if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }

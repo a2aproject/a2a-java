@@ -170,7 +170,7 @@ public class JSONRPCHandler {
             GetAuthenticatedExtendedCardRequest request, ServerCallContext context) {
         if (!agentCard.supportsAuthenticatedExtendedCard() || !extendedAgentCard.isResolvable()) {
             return new GetAuthenticatedExtendedCardResponse(request.getId(),
-                    new AuthenticatedExtendedCardNotConfiguredError());
+                    new AuthenticatedExtendedCardNotConfiguredError(null, "Authenticated Extended Card not configured", null));
         }
         try {
             return new GetAuthenticatedExtendedCardResponse(request.getId(), extendedAgentCard.get());

@@ -2,26 +2,17 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.a2aproject.sdk.compat03.util.Utils;
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.compat03.util.Utils;
 
 /**
  * A delete task push notification config request.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<DeleteTaskPushNotificationConfigParams> {
 
     public static final String METHOD = "tasks/pushNotificationConfig/delete";
 
-    @JsonCreator
-    public DeleteTaskPushNotificationConfigRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                                                   @JsonProperty("method") String method,
-                                                   @JsonProperty("params") DeleteTaskPushNotificationConfigParams params) {
+    public DeleteTaskPushNotificationConfigRequest(String jsonrpc, Object id, String method, DeleteTaskPushNotificationConfigParams params) {
         if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }

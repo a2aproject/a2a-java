@@ -2,7 +2,7 @@ package org.a2aproject.sdk.compat03.client.transport.rest;
 
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.a2aproject.sdk.compat03.json.JsonProcessingException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
@@ -36,7 +36,7 @@ import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.compat03.spec.A2AClientError;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest;
-import org.a2aproject.sdk.compat03.util.Utils;
+import org.a2aproject.sdk.compat03.json.JsonUtil;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -86,7 +86,7 @@ public class RestTransport implements ClientTransport {
             throw new A2AClientException("Failed to send message, wrong response:" + httpResponseBody);
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to send message: " + e, e);
         }
     }
@@ -113,6 +113,8 @@ public class RestTransport implements ClientTransport {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
             throw new A2AClientException("Send streaming message request timed out: " + e, e);
+        } catch (JsonProcessingException e) {
+            throw new A2AClientException("Failed to process JSON for streaming message request: " + e, e);
         }
     }
 
@@ -165,7 +167,7 @@ public class RestTransport implements ClientTransport {
             return ProtoUtils.FromProto.task(responseBuilder);
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to cancel task: " + e, e);
         }
     }
@@ -187,7 +189,7 @@ public class RestTransport implements ClientTransport {
             return ProtoUtils.FromProto.taskPushNotificationConfig(responseBuilder);
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to set task push notification config: " + e, e);
         }
     }
@@ -300,6 +302,8 @@ public class RestTransport implements ClientTransport {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
             throw new A2AClientException("Send streaming message request timed out: " + e, e);
+        } catch (JsonProcessingException e) {
+            throw new A2AClientException("Failed to process JSON for streaming message request: " + e, e);
         }
     }
 
@@ -329,10 +333,10 @@ public class RestTransport implements ClientTransport {
                 throw RestErrorMapper.mapRestError(response);
             }
             String httpResponseBody = response.body();
-            agentCard = Utils.OBJECT_MAPPER.readValue(httpResponseBody, AgentCard.class);
+            agentCard = JsonUtil.fromJson(httpResponseBody, AgentCard.class);
             needsExtendedCard = false;
             return agentCard;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
         } catch (A2AClientError e) {
             throw new A2AClientException("Failed to get agent card: " + e, e);
@@ -356,7 +360,7 @@ public class RestTransport implements ClientTransport {
         return payloadAndHeaders;
     }
 
-    private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders) throws IOException, InterruptedException {
+    private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException {
         A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {

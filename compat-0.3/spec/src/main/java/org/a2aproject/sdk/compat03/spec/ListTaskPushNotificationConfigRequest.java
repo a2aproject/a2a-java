@@ -2,26 +2,17 @@ package org.a2aproject.sdk.compat03.spec;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.a2aproject.sdk.compat03.util.Utils;
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.compat03.util.Utils;
 
 /**
  * A list task push notification config request.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class ListTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<ListTaskPushNotificationConfigParams> {
 
     public static final String METHOD = "tasks/pushNotificationConfig/list";
 
-    @JsonCreator
-    public ListTaskPushNotificationConfigRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                                                 @JsonProperty("method") String method,
-                                                 @JsonProperty("params") ListTaskPushNotificationConfigParams params) {
+    public ListTaskPushNotificationConfigRequest(String jsonrpc, Object id, String method, ListTaskPushNotificationConfigParams params) {
         if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
