@@ -106,6 +106,20 @@
             <artifactId>quarkus-arc</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- REST-assured for test utilities -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Jakarta WS-RS for MediaType -->
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
