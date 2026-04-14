@@ -28,7 +28,7 @@ public class TestBeanProducers {
             .version("1.0.0")
             .capabilities(new AgentCapabilities(
                 true,   // streaming
-                false,  // pushNotifications
+                true,   // pushNotifications
                 false,  // stateTransitionHistory
                 List.of()  // extensions
             ))
