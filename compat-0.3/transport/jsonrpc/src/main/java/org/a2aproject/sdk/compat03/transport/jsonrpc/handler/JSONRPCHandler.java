@@ -46,6 +46,7 @@ import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler;
+import org.a2aproject.sdk.compat03.conversion.ErrorConverter;
 import org.a2aproject.sdk.spec.A2AError;
 import mutiny.zero.ZeroPublisher;
 
@@ -82,7 +83,7 @@ public class JSONRPCHandler {
             EventKind result = requestHandler.onMessageSend(request.getParams(), context);
             return new SendMessageResponse(request.getId(), result);
         } catch (A2AError e) {
-            return new SendMessageResponse(request.getId(), convertA2AError(e));
+            return new SendMessageResponse(request.getId(), ErrorConverter.convertA2AError(e));
         } catch (Throwable t) {
             return new SendMessageResponse(request.getId(), new InternalError(t.getMessage()));
         }
@@ -101,7 +102,7 @@ public class JSONRPCHandler {
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(request.getParams(), context);
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
         } catch (A2AError e) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), convertA2AError(e)));
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), ErrorConverter.convertA2AError(e)));
         } catch (Throwable t) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(t.getMessage())));
         }
@@ -112,7 +113,7 @@ public class JSONRPCHandler {
             Task result = requestHandler.onCancelTask(request.getParams(), context);
             return new CancelTaskResponse(request.getId(), result);
         } catch (A2AError e) {
-            return new CancelTaskResponse(request.getId(), convertA2AError(e));
+            return new CancelTaskResponse(request.getId(), ErrorConverter.convertA2AError(e));
         } catch (Throwable t) {
             return new CancelTaskResponse(request.getId(), new InternalError(t.getMessage()));
         }
@@ -131,7 +132,7 @@ public class JSONRPCHandler {
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onResubscribeToTask(request.getParams(), context);
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
         } catch (A2AError e) {
-            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), convertA2AError(e)));
+            return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), ErrorConverter.convertA2AError(e)));
         } catch (Throwable t) {
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), new InternalError(t.getMessage())));
         }
@@ -147,7 +148,7 @@ public class JSONRPCHandler {
             TaskPushNotificationConfig result = requestHandler.onGetTaskPushNotificationConfig(request.getParams(), context);
             return new GetTaskPushNotificationConfigResponse(request.getId(), result);
         } catch (A2AError e) {
-            return new GetTaskPushNotificationConfigResponse(request.getId(), convertA2AError(e));
+            return new GetTaskPushNotificationConfigResponse(request.getId(), ErrorConverter.convertA2AError(e));
         } catch (Throwable t) {
             return new GetTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
         }
@@ -163,7 +164,7 @@ public class JSONRPCHandler {
             TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(request.getParams(), context);
             return new SetTaskPushNotificationConfigResponse(request.getId(), result);
         } catch (A2AError e) {
-            return new SetTaskPushNotificationConfigResponse(request.getId(), convertA2AError(e));
+            return new SetTaskPushNotificationConfigResponse(request.getId(), ErrorConverter.convertA2AError(e));
         } catch (Throwable t) {
             return new SetTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
         }
@@ -174,7 +175,7 @@ public class JSONRPCHandler {
             Task result = requestHandler.onGetTask(request.getParams(), context);
             return new GetTaskResponse(request.getId(), result);
         } catch (A2AError e) {
-            return new GetTaskResponse(request.getId(), convertA2AError(e));
+            return new GetTaskResponse(request.getId(), ErrorConverter.convertA2AError(e));
         } catch (Throwable t) {
             return new GetTaskResponse(request.getId(), new InternalError(t.getMessage()));
         }
@@ -191,7 +192,7 @@ public class JSONRPCHandler {
                     requestHandler.onListTaskPushNotificationConfig(request.getParams(), context);
             return new ListTaskPushNotificationConfigResponse(request.getId(), pushNotificationConfigList);
         } catch (A2AError e) {
-            return new ListTaskPushNotificationConfigResponse(request.getId(), convertA2AError(e));
+            return new ListTaskPushNotificationConfigResponse(request.getId(), ErrorConverter.convertA2AError(e));
         } catch (Throwable t) {
             return new ListTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
         }
@@ -207,7 +208,7 @@ public class JSONRPCHandler {
             requestHandler.onDeleteTaskPushNotificationConfig(request.getParams(), context);
             return new DeleteTaskPushNotificationConfigResponse(request.getId());
         } catch (A2AError e) {
-            return new DeleteTaskPushNotificationConfigResponse(request.getId(), convertA2AError(e));
+            return new DeleteTaskPushNotificationConfigResponse(request.getId(), ErrorConverter.convertA2AError(e));
         } catch (Throwable t) {
             return new DeleteTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
         }
@@ -231,55 +232,6 @@ public class JSONRPCHandler {
 
     public AgentCard getAgentCard() {
         return agentCard;
-    }
-
-    /**
-     * Converts a v1.0 A2AError to a v0.3 JSONRPCError.
-     * Since A2AError in v0.3 is an interface and JSONRPCError is the concrete implementation,
-     * we need to convert the v1.0 A2AError to the v0.3 JSONRPCError type.
-     */
-    private JSONRPCError convertA2AError(A2AError v10Error) {
-        // A2AError from v1.0 has: code, message (via getMessage()), details
-        // JSONRPCError from v0.3 has: code, message (via getMessage()), data
-        // Preserve exact error code, message, and details from v1.0 error
-
-        // Preserve specific error types by mapping v1.0 errors to v0.3 equivalents
-        if (v10Error instanceof org.a2aproject.sdk.spec.TaskNotFoundError) {
-            return new TaskNotFoundError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.UnsupportedOperationError) {
-            return new org.a2aproject.sdk.compat03.spec.UnsupportedOperationError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.TaskNotCancelableError) {
-            return new org.a2aproject.sdk.compat03.spec.TaskNotCancelableError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidParamsError) {
-            return new org.a2aproject.sdk.compat03.spec.InvalidParamsError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidRequestError) {
-            return new InvalidRequestError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InternalError) {
-            return new InternalError(v10Error.getMessage());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidAgentResponseError) {
-            return new org.a2aproject.sdk.compat03.spec.InvalidAgentResponseError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.ContentTypeNotSupportedError) {
-            return new org.a2aproject.sdk.compat03.spec.ContentTypeNotSupportedError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.PushNotificationNotSupportedError) {
-            return new PushNotificationNotSupportedError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.MethodNotFoundError) {
-            return new org.a2aproject.sdk.compat03.spec.MethodNotFoundError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.JSONParseError) {
-            return new org.a2aproject.sdk.compat03.spec.JSONParseError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError) {
-            return new AuthenticatedExtendedCardNotConfiguredError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        }
-
-        // Fallback to generic JSONRPCError for unmapped types
-        return new JSONRPCError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
     }
 
     private Flow.Publisher<SendStreamingMessageResponse> convertToSendStreamingMessageResponse(
