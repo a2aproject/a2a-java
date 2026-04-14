@@ -174,4 +174,9 @@ public class A2ACardResolverTest {
         }
     }
 
+    @Test
+    public void testFactoryCreate() {
+        A2AHttpClient client = A2AHttpClientFactory.create();
+        assertTrue(client instanceof JdkA2AHttpClient);
+    }
 }

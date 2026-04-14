@@ -9,7 +9,7 @@ import io.a2a.util.Assert;
  * Represents the status of a task at a specific point in time.
  */
 public record TaskStatus(TaskState state, Message message,
-                         OffsetDateTime timestamp) {
+        OffsetDateTime timestamp) {
 
     public TaskStatus {
         Assert.checkNotNullParam("state", state);
@@ -22,7 +22,8 @@ public record TaskStatus(TaskState state, Message message,
 
     /**
      * Constructor for testing purposes.
-     * @param state the task state
+     * 
+     * @param state     the task state
      * @param timestamp timestamp generation
      */
     TaskStatus(TaskState state, OffsetDateTime timestamp) {
