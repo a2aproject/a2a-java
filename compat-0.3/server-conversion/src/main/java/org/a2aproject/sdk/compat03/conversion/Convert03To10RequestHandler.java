@@ -2,10 +2,10 @@ package org.a2aproject.sdk.compat03.conversion;
 
 import java.util.List;
 import java.util.concurrent.Flow;
-import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.EventKindMapper;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.StreamingEventKindMapper;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper;
@@ -44,6 +44,9 @@ import org.a2aproject.sdk.spec.A2AError;
 @ApplicationScoped
 public class Convert03To10RequestHandler {
 
+    /**
+     * The v1.0 {@link RequestHandler} to which all converted requests are delegated.
+     */
     @Inject
     public RequestHandler v10Handler;
 

@@ -23,7 +23,7 @@ import org.mapstruct.Mapper;
  * <p>
  * The conversion involves mapping nested types:
  * <ul>
- *   <li>{@link TaskStatus} via {@link TaskStatusMapper}</li>
+ *   <li>{@link org.a2aproject.sdk.spec.TaskStatus} via {@link TaskStatusMapper}</li>
  *   <li>{@link Artifact} list via {@link ArtifactMapper}</li>
  *   <li>{@link Message} history list via {@link MessageMapper}</li>
  * </ul>
