@@ -32,6 +32,12 @@ public class SSEEventListener {
             log.warning("Failed to parse JSON message: " + message);
         } catch (JsonProcessingException e) {
             log.warning("Failed to process JSON message: " + message);
+        } catch (IllegalArgumentException e) {
+            log.warning("Invalid message format: " + message);
+            if (errorHandler != null) {
+                errorHandler.accept(e);
+            }
+            completableFuture.cancel(true); // close SSE channel
         }
     }
 
