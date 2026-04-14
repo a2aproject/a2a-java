@@ -53,6 +53,7 @@ import org.a2aproject.sdk.spec.JSONParseError;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.ListTasksParams;
+import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.PushNotificationNotSupportedError;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
@@ -297,7 +298,13 @@ public class RestHandler {
             org.a2aproject.sdk.grpc.SendMessageRequest.Builder request = org.a2aproject.sdk.grpc.SendMessageRequest.newBuilder();
             parseRequestBody(body, request);
             request.setTenant(tenant);
-            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(ProtoUtils.FromProto.messageSendParams(request), context);
+            MessageSendParams params = ProtoUtils.FromProto.messageSendParams(request);
+            try {
+                requestHandler.validateRequestedTask(params.message().taskId());
+            } catch (A2AError e) {
+                return createErrorResponse(e);
+            }
+            Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
@@ -370,7 +377,6 @@ public class RestHandler {
             if (!taskIdFromBody.isEmpty() && !taskIdFromBody.equals(taskId)) {
                 throw new InvalidParamsError("Task ID in request body (" + taskIdFromBody + ") does not match task ID in URL path (" + taskId + ").");
             }
-            
             builder.setTenant(tenant);
             builder.setTaskId(taskId);
             TaskPushNotificationConfig result = requestHandler.onCreateTaskPushNotificationConfig(ProtoUtils.FromProto.createTaskPushNotificationConfig(builder), context);
@@ -420,6 +426,11 @@ public class RestHandler {
                 return createErrorResponse(new InvalidRequestError("Streaming is not supported by the agent"));
             }
             TaskIdParams params = TaskIdParams.builder().id(taskId).tenant(tenant).build();
+            try {
+                requestHandler.validateRequestedTask(params.id());
+            } catch (A2AError e) {
+                return createErrorResponse(e);
+            }
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onSubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {

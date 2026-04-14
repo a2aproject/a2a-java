@@ -18,8 +18,16 @@ import java.util.function.Consumer;
 import org.jspecify.annotations.Nullable;
 
 import org.a2aproject.sdk.common.A2AErrorMessages;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.RequestOptions;
+import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -121,6 +129,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
 
     private final Vertx vertx;
     private final WebClient webClient;
+    private final HttpClient httpClient;
     private boolean ownsVertx;
     private static final Logger log = Logger.getLogger(VertxA2AHttpClient.class.getName());
 
@@ -144,6 +153,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 .setFollowRedirects(true)
                 .setKeepAlive(true);
         this.webClient = WebClient.create(vertx, options);
+        this.httpClient = vertx.createHttpClient(new HttpClientOptions().setKeepAlive(true));
        log.fine("Vert.x client is ready.");
     }
 
@@ -189,6 +199,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 .setFollowRedirects(true)
                 .setKeepAlive(true);
         this.webClient = WebClient.create(vertx, options);
+        this.httpClient = vertx.createHttpClient(new HttpClientOptions().setKeepAlive(true));
         log.fine("Vert.x client is ready.");
     }
 
@@ -203,6 +214,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
     @Override
     public void close() {
         webClient.close();
+        httpClient.close();
         if (ownsVertx) {
             vertx.close();
         }
@@ -337,7 +349,13 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
     /**
      * Common method to execute async SSE requests (GET or POST).
      *
-     * @param baseRequest the base HTTP request (HttpRequest&lt;Buffer&gt;) configured with method and URL
+     * <p>Uses the lower-level {@link HttpClient} so that the response status and
+     * {@code Content-Type} header are available before any body bytes flow.  The
+     * response is paused immediately on arrival; the appropriate body handler is then
+     * wired up and the response is resumed via {@code pipe().to(...)}.
+     *
+     * @param httpMethod the HTTP method (GET or POST)
+     * @param url the absolute request URL
      * @param headers custom headers to add to the request
      * @param bodyBuffer optional body buffer for POST requests (null for GET)
      * @param messageConsumer callback for each SSE message received
@@ -346,7 +364,8 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      * @return CompletableFuture that completes when the stream ends
      */
     private CompletableFuture<Void> executeAsyncSSE(
-            HttpRequest<Buffer> baseRequest,
+            HttpMethod httpMethod,
+            String url,
             Map<String, String> headers,
             @Nullable Buffer bodyBuffer,
             Consumer<String> messageConsumer,
@@ -354,72 +373,84 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
             Runnable completeRunnable) {
 
         CompletableFuture<Void> future = new CompletableFuture<>();
-        AtomicBoolean successOccurred = new AtomicBoolean(false);
-        AtomicBoolean streamEnded = new AtomicBoolean(false);
         AtomicBoolean futureCompleted = new AtomicBoolean(false);
 
-        HttpRequest<Void> request = baseRequest
-                .putHeader(ACCEPT, EVENT_STREAM)
-                .as(BodyCodec.sseStream(stream -> {
-                    stream.handler(event -> {
-                        String data = event.data();
-                        if (data != null) {
-                            data = data.trim();
-                            if (!data.isEmpty()) {
-                                messageConsumer.accept(data);
-                            }
-                        }
-                    });
-
-                    stream.endHandler(v -> {
-                        streamEnded.set(true);
-                        // Only complete if we've validated success and haven't completed yet
-                        if (successOccurred.get() && futureCompleted.compareAndSet(false, true)) {
-                            completeRunnable.run();
-                            future.complete(null);
-                        }
-                    });
-
-                    stream.exceptionHandler(error -> {
-                        if (futureCompleted.compareAndSet(false, true)) {
-                            errorConsumer.accept(error);
-                            future.complete(null);
-                        }
-                    });
-                }));
-
-        // Add custom headers
+        RequestOptions options = new RequestOptions()
+                .setAbsoluteURI(url)
+                .setMethod(httpMethod)
+                .addHeader(ACCEPT, EVENT_STREAM);
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-            request.putHeader(entry.getKey(), entry.getValue());
+            options.addHeader(entry.getKey(), entry.getValue());
         }
 
-        // Send with or without body
-        var sendFuture = (bodyBuffer != null) ? request.sendBuffer(bodyBuffer) : request.send();
-
-        sendFuture
+        httpClient.request(options)
+                .compose(req -> bodyBuffer != null ? req.send(bodyBuffer) : req.send())
                 .onSuccess(response -> {
-                    // Validate status code manually since .expecting() doesn't work with SSE streams
+                    // Pause before inspecting headers so no body bytes are lost while we
+                    // set up the appropriate handler. pipe().to(...) will resume the response.
+                    response.pause();
                     int statusCode = response.statusCode();
-                    if (statusCode < 200 || statusCode >= 300) {
-                        // Error - don't set successOccurred, just report error
+                    if (statusCode == HTTP_UNAUTHORIZED || statusCode == HTTP_FORBIDDEN) {
                         if (futureCompleted.compareAndSet(false, true)) {
-                            // Use same error messages as sync requests for consistency
-                            IOException error = switch (statusCode) {
-                                case HTTP_UNAUTHORIZED -> new IOException(A2AErrorMessages.AUTHENTICATION_FAILED);
-                                case HTTP_FORBIDDEN -> new IOException(A2AErrorMessages.AUTHORIZATION_FAILED);
-                                default -> new IOException("HTTP " + statusCode + ": " + response.bodyAsString());
-                            };
+                            IOException error = (statusCode == HTTP_UNAUTHORIZED)
+                                    ? new IOException(A2AErrorMessages.AUTHENTICATION_FAILED)
+                                    : new IOException(A2AErrorMessages.AUTHORIZATION_FAILED);
                             errorConsumer.accept(error);
                             future.complete(null);
                         }
+                        return;
+                    }
+                    String contentType = response.getHeader("Content-Type");
+                    boolean isSse = statusCode >= HTTP_OK && statusCode < HTTP_MULT_CHOICE
+                            && contentType != null && contentType.contains(EVENT_STREAM);
+                    if (isSse) {
+                        BodyCodec.sseStream(readStream ->
+                            readStream.handler(event -> {
+                                String data = event.data();
+                                if (data != null) {
+                                    data = data.trim();
+                                    if (!data.isEmpty()) {
+                                        messageConsumer.accept(data);
+                                    }
+                                }
+                            })
+                        ).create(ar -> {
+                            if (ar.failed()) {
+                                if (futureCompleted.compareAndSet(false, true)) {
+                                    errorConsumer.accept(ar.cause());
+                                    future.complete(null);
+                                }
+                                return;
+                            }
+                            response.pipe().to(ar.result())
+                                    .onSuccess(v -> {
+                                        if (futureCompleted.compareAndSet(false, true)) {
+                                            completeRunnable.run();
+                                            future.complete(null);
+                                        }
+                                    })
+                                    .onFailure(cause -> {
+                                        if (futureCompleted.compareAndSet(false, true)) {
+                                            errorConsumer.accept(cause);
+                                            future.complete(null);
+                                        }
+                                    });
+                        });
                     } else {
-                        // Success - mark as successful
-                        successOccurred.set(true);
-                        // If stream already ended, complete now
-                        if (streamEnded.get() && futureCompleted.compareAndSet(false, true)) {
-                            completeRunnable.run();
-                            future.complete(null);
-                        }
+                        // Non-SSE response (error body): deliver lines to messageConsumer so
+                        // the SSEEventListener up the call stack can parse the JSON-RPC error.
+                        response.pipe().to(new PlainBodyWriteStream(messageConsumer))
+                                .onSuccess(v -> {
+                                    if (futureCompleted.compareAndSet(false, true)) {
+                                        future.complete(null);
+                                    }
+                                })
+                                .onFailure(cause -> {
+                                    if (futureCompleted.compareAndSet(false, true)) {
+                                        errorConsumer.accept(cause);
+                                        future.complete(null);
+                                    }
+                                });
                     }
                 })
                 .onFailure(cause -> {
@@ -461,8 +492,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException {
 
-            HttpRequest<Buffer> request = webClient.getAbs(url);
-            return executeAsyncSSE(request, headers, null, messageConsumer, errorConsumer, completeRunnable);
+            return executeAsyncSSE(HttpMethod.GET, url, headers, null, messageConsumer, errorConsumer, completeRunnable);
         }
     }
 
@@ -504,9 +534,8 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException {
 
-            HttpRequest<Buffer> request = webClient.postAbs(url);
             Buffer bodyBuffer = Buffer.buffer(body, StandardCharsets.UTF_8.name());
-            return executeAsyncSSE(request, headers, bodyBuffer, messageConsumer, errorConsumer, completeRunnable);
+            return executeAsyncSSE(HttpMethod.POST, url, headers, bodyBuffer, messageConsumer, errorConsumer, completeRunnable);
         }
     }
 
@@ -531,6 +560,122 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         @Override
         public A2AHttpResponse delete() throws IOException, InterruptedException {
             return executeSyncRequest(webClient.deleteAbs(url), headers, null);
+        }
+    }
+
+    /**
+     * A {@link WriteStream} that handles plain (non-SSE) response bodies, e.g. JSON error
+     * responses returned when the stream never opens. Accumulates raw bytes, splits into lines
+     * on {@code \n} (decoding complete lines as UTF-8 to correctly handle multi-byte characters
+     * that may be split across consecutive write calls), and forwards each non-empty line to the
+     * message consumer so the SSEEventListener can parse the typed error.
+     *
+     * <p>A hard cap of {@value #MAX_BUFFER_BYTES} bytes is enforced on the internal buffer
+     * to prevent Denial-of-Service via {@link OutOfMemoryError} for arbitrarily large inputs.
+     */
+    private static class PlainBodyWriteStream implements WriteStream<Buffer> {
+        /** Maximum number of raw bytes that may be buffered before further writes are rejected. */
+        private static final int MAX_BUFFER_BYTES = 1024 * 1024; // 1 MB
+
+        private final Consumer<String> messageConsumer;
+        /**
+         * Raw bytes waiting for a complete line delimiter. We buffer raw bytes — rather than
+         * decoded characters — so that multi-byte UTF-8 sequences split across consecutive
+         * {@link #write} calls are never decoded prematurely.
+         */
+        private Buffer rawBuffer = Buffer.buffer();
+        private @Nullable Handler<Throwable> exceptionHandler;
+
+        PlainBodyWriteStream(Consumer<String> messageConsumer) {
+            this.messageConsumer = messageConsumer;
+        }
+
+        /**
+         * Scans {@link #rawBuffer} for {@code '\n'} bytes (0x0A, which never appears as a
+         * continuation byte in UTF-8), decodes each complete line as UTF-8, trims whitespace,
+         * and forwards non-empty lines to the message consumer. Unconsumed bytes are retained
+         * in the buffer for the next write.
+         */
+        private void processLines() {
+            int start = 0;
+            int len = rawBuffer.length();
+            while (true) {
+                int nlIdx = -1;
+                for (int i = start; i < len; i++) {
+                    if (rawBuffer.getByte(i) == '\n') {
+                        nlIdx = i;
+                        break;
+                    }
+                }
+                if (nlIdx < 0) break;
+                String line = new String(rawBuffer.getBytes(start, nlIdx), StandardCharsets.UTF_8).trim();
+                start = nlIdx + 1;
+                if (!line.isEmpty()) {
+                    messageConsumer.accept(line);
+                }
+            }
+            if (start > 0) {
+                rawBuffer = rawBuffer.getBuffer(start, len);
+            }
+        }
+
+        @Override
+        public Future<Void> write(Buffer data) {
+            if (rawBuffer.length() + data.length() > MAX_BUFFER_BYTES) {
+                IllegalStateException ex = new IllegalStateException(
+                        "Response body exceeded maximum allowed size of " + MAX_BUFFER_BYTES + " bytes");
+                Handler<Throwable> eh = exceptionHandler;
+                if (eh != null) {
+                    eh.handle(ex);
+                }
+                return Future.failedFuture(ex);
+            }
+            rawBuffer.appendBuffer(data);
+            processLines();
+            return Future.succeededFuture();
+        }
+
+        @Override
+        public void write(Buffer data, Handler<AsyncResult<Void>> handler) {
+            Future<Void> result = write(data);
+            if (handler != null) {
+                handler.handle(result);
+            }
+        }
+
+        @Override
+        public void end(Handler<AsyncResult<Void>> handler) {
+            if (rawBuffer.length() > 0) {
+                String remaining = rawBuffer.toString(StandardCharsets.UTF_8).trim();
+                rawBuffer = Buffer.buffer();
+                if (!remaining.isEmpty()) {
+                    messageConsumer.accept(remaining);
+                }
+            }
+            if (handler != null) {
+                handler.handle(Future.succeededFuture());
+            }
+        }
+
+        @Override
+        public WriteStream<Buffer> exceptionHandler(@Nullable Handler<Throwable> handler) {
+            this.exceptionHandler = handler;
+            return this;
+        }
+
+        @Override
+        public WriteStream<Buffer> setWriteQueueMaxSize(int maxSize) {
+            return this;
+        }
+
+        @Override
+        public boolean writeQueueFull() {
+            return false;
+        }
+
+        @Override
+        public WriteStream<Buffer> drainHandler(@Nullable Handler<Void> handler) {
+            return this;
         }
     }
 

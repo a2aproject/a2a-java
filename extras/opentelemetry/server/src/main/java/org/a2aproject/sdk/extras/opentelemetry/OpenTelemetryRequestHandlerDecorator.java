@@ -43,6 +43,7 @@ import jakarta.decorator.Delegate;
 import jakarta.enterprise.inject.Any;
 import jakarta.inject.Inject;
 import java.util.concurrent.Flow;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -455,7 +456,11 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
             span.end();
         }
     }
-    
+
+    public void validateRequestedTask(@Nullable String requestedTaskId) throws A2AError {
+        delegate.validateRequestedTask(requestedTaskId);
+    }
+
     private boolean extractRequest() {
         return Boolean.getBoolean(EXTRACT_REQUEST_SYS_PROPERTY);
     }

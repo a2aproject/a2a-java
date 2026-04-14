@@ -18,6 +18,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
+import org.jspecify.annotations.Nullable;
 
 public interface RequestHandler {
     Task onGetTask(
@@ -59,4 +60,6 @@ public interface RequestHandler {
     void onDeleteTaskPushNotificationConfig(
             DeleteTaskPushNotificationConfigParams params,
             ServerCallContext context) throws A2AError;
+
+    void validateRequestedTask(@Nullable String requestedTaskId) throws A2AError;
 }

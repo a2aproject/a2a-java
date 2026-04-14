@@ -284,11 +284,12 @@ public class JSONRPCUtils {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
-        Object id = getAndValidateId(jsonRpc);
-        JsonElement paramsNode = jsonRpc.get("result");
+        // Check for error before validating id: per JSON-RPC spec, error responses may have null id
         if (jsonRpc.has("error")) {
             throw processError(jsonRpc.getAsJsonObject("error"));
         }
+        Object id = getAndValidateId(jsonRpc);
+        JsonElement paramsNode = jsonRpc.get("result");
         StreamResponse.Builder builder = StreamResponse.newBuilder();
         parseRequestBody(paramsNode, builder, id);
         return builder.build();

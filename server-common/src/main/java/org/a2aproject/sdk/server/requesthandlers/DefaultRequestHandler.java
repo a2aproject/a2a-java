@@ -1061,6 +1061,23 @@ public class DefaultRequestHandler implements RequestHandler {
         return new MessageSendSetup(taskManager, task, requestContext);
     }
 
+    @Override
+    public void validateRequestedTask(@Nullable String requestedTaskId) throws A2AError {
+        if (requestedTaskId == null) {
+            return;
+        }
+        Task task = taskStore.get(requestedTaskId);
+        if (task == null) {
+            throw new TaskNotFoundError();
+        }
+
+        if (task.status().state().isFinal()) {
+            throw new UnsupportedOperationError(null, String.format(
+                    "Cannot send message to task %s: task is in terminal state %s and cannot accept further messages",
+                    task.id(), task.status().state()), null);
+        }
+    }
+
     private @Nullable Task validateRequestedTask(MessageSendParams params) throws A2AError {
         String requestedTaskId = params.message().taskId();
         if (requestedTaskId == null) {
