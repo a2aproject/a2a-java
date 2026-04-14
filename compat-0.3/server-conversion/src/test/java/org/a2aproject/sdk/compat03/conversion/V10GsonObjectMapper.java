@@ -3,7 +3,7 @@ package org.a2aproject.sdk.compat03.conversion;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperDeserializationContext;
 import io.restassured.mapper.ObjectMapperSerializationContext;
-import org.a2aproject.sdk.json.JsonProcessingException;
+import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 
 /**
