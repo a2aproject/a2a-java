@@ -238,7 +238,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     // ========================================
-    // Streaming Tests (Phase 4)
+    // Streaming Tests
     // ========================================
 
     @Test
@@ -320,77 +320,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     // ========================================
-    // Helper Methods
-    // ========================================
-
-    private StreamRecorder<SendMessageResponse> sendMessageRequest(TestGrpcHandler handler) throws Exception {
-        SendMessageRequest request = SendMessageRequest.newBuilder()
-                .setRequest(GRPC_MESSAGE)
-                .build();
-        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
-        handler.sendMessage(request, streamRecorder);
-        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
-        return streamRecorder;
-    }
-
-    private StreamRecorder<StreamResponse> sendStreamingMessageRequest(TestGrpcHandler handler) throws Exception {
-        SendMessageRequest request = SendMessageRequest.newBuilder()
-                .setRequest(GRPC_MESSAGE)
-                .build();
-        StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
-        handler.sendStreamingMessage(request, streamRecorder);
-        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
-        return streamRecorder;
-    }
-
-    private <V> void assertGrpcError(StreamRecorder<V> streamRecorder, Status.Code expectedStatusCode) {
-        Assertions.assertNotNull(streamRecorder.getError());
-        Assertions.assertInstanceOf(StatusRuntimeException.class, streamRecorder.getError());
-        Assertions.assertEquals(expectedStatusCode, ((StatusRuntimeException) streamRecorder.getError()).getStatus().getCode());
-        Assertions.assertTrue(streamRecorder.getValues().isEmpty());
-    }
-
-    // ========================================
-    // Test Handler Implementation
-    // ========================================
-
-    private static class TestGrpcHandler extends GrpcHandler {
-        private final org.a2aproject.sdk.compat03.spec.AgentCard card;
-        private final org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler handler;
-        private final java.util.concurrent.Executor executor;
-
-        TestGrpcHandler(org.a2aproject.sdk.compat03.spec.AgentCard card,
-                        org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler handler,
-                        java.util.concurrent.Executor executor) {
-            this.card = card;
-            this.handler = handler;
-            this.executor = executor;
-            setRequestHandler(handler);
-        }
-
-        @Override
-        protected org.a2aproject.sdk.compat03.spec.AgentCard getAgentCard() {
-            return card;
-        }
-
-        @Override
-        protected org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler getRequestHandler() {
-            return handler;
-        }
-
-        @Override
-        protected CallContextFactory getCallContextFactory() {
-            return null;
-        }
-
-        @Override
-        protected java.util.concurrent.Executor getExecutor() {
-            return executor;
-        }
-    }
-
-    // ========================================
-    // Phase 5: Push Notification Tests
+    // Push Notification Tests
     // ========================================
 
     @Test
@@ -503,6 +433,34 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     // Helper Methods
     // ========================================
 
+    private StreamRecorder<SendMessageResponse> sendMessageRequest(TestGrpcHandler handler) throws Exception {
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<SendMessageResponse> streamRecorder = StreamRecorder.create();
+        handler.sendMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+        return streamRecorder;
+    }
+
+    private StreamRecorder<StreamResponse> sendStreamingMessageRequest(TestGrpcHandler handler) throws Exception {
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setRequest(GRPC_MESSAGE)
+                .build();
+        StreamRecorder<StreamResponse> streamRecorder = StreamRecorder.create();
+        handler.sendStreamingMessage(request, streamRecorder);
+        streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
+        return streamRecorder;
+    }
+
+    private <V> void assertGrpcError(StreamRecorder<V> streamRecorder, Status.Code expectedStatusCode) {
+        Assertions.assertNotNull(streamRecorder.getError());
+        Assertions.assertInstanceOf(StatusRuntimeException.class, streamRecorder.getError());
+        Assertions.assertEquals(expectedStatusCode, ((StatusRuntimeException) streamRecorder.getError()).getStatus().getCode());
+        Assertions.assertTrue(streamRecorder.getValues().isEmpty());
+    }
+
+
     private StreamRecorder<org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig> createTaskPushNotificationConfigRequest(
             TestGrpcHandler handler, String name) throws Exception {
         // Save task to v1.0 backend
@@ -542,4 +500,43 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
         streamRecorder.awaitCompletion(5, TimeUnit.SECONDS);
         return streamRecorder;
     }
+    // ========================================
+    // Test Handler Implementation
+    // ========================================
+
+    private static class TestGrpcHandler extends GrpcHandler {
+        private final org.a2aproject.sdk.compat03.spec.AgentCard card;
+        private final org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler handler;
+        private final java.util.concurrent.Executor executor;
+
+        TestGrpcHandler(org.a2aproject.sdk.compat03.spec.AgentCard card,
+                        org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler handler,
+                        java.util.concurrent.Executor executor) {
+            this.card = card;
+            this.handler = handler;
+            this.executor = executor;
+            setRequestHandler(handler);
+        }
+
+        @Override
+        protected org.a2aproject.sdk.compat03.spec.AgentCard getAgentCard() {
+            return card;
+        }
+
+        @Override
+        protected org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler getRequestHandler() {
+            return handler;
+        }
+
+        @Override
+        protected CallContextFactory getCallContextFactory() {
+            return null;
+        }
+
+        @Override
+        protected java.util.concurrent.Executor getExecutor() {
+            return executor;
+        }
+    }
+
 }

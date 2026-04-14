@@ -263,7 +263,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     // ========================================
-    // Streaming Tests (Phase 4)
+    // Streaming Tests
     // ========================================
 
     @Test
@@ -523,7 +523,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     // ========================================
-    // Streaming Error Tests (Phase 4)
+    // Streaming Error Tests
     // ========================================
 
     @Test
@@ -743,7 +743,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     // ========================================
-    // Phase 5: Push Notification Tests
+    // Push Notification Tests
     // ========================================
 
     @Test
@@ -1131,10 +1131,6 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
             mainEventBusProcessor.setPushNotificationExecutor(null);
         }
     }
-
-    // ========================================
-    // Deferred Tests (Phase 6+)
-    // ========================================
 
     // TODO Phase 6: Add authenticated extended card tests
 }
