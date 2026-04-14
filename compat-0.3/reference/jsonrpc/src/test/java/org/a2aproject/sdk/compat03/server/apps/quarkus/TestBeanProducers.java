@@ -23,6 +23,8 @@ public class TestBeanProducers {
     public AgentCard createTestAgentCard() {
         return new AgentCard.Builder()
             .name("compat-0.3-test-agent")
+            .description("Test agent for compat-0.3 JSONRPC reference server")
+            .url("http://localhost:8081")
             .version("1.0.0")
             .capabilities(new AgentCapabilities(
                 true,   // streaming
@@ -30,6 +32,9 @@ public class TestBeanProducers {
                 false,  // stateTransitionHistory
                 List.of()  // extensions
             ))
+            .defaultInputModes(List.of("text"))
+            .defaultOutputModes(List.of("text"))
+            .skills(List.of())
             .build();
     }
 }
