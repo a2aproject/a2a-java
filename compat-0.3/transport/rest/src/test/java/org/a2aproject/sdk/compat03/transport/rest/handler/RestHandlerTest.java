@@ -193,7 +193,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     // ========================================
-    // Streaming Tests (Phase 4)
+    // Streaming Tests
     // ========================================
 
     @Test
@@ -267,7 +267,7 @@ public class RestHandlerTest extends AbstractA2ARequestHandlerTest {
     }
 
     // ========================================
-    // Phase 5: Push Notification Tests
+    // Push Notification Tests
     // ========================================
 
     @Test
