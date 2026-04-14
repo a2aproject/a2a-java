@@ -44,8 +44,11 @@ public interface TaskPushNotificationConfigMapper {
 
         org.a2aproject.sdk.compat03.spec.PushNotificationConfig pushConfig = v03.pushNotificationConfig();
 
+        // v0.3 id can be null; v1.0 requires non-null id but stores use empty string to auto-assign
+        String id = pushConfig.id() != null ? pushConfig.id() : "";
+
         return new TaskPushNotificationConfig(
-            pushConfig.id(),
+            id,
             v03.taskId(),
             pushConfig.url(),
             pushConfig.token(),
