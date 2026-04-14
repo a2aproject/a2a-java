@@ -1616,15 +1616,24 @@ public abstract class AbstractCompat03ServerTest {
 
     /**
      * Save a v0.3 push notification config to the v1.0 store.
-     * Converts v0.3 → v1.0 using mappers (if needed).
+     * Converts v0.3 → v1.0 using mappers.
      */
     protected void savePushNotificationConfigInStore(String taskId, PushNotificationConfig notificationConfig) throws Exception {
+        // Create v0.3 TaskPushNotificationConfig wrapper
+        org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig v03Config =
+                new org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig(taskId, notificationConfig);
+
+        // Convert v0.3 → v1.0
+        org.a2aproject.sdk.spec.TaskPushNotificationConfig v10Config =
+                TaskPushNotificationConfigMapper.INSTANCE.toV10(v03Config);
+
+        // Send to v1.0 server using v1.0 JSON serialization
         HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .build();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
-                .POST(HttpRequest.BodyPublishers.ofString(org.a2aproject.sdk.compat03.json.JsonUtil.toJson(notificationConfig)))
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtil.toJson(v10Config)))
                 .header("Content-Type", APPLICATION_JSON)
                 .build();
 
