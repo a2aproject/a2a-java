@@ -45,7 +45,7 @@ import org.a2aproject.sdk.spec.A2AError;
 public class Convert03To10RequestHandler {
 
     @Inject
-    RequestHandler v10Handler;
+    public RequestHandler v10Handler;
 
     /**
      * Gets a task by ID.
@@ -186,9 +186,14 @@ public class Convert03To10RequestHandler {
             ServerCallContext context) throws A2AError {
 
         // Convert v0.3 params → v1.0 params
-        // GetTaskPushNotificationConfigParams has the same structure in both versions (id field)
+        // v0.3: id = taskId, pushNotificationConfigId = optional config id
+        // v1.0: taskId = taskId, id = config id (defaults to taskId if not specified)
+        String configId = v03Params.pushNotificationConfigId() != null
+            ? v03Params.pushNotificationConfigId()
+            : v03Params.id(); // Default to taskId when config id not specified
+
         org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams v10Params =
-            new org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams(v03Params.id(), "");
+            new org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams(v03Params.id(), configId);
 
         // Call v1.0 handler
         org.a2aproject.sdk.spec.TaskPushNotificationConfig v10Result =
