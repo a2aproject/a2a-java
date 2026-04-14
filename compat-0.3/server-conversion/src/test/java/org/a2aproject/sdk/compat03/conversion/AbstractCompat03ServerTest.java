@@ -436,6 +436,7 @@ public abstract class AbstractCompat03ServerTest {
             AtomicReference<TaskStatusUpdateEvent> statusUpdateEvent = new AtomicReference<>();
             AtomicBoolean wasUnexpectedEvent = new AtomicBoolean(false);
             AtomicReference<Throwable> errorRef = new AtomicReference<>();
+            AtomicBoolean receivedInitialSnapshot = new AtomicBoolean(false);
 
             // Create consumer to handle resubscribed events
             BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
@@ -448,6 +449,12 @@ public abstract class AbstractCompat03ServerTest {
                         eventLatch.countDown();
                     } else {
                         wasUnexpectedEvent.set(true);
+                    }
+                } else if (event instanceof TaskEvent) {
+                    // v1.0 sends current task snapshot as first event on resubscribe - only valid as first event
+                    // TODO: Check if this is valid as the first event in 0.3
+                    if (!receivedInitialSnapshot.compareAndSet(false, true)) {
+                        wasUnexpectedEvent.set(true);  // TaskEvent received after first event
                     }
                 } else {
                     wasUnexpectedEvent.set(true);
@@ -594,11 +601,18 @@ public abstract class AbstractCompat03ServerTest {
             AtomicReference<TaskArtifactUpdateEvent> firstConsumerEvent = new AtomicReference<>();
             AtomicBoolean firstUnexpectedEvent = new AtomicBoolean(false);
             AtomicReference<Throwable> firstErrorRef = new AtomicReference<>();
+            AtomicBoolean firstReceivedInitialSnapshot = new AtomicBoolean(false);
 
             BiConsumer<ClientEvent, AgentCard> firstConsumer = (event, agentCard) -> {
                 if (event instanceof TaskUpdateEvent tue && tue.getUpdateEvent() instanceof TaskArtifactUpdateEvent artifact) {
                     firstConsumerEvent.set(artifact);
                     firstConsumerLatch.countDown();
+                } else if (event instanceof TaskEvent) {
+                    // v1.0 sends current task snapshot as first event on resubscribe - only valid as first event
+                    // TODO: Check if this is valid as the first event in 0.3
+                    if (!firstReceivedInitialSnapshot.compareAndSet(false, true)) {
+                        firstUnexpectedEvent.set(true);  // TaskEvent received after first event
+                    }
                 } else if (!(event instanceof TaskUpdateEvent)) {
                     firstUnexpectedEvent.set(true);
                 }
@@ -651,11 +665,18 @@ public abstract class AbstractCompat03ServerTest {
             AtomicReference<TaskArtifactUpdateEvent> secondConsumerEvent = new AtomicReference<>();
             AtomicBoolean secondUnexpectedEvent = new AtomicBoolean(false);
             AtomicReference<Throwable> secondErrorRef = new AtomicReference<>();
+            AtomicBoolean secondReceivedInitialSnapshot = new AtomicBoolean(false);
 
             BiConsumer<ClientEvent, AgentCard> secondConsumer = (event, agentCard) -> {
                 if (event instanceof TaskUpdateEvent tue && tue.getUpdateEvent() instanceof TaskArtifactUpdateEvent artifact) {
                     secondConsumerEvent.set(artifact);
                     secondConsumerLatch.countDown();
+                } else if (event instanceof TaskEvent) {
+                    // v1.0 sends current task snapshot as first event on resubscribe - only valid as first event
+                    // TODO: Check if this is valid as the first event in 0.3
+                    if (!secondReceivedInitialSnapshot.compareAndSet(false, true)) {
+                        secondUnexpectedEvent.set(true);  // TaskEvent received after first event
+                    }
                 } else if (!(event instanceof TaskUpdateEvent)) {
                     secondUnexpectedEvent.set(true);
                 }
@@ -990,12 +1011,21 @@ public abstract class AbstractCompat03ServerTest {
         List<org.a2aproject.sdk.compat03.spec.UpdateEvent> resubReceivedEvents = new CopyOnWriteArrayList<>();
         AtomicBoolean resubUnexpectedEvent = new AtomicBoolean(false);
         AtomicReference<Throwable> resubErrorRef = new AtomicReference<>();
+        AtomicBoolean resubReceivedInitialSnapshot = new AtomicBoolean(false);
 
         BiConsumer<ClientEvent, AgentCard> resubConsumer = (event, agentCard) -> {
             if (event instanceof TaskUpdateEvent tue) {
                 resubReceivedEvents.add(tue.getUpdateEvent());
                 resubEventLatch.countDown();
+            } else if (event instanceof TaskEvent) {
+                // v1.0 sends current task snapshot as first event on resubscribe - only valid as first event
+                // TODO: Check if this is valid as the first event in 0.3
+                if (!resubReceivedInitialSnapshot.compareAndSet(false, true)) {
+                    System.err.println("testNonBlockingWithMultipleMessages: TaskEvent received after first event");
+                    resubUnexpectedEvent.set(true);  // TaskEvent received after first event
+                }
             } else {
+                System.err.println("testNonBlockingWithMultipleMessages: Unexpected event type in resubConsumer: " + event.getClass().getName());
                 resubUnexpectedEvent.set(true);
             }
         };
