@@ -1,20 +1,20 @@
 package io.a2a.spec;
 
-
 import java.util.Map;
 
 import io.a2a.util.Assert;
 
 /**
- * Defines the parameters for a request to send a message to an agent. This can be used
+ * Defines the parameters for a request to send a message to an agent. This can
+ * be used
  * to create a new task, continue an existing one, or restart a task.
  *
- * @param message the message to send to the agent
+ * @param message       the message to send to the agent
  * @param configuration optional configuration options for this send request
- * @param metadata optional additional metadata
+ * @param metadata      optional additional metadata
  */
 public record MessageSendParams(Message message, MessageSendConfiguration configuration,
-                                Map<String, Object> metadata) {
+        Map<String, Object> metadata) {
 
     public MessageSendParams {
         Assert.checkNotNullParam("message", message);
