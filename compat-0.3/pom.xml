@@ -104,6 +104,12 @@
                 <artifactId>a2a-java-sdk-compat-0.3-server-conversion</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-server-conversion</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
