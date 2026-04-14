@@ -42,6 +42,7 @@ import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.server.util.async.Internal;
 import org.a2aproject.sdk.compat03.json.JsonUtil;
 import org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler;
+import org.a2aproject.sdk.compat03.conversion.ErrorConverter;
 import org.a2aproject.sdk.spec.A2AError;
 import jakarta.enterprise.inject.Instance;
 import java.util.concurrent.CompletableFuture;
@@ -92,7 +93,7 @@ public class RestHandler {
             EventKind result = requestHandler.onMessageSend(ProtoUtils.FromProto.messageSendParams(request), context);
             return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.SendMessageResponse.newBuilder(ProtoUtils.ToProto.taskOrMessage(result)));
         } catch (A2AError e) {
-            return createErrorResponse(convertA2AError(e));
+            return createErrorResponse(ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -110,7 +111,7 @@ public class RestHandler {
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(ProtoUtils.FromProto.messageSendParams(request), context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(convertA2AError(e)).toJson()));
+            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(ErrorConverter.convertA2AError(e)).toJson()));
         } catch (JSONRPCError e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
@@ -130,7 +131,7 @@ public class RestHandler {
             }
             throw new UnsupportedOperationError();
         } catch (A2AError e) {
-            return createErrorResponse(convertA2AError(e));
+            return createErrorResponse(ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -148,7 +149,7 @@ public class RestHandler {
             TaskPushNotificationConfig result = requestHandler.onSetTaskPushNotificationConfig(ProtoUtils.FromProto.taskPushNotificationConfig(builder), context);
             return createSuccessResponse(201, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(result)));
         } catch (A2AError e) {
-            return createErrorResponse(convertA2AError(e));
+            return createErrorResponse(ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -165,7 +166,7 @@ public class RestHandler {
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onResubscribeToTask(params, context);
             return createStreamingResponse(publisher);
         } catch (A2AError e) {
-            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(convertA2AError(e)).toJson()));
+            return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(ErrorConverter.convertA2AError(e)).toJson()));
         } catch (JSONRPCError e) {
             return new HTTPRestStreamingResponse(ZeroPublisher.fromItems(new HTTPRestErrorResponse(e).toJson()));
         } catch (Throwable throwable) {
@@ -182,7 +183,7 @@ public class RestHandler {
             }
             throw new TaskNotFoundError();
         } catch (A2AError e) {
-            return createErrorResponse(convertA2AError(e));
+            return createErrorResponse(ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -199,7 +200,7 @@ public class RestHandler {
             TaskPushNotificationConfig config = requestHandler.onGetTaskPushNotificationConfig(params, context);
             return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.TaskPushNotificationConfig.newBuilder(ProtoUtils.ToProto.taskPushNotificationConfig(config)));
         } catch (A2AError e) {
-            return createErrorResponse(convertA2AError(e));
+            return createErrorResponse(ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -216,7 +217,7 @@ public class RestHandler {
             List<TaskPushNotificationConfig> configs = requestHandler.onListTaskPushNotificationConfig(params, context);
             return createSuccessResponse(200, org.a2aproject.sdk.compat03.grpc.ListTaskPushNotificationConfigResponse.newBuilder(ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(configs)));
         } catch (A2AError e) {
-            return createErrorResponse(convertA2AError(e));
+            return createErrorResponse(ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
@@ -233,62 +234,12 @@ public class RestHandler {
             requestHandler.onDeleteTaskPushNotificationConfig(params, context);
             return new HTTPRestResponse(204, "application/json", "");
         } catch (A2AError e) {
-            return createErrorResponse(convertA2AError(e));
+            return createErrorResponse(ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable throwable) {
             return createErrorResponse(new InternalError(throwable.getMessage()));
         }
-    }
-
-    /**
-     * Converts a v1.0 A2AError to a v0.3 JSONRPCError.
-     * Since A2AError in v0.3 is an interface and JSONRPCError is the concrete implementation,
-     * we need to convert the v1.0 A2AError to the v0.3 JSONRPCError type.
-     * This method preserves specific error types to ensure proper HTTP status code mapping.
-     */
-    private JSONRPCError convertA2AError(A2AError v10Error) {
-        // A2AError from v1.0 has: code, message (via getMessage()), details
-        // JSONRPCError from v0.3 has: code, message (via getMessage()), data
-        // Preserve exact error code, message, and details from v1.0 error
-
-        // Preserve specific error types by mapping v1.0 errors to v0.3 equivalents
-        if (v10Error instanceof org.a2aproject.sdk.spec.TaskNotFoundError) {
-            return new TaskNotFoundError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.UnsupportedOperationError) {
-            return new UnsupportedOperationError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.TaskNotCancelableError) {
-            return new TaskNotCancelableError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidParamsError) {
-            return new InvalidParamsError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidRequestError) {
-            return new InvalidRequestError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InternalError) {
-            return new InternalError(v10Error.getMessage());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidAgentResponseError) {
-            return new InvalidAgentResponseError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.ContentTypeNotSupportedError) {
-            return new ContentTypeNotSupportedError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.PushNotificationNotSupportedError) {
-            return new PushNotificationNotSupportedError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.MethodNotFoundError) {
-            return new MethodNotFoundError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.JSONParseError) {
-            return new JSONParseError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError) {
-            return new AuthenticatedExtendedCardNotConfiguredError(
-                    v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        }
-
-        // Fallback to generic JSONRPCError for unmapped types
-        return new JSONRPCError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
     }
 
     private void parseRequestBody(String body, com.google.protobuf.Message.Builder builder) throws JSONRPCError {

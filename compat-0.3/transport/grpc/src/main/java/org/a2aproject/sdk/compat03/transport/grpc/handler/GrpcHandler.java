@@ -13,6 +13,7 @@ import java.util.concurrent.Flow;
 
 import com.google.protobuf.Empty;
 import org.a2aproject.sdk.compat03.conversion.Convert03To10RequestHandler;
+import org.a2aproject.sdk.compat03.conversion.ErrorConverter;
 import org.a2aproject.sdk.compat03.spec.AgentCard;
 import org.a2aproject.sdk.compat03.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigParams;
@@ -80,7 +81,7 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (A2AError e) {
-            handleError(responseObserver, convertA2AError(e));
+            handleError(responseObserver, ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
         } catch (Throwable t) {
@@ -102,7 +103,7 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
                 handleError(responseObserver, new TaskNotFoundError());
             }
         } catch (A2AError e) {
-            handleError(responseObserver, convertA2AError(e));
+            handleError(responseObserver, ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
         } catch (Throwable t) {
@@ -124,7 +125,7 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
                 handleError(responseObserver, new TaskNotFoundError());
             }
         } catch (A2AError e) {
-            handleError(responseObserver, convertA2AError(e));
+            handleError(responseObserver, ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
         } catch (Throwable t) {
@@ -147,7 +148,7 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
             responseObserver.onNext(ToProto.taskPushNotificationConfig(responseConfig));
             responseObserver.onCompleted();
         } catch (A2AError e) {
-            handleError(responseObserver, convertA2AError(e));
+            handleError(responseObserver, ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
         } catch (Throwable t) {
@@ -170,7 +171,7 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
             responseObserver.onNext(ToProto.taskPushNotificationConfig(config));
             responseObserver.onCompleted();
         } catch (A2AError e) {
-            handleError(responseObserver, convertA2AError(e));
+            handleError(responseObserver, ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
         } catch (Throwable t) {
@@ -198,7 +199,7 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
             responseObserver.onNext(responseBuilder.build());
             responseObserver.onCompleted();
         } catch (A2AError e) {
-            handleError(responseObserver, convertA2AError(e));
+            handleError(responseObserver, ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
         } catch (Throwable t) {
@@ -220,7 +221,7 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(params, context);
             convertToStreamResponse(publisher, responseObserver);
         } catch (A2AError e) {
-            handleError(responseObserver, convertA2AError(e));
+            handleError(responseObserver, ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
         } catch (Throwable t) {
@@ -242,7 +243,7 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
             Flow.Publisher<StreamingEventKind> publisher = requestHandler.onResubscribeToTask(params, context);
             convertToStreamResponse(publisher, responseObserver);
         } catch (A2AError e) {
-            handleError(responseObserver, convertA2AError(e));
+            handleError(responseObserver, ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
         } catch (Throwable t) {
@@ -276,7 +277,7 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
                 @Override
                 public void onError(Throwable throwable) {
                     if (throwable instanceof A2AError a2aError) {
-                        handleError(responseObserver, convertA2AError(a2aError));
+                        handleError(responseObserver, ErrorConverter.convertA2AError(a2aError));
                     } else if (throwable instanceof JSONRPCError jsonrpcError) {
                         handleError(responseObserver, jsonrpcError);
                     } else {
@@ -320,51 +321,12 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (A2AError e) {
-            handleError(responseObserver, convertA2AError(e));
+            handleError(responseObserver, ErrorConverter.convertA2AError(e));
         } catch (JSONRPCError e) {
             handleError(responseObserver, e);
         } catch (Throwable t) {
             handleInternalError(responseObserver, t);
         }
-    }
-
-    /**
-     * Converts a v1.0 A2AError to a v0.3 JSONRPCError.
-     * Since A2AError in v0.3 is an interface and JSONRPCError is the concrete implementation,
-     * we need to convert the v1.0 A2AError to the v0.3 JSONRPCError type.
-     */
-    private JSONRPCError convertA2AError(A2AError v10Error) {
-        // A2AError from v1.0 has: code, message (via getMessage()), details
-        // JSONRPCError from v0.3 has: code, message (via getMessage()), data
-        // Preserve exact error code, message, and details from v1.0 error
-
-        // Preserve specific error types by mapping v1.0 errors to v0.3 equivalents
-        if (v10Error instanceof org.a2aproject.sdk.spec.TaskNotFoundError) {
-            return new TaskNotFoundError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.UnsupportedOperationError) {
-            return new UnsupportedOperationError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.TaskNotCancelableError) {
-            return new TaskNotCancelableError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidParamsError) {
-            return new InvalidParamsError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidRequestError) {
-            return new InvalidRequestError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InternalError) {
-            return new InternalError(v10Error.getMessage());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.InvalidAgentResponseError) {
-            return new InvalidAgentResponseError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.ContentTypeNotSupportedError) {
-            return new ContentTypeNotSupportedError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.PushNotificationNotSupportedError) {
-            return new PushNotificationNotSupportedError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.MethodNotFoundError) {
-            return new MethodNotFoundError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        } else if (v10Error instanceof org.a2aproject.sdk.spec.JSONParseError) {
-            return new JSONParseError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
-        }
-
-        // Fallback to generic JSONRPCError for unmapped types
-        return new JSONRPCError(v10Error.getCode(), v10Error.getMessage(), v10Error.getDetails());
     }
 
     private <V> ServerCallContext createCallContext(StreamObserver<V> responseObserver) {
