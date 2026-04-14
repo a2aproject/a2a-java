@@ -71,6 +71,20 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- v0.3 client base -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- v0.3 client transport JSONRPC -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Server common test utilities (EventQueueUtil) -->
         <dependency>
             <groupId>${project.groupId}</groupId>
