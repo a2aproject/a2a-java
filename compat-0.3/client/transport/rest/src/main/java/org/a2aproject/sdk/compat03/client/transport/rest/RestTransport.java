@@ -25,6 +25,7 @@ import org.a2aproject.sdk.compat03.spec.A2AClientException;
 import org.a2aproject.sdk.compat03.spec.AgentCard;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.compat03.spec.EventKind;
+import org.a2aproject.sdk.compat03.spec.GetAuthenticatedExtendedCardRequest;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.compat03.spec.MessageSendParams;
@@ -319,7 +320,7 @@ public class RestTransport implements ClientTransport {
             if (!needsExtendedCard) {
                 return agentCard;
             }
-            PayloadAndHeaders payloadAndHeaders = applyInterceptors(org.a2aproject.sdk.compat03.spec.GetTaskRequest.METHOD, null,
+            PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest.METHOD, null,
                     agentCard, context);
             String url = agentUrl + String.format("/v1/card");
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);

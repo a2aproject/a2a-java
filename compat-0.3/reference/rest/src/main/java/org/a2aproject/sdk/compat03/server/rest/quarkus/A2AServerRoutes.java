@@ -122,13 +122,24 @@ public class A2AServerRoutes {
                 response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
             } else {
                 int historyLength = 0;
-                if (rc.request().params().contains("history_length")) {
+                boolean hasHistoryLength = rc.request().params().contains("history_length");
+                boolean hasHistoryLengthCamel = rc.request().params().contains("historyLength");
+
+                if (hasHistoryLength && hasHistoryLengthCamel) {
+                    response = jsonRestHandler.createErrorResponse(
+                        new InvalidParamsError("Only one of 'history_length' or 'historyLength' may be specified"));
+                } else if (hasHistoryLength) {
                     historyLength = Integer.parseInt(rc.request().params().get("history_length"));
+                } else if (hasHistoryLengthCamel) {
+                    historyLength = Integer.parseInt(rc.request().params().get("historyLength"));
                 }
-                response = jsonRestHandler.getTask(taskId, historyLength, context);
+
+                if (response == null) {
+                    response = jsonRestHandler.getTask(taskId, historyLength, context);
+                }
             }
         } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad history_length"));
+            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad history_length or historyLength"));
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new InternalError(t.getMessage()));
         } finally {

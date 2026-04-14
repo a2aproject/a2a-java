@@ -278,6 +278,7 @@ public class Convert03To10RequestHandler {
         org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams v10Params =
             new org.a2aproject.sdk.spec.DeleteTaskPushNotificationConfigParams(
                 v03Params.id(),
+                v03Params.pushNotificationConfigId(),
                 ""  // Default tenant
             );
 
@@ -306,8 +307,12 @@ public class Convert03To10RequestHandler {
 
             @Override
             public void onNext(V10 v10Item) {
-                V03 v03Item = mapper.apply(v10Item);
-                subscriber.onNext(v03Item);
+                try {
+                    V03 v03Item = mapper.apply(v10Item);
+                    subscriber.onNext(v03Item);
+                } catch (Exception e) {
+                    subscriber.onError(e);
+                }
             }
 
             @Override
