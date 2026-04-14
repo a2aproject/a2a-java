@@ -42,8 +42,7 @@ public class AgentExecutorProducer {
                 }
 
                 if (context.getTaskId().equals("task-not-supported-123")) {
-                    agentEmitter.fail(new UnsupportedOperationError());
-                    return;
+                    throw new UnsupportedOperationError();
                 }
                 
                 if (context.getMessage() != null) {
