@@ -41,7 +41,6 @@ import org.a2aproject.sdk.compat03.client.TaskEvent;
 import org.a2aproject.sdk.compat03.client.TaskUpdateEvent;
 import org.a2aproject.sdk.compat03.client.config.ClientConfig;
 import org.a2aproject.sdk.compat03.conversion.mappers.config.A03Mappers;
-import org.a2aproject.sdk.compat03.conversion.mappers.domain.MessageMapper;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskArtifactUpdateEventMapper;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskPushNotificationConfigMapper;
@@ -1633,7 +1632,7 @@ public abstract class AbstractCompat03ServerTest {
                 .build();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtil.toJson(v10Config)))
+                .POST(HttpRequest.BodyPublishers.ofString(org.a2aproject.sdk.jsonrpc.common.json.JsonUtil.toJson(v10Config)))
                 .header("Content-Type", APPLICATION_JSON)
                 .build();
 
