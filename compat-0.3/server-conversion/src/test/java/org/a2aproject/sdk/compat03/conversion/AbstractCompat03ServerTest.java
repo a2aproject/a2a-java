@@ -142,6 +142,16 @@ public abstract class AbstractCompat03ServerTest {
                         .objectMapperConfig(new ObjectMapperConfig(V10GsonObjectMapper.INSTANCE)));
     }
 
+    /**
+     * REST-Assured configuration using v0.3 JSON mapper.
+     * Use for deserializing v0.3 JSONRPC server responses (errors, etc.).
+     */
+    public static RequestSpecification givenV03() {
+        return RestAssured.given()
+                .config(RestAssured.config()
+                        .objectMapperConfig(new ObjectMapperConfig(V03GsonObjectMapper.INSTANCE)));
+    }
+
     protected final int serverPort;
     private Client client;
     private Client nonStreamingClient;
@@ -1133,7 +1143,7 @@ public abstract class AbstractCompat03ServerTest {
 
         // missing closing bracket
         String malformedRequest = "{\"jsonrpc\": \"2.0\", \"method\": \"message/send\", \"params\": {\"foo\": \"bar\"}";
-        JSONRPCErrorResponse response = given()
+        JSONRPCErrorResponse response = givenV03()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(malformedRequest)
                 .when()
@@ -1164,7 +1174,7 @@ public abstract class AbstractCompat03ServerTest {
     }
 
     private void testInvalidParams(String invalidParamsRequest) {
-        JSONRPCErrorResponse response = given()
+        JSONRPCErrorResponse response = givenV03()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(invalidParamsRequest)
                 .when()
@@ -1190,7 +1200,7 @@ public abstract class AbstractCompat03ServerTest {
                  "params": {}
                 }
                 """;
-        JSONRPCErrorResponse response = given()
+        JSONRPCErrorResponse response = givenV03()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(invalidRequest)
                 .when()
@@ -1212,7 +1222,7 @@ public abstract class AbstractCompat03ServerTest {
         String invalidRequest = """
                 {"jsonrpc": "2.0", "params": {}}
                 """;
-        JSONRPCErrorResponse response = given()
+        JSONRPCErrorResponse response = givenV03()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(invalidRequest)
                 .when()
@@ -1234,7 +1244,7 @@ public abstract class AbstractCompat03ServerTest {
         String invalidRequest = """
                 {"jsonrpc": "2.0", "method": "message/send", "params": {}, "id": {"bad": "type"}}
                 """;
-        JSONRPCErrorResponse response = given()
+        JSONRPCErrorResponse response = givenV03()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(invalidRequest)
                 .when()
@@ -1256,7 +1266,7 @@ public abstract class AbstractCompat03ServerTest {
         String invalidRequest = """
                 {"jsonrpc": "2.0", "method" : "nonexistent/method", "params": {}}
                 """;
-        JSONRPCErrorResponse response = given()
+        JSONRPCErrorResponse response = givenV03()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(invalidRequest)
                 .when()

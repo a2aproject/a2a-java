@@ -71,7 +71,11 @@ public class JsonUtil {
         return new GsonBuilder()
                 .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
                 .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
+                // Register JSONRPCError hierarchy adapter for all error subclasses
                 .registerTypeHierarchyAdapter(JSONRPCError.class, new JSONRPCErrorTypeAdapter())
+                // Register Throwable adapter for EXACT Throwable.class only (not subclasses)
+                // This prevents it from being used for JSONRPCError which extends Throwable
+                .registerTypeAdapter(Throwable.class, new ThrowableTypeAdapter())
                 .registerTypeAdapter(TaskState.class, new TaskStateTypeAdapter())
                 .registerTypeAdapter(Message.Role.class, new RoleTypeAdapter())
                 .registerTypeAdapter(Part.Kind.class, new PartKindTypeAdapter())
