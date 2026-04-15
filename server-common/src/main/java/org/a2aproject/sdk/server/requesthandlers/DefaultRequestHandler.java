@@ -339,7 +339,7 @@ public class DefaultRequestHandler implements RequestHandler {
             Instant now = Instant.now();
             if (params.statusTimestampAfter().isAfter(now)) {
                 Map<String, Object> errorData = new HashMap<>();
-                errorData.put("parameter", "lastUpdatedAfter");
+                errorData.put("parameter", "statusTimestampAfter");
                 errorData.put("reason", "Timestamp cannot be in the future");
                 throw new InvalidParamsError(null, "Invalid params", errorData);
             }
@@ -1177,25 +1177,6 @@ public class DefaultRequestHandler implements RequestHandler {
         }
 
         THREAD_STATS_LOGGER.debug("=== END THREAD STATS ===");
-    }
-
-    /**
-     * Check if an event represents a final task state.
-     *
-     * @param eventKind the event to check
-     * @return true if the event represents a final state (COMPLETED, FAILED, CANCELED, REJECTED, UNKNOWN)
-     */
-    private boolean isFinalEvent(EventKind eventKind) {
-        if (!(eventKind instanceof Event event)) {
-            return false;
-        }
-        if (event instanceof Task task) {
-            return task.status() != null && task.status().state() != null
-                    && task.status().state().isFinal();
-        } else if (event instanceof TaskStatusUpdateEvent statusUpdate) {
-            return statusUpdate.isFinal();
-        }
-        return false;
     }
 
     private record MessageSendSetup(TaskManager taskManager, @Nullable Task task, RequestContext requestContext) {}

@@ -25,7 +25,7 @@ public class VertxA2AHttpClientTest {
 
     @Test
     public void testVertxParameterConstructorNullThrows() {
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             new VertxA2AHttpClient(null);
         });
     }

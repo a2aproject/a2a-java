@@ -26,6 +26,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
+import org.a2aproject.sdk.util.ErrorDetail;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
@@ -957,9 +958,6 @@ public class RestHandler {
         }
     }
 
-    private static final String ERROR_INFO_TYPE = "type.googleapis.com/google.rpc.ErrorInfo";
-    private static final String ERROR_DOMAIN = "a2a-protocol.org";
-
     /**
      * Represents an HTTP error response containing A2A error details in the Google Cloud API error format.
      * <p>
@@ -995,7 +993,7 @@ public class RestHandler {
             String reason = errorCode != null ? errorCode.name() : "INTERNAL";
             String message = a2aError.getMessage() == null ? a2aError.getClass().getName() : a2aError.getMessage();
 
-            ErrorDetail detail = new ErrorDetail(ERROR_INFO_TYPE, reason, ERROR_DOMAIN, a2aError.getDetails());
+            ErrorDetail detail = ErrorDetail.of(reason, a2aError.getDetails());
             this.error = new ErrorBody(httpCode, status, message, List.of(detail));
         }
 
@@ -1014,11 +1012,5 @@ public class RestHandler {
         }
 
         private record ErrorBody(int code, String status, String message, List<ErrorDetail> details) {}
-
-        private record ErrorDetail(
-                @com.google.gson.annotations.SerializedName("@type") String type,
-                String reason,
-                String domain,
-                Map<String, Object> metadata) {}
     }
 }

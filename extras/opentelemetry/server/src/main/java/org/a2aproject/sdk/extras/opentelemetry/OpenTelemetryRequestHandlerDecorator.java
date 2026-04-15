@@ -457,6 +457,7 @@ public abstract class OpenTelemetryRequestHandlerDecorator implements RequestHan
         }
     }
 
+    @Override
     public void validateRequestedTask(@Nullable String requestedTaskId) throws A2AError {
         delegate.validateRequestedTask(requestedTaskId);
     }

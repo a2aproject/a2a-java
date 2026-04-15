@@ -374,7 +374,7 @@ public class JSONRPCHandler {
      * @see #onMessageSendStream(SendStreamingMessageRequest, ServerCallContext)
      */
     public Flow.Publisher<SendStreamingMessageResponse> onSubscribeToTask(
-            SubscribeToTaskRequest request, ServerCallContext context) {
+            SubscribeToTaskRequest request, ServerCallContext context) throws A2AError {
         if (!agentCard.capabilities().streaming()) {
             return ZeroPublisher.fromItems(
                     new SendStreamingMessageResponse(
@@ -431,7 +431,7 @@ public class JSONRPCHandler {
                     requestHandler.onGetTaskPushNotificationConfig(request.getParams(), context);
             return new GetTaskPushNotificationConfigResponse(request.getId(), config);
         } catch (A2AError e) {
-            return new GetTaskPushNotificationConfigResponse(request.getId().toString(), e);
+            return new GetTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
             return new GetTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
         }
@@ -471,7 +471,7 @@ public class JSONRPCHandler {
         try {
             TaskPushNotificationConfig config =
                     requestHandler.onCreateTaskPushNotificationConfig(request.getParams(), context);
-            return new CreateTaskPushNotificationConfigResponse(request.getId().toString(), config);
+            return new CreateTaskPushNotificationConfigResponse(request.getId(), config);
         } catch (A2AError e) {
             return new CreateTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {

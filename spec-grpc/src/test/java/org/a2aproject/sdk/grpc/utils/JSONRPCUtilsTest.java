@@ -7,8 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
@@ -20,7 +23,9 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigR
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.spec.InvalidParamsError;
+import org.a2aproject.sdk.util.ErrorDetail;
 import org.a2aproject.sdk.spec.JSONParseError;
+import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.junit.jupiter.api.Test;
 
@@ -143,7 +148,7 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testParseNumericalTimestampThrowsInvalidParamsJsonMappingException() {
-        String valideRequest = """
+        String validRequest = """
             {
               "jsonrpc": "2.0",
               "method": "ListTasks",
@@ -165,7 +170,7 @@ public class JSONRPCUtilsTest {
             """;
 
         try {
-            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(valideRequest, null);
+            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(validRequest, null);
             assertEquals(1, request.getId());
         } catch (JsonProcessingException e) {
             fail(e);
@@ -208,7 +213,7 @@ public class JSONRPCUtilsTest {
 
     @Test
     public void testParseUnknownField_ThrowsJsonMappingException() throws JsonMappingException {
-        String unkownFieldMessage=  """
+        String unknownFieldMessage=  """
            {
               "jsonrpc":"2.0",
               "method":"SendMessage",
@@ -232,7 +237,7 @@ public class JSONRPCUtilsTest {
             }""";
         JsonMappingException exception = assertThrows(
             JsonMappingException.class,
-            () -> JSONRPCUtils.parseRequestBody(unkownFieldMessage, null)
+            () -> JSONRPCUtils.parseRequestBody(unknownFieldMessage, null)
         );
         assertEquals(ERROR_MESSAGE.formatted("unknown in message lf.a2a.v1.Message"), exception.getMessage());
     }
@@ -390,5 +395,93 @@ public class JSONRPCUtilsTest {
         assertInstanceOf(JSONParseError.class, response.getError());
         assertEquals(-32700, response.getError().getCode());
         assertEquals("Parse error", response.getError().getMessage());
+    }
+
+    @Test
+    public void testToJsonRPCErrorResponse_KnownErrorCode_ProducesDataArray() {
+        TaskNotFoundError error = new TaskNotFoundError();
+
+        String json = JSONRPCUtils.toJsonRPCErrorResponse("req-1", error);
+
+        var jsonObject = JsonParser.parseString(json).getAsJsonObject();
+        var errorObj = jsonObject.getAsJsonObject("error");
+        assertTrue(errorObj.has("data"), "error should have a 'data' field");
+        assertTrue(errorObj.get("data").isJsonArray(), "'data' field should be a JSON array");
+        JsonArray dataArray = errorObj.getAsJsonArray("data");
+        assertEquals(1, dataArray.size());
+        var detail = dataArray.get(0).getAsJsonObject();
+        assertEquals(ErrorDetail.ERROR_INFO_TYPE, detail.get("@type").getAsString());
+        assertEquals("TASK_NOT_FOUND", detail.get("reason").getAsString());
+        assertEquals(ErrorDetail.ERROR_DOMAIN, detail.get("domain").getAsString());
+    }
+
+    @Test
+    public void testProcessError_ArrayFormData_ExtractsFirstElement() throws Exception {
+        String errorResponse = """
+            {
+              "jsonrpc": "2.0",
+              "id": "8",
+              "error": {
+                "code": -32001,
+                "message": "Task not found",
+                "data": [
+                  {
+                    "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+                    "reason": "TASK_NOT_FOUND",
+                    "domain": "a2a-protocol.org",
+                    "metadata": {}
+                  }
+                ]
+              }
+            }
+            """;
+
+        CreateTaskPushNotificationConfigResponse response =
+            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+
+        assertNotNull(response);
+        assertInstanceOf(TaskNotFoundError.class, response.getError());
+        assertEquals(-32001, response.getError().getCode());
+        assertEquals("Task not found", response.getError().getMessage());
+    }
+
+    @Test
+    public void testProcessError_ArrayFormData_NonObjectElement_DoesNotThrow() throws Exception {
+        // Verifies that a non-object first array element does not cause a ClassCastException
+        String errorResponse = """
+            {
+              "jsonrpc": "2.0",
+              "id": "9",
+              "error": {
+                "code": -32001,
+                "message": "Task not found",
+                "data": ["unexpected-string-element"]
+              }
+            }
+            """;
+
+        CreateTaskPushNotificationConfigResponse response =
+            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+
+        assertNotNull(response);
+        assertInstanceOf(TaskNotFoundError.class, response.getError());
+        // details should be empty since the array element was not an object
+        assertTrue(response.getError().getDetails().isEmpty());
+    }
+
+    @Test
+    public void testToJsonRPCErrorResponse_RoundTrip() throws Exception {
+        TaskNotFoundError original = new TaskNotFoundError("Custom message", null);
+
+        String json = JSONRPCUtils.toJsonRPCErrorResponse("req-rt", original);
+        CreateTaskPushNotificationConfigResponse response =
+            (CreateTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(
+                json,
+                SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+
+        assertNotNull(response);
+        assertInstanceOf(TaskNotFoundError.class, response.getError());
+        assertEquals(-32001, response.getError().getCode());
+        assertEquals("Custom message", response.getError().getMessage());
     }
 }

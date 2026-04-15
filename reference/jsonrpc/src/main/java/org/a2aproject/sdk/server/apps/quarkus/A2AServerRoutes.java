@@ -604,7 +604,7 @@ public class A2AServerRoutes {
      *   "error": {
      *     "code": -32602,
      *     "message": "Invalid params",
-     *     "details": { ... }
+     *     "data": [ ... ]
      *   }
      * }
      * }</pre>

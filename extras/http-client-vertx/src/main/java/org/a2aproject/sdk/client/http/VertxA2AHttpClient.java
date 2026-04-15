@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 import org.jspecify.annotations.Nullable;
 
 import org.a2aproject.sdk.common.A2AErrorMessages;
+import org.a2aproject.sdk.util.Assert;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -187,13 +188,10 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
      * such as Quarkus applications.
      *
      * @param vertx the Vert.x instance to use; must not be null
-     * @throws NullPointerException if vertx is null
+     * @throws IllegalArgumentException if vertx is null
      */
     public VertxA2AHttpClient(Vertx vertx) {
-        if (vertx == null) {
-            throw new NullPointerException("vertx must not be null");
-        }
-        this.vertx = vertx;
+        this.vertx = Assert.checkNotNullParam("vertx", vertx);
         this.ownsVertx = false;
         WebClientOptions options = new WebClientOptions()
                 .setFollowRedirects(true)

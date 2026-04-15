@@ -315,7 +315,6 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         @Override
         public A2AHttpResponse post() throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(false)
-                    .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
             HttpResponse<String> response =
                     httpClient.send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
