@@ -1,20 +1,55 @@
 package org.a2aproject.sdk.compat03.server.grpc.quarkus;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import java.util.concurrent.TimeUnit;
 
-// TODO: Uncomment when server-common is ported
-// See: /Users/kabir/sourcecontrol/AI/a2a-java-0.3.x/reference/grpc/src/test/java/io/a2a/server/grpc/quarkus/QuarkusA2AGrpcTest.java
+import org.a2aproject.sdk.compat03.client.ClientBuilder;
+import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransport;
+import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransportConfigBuilder;
+import org.a2aproject.sdk.compat03.conversion.AbstractCompat03ServerTest;
+import org.a2aproject.sdk.compat03.spec.TransportProtocol;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.quarkus.test.junit.QuarkusTest;
 
-/**
- * Placeholder stub - awaiting server-common port.
- */
-@Disabled("Disabled until server-common is ported")
-public class QuarkusA2AGrpcTest {
+import org.junit.jupiter.api.AfterAll;
 
-    @Test
-    public void placeholderTest() {
-        // This test exists only to make the test class show up as skipped
-        // Full test implementation commented out - awaiting server-common port
+@QuarkusTest
+public class QuarkusA2AGrpcTest extends AbstractCompat03ServerTest {
+
+    private static ManagedChannel channel;
+
+    public QuarkusA2AGrpcTest() {
+        super(8081); // HTTP server port for utility endpoints
+    }
+
+    @Override
+    protected String getTransportProtocol() {
+        return TransportProtocol.GRPC.asString();
+    }
+
+    @Override
+    protected String getTransportUrl() {
+        // gRPC server runs on port 8081, which is the same port as the main web server.
+        return "localhost:8081";
+    }
+
+    @Override
+    protected void configureTransport(ClientBuilder builder) {
+        builder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder().channelFactory(target -> {
+            channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+            return channel;
+        }));
+    }
+
+    @AfterAll
+    public static void closeChannel() {
+        if (channel != null) {
+            channel.shutdownNow();
+            try {
+                channel.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }
