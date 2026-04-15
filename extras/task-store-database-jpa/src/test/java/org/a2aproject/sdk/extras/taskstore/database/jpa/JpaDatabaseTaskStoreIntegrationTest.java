@@ -3,7 +3,6 @@ package org.a2aproject.sdk.extras.taskstore.database.jpa;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
@@ -69,17 +68,11 @@ public class JpaDatabaseTaskStoreIntegrationTest {
 
     @Test
     public void testJpaDatabaseTaskStore() throws Exception {
-        final String taskId = "test-task-1";
-        final String contextId = "contextId";
-
-        // Send a message creating the Task
-        assertNull(taskStore.get(taskId));
+        // Send a message creating the Task (no client-provided taskId — server generates it)
         Message userMessage = Message.builder()
             .role(Message.Role.ROLE_USER)
             .parts(Collections.singletonList(new TextPart("create")))
-            .taskId(taskId)
             .messageId("test-msg-1")
-            .contextId(contextId)
             .build();
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -101,6 +94,9 @@ public class JpaDatabaseTaskStoreIntegrationTest {
         assertNotNull(createdTask);
         assertEquals(0, createdTask.artifacts().size());
         assertEquals(TaskState.TASK_STATE_SUBMITTED, createdTask.status().state());
+
+        final String taskId = createdTask.id();
+        final String contextId = createdTask.contextId();
 
         // Send a message updating the Task
         userMessage = Message.builder()

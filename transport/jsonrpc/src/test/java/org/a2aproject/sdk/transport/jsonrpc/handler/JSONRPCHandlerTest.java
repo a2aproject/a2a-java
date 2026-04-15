@@ -174,6 +174,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageNewMessageSuccess() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
         agentExecutorExecute = (context, agentEmitter) -> {
             agentEmitter.sendMessage(context.getMessage());
         };
@@ -209,6 +210,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         // See testMessageOnErrorMocks() for a test more similar to the Python implementation, using mocks for
         // EventConsumer.consumeAll()
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
         agentExecutorExecute = (context, agentEmitter) -> {
             agentEmitter.fail(new UnsupportedOperationError());
         };
@@ -226,6 +228,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageErrorMocks() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
         Message message = Message.builder(MESSAGE)
                 .taskId(MINIMAL_TASK.id())
                 .contextId(MINIMAL_TASK.contextId())
@@ -248,8 +251,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageStreamNewMessageSuccess() throws InterruptedException {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
         agentExecutorExecute = (context, agentEmitter) -> {
-            agentEmitter.emitEvent(context.getTask() != null ? context.getTask() : context.getMessage());
+            agentEmitter.sendMessage(context.getMessage());
         };
 
         Message message = Message.builder(MESSAGE)
@@ -307,6 +311,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
         // Note: Do NOT set callback - DefaultRequestHandler has a permanent callback
         // We'll verify persistence by checking TaskStore after streaming completes
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
 
             // Create multiple events to be sent during streaming
         Task taskEvent = Task.builder(MINIMAL_TASK)
@@ -426,6 +431,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageStreamNewMessageSuccessMocks() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
 
         // This is used to send events from a mock
         List<Event> events = List.of(
@@ -1728,6 +1734,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
 
         JSONRPCHandler handler = new JSONRPCHandler(cardWithExtension, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
 
         // Create context WITH the required extension
         Set<String> requestedExtensions = new HashSet<>();
@@ -1887,6 +1894,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
 
         JSONRPCHandler handler = new JSONRPCHandler(agentCard, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
 
         // Create context with compatible version 1.1
         ServerCallContext contextWithVersion = new ServerCallContext(
@@ -1930,6 +1938,7 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
                 .build();
 
         JSONRPCHandler handler = new JSONRPCHandler(agentCard, requestHandler, internalExecutor);
+        taskStore.save(MINIMAL_TASK, false);
 
         // Use default callContext (no version - should default to 1.0)
         agentExecutorExecute = (context, agentEmitter) -> {

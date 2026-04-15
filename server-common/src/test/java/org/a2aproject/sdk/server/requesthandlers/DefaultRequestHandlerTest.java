@@ -12,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
@@ -37,6 +38,7 @@ import org.a2aproject.sdk.spec.MessageSendConfiguration;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
+import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
@@ -682,6 +684,34 @@ public class DefaultRequestHandlerTest {
     }
 
     /**
+     * CORE-MULTI-004: SendMessage with a client-provided taskId that does not
+     * reference an existing task must return TaskNotFoundError. A2A spec section
+     * 3.4.2 explicitly forbids client-provided taskId values for creating new tasks.
+     */
+    @Test
+    void testSendMessage_WithNonExistentTaskId_ThrowsTaskNotFoundError() {
+        agentExecutorExecute = (context, emitter) -> {
+            throw new AssertionError("AgentExecutor must NOT be invoked when taskId is unknown");
+        };
+
+        Message message = Message.builder()
+            .messageId("msg-unknown-task")
+            .role(Message.Role.ROLE_USER)
+            .taskId("does-not-exist-99999")
+            .parts(new TextPart("hello"))
+            .build();
+
+        MessageSendParams params = MessageSendParams.builder()
+            .message(message)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        assertThrows(TaskNotFoundError.class,
+            () -> requestHandler.onMessageSend(params, NULL_CONTEXT),
+            "Expected TaskNotFoundError when SendMessage references a non-existent taskId");
+    }
+
+    /**
      * Test: SendStreamingMessage to a task in a terminal state must also return UnsupportedOperationError
      * (CORE-SEND-002, streaming path).
      */
@@ -739,5 +769,140 @@ public class DefaultRequestHandlerTest {
         assertThrows(UnsupportedOperationError.class,
             () -> requestHandler.onMessageSendStream(followUpParams, NULL_CONTEXT),
             "Expected UnsupportedOperationError when streaming message to a completed task");
+    }
+
+    /**
+     * CORE-MULTI-004 (streaming path): onMessageSendStream with a client-provided
+     * taskId that does not reference an existing task must also return
+     * TaskNotFoundError.
+     */
+    @Test
+    void testSendMessageStream_WithNonExistentTaskId_ThrowsTaskNotFoundError() {
+        agentExecutorExecute = (context, emitter) -> {
+            throw new AssertionError("AgentExecutor must NOT be invoked when taskId is unknown");
+        };
+
+        Message message = Message.builder()
+            .messageId("msg-stream-unknown-task")
+            .role(Message.Role.ROLE_USER)
+            .taskId("does-not-exist-stream-99999")
+            .parts(new TextPart("hello"))
+            .build();
+
+        MessageSendParams params = MessageSendParams.builder()
+            .message(message)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        assertThrows(TaskNotFoundError.class,
+            () -> requestHandler.onMessageSendStream(params, NULL_CONTEXT),
+            "Expected TaskNotFoundError when onMessageSendStream references a non-existent taskId");
+    }
+
+    /**
+     * Verification for Codex adversarial review finding:
+     * When a follow-up message includes taskId but omits contextId,
+     * the emitted TaskStatusUpdateEvent should use the task's original
+     * contextId, NOT a freshly generated UUID.
+     */
+    @Test
+    void testSendMessage_FollowUpWithTaskIdOnly_PreservesOriginalContextId() throws Exception {
+        final String originalContextId = "original-ctx-for-verification";
+
+        // Arrange: create a task with a known contextId via the handler so the task is
+        // in a non-terminal (SUBMITTED) state and stored in taskStore.
+        CountDownLatch firstAgentStarted = new CountDownLatch(1);
+        CountDownLatch releaseFirstAgent = new CountDownLatch(1);
+
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.startWork();
+            firstAgentStarted.countDown();
+            try {
+                releaseFirstAgent.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            emitter.complete();
+        };
+
+        Message initialMessage = Message.builder()
+            .messageId("msg-initial-ctx-verify")
+            .role(Message.Role.ROLE_USER)
+            .contextId(originalContextId)
+            .parts(new TextPart("initial message"))
+            .build();
+
+        MessageSendParams initialParams = MessageSendParams.builder()
+            .message(initialMessage)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        EventKind initialResult = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
+        assertInstanceOf(Task.class, initialResult);
+        Task existingTask = (Task) initialResult;
+
+        // Verify the task was stored with the expected contextId
+        assertEquals(originalContextId, existingTask.contextId(),
+            "Initial task must have the original contextId");
+
+        // Wait until the first agent is actively running (task is non-terminal/WORKING)
+        assertTrue(firstAgentStarted.await(5, TimeUnit.SECONDS), "First agent should start");
+
+        // Capture the contextId that the agent sees in its RequestContext on the follow-up call
+        AtomicReference<String> observedContextId = new AtomicReference<>();
+        CountDownLatch followUpAgentDone = new CountDownLatch(1);
+
+        agentExecutorExecute = (context, emitter) -> {
+            observedContextId.set(context.getContextId());
+            emitter.complete();
+            followUpAgentDone.countDown();
+        };
+
+        // Act: follow-up message with taskId only, NO contextId
+        Message followUp = Message.builder()
+            .messageId("follow-up-msg-ctx-verify")
+            .role(Message.Role.ROLE_USER)
+            .taskId(existingTask.id())
+            // NOTE: intentionally NO .contextId(...)
+            .parts(new TextPart("follow up"))
+            .build();
+
+        MessageSendParams followUpParams = MessageSendParams.builder()
+            .message(followUp)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        // Release the first agent so the task reaches a non-terminal state that
+        // allows a follow-up (the test uses WORKING state, then we send a second message;
+        // but the spec only allows follow-up to non-terminal tasks so we send before
+        // completion by driving the task to SUBMITTED first via direct store manipulation).
+        // Instead: pre-store the task directly to control state precisely.
+        Task workingTask = new Task(
+            existingTask.id(),
+            originalContextId,
+            new TaskStatus(TaskState.TASK_STATE_WORKING),
+            null,
+            null,
+            null
+        );
+        taskStore.save(workingTask, false);
+
+        EventKind result = requestHandler.onMessageSend(followUpParams, NULL_CONTEXT);
+
+        // Assert: the task returned must still have the ORIGINAL contextId
+        assertInstanceOf(Task.class, result);
+        Task returned = (Task) result;
+        assertEquals(originalContextId, returned.contextId(),
+            "Task's contextId must be preserved after follow-up without contextId");
+
+        // Wait for follow-up agent to run and capture its observed contextId
+        assertTrue(followUpAgentDone.await(5, TimeUnit.SECONDS), "Follow-up agent should complete");
+
+        // And the agent's view of the contextId must match the original
+        assertEquals(originalContextId, observedContextId.get(),
+            "Agent should see the original contextId, not a freshly generated one");
+
+        // Cleanup: release the first agent
+        releaseFirstAgent.countDown();
     }
 }

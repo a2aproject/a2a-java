@@ -180,6 +180,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageNewMessageSuccess() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
         agentExecutorExecute = (context, agentEmitter) -> {
             agentEmitter.sendMessage(context.getMessage());
         };
@@ -212,6 +213,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageError() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
         agentExecutorExecute = (context, agentEmitter) -> {
             agentEmitter.fail(new UnsupportedOperationError());
         };
@@ -297,8 +299,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageStreamNewMessageSuccess() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
         agentExecutorExecute = (context, agentEmitter) -> {
-            agentEmitter.emitEvent(context.getTask() != null ? context.getTask() : context.getMessage());
+            agentEmitter.sendMessage(context.getMessage());
         };
 
         StreamRecorder<StreamResponse> streamRecorder = sendStreamingMessageRequest(handler);
@@ -774,6 +777,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testStreamingDoesNotBlockMainThread() throws Exception {
         GrpcHandler handler = new TestGrpcHandler(AbstractA2ARequestHandlerTest.CARD, requestHandler, internalExecutor);
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
 
         // Track if the main thread gets blocked during streaming
         AtomicBoolean eventReceived = new AtomicBoolean(false);
@@ -944,6 +948,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 };
             }
         };
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
 
         agentExecutorExecute = (context, agentEmitter) -> {
             agentEmitter.sendMessage(context.getMessage());
@@ -1085,6 +1090,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 };
             }
         };
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
 
         agentExecutorExecute = (context, agentEmitter) -> {
             agentEmitter.sendMessage(context.getMessage());
@@ -1136,6 +1142,7 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
                 };
             }
         };
+        taskStore.save(AbstractA2ARequestHandlerTest.MINIMAL_TASK, false);
 
         agentExecutorExecute = (context, agentEmitter) -> {
             agentEmitter.sendMessage(context.getMessage());
