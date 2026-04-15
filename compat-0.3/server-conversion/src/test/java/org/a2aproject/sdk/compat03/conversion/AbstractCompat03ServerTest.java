@@ -451,8 +451,8 @@ public abstract class AbstractCompat03ServerTest {
                         wasUnexpectedEvent.set(true);
                     }
                 } else if (event instanceof TaskEvent) {
-                    // v1.0 sends current task snapshot as first event on resubscribe - only valid as first event
-                    // TODO: Check if this is valid as the first event in 0.3
+                    // v0.3 spec confirms task snapshot as first event on resubscribe is valid behavior
+                    // See: https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
                     if (!receivedInitialSnapshot.compareAndSet(false, true)) {
                         wasUnexpectedEvent.set(true);  // TaskEvent received after first event
                     }
@@ -608,8 +608,8 @@ public abstract class AbstractCompat03ServerTest {
                     firstConsumerEvent.set(artifact);
                     firstConsumerLatch.countDown();
                 } else if (event instanceof TaskEvent) {
-                    // v1.0 sends current task snapshot as first event on resubscribe - only valid as first event
-                    // TODO: Check if this is valid as the first event in 0.3
+                    // v0.3 spec confirms task snapshot as first event on resubscribe is valid behavior
+                    // See: https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
                     if (!firstReceivedInitialSnapshot.compareAndSet(false, true)) {
                         firstUnexpectedEvent.set(true);  // TaskEvent received after first event
                     }
@@ -672,8 +672,8 @@ public abstract class AbstractCompat03ServerTest {
                     secondConsumerEvent.set(artifact);
                     secondConsumerLatch.countDown();
                 } else if (event instanceof TaskEvent) {
-                    // v1.0 sends current task snapshot as first event on resubscribe - only valid as first event
-                    // TODO: Check if this is valid as the first event in 0.3
+                    // v0.3 spec confirms task snapshot as first event on resubscribe is valid behavior
+                    // See: https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
                     if (!secondReceivedInitialSnapshot.compareAndSet(false, true)) {
                         secondUnexpectedEvent.set(true);  // TaskEvent received after first event
                     }
@@ -1018,8 +1018,8 @@ public abstract class AbstractCompat03ServerTest {
                 resubReceivedEvents.add(tue.getUpdateEvent());
                 resubEventLatch.countDown();
             } else if (event instanceof TaskEvent) {
-                // v1.0 sends current task snapshot as first event on resubscribe - only valid as first event
-                // TODO: Check if this is valid as the first event in 0.3
+                // v0.3 spec confirms task snapshot as first event on resubscribe is valid behavior
+                // See: https://a2a-protocol.org/v0.3.0/specification/#721-sendstreamingmessageresponse-object
                 if (!resubReceivedInitialSnapshot.compareAndSet(false, true)) {
                     System.err.println("testNonBlockingWithMultipleMessages: TaskEvent received after first event");
                     resubUnexpectedEvent.set(true);  // TaskEvent received after first event
