@@ -198,12 +198,14 @@ public class RestTransport implements ClientTransport {
     @Override
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
+        // When configId is not specified, use taskId as the default configId
+        String configId = request.pushNotificationConfigId() != null ? request.pushNotificationConfigId() : request.id();
         GetTaskPushNotificationConfigRequest.Builder builder = GetTaskPushNotificationConfigRequest.newBuilder();
-        builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId()));
+        builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
         try {
-            String url = agentUrl + String.format("/v1/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId());
+            String url = agentUrl + String.format("/v1/tasks/%1s/pushNotificationConfigs/%2s", request.id(), configId);
             A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
             if (payloadAndHeaders.getHeaders() != null) {
                 for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
