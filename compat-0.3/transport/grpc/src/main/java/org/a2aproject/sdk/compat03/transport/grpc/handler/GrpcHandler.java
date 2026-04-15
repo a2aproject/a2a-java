@@ -56,6 +56,10 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
 
     private Convert03To10RequestHandler requestHandler;
 
+    // Hook so testing can wait until streaming is subscribed.
+    // Without this we get intermittent failures
+    private static volatile Runnable streamingSubscribedRunnable;
+
     protected abstract AgentCard getAgentCard();
 
     protected abstract CallContextFactory getCallContextFactory();
@@ -260,6 +264,9 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
                     this.subscription = subscription;
+                    if (streamingSubscribedRunnable != null) {
+                        streamingSubscribedRunnable.run();
+                    }
                     subscription.request(1);
                 }
 
@@ -388,5 +395,9 @@ public abstract class GrpcHandler extends org.a2aproject.sdk.compat03.grpc.A2ASe
 
     private <V> void handleInternalError(StreamObserver<V> responseObserver, Throwable t) {
         handleError(responseObserver, new InternalError(t.getMessage()));
+    }
+
+    public static void setStreamingSubscribedRunnable(Runnable runnable) {
+        streamingSubscribedRunnable = runnable;
     }
 }
