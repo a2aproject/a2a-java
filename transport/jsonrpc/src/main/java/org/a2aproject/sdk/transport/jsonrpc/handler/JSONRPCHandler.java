@@ -374,23 +374,20 @@ public class JSONRPCHandler {
      * @see #onMessageSendStream(SendStreamingMessageRequest, ServerCallContext)
      */
     public Flow.Publisher<SendStreamingMessageResponse> onSubscribeToTask(
-            SubscribeToTaskRequest request, ServerCallContext context) {
+            SubscribeToTaskRequest request, ServerCallContext context) throws A2AError {
         if (!agentCard.capabilities().streaming()) {
             return ZeroPublisher.fromItems(
                     new SendStreamingMessageResponse(
                             request.getId(),
                             new InvalidRequestError("Streaming is not supported by the agent")));
         }
-
+        requestHandler.validateRequestedTask(request.getParams().id());
         try {
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onSubscribeToTask(request.getParams(), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled
             // via Subscriber.onError() rather than as part of the SendStreamingResponse payload
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
-        } catch (TaskNotFoundError | UnsupportedOperationError e) {
-            // Re-throw initial validation errors for routing layer to wrap in SSE format
-            throw e;
         } catch (A2AError e) {
             // Other A2AError types - wrap inline as part of the stream
             return ZeroPublisher.fromItems(new SendStreamingMessageResponse(request.getId(), e));
@@ -434,7 +431,7 @@ public class JSONRPCHandler {
                     requestHandler.onGetTaskPushNotificationConfig(request.getParams(), context);
             return new GetTaskPushNotificationConfigResponse(request.getId(), config);
         } catch (A2AError e) {
-            return new GetTaskPushNotificationConfigResponse(request.getId().toString(), e);
+            return new GetTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
             return new GetTaskPushNotificationConfigResponse(request.getId(), new InternalError(t.getMessage()));
         }
@@ -474,7 +471,7 @@ public class JSONRPCHandler {
         try {
             TaskPushNotificationConfig config =
                     requestHandler.onCreateTaskPushNotificationConfig(request.getParams(), context);
-            return new CreateTaskPushNotificationConfigResponse(request.getId().toString(), config);
+            return new CreateTaskPushNotificationConfigResponse(request.getId(), config);
         } catch (A2AError e) {
             return new CreateTaskPushNotificationConfigResponse(request.getId(), e);
         } catch (Throwable t) {
@@ -744,5 +741,9 @@ public class JSONRPCHandler {
                     });
                 }, executor);
             });
+    }
+
+    public void validateRequestedTask(String requestedTaskId) {
+        requestHandler.validateRequestedTask(requestedTaskId);
     }
 }

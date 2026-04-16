@@ -142,6 +142,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             Flow.Subscriber<String> subscriber = new Flow.Subscriber<String>() {
                 private Flow.@Nullable Subscription subscription;
                 private volatile boolean errorRaised = false;
+                private boolean isSseStream = false;
+                private boolean firstMeaningfulLineSeen = false;
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
@@ -151,10 +153,23 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
                 @Override
                 public void onNext(String item) {
-                    // SSE messages sometimes start with "data:". Strip that off
-                    if (item != null && item.startsWith("data:")) {
-                        item = item.substring(5).trim();
-                        if (!item.isEmpty()) {
+                    if (item != null && !item.isEmpty()) {
+                        if (!firstMeaningfulLineSeen) {
+                            firstMeaningfulLineSeen = true;
+                            isSseStream = item.startsWith("data:") || item.startsWith(":")
+                                    || item.startsWith("event:") || item.startsWith("id:")
+                                    || item.startsWith("retry:");
+                        }
+                        if (isSseStream) {
+                            if (item.startsWith("data:")) {
+                                String data = item.substring(5).trim();
+                                if (!data.isEmpty()) {
+                                    messageConsumer.accept(data);
+                                }
+                            }
+                            // Other SSE control lines (event:, id:, retry:, :) are ignored
+                        } else {
+                            // Plain error body: deliver so SSEEventListener can parse the typed error
                             messageConsumer.accept(item);
                         }
                     }
@@ -300,7 +315,6 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         @Override
         public A2AHttpResponse post() throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(false)
-                    .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
             HttpResponse<String> response =
                     httpClient.send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));

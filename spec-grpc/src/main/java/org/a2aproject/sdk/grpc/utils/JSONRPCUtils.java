@@ -1,12 +1,14 @@
 package org.a2aproject.sdk.grpc.utils;
 
 import org.a2aproject.sdk.spec.A2AErrorCodes;
+
 import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -66,6 +68,7 @@ import org.a2aproject.sdk.spec.TaskNotCancelableError;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
+import org.a2aproject.sdk.util.ErrorDetail;
 import org.a2aproject.sdk.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -284,11 +287,12 @@ public class JSONRPCUtils {
         JsonElement jelement = JsonParser.parseString(body);
         JsonObject jsonRpc = jelement.getAsJsonObject();
         String version = getAndValidateJsonrpc(jsonRpc);
-        Object id = getAndValidateId(jsonRpc);
-        JsonElement paramsNode = jsonRpc.get("result");
+        // Check for error before validating id: per JSON-RPC spec, error responses may have null id
         if (jsonRpc.has("error")) {
             throw processError(jsonRpc.getAsJsonObject("error"));
         }
+        Object id = getAndValidateId(jsonRpc);
+        JsonElement paramsNode = jsonRpc.get("result");
         StreamResponse.Builder builder = StreamResponse.newBuilder();
         parseRequestBody(paramsNode, builder, id);
         return builder.build();
@@ -392,8 +396,16 @@ public class JSONRPCUtils {
         String message = error.has("message") ? error.get("message").getAsString() : null;
         Integer code = error.has("code") ? error.get("code").getAsInt() : null;
         Map<String, Object> details = null;
-        if (error.has("data") && error.get("data").isJsonObject()) {
-            details =GSON.fromJson(error.get("data"), Map.class);
+        if (error.has("data")) {
+            JsonElement data = error.get("data");
+            if (data.isJsonObject()) {
+                details = GSON.fromJson(data, Map.class);
+            } else if (data.isJsonArray() && !data.getAsJsonArray().isEmpty()) {
+                JsonElement first = data.getAsJsonArray().get(0);
+                if (first.isJsonObject()) {
+                    details = GSON.fromJson(first.getAsJsonObject(), Map.class);
+                }
+            }
         }
         if (code != null) {
             A2AErrorCodes errorCode = A2AErrorCodes.fromCode(code);
@@ -605,10 +617,10 @@ public class JSONRPCUtils {
             output.beginObject();
             output.name("code").value(error.getCode());
             output.name("message").value(error.getMessage());
-            if (!error.getDetails().isEmpty()) {
-                output.name("data");
-                GSON.toJson(error.getDetails(), Map.class, output);
-            }
+            A2AErrorCodes a2aErrorCode = A2AErrorCodes.fromCode(error.getCode());
+            String reason = a2aErrorCode != null ? a2aErrorCode.name() : A2AErrorCodes.INTERNAL.name();
+            output.name("data");
+            GSON.toJson(List.of(ErrorDetail.of(reason, error.getDetails())), List.class, output);
             output.endObject();
             output.endObject();
             return result.toString();

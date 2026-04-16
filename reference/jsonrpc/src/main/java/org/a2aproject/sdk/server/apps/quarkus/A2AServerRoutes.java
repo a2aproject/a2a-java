@@ -438,7 +438,12 @@ public class A2AServerRoutes {
      * @return a Multi stream of JSON-RPC responses
      */
     private Multi<? extends A2AResponse<?>> processStreamingRequest(
-            A2ARequest<?> request, ServerCallContext context) {
+            A2ARequest<?> request, ServerCallContext context) throws A2AError {
+        if (request instanceof SendStreamingMessageRequest req) {
+            jsonRpcHandler.validateRequestedTask(req.getParams().message().taskId());
+        } else if (request instanceof SubscribeToTaskRequest req) {
+            jsonRpcHandler.validateRequestedTask(req.getParams().id());
+        }
         try {
             Flow.Publisher<? extends A2AResponse<?>> publisher;
             if (request instanceof SendStreamingMessageRequest req) {
@@ -450,8 +455,6 @@ public class A2AServerRoutes {
             }
             return Multi.createFrom().publisher(publisher);
         } catch (A2AError error) {
-            // For streaming endpoints, wrap immediate errors (like TaskNotFoundError,
-            // UnsupportedOperationError) in error response and send as first SSE event
             return Multi.createFrom().item(generateErrorResponse(request, error));
         }
     }
@@ -601,7 +604,7 @@ public class A2AServerRoutes {
      *   "error": {
      *     "code": -32602,
      *     "message": "Invalid params",
-     *     "details": { ... }
+     *     "data": [ ... ]
      *   }
      * }
      * }</pre>
