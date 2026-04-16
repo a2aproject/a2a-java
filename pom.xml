@@ -570,7 +570,6 @@
         <module>server-common</module>
         <module>spec</module>
         <module>spec-grpc</module>
-        <module>tck</module>
         <module>test-utils-docker</module>
         <module>tests/server-common</module>
         <module>transport/jsonrpc</module>
