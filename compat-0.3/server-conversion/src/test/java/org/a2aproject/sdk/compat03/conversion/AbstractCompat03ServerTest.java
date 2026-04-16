@@ -267,10 +267,7 @@ public abstract class AbstractCompat03ServerTest {
 
     @Test
     public void testSendMessageNewMessageSuccess() throws Exception {
-        assertTrue(getTaskFromTaskStore(MINIMAL_TASK.getId()) == null);
         Message message = new Message.Builder(MESSAGE)
-                .taskId(MINIMAL_TASK.getId())
-                .contextId(MINIMAL_TASK.getContextId())
                 .build();
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -388,20 +385,25 @@ public abstract class AbstractCompat03ServerTest {
     }
 
     @Test
-    public void testError() throws A2AClientException {
-        Message message = new Message.Builder(MESSAGE)
-                .taskId(SEND_MESSAGE_NOT_SUPPORTED.getId())
-                .contextId(SEND_MESSAGE_NOT_SUPPORTED.getContextId())
-                .build();
-
+    public void testError() throws Exception {
+        saveTaskInTaskStore(SEND_MESSAGE_NOT_SUPPORTED);
         try {
-            getNonStreamingClient().sendMessage(message);
+            Message message = new Message.Builder(MESSAGE)
+                    .taskId(SEND_MESSAGE_NOT_SUPPORTED.getId())
+                    .contextId(SEND_MESSAGE_NOT_SUPPORTED.getContextId())
+                    .build();
 
-            // For non-streaming clients, the error should still be thrown as an exception
-            fail("Expected A2AClientException for unsupported send message operation");
-        } catch (A2AClientException e) {
-            // Expected - the client should throw an exception for unsupported operations
-            assertInstanceOf(UnsupportedOperationError.class, e.getCause());
+            try {
+                getNonStreamingClient().sendMessage(message);
+
+                // For non-streaming clients, the error should still be thrown as an exception
+                fail("Expected A2AClientException for unsupported send message operation");
+            } catch (A2AClientException e) {
+                // Expected - the client should throw an exception for unsupported operations
+                assertInstanceOf(UnsupportedOperationError.class, e.getCause());
+            }
+        } finally {
+            deleteTaskInTaskStore(SEND_MESSAGE_NOT_SUPPORTED.getId());
         }
     }
 
@@ -987,11 +989,12 @@ public abstract class AbstractCompat03ServerTest {
     @Test
     @Timeout(value = 1, unit = TimeUnit.MINUTES)
     public void testNonBlockingWithMultipleMessages() throws Exception {
-        // 1. Send first non-blocking message to create task in WORKING state
+        AtomicReference<String> generatedTaskIdRef = new AtomicReference<>();
+        try {
+        // 1. Send first non-blocking message without taskId - server generates one
+        // Routing is by message content prefix "multi-event:first"
         Message message1 = new Message.Builder(MESSAGE)
-                .taskId("multi-event-test")
-                .contextId("test-context")
-                .parts(new TextPart("First request"))
+                .parts(new TextPart("multi-event:first"))
                 .build();
 
         AtomicReference<String> taskIdRef = new AtomicReference<>();
@@ -1014,7 +1017,7 @@ public abstract class AbstractCompat03ServerTest {
         assertTrue(firstTaskLatch.await(10, TimeUnit.SECONDS));
         String taskId = taskIdRef.get();
         assertNotNull(taskId);
-        assertEquals("multi-event-test", taskId);
+        generatedTaskIdRef.set(taskId);
 
         // 2. Resubscribe to task (queue should still be open)
         CountDownLatch resubEventLatch = new CountDownLatch(2);  // artifact-2 + completion
@@ -1059,9 +1062,8 @@ public abstract class AbstractCompat03ServerTest {
 
         // 3. Send second streaming message to same taskId
         Message message2 = new Message.Builder(MESSAGE)
-                .taskId("multi-event-test")  // Same taskId
-                .contextId("test-context")
-                .parts(new TextPart("Second request"))
+                .taskId(taskId)
+                .parts(new TextPart("multi-event:second"))
                 .build();
 
         CountDownLatch streamEventLatch = new CountDownLatch(2);  // artifact-2 + completion
@@ -1133,6 +1135,12 @@ public abstract class AbstractCompat03ServerTest {
         assertEquals("artifact-2", streamArtifact.getArtifact().artifactId());
         assertEquals("Second message artifact",
                 ((TextPart) streamArtifact.getArtifact().parts().get(0)).getText());
+        } finally {
+            String taskId = generatedTaskIdRef.get();
+            if (taskId != null) {
+                deleteTaskInTaskStore(taskId);
+            }
+        }
     }
 
     @Test
@@ -1306,6 +1314,8 @@ public abstract class AbstractCompat03ServerTest {
     }
 
     private void testSendStreamingMessageWithHttpClient(String mediaType) throws Exception {
+        saveTaskInTaskStore(MINIMAL_TASK);
+        try {
         Message message = new Message.Builder(MESSAGE)
                 .taskId(MINIMAL_TASK.getId())
                 .contextId(MINIMAL_TASK.getContextId())
@@ -1350,6 +1360,10 @@ public abstract class AbstractCompat03ServerTest {
         boolean dataRead = latch.await(20, TimeUnit.SECONDS);
         Assertions.assertTrue(dataRead);
         Assertions.assertNull(errorRef.get());
+
+        } finally {
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
+        }
     }
 
     public void testSendStreamingMessage(boolean createTask) throws Exception {
@@ -1357,10 +1371,11 @@ public abstract class AbstractCompat03ServerTest {
             saveTaskInTaskStore(MINIMAL_TASK);
         }
         try {
-            Message message = new Message.Builder(MESSAGE)
-                    .taskId(MINIMAL_TASK.getId())
-                    .contextId(MINIMAL_TASK.getContextId())
-                    .build();
+            Message.Builder messageBuilder = new Message.Builder(MESSAGE);
+            if (createTask) {
+                messageBuilder.taskId(MINIMAL_TASK.getId()).contextId(MINIMAL_TASK.getContextId());
+            }
+            Message message = messageBuilder.build();
 
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<Message> receivedMessage = new AtomicReference<>();
@@ -1906,30 +1921,29 @@ public abstract class AbstractCompat03ServerTest {
     @Test
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
     public void testMainQueueClosesForFinalizedTasks() throws Exception {
-        String taskId = "completed-task-integration";
-        String contextId = "completed-ctx";
-
-        // Send a message that will create and complete the task
+        // Send a message without taskId - server generates one
         Message message = new Message.Builder(MESSAGE)
-                .taskId(taskId)
-                .contextId(contextId)
                 .parts(new TextPart("complete task"))
                 .build();
 
         CountDownLatch completionLatch = new CountDownLatch(1);
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
+        AtomicReference<String> generatedTaskId = new AtomicReference<>();
 
         BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
             if (event instanceof TaskEvent te) {
+                generatedTaskId.compareAndSet(null, te.getTask().getId());
                 // Might get Task with final state
                 if (te.getTask().getStatus().state().isFinal()) {
                     completionLatch.countDown();
                 }
             } else if (event instanceof MessageEvent me) {
-                // Message is considered a final event
+                // Message is considered a final event - capture taskId from the message
+                generatedTaskId.compareAndSet(null, me.getMessage().getTaskId());
                 completionLatch.countDown();
             } else if (event instanceof TaskUpdateEvent tue &&
                     tue.getUpdateEvent() instanceof TaskStatusUpdateEvent status) {
+                generatedTaskId.compareAndSet(null, status.getTaskId());
                 if (status.isFinal()) {
                     completionLatch.countDown();
                 }
@@ -1950,6 +1964,9 @@ public abstract class AbstractCompat03ServerTest {
             assertTrue(completionLatch.await(15, TimeUnit.SECONDS),
                     "Should receive final event");
             assertNull(errorRef.get(), "Should not have errors during message send");
+
+            String taskId = generatedTaskId.get();
+            assertNotNull(taskId, "Should have captured server-generated taskId");
 
             // Give cleanup time to run after final event
             Thread.sleep(2000);
@@ -2004,13 +2021,16 @@ public abstract class AbstractCompat03ServerTest {
 
         } finally {
             // Task might not exist in store if created via message send
-            try {
-                Task task = getTaskFromTaskStore(taskId);
-                if (task != null) {
-                    deleteTaskInTaskStore(taskId);
+            String taskId = generatedTaskId.get();
+            if (taskId != null) {
+                try {
+                    Task task = getTaskFromTaskStore(taskId);
+                    if (task != null) {
+                        deleteTaskInTaskStore(taskId);
+                    }
+                } catch (Exception e) {
+                    // Ignore cleanup errors
                 }
-            } catch (Exception e) {
-                // Ignore cleanup errors - task might not have been persisted
             }
         }
     }
