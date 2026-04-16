@@ -190,6 +190,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageSendSuccess() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, internalExecutor, convert03To10Handler);
 
+        // Save existing task
+        taskStore.save(TaskMapper.INSTANCE.toV10(MINIMAL_TASK), false);
+
         // Configure agent to echo the message back
         agentExecutorExecute = (context, emitter) -> {
             // Note: context.getMessage() contains v1.0 Message (already converted by Convert03To10RequestHandler)
@@ -245,6 +248,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageSendError() {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, internalExecutor, convert03To10Handler);
 
+        // Save existing task
+        taskStore.save(TaskMapper.INSTANCE.toV10(MINIMAL_TASK), false);
+
         // Configure agent to throw error
         agentExecutorExecute = (context, emitter) -> {
             emitter.emitEvent(new org.a2aproject.sdk.spec.UnsupportedOperationError());
@@ -269,6 +275,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageSendStreamSuccess() throws InterruptedException {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, internalExecutor, convert03To10Handler);
+
+        // Save existing task
+        taskStore.save(TaskMapper.INSTANCE.toV10(MINIMAL_TASK), false);
 
         // Configure agent to emit the message back (v1.0 context contains v1.0 Message)
         agentExecutorExecute = (context, emitter) -> {
@@ -338,6 +347,9 @@ public class JSONRPCHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageSendStreamMultipleEventsSuccess() throws InterruptedException {
         JSONRPCHandler handler = new JSONRPCHandler(CARD, internalExecutor, convert03To10Handler);
+
+        // Save existing task
+        taskStore.save(TaskMapper.INSTANCE.toV10(MINIMAL_TASK), false);
 
         // Create v0.3 events for reference (we'll emit v1.0 equivalents)
         Task v03TaskEvent = new Task.Builder(MINIMAL_TASK)

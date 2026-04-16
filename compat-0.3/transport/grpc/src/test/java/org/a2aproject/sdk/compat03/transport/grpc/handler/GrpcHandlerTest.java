@@ -184,6 +184,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageNewMessageSuccess() throws Exception {
         TestGrpcHandler handler = new TestGrpcHandler(CARD, convert03To10Handler, internalExecutor);
 
+        // Save existing task
+        taskStore.save(TaskMapper.INSTANCE.toV10(MINIMAL_TASK), false);
+
         // Configure agent to echo the message back
         agentExecutorExecute = (context, emitter) -> {
             emitter.emitEvent(context.getMessage());
@@ -227,6 +230,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     public void testOnMessageError() throws Exception {
         TestGrpcHandler handler = new TestGrpcHandler(CARD, convert03To10Handler, internalExecutor);
 
+        // Save existing task
+        taskStore.save(TaskMapper.INSTANCE.toV10(MINIMAL_TASK), false);
+
         // Configure agent to throw error
         agentExecutorExecute = (context, emitter) -> {
             emitter.emitEvent(new org.a2aproject.sdk.spec.UnsupportedOperationError());
@@ -244,6 +250,9 @@ public class GrpcHandlerTest extends AbstractA2ARequestHandlerTest {
     @Test
     public void testOnMessageStreamNewMessageSuccess() throws Exception {
         TestGrpcHandler handler = new TestGrpcHandler(CARD, convert03To10Handler, internalExecutor);
+
+        // Save existing task
+        taskStore.save(TaskMapper.INSTANCE.toV10(MINIMAL_TASK), false);
 
         // Configure agent to emit the message back (v1.0 context contains v1.0 Message)
         agentExecutorExecute = (context, emitter) -> {

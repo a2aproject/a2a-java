@@ -23,33 +23,74 @@ public class AgentExecutorProducer {
             @Override
             public void execute(RequestContext context, AgentEmitter agentEmitter) throws A2AError {
                 String taskId = context.getTaskId();
+                String input = context.getMessage() != null ? extractTextFromMessage(context.getMessage()) : "";
 
-                // Special handling for multi-event test
-                if ("multi-event-test".equals(taskId)) {
-                    // First call: context.getTask() == null (new task)
-                    if (context.getTask() == null) {
-                        agentEmitter.startWork();
-                        // Return immediately - queue stays open because task is in WORKING state
-                        return;
-                    } else {
-                        // Second call: context.getTask() != null (existing task)
-                        agentEmitter.addArtifact(
-                            List.of(new TextPart("Second message artifact")),
-                            "artifact-2", "Second Artifact", null);
+                // Special handling for multi-event test (routed by message content)
+                if (input.startsWith("multi-event:first")) {
+                    agentEmitter.startWork();
+                    // Return immediately - queue stays open because task is in WORKING state
+                    return;
+                }
+                if (input.startsWith("multi-event:second")) {
+                    agentEmitter.addArtifact(
+                        List.of(new TextPart("Second message artifact")),
+                        "artifact-2", "Second Artifact", null);
+                    agentEmitter.complete();
+                    return;
+                }
+
+                // Special handling for input-required test (routed by message content)
+                if (input.startsWith("input-required:")) {
+                    String payload = input.substring("input-required:".length());
+                    // Second call: user provided the required input - complete the task
+                    if ("User input".equals(payload)) {
                         agentEmitter.complete();
                         return;
                     }
+                    // First call: emit INPUT_REQUIRED
+                    agentEmitter.requiresInput(agentEmitter.newAgentMessage(
+                            List.of(new TextPart("Please provide additional information")),
+                            context.getMessage().metadata()));
+                    return;
                 }
 
-                if (context.getTaskId().equals("task-not-supported-123")) {
+                // Special handling for auth-required test (routed by message content)
+                if (input.startsWith("auth-required:")) {
+                    agentEmitter.requiresAuth(agentEmitter.newAgentMessage(
+                            List.of(new TextPart("Please authenticate with OAuth provider")),
+                            context.getMessage().metadata()));
+
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new org.a2aproject.sdk.spec.InternalError("Auth simulation interrupted: " + e.getMessage());
+                    }
+
+                    agentEmitter.complete();
+                    return;
+                }
+
+                if ("task-not-supported-123".equals(taskId)) {
                     throw new UnsupportedOperationError();
                 }
-                
+
                 if (context.getMessage() != null) {
                     agentEmitter.sendMessage(context.getMessage());
                 } else {
                     agentEmitter.addTask(context.getTask());
                 }
+            }
+
+            private String extractTextFromMessage(org.a2aproject.sdk.spec.Message message) {
+                if (message.parts() == null || message.parts().isEmpty()) {
+                    return "";
+                }
+                return message.parts().stream()
+                        .filter(part -> part instanceof TextPart)
+                        .map(part -> ((TextPart) part).text())
+                        .findFirst()
+                        .orElse("");
             }
 
             @Override
