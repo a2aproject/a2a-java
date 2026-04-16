@@ -4,6 +4,11 @@ import io.a2a.util.Assert;
 
 /**
  * Defines the configuration for setting up push notifications for task updates.
+ *
+ * @param url the URL of the push notification endpoint
+ * @param token optional authentication token for the push notification endpoint
+ * @param authentication optional authentication details for the push notification endpoint
+ * @param id optional identifier for this push notification configuration
  */
 public record PushNotificationConfig(String url, String token, PushNotificationAuthenticationInfo authentication, String id) {
 

@@ -6,6 +6,8 @@ import io.a2a.util.Assert;
 
 /**
  * Represents a JSONRPC response.
+ *
+ * @param <T> the type of the response result
  */
 public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permits SendStreamingMessageResponse,
         GetTaskResponse, CancelTaskResponse, SetTaskPushNotificationConfigResponse, GetTaskPushNotificationConfigResponse,

@@ -1,5 +1,6 @@
 package io.a2a.spec;
 
+import static io.a2a.spec.JSONRPCMessage.JSONRPC_VERSION;
 import static io.a2a.util.Utils.defaultIfNull;
 
 import io.a2a.util.Assert;
@@ -31,6 +32,19 @@ public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<M
 
     public SendStreamingMessageRequest(Object id,  MessageSendParams params) {
         this(null, id, METHOD, params);
+    }
+
+    public void check() {
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
+            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
+        }
+        Assert.checkNotNullParam("method", method);
+        if (!method.equals(METHOD)) {
+            throw new IllegalArgumentException("Invalid SendStreamingMessageRequest method");
+        }
+        Assert.checkNotNullParam("params", params);
+        Assert.isNullOrStringOrInteger(id);
+        params.check();
     }
 
     public static class Builder {

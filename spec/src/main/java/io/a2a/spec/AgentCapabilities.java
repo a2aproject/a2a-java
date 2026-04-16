@@ -4,6 +4,11 @@ import java.util.List;
 
 /**
  * Defines optional capabilities supported by an agent.
+ *
+ * @param streaming whether the agent supports streaming responses
+ * @param pushNotifications whether the agent supports push notifications
+ * @param stateTransitionHistory whether the agent supports state transition history
+ * @param extensions optional list of protocol extensions supported by the agent
  */
 public record AgentCapabilities(boolean streaming, boolean pushNotifications, boolean stateTransitionHistory,
                                 List<AgentExtension> extensions) {
