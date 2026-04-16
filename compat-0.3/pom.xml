@@ -137,7 +137,6 @@
         <module>transport/rest</module>
 
         <!-- Reference server modules -->
-        <module>reference/common</module>
         <module>reference/jsonrpc</module>
         <module>reference/grpc</module>
         <module>reference/rest</module>

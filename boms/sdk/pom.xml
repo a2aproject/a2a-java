@@ -174,11 +174,6 @@
             <!-- Compat 0.3 Reference modules -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>a2a-java-sdk-compat-0.3-reference-common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
                 <artifactId>a2a-java-sdk-compat-0.3-reference-jsonrpc</artifactId>
                 <version>${project.version}</version>
             </dependency>

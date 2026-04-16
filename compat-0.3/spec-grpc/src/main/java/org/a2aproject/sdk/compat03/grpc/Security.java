@@ -32,7 +32,7 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_Security_descriptor;
+    return A2A.internal_static_a2a_v1_Security_descriptor;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -50,7 +50,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_Security_fieldAccessorTable
+    return A2A.internal_static_a2a_v1_Security_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             org.a2aproject.sdk.compat03.grpc.Security.class, org.a2aproject.sdk.compat03.grpc.Security.Builder.class);
   }
@@ -61,7 +61,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String, org.a2aproject.sdk.compat03.grpc.StringList> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, org.a2aproject.sdk.compat03.grpc.StringList>newDefaultInstance(
-                org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_Security_SchemesEntry_descriptor, 
+                A2A.internal_static_a2a_v1_Security_SchemesEntry_descriptor,
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.MESSAGE,
@@ -311,7 +311,7 @@ org.a2aproject.sdk.compat03.grpc.StringList defaultValue) {
       org.a2aproject.sdk.compat03.grpc.SecurityOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_Security_descriptor;
+      return A2A.internal_static_a2a_v1_Security_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -339,7 +339,7 @@ org.a2aproject.sdk.compat03.grpc.StringList defaultValue) {
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_Security_fieldAccessorTable
+      return A2A.internal_static_a2a_v1_Security_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.a2aproject.sdk.compat03.grpc.Security.class, org.a2aproject.sdk.compat03.grpc.Security.Builder.class);
     }
@@ -365,7 +365,7 @@ org.a2aproject.sdk.compat03.grpc.StringList defaultValue) {
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_Security_descriptor;
+      return A2A.internal_static_a2a_v1_Security_descriptor;
     }
 
     @java.lang.Override

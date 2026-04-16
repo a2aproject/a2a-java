@@ -8,7 +8,7 @@
         <groupId>org.a2aproject.sdk</groupId>
         <artifactId>a2a-java-sdk-compat-0.3-parent</artifactId>
         <version>1.0.0.Beta1-SNAPSHOT</version>
-        <relativePath>../..</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>a2a-java-sdk-compat-0.3-reference-jsonrpc</artifactId>
 
@@ -21,10 +21,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-compat-0.3-spec</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-compat-0.3-reference-common</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

@@ -39,13 +39,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_descriptor;
+    return A2A.internal_static_a2a_v1_AuthenticationInfo_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_fieldAccessorTable
+    return A2A.internal_static_a2a_v1_AuthenticationInfo_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             org.a2aproject.sdk.compat03.grpc.AuthenticationInfo.class, org.a2aproject.sdk.compat03.grpc.AuthenticationInfo.Builder.class);
   }
@@ -336,13 +336,13 @@ private static final long serialVersionUID = 0L;
       org.a2aproject.sdk.compat03.grpc.AuthenticationInfoOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_descriptor;
+      return A2A.internal_static_a2a_v1_AuthenticationInfo_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_fieldAccessorTable
+      return A2A.internal_static_a2a_v1_AuthenticationInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.a2aproject.sdk.compat03.grpc.AuthenticationInfo.class, org.a2aproject.sdk.compat03.grpc.AuthenticationInfo.Builder.class);
     }
@@ -370,7 +370,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_AuthenticationInfo_descriptor;
+      return A2A.internal_static_a2a_v1_AuthenticationInfo_descriptor;
     }
 
     @java.lang.Override

@@ -33,13 +33,13 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_descriptor;
+    return A2A.internal_static_a2a_v1_CancelTaskRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_fieldAccessorTable
+    return A2A.internal_static_a2a_v1_CancelTaskRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             org.a2aproject.sdk.compat03.grpc.CancelTaskRequest.class, org.a2aproject.sdk.compat03.grpc.CancelTaskRequest.Builder.class);
   }
@@ -256,13 +256,13 @@ private static final long serialVersionUID = 0L;
       org.a2aproject.sdk.compat03.grpc.CancelTaskRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_descriptor;
+      return A2A.internal_static_a2a_v1_CancelTaskRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_fieldAccessorTable
+      return A2A.internal_static_a2a_v1_CancelTaskRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.a2aproject.sdk.compat03.grpc.CancelTaskRequest.class, org.a2aproject.sdk.compat03.grpc.CancelTaskRequest.Builder.class);
     }
@@ -288,7 +288,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_CancelTaskRequest_descriptor;
+      return A2A.internal_static_a2a_v1_CancelTaskRequest_descriptor;
     }
 
     @java.lang.Override

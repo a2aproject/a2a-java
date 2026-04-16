@@ -14,11 +14,11 @@ import org.mapstruct.ReportingPolicy;
  * Key Configuration:
  * <ul>
  *   <li><b>unmappedTargetPolicy = ERROR:</b> Compile-time validation ensures no fields are missed</li>
- *   <li><b>componentModel = "default":</b> Uses singleton pattern via {@link A03Mappers} factory</li>
+ *   <li><b>componentModel = "default":</b> Uses singleton pattern via {@link A2AMappers_v0_3} factory</li>
  *   <li><b>nullValuePropertyMappingStrategy = IGNORE:</b> Skip null source properties during mapping</li>
  * </ul>
  *
- * @see A03Mappers
+ * @see A2AMappers_v0_3
  */
 @MapperConfig(
     unmappedTargetPolicy = ReportingPolicy.ERROR,

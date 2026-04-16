@@ -240,7 +240,7 @@ public enum TaskState
   }
   public static com.google.protobuf.Descriptors.EnumDescriptor
       getDescriptor() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.getDescriptor().getEnumTypes().get(0);
+    return A2A.getDescriptor().getEnumTypes().get(0);
   }
 
   private static final TaskState[] VALUES = values();

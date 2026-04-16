@@ -34,7 +34,7 @@ private static final long serialVersionUID = 0L;
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
+    return A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -52,7 +52,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
+    return A2A.internal_static_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.class, org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.Builder.class);
   }
@@ -161,7 +161,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String, java.lang.String> defaultEntry =
             com.google.protobuf.MapEntry
             .<java.lang.String, java.lang.String>newDefaultInstance(
-                org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_ScopesEntry_descriptor, 
+                A2A.internal_static_a2a_v1_PasswordOAuthFlow_ScopesEntry_descriptor,
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.STRING,
@@ -451,7 +451,7 @@ java.lang.String defaultValue) {
       org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlowOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
+      return A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -479,7 +479,7 @@ java.lang.String defaultValue) {
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
+      return A2A.internal_static_a2a_v1_PasswordOAuthFlow_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.class, org.a2aproject.sdk.compat03.grpc.PasswordOAuthFlow.Builder.class);
     }
@@ -507,7 +507,7 @@ java.lang.String defaultValue) {
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
+      return A2A.internal_static_a2a_v1_PasswordOAuthFlow_descriptor;
     }
 
     @java.lang.Override

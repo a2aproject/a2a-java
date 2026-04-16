@@ -122,7 +122,7 @@ public enum Role
   }
   public static com.google.protobuf.Descriptors.EnumDescriptor
       getDescriptor() {
-    return org.a2aproject.sdk.compat03.grpc.A2A.getDescriptor().getEnumTypes().get(1);
+    return A2A.getDescriptor().getEnumTypes().get(1);
   }
 
   private static final Role[] VALUES = values();

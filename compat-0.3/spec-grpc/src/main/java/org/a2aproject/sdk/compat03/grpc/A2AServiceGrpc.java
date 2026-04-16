@@ -1265,7 +1265,7 @@ public final class A2AServiceGrpc {
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return org.a2aproject.sdk.compat03.grpc.A2A.getDescriptor();
+      return A2A.getDescriptor();
     }
 
     @java.lang.Override
