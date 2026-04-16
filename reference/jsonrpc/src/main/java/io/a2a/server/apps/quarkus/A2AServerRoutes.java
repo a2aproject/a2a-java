@@ -104,6 +104,9 @@ public class A2AServerRoutes {
             com.google.gson.JsonElement jsonrpcElement = node.get("jsonrpc");
             if (jsonrpcElement == null || !jsonrpcElement.isJsonPrimitive()
                     || !JSONRPCMessage.JSONRPC_VERSION.equals(jsonrpcElement.getAsString())) {
+                if(node.has("id")) {
+                   throw new InvalidRequestError(null, "Invalid JSON-RPC request: missing or invalid 'jsonrpc' field", Map.of("id", node.get("id").getAsString()));
+                }
                 throw new InvalidRequestError("Invalid JSON-RPC request: missing or invalid 'jsonrpc' field");
             }
 

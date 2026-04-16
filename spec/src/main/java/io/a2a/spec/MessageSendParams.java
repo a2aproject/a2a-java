@@ -1,5 +1,6 @@
 package io.a2a.spec;
 
+
 import java.util.Map;
 
 import io.a2a.util.Assert;
@@ -17,6 +18,11 @@ public record MessageSendParams(Message message, MessageSendConfiguration config
 
     public MessageSendParams {
         Assert.checkNotNullParam("message", message);
+    }
+
+    public void check() {
+        Assert.checkNotNullParam("message", message);
+        message.check();
     }
 
     public static class Builder {

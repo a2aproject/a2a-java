@@ -3,9 +3,12 @@ package io.a2a.spec;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.a2a.json.JsonProcessingException;
 import io.a2a.json.JsonUtil;
@@ -42,6 +45,37 @@ public class JSONRPCErrorSerializationTest {
             assertEquals("error", error.getMessage());
             assertEquals("anything", error.getData().toString());
         }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void deleteTaskPushNotificationConfigSuccessResponseSerializesResultAsNull() throws JsonProcessingException {
+        DeleteTaskPushNotificationConfigResponse response =
+                new DeleteTaskPushNotificationConfigResponse("req-123");
+
+        String json = JsonUtil.toJson(response);
+        Map<String, Object> map = JsonUtil.fromJson(json, Map.class);
+
+        assertEquals("2.0", map.get("jsonrpc"));
+        assertEquals("req-123", map.get("id"));
+        assertTrue(map.containsKey("result"), "result field must be present in success response");
+        assertEquals(null, map.get("result"), "result must be null for delete response");
+        assertFalse(map.containsKey("error"), "error field must not be present in success response");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void deleteTaskPushNotificationConfigErrorResponseSerializesErrorWithoutResult() throws JsonProcessingException {
+        DeleteTaskPushNotificationConfigResponse response =
+                new DeleteTaskPushNotificationConfigResponse("req-456", new TaskNotFoundError());
+
+        String json = JsonUtil.toJson(response);
+        Map<String, Object> map = JsonUtil.fromJson(json, Map.class);
+
+        assertEquals("2.0", map.get("jsonrpc"));
+        assertEquals("req-456", map.get("id"));
+        assertTrue(map.containsKey("error"), "error field must be present in error response");
+        assertFalse(map.containsKey("result"), "result field must not be present in error response");
     }
 
 
