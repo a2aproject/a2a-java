@@ -53,6 +53,19 @@ public final class Message_v0_3 implements EventKind_v0_3, StreamingEventKind_v0
         this.kind = kind;
     }
 
+    public void check() {
+        Assert.checkNotNullParam("kind", kind);
+        Assert.checkNotNullParam("parts", parts);
+        if (parts.isEmpty()) {
+            throw new IllegalArgumentException("Parts cannot be empty");
+        }
+        Assert.checkNotNullParam("role", role);
+        if (!kind.equals(MESSAGE)) {
+            throw new IllegalArgumentException("Invalid Message");
+        }
+        Assert.checkNotNullParam("messageId", messageId);
+    }
+
     public Role getRole() {
         return role;
     }

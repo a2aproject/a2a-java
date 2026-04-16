@@ -29,6 +29,19 @@ public final class SendStreamingMessageRequest_v0_3 extends StreamingJSONRPCRequ
         this.params = params;
     }
 
+    public void check() {
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
+            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
+        }
+        Assert.checkNotNullParam("method", method);
+        if (!method.equals(METHOD)) {
+            throw new IllegalArgumentException("Invalid SendStreamingMessageRequest method");
+        }
+        Assert.checkNotNullParam("params", params);
+        Assert.isNullOrStringOrInteger(id);
+        params.check();
+    }
+
     public SendStreamingMessageRequest_v0_3(Object id, MessageSendParams_v0_3 params) {
         this(null, id, METHOD, params);
     }

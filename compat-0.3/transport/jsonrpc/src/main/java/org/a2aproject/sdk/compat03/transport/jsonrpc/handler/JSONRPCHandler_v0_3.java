@@ -28,6 +28,7 @@ import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigResponse_v0
 import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
+import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
 import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
@@ -79,10 +80,13 @@ public class JSONRPCHandler_v0_3 {
 
     public SendMessageResponse_v0_3 onMessageSend(SendMessageRequest_v0_3 request, ServerCallContext context) {
         try {
+            request.check();
             EventKind_v0_3 result = requestHandler.onMessageSend(request.getParams(), context);
             return new SendMessageResponse_v0_3(request.getId(), result);
         } catch (A2AError e) {
             return new SendMessageResponse_v0_3(request.getId(), ErrorConverter_v0_3.convertA2AError(e));
+        } catch (IllegalArgumentException t) {
+            return new SendMessageResponse_v0_3(request.getId(), new InvalidParamsError_v0_3(t.getMessage()));
         } catch (Throwable t) {
             return new SendMessageResponse_v0_3(request.getId(), new InternalError_v0_3(t.getMessage()));
         }
@@ -96,8 +100,8 @@ public class JSONRPCHandler_v0_3 {
                             request.getId(),
                             new InvalidRequestError_v0_3("Streaming is not supported by the agent")));
         }
-
         try {
+            request.check();
             Flow.Publisher<StreamingEventKind_v0_3> publisher = requestHandler.onMessageSendStream(request.getParams(), context);
             return convertToSendStreamingMessageResponse(request.getId(), publisher);
         } catch (A2AError e) {

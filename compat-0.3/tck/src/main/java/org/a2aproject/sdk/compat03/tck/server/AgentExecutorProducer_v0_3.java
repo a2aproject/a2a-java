@@ -33,7 +33,7 @@ public class AgentExecutorProducer_v0_3 {
 
             // Sleep to allow task state persistence before TCK resubscribe test
             Message message = context.getMessage();
-            if (message != null && message.messageId().startsWith("test-resubscribe-message-id")) {
+            if (message != null && message.messageId() != null && message.messageId().startsWith("test-resubscribe-message-id")) {
                 int timeoutMs = Integer.parseInt(System.getenv().getOrDefault("RESUBSCRIBE_TIMEOUT_MS", "3000"));
                 System.out.println("====> task id starts with test-resubscribe-message-id, sleeping for " + timeoutMs + " ms");
                 try {

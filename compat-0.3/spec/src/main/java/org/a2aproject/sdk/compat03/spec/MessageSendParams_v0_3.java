@@ -15,6 +15,11 @@ public record MessageSendParams_v0_3(Message_v0_3 message, MessageSendConfigurat
         Assert.checkNotNullParam("message", message);
     }
 
+    public void check() {
+        Assert.checkNotNullParam("message", message);
+        message.check();
+    }
+
     public static class Builder {
         Message_v0_3 message;
         MessageSendConfiguration_v0_3 configuration;

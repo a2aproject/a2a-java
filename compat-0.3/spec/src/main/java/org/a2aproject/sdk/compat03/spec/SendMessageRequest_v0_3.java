@@ -44,6 +44,22 @@ public final class SendMessageRequest_v0_3 extends NonStreamingJSONRPCRequest_v0
         this.params = params;
     }
 
+    public void check() {
+        if (jsonrpc == null || jsonrpc.isEmpty()) {
+            throw new IllegalArgumentException("JSON-RPC protocol version cannot be null or empty");
+        }
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
+            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
+        }
+        Assert.checkNotNullParam("method", method);
+        if (!method.equals(METHOD)) {
+            throw new IllegalArgumentException("Invalid SendMessageRequest method");
+        }
+        Assert.checkNotNullParam("params", params);
+        Assert.isNullOrStringOrInteger(id);
+        params.check();
+    }
+
     public SendMessageRequest_v0_3(Object id, MessageSendParams_v0_3 params) {
         this(JSONRPC_VERSION, id, METHOD, params);
     }
