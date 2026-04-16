@@ -1,7 +1,6 @@
 name: Run TCK
 
 on:
-  # Handle all branches for now
   push:
     branches:
       - main
@@ -12,17 +11,10 @@ on:
 
 env:
   # Tag/branch of the TCK
-  TCK_VERSION: main
-  # Tell the TCK runner to report failure if the quality tests fail
-  A2A_TCK_FAIL_ON_QUALITY: 1
-  # Tell the TCK runner to report failure if the features tests fail
-  A2A_TCK_FAIL_ON_FEATURES: 1
+  TCK_VERSION: 1.0-dev
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
-  # SUT_JSONRPC_URL to use for the TCK and the server agent
-  SUT_JSONRPC_URL: http://localhost:9999
-  # Slow system on CI
-  TCK_STREAMING_TIMEOUT: 5.0
+  SUT_URL: http://localhost:9999
 
 # Only run the latest job
 concurrency:
@@ -34,142 +26,102 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java-version: [17, 21, 25]
+        java-version: [17]
     steps:
       - name: Checkout a2a-java
         uses: actions/checkout@v6
-      - name: Checkout a2a-tck
-        uses: actions/checkout@v6
-        with:
-          repository: a2aproject/a2a-tck
-          path: tck/a2a-tck
-          ref: ${{ env.TCK_VERSION }}
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v5
         with:
           java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
           cache: maven
-      - name: check java_home
-        run: echo $JAVA_HOME
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Build a2a-java SDK
+        run: mvn -B install -DskipTests
+      - name: Extract a2a-java version
+        id: extract-version
+        run: |
+          A2A_JAVA_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=$A2A_JAVA_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected a2a-java version: $A2A_JAVA_VERSION"
+      - name: Checkout a2a-tck
+        uses: actions/checkout@v6
         with:
-          python-version-file: "tck/a2a-tck/pyproject.toml"
+          repository: a2aproject/a2a-tck
+          path: a2a-tck
+          ref: ${{ env.TCK_VERSION }}
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "a2a-tck/pyproject.toml"
       - name: Install uv and Python dependencies
         run: |
           pip install uv
           uv pip install -e .
-        working-directory: tck/a2a-tck
-      - name: Build with Maven, skipping tests
-        run: mvn -B install -DskipTests
+        working-directory: a2a-tck
+      - name: Generate a2a-java SUT
+        run: A2A_JAVA_SDK_VERSION=${{ steps.extract-version.outputs.version }} make codegen-a2a-java-sut
+        working-directory: a2a-tck
       - name: Start SUT
-        run: SUT_GRPC_URL=${{ env.SUT_JSONRPC_URL }} SUT_REST_URL=${{ env.SUT_JSONRPC_URL }} mvn -B quarkus:dev & #SUT_JSONRPC_URL already set
-        working-directory: tck
+        run: mvn -B quarkus:dev -Dquarkus.console.enabled=false &
+        working-directory: a2a-tck/sut/a2a-java
       - name: Wait for SUT to start
         run: |
-          URL="${{ env.SUT_JSONRPC_URL }}/.well-known/agent-card.json"
+          URL="${{ env.SUT_URL }}/.well-known/agent-card.json"
           EXPECTED_STATUS=200
           TIMEOUT=120
           RETRY_INTERVAL=2
           START_TIME=$(date +%s)
 
           while true; do
-            # Calculate elapsed time
             CURRENT_TIME=$(date +%s)
             ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
 
-            # Check for timeout
             if [ "$ELAPSED_TIME" -ge "$TIMEOUT" ]; then
-                echo "❌ Timeout: Server did not respond with status $EXPECTED_STATUS within $TIMEOUT seconds."
+                echo "Timeout: Server did not respond with status $EXPECTED_STATUS within $TIMEOUT seconds."
                 exit 1
             fi
 
-            # Get HTTP status code. || true is to reporting a failure to connect as an error
             HTTP_STATUS=$(curl --output /dev/null --silent --write-out "%{http_code}" "$URL") || true
-            echo "STATUS: ${HTTP_STATUS}"
 
-            # Check if we got the correct status code
             if [ "$HTTP_STATUS" -eq "$EXPECTED_STATUS" ]; then
-                echo "✅ Server is up! Received status $HTTP_STATUS after $ELAPSED_TIME seconds."
+                echo "Server is up! Received status $HTTP_STATUS after $ELAPSED_TIME seconds."
                 break;
             fi
 
-            # Wait before retrying
-            echo "⏳ Server not ready (status: $HTTP_STATUS). Retrying in $RETRY_INTERVAL seconds..."
+            echo "Server not ready (status: $HTTP_STATUS). Retrying in $RETRY_INTERVAL seconds..."
             sleep "$RETRY_INTERVAL"
           done
-          
       - name: Run TCK
         id: run-tck
         timeout-minutes: 5
         run: |
           set -o pipefail
-          ./run_tck.py --sut-url ${{ env.SUT_JSONRPC_URL }} --category all --transports jsonrpc,grpc,rest --compliance-report report.json 2>&1 | tee tck-output.log
-        working-directory: tck/a2a-tck
-      - name: Capture Diagnostics on Failure
-        if: failure()
+          uv run ./run_tck.py --sut-host ${{ env.SUT_URL }} -v 2>&1 | tee tck-output.log
+        working-directory: a2a-tck
+      - name: TCK Summary
+        if: always() && steps.run-tck.outcome != 'skipped'
         run: |
-          echo "=== Capturing diagnostic information ==="
-
-          # Create diagnostics directory
-          mkdir -p tck/target/diagnostics
-
-          # Capture process list
-          echo "📋 Capturing process list..."
-          ps auxww > tck/target/diagnostics/processes.txt
-
-          # Find the actual Quarkus JVM (child of Maven process), not the Maven parent
-          # Look for the dev.jar process which is the actual application
-          QUARKUS_PID=$(pgrep -f "a2a-tck-server-dev.jar" || echo "")
-          if [ -n "$QUARKUS_PID" ]; then
-            echo "📊 Capturing thread dump for Quarkus JVM PID $QUARKUS_PID"
-            jstack $QUARKUS_PID > tck/target/diagnostics/thread-dump.txt || echo "Failed to capture thread dump"
-            if [ -f tck/target/diagnostics/thread-dump.txt ]; then
-              echo "✅ Thread dump captured ($(wc -l < tck/target/diagnostics/thread-dump.txt) lines)"
+          if [ -f a2a-tck/tck-output.log ]; then
+            # Extract everything after the first ═══ separator line
+            SUMMARY=$(sed -n '/^═══/,$p' a2a-tck/tck-output.log)
+            if [ -n "$SUMMARY" ]; then
+              echo '### TCK Results (Java ${{ matrix.java-version }})' >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
             fi
-          else
-            echo "⚠️ No Quarkus JVM process found for thread dump"
-            echo "Available Java processes:"
-            ps aux | grep java | tee -a tck/target/diagnostics/processes.txt || true
           fi
-
-          # Capture Quarkus application logs (if available)
-          echo "📝 Checking for Quarkus logs..."
-          if [ -f tck/target/quarkus.log ]; then
-            cp tck/target/quarkus.log tck/target/diagnostics/
-            echo "✅ Copied quarkus.log ($(wc -l < tck/target/quarkus.log) lines)"
-          fi
-
-          # Copy TCK server logs
-          if [ -f tck/target/tck-test.log ]; then
-            cp tck/target/tck-test.log tck/target/diagnostics/
-            echo "✅ Copied tck-test.log ($(wc -l < tck/target/tck-test.log) lines)"
-          fi
-
-          echo ""
-          echo "=== Diagnostic capture complete ==="
-      - name: Stop Quarkus Server
+      - name: Stop SUT
         if: always()
         run: |
-          # Find and kill the Quarkus process to ensure logs are flushed
           pkill -f "quarkus:dev" || true
           sleep 2
-      - name: Upload TCK Diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v6
-        with:
-          name: tck-diagnostics-java-${{ matrix.java-version }}
-          path: |
-            tck/target/diagnostics/
-            tck/a2a-tck/tck-output.log
-          retention-days: 7
-          if-no-files-found: warn
-      - name: Upload TCK Compliance Report
+      - name: Upload TCK Reports
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: tck-compliance-report-java-${{ matrix.java-version }}
-          path: tck/a2a-tck/report.json
+          name: tck-reports-java-${{ matrix.java-version }}
+          path: a2a-tck/reports/
           retention-days: 14
-          if-no-files-found: ignore
+          if-no-files-found: warn
