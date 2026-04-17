@@ -1,0 +1,57 @@
+package org.a2aproject.sdk.compat03.spec;
+
+import static org.a2aproject.sdk.compat03.util.Utils.defaultIfNull;
+
+import org.a2aproject.sdk.util.Assert;
+
+/**
+ * Represents a JSONRPC response.
+ */
+public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permits SendStreamingMessageResponse,
+        GetTaskResponse, CancelTaskResponse, SetTaskPushNotificationConfigResponse, GetTaskPushNotificationConfigResponse,
+        SendMessageResponse, DeleteTaskPushNotificationConfigResponse, ListTaskPushNotificationConfigResponse, JSONRPCErrorResponse,
+        GetAuthenticatedExtendedCardResponse {
+
+    protected String jsonrpc;
+    protected Object id;
+    protected T result;
+    protected JSONRPCError error;
+
+    public JSONRPCResponse() {
+    }
+
+    public JSONRPCResponse(String jsonrpc, Object id, T result, JSONRPCError error, Class<T> resultType) {
+        if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
+            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
+        }
+        if (error != null && result != null) {
+            throw new IllegalArgumentException("Invalid JSON-RPC error response");
+        }
+        if (error == null && result == null && ! Void.class.equals(resultType)) {
+            throw new IllegalArgumentException("Invalid JSON-RPC success response");
+        }
+        Assert.isNullOrStringOrInteger(id);
+        this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
+        this.id = id;
+        this.result = result;
+        this.error = error;
+    }
+
+    @Override
+    public String getJsonrpc() {
+        return this.jsonrpc;
+    }
+
+    @Override
+    public Object getId() {
+        return this.id;
+    }
+
+    public T getResult() {
+        return this.result;
+    }
+
+    public JSONRPCError getError() {
+        return this.error;
+    }
+}

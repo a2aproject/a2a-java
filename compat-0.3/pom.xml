@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.a2aproject.sdk</groupId>
+        <artifactId>a2a-java-sdk-parent</artifactId>
+        <version>1.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>a2a-java-sdk-compat-0.3-parent</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Java SDK A2A Compat 0.3 Parent</name>
+    <description>A2A Protocol v0.3 backward compatibility layer for v1.0 SDK</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Compat 0.3 modules -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-spec</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-spec-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-http-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-transport-spi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-transport-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-client-transport-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-transport-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-transport-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-transport-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-reference-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-reference-jsonrpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-reference-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-reference-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-compat-0.3-tck-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>a2a-java-sdk-compat-0.3-server-conversion</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <modules>
+        <!-- Spec modules -->
+        <module>spec</module>
+        <module>spec-grpc</module>
+
+        <!-- HTTP Client -->
+        <module>http-client</module>
+
+        <!-- Server conversion (0.3 to 1.0 translation layer) -->
+        <module>server-conversion</module>
+
+        <!-- Client modules -->
+        <module>client/base</module>
+        <module>client/transport/spi</module>
+        <module>client/transport/jsonrpc</module>
+        <module>client/transport/grpc</module>
+        <module>client/transport/rest</module>
+
+        <!-- Server transport modules -->
+        <module>transport/jsonrpc</module>
+        <module>transport/grpc</module>
+        <module>transport/rest</module>
+
+        <!-- Reference server modules -->
+        <module>reference/common</module>
+        <module>reference/jsonrpc</module>
+        <module>reference/grpc</module>
+        <module>reference/rest</module>
+
+        <!-- TCK -->
+        <module>tck</module>
+    </modules>
+
+</project>
