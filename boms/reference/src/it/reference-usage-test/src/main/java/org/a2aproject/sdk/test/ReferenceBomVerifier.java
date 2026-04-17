@@ -16,7 +16,8 @@ public class ReferenceBomVerifier extends DynamicBomVerifier {
         "examples/",        // Example applications
         "tck/",             // TCK test suite
         "tests/",           // Integration tests
-        "test-utils-docker/" // Test utilities for Docker-based tests
+        "test-utils-docker/", // Test utilities for Docker-based tests
+        "compat-0.3/"       // Compat 0.3 modules (part of SDK BOM, not reference BOM)
         // Note: reference/ is NOT in this list - we want to verify those classes load
     );
 

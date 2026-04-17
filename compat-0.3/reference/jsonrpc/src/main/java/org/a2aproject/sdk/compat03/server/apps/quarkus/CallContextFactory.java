@@ -1,0 +1,8 @@
+package org.a2aproject.sdk.compat03.server.apps.quarkus;
+
+import org.a2aproject.sdk.server.ServerCallContext;
+import io.vertx.ext.web.RoutingContext;
+
+public interface CallContextFactory {
+    ServerCallContext build(RoutingContext rc);
+}
