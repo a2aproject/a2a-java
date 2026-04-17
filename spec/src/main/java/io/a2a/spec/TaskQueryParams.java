@@ -1,8 +1,5 @@
 package io.a2a.spec;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
@@ -14,9 +11,6 @@ import org.jspecify.annotations.Nullable;
  * @param historyLength the maximum number of items of history for the task to include in the response
  * @param metadata additional properties
  */
-
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record TaskQueryParams(String id, int historyLength, @Nullable Map<String, Object> metadata) {
 
     public TaskQueryParams {

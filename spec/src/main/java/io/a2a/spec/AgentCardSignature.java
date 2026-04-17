@@ -1,20 +1,19 @@
 package io.a2a.spec;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.a2a.util.Assert;
 
 /**
  * Represents a JWS signature of an AgentCard.
  * This follows the JSON format of an RFC 7515 JSON Web Signature (JWS).
+ *
+ * @param header the JWS unprotected header
+ * @param protectedHeader the JWS protected header (base64url-encoded)
+ * @param signature the JWS signature value (base64url-encoded)
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record AgentCardSignature(Map<String, Object> header, @JsonProperty("protected") String protectedHeader,
+public record AgentCardSignature(Map<String, Object> header, @SerializedName("protected")String protectedHeader,
                                  String signature) {
 
     public AgentCardSignature {

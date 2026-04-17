@@ -1,6 +1,7 @@
 package io.a2a.server.tasks;
 
 import static io.a2a.common.A2AHeaders.X_A2A_NOTIFICATION_TOKEN;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -9,13 +10,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.json.JsonUtil;
+import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
-import io.a2a.util.Utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +29,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     @Inject
     public BasePushNotificationSender(PushNotificationConfigStore configStore) {
-        this.httpClient = new JdkA2AHttpClient();
-        this.configStore = configStore;
+        this(configStore, A2AHttpClientFactory.create());
     }
 
     public BasePushNotificationSender(PushNotificationConfigStore configStore, A2AHttpClient httpClient) {
@@ -55,11 +53,12 @@ public class BasePushNotificationSender implements PushNotificationSender {
                 .allMatch(CompletableFuture::join));
         try {
             boolean allSent = dispatchResult.get();
-            if (! allSent) {
+            if (!allSent) {
                 LOGGER.warn("Some push notifications failed to send for taskId: " + task.getId());
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOGGER.warn("Some push notifications failed to send for taskId " + task.getId() + ": {}", e.getMessage(), e);
+            LOGGER.warn("Some push notifications failed to send for taskId " + task.getId() + ": {}", e.getMessage(),
+                    e);
         }
     }
 
@@ -78,10 +77,7 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
         String body;
         try {
-            body = Utils.OBJECT_MAPPER.writeValueAsString(task);
-        } catch (JsonProcessingException e) {
-            LOGGER.debug("Error writing value as string: {}", e.getMessage(), e);
-            return false;
+            body = JsonUtil.toJson(task);
         } catch (Throwable throwable) {
             LOGGER.debug("Error writing value as string: {}", throwable.getMessage(), throwable);
             return false;

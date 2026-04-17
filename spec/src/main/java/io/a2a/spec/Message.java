@@ -4,13 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.util.Assert;
 
 import static io.a2a.spec.Message.MESSAGE;
@@ -18,12 +11,7 @@ import static io.a2a.spec.Message.MESSAGE;
 /**
  * Represents a single message in the conversation between a user and an agent.
  */
-@JsonTypeName(MESSAGE)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class Message implements EventKind, StreamingEventKind {
-
-    public static final TypeReference<Message> TYPE_REFERENCE = new TypeReference<>() {};
 
     public static final String MESSAGE = "message";
     private final Role role;
@@ -41,12 +29,11 @@ public final class Message implements EventKind, StreamingEventKind {
         this(role, parts, messageId, contextId, taskId, referenceTaskIds, metadata, extensions, MESSAGE);
     }
 
-    @JsonCreator
-    public Message(@JsonProperty("role") Role role, @JsonProperty("parts") List<Part<?>> parts,
-                   @JsonProperty("messageId") String messageId, @JsonProperty("contextId") String contextId,
-                   @JsonProperty("taskId") String taskId, @JsonProperty("referenceTaskIds") List<String> referenceTaskIds,
-                   @JsonProperty("metadata") Map<String, Object> metadata, @JsonProperty("extensions") List<String> extensions,
-                   @JsonProperty("kind") String kind) {
+    public Message(Role role, List<Part<?>> parts,
+                   String messageId, String contextId,
+                   String taskId, List<String> referenceTaskIds,
+                   Map<String, Object> metadata, List<String> extensions,
+                   String kind) {
         Assert.checkNotNullParam("kind", kind);
         Assert.checkNotNullParam("parts", parts);
         if (parts.isEmpty()) {
@@ -66,6 +53,19 @@ public final class Message implements EventKind, StreamingEventKind {
         this.metadata = metadata;
         this.extensions = extensions;
         this.kind = kind;
+    }
+
+    public void check() {
+        Assert.checkNotNullParam("kind", kind);
+        Assert.checkNotNullParam("parts", parts);
+        if (parts.isEmpty()) {
+            throw new IllegalArgumentException("Parts cannot be empty");
+        }
+        Assert.checkNotNullParam("role", role);
+        if (!kind.equals(MESSAGE)) {
+            throw new IllegalArgumentException("Invalid Message");
+        }
+        Assert.checkNotNullParam("messageId", messageId);
     }
 
     public Role getRole() {
@@ -123,7 +123,11 @@ public final class Message implements EventKind, StreamingEventKind {
             this.role = role;
         }
 
-        @JsonValue
+        /**
+         * Returns the string representation of the role for JSON serialization.
+         *
+         * @return the role as a string ("user" or "agent")
+         */
         public String asString() {
             return this.role;
         }

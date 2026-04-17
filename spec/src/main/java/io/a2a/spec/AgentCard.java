@@ -4,23 +4,54 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
- * The AgentCard is a self-describing manifest for an agent. It provides essential
+ * The AgentCard is a self-describing manifest for an agent. It provides
+ * essential
  * metadata including the agent's identity, capabilities, skills, supported
  * communication methods, and security requirements.
+ *
+ * @param name                              the human-readable name of the agent
+ * @param description                       a human-readable description of the
+ *                                          agent
+ * @param url                               the URL of the agent's primary
+ *                                          endpoint
+ * @param provider                          the organization or individual
+ *                                          providing the agent
+ * @param version                           the version of the agent
+ * @param documentationUrl                  optional URL to the agent's
+ *                                          documentation
+ * @param capabilities                      the capabilities supported by the
+ *                                          agent
+ * @param defaultInputModes                 the default input content modes
+ *                                          supported by the agent
+ * @param defaultOutputModes                the default output content modes
+ *                                          supported by the agent
+ * @param skills                            the list of skills the agent can
+ *                                          perform
+ * @param supportsAuthenticatedExtendedCard whether the agent supports an
+ *                                          authenticated extended card
+ * @param securitySchemes                   the security scheme definitions
+ *                                          available for this agent
+ * @param security                          the security requirements for
+ *                                          accessing the agent
+ * @param iconUrl                           optional URL to the agent's icon
+ * @param additionalInterfaces              additional transport/URL
+ *                                          combinations for interacting with
+ *                                          the agent
+ * @param preferredTransport                the preferred transport protocol
+ * @param protocolVersion                   the A2A protocol version supported
+ *                                          by the agent
+ * @param signatures                        optional JWS signatures of the agent
+ *                                          card
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record AgentCard(String name, String description, String url, AgentProvider provider,
-                        String version, String documentationUrl, AgentCapabilities capabilities,
-                        List<String> defaultInputModes, List<String> defaultOutputModes, List<AgentSkill> skills,
-                        boolean supportsAuthenticatedExtendedCard, Map<String, SecurityScheme> securitySchemes,
-                        List<Map<String, List<String>>> security, String iconUrl, List<AgentInterface> additionalInterfaces,
-                        String preferredTransport, String protocolVersion, List<AgentCardSignature> signatures) {
+        String version, String documentationUrl, AgentCapabilities capabilities,
+        List<String> defaultInputModes, List<String> defaultOutputModes, List<AgentSkill> skills,
+        boolean supportsAuthenticatedExtendedCard, Map<String, SecurityScheme> securitySchemes,
+        List<Map<String, List<String>>> security, String iconUrl, List<AgentInterface> additionalInterfaces,
+        String preferredTransport, String protocolVersion, List<AgentCardSignature> signatures) {
 
     private static final String DEFAULT_PROTOCOL_VERSION = "0.3.0";
     private static final TransportProtocol DEFAULT_TRANSPORT = TransportProtocol.JSONRPC;
@@ -89,7 +120,8 @@ public record AgentCard(String name, String description, String url, AgentProvid
             this.securitySchemes = card.securitySchemes != null ? Map.copyOf(card.securitySchemes) : null;
             this.security = card.security != null ? new ArrayList<>(card.security) : null;
             this.iconUrl = card.iconUrl;
-            this.additionalInterfaces = card.additionalInterfaces != null ? new ArrayList<>(card.additionalInterfaces) : null;
+            this.additionalInterfaces = card.additionalInterfaces != null ? new ArrayList<>(card.additionalInterfaces)
+                    : null;
             this.preferredTransport = card.preferredTransport;
             this.protocolVersion = card.protocolVersion;
             this.signatures = card.signatures != null ? new ArrayList<>(card.signatures) : null;

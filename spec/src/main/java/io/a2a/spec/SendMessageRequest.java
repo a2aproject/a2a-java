@@ -4,25 +4,28 @@ import static io.a2a.util.Utils.defaultIfNull;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.a2a.util.Assert;
 
 /**
  * Used to send a message request.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class SendMessageRequest extends NonStreamingJSONRPCRequest<MessageSendParams> {
 
     public static final String METHOD = "message/send";
 
-    @JsonCreator
-    public SendMessageRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                              @JsonProperty("method") String method, @JsonProperty("params") MessageSendParams params) {
+    /**
+     * Constructs a SendMessageRequest with the specified JSON-RPC fields.
+     * <p>
+     * This constructor is used for JSON deserialization and validates
+     * that the method name is exactly "SendMessage".
+     *
+     * @param jsonrpc the JSON-RPC version (must be "2.0")
+     * @param id the request correlation identifier (String, Integer, or null)
+     * @param method the method name (must be {@value #METHOD})
+     * @param params the message send parameters (required)
+     * @throws IllegalArgumentException if validation fails
+     */
+    public SendMessageRequest(String jsonrpc, Object id, String method, MessageSendParams params) {
         if (jsonrpc == null || jsonrpc.isEmpty()) {
             throw new IllegalArgumentException("JSON-RPC protocol version cannot be null or empty");
         }
@@ -39,6 +42,22 @@ public final class SendMessageRequest extends NonStreamingJSONRPCRequest<Message
         this.id = id;
         this.method = method;
         this.params = params;
+    }
+
+    public void check() {
+        if (jsonrpc == null || jsonrpc.isEmpty()) {
+            throw new IllegalArgumentException("JSON-RPC protocol version cannot be null or empty");
+        }
+        if (jsonrpc != null && !jsonrpc.equals(JSONRPC_VERSION)) {
+            throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
+        }
+        Assert.checkNotNullParam("method", method);
+        if (!method.equals(METHOD)) {
+            throw new IllegalArgumentException("Invalid SendMessageRequest method");
+        }
+        Assert.checkNotNullParam("params", params);
+        Assert.isNullOrStringOrInteger(id);
+        params.check();
     }
 
     public SendMessageRequest(Object id, MessageSendParams params) {

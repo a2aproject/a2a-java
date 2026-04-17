@@ -4,10 +4,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.a2a.extras.queuemanager.replicated.core.ReplicatedEventQueueItem;
 import io.a2a.extras.queuemanager.replicated.core.ReplicationStrategy;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 public class ReactiveMessagingReplicationStrategy implements ReplicationStrategy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveMessagingReplicationStrategy.class);
-    private static final TypeReference<ReplicatedEventQueueItem> REPLICATED_EVENT_TYPE_REF = new TypeReference<ReplicatedEventQueueItem>() {};
 
     @Inject
     @Channel("replicated-events-out")
@@ -33,7 +31,7 @@ public class ReactiveMessagingReplicationStrategy implements ReplicationStrategy
 
         try {
             ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, event);
-            String json = Utils.OBJECT_MAPPER.writeValueAsString(replicatedEvent);
+            String json = JsonUtil.toJson(replicatedEvent);
             emitter.send(json);
             LOGGER.debug("Successfully sent replicated event for task: {}", taskId);
         } catch (Exception e) {
@@ -47,7 +45,7 @@ public class ReactiveMessagingReplicationStrategy implements ReplicationStrategy
         LOGGER.debug("Received replicated event JSON: {}", jsonMessage);
 
         try {
-            ReplicatedEventQueueItem replicatedEvent = Utils.unmarshalFrom(jsonMessage, REPLICATED_EVENT_TYPE_REF);
+            ReplicatedEventQueueItem replicatedEvent = JsonUtil.fromJson(jsonMessage, ReplicatedEventQueueItem.class);
             LOGGER.debug("Deserialized replicated event for task: {}, event: {}",
                     replicatedEvent.getTaskId(), replicatedEvent.getEvent());
 

@@ -39,7 +39,7 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -261,7 +261,7 @@ public class KafkaReplicationIntegrationTest {
                 .build();
 
         ReplicatedEventQueueItem replicatedEvent = new ReplicatedEventQueueItem(taskId, statusEvent);
-        String eventJson = Utils.OBJECT_MAPPER.writeValueAsString(replicatedEvent);
+        String eventJson = JsonUtil.toJson(replicatedEvent);
 
         // Send to Kafka using reactive messaging
         testEmitter.send(eventJson);
@@ -361,7 +361,7 @@ public class KafkaReplicationIntegrationTest {
         // Now manually send a QueueClosedEvent to Kafka to simulate queue closure on another node
         QueueClosedEvent closedEvent = new QueueClosedEvent(taskId);
         ReplicatedEventQueueItem replicatedClosedEvent = new ReplicatedEventQueueItem(taskId, closedEvent);
-        String eventJson = Utils.OBJECT_MAPPER.writeValueAsString(replicatedClosedEvent);
+        String eventJson = JsonUtil.toJson(replicatedClosedEvent);
 
         // Send to Kafka using reactive messaging
         testEmitter.send(eventJson);

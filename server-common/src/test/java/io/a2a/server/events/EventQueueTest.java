@@ -100,7 +100,7 @@ public class EventQueueTest {
         EventQueue parentQueue = EventQueue.builder().build();
         EventQueue childQueue = parentQueue.tap();
 
-        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
         parentQueue.enqueueEvent(event);
 
         // Event should be available in both parent and child queues
@@ -117,8 +117,8 @@ public class EventQueueTest {
         EventQueue childQueue1 = parentQueue.tap();
         EventQueue childQueue2 = parentQueue.tap();
 
-        Event event1 = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
-        Event event2 = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.TYPE_REFERENCE);
+        Event event1 = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
+        Event event2 = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.class);
 
         parentQueue.enqueueEvent(event1);
         parentQueue.enqueueEvent(event2);
@@ -140,7 +140,7 @@ public class EventQueueTest {
         EventQueue childQueue1 = parentQueue.tap();
         EventQueue childQueue2 = parentQueue.tap();
 
-        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
         parentQueue.enqueueEvent(event);
 
         // Dequeue from child1 first
@@ -163,7 +163,7 @@ public class EventQueueTest {
         EventQueue childQueue = parentQueue.tap();
 
         // Add events to both parent and child
-        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
         parentQueue.enqueueEvent(event);
 
         assertFalse(childQueue.isClosed());
@@ -190,7 +190,7 @@ public class EventQueueTest {
     @Test
     public void testEnqueueEventWhenClosed() throws Exception {
         EventQueue queue = EventQueue.builder().build();
-        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
 
         queue.close(); // Close the queue first
         assertTrue(queue.isClosed());
@@ -220,7 +220,7 @@ public class EventQueueTest {
     @Test
     public void testDequeueEventWhenClosedButHasEvents() throws Exception {
         EventQueue queue = EventQueue.builder().build();
-        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
         queue.enqueueEvent(event);
 
         queue.close(); // Graceful close - events should remain
@@ -236,7 +236,7 @@ public class EventQueueTest {
 
     @Test
     public void testEnqueueAndDequeueEvent() throws Exception {
-        Event event = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MESSAGE_PAYLOAD, Message.class);
         eventQueue.enqueueEvent(event);
         Event dequeuedEvent = eventQueue.dequeueEventItem(200).getEvent();
         assertSame(event, dequeuedEvent);
@@ -244,7 +244,7 @@ public class EventQueueTest {
 
     @Test
     public void testDequeueEventNoWait() throws Exception {
-        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
         eventQueue.enqueueEvent(event);
         Event dequeuedEvent = eventQueue.dequeueEventItem(-1).getEvent();
         assertSame(event, dequeuedEvent);
@@ -305,7 +305,7 @@ public class EventQueueTest {
      */
     @Test
     public void testCloseGracefulSetsFlag() throws Exception {
-        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
         eventQueue.enqueueEvent(event);
 
         eventQueue.close(false); // Graceful close
@@ -318,7 +318,7 @@ public class EventQueueTest {
      */
     @Test
     public void testCloseImmediateClearsQueue() throws Exception {
-        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.TYPE_REFERENCE);
+        Event event = Utils.unmarshalFrom(MINIMAL_TASK, Task.class);
         eventQueue.enqueueEvent(event);
 
         eventQueue.close(true); // Immediate close
