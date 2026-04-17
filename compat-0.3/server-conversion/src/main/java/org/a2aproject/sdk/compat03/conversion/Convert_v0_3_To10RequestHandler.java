@@ -38,6 +38,7 @@ import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskIdParams;
+import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 
@@ -200,6 +201,9 @@ public class Convert_v0_3_To10RequestHandler {
      * Gets a task push notification configuration.
      * <p>
      * v0.3 → v1.0: Converts GetTaskPushNotificationConfigParams and TaskPushNotificationConfig
+     * <p>
+     * v0.3 semantics: If a specific pushNotificationConfigId is provided but not found,
+     * fall back to returning the first config (lenient behavior).
      *
      * @param v03Params the v0.3 get params
      * @param context the server call context
@@ -220,9 +224,28 @@ public class Convert_v0_3_To10RequestHandler {
         GetTaskPushNotificationConfigParams v10Params =
             new GetTaskPushNotificationConfigParams(v03Params.id(), configId);
 
-        // Call v1.0 handler
-        TaskPushNotificationConfig v10Result =
-            v10Handler.onGetTaskPushNotificationConfig(v10Params, context);
+        TaskPushNotificationConfig v10Result;
+        try {
+            // Call v1.0 handler
+            v10Result = v10Handler.onGetTaskPushNotificationConfig(v10Params, context);
+        } catch (TaskNotFoundError e) {
+            // v0.3 fallback behavior: if specific config ID not found, return first config
+            // This matches v0.3 DefaultRequestHandler.getPushNotificationConfig() behavior
+            if (v03Params.pushNotificationConfigId() != null) {
+                ListTaskPushNotificationConfigsParams listParams =
+                    new ListTaskPushNotificationConfigsParams(v03Params.id());
+                ListTaskPushNotificationConfigsResult listResult =
+                    v10Handler.onListTaskPushNotificationConfigs(listParams, context);
+
+                if (listResult.configs().isEmpty()) {
+                    throw e; // Re-throw if no configs exist at all
+                }
+                // Return first config as fallback
+                v10Result = listResult.configs().get(0);
+            } else {
+                throw e; // Re-throw if no fallback is applicable
+            }
+        }
 
         // Convert v1.0 result → v0.3 result
         return TaskPushNotificationConfigMapper_v0_3.INSTANCE.fromV10(v10Result);

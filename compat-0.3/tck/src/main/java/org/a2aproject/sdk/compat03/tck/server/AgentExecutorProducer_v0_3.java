@@ -28,7 +28,9 @@ public class AgentExecutorProducer_v0_3 {
             Task task = context.getTask();
 
             if (task == null) {
-                emitter.submit();
+                // The 0.3 TCK requires the initial message to be part of the Task history
+                // However, the 1.0 spec says it is up to the agent what is saved
+                emitter.submit(context.getMessage());
             }
 
             // Sleep to allow task state persistence before TCK resubscribe test
