@@ -22,6 +22,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.a2aproject.sdk.compat03.spec.APIKeySecurityScheme_v0_3;
+import org.a2aproject.sdk.compat03.spec.AgentCapabilities_v0_3;
 import org.a2aproject.sdk.compat03.spec.EventKind_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
 import org.a2aproject.sdk.compat03.spec.ContentTypeNotSupportedError_v0_3;
@@ -59,6 +60,7 @@ import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 import static org.a2aproject.sdk.compat03.json.JsonUtil_v0_3.JSONRPCErrorTypeAdapter.THROWABLE_MARKER_FIELD;
@@ -81,7 +83,8 @@ public class JsonUtil_v0_3 {
                 .registerTypeHierarchyAdapter(SecurityScheme_v0_3.class, new SecuritySchemeTypeAdapter())
                 .registerTypeAdapter(void.class, new VoidTypeAdapter())
                 .registerTypeAdapter(Void.class, new VoidTypeAdapter())
-                .registerTypeAdapterFactory(new JSONRPCResponseTypeAdapterFactory());
+                .registerTypeAdapterFactory(new JSONRPCResponseTypeAdapterFactory())
+                .registerTypeAdapter(AgentCapabilities_v0_3.class, new AgentCapabilitiesTypeAdapter());
     }
 
     /**
@@ -901,6 +904,49 @@ public class JsonUtil_v0_3 {
             } else {
                 throw new JsonSyntaxException("FileContent must have either 'bytes' or 'uri' field");
             }
+        }
+    }
+
+    /**
+     * Gson TypeAdapter for serializing and deserializing {@link AgentCapabilities_v0_3}.
+     * <p>
+     * This adapter ensures that the {@code extensions} field is serialized as an empty array {@code []}
+     * when it is {@code null}, as required by the A2A v0.3 specification.
+     */
+    static class AgentCapabilitiesTypeAdapter extends TypeAdapter<AgentCapabilities_v0_3> {
+
+        private final Gson delegateGson = new Gson();
+
+        @Override
+        public void write(JsonWriter out, AgentCapabilities_v0_3 value) throws java.io.IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+
+            out.beginObject();
+            out.name("streaming").value(value.streaming());
+            out.name("pushNotifications").value(value.pushNotifications());
+            out.name("stateTransitionHistory").value(value.stateTransitionHistory());
+            out.name("extensions");
+            if (value.extensions() == null) {
+                out.beginArray();
+                out.endArray();
+            } else {
+                delegateGson.toJson(value.extensions(), List.class, out);
+            }
+            out.endObject();
+        }
+
+        @Override
+        public org.a2aproject.sdk.compat03.spec.@Nullable AgentCapabilities_v0_3 read(JsonReader in) throws java.io.IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
+            com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseReader(in);
+            return delegateGson.fromJson(jsonElement, AgentCapabilities_v0_3.class);
         }
     }
 

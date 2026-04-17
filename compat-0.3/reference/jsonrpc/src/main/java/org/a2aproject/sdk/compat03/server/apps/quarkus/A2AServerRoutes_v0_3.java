@@ -100,17 +100,7 @@ public class A2AServerRoutes_v0_3 {
                 throw new JSONParseError_v0_3(e.getMessage());
             }
 
-            // Validate jsonrpc field
-            com.google.gson.JsonElement jsonrpcElement = node.get("jsonrpc");
-            if (jsonrpcElement == null || !jsonrpcElement.isJsonPrimitive()
-                    || !JSONRPCMessage_v0_3.JSONRPC_VERSION.equals(jsonrpcElement.getAsString())) {
-                if(node.has("id")) {
-                   throw new InvalidRequestError_v0_3(null, "Invalid JSON-RPC request: missing or invalid 'jsonrpc' field", Map.of("id", node.get("id").getAsString()));
-                }
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'jsonrpc' field");
-            }
-
-            // Validate id field (must be string, number, or null — not an object or array)
+            // Extract id field early so error responses can include it
             com.google.gson.JsonElement idElement = node.get("id");
             if (idElement != null && !idElement.isJsonNull() && !idElement.isJsonPrimitive()) {
                 throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: 'id' must be a string, number, or null");
@@ -118,6 +108,13 @@ public class A2AServerRoutes_v0_3 {
             if (idElement != null && !idElement.isJsonNull() && idElement.isJsonPrimitive()) {
                 com.google.gson.JsonPrimitive idPrimitive = idElement.getAsJsonPrimitive();
                 requestId = idPrimitive.isNumber() ? idPrimitive.getAsLong() : idPrimitive.getAsString();
+            }
+
+            // Validate jsonrpc field
+            com.google.gson.JsonElement jsonrpcElement = node.get("jsonrpc");
+            if (jsonrpcElement == null || !jsonrpcElement.isJsonPrimitive()
+                    || !JSONRPCMessage_v0_3.JSONRPC_VERSION.equals(jsonrpcElement.getAsString())) {
+                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'jsonrpc' field");
             }
 
             // Validate method field
