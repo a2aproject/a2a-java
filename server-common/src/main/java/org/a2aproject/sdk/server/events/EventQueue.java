@@ -10,6 +10,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.a2aproject.sdk.server.tasks.TaskManager;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.Task;
@@ -367,6 +368,26 @@ public abstract class EventQueue implements AutoCloseable {
     }
 
     /**
+     * Sets the TaskManager for this queue.
+     * This allows MainEventBusProcessor to reuse the TaskManager created in DefaultRequestHandler,
+     * preserving the initial message in the task's history. Only relevant for messages
+     * resulting in new tasks.
+     *
+     * @param taskManager the TaskManager to associate with this queue, or null to clear it
+     */
+    public abstract void setInitialMessageTaskManager(@Nullable TaskManager taskManager);
+
+    /**
+     * Returns the TaskManager associated with this queue.
+     * Returns null if no TaskManager has been set.
+     * Only relevant for messages resulting in new tasks.
+     *
+     * @return the associated TaskManager, or null
+     */
+    @Nullable
+    public abstract TaskManager getInitialMessageTaskManager();
+
+    /**
      * Internal method to close the queue gracefully.
      * Delegates to {@link #doClose(boolean)} with immediate=false.
      */
@@ -400,6 +421,8 @@ public abstract class EventQueue implements AutoCloseable {
         private final List<Runnable> onCloseCallbacks;
         private final @Nullable TaskStateProvider taskStateProvider;
         private final MainEventBus mainEventBus;
+        /** TaskManager for preserving initial message in new tasks; cleared after first use */
+        private volatile @Nullable TaskManager initialMessageTaskManager;
 
         MainQueue(int queueSize,
                   @Nullable EventEnqueueHook hook,
@@ -438,6 +461,17 @@ public abstract class EventQueue implements AutoCloseable {
          */
         @Nullable EventEnqueueHook getEnqueueHook() {
             return enqueueHook;
+        }
+
+        @Override
+        public void setInitialMessageTaskManager(@Nullable TaskManager taskManager) {
+            this.initialMessageTaskManager = taskManager;
+        }
+
+        @Override
+        @Nullable
+        public TaskManager getInitialMessageTaskManager() {
+            return initialMessageTaskManager;
         }
 
         @Override
@@ -803,8 +837,26 @@ public abstract class EventQueue implements AutoCloseable {
         }
 
         @Override
+        public void setInitialMessageTaskManager(@Nullable TaskManager taskManager) {
+            parent.setInitialMessageTaskManager(taskManager);
+        }
+
+        @Override
+        @Nullable
+        public TaskManager getInitialMessageTaskManager() {
+            return parent.getInitialMessageTaskManager();
+        }
+
+        @Override
         protected void doClose(boolean immediate) {
             super.doClose(immediate);  // Sets closed flag
+
+            // Clear TaskManager from parent to prevent memory leak
+            // MainQueue can live for a long time, but TaskManager is only needed for first message
+            // Safe to do for all ChildQueues - clearing null is a no-op for resubscriptions
+            parent.setInitialMessageTaskManager(null);
+            LOGGER.debug("Cleared TaskManager from MainQueue on ChildQueue close");
+
             if (immediate) {
                 // Immediate close: clear pending events from local queue
                 this.immediateClose = true;

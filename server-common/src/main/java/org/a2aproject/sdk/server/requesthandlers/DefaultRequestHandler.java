@@ -66,7 +66,6 @@ import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
-import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -449,6 +448,14 @@ public class DefaultRequestHandler implements RequestHandler {
 
         // Create queue with real taskId (no tempId parameter needed)
         EventQueue queue = queueManager.createOrTap(queueTaskId);
+
+        // For NEW tasks, associate the TaskManager with the queue
+        // This allows MainEventBusProcessor to reuse it, preserving the initial message
+        if (mss.task() == null) {
+            queue.setInitialMessageTaskManager(mss.taskManager);
+            LOGGER.debug("Set TaskManager on queue for new task {}", queueTaskId);
+        }
+
         final java.util.concurrent.atomic.AtomicReference<@NonNull String> taskId = new java.util.concurrent.atomic.AtomicReference<>(queueTaskId);
         ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
 
@@ -648,6 +655,13 @@ public class DefaultRequestHandler implements RequestHandler {
         // Create queue with real taskId (no tempId parameter needed)
         EventQueue queue = queueManager.createOrTap(queueTaskId);
         LOGGER.debug("Created/tapped queue for task {}: {}", taskId.get(), queue);
+
+        // For NEW tasks, associate the TaskManager with the queue
+        // This allows MainEventBusProcessor to reuse it, preserving the initial message
+        if (mss.task() == null) {
+            queue.setInitialMessageTaskManager(mss.taskManager);
+            LOGGER.debug("Set TaskManager on queue for new task {} (streaming)", queueTaskId);
+        }
 
         // Store push notification config SYNCHRONOUSLY for new tasks before agent starts
         // This ensures config is available when MainEventBusProcessor sends push notifications

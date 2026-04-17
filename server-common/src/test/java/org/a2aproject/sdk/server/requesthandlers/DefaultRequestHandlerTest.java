@@ -800,6 +800,59 @@ public class DefaultRequestHandlerTest {
     }
 
     /**
+     * Test that initial message is preserved in task history when agent submits task.
+     * Verifies that MainEventBusProcessor reuses TaskManager from queue (with initial message)
+     * rather than creating a new one without it.
+     */
+    @Test
+    void testNewTask_InitialMessagePreservedInHistory() throws Exception {
+        // Arrange: Create an initial message
+        CountDownLatch agentCompleted = new CountDownLatch(1);
+
+        agentExecutorExecute = (context, emitter) -> {
+            // Submit a task - should preserve initial message in history
+            emitter.submit();
+            emitter.complete();
+            agentCompleted.countDown();
+        };
+
+        Message initialMessage = Message.builder()
+            .messageId("msg-initial-123")
+            .role(Message.Role.ROLE_USER)
+            .parts(new TextPart("Hello, please do something"))
+            .build();
+
+        MessageSendParams params = MessageSendParams.builder()
+            .message(initialMessage)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        // Act: Send message (non-streaming)
+        EventKind eventKind = requestHandler.onMessageSend(params, NULL_CONTEXT);
+
+        // Assert: Task returned
+        assertNotNull(eventKind);
+        assertInstanceOf(Task.class, eventKind);
+        Task result = (Task) eventKind;
+
+        // Wait for agent to complete
+        assertTrue(agentCompleted.await(5, TimeUnit.SECONDS), "Agent should complete");
+        Thread.sleep(200); // Allow MainEventBusProcessor to persist
+
+        // Verify task in TaskStore has initial message in history
+        Task storedTask = taskStore.get(result.id());
+        assertNotNull(storedTask, "Task should be in TaskStore");
+        assertNotNull(storedTask.history(), "Task should have history");
+        assertFalse(storedTask.history().isEmpty(), "Task history should not be empty");
+
+        // The initial message should be in the history
+        boolean foundInitialMessage = storedTask.history().stream()
+            .anyMatch(msg -> "msg-initial-123".equals(msg.messageId()));
+        assertTrue(foundInitialMessage,
+            "Initial message should be in task history, but history was: " + storedTask.history());
+    }
+
+    /**
      * Verification for Codex adversarial review finding:
      * When a follow-up message includes taskId but omits contextId,
      * the emitted TaskStatusUpdateEvent should use the task's original
