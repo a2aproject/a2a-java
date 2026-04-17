@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.a2aproject.sdk.spec.A2AClientException;
+import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.ExtensionSupportRequiredError;
 import org.a2aproject.sdk.spec.VersionNotSupportedError;
@@ -641,6 +642,48 @@ public class JSONRPCTransportTest {
             assertInstanceOf(ExtensionSupportRequiredError.class, e.getCause());
             ExtensionSupportRequiredError extensionError = (ExtensionSupportRequiredError) e.getCause();
             assertTrue(extensionError.getMessage().contains("https://example.com/test-extension"));
+        }
+    }
+
+    /**
+     * Test that HTTP error responses expose the status code via A2AClientHTTPError cause,
+     * while remaining backward compatible (A2AClientException is still thrown).
+     */
+    @Test
+    public void testHttpErrorExposeStatusCode() throws Exception {
+        this.server.when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(503)
+                                .withBody("{\"error\": \"Service Unavailable\"}")
+                );
+
+        JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("hello")))
+                        .contextId("ctx")
+                        .messageId("msg")
+                        .build())
+                .build();
+
+        try {
+            client.sendMessage(params, null);
+            fail("Expected A2AClientException to be thrown");
+        } catch (A2AClientException e) {
+            // Backward compatible: still throws A2AClientException
+            assertTrue(e.getMessage().contains("503"), "Expected message to contain '503' but was: " + e.getMessage());
+            // New: cause carries structured HTTP status
+            assertInstanceOf(A2AClientHTTPError.class, e.getCause());
+            A2AClientHTTPError httpError = (A2AClientHTTPError) e.getCause();
+            assertEquals(503, httpError.getCode());
+            assertNotNull(httpError.getResponseBody());
+            assertTrue(httpError.getResponseBody().contains("Service Unavailable"), "Expected response body to contain 'Service Unavailable' but was: " + httpError.getResponseBody());
         }
     }
 
