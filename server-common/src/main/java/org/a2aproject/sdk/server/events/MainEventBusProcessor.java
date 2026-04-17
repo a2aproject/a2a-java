@@ -14,10 +14,8 @@ import org.a2aproject.sdk.server.tasks.TaskPersistenceException;
 import org.a2aproject.sdk.server.tasks.TaskSerializationException;
 import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
-import org.a2aproject.sdk.spec.A2AServerException;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
@@ -207,7 +205,7 @@ public class MainEventBusProcessor implements Runnable {
             // If this throws, we distribute an error to ensure "persist before client visibility"
 
             try {
-                boolean isFinal = updateTaskStore(taskId, event, isReplicated);
+                boolean isFinal = updateTaskStore(taskId, event, isReplicated, mainQueue);
 
                 eventToDistribute = event; // Success - distribute original event
 
@@ -279,9 +277,10 @@ public class MainEventBusProcessor implements Runnable {
     /**
      * Updates TaskStore using TaskManager.process().
      * <p>
-     * Creates a temporary TaskManager instance for this event and delegates to its process() method,
-     * which handles all event types (Task, TaskStatusUpdateEvent, TaskArtifactUpdateEvent).
-     * This leverages existing TaskManager logic for status updates, artifact appending, message history, etc.
+     * Attempts to reuse the TaskManager from the MainQueue (if available), which preserves
+     * the initial message in the task's history. Falls back to creating a temporary TaskManager
+     * if none is available. The TaskManager.process() method handles all event types
+     * (Task, TaskStatusUpdateEvent, TaskArtifactUpdateEvent).
      * </p>
      * <p>
      * If persistence fails, the exception is propagated to processEvent() which distributes an
@@ -291,21 +290,32 @@ public class MainEventBusProcessor implements Runnable {
      *
      * @param taskId the task ID
      * @param event the event to persist
+     * @param isReplicated whether this is a replicated event
+     * @param mainQueue the main queue for this task
      * @return true if the task reached a final state, false otherwise
      * @throws InternalError if persistence fails
      */
-    private boolean updateTaskStore(String taskId, Event event, boolean isReplicated) throws InternalError {
+    private boolean updateTaskStore(String taskId, Event event, boolean isReplicated, EventQueue.MainQueue mainQueue) throws InternalError {
         try {
             // Extract contextId from event (all relevant events have it)
             String contextId = extractContextId(event);
 
-            // Create temporary TaskManager instance for this event
-            TaskManager taskManager = new TaskManager(taskId, contextId, taskStore, null);
+            // Try to get TaskManager from MainQueue (preserves initial message for new tasks)
+            // Falls back to creating a temporary one for existing tasks
+            TaskManager taskManager = mainQueue.getInitialMessageTaskManager();
+            if (taskManager == null) {
+                // Create temporary TaskManager instance for this event
+                taskManager = new TaskManager(taskId, contextId, taskStore, null);
+                LOGGER.debug("Created temporary TaskManager for task {} (no TaskManager on queue)", taskId);
+            } else {
+                LOGGER.debug("Reusing TaskManager from queue for task {} (preserves initial message)", taskId);
+            }
 
             // Use TaskManager.process() - handles all event types with existing logic
             boolean isFinal = taskManager.process(event, isReplicated);
             LOGGER.debug("TaskStore updated via TaskManager.process() for task {}: {} (final: {}, replicated: {})",
                         taskId, event.getClass().getSimpleName(), isFinal, isReplicated);
+
             return isFinal;
 
         } catch (TaskSerializationException e) {
