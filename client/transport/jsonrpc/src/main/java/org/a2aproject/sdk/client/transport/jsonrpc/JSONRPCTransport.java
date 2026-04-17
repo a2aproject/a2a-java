@@ -46,6 +46,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.spec.A2AClientError;
 import org.a2aproject.sdk.spec.A2AClientException;
+import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
@@ -321,10 +322,12 @@ public class JSONRPCTransport implements ClientTransport {
     }
 
     private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders, String method) throws IOException, InterruptedException, JsonProcessingException {
-        A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders,method);
+        A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders, method);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
-            throw new IOException("Request failed " + response.status());
+            int status = response.status();
+            String message = "Request failed with HTTP " + status;
+            throw new A2AClientException(message, new A2AClientHTTPError(status, message, response.body()));
         }
         return response.body();
     }

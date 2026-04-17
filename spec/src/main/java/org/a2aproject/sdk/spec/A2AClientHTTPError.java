@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Client exception indicating an HTTP transport error with a specific status code.
@@ -15,14 +16,14 @@ import org.a2aproject.sdk.util.Assert;
  *   <li>5xx - Server errors (500 Internal Server Error, 503 Service Unavailable, etc.)</li>
  * </ul>
  * <p>
- * Usage example:
+ * This exception is set as the cause of {@link A2AClientException} so that callers
+ * can inspect the HTTP status code while remaining backward compatible:
  * <pre>{@code
- * if (response.statusCode() >= 400) {
- *     throw new A2AClientHTTPError(
- *         response.statusCode(),
- *         "HTTP error: " + response.statusMessage(),
- *         response.body()
- *     );
+ * } catch (A2AClientException e) {
+ *     if (e.getCause() instanceof A2AClientHTTPError httpError) {
+ *         int status = httpError.getCode();           // e.g. 401, 503
+ *         String body = httpError.getResponseBody();  // raw response body, may be null
+ *     }
  * }
  * }</pre>
  *
@@ -41,36 +42,68 @@ public class A2AClientHTTPError extends A2AClientError {
     private final String message;
 
     /**
+     * The raw HTTP response body, may be {@code null}.
+     */
+    @Nullable
+    private final String responseBody;
+
+    /**
      * Creates a new HTTP client error with the specified status code and message.
      *
      * @param code the HTTP status code
      * @param message the error message
      * @param data additional error data (may be the response body)
      * @throws IllegalArgumentException if code or message is null
+     * @deprecated Use {@link #A2AClientHTTPError(int, String, String)} instead to preserve the response body.
      */
+    @Deprecated(since = "1.0.0.Beta1", forRemoval = true)
     public A2AClientHTTPError(int code, String message, Object data) {
         Assert.checkNotNullParam("code", code);
         Assert.checkNotNullParam("message", message);
         this.code = code;
         this.message = message;
+        this.responseBody = data instanceof String s ? s : null;
     }
 
     /**
-     * Gets the error code
+     * Creates a new HTTP client error with the specified status code, message, and response body.
      *
-     * @return the error code
+     * @param code the HTTP status code (e.g. 401, 503)
+     * @param message the error message
+     * @param responseBody the raw HTTP response body, may be {@code null}
+     */
+    public A2AClientHTTPError(int code, String message, @Nullable String responseBody) {
+        Assert.checkNotNullParam("message", message);
+        this.code = code;
+        this.message = message;
+        this.responseBody = responseBody;
+    }
+
+    /**
+     * Gets the HTTP status code.
+     *
+     * @return the HTTP status code (e.g. 401, 404, 500, 503)
      */
     public int getCode() {
         return code;
     }
 
     /**
-     * Gets the error message
+     * Gets the error message.
      *
      * @return the error message
      */
     @Override
     public String getMessage() {
         return message;
+    }
+
+    /**
+     * Returns the raw HTTP response body, if available.
+     *
+     * @return the response body, or {@code null} if not available
+     */
+    public @Nullable String getResponseBody() {
+        return responseBody;
     }
 }
