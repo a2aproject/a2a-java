@@ -6,6 +6,8 @@ import io.a2a.util.Assert;
 
 /**
  * Represents a JSONRPC request.
+ *
+ * @param <T> the type of the request parameters
  */
 public abstract sealed class JSONRPCRequest<T> implements JSONRPCMessage permits NonStreamingJSONRPCRequest, StreamingJSONRPCRequest {
 

@@ -24,13 +24,12 @@ import java.util.logging.Logger;
  * <p>
  * Key capabilities:
  * <ul>
- * <li>JSON processing with pre-configured {@link Gson}</li>
+ * <li>JSON processing with pre-configured {@link io.a2a.json.JsonUtil#OBJECT_MAPPER}</li>
  * <li>Null-safe value defaults via {@link #defaultIfNull(Object, Object)}</li>
  * <li>Artifact streaming support via {@link #appendArtifactToTask(Task, TaskArtifactUpdateEvent, String)}</li>
  * <li>Type-safe exception rethrowing via {@link #rethrow(Throwable)}</li>
  * </ul>
  *
- * @see Gson for JSON processing
  * @see TaskArtifactUpdateEvent for streaming artifact updates
  */
 public class Utils {
@@ -41,7 +40,7 @@ public class Utils {
     /**
      * Deserializes JSON string into a typed object using Gson.
      * <p>
-     * This method uses the pre-configured {@link #OBJECT_MAPPER} to parse JSON.
+     * This method uses the pre-configured {@link io.a2a.json.JsonUtil#OBJECT_MAPPER} to parse JSON.
      *
      * @param <T> the target type
      * @param data JSON string to deserialize

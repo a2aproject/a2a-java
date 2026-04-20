@@ -8,6 +8,10 @@ import io.a2a.util.Assert;
 /**
  * Represents a JWS signature of an AgentCard.
  * This follows the JSON format of an RFC 7515 JSON Web Signature (JWS).
+ *
+ * @param header the JWS unprotected header
+ * @param protectedHeader the JWS protected header (base64url-encoded)
+ * @param signature the JWS signature value (base64url-encoded)
  */
 public record AgentCardSignature(Map<String, Object> header, @SerializedName("protected")String protectedHeader,
                                  String signature) {

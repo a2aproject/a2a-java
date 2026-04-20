@@ -1,6 +1,7 @@
 package io.a2a.transport.jsonrpc.handler;
 
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -46,6 +47,7 @@ import io.a2a.spec.TaskNotFoundError;
 import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskResubscriptionRequest;
 import io.a2a.server.util.async.Internal;
+import io.a2a.spec.InvalidParamsError;
 import mutiny.zero.ZeroPublisher;
 
 @ApplicationScoped
@@ -78,11 +80,14 @@ public class JSONRPCHandler {
 
     public SendMessageResponse onMessageSend(SendMessageRequest request, ServerCallContext context) {
         try {
+            request.check();
             EventKind taskOrMessage = requestHandler.onMessageSend(request.getParams(), context);
             return new SendMessageResponse(request.getId(), taskOrMessage);
         } catch (JSONRPCError e) {
             return new SendMessageResponse(request.getId(), e);
-        } catch (Throwable t) {
+        } catch (IllegalArgumentException t) {
+            return new SendMessageResponse(request.getId(), new InvalidParamsError(t.getMessage()));
+        }catch (Throwable t) {
             return new SendMessageResponse(request.getId(), new InternalError(t.getMessage()));
         }
     }
@@ -96,8 +101,8 @@ public class JSONRPCHandler {
                             request.getId(),
                             new InvalidRequestError("Streaming is not supported by the agent")));
         }
-
         try {
+            request.check();
             Flow.Publisher<StreamingEventKind> publisher =
                     requestHandler.onMessageSendStream(request.getParams(), context);
             // We can't use the convertingProcessor convenience method since that propagates any errors as an error handled

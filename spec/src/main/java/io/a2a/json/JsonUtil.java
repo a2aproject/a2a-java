@@ -23,10 +23,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import io.a2a.spec.APIKeySecurityScheme;
 import io.a2a.spec.EventKind;
+import io.a2a.spec.JSONRPCResponse;
 import io.a2a.spec.ContentTypeNotSupportedError;
 import io.a2a.spec.DataPart;
 import io.a2a.spec.FileContent;
@@ -76,7 +79,10 @@ public class JsonUtil {
                 .registerTypeAdapter(Message.Role.class, new RoleTypeAdapter())
                 .registerTypeAdapter(Part.Kind.class, new PartKindTypeAdapter())
                 .registerTypeHierarchyAdapter(FileContent.class, new FileContentTypeAdapter())
-                .registerTypeHierarchyAdapter(SecurityScheme.class, new SecuritySchemeTypeAdapter());
+                .registerTypeHierarchyAdapter(SecurityScheme.class, new SecuritySchemeTypeAdapter())
+                .registerTypeAdapter(void.class, new VoidTypeAdapter())
+                .registerTypeAdapter(Void.class, new VoidTypeAdapter())
+                .registerTypeAdapterFactory(new JSONRPCResponseTypeAdapterFactory());
     }
 
     /**
@@ -87,7 +93,6 @@ public class JsonUtil {
      * <p>
      * Used throughout the SDK for consistent JSON serialization and deserialization.
      *
-     * @see GsonFactory#createGson()
      */
     public static final Gson OBJECT_MAPPER = createBaseGsonBuilder()
             .registerTypeHierarchyAdapter(Part.class, new PartTypeAdapter())
@@ -725,8 +730,7 @@ public class JsonUtil {
         }
 
         @Override
-        public @Nullable
-        StreamingEventKind read(JsonReader in) throws java.io.IOException {
+        public @Nullable StreamingEventKind read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -875,8 +879,7 @@ public class JsonUtil {
         }
 
         @Override
-        public @Nullable
-        FileContent read(JsonReader in) throws java.io.IOException {
+        public @Nullable FileContent read(JsonReader in) throws java.io.IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
@@ -901,4 +904,98 @@ public class JsonUtil {
         }
     }
 
+    static class VoidTypeAdapter extends TypeAdapter<Void> {
+
+
+        @Override
+        @SuppressWarnings("resource")
+        public void write(final JsonWriter out, final Void value) throws java.io.IOException {
+            out.nullValue();
+        }
+
+        @Override
+        public @Nullable Void read(final JsonReader in) throws java.io.IOException {
+            in.skipValue();
+            return null;
+        }
+
+    }
+
+    /**
+     * Gson TypeAdapterFactory for serializing {@link JSONRPCResponse} subclasses.
+     * <p>
+     * JSON-RPC 2.0 requires that:
+     * <ul>
+     * <li>{@code result} MUST be present (possibly null) on success, and MUST NOT be present on error</li>
+     * <li>{@code error} MUST be present on error, and MUST NOT be present on success</li>
+     * </ul>
+     * Gson's default null-field-skipping behavior would omit {@code "result": null} for Void responses,
+     * so this factory writes the fields explicitly to comply with the spec.
+     */
+    static class JSONRPCResponseTypeAdapterFactory implements TypeAdapterFactory {
+
+        @Override
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public @Nullable <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+            if (!JSONRPCResponse.class.isAssignableFrom(type.getRawType())) {
+                return null;
+            }
+
+            TypeAdapter<T> delegateAdapter = gson.getDelegateAdapter(this, type);
+            TypeAdapter<JSONRPCError> errorAdapter = gson.getAdapter(JSONRPCError.class);
+
+            return new TypeAdapter<T>() {
+                @Override
+                public void write(JsonWriter out, T value) throws java.io.IOException {
+                    if (value == null) {
+                        out.nullValue();
+                        return;
+                    }
+
+                    JSONRPCResponse<?> response = (JSONRPCResponse<?>) value;
+
+                    out.beginObject();
+                    out.name("jsonrpc").value(response.getJsonrpc());
+
+                    Object id = response.getId();
+                    out.name("id");
+                    if (id == null) {
+                        out.nullValue();
+                    } else if (id instanceof Number n) {
+                        out.value(n.longValue());
+                    } else {
+                        out.value(id.toString());
+                    }
+
+                    JSONRPCError error = response.getError();
+                    if (error != null) {
+                        out.name("error");
+                        errorAdapter.write(out, error);
+                    } else {
+                        out.name("result");
+                        Object result = response.getResult();
+                        if (result == null) {
+                            // JsonWriter.nullValue() skips both name+value when serializeNulls=false,
+                            // so we must temporarily enable it to write "result":null as required
+                            // by JSON-RPC 2.0.
+                            boolean prev = out.getSerializeNulls();
+                            out.setSerializeNulls(true);
+                            out.nullValue();
+                            out.setSerializeNulls(prev);
+                        } else {
+                            TypeAdapter resultAdapter = gson.getAdapter(result.getClass());
+                            resultAdapter.write(out, result);
+                        }
+                    }
+
+                    out.endObject();
+                }
+
+                @Override
+                public T read(JsonReader in) throws java.io.IOException {
+                    return delegateAdapter.read(in);
+                }
+            };
+        }
+    }
 }

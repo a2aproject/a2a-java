@@ -10,6 +10,25 @@ import io.a2a.util.Assert;
  * The AgentCard is a self-describing manifest for an agent. It provides essential
  * metadata including the agent's identity, capabilities, skills, supported
  * communication methods, and security requirements.
+ *
+ * @param name the human-readable name of the agent
+ * @param description a human-readable description of the agent
+ * @param url the URL of the agent's primary endpoint
+ * @param provider the organization or individual providing the agent
+ * @param version the version of the agent
+ * @param documentationUrl optional URL to the agent's documentation
+ * @param capabilities the capabilities supported by the agent
+ * @param defaultInputModes the default input content modes supported by the agent
+ * @param defaultOutputModes the default output content modes supported by the agent
+ * @param skills the list of skills the agent can perform
+ * @param supportsAuthenticatedExtendedCard whether the agent supports an authenticated extended card
+ * @param securitySchemes the security scheme definitions available for this agent
+ * @param security the security requirements for accessing the agent
+ * @param iconUrl optional URL to the agent's icon
+ * @param additionalInterfaces additional transport/URL combinations for interacting with the agent
+ * @param preferredTransport the preferred transport protocol
+ * @param protocolVersion the A2A protocol version supported by the agent
+ * @param signatures optional JWS signatures of the agent card
  */
 public record AgentCard(String name, String description, String url, AgentProvider provider,
                         String version, String documentationUrl, AgentCapabilities capabilities,

@@ -8,6 +8,10 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Parameters for fetching a pushNotificationConfiguration associated with a Task.
+ *
+ * @param id the task ID
+ * @param pushNotificationConfigId optional ID of a specific push notification configuration to retrieve
+ * @param metadata optional additional metadata
  */
 public record GetTaskPushNotificationConfigParams(String id, @Nullable String pushNotificationConfigId, @Nullable Map<String, Object> metadata) {
 
