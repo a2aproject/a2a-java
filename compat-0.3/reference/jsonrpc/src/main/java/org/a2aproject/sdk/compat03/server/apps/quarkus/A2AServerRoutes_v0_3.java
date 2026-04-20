@@ -33,6 +33,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import org.a2aproject.sdk.compat03.common.A2AHeaders_v0_3;
+import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
@@ -170,10 +171,11 @@ public class A2AServerRoutes_v0_3 {
      * Returns the agent card in JSON format.
      *
      * @return the agent card
+     * @throws JsonProcessingException_v0_3 if serialization fails
      */
     @Route(path = "/.well-known/agent-card.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
-    public AgentCard_v0_3 getAgentCard() {
-        return jsonRpcHandler.getAgentCard();
+    public String getAgentCard() throws JsonProcessingException_v0_3 {
+        return JsonUtil_v0_3.toJson(jsonRpcHandler.getAgentCard());
     }
 
     private NonStreamingJSONRPCRequest_v0_3<?> deserializeNonStreamingRequest(String body, String methodName) {
