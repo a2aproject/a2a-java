@@ -138,6 +138,10 @@ public class Convert_v0_3_To10RequestHandler {
         // Convert v0.3 params → v1.0 params
         MessageSendParams v10Params = MessageSendParamsMapper_v0_3.INSTANCE.toV10(v03Params);
 
+        // Enable v0.3 compatibility mode: disable strict context ID validation
+        // v0.3 allowed messages with both taskId and contextId even if they didn't match
+        context.getState().put(ServerCallContext.STRICT_CONTEXT_VALIDATION_KEY, false);
+
         // Call v1.0 handler
         EventKind v10Result = v10Handler.onMessageSend(v10Params, context);
 
@@ -161,6 +165,10 @@ public class Convert_v0_3_To10RequestHandler {
 
         // Convert v0.3 params → v1.0 params
         MessageSendParams v10Params = MessageSendParamsMapper_v0_3.INSTANCE.toV10(v03Params);
+
+        // Enable v0.3 compatibility mode: disable strict context ID validation
+        // v0.3 allowed messages with both taskId and contextId even if they didn't match
+        context.getState().put(ServerCallContext.STRICT_CONTEXT_VALIDATION_KEY, false);
 
         // Get v1.0 publisher
         Flow.Publisher<StreamingEventKind> v10Publisher =
