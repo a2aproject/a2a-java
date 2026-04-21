@@ -15,6 +15,14 @@ public class ServerCallContext {
      */
     public static final String TRANSPORT_KEY = "transport";
 
+    /**
+     * Key for context ID validation mode in the state map.
+     * Value should be a {@link Boolean}.
+     * If true or absent, strict validation is enabled (v1.0 behavior).
+     * If false, context ID mismatch validation is skipped (v0.3 compatibility).
+     */
+    public static final String STRICT_CONTEXT_VALIDATION_KEY = "strictContextValidation";
+
     // TODO Not totally sure yet about these field types
     private final Map<Object, Object> modelConfig = new ConcurrentHashMap<>();
     private final Map<String, Object> state;
@@ -30,7 +38,8 @@ public class ServerCallContext {
 
     public ServerCallContext(User user, Map<String, Object> state, Set<String> requestedExtensions, @Nullable String requestedProtocolVersion) {
         this.user = user;
-        this.state = state;
+        this.state = new ConcurrentHashMap<>();
+        this.state.putAll(state);
         this.requestedExtensions = new HashSet<>(requestedExtensions);
         this.activatedExtensions = new HashSet<>(); // Always starts empty, populated later by application code
         this.requestedProtocolVersion = requestedProtocolVersion;

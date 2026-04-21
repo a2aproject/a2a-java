@@ -1,0 +1,55 @@
+package org.a2aproject.sdk.compat03.client.transport.spi.interceptors.auth;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.ClientCallContext_v0_3;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * A simple in-memory store for session-keyed credentials.
+ * This class uses the 'sessionId' from the {@code ClientCallContext} state to
+ * store and retrieve credentials
+ */
+public class InMemoryContextCredentialService_v0_3 implements CredentialService_v0_3 {
+
+    private static final String SESSION_ID = "sessionId";
+
+    // maps a sessionId to a map of security scheme names to credentials
+    private final ConcurrentMap<String, ConcurrentMap<String, String>> credentialStore;
+
+    public InMemoryContextCredentialService_v0_3() {
+        credentialStore = new ConcurrentHashMap<>();
+    }
+
+    @Override
+    public @Nullable String getCredential(String securitySchemeName,
+                                @Nullable ClientCallContext_v0_3 clientCallContext) {
+        if (clientCallContext == null || !clientCallContext.getState().containsKey(SESSION_ID)) {
+            // no credential to retrieve
+            return null;
+        }
+
+        Object sessionIdObj = clientCallContext.getState().get(SESSION_ID);
+        if (! (sessionIdObj instanceof String sessionId)) {
+            return null;
+        }
+        Map<String, String> sessionCredentials = credentialStore.get(sessionId);
+        if (sessionCredentials == null) {
+            return null;
+        }
+        return sessionCredentials.get(securitySchemeName);
+    }
+
+    /**
+     * Method to populate the in-memory credential service.
+     *
+     * @param sessionId the session ID
+     * @param securitySchemeName the name of the security scheme
+     * @param credential the credential string
+     */
+    public void setCredential(String sessionId, String securitySchemeName, String credential) {
+        credentialStore.computeIfAbsent(sessionId, k -> new ConcurrentHashMap<>()).put(securitySchemeName, credential);
+    }
+}

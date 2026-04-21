@@ -1021,7 +1021,7 @@ public class DefaultRequestHandler implements RequestHandler {
     }
 
     private MessageSendSetup initMessageSend(MessageSendParams params, ServerCallContext context) throws A2AError {
-        Task task = validateRequestedTask(params);
+        Task task = validateRequestedTask(params, context);
         MessageSendParams requestParams = task == null ? params : normalizeRequestParamsForTask(params, task);
 
         RequestContext requestContext = requestContextBuilder.get()
@@ -1078,7 +1078,7 @@ public class DefaultRequestHandler implements RequestHandler {
         }
     }
 
-    private @Nullable Task validateRequestedTask(MessageSendParams params) throws A2AError {
+    private @Nullable Task validateRequestedTask(MessageSendParams params, ServerCallContext context) throws A2AError {
         String requestedTaskId = params.message().taskId();
         if (requestedTaskId == null) {
             return null;
@@ -1089,8 +1089,18 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new TaskNotFoundError();
         }
 
+        // Check if strict context validation is enabled (default true for v1.0 behavior)
+        // Context might be null in unit tests
+        boolean strictValidation = true;
+        if (context != null) {
+            Object strictValidationObj = context.getState().get(ServerCallContext.STRICT_CONTEXT_VALIDATION_KEY);
+            if (strictValidationObj instanceof Boolean) {
+                strictValidation = (Boolean) strictValidationObj;
+            }
+        }
+
         String messageContextId = params.message().contextId();
-        if (messageContextId != null && !messageContextId.equals(task.contextId())) {
+        if (strictValidation && messageContextId != null && !messageContextId.equals(task.contextId())) {
             throw new InvalidParamsError(String.format(
                     "Message has a mismatched context ID (Task %s has contextId %s but message has contextId %s)",
                     task.id(), task.contextId(), messageContextId));
