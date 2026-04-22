@@ -2,16 +2,17 @@ package io.a2a.spec;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.a2a.util.Assert;
 
 /**
  * Defines configuration details for the OAuth 2.0 Authorization Code flow.
+ *
+ * @param authorizationUrl the URL for the authorization endpoint
+ * @param refreshUrl optional URL for obtaining refresh tokens
+ * @param scopes the available scopes mapped to their descriptions
+ * @param tokenUrl the URL for the token endpoint
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record AuthorizationCodeOAuthFlow(String authorizationUrl, String refreshUrl, Map<String, String> scopes,
                                          String tokenUrl) {
 

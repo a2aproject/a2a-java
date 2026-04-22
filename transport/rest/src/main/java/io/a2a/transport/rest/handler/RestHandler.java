@@ -2,7 +2,8 @@ package io.a2a.transport.rest.handler;
 
 import static io.a2a.server.util.async.AsyncUtils.createTubeConfig;
 
-import com.fasterxml.jackson.core.JacksonException;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.a2a.grpc.utils.ProtoUtils;
@@ -41,7 +42,7 @@ import io.a2a.spec.TaskPushNotificationConfig;
 import io.a2a.spec.TaskQueryParams;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.server.util.async.Internal;
-import io.a2a.util.Utils;
+import io.a2a.json.JsonUtil;
 import jakarta.enterprise.inject.Instance;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -238,8 +239,8 @@ public class RestHandler {
 
     private void validate(String json) {
         try {
-            Utils.OBJECT_MAPPER.readTree(json);
-        } catch (JacksonException e) {
+            JsonParser.parseString(json);
+        } catch (JsonSyntaxException e) {
             throw new JSONParseError(JSONParseError.DEFAULT_CODE, "Failed to parse json", e.getMessage());
         }
     }
@@ -346,9 +347,9 @@ public class RestHandler {
     public HTTPRestResponse getAuthenticatedExtendedCard() {
         try {
             if (!agentCard.supportsAuthenticatedExtendedCard() || extendedAgentCard == null || !extendedAgentCard.isResolvable()) {
-                throw new AuthenticatedExtendedCardNotConfiguredError();
+                throw new AuthenticatedExtendedCardNotConfiguredError(null, "Authenticated Extended Card not configured", null);
             }
-            return new HTTPRestResponse(200, "application/json", Utils.OBJECT_MAPPER.writeValueAsString(extendedAgentCard.get()));
+            return new HTTPRestResponse(200, "application/json", JsonUtil.toJson(extendedAgentCard.get()));
         } catch (JSONRPCError e) {
             return createErrorResponse(e);
         } catch (Throwable t) {
@@ -358,7 +359,7 @@ public class RestHandler {
 
     public HTTPRestResponse getAgentCard() {
         try {
-            return new HTTPRestResponse(200, "application/json", Utils.OBJECT_MAPPER.writeValueAsString(agentCard));
+            return new HTTPRestResponse(200, "application/json", JsonUtil.toJson(agentCard));
         } catch (Throwable t) {
             return createErrorResponse(500, new InternalError(t.getMessage()));
         }

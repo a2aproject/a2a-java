@@ -1,13 +1,13 @@
 package io.a2a.spec;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 /**
  * Defines the configuration for the supported OAuth 2.0 flows.
+ *
+ * @param authorizationCode configuration for the Authorization Code flow
+ * @param clientCredentials configuration for the Client Credentials flow
+ * @param implicit configuration for the Implicit flow
+ * @param password configuration for the Resource Owner Password flow
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record OAuthFlows(AuthorizationCodeOAuthFlow authorizationCode, ClientCredentialsOAuthFlow clientCredentials,
                          ImplicitOAuthFlow implicit, PasswordOAuthFlow password) {
 

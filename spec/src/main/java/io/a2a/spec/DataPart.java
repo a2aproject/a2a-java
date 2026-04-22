@@ -2,21 +2,12 @@ package io.a2a.spec;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.a2a.util.Assert;
 
-import static io.a2a.spec.DataPart.DATA;
 
 /**
  * Represents a structured data segment (e.g., JSON) within a message or artifact.
  */
-@JsonTypeName(DATA)
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class DataPart extends Part<Map<String, Object>> {
 
     public static final String DATA = "data";
@@ -28,9 +19,7 @@ public class DataPart extends Part<Map<String, Object>> {
         this(data, null);
     }
 
-    @JsonCreator
-    public DataPart(@JsonProperty("data") Map<String, Object> data,
-                    @JsonProperty("metadata") Map<String, Object> metadata) {
+    public DataPart(Map<String, Object> data, Map<String, Object> metadata) {
         Assert.checkNotNullParam("data", data);
         this.data = data;
         this.metadata = metadata;

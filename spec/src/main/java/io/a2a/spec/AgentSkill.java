@@ -3,15 +3,20 @@ package io.a2a.spec;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.a2a.util.Assert;
 
 /**
  * The set of skills, or distinct capabilities, that the agent can perform.
+ *
+ * @param id a unique identifier for the skill
+ * @param name the human-readable name of the skill
+ * @param description a human-readable description of the skill
+ * @param tags tags for categorizing or discovering the skill
+ * @param examples example prompts or use cases for the skill
+ * @param inputModes the content modes accepted as input by the skill
+ * @param outputModes the content modes produced as output by the skill
+ * @param security optional security requirements specific to this skill
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record AgentSkill(String id, String name, String description, List<String> tags,
                          List<String> examples, List<String> inputModes, List<String> outputModes,
                          List<Map<String, List<String>>> security) {

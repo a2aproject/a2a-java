@@ -37,7 +37,7 @@ public class Client extends AbstractClient {
 
     private final ClientConfig clientConfig;
     private final ClientTransport clientTransport;
-    private AgentCard agentCard;
+    private volatile AgentCard agentCard;
 
     Client(AgentCard agentCard, ClientConfig clientConfig, ClientTransport clientTransport,
                   List<BiConsumer<ClientEvent, AgentCard>> consumers, @Nullable Consumer<Throwable> streamingErrorHandler) {
@@ -127,8 +127,18 @@ public class Client extends AbstractClient {
 
     @Override
     public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
-        agentCard = clientTransport.getAgentCard(context);
-        return agentCard;
+        // Fast path - avoid synchronization if already initialized
+        if (agentCard != null) {
+            return agentCard;
+        }
+
+        synchronized (this) {
+            // Double-check inside synchronized block
+            if (agentCard == null) {
+                agentCard = clientTransport.getAgentCard(context);
+            }
+            return agentCard;
+        }
     }
 
     @Override

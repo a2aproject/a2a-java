@@ -4,25 +4,16 @@ import static io.a2a.util.Utils.defaultIfNull;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.a2a.util.Assert;
 
 /**
  * Used to set a task push notification request.
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<TaskPushNotificationConfig> {
 
     public static final String METHOD = "tasks/pushNotificationConfig/set";
 
-    @JsonCreator
-    public SetTaskPushNotificationConfigRequest(@JsonProperty("jsonrpc") String jsonrpc, @JsonProperty("id") Object id,
-                                                @JsonProperty("method") String method, @JsonProperty("params") TaskPushNotificationConfig params) {
+    public SetTaskPushNotificationConfigRequest(String jsonrpc, Object id, String method, TaskPushNotificationConfig params) {
         if (jsonrpc != null && ! jsonrpc.equals(JSONRPC_VERSION)) {
             throw new IllegalArgumentException("Invalid JSON-RPC protocol version");
         }
@@ -31,7 +22,7 @@ public final class SetTaskPushNotificationConfigRequest extends NonStreamingJSON
             throw new IllegalArgumentException("Invalid SetTaskPushNotificationRequest method");
         }
         Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;

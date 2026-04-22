@@ -1,6 +1,5 @@
 package io.a2a.server.apps.common;
 
-import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -31,7 +30,7 @@ import java.util.stream.Stream;
 
 import jakarta.ws.rs.core.MediaType;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.a2a.json.JsonProcessingException;
 import io.a2a.client.Client;
 import io.a2a.client.ClientBuilder;
 import io.a2a.client.ClientEvent;
@@ -72,7 +71,11 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.TransportProtocol;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.json.JsonUtil;
 import io.a2a.util.Utils;
+import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -113,6 +116,13 @@ public abstract class AbstractA2AServerTest {
             .parts(new TextPart("test message"))
             .build();
     public static final String APPLICATION_JSON = "application/json";
+
+    public static RequestSpecification given() {
+    return RestAssured.given()
+        .config(RestAssured.config()
+            .objectMapperConfig(new ObjectMapperConfig(A2AGsonObjectMapper.INSTANCE)));
+}
+
 
     protected final int serverPort;
     private Client client;
@@ -1355,7 +1365,7 @@ public abstract class AbstractA2AServerTest {
         // Create the request
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + serverPort + "/"))
-                .POST(HttpRequest.BodyPublishers.ofString(Utils.OBJECT_MAPPER.writeValueAsString(request)))
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtil.toJson(request)))
                 .header("Content-Type", APPLICATION_JSON);
         if (mediaType != null) {
             builder.header("Accept", mediaType);
@@ -1370,7 +1380,7 @@ public abstract class AbstractA2AServerTest {
     private SendStreamingMessageResponse extractJsonResponseFromSseLine(String line) throws JsonProcessingException {
         line = extractSseData(line);
         if (line != null) {
-            return Utils.OBJECT_MAPPER.readValue(line, SendStreamingMessageResponse.class);
+            return JsonUtil.fromJson(line, SendStreamingMessageResponse.class);
         }
         return null;
     }
@@ -1407,7 +1417,7 @@ public abstract class AbstractA2AServerTest {
                 .build();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + serverPort + "/test/task"))
-                .POST(HttpRequest.BodyPublishers.ofString(Utils.OBJECT_MAPPER.writeValueAsString(task)))
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtil.toJson(task)))
                 .header("Content-Type", APPLICATION_JSON)
                 .build();
 
@@ -1433,7 +1443,7 @@ public abstract class AbstractA2AServerTest {
         if (response.statusCode() != 200) {
             throw new RuntimeException(String.format("Getting task failed! Status: %d, Body: %s", response.statusCode(), response.body()));
         }
-        return Utils.OBJECT_MAPPER.readValue(response.body(), Task.TYPE_REFERENCE);
+        return JsonUtil.fromJson(response.body(), Task.class);
     }
 
     protected void deleteTaskInTaskStore(String taskId) throws Exception {
@@ -1480,7 +1490,7 @@ public abstract class AbstractA2AServerTest {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + serverPort + "/" + path))
                 .header("Content-Type", APPLICATION_JSON)
-                .POST(HttpRequest.BodyPublishers.ofString(Utils.OBJECT_MAPPER.writeValueAsString(event)))
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtil.toJson(event)))
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
@@ -1569,7 +1579,7 @@ public abstract class AbstractA2AServerTest {
                 .build();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + serverPort + "/test/task/" + taskId))
-                .POST(HttpRequest.BodyPublishers.ofString(Utils.OBJECT_MAPPER.writeValueAsString(notificationConfig)))
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtil.toJson(notificationConfig)))
                 .header("Content-Type", APPLICATION_JSON)
                 .build();
 

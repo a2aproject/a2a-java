@@ -7,9 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-
+import io.a2a.json.JsonProcessingException;
+import io.a2a.json.JsonUtil;
 import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
@@ -58,24 +57,22 @@ import io.a2a.client.transport.jsonrpc.sse.SSEEventListener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.a2a.util.Utils;
-
 public class JSONRPCTransport implements ClientTransport {
 
-    private static final TypeReference<SendMessageResponse> SEND_MESSAGE_RESPONSE_REFERENCE = new TypeReference<>() {};
-    private static final TypeReference<GetTaskResponse> GET_TASK_RESPONSE_REFERENCE = new TypeReference<>() {};
-    private static final TypeReference<CancelTaskResponse> CANCEL_TASK_RESPONSE_REFERENCE = new TypeReference<>() {};
-    private static final TypeReference<GetTaskPushNotificationConfigResponse> GET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
-    private static final TypeReference<SetTaskPushNotificationConfigResponse> SET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
-    private static final TypeReference<ListTaskPushNotificationConfigResponse> LIST_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
-    private static final TypeReference<DeleteTaskPushNotificationConfigResponse> DELETE_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = new TypeReference<>() {};
-    private static final TypeReference<GetAuthenticatedExtendedCardResponse> GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE = new TypeReference<>() {};
+    private static final Class<SendMessageResponse> SEND_MESSAGE_RESPONSE_REFERENCE = SendMessageResponse.class;
+    private static final Class<GetTaskResponse> GET_TASK_RESPONSE_REFERENCE = GetTaskResponse.class;
+    private static final Class<CancelTaskResponse> CANCEL_TASK_RESPONSE_REFERENCE = CancelTaskResponse.class;
+    private static final Class<GetTaskPushNotificationConfigResponse> GET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = GetTaskPushNotificationConfigResponse.class;
+    private static final Class<SetTaskPushNotificationConfigResponse> SET_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = SetTaskPushNotificationConfigResponse.class;
+    private static final Class<ListTaskPushNotificationConfigResponse> LIST_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = ListTaskPushNotificationConfigResponse.class;
+    private static final Class<DeleteTaskPushNotificationConfigResponse> DELETE_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE = DeleteTaskPushNotificationConfigResponse.class;
+    private static final Class<GetAuthenticatedExtendedCardResponse> GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE = GetAuthenticatedExtendedCardResponse.class;
 
     private final A2AHttpClient httpClient;
     private final String agentUrl;
     private final List<ClientCallInterceptor> interceptors;
-    private AgentCard agentCard;
-    private boolean needsExtendedCard = false;
+    private volatile AgentCard agentCard;
+    private volatile boolean needsExtendedCard = false;
 
     public JSONRPCTransport(String agentUrl) {
         this(null, null, agentUrl, null);
@@ -112,7 +109,7 @@ public class JSONRPCTransport implements ClientTransport {
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to send message: " + e, e);
         }
     }
@@ -147,6 +144,8 @@ public class JSONRPCTransport implements ClientTransport {
             throw new A2AClientException("Failed to send streaming message request: " + e, e);
         } catch (InterruptedException e) {
             throw new A2AClientException("Send streaming message request timed out: " + e, e);
+        } catch (JsonProcessingException e) {
+            throw new A2AClientException("Failed to process JSON for streaming message request: " + e, e);
         }
     }
 
@@ -168,7 +167,7 @@ public class JSONRPCTransport implements ClientTransport {
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to get task: " + e, e);
         }
     }
@@ -191,7 +190,7 @@ public class JSONRPCTransport implements ClientTransport {
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to cancel task: " + e, e);
         }
     }
@@ -216,7 +215,7 @@ public class JSONRPCTransport implements ClientTransport {
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to set task push notification config: " + e, e);
         }
     }
@@ -241,7 +240,7 @@ public class JSONRPCTransport implements ClientTransport {
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to get task push notification config: " + e, e);
         }
     }
@@ -267,7 +266,7 @@ public class JSONRPCTransport implements ClientTransport {
             return response.getResult();
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to list task push notification configs: " + e, e);
         }
     }
@@ -290,7 +289,7 @@ public class JSONRPCTransport implements ClientTransport {
             unmarshalResponse(httpResponseBody, DELETE_TASK_PUSH_NOTIFICATION_CONFIG_RESPONSE_REFERENCE);
         } catch (A2AClientException e) {
             throw e;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | JsonProcessingException e) {
             throw new A2AClientException("Failed to delete task push notification configs: " + e, e);
         }
     }
@@ -326,42 +325,53 @@ public class JSONRPCTransport implements ClientTransport {
             throw new A2AClientException("Failed to send task resubscription request: " + e, e);
         } catch (InterruptedException e) {
             throw new A2AClientException("Task resubscription request timed out: " + e, e);
+        } catch (JsonProcessingException e) {
+            throw new A2AClientException("Failed to process JSON for task resubscription request: " + e, e);
         }
     }
 
     @Override
     public AgentCard getAgentCard(ClientCallContext context) throws A2AClientException {
-        A2ACardResolver resolver;
-        try {
-            if (agentCard == null) {
-                resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
-                agentCard = resolver.getAgentCard();
-                needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
-            }
-            if (!needsExtendedCard) {
-                return agentCard;
-            }
+        // Fast path - avoid synchronization if already initialized
+        if (agentCard != null && !needsExtendedCard) {
+            return agentCard;
+        }
 
-            GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = new GetAuthenticatedExtendedCardRequest.Builder()
-                    .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                    .method(GetAuthenticatedExtendedCardRequest.METHOD)
-                    .build(); // id will be randomly generated
-
-            PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest.METHOD,
-                    getExtendedAgentCardRequest, agentCard, context);
-
+        synchronized (this) {
+            // Double-check inside synchronized block
+            A2ACardResolver resolver;
             try {
-                String httpResponseBody = sendPostRequest(payloadAndHeaders);
-                GetAuthenticatedExtendedCardResponse response = unmarshalResponse(httpResponseBody,
-                        GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE);
-                agentCard = response.getResult();
-                needsExtendedCard = false;
-                return agentCard;
-            } catch (IOException | InterruptedException e) {
-                throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
+                if (agentCard == null) {
+                    resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
+                    agentCard = resolver.getAgentCard();
+                    needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
+                }
+                if (!needsExtendedCard) {
+                    return agentCard;
+                }
+
+                // Extended card fetch logic remains inside synchronized block
+                GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = new GetAuthenticatedExtendedCardRequest.Builder()
+                        .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                        .method(GetAuthenticatedExtendedCardRequest.METHOD)
+                        .build(); // id will be randomly generated
+
+                PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest.METHOD,
+                        getExtendedAgentCardRequest, agentCard, context);
+
+                try {
+                    String httpResponseBody = sendPostRequest(payloadAndHeaders);
+                    GetAuthenticatedExtendedCardResponse response = unmarshalResponse(httpResponseBody,
+                            GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE);
+                    agentCard = response.getResult();
+                    needsExtendedCard = false;
+                    return agentCard;
+                } catch (IOException | InterruptedException | JsonProcessingException e) {
+                    throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
+                }
+            } catch(A2AClientError e){
+                throw new A2AClientException("Failed to get agent card: " + e, e);
             }
-        } catch(A2AClientError e){
-            throw new A2AClientException("Failed to get agent card: " + e, e);
         }
     }
 
@@ -382,7 +392,7 @@ public class JSONRPCTransport implements ClientTransport {
         return payloadAndHeaders;
     }
 
-    private String sendPostRequest(PayloadAndHeaders payloadAndHeaders) throws IOException, InterruptedException {
+    private String sendPostRequest(PayloadAndHeaders payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException {
         A2AHttpClient.PostBuilder builder = createPostBuilder(payloadAndHeaders);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
@@ -395,7 +405,7 @@ public class JSONRPCTransport implements ClientTransport {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(agentUrl)
                 .addHeader("Content-Type", "application/json")
-                .body(Utils.OBJECT_MAPPER.writeValueAsString(payloadAndHeaders.getPayload()));
+                .body(JsonUtil.toJson(payloadAndHeaders.getPayload()));
 
         if (payloadAndHeaders.getHeaders() != null) {
             for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
@@ -406,9 +416,9 @@ public class JSONRPCTransport implements ClientTransport {
         return postBuilder;
     }
 
-    private <T extends JSONRPCResponse<?>> T unmarshalResponse(String response, TypeReference<T> typeReference)
+    private <T extends JSONRPCResponse<?>> T unmarshalResponse(String response, Class<T> responseClass)
             throws A2AClientException, JsonProcessingException {
-        T value = Utils.unmarshalFrom(response, typeReference);
+        T value = JsonUtil.fromJson(response, responseClass);
         JSONRPCError error = value.getError();
         if (error != null) {
             throw new A2AClientException(error.getMessage() + (error.getData() != null ? ": " + error.getData() : ""), error);

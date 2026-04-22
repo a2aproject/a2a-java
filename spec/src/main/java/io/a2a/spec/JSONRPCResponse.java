@@ -2,16 +2,13 @@ package io.a2a.spec;
 
 import static io.a2a.util.Utils.defaultIfNull;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import io.a2a.util.Assert;
 
 /**
  * Represents a JSONRPC response.
+ *
+ * @param <T> the type of the response result
  */
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permits SendStreamingMessageResponse,
         GetTaskResponse, CancelTaskResponse, SetTaskPushNotificationConfigResponse, GetTaskPushNotificationConfigResponse,
         SendMessageResponse, DeleteTaskPushNotificationConfigResponse, ListTaskPushNotificationConfigResponse, JSONRPCErrorResponse,
@@ -35,7 +32,7 @@ public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permit
         if (error == null && result == null && ! Void.class.equals(resultType)) {
             throw new IllegalArgumentException("Invalid JSON-RPC success response");
         }
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.result = result;
