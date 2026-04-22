@@ -195,6 +195,22 @@ public class JsonUtil {
      */
     static class ThrowableTypeAdapter extends TypeAdapter<Throwable> {
 
+        private static final java.util.Set<String> ALLOWED_THROWABLE_PACKAGES = java.util.Set.of(
+            "java.lang.",
+            "java.io.",
+            "io.a2a."
+        );
+
+        private static final java.util.Set<String> ALLOWED_THROWABLE_CLASSES = java.util.Set.of(
+            "java.lang.Exception",
+            "java.lang.RuntimeException",
+            "java.lang.IllegalArgumentException",
+            "java.lang.IllegalStateException",
+            "java.lang.NullPointerException",
+            "java.lang.UnsupportedOperationException",
+            "java.io.IOException"
+        );
+
         @Override
         public void write(JsonWriter out, Throwable value) throws java.io.IOException {
             if (value == null) {
@@ -235,6 +251,15 @@ public class JsonUtil {
 
             // Try to reconstruct the Throwable
             if (type != null) {
+                // Validate class name before loading to prevent CWE-470 vulnerability
+                boolean allowed = ALLOWED_THROWABLE_CLASSES.contains(type) ||
+                                 ALLOWED_THROWABLE_PACKAGES.stream().anyMatch(type::startsWith);
+
+                if (!allowed) {
+                    // Return generic RuntimeException for untrusted types
+                    return new RuntimeException("Error type '" + type + "': " + message);
+                }
+
                 try {
                     Class<?> throwableClass = Class.forName(type);
                     if (Throwable.class.isAssignableFrom(throwableClass)) {

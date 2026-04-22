@@ -49,7 +49,7 @@ public class JSONRPCUtilsTest {
         assertInstanceOf(SetTaskPushNotificationConfigRequest.class, request);
         SetTaskPushNotificationConfigRequest setRequest = (SetTaskPushNotificationConfigRequest) request;
         assertEquals("2.0", setRequest.getJsonrpc());
-        assertEquals(1, setRequest.getId());
+        assertEquals(1L, setRequest.getId());
         assertEquals(SetTaskPushNotificationConfigRequest.METHOD, setRequest.getMethod());
 
         TaskPushNotificationConfig config = setRequest.getParams();
@@ -78,7 +78,7 @@ public class JSONRPCUtilsTest {
         assertInstanceOf(GetTaskPushNotificationConfigRequest.class, request);
         GetTaskPushNotificationConfigRequest getRequest = (GetTaskPushNotificationConfigRequest) request;
         assertEquals("2.0", getRequest.getJsonrpc());
-        assertEquals(2, getRequest.getId());
+        assertEquals(2L, getRequest.getId());
         assertEquals(GetTaskPushNotificationConfigRequest.METHOD, getRequest.getMethod());
         assertNotNull(getRequest.getParams());
         assertEquals("task-123", getRequest.getParams().id());
@@ -114,7 +114,7 @@ public class JSONRPCUtilsTest {
             InvalidParamsJsonMappingException.class,
             () -> JSONRPCUtils.parseRequestBody(invalidParamsRequest)
         );
-        assertEquals(3, exception.getId());
+        assertEquals(3L, exception.getId());
     }
 
     @Test
@@ -134,7 +134,7 @@ public class JSONRPCUtilsTest {
             InvalidParamsJsonMappingException.class,
             () -> JSONRPCUtils.parseRequestBody(invalidStructure)
         );
-        assertEquals(4, exception.getId());
+        assertEquals(4L, exception.getId());
     }
 
     @Test
@@ -165,7 +165,7 @@ public class JSONRPCUtilsTest {
             (SetTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(responseJson, SetTaskPushNotificationConfigRequest.METHOD);
 
         assertNotNull(response);
-        assertEquals(1, response.getId());
+        assertEquals(1L, response.getId());
         assertNotNull(response.getResult());
         assertEquals("task-123", response.getResult().taskId());
         assertEquals("https://example.com/callback", response.getResult().pushNotificationConfig().url());
@@ -191,7 +191,7 @@ public class JSONRPCUtilsTest {
             (GetTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(responseJson, GetTaskPushNotificationConfigRequest.METHOD);
 
         assertNotNull(response);
-        assertEquals(2, response.getId());
+        assertEquals(2L, response.getId());
         assertNotNull(response.getResult());
         assertEquals("task-123", response.getResult().taskId());
         assertEquals("https://example.com/callback", response.getResult().pushNotificationConfig().url());
@@ -214,7 +214,7 @@ public class JSONRPCUtilsTest {
             (SetTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SetTaskPushNotificationConfigRequest.METHOD);
 
         assertNotNull(response);
-        assertEquals(5, response.getId());
+        assertEquals(5L, response.getId());
         assertNotNull(response.getError());
         assertInstanceOf(InvalidParamsError.class, response.getError());
         assertEquals(-32602, response.getError().getCode());
@@ -238,7 +238,7 @@ public class JSONRPCUtilsTest {
             (SetTaskPushNotificationConfigResponse) JSONRPCUtils.parseResponseBody(errorResponse, SetTaskPushNotificationConfigRequest.METHOD);
 
         assertNotNull(response);
-        assertEquals(6, response.getId());
+        assertEquals(6L, response.getId());
         assertNotNull(response.getError());
         assertInstanceOf(JSONParseError.class, response.getError());
         assertEquals(-32700, response.getError().getCode());

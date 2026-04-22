@@ -71,8 +71,8 @@ public class JSONRPCTransport implements ClientTransport {
     private final A2AHttpClient httpClient;
     private final String agentUrl;
     private final List<ClientCallInterceptor> interceptors;
-    private AgentCard agentCard;
-    private boolean needsExtendedCard = false;
+    private volatile AgentCard agentCard;
+    private volatile boolean needsExtendedCard = false;
 
     public JSONRPCTransport(String agentUrl) {
         this(null, null, agentUrl, null);
@@ -332,37 +332,46 @@ public class JSONRPCTransport implements ClientTransport {
 
     @Override
     public AgentCard getAgentCard(ClientCallContext context) throws A2AClientException {
-        A2ACardResolver resolver;
-        try {
-            if (agentCard == null) {
-                resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
-                agentCard = resolver.getAgentCard();
-                needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
-            }
-            if (!needsExtendedCard) {
-                return agentCard;
-            }
+        // Fast path - avoid synchronization if already initialized
+        if (agentCard != null && !needsExtendedCard) {
+            return agentCard;
+        }
 
-            GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = new GetAuthenticatedExtendedCardRequest.Builder()
-                    .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
-                    .method(GetAuthenticatedExtendedCardRequest.METHOD)
-                    .build(); // id will be randomly generated
-
-            PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest.METHOD,
-                    getExtendedAgentCardRequest, agentCard, context);
-
+        synchronized (this) {
+            // Double-check inside synchronized block
+            A2ACardResolver resolver;
             try {
-                String httpResponseBody = sendPostRequest(payloadAndHeaders);
-                GetAuthenticatedExtendedCardResponse response = unmarshalResponse(httpResponseBody,
-                        GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE);
-                agentCard = response.getResult();
-                needsExtendedCard = false;
-                return agentCard;
-            } catch (IOException | InterruptedException | JsonProcessingException e) {
-                throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
+                if (agentCard == null) {
+                    resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
+                    agentCard = resolver.getAgentCard();
+                    needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
+                }
+                if (!needsExtendedCard) {
+                    return agentCard;
+                }
+
+                // Extended card fetch logic remains inside synchronized block
+                GetAuthenticatedExtendedCardRequest getExtendedAgentCardRequest = new GetAuthenticatedExtendedCardRequest.Builder()
+                        .jsonrpc(JSONRPCMessage.JSONRPC_VERSION)
+                        .method(GetAuthenticatedExtendedCardRequest.METHOD)
+                        .build(); // id will be randomly generated
+
+                PayloadAndHeaders payloadAndHeaders = applyInterceptors(GetAuthenticatedExtendedCardRequest.METHOD,
+                        getExtendedAgentCardRequest, agentCard, context);
+
+                try {
+                    String httpResponseBody = sendPostRequest(payloadAndHeaders);
+                    GetAuthenticatedExtendedCardResponse response = unmarshalResponse(httpResponseBody,
+                            GET_AUTHENTICATED_EXTENDED_CARD_RESPONSE_REFERENCE);
+                    agentCard = response.getResult();
+                    needsExtendedCard = false;
+                    return agentCard;
+                } catch (IOException | InterruptedException | JsonProcessingException e) {
+                    throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
+                }
+            } catch(A2AClientError e){
+                throw new A2AClientException("Failed to get agent card: " + e, e);
             }
-        } catch(A2AClientError e){
-            throw new A2AClientException("Failed to get agent card: " + e, e);
         }
     }
 

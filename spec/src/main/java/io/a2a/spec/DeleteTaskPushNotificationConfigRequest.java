@@ -20,7 +20,7 @@ public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJ
         if (! method.equals(METHOD)) {
             throw new IllegalArgumentException("Invalid DeleteTaskPushNotificationConfigRequest method");
         }
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;

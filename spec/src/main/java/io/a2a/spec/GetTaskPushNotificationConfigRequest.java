@@ -20,7 +20,7 @@ public final class GetTaskPushNotificationConfigRequest extends NonStreamingJSON
         if (! method.equals(METHOD)) {
             throw new IllegalArgumentException("Invalid GetTaskPushNotificationRequest method");
         }
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;

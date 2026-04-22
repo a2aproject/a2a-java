@@ -22,9 +22,15 @@ public final class Assert {
         if (value == null) throw new IllegalArgumentException("Parameter '" + name + "' may not be null");
     }
 
-    public static void isNullOrStringOrInteger(Object value) {
-        if (! (value == null || value instanceof String || value instanceof Integer)) {
-            throw new IllegalArgumentException("Id must be null, a String, or an Integer");
+    /**
+     * Validates that a value is a valid JSON-RPC ID (null, String, Integer, or Long).
+     *
+     * @param value the value to validate
+     * @throws IllegalArgumentException if the value is not a valid JSON-RPC ID type
+     */
+    public static void isValidJsonRpcId(Object value) {
+        if (! (value == null || value instanceof String || value instanceof Integer || value instanceof Long)) {
+            throw new IllegalArgumentException("Id must be null, a String, an Integer, or a Long");
         }
     }
 

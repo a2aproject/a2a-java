@@ -21,7 +21,7 @@ public final class GetAuthenticatedExtendedCardRequest extends NonStreamingJSONR
         if (! method.equals(METHOD)) {
             throw new IllegalArgumentException("Invalid GetAuthenticatedExtendedCardRequest method");
         }
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = Utils.defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;

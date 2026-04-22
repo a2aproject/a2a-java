@@ -185,10 +185,12 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             return httpClient.sendAsync(request, bodyHandler)
                     .thenAccept(response -> {
                         // Handle non-authentication/non-authorization errors here
-                        if (!isSuccessStatus(response.statusCode()) && 
-                            response.statusCode() != HTTP_UNAUTHORIZED && 
+                        if (!isSuccessStatus(response.statusCode()) &&
+                            response.statusCode() != HTTP_UNAUTHORIZED &&
                             response.statusCode() != HTTP_FORBIDDEN) {
-                            subscriber.onError(new IOException("Request failed with status " + response.statusCode() + ":" + response.body()));
+                            // Note: body is not available here as it's being streamed to the subscriber
+                            subscriber.onError(new IOException("Request failed with status " +
+                                response.statusCode()));
                         }
                     });
         }

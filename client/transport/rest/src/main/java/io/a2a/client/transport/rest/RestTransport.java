@@ -54,8 +54,8 @@ public class RestTransport implements ClientTransport {
     private final A2AHttpClient httpClient;
     private final String agentUrl;
     private @Nullable final List<ClientCallInterceptor> interceptors;
-    private AgentCard agentCard;
-    private boolean needsExtendedCard = false;
+    private volatile AgentCard agentCard;
+    private volatile boolean needsExtendedCard = false;
 
     public RestTransport(AgentCard agentCard) {
         this(null, agentCard, agentCard.url(), null);
@@ -199,7 +199,7 @@ public class RestTransport implements ClientTransport {
     public TaskPushNotificationConfig getTaskPushNotificationConfiguration(GetTaskPushNotificationConfigParams request, @Nullable ClientCallContext context) throws A2AClientException {
         checkNotNullParam("request", request);
         GetTaskPushNotificationConfigRequest.Builder builder = GetTaskPushNotificationConfigRequest.newBuilder();
-        builder.setName(String.format("/tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId()));
+        builder.setName(String.format("tasks/%1s/pushNotificationConfigs/%2s", request.id(), request.pushNotificationConfigId()));
         PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskPushNotificationConfigRequest.METHOD, builder,
                 agentCard, context);
         try {
@@ -310,37 +310,46 @@ public class RestTransport implements ClientTransport {
 
     @Override
     public AgentCard getAgentCard(@Nullable ClientCallContext context) throws A2AClientException {
-        A2ACardResolver resolver;
-        try {
-            if (agentCard == null) {
-                resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
-                agentCard = resolver.getAgentCard();
-                needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
-            }
-            if (!needsExtendedCard) {
-                return agentCard;
-            }
-            PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskRequest.METHOD, null,
-                    agentCard, context);
-            String url = agentUrl + String.format("/v1/card");
-            A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
-            if (payloadAndHeaders.getHeaders() != null) {
-                for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
-                    getBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
-            }
-            A2AHttpResponse response = getBuilder.get();
-            if (!response.success()) {
-                throw RestErrorMapper.mapRestError(response);
-            }
-            String httpResponseBody = response.body();
-            agentCard = JsonUtil.fromJson(httpResponseBody, AgentCard.class);
-            needsExtendedCard = false;
+        // Fast path - avoid synchronization if already initialized
+        if (agentCard != null && !needsExtendedCard) {
             return agentCard;
-        } catch (IOException | InterruptedException | JsonProcessingException e) {
-            throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
-        } catch (A2AClientError e) {
-            throw new A2AClientException("Failed to get agent card: " + e, e);
+        }
+
+        synchronized (this) {
+            // Double-check inside synchronized block
+            A2ACardResolver resolver;
+            try {
+                if (agentCard == null) {
+                    resolver = new A2ACardResolver(httpClient, agentUrl, null, getHttpHeaders(context));
+                    agentCard = resolver.getAgentCard();
+                    needsExtendedCard = agentCard.supportsAuthenticatedExtendedCard();
+                }
+                if (!needsExtendedCard) {
+                    return agentCard;
+                }
+                // Extended card fetch logic remains inside synchronized block
+                PayloadAndHeaders payloadAndHeaders = applyInterceptors(io.a2a.spec.GetTaskRequest.METHOD, null,
+                        agentCard, context);
+                String url = agentUrl + String.format("/v1/card");
+                A2AHttpClient.GetBuilder getBuilder = httpClient.createGet().url(url);
+                if (payloadAndHeaders.getHeaders() != null) {
+                    for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
+                        getBuilder.addHeader(entry.getKey(), entry.getValue());
+                    }
+                }
+                A2AHttpResponse response = getBuilder.get();
+                if (!response.success()) {
+                    throw RestErrorMapper.mapRestError(response);
+                }
+                String httpResponseBody = response.body();
+                agentCard = JsonUtil.fromJson(httpResponseBody, AgentCard.class);
+                needsExtendedCard = false;
+                return agentCard;
+            } catch (IOException | InterruptedException | JsonProcessingException e) {
+                throw new A2AClientException("Failed to get authenticated extended agent card: " + e, e);
+            } catch (A2AClientError e) {
+                throw new A2AClientException("Failed to get agent card: " + e, e);
+            }
         }
     }
 

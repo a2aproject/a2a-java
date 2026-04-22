@@ -172,8 +172,13 @@ public class A2AServerRoutes {
      * @return the agent card
      */
     @Route(path = "/.well-known/agent-card.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
-    public AgentCard getAgentCard() {
-        return jsonRpcHandler.getAgentCard();
+    public String getAgentCard() {
+        try {
+            return JsonUtil.toJson(jsonRpcHandler.getAgentCard());
+        } catch (Exception e) {
+            // This should never happen with a valid AgentCard, but handle it just in case
+            throw new RuntimeException("Failed to serialize agent card: " + e.getMessage(), e);
+        }
     }
 
     private NonStreamingJSONRPCRequest<?> deserializeNonStreamingRequest(String body, String methodName) {

@@ -23,7 +23,7 @@ public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryPa
             throw new IllegalArgumentException("Invalid GetTaskRequest method");
         }
         Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;

@@ -32,7 +32,7 @@ public abstract sealed class JSONRPCResponse<T> implements JSONRPCMessage permit
         if (error == null && result == null && ! Void.class.equals(resultType)) {
             throw new IllegalArgumentException("Invalid JSON-RPC success response");
         }
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.result = result;

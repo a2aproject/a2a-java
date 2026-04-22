@@ -22,7 +22,7 @@ public abstract sealed class JSONRPCRequest<T> implements JSONRPCMessage permits
     public JSONRPCRequest(String jsonrpc, Object id, String method, T params) {
         Assert.checkNotNullParam("jsonrpc", jsonrpc);
         Assert.checkNotNullParam("method", method);
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;
