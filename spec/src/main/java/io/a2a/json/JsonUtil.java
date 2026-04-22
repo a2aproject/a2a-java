@@ -402,7 +402,7 @@ public class JsonUtil {
                                 // Check if it has the structure of a serialized Throwable (type + message)
                                 if (obj.has(TYPE_FIELD) && obj.has(MESSAGE_FIELD) && obj.has(THROWABLE_MARKER_FIELD)) {
                                     // Deserialize as Throwable using ThrowableTypeAdapter
-                                    yield THROWABLE_ADAPTER.read(new JsonReader(new StringReader(element.toString())));
+                                    yield THROWABLE_ADAPTER.fromJsonTree(element);
                                 }
                             }
                             // Otherwise, deserialize as generic object using the Gson instance

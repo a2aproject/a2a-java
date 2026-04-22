@@ -62,14 +62,13 @@ public class SSEEventListener {
 
     private void handleMessage(JsonObject jsonObject, Future<Void> future) throws JsonProcessingException {
         if (jsonObject.has("error")) {
-            JSONRPCError error = JsonUtil.fromJson(jsonObject.get("error").toString(), JSONRPCError.class);
+            JSONRPCError error = JsonUtil.OBJECT_MAPPER.fromJson(jsonObject.get("error"), JSONRPCError.class);
             if (errorHandler != null) {
                 errorHandler.accept(error);
             }
         } else if (jsonObject.has("result")) {
             // result can be a Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent
-            String resultJson = jsonObject.get("result").toString();
-            StreamingEventKind event = JsonUtil.fromJson(resultJson, StreamingEventKind.class);
+            StreamingEventKind event = JsonUtil.OBJECT_MAPPER.fromJson(jsonObject.get("result"), StreamingEventKind.class);
             eventHandler.accept(event);
             if (event instanceof TaskStatusUpdateEvent && ((TaskStatusUpdateEvent) event).isFinal()) {
                 future.cancel(true); // close SSE channel

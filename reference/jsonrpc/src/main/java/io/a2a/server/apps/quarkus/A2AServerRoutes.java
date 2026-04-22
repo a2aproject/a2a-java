@@ -93,7 +93,11 @@ public class A2AServerRoutes {
         JSONRPCErrorResponse error = null;
         Object requestId = null;
         try {
-            com.google.gson.JsonObject node = JsonParser.parseString(body).getAsJsonObject();
+            com.google.gson.JsonElement element = JsonParser.parseString(body);
+            if (!element.isJsonObject()) {
+                throw new InvalidRequestError("Invalid JSON-RPC request: expected a JSON object");
+            }
+            com.google.gson.JsonObject node = element.getAsJsonObject();
 
             // Extract id field early so error responses can include it
             com.google.gson.JsonElement idElement = node.get("id");
