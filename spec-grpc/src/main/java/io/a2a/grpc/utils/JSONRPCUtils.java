@@ -157,6 +157,10 @@ public class JSONRPCUtils {
 
     public static JSONRPCRequest<?> parseRequestBody(String body) throws JsonMappingException {
         JsonElement jelement = JsonParser.parseString(body);
+        if (!jelement.isJsonObject()) {
+            throw new JsonMappingException(
+                    "JSON-RPC request must be a JSON object, not an array or primitive value");
+        }
         JsonObject jsonRpc = jelement.getAsJsonObject();
         if (!jsonRpc.has("method")) {
             throw new IdJsonMappingException(
@@ -292,9 +296,10 @@ public class JSONRPCUtils {
             }
             case GetAuthenticatedExtendedCardRequest.METHOD -> {
                 try {
-                    AgentCard card = JsonUtil.fromJson(JsonUtil.OBJECT_MAPPER.toJson(paramsNode), AgentCard.class);
+                    // Deserialize directly from JsonElement without double conversion
+                    AgentCard card = JsonUtil.OBJECT_MAPPER.fromJson(paramsNode, AgentCard.class);
                     return new GetAuthenticatedExtendedCardResponse(id, card);
-                } catch (JsonProcessingException e) {
+                } catch (Exception e) {
                     throw new InvalidParamsError("Failed to parse agent card response: " + e.getMessage());
                 }
             }

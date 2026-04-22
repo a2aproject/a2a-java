@@ -1,5 +1,6 @@
 package io.a2a.client.transport.rest;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.a2a.client.http.A2AHttpResponse;
 import io.a2a.json.JsonProcessingException;
@@ -33,8 +34,21 @@ public class RestErrorMapper {
         try {
             if (body != null && !body.isBlank()) {
                 JsonObject node = JsonUtil.fromJson(body, JsonObject.class);
-                String className = node.has("error") ? node.get("error").getAsString() : "";
-                String errorMessage = node.has("message") ? node.get("message").getAsString() : "";
+                // Safely extract string fields, handling null and non-string types
+                String className = "";
+                if (node.has("error")) {
+                    JsonElement errorElement = node.get("error");
+                    if (errorElement != null && errorElement.isJsonPrimitive() && errorElement.getAsJsonPrimitive().isString()) {
+                        className = errorElement.getAsString();
+                    }
+                }
+                String errorMessage = "";
+                if (node.has("message")) {
+                    JsonElement messageElement = node.get("message");
+                    if (messageElement != null && messageElement.isJsonPrimitive() && messageElement.getAsJsonPrimitive().isString()) {
+                        errorMessage = messageElement.getAsString();
+                    }
+                }
                 return mapRestError(className, errorMessage, code);
             }
             return mapRestError("", "", code);

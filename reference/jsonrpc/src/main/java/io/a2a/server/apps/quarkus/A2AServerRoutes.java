@@ -93,12 +93,7 @@ public class A2AServerRoutes {
         JSONRPCErrorResponse error = null;
         Object requestId = null;
         try {
-            com.google.gson.JsonObject node;
-            try {
-                node = JsonParser.parseString(body).getAsJsonObject();
-            } catch (Exception e) {
-                throw new JSONParseError(e.getMessage());
-            }
+            com.google.gson.JsonObject node = JsonParser.parseString(body).getAsJsonObject();
 
             // Extract id field early so error responses can include it
             com.google.gson.JsonElement idElement = node.get("id");
