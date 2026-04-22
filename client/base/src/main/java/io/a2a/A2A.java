@@ -3,11 +3,10 @@ package io.a2a;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.http.A2AHttpClient;
-import io.a2a.client.http.JdkA2AHttpClient;
+import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientJSONError;
 import io.a2a.spec.AgentCard;
@@ -139,7 +138,7 @@ public class A2A {
      * @throws A2AClientJSONError If the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(String agentUrl) throws A2AClientError, A2AClientJSONError {
-        return getAgentCard(new JdkA2AHttpClient(), agentUrl);
+        return getAgentCard(A2AHttpClientFactory.create(), agentUrl);
     }
 
     /**
@@ -167,7 +166,7 @@ public class A2A {
      * @throws A2AClientJSONError If the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError {
-        return getAgentCard(new JdkA2AHttpClient(), agentUrl, relativeCardPath, authHeaders);
+        return getAgentCard(A2AHttpClientFactory.create(), agentUrl, relativeCardPath, authHeaders);
     }
 
     /**

@@ -14,8 +14,8 @@ import io.a2a.client.transport.spi.interceptors.ClientCallContext;
 import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
 import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
 import io.a2a.client.http.A2AHttpClient;
+import io.a2a.client.http.A2AHttpClientFactory;
 import io.a2a.client.http.A2AHttpResponse;
-import io.a2a.client.http.JdkA2AHttpClient;
 import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientException;
@@ -84,7 +84,7 @@ public class JSONRPCTransport implements ClientTransport {
 
     public JSONRPCTransport(A2AHttpClient httpClient, AgentCard agentCard,
                             String agentUrl, List<ClientCallInterceptor> interceptors) {
-        this.httpClient = httpClient == null ? new JdkA2AHttpClient() : httpClient;
+        this.httpClient = httpClient == null ? A2AHttpClientFactory.create() : httpClient;
         this.agentCard = agentCard;
         this.agentUrl = agentUrl;
         this.interceptors = interceptors;

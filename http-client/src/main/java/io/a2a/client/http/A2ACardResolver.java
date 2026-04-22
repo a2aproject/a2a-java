@@ -21,20 +21,23 @@ public class A2ACardResolver {
 
     /**
      * Get the agent card for an A2A agent.
-     * The {@code JdkA2AHttpClient} will be used to fetch the agent card.
+     * The {@link A2AHttpClientFactory#create()} will be used to fetch the agent
+     * card if available.
      *
-     * @param baseUrl the base URL for the agent whose agent card we want to retrieve
+     * @param baseUrl the base URL for the agent whose agent card we want to
+     *                retrieve
      * @throws A2AClientError if the URL for the agent is invalid
      */
     public A2ACardResolver(String baseUrl) throws A2AClientError {
-        this(new JdkA2AHttpClient(), baseUrl, null, null);
+        this(A2AHttpClientFactory.create(), baseUrl, null, null);
     }
 
     /**
      * Constructs an A2ACardResolver with a specific HTTP client and base URL.
      *
      * @param httpClient the http client to use
-     * @param baseUrl the base URL for the agent whose agent card we want to retrieve
+     * @param baseUrl    the base URL for the agent whose agent card we want to
+     *                   retrieve
      * @throws A2AClientError if the URL for the agent is invalid
      */
     public A2ACardResolver(A2AHttpClient httpClient, String baseUrl) throws A2AClientError {
@@ -42,10 +45,12 @@ public class A2ACardResolver {
     }
 
     /**
-     * @param httpClient the http client to use
-     * @param baseUrl the base URL for the agent whose agent card we want to retrieve
-     * @param agentCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent-card.json"
+     * @param httpClient    the http client to use
+     * @param baseUrl       the base URL for the agent whose agent card we want to
+     *                      retrieve
+     * @param agentCardPath optional path to the agent card endpoint relative to the
+     *                      base
+     *                      agent URL, defaults to ".well-known/agent-card.json"
      * @throws A2AClientError if the URL for the agent is invalid
      */
     public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, String agentCardPath) throws A2AClientError {
@@ -53,17 +58,21 @@ public class A2ACardResolver {
     }
 
     /**
-     * @param httpClient the http client to use
-     * @param baseUrl the base URL for the agent whose agent card we want to retrieve
-     * @param agentCardPath optional path to the agent card endpoint relative to the base
-     *                         agent URL, defaults to ".well-known/agent-card.json"
-     * @param authHeaders the HTTP authentication headers to use. May be {@code null}
+     * @param httpClient    the http client to use
+     * @param baseUrl       the base URL for the agent whose agent card we want to
+     *                      retrieve
+     * @param agentCardPath optional path to the agent card endpoint relative to the
+     *                      base
+     *                      agent URL, defaults to ".well-known/agent-card.json"
+     * @param authHeaders   the HTTP authentication headers to use. May be
+     *                      {@code null}
      * @throws A2AClientError if the URL for the agent is invalid
      */
     public A2ACardResolver(A2AHttpClient httpClient, String baseUrl, @Nullable String agentCardPath,
-                           @Nullable Map<String, String> authHeaders) throws A2AClientError {
+            @Nullable Map<String, String> authHeaders) throws A2AClientError {
         this.httpClient = httpClient;
-        String effectiveAgentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
+        String effectiveAgentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? DEFAULT_AGENT_CARD_PATH
+                : agentCardPath;
         try {
             this.url = new URI(baseUrl).resolve(effectiveAgentCardPath).toString();
         } catch (URISyntaxException e) {
@@ -76,8 +85,9 @@ public class A2ACardResolver {
      * Get the agent card for the configured A2A agent.
      *
      * @return the agent card
-     * @throws A2AClientError If an HTTP error occurs fetching the card
-     * @throws A2AClientJSONError If the response body cannot be decoded as JSON or validated against the AgentCard schema
+     * @throws A2AClientError     If an HTTP error occurs fetching the card
+     * @throws A2AClientJSONError If the response body cannot be decoded as JSON or
+     *                            validated against the AgentCard schema
      */
     public AgentCard getAgentCard() throws A2AClientError, A2AClientJSONError {
         A2AHttpClient.GetBuilder builder = httpClient.createGet()
@@ -108,6 +118,5 @@ public class A2ACardResolver {
         }
 
     }
-
 
 }

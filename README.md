@@ -394,7 +394,7 @@ Different transport protocols can be configured with specific settings using spe
 
 ##### JSON-RPC Transport Configuration
 
-For the JSON-RPC transport, to use the default `JdkA2AHttpClient`, provide a `JSONRPCTransportConfig` created with its default constructor.
+For the JSON-RPC transport, to use the default HTTP client (resolved automatically by `A2AHttpClientFactory`), provide a `JSONRPCTransportConfig` created with its default constructor.
 
 To use a custom HTTP client implementation, simply create a `JSONRPCTransportConfig` as follows:
 
@@ -441,7 +441,7 @@ Client client = Client
 
 ##### HTTP+JSON/REST Transport Configuration
 
-For the HTTP+JSON/REST transport, if you'd like to use the default `JdkA2AHttpClient`, provide a `RestTransportConfig` created with its default constructor.
+For the HTTP+JSON/REST transport, to use the default HTTP client (resolved automatically by `A2AHttpClientFactory`), provide a `RestTransportConfig` created with its default constructor.
 
 To use a custom HTTP client implementation, simply create a `RestTransportConfig` as follows:
 
