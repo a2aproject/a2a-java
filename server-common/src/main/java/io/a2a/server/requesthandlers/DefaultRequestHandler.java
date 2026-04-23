@@ -326,8 +326,13 @@ public class DefaultRequestHandler implements RequestHandler {
                     }
                 }
             }
-            if (kind instanceof Task taskResult && !taskId.equals(taskResult.getId())) {
-                throw new InternalError("Task ID mismatch in agent response");
+            if (kind instanceof Task taskResult) {
+                if (shouldAddPushInfo(params)) {
+                    pushConfigStore.setInfo(taskResult.getId(), params.configuration().pushNotificationConfig());
+                }
+                if (!Objects.equals(taskId, taskResult.getId())) {
+                    throw new InternalError("Task ID mismatch in agent response");
+                }
             }
 
             // Send push notification after initial return (for both blocking and non-blocking)
