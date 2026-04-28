@@ -120,7 +120,6 @@ public class SSEEventListenerTest {
                 TEST_TASK_ID,
                 new TaskStatus(state),
                 TEST_CONTEXT_ID,
-                isFinal,
                 null
         );
     }

@@ -190,7 +190,6 @@ public class SSEEventListenerTest {
                 "1234",
                 completedStatus,
                 "xyz",
-                completedStatus.state().isFinal(),  // Derive from state
                 null
         );
 

@@ -37,7 +37,6 @@ public interface TaskStatusUpdateEventMapper {
                 proto.getTaskId(),
                 status,
                 proto.getContextId(),
-                status != null && status.state() != null && status.state().isFinal(),
                 A2ACommonFieldMapper.INSTANCE.metadataFromProto(proto.getMetadata())
         );
     }

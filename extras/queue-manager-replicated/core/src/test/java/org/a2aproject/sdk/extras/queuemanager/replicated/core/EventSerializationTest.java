@@ -116,7 +116,8 @@ public class EventSerializationTest {
         String json = JsonUtil.toJson((Event) originalEvent);
         assertTrue(json.contains("\"statusUpdate\""), "JSON should contain statusUpdate wrapper");
         assertTrue(json.contains("\"taskId\":\"test-task-abc\""), "JSON should contain task ID");
-        assertTrue(json.contains("\"final\":true"), "JSON should contain final flag");
+        assertFalse(json.contains("\"final\":true"), "JSON shouldn't contain final flag");
+        assertFalse(json.contains("\"final\":false"), "JSON shouldn't contain final flag");
 
         // Test deserialization back to StreamingEventKind
         StreamingEventKind deserializedEvent = JsonUtil.fromJson(json, StreamingEventKind.class);

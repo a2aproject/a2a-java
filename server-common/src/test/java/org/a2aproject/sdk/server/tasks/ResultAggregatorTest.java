@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.server.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atMost;
@@ -374,7 +373,6 @@ public class ResultAggregatorTest {
             taskId,
             new TaskStatus(TaskState.TASK_STATE_AUTH_REQUIRED),
             "ctx1",
-            false,  // isFinal=false for AUTH_REQUIRED
             null
         );
 

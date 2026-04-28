@@ -261,7 +261,6 @@ public class ToProtoTest {
                 "1234",
                 completedStatus,
                 "xyz",
-                completedStatus.state().isFinal(),  // Derive from state
                 null
         );
         org.a2aproject.sdk.grpc.TaskStatusUpdateEvent result = ProtoUtils.ToProto.taskStatusUpdateEvent(tsue);

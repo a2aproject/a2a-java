@@ -107,7 +107,8 @@ class StreamingEventKindSerializationTest {
         assertTrue(json.contains("\"statusUpdate\""));
         assertTrue(json.contains("\"taskId\":\"task-abc\""));
         assertTrue(json.contains("\"state\":\"TASK_STATE_WORKING\""));
-        assertTrue(json.contains("\"final\":false"));
+        assertFalse(json.contains("\"final\":false"));
+        assertFalse(json.contains("\"final\":true"));
         assertFalse(json.contains("\"kind\""));
 
         // Deserialize back to StreamingEventKind

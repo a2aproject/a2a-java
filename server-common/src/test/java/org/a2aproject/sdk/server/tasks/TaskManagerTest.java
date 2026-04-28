@@ -84,7 +84,6 @@ public class TaskManagerTest {
                 minimalTask.id(),
                 newStatus,
                 minimalTask.contextId(),
-                false,
                 new HashMap<>());
 
 

@@ -8,7 +8,6 @@ import static org.a2aproject.sdk.spec.TaskState.TASK_STATE_REJECTED;
 
 import java.util.Map;
 
-import com.google.gson.annotations.SerializedName;
 import org.a2aproject.sdk.util.Assert;
 import org.jspecify.annotations.Nullable;
 
@@ -23,7 +22,7 @@ import org.jspecify.annotations.Nullable;
  * @param metadata additional metadata (optional)
  */
 public record TaskStatusUpdateEvent(String taskId, TaskStatus status, String contextId,
-        @SerializedName("final") boolean isFinal, @Nullable Map<String, Object> metadata) implements EventKind, StreamingEventKind, UpdateEvent {
+        @Nullable Map<String, Object> metadata) implements EventKind, StreamingEventKind, UpdateEvent {
 
     /**
      * The identifier when used in streaming responses
@@ -44,9 +43,6 @@ public record TaskStatusUpdateEvent(String taskId, TaskStatus status, String con
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("status", status);
         Assert.checkNotNullParam("contextId", contextId);
-        if (isFinal != status.state().isFinal()) {
-            throw new IllegalArgumentException("isFinal must be the same as the Status state");
-        }
     }
 
     @Override
@@ -55,8 +51,17 @@ public record TaskStatusUpdateEvent(String taskId, TaskStatus status, String con
     }
 
     /**
-     * Indicates if the task is fianl or waiting for some inputs from the client.
-     * @return true if the task is fianl or waiting for some inputs from the client - false otherwise.
+     * Indicates if the task is final.
+     * @return true if the task is final - false otherwise.
+     */
+    public boolean isFinal() {
+        TaskState state = status.state();
+        return state != null && state.isFinal();
+    }
+
+    /**
+     * Indicates if the task is final or waiting for some inputs from the client.
+     * @return true if the task is final or waiting for some inputs from the client - false otherwise.
      */
     public boolean isFinalOrInterrupted() {
         return status.state() == TASK_STATE_COMPLETED || status.state() == TASK_STATE_FAILED || status.state() == TASK_STATE_CANCELED || status.state() == TASK_STATE_REJECTED || status.state() == TASK_STATE_INPUT_REQUIRED;
@@ -155,7 +160,6 @@ public record TaskStatusUpdateEvent(String taskId, TaskStatus status, String con
                     Assert.checkNotNullParam("taskId", taskId),
                     Assert.checkNotNullParam("status", status),
                     Assert.checkNotNullParam("contextId", contextId),
-                    Assert.checkNotNullParam("status", status).state().isFinal(),
                     metadata);
         }
     }
