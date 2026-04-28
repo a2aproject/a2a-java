@@ -1,6 +1,6 @@
 ---
 # Kafka topic for A2A event replication
-apiVersion: kafka.strimzi.io/v1beta2
+apiVersion: kafka.strimzi.io/v1
 kind: KafkaTopic
 metadata:
   name: a2a-replicated-events

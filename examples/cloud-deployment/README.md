@@ -447,7 +447,7 @@ kubectl logs -n kafka <strimzi-operator-pod>
 kubectl get crd kafkas.kafka.strimzi.io
 
 # If missing, reinstall Strimzi
-kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+kubectl create -f '../strimzi-1.0.0/strimzi-cluster-operator-1.0.0.yaml' -n kafka
 ```
 
 ### Kind Resource Issues
@@ -531,6 +531,8 @@ cloud-deployment/
 │   ├── 03-kafka-topic.yaml                   # Kafka topic
 │   ├── 04-agent-configmap.yaml               # Configuration
 │   └── 05-agent-deployment.yaml              # Agent deployment + service
+├── strimzi-1.0.0/
+│   └── strimzi-cluster-operator-1.0.0.yaml   # Pinned from https://strimzi.io/install/latest?namespace=kafka
 ├── scripts/
 │   ├── deploy.sh                             # Automated deployment
 │   ├── verify.sh                             # Health checks

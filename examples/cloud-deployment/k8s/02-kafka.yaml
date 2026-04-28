@@ -1,6 +1,6 @@
 ---
 # KafkaNodePool for KRaft mode
-apiVersion: kafka.strimzi.io/v1beta2
+apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: broker
@@ -23,7 +23,7 @@ spec:
       cpu: "500m"
 ---
 # Kafka cluster
-apiVersion: kafka.strimzi.io/v1beta2
+apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: a2a-kafka
