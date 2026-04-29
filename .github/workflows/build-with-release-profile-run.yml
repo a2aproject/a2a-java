@@ -54,7 +54,7 @@ jobs:
 
       - name: Report pending status to PR
         if: steps.pr_info.outputs.pr_sha
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.repos.createCommitStatus({
@@ -125,7 +125,7 @@ jobs:
 
       - name: Report status to PR
         if: always() && steps.pr_info.outputs.pr_sha
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const state = '${{ job.status }}' === 'success' ? 'success' : 'failure';
