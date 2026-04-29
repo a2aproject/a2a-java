@@ -119,7 +119,7 @@ jobs:
           sleep 2
       - name: Upload TCK Reports
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: tck-reports-java-${{ matrix.java-version }}
           path: a2a-tck/reports/
