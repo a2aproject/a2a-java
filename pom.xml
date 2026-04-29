@@ -70,7 +70,7 @@
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.18</logback.version>
         <version.testcontainers>1.21.4</version.testcontainers>
-        <error-prone.version>2.47.0</error-prone.version>
+        <error-prone.version>2.49.0</error-prone.version>
         <nullaway.version>0.13.1</nullaway.version>
         <error-prone.flag>-XDaddTypeAnnotationsToSymbol=true</error-prone.flag>
         <nullaway.args>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -Xep:RequireExplicitNullMarking:WARN -XepOpt:NullAway:ExhaustiveOverride=true -XepOpt:NullAway:OnlyNullMarked=true -XepOpt:NullAway:JSpecifyMode=true -XepExcludedPaths:.*/src/test/.* -XepDisableWarningsInGeneratedCode</nullaway.args>
