@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import io.a2a.client.http.ServerSentEvent;
 import io.a2a.client.transport.rest.RestErrorMapper;
 import io.a2a.grpc.StreamResponse;
 import io.a2a.grpc.utils.ProtoUtils;
@@ -29,14 +30,14 @@ public class RestSSEEventListener {
         this.errorHandler = errorHandler;
     }
 
-    public void onMessage(String message, @Nullable Future<Void> completableFuture) {
+    public void onMessage(ServerSentEvent event, @Nullable Future<Void> completableFuture) {
         try {
-            log.fine("Streaming message received: " + message);
+            log.fine("Streaming message received: " + event.data());
             io.a2a.grpc.StreamResponse.Builder builder = io.a2a.grpc.StreamResponse.newBuilder();
-            JsonFormat.parser().merge(message, builder);
+            JsonFormat.parser().merge(event.data(), builder);
             handleMessage(builder.build());
         } catch (InvalidProtocolBufferException e) {
-            errorHandler.accept(RestErrorMapper.mapRestError(message, 500));
+            errorHandler.accept(RestErrorMapper.mapRestError(event.data(), 500));
         }
     }
 

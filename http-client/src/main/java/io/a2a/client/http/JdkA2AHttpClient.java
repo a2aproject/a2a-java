@@ -101,10 +101,12 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
         protected CompletableFuture<Void> asyncRequest(
                 HttpRequest request,
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable
         ) {
+            ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer);
+
             Flow.Subscriber<String> subscriber = new Flow.Subscriber<String>() {
                 private Flow.@Nullable Subscription subscription;
                 private volatile boolean errorRaised = false;
@@ -117,12 +119,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
                 @Override
                 public void onNext(String item) {
-                    // SSE messages sometimes start with "data:". Strip that off
-                    if (item != null && item.startsWith("data:")) {
-                        item = item.substring(5).trim();
-                        if (!item.isEmpty()) {
-                            messageConsumer.accept(item);
-                        }
+                    if (item != null) {
+                        sseParser.processLine(item);
                     }
                     if (subscription != null) {
                         subscription.request(1);
@@ -143,6 +141,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 @Override
                 public void onComplete() {
                     if (!errorRaised) {
+                        sseParser.flush();
                         completeRunnable.run();
                     }
                     if (subscription != null) {
@@ -226,7 +225,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
         @Override
         public CompletableFuture<Void> getAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(true)
@@ -282,7 +281,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
         @Override
         public CompletableFuture<Void> postAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(true)

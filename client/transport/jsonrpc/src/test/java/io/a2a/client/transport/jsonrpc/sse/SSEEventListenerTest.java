@@ -13,6 +13,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.a2a.client.http.ServerSentEvent;
 import io.a2a.client.transport.jsonrpc.JsonStreamingMessages;
 import io.a2a.spec.Artifact;
 import io.a2a.spec.JSONRPCError;
@@ -43,7 +44,7 @@ public class SSEEventListenerTest {
                 JsonStreamingMessages.STREAMING_TASK_EVENT.indexOf("{"));
         
         // Call the onEvent method directly
-        listener.onMessage(eventData, null);
+        listener.onMessage(new ServerSentEvent(eventData), null);
 
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());
@@ -68,7 +69,7 @@ public class SSEEventListenerTest {
                 JsonStreamingMessages.STREAMING_MESSAGE_EVENT.indexOf("{"));
         
         // Call onEvent method
-        listener.onMessage(eventData, null);
+        listener.onMessage(new ServerSentEvent(eventData), null);
 
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());
@@ -96,7 +97,7 @@ public class SSEEventListenerTest {
                 JsonStreamingMessages.STREAMING_STATUS_UPDATE_EVENT.indexOf("{"));
 
         // Call onEvent method
-        listener.onMessage(eventData, null);
+        listener.onMessage(new ServerSentEvent(eventData), null);
 
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());
@@ -122,7 +123,7 @@ public class SSEEventListenerTest {
                 JsonStreamingMessages.STREAMING_ARTIFACT_UPDATE_EVENT.indexOf("{"));
 
         // Call onEvent method
-        listener.onMessage(eventData, null);
+        listener.onMessage(new ServerSentEvent(eventData), null);
 
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());
@@ -154,7 +155,7 @@ public class SSEEventListenerTest {
                 JsonStreamingMessages.STREAMING_ERROR_EVENT.indexOf("{"));
         
         // Call onEvent method
-        listener.onMessage(eventData, null);
+        listener.onMessage(new ServerSentEvent(eventData), null);
 
         // Verify the error was processed correctly
         assertNotNull(receivedError.get());
@@ -217,7 +218,7 @@ public class SSEEventListenerTest {
 
         // Call onEvent method
         CancelCapturingFuture future = new CancelCapturingFuture();
-        listener.onMessage(eventData, future);
+        listener.onMessage(new ServerSentEvent(eventData), future);
 
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());

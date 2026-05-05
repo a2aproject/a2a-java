@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.http.A2AHttpResponse;
+import io.a2a.client.http.ServerSentEvent;
 import io.a2a.common.A2AHeaders;
 import io.a2a.json.JsonProcessingException;
 import io.a2a.json.JsonUtil;
@@ -106,7 +107,7 @@ public class PushNotificationSenderTest {
             }
 
             @Override
-            public CompletableFuture<Void> postAsyncSSE(Consumer<String> messageConsumer, Consumer<Throwable> errorConsumer, Runnable completeRunnable) throws IOException, InterruptedException {
+            public CompletableFuture<Void> postAsyncSSE(Consumer<ServerSentEvent> messageConsumer, Consumer<Throwable> errorConsumer, Runnable completeRunnable) throws IOException, InterruptedException {
                 return null;
             }
 

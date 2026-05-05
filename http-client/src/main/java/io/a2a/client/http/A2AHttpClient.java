@@ -22,7 +22,7 @@ public interface A2AHttpClient {
     interface GetBuilder extends Builder<GetBuilder> {
         A2AHttpResponse get() throws IOException, InterruptedException;
         CompletableFuture<Void> getAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException;
     }
@@ -31,7 +31,7 @@ public interface A2AHttpClient {
         PostBuilder body(String body);
         A2AHttpResponse post() throws IOException, InterruptedException;
         CompletableFuture<Void> postAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException;
     }

@@ -3,6 +3,7 @@ package io.a2a.client.transport.jsonrpc.sse;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import io.a2a.client.http.ServerSentEvent;
 import io.a2a.json.JsonProcessingException;
 import io.a2a.json.JsonUtil;
 import io.a2a.spec.JSONRPCError;
@@ -25,13 +26,13 @@ public class SSEEventListener {
         this.errorHandler = errorHandler;
     }
 
-    public void onMessage(String message, Future<Void> completableFuture) {
+    public void onMessage(ServerSentEvent event, Future<Void> completableFuture) {
         try {
-            handleMessage(JsonParser.parseString(message).getAsJsonObject(), completableFuture);
+            handleMessage(JsonParser.parseString(event.data()).getAsJsonObject(), completableFuture);
         } catch (JsonSyntaxException e) {
-            log.warning("Failed to parse JSON message: " + message);
+            log.warning("Failed to parse JSON message: " + event.data());
         } catch (JsonProcessingException e) {
-            log.warning("Failed to process JSON message: " + message);
+            log.warning("Failed to process JSON message: " + event.data());
         }
     }
 
