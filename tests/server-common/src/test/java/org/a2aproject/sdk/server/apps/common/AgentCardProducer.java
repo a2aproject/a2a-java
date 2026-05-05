@@ -11,12 +11,16 @@ import java.util.Properties;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 
 import org.a2aproject.sdk.server.ExtendedAgentCard;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
+import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
+import org.a2aproject.sdk.spec.SecurityRequirement;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.quarkus.arc.profile.IfBuildProfile;
 import org.junit.jupiter.api.Assertions;
@@ -27,6 +31,11 @@ public class AgentCardProducer {
 
     private static final String PREFERRED_TRANSPORT = "preferred-transport";
     private static final String A2A_REQUESTHANDLER_TEST_PROPERTIES = "/a2a-requesthandler-test.properties";
+    private static final String BASIC_AUTH_SCHEME_NAME = "basicAuth";
+
+    @Inject
+    @ConfigProperty(name = "test.agent.security.enabled", defaultValue = "false")
+    boolean securityEnabled;
 
     @Produces
     @PublicAgentCard
@@ -50,6 +59,18 @@ public class AgentCardProducer {
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(new ArrayList<>())
                 .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, transportUrl)));
+
+        // Add security configuration if enabled (for authentication tests)
+        if (securityEnabled) {
+            builder.securitySchemes(java.util.Map.of(
+                    BASIC_AUTH_SCHEME_NAME,
+                    new HTTPAuthSecurityScheme(null, "basic", "HTTP Basic authentication")))
+                   .securityRequirements(java.util.List.of(
+                    SecurityRequirement.builder()
+                            .scheme(BASIC_AUTH_SCHEME_NAME, java.util.List.of())
+                            .build()));
+        }
+
         return builder.build();
     }
 

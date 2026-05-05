@@ -1,6 +1,5 @@
 package org.a2aproject.sdk.extras.opentelemetry.it;
 
-import static io.quarkus.vertx.web.ReactiveRoutes.APPLICATION_JSON;
 import static io.restassured.RestAssured.given;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -243,7 +242,7 @@ abstract class OpenTelemetryA2ABaseTest extends BaseTest {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + serverPort + "/test/task"))
                 .POST(HttpRequest.BodyPublishers.ofString(JsonUtil.toJson(task)))
-                .header("Content-Type", APPLICATION_JSON)
+                .header("Content-Type", "application/json")
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));

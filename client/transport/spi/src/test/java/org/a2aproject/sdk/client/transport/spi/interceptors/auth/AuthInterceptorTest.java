@@ -129,6 +129,21 @@ public class AuthInterceptorTest {
         testSecurityScheme(authTestCase);
     }
 
+    @Test
+    public void testBasicAuthSecurityScheme() {
+        // Credential should be pre-encoded base64("testuser:testpass") = "dGVzdHVzZXI6dGVzdHBhc3M="
+        AuthTestCase authTestCase = new AuthTestCase(
+                "http://agent.com/rpc",
+                "session-id",
+                "basic",
+                "dGVzdHVzZXI6dGVzdHBhc3M=",
+                new HTTPAuthSecurityScheme(null, "basic", "HTTP Basic authentication"),
+                "Authorization",
+                "Basic dGVzdHVzZXI6dGVzdHBhc3M="
+        );
+        testSecurityScheme(authTestCase);
+    }
+
     private void testSecurityScheme(AuthTestCase authTestCase) {
         credentialStore.setCredential(authTestCase.sessionId, authTestCase.schemeName, authTestCase.credential);
 

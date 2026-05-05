@@ -472,6 +472,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
         CompletableFuture.runAsync(() -> {
             publisher.subscribe(new Flow.Subscriber<StreamingEventKind>() {
                 private  Flow.@Nullable Subscription subscription;
+                private final AtomicBoolean completed = new AtomicBoolean(false);
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
@@ -510,7 +511,11 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                                 || state == org.a2aproject.sdk.grpc.TaskState.TASK_STATE_FAILED
                                 || state == org.a2aproject.sdk.grpc.TaskState.TASK_STATE_REJECTED;
                         if (isFinal) {
-                            responseObserver.onCompleted();
+                            // Cancel subscription to prevent onComplete() from being called after we close the stream
+                            if (this.subscription != null) {
+                                subscription.cancel();
+                            }
+                            completeStream();
                         } else {
                             if (this.subscription != null) {
                                 subscription.request(1);
@@ -534,12 +539,19 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                     } else {
                         handleInternalError(responseObserver, throwable);
                     }
-                    responseObserver.onCompleted();
+                    completeStream();
                 }
 
                 @Override
                 public void onComplete() {
-                    responseObserver.onCompleted();
+                    completeStream();
+                }
+
+                private void completeStream() {
+                    // Atomically check and set - only the first caller will proceed
+                    if (completed.compareAndSet(false, true)) {
+                        responseObserver.onCompleted();
+                    }
                 }
             });
         }, getExecutor());
@@ -652,12 +664,12 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
                     io.grpc.Metadata grpcMetadata = GrpcContextKeys.METADATA_KEY.get(currentContext);
                     if (grpcMetadata != null) {
                         state.put("grpc_metadata", grpcMetadata);
+                        Map<String, String> headers = new HashMap<>();
+                        for (String key : grpcMetadata.keys()) {
+                            headers.put(key, grpcMetadata.get(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER)));
+                        }
+                        state.put("headers", headers);
                     }
-                    Map<String, String> headers= new HashMap<>();
-                    for(String key : grpcMetadata.keys()) {
-                        headers.put(key, grpcMetadata.get(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER)));
-                    }
-                    state.put("headers", headers);
                     String methodName = GrpcContextKeys.GRPC_METHOD_NAME_KEY.get(currentContext);
                     if (methodName != null) {
                         state.put("grpc_method_name", methodName);

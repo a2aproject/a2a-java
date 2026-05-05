@@ -7,7 +7,7 @@
  *
  * <h2>Key Components</h2>
  * <ul>
- *   <li>{@link A2AServerRoutes} - Vert.x route definitions mapping HTTP paths to A2A operations</li>
+ *   <li>{@link A2AServerRoutes} - Vert.x Web Router route definitions mapping HTTP paths to A2A operations</li>
  *   <li>{@link CallContextFactory} - Extensible factory for creating {@link org.a2aproject.sdk.server.ServerCallContext}</li>
  *   <li>{@link QuarkusRestTransportMetadata} - Transport protocol metadata implementation</li>
  * </ul>
@@ -16,7 +16,7 @@
  * <pre>
  * HTTP Request (Quarkus/Vert.x)
  *     ↓
- * A2AServerRoutes (@Route methods)
+ * A2AServerRoutes (Vert.x Web Router)
  *     ↓
  * RestHandler (transport/rest)
  *     ↓

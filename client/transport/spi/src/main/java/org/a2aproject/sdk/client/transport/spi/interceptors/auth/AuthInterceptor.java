@@ -24,8 +24,10 @@ import org.jspecify.annotations.Nullable;
 public class AuthInterceptor extends ClientCallInterceptor {
 
     private static final String BEARER_SCHEME = "bearer";
+    private static final String BASIC_SCHEME = "basic";
     public static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
+    private static final String BASIC = "Basic ";
     private final CredentialService credentialService;
 
     public AuthInterceptor(final CredentialService credentialService) {
@@ -51,8 +53,12 @@ public class AuthInterceptor extends ClientCallInterceptor {
                         continue;
                     }
                     if (securityScheme instanceof HTTPAuthSecurityScheme httpAuthSecurityScheme) {
-                        if (httpAuthSecurityScheme.scheme().toLowerCase(Locale.ROOT).equals(BEARER_SCHEME)) {
+                        String scheme = httpAuthSecurityScheme.scheme().toLowerCase(Locale.ROOT);
+                        if (scheme.equals(BEARER_SCHEME)) {
                             updatedHeaders.put(AUTHORIZATION, getBearerValue(credential));
+                            return new PayloadAndHeaders(payload, updatedHeaders);
+                        } else if (scheme.equals(BASIC_SCHEME)) {
+                            updatedHeaders.put(AUTHORIZATION, getBasicValue(credential));
                             return new PayloadAndHeaders(payload, updatedHeaders);
                         }
                     } else if (securityScheme instanceof OAuth2SecurityScheme
@@ -71,5 +77,9 @@ public class AuthInterceptor extends ClientCallInterceptor {
 
     private static String getBearerValue(String credential) {
         return BEARER + credential;
+    }
+
+    private static String getBasicValue(String credential) {
+        return BASIC + credential;
     }
 }

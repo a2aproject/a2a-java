@@ -1,12 +1,12 @@
 package org.a2aproject.sdk.server.apps.quarkus;
 
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.MediaType.SERVER_SENT_EVENTS;
 import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.METHOD_NAME_KEY;
 import static org.a2aproject.sdk.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static jakarta.ws.rs.core.MediaType.SERVER_SENT_EVENTS;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,13 +16,25 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
 
+import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import com.google.gson.JsonSyntaxException;
+import io.quarkus.security.Authenticated;
+import io.quarkus.security.ForbiddenException;
+import io.quarkus.security.UnauthorizedException;
+import io.smallrye.mutiny.Multi;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import org.a2aproject.sdk.common.A2AHeaders;
-import org.a2aproject.sdk.server.util.sse.SseFormatter;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.IdJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
@@ -35,6 +47,8 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.A2ARequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.A2AResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CancelTaskResponse;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
+import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
@@ -52,30 +66,21 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
-import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
+import org.a2aproject.sdk.server.AgentCardCacheMetadata;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
+import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.server.util.async.Internal;
+import org.a2aproject.sdk.server.util.sse.SseFormatter;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.InternalError;
 import org.a2aproject.sdk.spec.JSONParseError;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.spec.UnsupportedOperationError;
 import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
-import io.quarkus.security.Authenticated;
-import io.quarkus.vertx.web.Body;
-import io.quarkus.vertx.web.Route;
-import io.smallrye.mutiny.Multi;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,7 +178,7 @@ public class A2AServerRoutes {
     JSONRPCHandler jsonRpcHandler;
 
     @Inject
-    org.a2aproject.sdk.server.AgentCardCacheMetadata cacheMetadata;
+    AgentCardCacheMetadata cacheMetadata;
 
     // Hook so testing can wait until the MultiSseSupport is subscribed.
     // Without this we get intermittent failures
@@ -185,6 +190,53 @@ public class A2AServerRoutes {
 
     @Inject
     Instance<CallContextFactory> callContextFactory;
+
+    @Inject
+    VertxSecurityHelper vertxSecurityHelper;
+
+    /**
+     * Configures Vert.x Web Router with JSON-RPC routes.
+     *
+     * <p>This method is invoked during application startup to register all HTTP routes
+     * for the JSON-RPC transport. Routes are configured with direct Vert.x Web Router
+     * instead of Quarkus Reactive Routes.
+     *
+     * @param router the Vert.x Web Router instance to configure
+     */
+    void setupRoutes(@Observes Router router) {
+        // Add BodyHandler to parse request bodies
+        router.route().handler(BodyHandler.create());
+
+        // Main JSON-RPC endpoint: POST /
+        router.post("/")
+            .consumes(APPLICATION_JSON)
+            .blockingHandler(ctx -> {
+                try {
+                    vertxSecurityHelper.runInRequestContext(ctx, () -> {
+                        invokeJSONRPCHandler(ctx.body().asString(), ctx);
+                    });
+                } catch (UnauthorizedException | ForbiddenException e) {
+                    vertxSecurityHelper.handleAuthError(ctx, e);
+                } catch (Exception e) {
+                    VertxSecurityHelper.handleGenericError(ctx);
+                }
+            });
+
+        // Agent card endpoint: GET /.well-known/agent-card.json
+        router.get("/.well-known/agent-card.json")
+            .produces(APPLICATION_JSON)
+            .handler(ctx -> {
+                try {
+                    String agentCard = getAgentCard(ctx);
+                    ctx.response()
+                        .setStatusCode(200)
+                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .end(agentCard);
+                } catch (JsonProcessingException e) {
+                    ctx.response().setStatusCode(500).end("Internal Server Error");
+                }
+            });
+    }
 
     /**
      * Main entry point for all JSON-RPC requests.
@@ -258,9 +310,8 @@ public class A2AServerRoutes {
      * @param rc the Vert.x routing context containing HTTP request/response
      * @throws A2AError if request processing fails
      */
-    @Route(path = "/", methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
     @Authenticated
-    public void invokeJSONRPCHandler(@Body String body, RoutingContext rc) {
+    public void invokeJSONRPCHandler(String body, RoutingContext rc) {
         boolean streaming = false;
         ServerCallContext context = createCallContext(rc);
         A2AResponse<?> nonStreamingResponse = null;
@@ -286,9 +337,7 @@ public class A2AServerRoutes {
         } catch (JsonMappingException e) {
             // General JsonMappingException - treat as InvalidRequest
             error = new A2AErrorResponse(new org.a2aproject.sdk.spec.InvalidRequestError(null, e.getMessage(), null));
-        } catch (JsonSyntaxException e) {
-            error = new A2AErrorResponse(new JSONParseError(e.getMessage()));
-        } catch (JsonProcessingException e) {
+        } catch (JsonSyntaxException | JsonProcessingException e) {
             error = new A2AErrorResponse(new JSONParseError(e.getMessage()));
         } catch (Throwable t) {
             error = new A2AErrorResponse(new InternalError(t.getMessage()));
@@ -360,7 +409,6 @@ public class A2AServerRoutes {
      * @throws JsonProcessingException if serialization fails
      * @see JSONRPCHandler#getAgentCard()
      */
-    @Route(path = "/.well-known/agent-card.json", methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
     public String getAgentCard(RoutingContext rc) throws JsonProcessingException {
         // Add caching headers per A2A specification section 8.6
         cacheMetadata.getHttpHeadersMap().forEach((k, v) -> rc.response().putHeader(k, v));

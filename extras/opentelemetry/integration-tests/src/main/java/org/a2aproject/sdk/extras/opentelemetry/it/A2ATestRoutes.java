@@ -18,11 +18,11 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.quarkus.vertx.web.Body;
-import io.quarkus.vertx.web.Param;
-import io.quarkus.vertx.web.Route;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -48,8 +48,47 @@ public class A2ATestRoutes {
     @Inject
     Tracer tracer;
 
-    @Route(path = "/test/task", methods = {Route.HttpMethod.POST}, consumes = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
-    public void saveTask(@Body String body, RoutingContext rc) {
+    void setupRoutes(@Observes Router router) {
+        router.post("/test/task")
+            .consumes(APPLICATION_JSON)
+            .blockingHandler(ctx -> saveTask(ctx.body().asString(), ctx));
+
+        router.get("/test/task/:taskId")
+            .produces(APPLICATION_JSON)
+            .blockingHandler(ctx -> getTask(ctx.pathParam("taskId"), ctx));
+
+        router.delete("/test/task/:taskId")
+            .blockingHandler(ctx -> deleteTask(ctx.pathParam("taskId"), ctx));
+
+        router.post("/test/queue/ensure/:taskId")
+            .handler(ctx -> ensureTaskQueue(ctx.pathParam("taskId"), ctx));
+
+        router.post("/test/queue/enqueueTaskStatusUpdateEvent/:taskId")
+            .handler(BodyHandler.create())
+            .handler(ctx -> enqueueTaskStatusUpdateEvent(ctx.pathParam("taskId"), ctx.body().asString(), ctx));
+
+        router.post("/test/queue/enqueueTaskArtifactUpdateEvent/:taskId")
+            .handler(BodyHandler.create())
+            .handler(ctx -> enqueueTaskArtifactUpdateEvent(ctx.pathParam("taskId"), ctx.body().asString(), ctx));
+
+        router.get("/test/queue/childCount/:taskId")
+            .produces(TEXT_PLAIN)
+            .handler(ctx -> getChildQueueCount(ctx.pathParam("taskId"), ctx));
+
+        router.get("/hello")
+            .produces(TEXT_PLAIN)
+            .handler(ctx -> hello(ctx));
+
+        router.get("/export")
+            .produces(APPLICATION_JSON)
+            .handler(ctx -> exportSpans(ctx));
+
+        router.get("/reset")
+            .produces(TEXT_PLAIN)
+            .handler(ctx -> reset(ctx));
+    }
+
+    public void saveTask(String body, RoutingContext rc) {
         try {
             Task task = JsonUtil.fromJson(body, Task.class);
             testUtilsBean.saveTask(task);
@@ -61,8 +100,7 @@ public class A2ATestRoutes {
         }
     }
 
-    @Route(path = "/test/task/:taskId", methods = {Route.HttpMethod.GET}, produces = {APPLICATION_JSON}, type = Route.HandlerType.BLOCKING)
-    public void getTask(@Param String taskId, RoutingContext rc) {
+    public void getTask(String taskId, RoutingContext rc) {
         try {
             Task task = testUtilsBean.getTask(taskId);
             if (task == null) {
@@ -81,8 +119,7 @@ public class A2ATestRoutes {
         }
     }
 
-    @Route(path = "/test/task/:taskId", methods = {Route.HttpMethod.DELETE}, type = Route.HandlerType.BLOCKING)
-    public void deleteTask(@Param String taskId, RoutingContext rc) {
+    public void deleteTask(String taskId, RoutingContext rc) {
         try {
             Task task = testUtilsBean.getTask(taskId);
             if (task == null) {
@@ -100,8 +137,7 @@ public class A2ATestRoutes {
         }
     }
 
-    @Route(path = "/test/queue/ensure/:taskId", methods = {Route.HttpMethod.POST})
-    public void ensureTaskQueue(@Param String taskId, RoutingContext rc) {
+    public void ensureTaskQueue(String taskId, RoutingContext rc) {
         try {
             testUtilsBean.ensureQueue(taskId);
             rc.response()
@@ -112,8 +148,7 @@ public class A2ATestRoutes {
         }
     }
 
-    @Route(path = "/test/queue/enqueueTaskStatusUpdateEvent/:taskId", methods = {Route.HttpMethod.POST})
-    public void enqueueTaskStatusUpdateEvent(@Param String taskId, @Body String body, RoutingContext rc) {
+    public void enqueueTaskStatusUpdateEvent(String taskId, String body, RoutingContext rc) {
         try {
             TaskStatusUpdateEvent event = JsonUtil.fromJson(body, TaskStatusUpdateEvent.class);
             testUtilsBean.enqueueEvent(taskId, event);
@@ -125,8 +160,7 @@ public class A2ATestRoutes {
         }
     }
 
-    @Route(path = "/test/queue/enqueueTaskArtifactUpdateEvent/:taskId", methods = {Route.HttpMethod.POST})
-    public void enqueueTaskArtifactUpdateEvent(@Param String taskId, @Body String body, RoutingContext rc) {
+    public void enqueueTaskArtifactUpdateEvent(String taskId, String body, RoutingContext rc) {
         try {
             TaskArtifactUpdateEvent event = JsonUtil.fromJson(body, TaskArtifactUpdateEvent.class);
             testUtilsBean.enqueueEvent(taskId, event);
@@ -138,15 +172,13 @@ public class A2ATestRoutes {
         }
     }
 
-    @Route(path = "/test/queue/childCount/:taskId", methods = {Route.HttpMethod.GET}, produces = {TEXT_PLAIN})
-    public void getChildQueueCount(@Param String taskId, RoutingContext rc) {
+    public void getChildQueueCount(String taskId, RoutingContext rc) {
         int count = testUtilsBean.getChildQueueCount(taskId);
         rc.response()
                 .setStatusCode(200)
                 .end(String.valueOf(count));
     }
 
-    @Route(path = "/hello", methods = {Route.HttpMethod.GET}, produces = {TEXT_PLAIN})
     public void hello(RoutingContext rc) {
         Span span = tracer.spanBuilder("hello").startSpan();
         try (Scope scope = span.makeCurrent()) {
@@ -159,8 +191,7 @@ public class A2ATestRoutes {
         }
     }
 
-    @Route(path = "/export", methods = {Route.HttpMethod.GET}, produces = {APPLICATION_JSON})
-    public void exportSpans(@Param String taskId, RoutingContext rc) {
+    public void exportSpans(RoutingContext rc) {
         List<SpanData> spans = inMemorySpanExporter.getFinishedSpanItems()
                 .stream()
                 .filter(sd -> !sd.getName().contains("export") && !sd.getName().contains("reset"))
@@ -202,8 +233,7 @@ public class A2ATestRoutes {
         return spans;
     }
 
-    @Route(path = "/reset", methods = {Route.HttpMethod.GET}, produces = {TEXT_PLAIN})
-    public void reset(@Param String taskId, RoutingContext rc) {
+    public void reset(RoutingContext rc) {
         inMemorySpanExporter.reset();
         rc.response().setStatusCode(200).end();
     }

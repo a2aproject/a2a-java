@@ -16,10 +16,12 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 import org.a2aproject.sdk.server.util.sse.SseFormatter;
 
-import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -39,17 +41,21 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestResponse;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestStreamingResponse;
+import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.util.Utils;
 import io.quarkus.security.Authenticated;
-import io.quarkus.vertx.web.Body;
-import io.quarkus.vertx.web.Route;
+import io.quarkus.security.ForbiddenException;
+import io.quarkus.security.UnauthorizedException;
 import io.smallrye.mutiny.Multi;
+import jakarta.annotation.security.PermitAll;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import org.jspecify.annotations.Nullable;
 
 import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
@@ -65,10 +71,10 @@ import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.TENANT_KEY;
 
 /**
- * Quarkus reactive routes for A2A protocol REST endpoints.
+ * Vert.x Web Router routes for A2A protocol REST endpoints.
  *
- * <p>This class defines all HTTP routes for the A2A protocol using Quarkus Reactive Routes
- * (Vert.x web). Each method is annotated with {@code @Route} to map HTTP requests to
+ * <p>This class defines all HTTP routes for the A2A protocol using the Vert.x Web Router API
+ * ({@code @Observes Router}). Routes are registered programmatically to map HTTP requests to
  * A2A operations, delegating to {@link RestHandler} for processing.
  *
  * <h2>Route Mapping</h2>
@@ -120,7 +126,6 @@ import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.TENANT_K
  * @see CallContextFactory
  */
 @Singleton
-@Authenticated
 public class A2AServerRoutes {
 
     private static final String HISTORY_LENGTH_PARAM = "historyLength";
@@ -142,6 +147,118 @@ public class A2AServerRoutes {
 
     @Inject
     Instance<CallContextFactory> callContextFactory;
+
+    @Inject
+    VertxSecurityHelper vertxSecurityHelper;
+
+    /**
+     * Initializes Vert.x Web Router with all A2A REST endpoints.
+     *
+     * <p>This method observes the Router bean creation and configures all routes.
+     * Replaces the deprecated @Route annotation-based routing with direct Router API.
+     *
+     * @param router the Vert.x router to configure
+     */
+    void setupRouter(@Observes @Priority(10) Router router) {
+        // Don't add a global BodyHandler - it interferes with gRPC routes
+        // Instead, BodyHandler is added per-route below
+
+        // Message Routes
+
+        // POST /{tenant}/message:send - Non-streaming message send
+        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)message:send$")
+            .handler(BodyHandler.create())
+            .blockingHandler(authenticated(ctx -> {
+                String body = extractBody(ctx);
+                sendMessage(body, ctx);
+            }));
+
+        // POST /{tenant}/message:stream - Streaming message with SSE
+        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)message:stream$")
+            .handler(BodyHandler.create())
+            .blockingHandler(authenticated(ctx -> {
+                String body = extractBody(ctx);
+                sendMessageStreaming(body, ctx);
+            }));
+
+        // Task Routes
+
+        // GET /{tenant}/tasks - List tasks with query params
+        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\??")
+            .order(0)
+            .blockingHandler(authenticated(this::listTasks));
+
+        // GET /{tenant}/tasks/{taskId} - Get specific task
+        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^:^/]+)$")
+            .order(1)
+            .blockingHandler(authenticated(this::getTask));
+
+        // POST /{tenant}/tasks/{taskId}:cancel - Cancel task
+        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$")
+            .order(1)
+            .handler(BodyHandler.create())
+            .blockingHandler(authenticated(ctx -> {
+                String body = extractBody(ctx);
+                cancelTask(body, ctx);
+            }));
+
+        // POST /{tenant}/tasks/{taskId}:subscribe - Subscribe to task updates (SSE)
+        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):subscribe$")
+            .order(1)
+            .blockingHandler(authenticated(this::subscribeToTask));
+
+        // Push Notification Routes
+
+        // POST /{tenant}/tasks/{taskId}/pushNotificationConfigs
+        router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$")
+            .order(1)
+            .handler(BodyHandler.create())
+            .blockingHandler(authenticated(ctx -> {
+                String body = extractBody(ctx);
+                createTaskPushNotificationConfiguration(body, ctx);
+            }));
+
+        // GET /{tenant}/tasks/{taskId}/pushNotificationConfigs/{configId}
+        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^\\/]+)")
+            .order(2)
+            .blockingHandler(authenticated(this::getTaskPushNotificationConfiguration));
+
+        // GET /{tenant}/tasks/{taskId}/pushNotificationConfigs
+        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/?$")
+            .order(3)
+            .blockingHandler(authenticated(this::listTaskPushNotificationConfigurations));
+
+        // DELETE /{tenant}/tasks/{taskId}/pushNotificationConfigs/{configId}
+        router.deleteWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^/]+)")
+            .order(1)
+            .blockingHandler(authenticated(this::deleteTaskPushNotificationConfiguration));
+
+        // Discovery Routes
+
+        // GET /.well-known/agent-card.json - Public agent card (no auth required)
+        router.get("/.well-known/agent-card.json")
+            .order(1)
+            .produces(APPLICATION_JSON)
+            .handler(this::getAgentCard);
+
+        // GET /{tenant}/extendedAgentCard - Extended agent card (auth required)
+        router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$")
+            .order(1)
+            .produces(APPLICATION_JSON)
+            .blockingHandler(authenticated(this::getExtendedAgentCard));
+    }
+
+    private Handler<RoutingContext> authenticated(Consumer<RoutingContext> action) {
+        return ctx -> {
+            try {
+                vertxSecurityHelper.runInRequestContext(ctx, () -> action.accept(ctx));
+            } catch (UnauthorizedException | ForbiddenException e) {
+                vertxSecurityHelper.handleAuthError(ctx, e);
+            } catch (Exception e) {
+                VertxSecurityHelper.handleGenericError(ctx);
+            }
+        };
+    }
 
     /**
      * Handles blocking message send requests.
@@ -166,8 +283,8 @@ public class A2AServerRoutes {
      * @param body the JSON request body
      * @param rc the Vert.x routing context
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)message:send$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
-    public void sendMessage(@Body String body, RoutingContext rc) {
+    @Authenticated
+    public void sendMessage(String body, RoutingContext rc) {
         if(!validateContentType(rc)) {
             return;
         }
@@ -202,8 +319,8 @@ public class A2AServerRoutes {
      * @param body the JSON request body
      * @param rc the Vert.x routing context
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)message:stream$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
-    public void sendMessageStreaming(@Body String body, RoutingContext rc) {
+    @Authenticated
+    public void sendMessageStreaming(String body, RoutingContext rc) {
         if(!validateContentType(rc)) {
             return;
         }
@@ -255,7 +372,7 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\??", order = 0, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    @Authenticated
     public void listTasks(RoutingContext rc) {
         ServerCallContext context = createCallContext(rc, LIST_TASK_METHOD);
         HTTPRestResponse response = null;
@@ -310,7 +427,7 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^:^/]+)$", order = 1, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    @Authenticated
     public void getTask(RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, GET_TASK_METHOD);
@@ -344,8 +461,8 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
-    public void cancelTask(@Body String body, RoutingContext rc) {
+    @Authenticated
+    public void cancelTask(String body, RoutingContext rc) {
         if (!validateContentTypeForOptionalBody(rc, body)) {
             return;
         }
@@ -410,7 +527,7 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):subscribe$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
+    @Authenticated
     public void subscribeToTask(RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, SUBSCRIBE_TO_TASK_METHOD);
@@ -457,8 +574,8 @@ public class A2AServerRoutes {
      * @param body the JSON request body with notification configuration
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$", order = 1, methods = {Route.HttpMethod.POST}, type = Route.HandlerType.BLOCKING)
-    public void createTaskPushNotificationConfiguration(@Body String body, RoutingContext rc) {
+    @Authenticated
+    public void createTaskPushNotificationConfiguration(String body, RoutingContext rc) {
         if(!validateContentType(rc)) {
             return;
         }
@@ -488,7 +605,7 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context (taskId and configId extracted from path)
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^\\/]+)", order = 2, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    @Authenticated
     public void getTaskPushNotificationConfiguration(RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
         String configId = rc.pathParam("configId");
@@ -526,7 +643,7 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context (taskId extracted from path)
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/?$", order = 3, methods = {Route.HttpMethod.GET}, type = Route.HandlerType.BLOCKING)
+    @Authenticated
     public void listTaskPushNotificationConfigurations(RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
         ServerCallContext context = createCallContext(rc, LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
@@ -566,7 +683,7 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context (taskId and configId extracted from path)
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^/]+)", order = 1, methods = {Route.HttpMethod.DELETE}, type = Route.HandlerType.BLOCKING)
+    @Authenticated
     public void deleteTaskPushNotificationConfiguration(RoutingContext rc) {
         String taskId = rc.pathParam("taskId");
         String configId = rc.pathParam("configId");
@@ -585,6 +702,17 @@ public class A2AServerRoutes {
         } finally {
             sendResponse(rc, response);
         }
+    }
+
+    /**
+     * Extracts request body from routing context, returning empty string if null.
+     *
+     * @param rc the routing context
+     * @return the request body, or empty string if null
+     */
+    private static String extractBody(RoutingContext rc) {
+        String body = rc.body().asString();
+        return body != null ? body : "";
     }
 
     /**
@@ -616,7 +744,7 @@ public class A2AServerRoutes {
 
     /**
      * Check if the request content type is application/json.
-     * @param rc
+     * @param rc the routing context
      * @return true if the content type is application/json - false otherwise.
      */
     private boolean validateContentType(RoutingContext rc) {
@@ -668,7 +796,6 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context
      */
-    @Route(path = "/.well-known/agent-card.json", order = 1, methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
     @PermitAll
     public void getAgentCard(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.getAgentCard();
@@ -687,7 +814,7 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context
      */
-    @Route(regex = "^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$", order = 1, methods = Route.HttpMethod.GET, produces = APPLICATION_JSON)
+    @Authenticated
     public void getExtendedAgentCard(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(createCallContext(rc, GET_EXTENDED_AGENT_CARD_METHOD), extractTenant(rc));
         sendResponse(rc, response);
@@ -704,7 +831,6 @@ public class A2AServerRoutes {
      *
      * @param rc the Vert.x routing context
      */
-    @Route(path = "^/.*", order = 100, methods = {Route.HttpMethod.DELETE, Route.HttpMethod.GET, Route.HttpMethod.HEAD, Route.HttpMethod.OPTIONS, Route.HttpMethod.POST, Route.HttpMethod.PUT}, produces = APPLICATION_JSON)
     public void methodNotFoundMessage(RoutingContext rc) {
         HTTPRestResponse response = jsonRestHandler.createErrorResponse(new MethodNotFoundError());
         sendResponse(rc, response);
@@ -769,9 +895,6 @@ public class A2AServerRoutes {
                 };
             }
             Map<String, Object> state = new HashMap<>();
-            // TODO Python's impl has
-            //    state['auth'] = request.auth
-            //  in jsonrpc_app.py. Figure out what this maps to in what Vert.X gives us
 
             Map<String, String> headers = new HashMap<>();
             Set<String> headerNames = rc.request().headers().names();
