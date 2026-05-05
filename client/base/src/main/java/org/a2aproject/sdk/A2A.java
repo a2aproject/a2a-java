@@ -393,7 +393,14 @@ public class A2A {
      * @throws org.a2aproject.sdk.spec.A2AClientJSONError if the response body cannot be decoded as JSON or validated against the AgentCard schema
      */
     public static AgentCard getAgentCard(A2AHttpClient httpClient, String agentUrl, String relativeCardPath, Map<String, String> authHeaders) throws A2AClientError, A2AClientJSONError  {
-        A2ACardResolver resolver = new A2ACardResolver(httpClient, agentUrl, "", relativeCardPath, authHeaders);
-        return resolver.getAgentCard();
+        A2ACardResolver resolver = A2ACardResolver.builder()
+                .httpClient(httpClient)
+                .baseUrl(agentUrl)
+                .agentCardPath(relativeCardPath)
+                .authHeaders(authHeaders)
+                .build();
+        return (relativeCardPath == null || relativeCardPath.isBlank())
+                ? resolver.getWellKnownAgentCard()
+                : resolver.getConfiguredAgentCard();
     }
 }
