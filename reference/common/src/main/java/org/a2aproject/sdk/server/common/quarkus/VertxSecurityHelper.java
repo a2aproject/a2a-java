@@ -11,6 +11,7 @@ import io.quarkus.vertx.http.runtime.security.ChallengeData;
 import io.quarkus.vertx.http.runtime.security.HttpAuthenticator;
 import io.vertx.core.Context;
 import io.vertx.ext.web.RoutingContext;
+import java.util.Map;
 
 /**
  * CDI helper for integrating Quarkus security with Vert.x Web routes.
@@ -149,7 +150,9 @@ public final class VertxSecurityHelper {
                     ChallengeData challenge = httpAuthenticator.get().getChallenge(ctx).await().indefinitely();
                     if (challenge != null) {
                         status = challenge.status;
-                        ctx.response().putHeader(challenge.headerName, challenge.headerContent);
+                        for(Map.Entry<CharSequence, String> header : challenge.getHeaders().entrySet()) {
+                            ctx.response().putHeader(header.getKey(), header.getValue());
+                        }
                     }
                 }
                 ctx.response()
