@@ -62,7 +62,7 @@ public abstract class AbstractA2AHttpClientSSETest {
         client.createGet()
                 .url(getBaseUrl() + "/sse")
                 .getAsyncSSE(
-                        events::add,
+                        event -> events.add(event.data()),
                         error::set,
                         latch::countDown
                 );
@@ -95,7 +95,7 @@ public abstract class AbstractA2AHttpClientSSETest {
                 .url(getBaseUrl() + "/sse")
                 .body("{\"subscribe\":true}")
                 .postAsyncSSE(
-                        events::add,
+                        event -> events.add(event.data()),
                         error::set,
                         latch::countDown
                 );
@@ -114,7 +114,7 @@ public abstract class AbstractA2AHttpClientSSETest {
                 .respond(response()
                         .withStatusCode(200)
                         .withHeader("Content-Type", "text/event-stream")
-                        .withBody("data: content here\n\ndata:no space\n\ndata: extra spaces  \n\n"));
+                        .withBody("data: content here\n\ndata:no space\n\ndata:  extra spaces  \n\n"));
 
         CountDownLatch latch = new CountDownLatch(1);
         List<String> events = new ArrayList<>();
@@ -123,7 +123,7 @@ public abstract class AbstractA2AHttpClientSSETest {
         client.createGet()
                 .url(getBaseUrl() + "/sse")
                 .getAsyncSSE(
-                        events::add,
+                        event -> events.add(event.data()),
                         error::set,
                         latch::countDown
                 );
@@ -132,7 +132,8 @@ public abstract class AbstractA2AHttpClientSSETest {
         assertNull(error.get());
         assertTrue(events.contains("content here"), "Should have stripped 'data: ' prefix");
         assertTrue(events.contains("no space"), "Should handle 'data:' without space");
-        assertTrue(events.contains("extra spaces"), "Should trim whitespace");
+        // SSE spec: only first space after colon is removed, rest is preserved
+        assertTrue(events.contains(" extra spaces  "), "Should preserve whitespace after first space");
     }
 
     @Test
@@ -209,7 +210,7 @@ public abstract class AbstractA2AHttpClientSSETest {
         client.createGet()
                 .url(getBaseUrl() + "/sse")
                 .getAsyncSSE(
-                        events::add,
+                        event -> events.add(event.data()),
                         error::set,
                         latch::countDown
                 );
@@ -243,7 +244,7 @@ public abstract class AbstractA2AHttpClientSSETest {
                 .url(getBaseUrl() + "/sse")
                 .addHeader("Authorization", "Bearer token")
                 .getAsyncSSE(
-                        events::add,
+                        event -> events.add(event.data()),
                         error::set,
                         latch::countDown
                 );
@@ -251,5 +252,129 @@ public abstract class AbstractA2AHttpClientSSETest {
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertNull(error.get());
         assertTrue(events.contains("authenticated"));
+    }
+
+    @Test
+    public void testSSETypedEvents() throws Exception {
+        mockServer
+                .when(request().withMethod("GET").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("event: update\ndata: payload1\n\nevent: delete\ndata: payload2\n\ndata: no-type\n\n"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        client.createGet()
+                .url(getBaseUrl() + "/sse")
+                .getAsyncSSE(events::add, error::set, latch::countDown);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNull(error.get());
+        assertEquals(3, events.size());
+        assertEquals("update", events.get(0).eventType());
+        assertEquals("payload1", events.get(0).data());
+        assertEquals("delete", events.get(1).eventType());
+        assertEquals("payload2", events.get(1).data());
+        assertEquals("message", events.get(2).eventType(), "Event without 'event:' field should default to 'message'");
+    }
+
+    @Test
+    public void testSSEEventIdAndLastEventId() throws Exception {
+        mockServer
+                .when(request().withMethod("GET").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("id: 42\ndata: identified\n\ndata: no-id\n\n"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        client.createGet()
+                .url(getBaseUrl() + "/sse")
+                .getAsyncSSE(events::add, error::set, latch::countDown);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNull(error.get());
+        assertEquals(2, events.size());
+        assertEquals("42", events.get(0).id());
+        assertEquals("42", events.get(1).id(), "Event without 'id:' field inherits last event ID per SSE spec");
+    }
+
+    @Test
+    public void testSSEMultiLineData() throws Exception {
+        mockServer
+                .when(request().withMethod("GET").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("data: line1\ndata: line2\ndata: line3\n\n"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        client.createGet()
+                .url(getBaseUrl() + "/sse")
+                .getAsyncSSE(events::add, error::set, latch::countDown);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNull(error.get());
+        assertEquals(1, events.size());
+        assertEquals("line1\nline2\nline3", events.get(0).data());
+    }
+
+    @Test
+    public void testSSEStreamEndingWithoutTrailingEmptyLine() throws Exception {
+        // Stream ends mid-event with no terminal empty line — flush() must dispatch the buffered data
+        mockServer
+                .when(request().withMethod("GET").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("data: flushed-event"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        client.createGet()
+                .url(getBaseUrl() + "/sse")
+                .getAsyncSSE(events::add, error::set, latch::countDown);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNull(error.get());
+        assertEquals(1, events.size(), "Buffered event must be dispatched on stream end");
+        assertEquals("flushed-event", events.get(0).data());
+    }
+
+    @Test
+    public void testPostSSETypedEvents() throws Exception {
+        mockServer
+                .when(request().withMethod("POST").withPath("/sse"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withHeader("Content-Type", "text/event-stream")
+                        .withBody("event: result\nid: 99\ndata: done\n\n"));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        List<ServerSentEvent> events = new ArrayList<>();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+
+        client.createPost()
+                .url(getBaseUrl() + "/sse")
+                .body("{}")
+                .postAsyncSSE(events::add, error::set, latch::countDown);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertNull(error.get());
+        assertEquals(1, events.size());
+        assertEquals("result", events.get(0).eventType());
+        assertEquals("99", events.get(0).id());
+        assertEquals("done", events.get(0).data());
     }
 }

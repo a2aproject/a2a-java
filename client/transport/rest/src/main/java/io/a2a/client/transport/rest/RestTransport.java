@@ -105,7 +105,7 @@ public class RestTransport implements ClientTransport {
         try {
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(agentUrl + "/v1/message:stream", payloadAndHeaders);
             ref.set(postBuilder.postAsyncSSE(
-                    msg -> sseEventListener.onMessage(msg, ref.get()),
+                    event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // We don't need to do anything special on completion
@@ -294,7 +294,7 @@ public class RestTransport implements ClientTransport {
             String url = agentUrl + String.format("/v1/tasks/%1s:subscribe", request.id());
             A2AHttpClient.PostBuilder postBuilder = createPostBuilder(url, payloadAndHeaders);
             ref.set(postBuilder.postAsyncSSE(
-                    msg -> sseEventListener.onMessage(msg, ref.get()),
+                    event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // We don't need to do anything special on completion
