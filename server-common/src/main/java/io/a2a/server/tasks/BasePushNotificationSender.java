@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.json.JsonUtil;
 import io.a2a.client.http.A2AHttpClientFactory;
+import io.a2a.spec.PushNotificationAuthenticationInfo;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 
@@ -73,6 +74,12 @@ public class BasePushNotificationSender implements PushNotificationSender {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost();
         if (token != null && !token.isBlank()) {
             postBuilder.addHeader(X_A2A_NOTIFICATION_TOKEN, token);
+        }
+
+        PushNotificationAuthenticationInfo auth = pushInfo.authentication();
+        if (auth != null && !auth.schemes().isEmpty() && auth.credentials() != null && !auth.credentials().isBlank()) {
+            String scheme = auth.schemes().get(0);
+            postBuilder.addHeader("Authorization", scheme + " " + auth.credentials());
         }
 
         String body;

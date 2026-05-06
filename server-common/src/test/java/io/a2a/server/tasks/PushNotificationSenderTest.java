@@ -22,6 +22,7 @@ import io.a2a.client.http.ServerSentEvent;
 import io.a2a.common.A2AHeaders;
 import io.a2a.json.JsonProcessingException;
 import io.a2a.json.JsonUtil;
+import io.a2a.spec.PushNotificationAuthenticationInfo;
 import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskState;
@@ -287,6 +288,139 @@ public class PushNotificationSenderTest {
             assertEquals(taskData.getContextId(), sentTask.getContextId());
             assertEquals(taskData.getStatus().state(), sentTask.getStatus().state());
         }
+    }
+
+    @Test
+    public void testSendNotificationWithAuthentication() throws InterruptedException {
+        String taskId = "task_send_with_auth";
+        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationAuthenticationInfo authInfo = new PushNotificationAuthenticationInfo(
+                List.of("Bearer"), "my-secret-credentials");
+        PushNotificationConfig config = new PushNotificationConfig.Builder()
+                .url("http://notify.me/here")
+                .id("cfg1")
+                .authenticationInfo(authInfo)
+                .build();
+
+        configStore.setInfo(taskId, config);
+        testHttpClient.latch = new CountDownLatch(1);
+
+        sender.sendNotification(taskData);
+
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS));
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertEquals("Bearer my-secret-credentials", sentHeaders.get("Authorization"));
+    }
+
+    @Test
+    public void testSendNotificationWithTokenAndAuthentication() throws InterruptedException {
+        String taskId = "task_send_token_and_auth";
+        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationAuthenticationInfo authInfo = new PushNotificationAuthenticationInfo(
+                List.of("Bearer"), "my-secret-credentials");
+        PushNotificationConfig config = new PushNotificationConfig.Builder()
+                .url("http://notify.me/here")
+                .id("cfg1")
+                .token("my-token")
+                .authenticationInfo(authInfo)
+                .build();
+
+        configStore.setInfo(taskId, config);
+        testHttpClient.latch = new CountDownLatch(1);
+
+        sender.sendNotification(taskData);
+
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS));
+        assertEquals(1, testHttpClient.headers.size());
+        Map<String, String> sentHeaders = testHttpClient.headers.get(0);
+        assertEquals("my-token", sentHeaders.get(A2AHeaders.X_A2A_NOTIFICATION_TOKEN));
+        assertEquals("Bearer my-secret-credentials", sentHeaders.get("Authorization"));
+    }
+
+    @Test
+    public void testSendNotificationWithNullAuthSchemes() throws InterruptedException {
+        String taskId = "task_send_null_schemes";
+        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationConfig config = new PushNotificationConfig.Builder()
+                .url("http://notify.me/here")
+                .id("cfg1")
+                .build();
+
+        configStore.setInfo(taskId, config);
+        testHttpClient.latch = new CountDownLatch(1);
+
+        sender.sendNotification(taskData);
+
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS));
+        assertEquals(1, testHttpClient.headers.size());
+        assertTrue(testHttpClient.headers.get(0).isEmpty());
+    }
+
+    @Test
+    public void testSendNotificationWithEmptyAuthSchemes() throws InterruptedException {
+        String taskId = "task_send_empty_schemes";
+        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationAuthenticationInfo authInfo = new PushNotificationAuthenticationInfo(
+                List.of(), "my-secret-credentials");
+        PushNotificationConfig config = new PushNotificationConfig.Builder()
+                .url("http://notify.me/here")
+                .id("cfg1")
+                .authenticationInfo(authInfo)
+                .build();
+
+        configStore.setInfo(taskId, config);
+        testHttpClient.latch = new CountDownLatch(1);
+
+        sender.sendNotification(taskData);
+
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS));
+        assertEquals(1, testHttpClient.headers.size());
+        assertTrue(testHttpClient.headers.get(0).isEmpty());
+    }
+
+    @Test
+    public void testSendNotificationWithNullAuthCredentials() throws InterruptedException {
+        String taskId = "task_send_null_creds";
+        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationAuthenticationInfo authInfo = new PushNotificationAuthenticationInfo(
+                List.of("Bearer"), null);
+        PushNotificationConfig config = new PushNotificationConfig.Builder()
+                .url("http://notify.me/here")
+                .id("cfg1")
+                .authenticationInfo(authInfo)
+                .build();
+
+        configStore.setInfo(taskId, config);
+        testHttpClient.latch = new CountDownLatch(1);
+
+        sender.sendNotification(taskData);
+
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS));
+        assertEquals(1, testHttpClient.headers.size());
+        assertTrue(testHttpClient.headers.get(0).isEmpty());
+    }
+
+    @Test
+    public void testSendNotificationWithBlankAuthCredentials() throws InterruptedException {
+        String taskId = "task_send_blank_creds";
+        Task taskData = createSampleTask(taskId, TaskState.COMPLETED);
+        PushNotificationAuthenticationInfo authInfo = new PushNotificationAuthenticationInfo(
+                List.of("Bearer"), "   ");
+        PushNotificationConfig config = new PushNotificationConfig.Builder()
+                .url("http://notify.me/here")
+                .id("cfg1")
+                .authenticationInfo(authInfo)
+                .build();
+
+        configStore.setInfo(taskId, config);
+        testHttpClient.latch = new CountDownLatch(1);
+
+        sender.sendNotification(taskData);
+
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS));
+        assertEquals(1, testHttpClient.headers.size());
+        assertTrue(testHttpClient.headers.get(0).isEmpty());
     }
 
     @Test
