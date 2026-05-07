@@ -116,7 +116,7 @@ import java.util.logging.Logger;
  *     CompletableFuture<Void> future = client.createGet()
  *         .url("https://api.example.com/stream")
  *         .getAsyncSSE(
- *             message -> System.out.println("Received: " + message),
+ *             event -> System.out.println("Received: " + event.data()),
  *             error -> error.printStackTrace(),
  *             () -> System.out.println("Stream complete")
  *         );
@@ -366,7 +366,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
             String url,
             Map<String, String> headers,
             @Nullable Buffer bodyBuffer,
-            Consumer<String> messageConsumer,
+            Consumer<ServerSentEvent> messageConsumer,
             Consumer<Throwable> errorConsumer,
             Runnable completeRunnable) {
 
@@ -403,13 +403,15 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                             && contentType != null && contentType.contains(EVENT_STREAM);
                     if (isSse) {
                         BodyCodec.sseStream(readStream ->
-                            readStream.handler(event -> {
-                                String data = event.data();
-                                if (data != null) {
-                                    data = data.trim();
-                                    if (!data.isEmpty()) {
-                                        messageConsumer.accept(data);
-                                    }
+                            readStream.handler(sseEvent -> {
+                                String data = sseEvent.data();
+                                if (data != null && !data.isEmpty()) {
+                                    String eventType = sseEvent.event() != null ? sseEvent.event() : ServerSentEvent.DEFAULT_EVENT_TYPE;
+                                    // Vert.x SseEvent.retry() defaults to 0 when no retry field is present, so
+                                    // retry:0 (a valid SSE directive meaning "reconnect immediately") is
+                                    // indistinguishable from "not set" and is silently treated as absent.
+                                    Long retry = sseEvent.retry() != 0 ? (long) sseEvent.retry() : null;
+                                    messageConsumer.accept(new ServerSentEvent(data, eventType, sseEvent.id(), retry));
                                 }
                             })
                         ).create(ar -> {
@@ -440,6 +442,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                         response.pipe().to(new PlainBodyWriteStream(messageConsumer))
                                 .onSuccess(v -> {
                                     if (futureCompleted.compareAndSet(false, true)) {
+                                        completeRunnable.run();
                                         future.complete(null);
                                     }
                                 })
@@ -486,7 +489,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
 
         @Override
         public CompletableFuture<Void> getAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException {
 
@@ -528,7 +531,7 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
 
         @Override
         public CompletableFuture<Void> postAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException {
 
@@ -563,10 +566,9 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
 
     /**
      * A {@link WriteStream} that handles plain (non-SSE) response bodies, e.g. JSON error
-     * responses returned when the stream never opens. Accumulates raw bytes, splits into lines
-     * on {@code \n} (decoding complete lines as UTF-8 to correctly handle multi-byte characters
-     * that may be split across consecutive write calls), and forwards each non-empty line to the
-     * message consumer so the SSEEventListener can parse the typed error.
+     * responses returned when the stream never opens. Accumulates all bytes and emits the
+     * entire body as a single {@link ServerSentEvent} on {@link #end} so that multi-line or
+     * pretty-printed JSON is delivered as one parseable unit to the SSEEventListener.
      *
      * <p>A hard cap of {@value #MAX_BUFFER_BYTES} bytes is enforced on the internal buffer
      * to prevent Denial-of-Service via {@link OutOfMemoryError} for arbitrarily large inputs.
@@ -575,46 +577,12 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         /** Maximum number of raw bytes that may be buffered before further writes are rejected. */
         private static final int MAX_BUFFER_BYTES = 1024 * 1024; // 1 MB
 
-        private final Consumer<String> messageConsumer;
-        /**
-         * Raw bytes waiting for a complete line delimiter. We buffer raw bytes — rather than
-         * decoded characters — so that multi-byte UTF-8 sequences split across consecutive
-         * {@link #write} calls are never decoded prematurely.
-         */
+        private final Consumer<ServerSentEvent> messageConsumer;
         private Buffer rawBuffer = Buffer.buffer();
         private @Nullable Handler<Throwable> exceptionHandler;
 
-        PlainBodyWriteStream(Consumer<String> messageConsumer) {
+        PlainBodyWriteStream(Consumer<ServerSentEvent> messageConsumer) {
             this.messageConsumer = messageConsumer;
-        }
-
-        /**
-         * Scans {@link #rawBuffer} for {@code '\n'} bytes (0x0A, which never appears as a
-         * continuation byte in UTF-8), decodes each complete line as UTF-8, trims whitespace,
-         * and forwards non-empty lines to the message consumer. Unconsumed bytes are retained
-         * in the buffer for the next write.
-         */
-        private void processLines() {
-            int start = 0;
-            int len = rawBuffer.length();
-            while (true) {
-                int nlIdx = -1;
-                for (int i = start; i < len; i++) {
-                    if (rawBuffer.getByte(i) == '\n') {
-                        nlIdx = i;
-                        break;
-                    }
-                }
-                if (nlIdx < 0) break;
-                String line = new String(rawBuffer.getBytes(start, nlIdx), StandardCharsets.UTF_8).trim();
-                start = nlIdx + 1;
-                if (!line.isEmpty()) {
-                    messageConsumer.accept(line);
-                }
-            }
-            if (start > 0) {
-                rawBuffer = rawBuffer.getBuffer(start, len);
-            }
         }
 
         @Override
@@ -629,7 +597,6 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
                 return Future.failedFuture(ex);
             }
             rawBuffer.appendBuffer(data);
-            processLines();
             return Future.succeededFuture();
         }
 
@@ -644,10 +611,10 @@ public class VertxA2AHttpClient implements A2AHttpClient, AutoCloseable {
         @Override
         public void end(Handler<AsyncResult<Void>> handler) {
             if (rawBuffer.length() > 0) {
-                String remaining = rawBuffer.toString(StandardCharsets.UTF_8).trim();
+                String body = rawBuffer.toString(StandardCharsets.UTF_8).trim();
                 rawBuffer = Buffer.buffer();
-                if (!remaining.isEmpty()) {
-                    messageConsumer.accept(remaining);
+                if (!body.isEmpty()) {
+                    messageConsumer.accept(new ServerSentEvent(body));
                 }
             }
             if (handler != null) {

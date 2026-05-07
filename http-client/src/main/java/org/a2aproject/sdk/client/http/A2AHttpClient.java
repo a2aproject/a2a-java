@@ -33,7 +33,7 @@ import java.util.function.Consumer;
  *     .url("http://localhost:9999/message:stream")
  *     .body(jsonBody)
  *     .postAsyncSSE(
- *         message -> System.out.println("Event: " + message),
+ *         event -> System.out.println("Event: " + event.data()),
  *         error -> System.err.println("Error: " + error),
  *         () -> System.out.println("Stream complete")
  *     );
@@ -45,9 +45,9 @@ import java.util.function.Consumer;
 public interface A2AHttpClient {
 
     /** HTTP Content-Type header name. */
-    String CONTENT_TYPE= "Content-Type";
+    String CONTENT_TYPE = "Content-Type";
     /** JSON content type value. */
-    String APPLICATION_JSON= "application/json";
+    String APPLICATION_JSON = "application/json";
     /** HTTP Accept header name. */
     String ACCEPT = "Accept";
     /** SSE event stream content type. */
@@ -135,7 +135,7 @@ public interface A2AHttpClient {
          * @throws InterruptedException if the operation is interrupted
          */
         CompletableFuture<Void> getAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException;
     }
@@ -177,7 +177,7 @@ public interface A2AHttpClient {
          * @throws InterruptedException if the operation is interrupted
          */
         CompletableFuture<Void> postAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException;
     }

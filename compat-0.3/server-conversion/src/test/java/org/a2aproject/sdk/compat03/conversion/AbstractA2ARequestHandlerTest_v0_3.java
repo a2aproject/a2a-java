@@ -15,6 +15,7 @@ import jakarta.enterprise.context.Dependent;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
+import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
@@ -260,7 +261,7 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
             }
 
             @Override
-            public CompletableFuture<Void> postAsyncSSE(Consumer<String> messageConsumer,
+            public CompletableFuture<Void> postAsyncSSE(Consumer<ServerSentEvent> messageConsumer,
                                                         Consumer<Throwable> errorConsumer,
                                                         Runnable completeRunnable)
                     throws IOException, InterruptedException {

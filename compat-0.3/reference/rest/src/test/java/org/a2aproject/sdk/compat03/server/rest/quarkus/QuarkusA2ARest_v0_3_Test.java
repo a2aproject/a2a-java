@@ -6,17 +6,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
-import org.a2aproject.sdk.compat03.client.transport.rest.RestTransport_v0_3;
-import org.a2aproject.sdk.compat03.client.transport.rest.RestTransportConfigBuilder_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerServerTest_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@QuarkusTest
-public class QuarkusA2ARest_v0_3_Test extends AbstractA2AServerServerTest_v0_3 {
+public abstract class QuarkusA2ARest_v0_3_Test extends AbstractA2AServerServerTest_v0_3 {
 
     public QuarkusA2ARest_v0_3_Test() {
         super(8081);
@@ -33,9 +29,7 @@ public class QuarkusA2ARest_v0_3_Test extends AbstractA2AServerServerTest_v0_3 {
     }
 
     @Override
-    protected void configureTransport(ClientBuilder_v0_3 builder) {
-        builder.withTransport(RestTransport_v0_3.class, new RestTransportConfigBuilder_v0_3());
-    }
+    protected abstract void configureTransport(ClientBuilder_v0_3 builder);
 
     @Test
     public void testMethodNotFound() throws Exception {

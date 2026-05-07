@@ -165,13 +165,17 @@ public class A2AServerRoutes {
 
         // Message Routes
 
+        // ordered=false on all blocking handlers: A2A requests are independent, and agent
+        // delegation via Vert.x WebClient can land on the same event loop context as the outer
+        // request. ordered=true would serialize them, causing a 30s deadlock.
+
         // POST /{tenant}/message:send - Non-streaming message send
         router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)message:send$")
             .handler(BodyHandler.create())
             .blockingHandler(authenticated(ctx -> {
                 String body = extractBody(ctx);
                 sendMessage(body, ctx);
-            }));
+            }), false);
 
         // POST /{tenant}/message:stream - Streaming message with SSE
         router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)message:stream$")
@@ -179,19 +183,19 @@ public class A2AServerRoutes {
             .blockingHandler(authenticated(ctx -> {
                 String body = extractBody(ctx);
                 sendMessageStreaming(body, ctx);
-            }));
+            }), false);
 
         // Task Routes
 
         // GET /{tenant}/tasks - List tasks with query params
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\??")
             .order(0)
-            .blockingHandler(authenticated(this::listTasks));
+            .blockingHandler(authenticated(this::listTasks), false);
 
         // GET /{tenant}/tasks/{taskId} - Get specific task
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^:^/]+)$")
             .order(1)
-            .blockingHandler(authenticated(this::getTask));
+            .blockingHandler(authenticated(this::getTask), false);
 
         // POST /{tenant}/tasks/{taskId}:cancel - Cancel task
         router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):cancel$")
@@ -200,12 +204,12 @@ public class A2AServerRoutes {
             .blockingHandler(authenticated(ctx -> {
                 String body = extractBody(ctx);
                 cancelTask(body, ctx);
-            }));
+            }), false);
 
         // POST /{tenant}/tasks/{taskId}:subscribe - Subscribe to task updates (SSE)
         router.postWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+):subscribe$")
             .order(1)
-            .blockingHandler(authenticated(this::subscribeToTask));
+            .blockingHandler(authenticated(this::subscribeToTask), false);
 
         // Push Notification Routes
 
@@ -216,22 +220,22 @@ public class A2AServerRoutes {
             .blockingHandler(authenticated(ctx -> {
                 String body = extractBody(ctx);
                 createTaskPushNotificationConfiguration(body, ctx);
-            }));
+            }), false);
 
         // GET /{tenant}/tasks/{taskId}/pushNotificationConfigs/{configId}
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^\\/]+)")
             .order(2)
-            .blockingHandler(authenticated(this::getTaskPushNotificationConfiguration));
+            .blockingHandler(authenticated(this::getTaskPushNotificationConfiguration), false);
 
         // GET /{tenant}/tasks/{taskId}/pushNotificationConfigs
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/?$")
             .order(3)
-            .blockingHandler(authenticated(this::listTaskPushNotificationConfigurations));
+            .blockingHandler(authenticated(this::listTaskPushNotificationConfigurations), false);
 
         // DELETE /{tenant}/tasks/{taskId}/pushNotificationConfigs/{configId}
         router.deleteWithRegex("^\\/(?<tenant>[^\\/]*\\/?)tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^/]+)")
             .order(1)
-            .blockingHandler(authenticated(this::deleteTaskPushNotificationConfiguration));
+            .blockingHandler(authenticated(this::deleteTaskPushNotificationConfiguration), false);
 
         // Discovery Routes
 
@@ -245,7 +249,7 @@ public class A2AServerRoutes {
         router.getWithRegex("^\\/(?<tenant>[^\\/]*\\/?)extendedAgentCard$")
             .order(1)
             .produces(APPLICATION_JSON)
-            .blockingHandler(authenticated(this::getExtendedAgentCard));
+            .blockingHandler(authenticated(this::getExtendedAgentCard), false);
     }
 
     private Handler<RoutingContext> authenticated(Consumer<RoutingContext> action) {

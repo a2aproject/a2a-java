@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
@@ -47,7 +48,7 @@ public class SSEEventListenerTest {
         }
 
         @Override
-        public void onMessage(String message, @Nullable Future<Void> completableFuture) {
+        public void onMessage(ServerSentEvent event, @Nullable Future<Void> completableFuture) {
             if (eventToHandle != null) {
                 handleEvent(eventToHandle, completableFuture);
             }
@@ -145,7 +146,7 @@ public class SSEEventListenerTest {
         Message message = createMessage(Message.Role.ROLE_USER);
 
         listener.setEventToHandle(message);
-        listener.onMessage(TEST_TEXT, null);
+        listener.onMessage(new ServerSentEvent(TEST_TEXT), null);
 
         assertNotNull(receivedEvent.get());
         assertEquals(message, receivedEvent.get());
@@ -159,7 +160,7 @@ public class SSEEventListenerTest {
         Task task = createTask(TaskState.TASK_STATE_WORKING);
 
         listener.setEventToHandle(task);
-        listener.onMessage(TEST_TEXT, null);
+        listener.onMessage(new ServerSentEvent(TEST_TEXT), null);
 
         assertNotNull(receivedEvent.get());
     }
@@ -254,7 +255,7 @@ public class SSEEventListenerTest {
         CancelCapturingFuture future = new CancelCapturingFuture();
 
         listener.setEventToHandle(finalEvent);
-        listener.onMessage(TEST_TEXT, future);
+        listener.onMessage(new ServerSentEvent(TEST_TEXT), future);
 
         assertNotNull(receivedEvent.get());
         assertEquals(finalEvent, receivedEvent.get());
@@ -270,7 +271,7 @@ public class SSEEventListenerTest {
         CancelCapturingFuture future = new CancelCapturingFuture();
 
         listener.setEventToHandle(message);
-        listener.onMessage(TEST_TEXT, future);
+        listener.onMessage(new ServerSentEvent(TEST_TEXT), future);
 
         assertNotNull(receivedEvent.get());
         assertFalse(future.wasCancelled());
@@ -285,7 +286,7 @@ public class SSEEventListenerTest {
 
         // Should not throw with null future
         listener.setEventToHandle(finalEvent);
-        listener.onMessage(TEST_TEXT, null);
+        listener.onMessage(new ServerSentEvent(TEST_TEXT), null);
 
         assertNotNull(receivedEvent.get());
     }

@@ -122,6 +122,12 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
 
     protected A2AHttpResponse execute(HttpURLConnection connection) throws IOException {
       int status = connection.getResponseCode();
+      if (status == HTTP_UNAUTHORIZED) {
+        throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED);
+      } else if (status == HTTP_FORBIDDEN) {
+        throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED);
+      }
+
       String body = "";
       try (InputStream is =
           (status >= HTTP_OK && status < HTTP_MULT_CHOICE)
@@ -130,23 +136,17 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
         body = readStreamWithLimit(is);
       }
 
-      if (status == HTTP_UNAUTHORIZED) {
-        throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED);
-      } else if (status == HTTP_FORBIDDEN) {
-        throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED);
-      }
-
       return new AndroidHttpResponse(status, body);
     }
 
     protected void processSSEResponse(
         HttpURLConnection connection,
-        Consumer<String> messageConsumer,
+        Consumer<ServerSentEvent> messageConsumer,
         Consumer<Throwable> errorConsumer,
         Runnable completeRunnable) {
       try {
         int status = connection.getResponseCode();
-        if (status != HTTP_OK) {
+        if (!(status >= HTTP_OK && status < HTTP_MULT_CHOICE)) {
           if (status == HTTP_UNAUTHORIZED) {
             errorConsumer.accept(new IOException(A2AErrorMessages.AUTHENTICATION_FAILED));
             return;
@@ -159,20 +159,44 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
           try (InputStream es = connection.getErrorStream()) {
             errorBody = readStreamWithLimit(es);
           }
-          errorConsumer.accept(
-              new IOException("Request failed with status " + status + ":" + errorBody));
+          // Pass the error body through messageConsumer so higher-level listeners
+          // (e.g. RestErrorMapper in SSEEventListener) can produce a typed error.
+          // Do not also call errorConsumer here — the messageConsumer path is responsible
+          // for signalling the error, matching the async JDK client's behaviour.
+          if (!errorBody.isEmpty()) {
+            messageConsumer.accept(new ServerSentEvent(errorBody));
+          } else {
+            errorConsumer.accept(
+                new IOException("Request failed with status " + status));
+          }
           return;
         }
+
+        String contentType = connection.getContentType();
+        boolean isSse = contentType != null && contentType.contains(EVENT_STREAM);
 
         try (InputStream is = connection.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
           String line;
-          while ((line = reader.readLine()) != null) {
-            if (line.startsWith("data:")) {
-              String data = line.substring(5).trim();
-              if (!data.isEmpty()) {
-                messageConsumer.accept(data);
+          if (isSse) {
+            ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer);
+            while ((line = reader.readLine()) != null) {
+              sseParser.processLine(line);
+            }
+            sseParser.flush();
+          } else {
+            StringBuilder bodyBuffer = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+              if (!line.isEmpty()) {
+                if (bodyBuffer.length() > 0) {
+                  bodyBuffer.append('\n');
+                }
+                bodyBuffer.append(line);
               }
+            }
+            String body = bodyBuffer.toString();
+            if (!body.isEmpty()) {
+              messageConsumer.accept(new ServerSentEvent(body));
             }
           }
           completeRunnable.run();
@@ -186,7 +210,7 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
 
     protected CompletableFuture<Void> executeAsyncSSE(
         HttpURLConnection connection,
-        Consumer<String> messageConsumer,
+        Consumer<ServerSentEvent> messageConsumer,
         Consumer<Throwable> errorConsumer,
         Runnable completeRunnable) {
       return CompletableFuture.runAsync(
@@ -209,7 +233,7 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
 
     @Override
     public CompletableFuture<Void> getAsyncSSE(
-        Consumer<String> messageConsumer,
+        Consumer<ServerSentEvent> messageConsumer,
         Consumer<Throwable> errorConsumer,
         Runnable completeRunnable)
         throws IOException {
@@ -245,7 +269,7 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
 
     @Override
     public CompletableFuture<Void> postAsyncSSE(
-        Consumer<String> messageConsumer,
+        Consumer<ServerSentEvent> messageConsumer,
         Consumer<Throwable> errorConsumer,
         Runnable completeRunnable)
         throws IOException {

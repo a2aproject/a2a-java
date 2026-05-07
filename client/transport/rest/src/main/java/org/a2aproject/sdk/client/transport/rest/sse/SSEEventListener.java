@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.transport.spi.sse.AbstractSSEEventListener;
 import org.a2aproject.sdk.client.transport.rest.RestErrorMapper;
 import org.a2aproject.sdk.grpc.StreamResponse;
@@ -27,15 +28,15 @@ public class SSEEventListener extends AbstractSSEEventListener {
     }
 
     @Override
-    public void onMessage(String message, @Nullable Future<Void> completableFuture) {
+    public void onMessage(ServerSentEvent event, @Nullable Future<Void> completableFuture) {
         try {
-            log.fine("Streaming message received: " + message);
+            log.fine("Streaming message received: " + event.data());
             org.a2aproject.sdk.grpc.StreamResponse.Builder builder = org.a2aproject.sdk.grpc.StreamResponse.newBuilder();
-            JsonFormat.parser().merge(message, builder);
+            JsonFormat.parser().merge(event.data(), builder);
             parseAndHandleMessage(builder.build(), completableFuture);
         } catch (InvalidProtocolBufferException e) {
             if (getErrorHandler() != null) {
-                getErrorHandler().accept(RestErrorMapper.mapRestError(message, 500));
+                getErrorHandler().accept(RestErrorMapper.mapRestError(event.data(), 500));
             }
         }
     }

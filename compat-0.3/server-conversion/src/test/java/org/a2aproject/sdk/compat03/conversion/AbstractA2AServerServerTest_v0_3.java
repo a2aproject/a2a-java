@@ -1080,8 +1080,20 @@ public abstract class AbstractA2AServerServerTest_v0_3 {
             }
         };
 
+        // Wait for the server to register the new SSE subscription before the agent emits events.
+        // Without this guard there is a race: the server can finish processing message2 and emit
+        // events to the task queue before the streaming subscriber from sendMessage is registered,
+        // causing those events to be silently dropped (sendMessage streaming starts from the
+        // current queue position, unlike resubscribe which replays from an earlier point).
+        CountDownLatch streamSubscriptionLatch = new CountDownLatch(1);
+        awaitStreamingSubscription()
+                .whenComplete((unused, throwable) -> streamSubscriptionLatch.countDown());
+
         // Streaming message adds artifact-2 and completes task
         getClient().sendMessage(message2, List.of(streamConsumer), null);
+
+        assertTrue(streamSubscriptionLatch.await(15, TimeUnit.SECONDS),
+                "Stream subscription should be established before agent emits events");
 
         // 4. Verify both consumers received artifact-2 and completion
         assertTrue(resubEventLatch.await(10, TimeUnit.SECONDS));

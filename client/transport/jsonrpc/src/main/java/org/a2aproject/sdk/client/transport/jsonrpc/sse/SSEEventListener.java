@@ -4,6 +4,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.client.transport.spi.sse.AbstractSSEEventListener;
 import org.a2aproject.sdk.grpc.StreamResponse;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
@@ -28,8 +29,8 @@ public class SSEEventListener extends AbstractSSEEventListener {
     }
 
     @Override
-    public void onMessage(String message, @Nullable Future<Void> completableFuture) {
-        parseAndHandleMessage(message, completableFuture);
+    public void onMessage(ServerSentEvent event, @Nullable Future<Void> completableFuture) {
+        parseAndHandleMessage(event.data(), completableFuture);
     }
 
     public void onComplete() {

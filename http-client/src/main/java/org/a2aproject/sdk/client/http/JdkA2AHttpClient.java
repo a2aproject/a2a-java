@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import org.jspecify.annotations.Nullable;
 
@@ -135,15 +136,17 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
         protected CompletableFuture<Void> asyncRequest(
                 HttpRequest request,
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable
         ) {
+            ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer);
+            AtomicBoolean useSseParser = new AtomicBoolean(false);
+            AtomicBoolean errorNotified = new AtomicBoolean(false);
+            StringBuilder nonSseBodyBuffer = new StringBuilder();
+
             Flow.Subscriber<String> subscriber = new Flow.Subscriber<String>() {
                 private Flow.@Nullable Subscription subscription;
-                private volatile boolean errorRaised = false;
-                private boolean isSseStream = false;
-                private boolean firstMeaningfulLineSeen = false;
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
@@ -153,24 +156,14 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
                 @Override
                 public void onNext(String item) {
-                    if (item != null && !item.isEmpty()) {
-                        if (!firstMeaningfulLineSeen) {
-                            firstMeaningfulLineSeen = true;
-                            isSseStream = item.startsWith("data:") || item.startsWith(":")
-                                    || item.startsWith("event:") || item.startsWith("id:")
-                                    || item.startsWith("retry:");
-                        }
-                        if (isSseStream) {
-                            if (item.startsWith("data:")) {
-                                String data = item.substring(5).trim();
-                                if (!data.isEmpty()) {
-                                    messageConsumer.accept(data);
-                                }
+                    if (item != null) {
+                        if (useSseParser.get()) {
+                            sseParser.processLine(item);
+                        } else if (!item.isEmpty()) {
+                            if (nonSseBodyBuffer.length() > 0) {
+                                nonSseBodyBuffer.append('\n');
                             }
-                            // Other SSE control lines (event:, id:, retry:, :) are ignored
-                        } else {
-                            // Plain error body: deliver so SSEEventListener can parse the typed error
-                            messageConsumer.accept(item);
+                            nonSseBodyBuffer.append(item);
                         }
                     }
                     if (subscription != null) {
@@ -180,8 +173,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
                 @Override
                 public void onError(Throwable throwable) {
-                    if (!errorRaised) {
-                        errorRaised = true;
+                    if (errorNotified.compareAndSet(false, true)) {
                         errorConsumer.accept(throwable);
                     }
                     if (subscription != null) {
@@ -191,7 +183,15 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
                 @Override
                 public void onComplete() {
-                    if (!errorRaised) {
+                    if (!errorNotified.get()) {
+                        if (useSseParser.get()) {
+                            sseParser.flush();
+                        } else {
+                            String body = nonSseBodyBuffer.toString();
+                            if (!body.isEmpty()) {
+                                messageConsumer.accept(new ServerSentEvent(body));
+                            }
+                        }
                         completeRunnable.run();
                     }
                     if (subscription != null) {
@@ -200,7 +200,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 }
             };
 
-            // Create a custom body handler that checks status before processing body
+            // Create a custom body handler that checks status and Content-Type before processing body
             BodyHandler<Void> bodyHandler = responseInfo -> {
                 // Check for authentication/authorization errors only
                 if (responseInfo.statusCode() == HTTP_UNAUTHORIZED || responseInfo.statusCode() == HTTP_FORBIDDEN) {
@@ -216,37 +216,42 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                         public void onSubscribe(Flow.Subscription subscription) {
                             subscriber.onError(new IOException(errorMessage));
                         }
-                        
+
                         @Override
                         public void onNext(List<ByteBuffer> item) {
                             // Should not be called
                         }
-                        
+
                         @Override
                         public void onError(Throwable throwable) {
                             // Should not be called
                         }
-                        
+
                         @Override
                         public void onComplete() {
                             // Should not be called
                         }
                     });
-                } else {
-                    // For all other status codes (including other errors), proceed with normal line subscriber
-                    return BodyHandlers.fromLineSubscriber(subscriber).apply(responseInfo);
                 }
+                // Use SSE parser only for actual SSE responses; plain body lines are forwarded directly
+                String contentType = responseInfo.headers().firstValue("Content-Type").orElse("");
+                boolean isSse = JdkHttpResponse.success(responseInfo.statusCode())
+                        && contentType.contains(EVENT_STREAM);
+                useSseParser.set(isSse);
+                return BodyHandlers.fromLineSubscriber(subscriber).apply(responseInfo);
             };
 
             // Send the response async, and let the subscriber handle the lines.
+            // handle() catches failures before the body handler is reached (e.g. connection
+            // errors, DNS failures) and routes them to errorConsumer, then always completes
+            // normally — consistent with the Vert.x and Android implementations.
             return httpClient.sendAsync(request, bodyHandler)
-                    .thenAccept(response -> {
-                        // Handle non-authentication/non-authorization errors here
-                        if (!isSuccessStatus(response.statusCode()) && 
-                            response.statusCode() != HTTP_UNAUTHORIZED && 
-                            response.statusCode() != HTTP_FORBIDDEN) {
-                            subscriber.onError(new IOException("Request failed with status " + response.statusCode() + ":" + response.body()));
+                    .<Void>handle((response, throwable) -> {
+                        if (throwable != null && errorNotified.compareAndSet(false, true)) {
+                            Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
+                            errorConsumer.accept(cause);
                         }
+                        return null;
                     });
         }
     }
@@ -279,7 +284,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
         @Override
         public CompletableFuture<Void> getAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(true)
@@ -344,7 +349,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
         @Override
         public CompletableFuture<Void> postAsyncSSE(
-                Consumer<String> messageConsumer,
+                Consumer<ServerSentEvent> messageConsumer,
                 Consumer<Throwable> errorConsumer,
                 Runnable completeRunnable) throws IOException, InterruptedException {
             HttpRequest request = createRequestBuilder(true)
@@ -361,12 +366,12 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         }
 
         @Override
-        public boolean success() {// Send the request and get the response
-            return success(response);
+        public boolean success() {
+            return success(response.statusCode());
         }
 
-        static boolean success(HttpResponse<?> response) {
-            return response.statusCode() >= HTTP_OK && response.statusCode() < HTTP_MULT_CHOICE;
+        static boolean success(int statusCode) {
+            return statusCode >= HTTP_OK && statusCode < HTTP_MULT_CHOICE;
         }
 
         @Override
@@ -374,8 +379,5 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             return response.body();
         }
     }
-
-    private static boolean isSuccessStatus(int statusCode) {
-        return statusCode >= HTTP_OK && statusCode <  HTTP_MULT_CHOICE;
-    }
 }
+

@@ -4,6 +4,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskState;
@@ -59,10 +60,10 @@ public abstract class AbstractSSEEventListener {
      * Handles incoming SSE messages. Subclasses must implement the specific
      * parsing logic for their transport protocol.
      *
-     * @param message The raw message string from the SSE stream
+     * @param event The parsed SSE event from the stream
      * @param completableFuture Optional future for controlling the SSE connection
      */
-    public abstract void onMessage(String message, @Nullable Future<Void> completableFuture);
+    public abstract void onMessage(ServerSentEvent event, @Nullable Future<Void> completableFuture);
 
     /**
      * Handles errors that occur during SSE streaming.

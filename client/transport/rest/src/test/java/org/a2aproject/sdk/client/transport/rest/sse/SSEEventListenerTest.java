@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.a2aproject.sdk.client.http.ServerSentEvent;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
@@ -83,7 +84,7 @@ public class SSEEventListenerTest {
             """;
 
         // Call the onMessage method
-        listener.onMessage(jsonMessage, null);
+        listener.onMessage(new ServerSentEvent(jsonMessage), null);
 
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());
@@ -120,7 +121,7 @@ public class SSEEventListenerTest {
             """;
 
         // Call onMessage method
-        listener.onMessage(jsonMessage, null);
+        listener.onMessage(new ServerSentEvent(jsonMessage), null);
 
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());
@@ -157,7 +158,7 @@ public class SSEEventListenerTest {
             """;
 
         // Call onMessage method
-        listener.onMessage(jsonMessage, null);
+        listener.onMessage(new ServerSentEvent(jsonMessage), null);
 
         // Verify the event was processed correctly
         assertNotNull(receivedEvent.get());
@@ -193,7 +194,7 @@ public class SSEEventListenerTest {
 
         // Call onMessage with a cancellable future
         CancelCapturingFuture future = new CancelCapturingFuture();
-        listener.onMessage(jsonMessage, future);
+        listener.onMessage(new ServerSentEvent(jsonMessage), future);
 
         // Verify the event was received and processed
         assertNotNull(receivedEvent.get());
@@ -230,7 +231,7 @@ public class SSEEventListenerTest {
 
         // Call onMessage with a cancellable future
         CancelCapturingFuture future = new CancelCapturingFuture();
-        listener.onMessage(jsonMessage, future);
+        listener.onMessage(new ServerSentEvent(jsonMessage), future);
 
         // Verify the event was received
         assertNotNull(receivedEvent.get());
@@ -255,7 +256,7 @@ public class SSEEventListenerTest {
         String invalidJson = "{ invalid json }";
 
         // Call onMessage
-        listener.onMessage(invalidJson, null);
+        listener.onMessage(new ServerSentEvent(invalidJson), null);
 
         // Verify error handler was called
         assertNotNull(receivedError.get());
@@ -274,7 +275,7 @@ public class SSEEventListenerTest {
         String jsonMessage = "{}";
 
         // Call onMessage
-        listener.onMessage(jsonMessage, null);
+        listener.onMessage(new ServerSentEvent(jsonMessage), null);
 
         // Verify error handler was called
         assertNotNull(receivedError.get());
@@ -335,7 +336,7 @@ public class SSEEventListenerTest {
         String invalidJson = "{ invalid json }";
 
         // Call onMessage - should not throw even with null error handler
-        listener.onMessage(invalidJson, null);
+        listener.onMessage(new ServerSentEvent(invalidJson), null);
 
         // No exception thrown means test passes
     }

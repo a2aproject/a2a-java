@@ -122,7 +122,7 @@ public class JSONRPCTransport implements ClientTransport {
         try {
             A2AHttpClient.PostBuilder builder = createPostBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, SEND_STREAMING_MESSAGE_METHOD);
             ref.set(builder.postAsyncSSE(
-                    msg -> sseEventListener.onMessage(msg, ref.get()),
+                    event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)
@@ -272,7 +272,7 @@ public class JSONRPCTransport implements ClientTransport {
         try {
             A2AHttpClient.PostBuilder builder = createPostBuilder(Utils.buildBaseUrl(agentInterface, request.tenant()), payloadAndHeaders, SUBSCRIBE_TO_TASK_METHOD);
             ref.set(builder.postAsyncSSE(
-                    msg -> sseEventListener.onMessage(msg, ref.get()),
+                    event -> sseEventListener.onMessage(event, ref.get()),
                     throwable -> sseEventListener.onError(throwable, ref.get()),
                     () -> {
                         // Signal normal stream completion to error handler (null error means success)

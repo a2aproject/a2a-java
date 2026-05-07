@@ -208,6 +208,7 @@ public class A2AServerRoutes {
         router.route().handler(BodyHandler.create());
 
         // Main JSON-RPC endpoint: POST /
+        // ordered=false: delegation via Vert.x WebClient can share the same event loop context as the outer request; ordered=true would serialize them, causing a 30s deadlock.
         router.post("/")
             .consumes(APPLICATION_JSON)
             .blockingHandler(ctx -> {
@@ -220,7 +221,7 @@ public class A2AServerRoutes {
                 } catch (Exception e) {
                     VertxSecurityHelper.handleGenericError(ctx);
                 }
-            });
+            }, false);
 
         // Agent card endpoint: GET /.well-known/agent-card.json
         router.get("/.well-known/agent-card.json")
