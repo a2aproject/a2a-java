@@ -306,7 +306,7 @@ public class JSONRPCUtils {
         String version = getAndValidateJsonrpc(jsonRpc);
         Object id = getAndValidateId(jsonRpc);
         JsonElement paramsNode = jsonRpc.get("result");
-        if (jsonRpc.has("error")) {
+        if (jsonRpc.has("error") && !jsonRpc.get("error").isJsonNull()) {
             return parseError(jsonRpc.getAsJsonObject("error"), id, method);
         }
         switch (method) {
