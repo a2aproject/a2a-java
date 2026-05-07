@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Java Mock Spawner Verification Test",
+      "sdks": ["current", "python_v10"],
+      "traversal": "euler",
+      "edges": ["0->1", "1->0"],
+      "protocols": ["jsonrpc"],
+      "behavior": "send_message"
+    }
+  ]
+}

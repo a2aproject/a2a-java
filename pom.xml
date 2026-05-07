@@ -605,6 +605,7 @@
         <module>boms/extras</module>
         <module>boms/reference</module>
         <module>boms/sdk</module>
+        <module>itk</module>
     </modules>
 
     <profiles>
