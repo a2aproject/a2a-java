@@ -605,6 +605,10 @@
         <module>boms/extras</module>
         <module>boms/reference</module>
         <module>boms/sdk</module>
+
+        <!-- TCK -->
+        <module>tck</module>
+
     </modules>
 
     <profiles>
