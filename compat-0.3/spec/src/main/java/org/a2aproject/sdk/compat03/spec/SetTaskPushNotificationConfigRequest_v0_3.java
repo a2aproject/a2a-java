@@ -22,7 +22,7 @@ public final class SetTaskPushNotificationConfigRequest_v0_3 extends NonStreamin
             throw new IllegalArgumentException("Invalid SetTaskPushNotificationRequest method");
         }
         Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;

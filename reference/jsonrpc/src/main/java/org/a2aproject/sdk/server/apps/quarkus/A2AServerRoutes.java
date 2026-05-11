@@ -204,13 +204,12 @@ public class A2AServerRoutes {
      * @param router the Vert.x Web Router instance to configure
      */
     void setupRoutes(@Observes Router router) {
-        // Add BodyHandler to parse request bodies
-        router.route().handler(BodyHandler.create());
-
         // Main JSON-RPC endpoint: POST /
+        // BodyHandler is per-route (not global) to avoid interfering with gRPC routes
         // ordered=false: delegation via Vert.x WebClient can share the same event loop context as the outer request; ordered=true would serialize them, causing a 30s deadlock.
         router.post("/")
             .consumes(APPLICATION_JSON)
+            .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
                 try {
                     vertxSecurityHelper.runInRequestContext(ctx, () -> {

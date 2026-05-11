@@ -23,7 +23,7 @@ public final class CancelTaskRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_
             throw new IllegalArgumentException("Invalid CancelTaskRequest method");
         }
         Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;

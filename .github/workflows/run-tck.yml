@@ -12,9 +12,12 @@ on:
 env:
   # Tag/branch of the TCK
   TCK_VERSION: 1.0-dev
+  TCK_VERSION_0_3: 0.3.0.beta4
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
   SUT_URL: http://localhost:9999
+  # Slow system on CI
+  TCK_STREAMING_TIMEOUT_0_3: 5.0
 
 # Only run the latest job
 concurrency:
@@ -27,6 +30,7 @@ jobs:
     strategy:
       matrix:
         java-version: [17]
+        profile: ['', 'multi-mode']
     steps:
       - name: Checkout a2a-java
         uses: actions/checkout@v6
@@ -54,7 +58,7 @@ jobs:
           uv pip install -e .
         working-directory: a2a-tck
       - name: Start SUT
-        run: mvn -B quarkus:dev -Dquarkus.console.enabled=false &
+        run: mvn -B quarkus:dev ${{ matrix.profile && format('-P{0}', matrix.profile) || '' }} -Dquarkus.console.enabled=false &
         working-directory: tck
       - name: Wait for SUT to start
         run: |
@@ -97,7 +101,7 @@ jobs:
             # Extract everything after the first ═══ separator line
             SUMMARY=$(sed -n '/^═══/,$p' a2a-tck/tck-output.log)
             if [ -n "$SUMMARY" ]; then
-              echo '### TCK Results (Java ${{ matrix.java-version }})' >> $GITHUB_STEP_SUMMARY
+              echo '### TCK 1.0 Results (Java ${{ matrix.java-version }}${{ matrix.profile && format(', {0}', matrix.profile) || '' }})' >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
               echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
@@ -112,7 +116,106 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: tck-reports-java-${{ matrix.java-version }}
+          name: tck-reports-java-${{ matrix.java-version }}${{ matrix.profile && format('-{0}', matrix.profile) || '' }}
           path: a2a-tck/reports/
+          retention-days: 14
+          if-no-files-found: warn
+
+  tck-test-0-3:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [17]
+        profile: ['', 'multi-mode']
+    steps:
+      - name: Checkout a2a-java
+        uses: actions/checkout@v6
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+          cache: maven
+      - name: Build a2a-java SDK
+        run: mvn -B install -DskipTests
+      - name: Checkout a2a-tck
+        uses: actions/checkout@v6
+        with:
+          repository: a2aproject/a2a-tck
+          path: a2a-tck
+          ref: ${{ env.TCK_VERSION_0_3 }}
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: "a2a-tck/pyproject.toml"
+      - name: Install uv and Python dependencies
+        run: |
+          pip install uv
+          uv pip install -e .
+        working-directory: a2a-tck
+      - name: Start SUT
+        run: mvn -B quarkus:dev ${{ matrix.profile && format('-P{0}', matrix.profile) || '' }} -Dquarkus.console.enabled=false &
+        working-directory: compat-0.3/tck
+      - name: Wait for SUT to start
+        run: |
+          URL="${{ env.SUT_URL }}/.well-known/agent-card.json"
+          EXPECTED_STATUS=200
+          TIMEOUT=120
+          RETRY_INTERVAL=2
+          START_TIME=$(date +%s)
+
+          while true; do
+            CURRENT_TIME=$(date +%s)
+            ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
+
+            if [ "$ELAPSED_TIME" -ge "$TIMEOUT" ]; then
+                echo "Timeout: Server did not respond with status $EXPECTED_STATUS within $TIMEOUT seconds."
+                exit 1
+            fi
+
+            HTTP_STATUS=$(curl --output /dev/null --silent --write-out "%{http_code}" "$URL") || true
+
+            if [ "$HTTP_STATUS" -eq "$EXPECTED_STATUS" ]; then
+                echo "Server is up! Received status $HTTP_STATUS after $ELAPSED_TIME seconds."
+                break;
+            fi
+
+            echo "Server not ready (status: $HTTP_STATUS). Retrying in $RETRY_INTERVAL seconds..."
+            sleep "$RETRY_INTERVAL"
+          done
+      - name: Run TCK
+        id: run-tck
+        timeout-minutes: 5
+        env:
+          TCK_STREAMING_TIMEOUT: ${{ env.TCK_STREAMING_TIMEOUT_0_3 }}
+        run: |
+          set -o pipefail
+          ./run_tck.py --sut-url ${{ env.SUT_URL }} --category all --transports jsonrpc,grpc,rest --compliance-report report.json 2>&1 | tee tck-output.log
+        working-directory: a2a-tck
+      - name: TCK Summary
+        if: always() && steps.run-tck.outcome != 'skipped'
+        run: |
+          if [ -f a2a-tck/tck-output.log ]; then
+            SUMMARY=$(sed -n '/^═══/,$p' a2a-tck/tck-output.log)
+            if [ -n "$SUMMARY" ]; then
+              echo '### TCK 0.3 Results (Java ${{ matrix.java-version }}${{ matrix.profile && format(', {0}', matrix.profile) || '' }})' >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+      - name: Stop SUT
+        if: always()
+        run: |
+          pkill -f "quarkus:dev" || true
+          sleep 2
+      - name: Upload TCK Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: tck-0.3-reports-java-${{ matrix.java-version }}${{ matrix.profile && format('-{0}', matrix.profile) || '' }}
+          path: |
+            a2a-tck/reports/
+            a2a-tck/report.json
           retention-days: 14
           if-no-files-found: warn

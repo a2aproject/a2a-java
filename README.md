@@ -345,7 +345,33 @@ These are a convenience — they transitively include all the individual compat 
 
 - **JSON-RPC and REST**: When serving multiple protocol versions, version routing inspects the `A2A-Version` HTTP header on each request. If the header is `"1.0"`, the request is routed to the v1.0 handler. If it is `"0.3"` or absent, the request is routed to the v0.3 handler.
 - **gRPC**: Version dispatch is implicit — v0.3 clients use the `a2a.v1` protobuf package and v1.0 clients use `lf.a2a.v1`, so requests are routed to the correct service automatically.
-- **Agent card**: The agent card is served in v1.0 format only. Older clients must be able to parse the v1.0 agent card.
+- **Agent card**: When both v1.0 and v0.3 are enabled, the v1.0 `AgentCard` takes precedence and is served at `/.well-known/agent-card.json`. The v0.3 `AgentCard_v0_3` is ignored. If only v0.3 is enabled, the v0.3 agent card is used. If only v1.0 is enabled, the v1.0 agent card is used as-is.
+
+#### Making the v1.0 Agent Card Compatible with v0.3 Clients
+
+When serving both protocol versions, you need to ensure the v1.0 agent card contains fields that v0.3 clients expect. Existing v0.3 client implementations (in any language) look for `url`, `preferredTransport`, and `additionalInterfaces` with `transport`/`url` entries — fields that don't exist in the v1.0 format by default.
+
+To make your v1.0 `AgentCard` parsable by v0.3 clients, set these fields on the builder:
+
+```java
+AgentCard card = AgentCard.builder()
+        .name("My Agent")
+        // ... other v1.0 fields ...
+        .supportedInterfaces(List.of(
+                new AgentInterface("jsonrpc", "http://localhost:9999")))
+        // v0.3 backward-compatibility fields:
+        .url("http://localhost:9999")
+        .preferredTransport("jsonrpc")
+        .additionalInterfaces(List.of(
+                new Legacy_0_3_AgentInterface("jsonrpc", "http://localhost:9999")))
+        .build();
+```
+
+The two interface lists serve different clients:
+
+- `supportedInterfaces` — used by **v1.0 clients** to discover endpoints (uses `AgentInterface` with `protocolBinding`/`url`/`tenant` fields)
+- `additionalInterfaces` — used by **v0.3 clients** to discover endpoints (uses `Legacy_0_3_AgentInterface` with v0.3 field names: `transport`/`url`)
+- `url` and `preferredTransport` — top-level fields that v0.3 clients use to discover the primary endpoint
 
 ## A2A Client
 

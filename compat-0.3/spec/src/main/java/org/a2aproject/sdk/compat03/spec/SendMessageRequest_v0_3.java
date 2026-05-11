@@ -37,7 +37,7 @@ public final class SendMessageRequest_v0_3 extends NonStreamingJSONRPCRequest_v0
             throw new IllegalArgumentException("Invalid SendMessageRequest method");
         }
         Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;
@@ -56,7 +56,7 @@ public final class SendMessageRequest_v0_3 extends NonStreamingJSONRPCRequest_v0
             throw new IllegalArgumentException("Invalid SendMessageRequest method");
         }
         Assert.checkNotNullParam("params", params);
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         params.check();
     }
 

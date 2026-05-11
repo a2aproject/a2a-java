@@ -98,7 +98,7 @@ public abstract sealed class A2ARequest<T> implements A2AMessage permits NonStre
         }
         Assert.checkNotNullParam("method", method);
         this.method = method;
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.id = id;
         if (paramsIsRequired) {
             Assert.checkNotNullParam("params", params);

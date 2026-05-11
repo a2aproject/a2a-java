@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,6 +19,7 @@ import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
+import org.a2aproject.sdk.spec.Compat03Fields;
 import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
 import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -45,6 +47,8 @@ public class AgentCardProducer {
         String preferredTransport = loadPreferredTransportFromProperties();
         String transportUrl = GRPC.toString().equals(preferredTransport) ? "localhost:" + port : "http://localhost:" + port;
 
+        List<AgentInterface> interfaces = Collections.singletonList(new AgentInterface(preferredTransport, transportUrl));
+
         AgentCard.Builder builder = AgentCard.builder()
                 .name("test-card")
                 .description("A test agent card")
@@ -58,9 +62,9 @@ public class AgentCardProducer {
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(new ArrayList<>())
-                .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, transportUrl)))
-                .url(transportUrl)
-                .preferredTransport(preferredTransport);
+                .supportedInterfaces(interfaces);
+
+        Compat03Fields.addCompat03FieldsIfAvailable(builder, interfaces, transportUrl, preferredTransport);
 
         // Add security configuration if enabled (for authentication tests)
         if (securityEnabled) {

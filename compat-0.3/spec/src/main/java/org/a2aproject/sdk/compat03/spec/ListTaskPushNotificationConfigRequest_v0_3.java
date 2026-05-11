@@ -20,7 +20,7 @@ public final class ListTaskPushNotificationConfigRequest_v0_3 extends NonStreami
         if (! method.equals(METHOD)) {
             throw new IllegalArgumentException("Invalid ListTaskPushNotificationConfigRequest method");
         }
-        Assert.isNullOrStringOrInteger(id);
+        Assert.isValidJsonRpcId(id);
         this.jsonrpc = Utils_v0_3.defaultIfNull(jsonrpc, JSONRPC_VERSION);
         this.id = id;
         this.method = method;

@@ -8,7 +8,6 @@ import org.a2aproject.sdk.compat03.client.transport.rest.RestTransportConfigBuil
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.auth.AuthInterceptor_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerWithAuthTest_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -43,12 +42,6 @@ public class MultiVersion_v0_3_RestWithAuthTest extends AbstractA2AServerWithAut
     @Override
     protected void configureTransport(ClientBuilder_v0_3 builder) {
         builder.withTransport(RestTransport_v0_3.class, new RestTransportConfigBuilder_v0_3());
-    }
-
-    @Test
-    @Override
-    @Disabled("Agent card is v1.0 format in multi-version mode")
-    public void testGetAgentCardIsPublic() {
     }
 
     @Test

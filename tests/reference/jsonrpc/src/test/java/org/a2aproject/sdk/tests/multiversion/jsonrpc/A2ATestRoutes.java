@@ -46,6 +46,7 @@ public class A2ATestRoutes {
     void setupRoutes(@Observes Router router) {
         router.post("/test/task")
             .consumes(APPLICATION_JSON)
+            .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
                 String body = ctx.body().asString();
                 saveTask(body, ctx);
@@ -105,6 +106,7 @@ public class A2ATestRoutes {
             });
 
         router.post("/test/task/:taskId")
+            .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
                 String taskId = ctx.pathParam("taskId");
                 String body = ctx.body().asString();

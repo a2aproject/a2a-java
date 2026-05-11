@@ -8,8 +8,6 @@ import org.a2aproject.sdk.compat03.client.transport.jsonrpc.JSONRPCTransportConf
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.auth.AuthInterceptor_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerWithAuthTest_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @TestProfile(AuthTestProfile.class)
@@ -45,9 +43,4 @@ public class MultiVersionJSONRPC_v0_3_WithAuthTest extends AbstractA2AServerWith
         builder.withTransport(JSONRPCTransport_v0_3.class, new JSONRPCTransportConfigBuilder_v0_3());
     }
 
-    @Test
-    @Override
-    @Disabled("Agent card is v1.0 format in multi-version mode")
-    public void testGetAgentCardIsPublic() {
-    }
 }

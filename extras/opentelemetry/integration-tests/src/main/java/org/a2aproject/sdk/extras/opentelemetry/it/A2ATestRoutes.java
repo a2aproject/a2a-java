@@ -51,6 +51,7 @@ public class A2ATestRoutes {
     void setupRoutes(@Observes Router router) {
         router.post("/test/task")
             .consumes(APPLICATION_JSON)
+            .handler(BodyHandler.create())
             .blockingHandler(ctx -> saveTask(ctx.body().asString(), ctx));
 
         router.get("/test/task/:taskId")

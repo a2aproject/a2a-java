@@ -32,7 +32,7 @@ The A2A protocol evolved from v0.3 to v1.0 with significant breaking changes. Ex
 - Changes to existing v1.0 modules (no regressions, no API changes)
 - Automatic protocol version detection (client must explicitly choose API version)
 - Extras modules (OpenTelemetry, JPA stores, etc.) for v0.3
-- v0.3 format agent card (v0.3 clients must be able to parse v1.0 agent card format)
+- Serving a separate v0.3-format agent card (the v1.0 card is served, with optional v0.3-compatible fields added by the user)
 
 ---
 
@@ -149,19 +149,24 @@ v0.3 Client Response
 
 `TASK_STATE_REJECTED` (v1.0-only) is mapped to `TASK_STATE_FAILED` when converting to v0.3 wire format. The original state is preserved in metadata (`"original_state": "REJECTED"`) so information is not entirely lost. Both are terminal states, so v0.3 clients can handle the result correctly.
 
-### Agent Card: v1.0 Only
+### Agent Card Precedence in Multi-Version Mode
 
-The agent card (`/.well-known/agent-card.json`) is produced only using the v1.0 format. The compat layer does not produce a v0.3-format agent card.
+When both v1.0 and v0.3 protocol support are enabled, a single agent card is served at `/.well-known/agent-card.json`:
 
-A server that supports both versions should advertise this via a single v1.0 agent card containing multiple `AgentInterface` entries — one per version — each with its own URL and `protocolVersion` field. v0.3 clients must be able to parse the v1.0 agent card format to discover their endpoint.
+- **Both v1.0 and v0.3 enabled**: The v1.0 `AgentCard` takes precedence. The v0.3 `AgentCard_v0_3` is ignored.
+- **Only v0.3 enabled**: The v0.3 `AgentCard_v0_3` is used.
+- **Only v1.0 enabled**: The v1.0 `AgentCard` is used as-is.
 
-**Pros:**
-- **Single source of truth**: one agent card at one well-known URL describes all supported versions and transports
-- **Simpler server implementation**: no need for separate v0.3 agent card endpoint, serializer, or CDI producer
-- **Forward-looking**: encourages v0.3 clients to understand the v1.0 discovery format
+### Making the v1.0 Agent Card Parsable by v0.3 Clients
 
-**Cons:**
-- **v0.3 clients must parse v1.0 agent card**: pure v0.3 clients that only understand the v0.3 structure need updating
+Existing v0.3 client implementations (across all languages) expect specific fields in the agent card that don't exist in the v1.0 format. Since we cannot control what external v0.3 clients can parse, the v1.0 `AgentCard` must include backward-compatible fields when serving both protocol versions:
+
+- `url` and `preferredTransport` — top-level fields that v0.3 clients use to discover the primary endpoint
+- `additionalInterfaces` — a list of `Legacy_0_3_AgentInterface(transport, url)` entries using v0.3 field names (`transport` instead of v1.0's `protocolBinding`)
+
+These fields coexist alongside the v1.0 `supportedInterfaces` field. v1.0 clients use `supportedInterfaces`; v0.3 clients use `url`, `preferredTransport`, and `additionalInterfaces`.
+
+`Legacy_0_3_AgentInterface` is a separate record from `AgentInterface` because they serialize to different JSON field names (`transport`/`url` vs `protocolBinding`/`url`/`tenant`).
 
 ---
 

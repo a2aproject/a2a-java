@@ -27,9 +27,9 @@ public final class Assert {
         }
     }
 
-    public static void isNullOrStringOrInteger(@Nullable Object value) {
-        if (! (value == null || value instanceof String || value instanceof Integer)) {
-            throw new IllegalArgumentException("Id must be null, a String, or an Integer");
+    public static void isValidJsonRpcId(@Nullable Object value) {
+        if (! (value == null || value instanceof String || value instanceof Number)) {
+            throw new IllegalArgumentException("JSON-RPC id must be null, a String, or a Number");
         }
     }
 

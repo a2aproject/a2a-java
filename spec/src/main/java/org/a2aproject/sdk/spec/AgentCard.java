@@ -58,7 +58,8 @@ public record AgentCard(
         List<AgentInterface> supportedInterfaces,
         @Nullable List<AgentCardSignature> signatures,
         @Nullable String url,
-        @Nullable String preferredTransport) {
+        @Nullable String preferredTransport,
+        @Nullable List<Legacy_0_3_AgentInterface> additionalInterfaces) {
 
     /**
      * Compact constructor that validates required fields.
@@ -160,6 +161,7 @@ public record AgentCard(
         private @Nullable List<AgentCardSignature> signatures;
         private @Nullable String url;
         private @Nullable String preferredTransport;
+        private @Nullable List<Legacy_0_3_AgentInterface> additionalInterfaces;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -192,6 +194,7 @@ public record AgentCard(
             this.signatures = card.signatures() != null ? new ArrayList<>(card.signatures()) : null;
             this.url =  card.url();
             this.preferredTransport= card.preferredTransport();
+            this.additionalInterfaces = card.additionalInterfaces() != null ? new ArrayList<>(card.additionalInterfaces()) : null;
         }
 
         /**
@@ -392,6 +395,11 @@ public record AgentCard(
             return this;
         }
 
+        public Builder additionalInterfaces(List<Legacy_0_3_AgentInterface> additionalInterfaces) {
+            this.additionalInterfaces = additionalInterfaces;
+            return this;
+        }
+
         /**
          * Builds an immutable {@link AgentCard} from the current builder state.
          * <p>
@@ -417,7 +425,8 @@ public record AgentCard(
                     Assert.checkNotNullParam("supportedInterfaces", supportedInterfaces),
                     signatures,
                     url,
-                    preferredTransport == null ?  "JSONRPC" : preferredTransport);
+                    preferredTransport == null ?  "JSONRPC" : preferredTransport,
+                    additionalInterfaces);
         }
     }
 }

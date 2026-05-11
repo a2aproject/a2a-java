@@ -43,6 +43,7 @@ public class A2ATestRoutes {
         // Save task: POST /test/task
         router.post("/test/task")
             .consumes(APPLICATION_JSON)
+            .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
                 String body = ctx.body().asString();
                 saveTask(body, ctx);
@@ -113,6 +114,7 @@ public class A2ATestRoutes {
 
         // Save task push notification config: POST /test/task/:taskId
         router.post("/test/task/:taskId")
+            .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
                 String taskId = ctx.pathParam("taskId");
                 String body = ctx.body().asString();
