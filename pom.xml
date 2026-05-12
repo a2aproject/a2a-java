@@ -50,7 +50,7 @@
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
         <gmavenplus-plugin.version>4.2.1</gmavenplus-plugin.version>
         <sonatype-central-publishing-plugin.version>0.10.0</sonatype-central-publishing-plugin.version>
-        <groovy.version>5.0.5</groovy.version>
+        <groovy.version>5.0.6</groovy.version>
         <gson.version>2.14.0</gson.version>
         <jakarta.enterprise.cdi-api.version>4.1.0</jakarta.enterprise.cdi-api.version>
         <jakarta.inject.jakarta.inject-api.version>2.0.1</jakarta.inject.jakarta.inject-api.version>
