@@ -14,8 +14,8 @@
 
     <packaging>jar</packaging>
 
-    <name>Java A2A SDK Tests Dual-Version gRPC</name>
-    <description>Tests for dual v1.0/v0.3 gRPC deployment</description>
+    <name>Java A2A SDK Tests Multi-Version gRPC</name>
+    <description>Tests for multi-version v1.0/v0.3 gRPC deployment</description>
 
     <dependencies>
         <!-- v1.0 gRPC reference server -->

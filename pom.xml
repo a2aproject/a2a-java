@@ -596,7 +596,7 @@
         <module>reference/multiversion-jsonrpc</module>
         <module>reference/multiversion-rest</module>
 
-        <!-- Dual-version test modules -->
+        <!-- Multi-version test modules -->
         <module>tests/reference/jsonrpc</module>
         <module>tests/reference/rest</module>
         <module>tests/reference/grpc</module>
@@ -605,6 +605,10 @@
         <module>boms/extras</module>
         <module>boms/reference</module>
         <module>boms/sdk</module>
+
+        <!-- TCK -->
+        <module>tck</module>
+
     </modules>
 
     <profiles>

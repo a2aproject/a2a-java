@@ -270,6 +270,83 @@ a2a.blocking.consumption.timeout.seconds=5
 
 **Note:** The reference server implementations (Quarkus-based) automatically include the MicroProfile Config integration, so properties work out of the box in `application.properties`.
 
+### Serving Older Protocol Versions (Backward Compatibility)
+
+The A2A Java SDK includes compatibility layers that allow your server to accept requests from clients using older protocol versions. Each compatibility layer is a separate set of modules that you add to your project as needed. **No changes to your `AgentExecutor` are needed** — the compatibility layer converts older protocol requests to v1.0 internally before delegating to your agent.
+
+#### Adding v0.3 Protocol Support
+
+To enable v0.3 support, add the v0.3 compat reference module for your chosen transport alongside (or instead of) the v1.0 reference module:
+
+```xml
+<!-- v0.3 JSON-RPC support -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-reference-jsonrpc</artifactId>
+    <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
+    <version>${org.a2aproject.sdk.version}</version>
+</dependency>
+
+<!-- v0.3 REST support -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-reference-rest</artifactId>
+    <version>${org.a2aproject.sdk.version}</version>
+</dependency>
+
+<!-- v0.3 gRPC support -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-reference-grpc</artifactId>
+    <version>${org.a2aproject.sdk.version}</version>
+</dependency>
+```
+
+For example, a server that supports **v1.0 and v0.3 over JSON-RPC** would include both:
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
+    <version>${org.a2aproject.sdk.version}</version>
+</dependency>
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-reference-jsonrpc</artifactId>
+    <version>${org.a2aproject.sdk.version}</version>
+</dependency>
+```
+
+A server that only needs to support **v0.3** would include only the compat dependency.
+
+#### Multi-Version Convenience Modules
+
+For JSON-RPC and REST, multi-version modules are provided that bundle all supported protocol versions together with version-dispatching routes:
+
+```xml
+<!-- Includes v1.0 + v0.3 JSON-RPC support with automatic version routing -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-multiversion-jsonrpc</artifactId>
+    <version>${org.a2aproject.sdk.version}</version>
+</dependency>
+
+<!-- Includes v1.0 + v0.3 REST support with automatic version routing -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-multiversion-rest</artifactId>
+    <version>${org.a2aproject.sdk.version}</version>
+</dependency>
+```
+
+These are a convenience — they transitively include all the individual compat reference modules.
+
+#### How Version Routing Works
+
+- **JSON-RPC and REST**: When serving multiple protocol versions, version routing inspects the `A2A-Version` HTTP header on each request. If the header is `"1.0"`, the request is routed to the v1.0 handler. If it is `"0.3"` or absent, the request is routed to the v0.3 handler.
+- **gRPC**: Version dispatch is implicit — v0.3 clients use the `a2a.v1` protobuf package and v1.0 clients use `lf.a2a.v1`, so requests are routed to the correct service automatically.
+- **Agent card**: The agent card is served in v1.0 format only. Older clients must be able to parse the v1.0 agent card.
+
 ## A2A Client
 
 The A2A Java SDK provides a Java client implementation of the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/), allowing communication with A2A servers. The Java client implementation supports the following transports:
@@ -635,6 +712,55 @@ client.subscribeToTask(taskIdParams, clientCallContext);
 ```java
 AgentCard serverAgentCard = client.getAgentCard();
 ```
+
+### Communicating with v0.3 Agents
+
+If you need to communicate with an agent that only supports protocol v0.3, use the compatibility client `Client_v0_3`.
+
+#### 1. Add the v0.3 client dependency
+
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-client</artifactId>
+    <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases -->
+    <version>${org.a2aproject.sdk.version}</version>
+</dependency>
+```
+
+#### 2. Add a v0.3 client transport dependency
+
+```xml
+<!-- JSON-RPC transport for v0.3 -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
+    <version>${org.a2aproject.sdk.version}</version>
+</dependency>
+```
+
+gRPC and REST transports are also available:
+- `a2a-java-sdk-compat-0.3-client-transport-grpc`
+- `a2a-java-sdk-compat-0.3-client-transport-rest`
+
+#### 3. Create the v0.3 client
+
+```java
+AgentCard card = new A2ACardResolver("http://localhost:1234").getAgentCard();
+
+// Find the v0.3 interface from the agent card
+AgentInterface v03Interface = card.supportedInterfaces().stream()
+        .filter(iface -> "0.3".equals(iface.protocolVersion()))
+        .findFirst()
+        .orElseThrow();
+
+// Create the v0.3 compatibility client
+Client_v0_3 client = ClientBuilder_v0_3.forUrl(v03Interface.url())
+        .withTransport(JSONRPCTransport_v0_3.class, new JSONRPCTransportConfigBuilder_v0_3())
+        .build();
+```
+
+**Note:** `Client_v0_3` exposes only operations available in protocol v0.3. For example, `listTasks()` is not available (it was added in v1.0). Return types use v0.3 domain objects from the `org.a2aproject.sdk.compat03.spec` package.
 
 ## Additional Examples
 

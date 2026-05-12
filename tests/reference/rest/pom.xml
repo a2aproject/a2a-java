@@ -14,8 +14,8 @@
 
     <packaging>jar</packaging>
 
-    <name>Java A2A SDK Tests Dual-Version REST</name>
-    <description>Tests for dual v1.0/v0.3 REST deployment</description>
+    <name>Java A2A SDK Tests Multi-Version REST</name>
+    <description>Tests for multi-version v1.0/v0.3 REST deployment</description>
 
     <dependencies>
         <!-- Production multiversion module (provides MultiVersionRestRoutes) -->

@@ -76,7 +76,7 @@ public class A2AVersionValidatorTest {
     }
 
     @Test
-    public void testValidateProtocolVersion_NoVersionProvided_DualVersionServer() {
+    public void testValidateProtocolVersion_NoVersionProvided_MultiVersionServer() {
         // A server supporting both 1.0 and 0.3 should accept missing version (defaults to 0.3)
         AgentCard agentCard = createAgentCardWithVersions("1.0", "0.3");
         ServerCallContext context = createContext(null);

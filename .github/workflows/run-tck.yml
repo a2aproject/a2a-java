@@ -38,12 +38,6 @@ jobs:
           cache: maven
       - name: Build a2a-java SDK
         run: mvn -B install -DskipTests
-      - name: Extract a2a-java version
-        id: extract-version
-        run: |
-          A2A_JAVA_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "version=$A2A_JAVA_VERSION" >> $GITHUB_OUTPUT
-          echo "Detected a2a-java version: $A2A_JAVA_VERSION"
       - name: Checkout a2a-tck
         uses: actions/checkout@v6
         with:
@@ -59,12 +53,9 @@ jobs:
           pip install uv
           uv pip install -e .
         working-directory: a2a-tck
-      - name: Generate a2a-java SUT
-        run: A2A_JAVA_SDK_VERSION=${{ steps.extract-version.outputs.version }} make codegen-a2a-java-sut
-        working-directory: a2a-tck
       - name: Start SUT
         run: mvn -B quarkus:dev -Dquarkus.console.enabled=false &
-        working-directory: a2a-tck/sut/a2a-java
+        working-directory: tck
       - name: Wait for SUT to start
         run: |
           URL="${{ env.SUT_URL }}/.well-known/agent-card.json"

@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
 
     <name>Java A2A SDK Reference Multiversion JSON-RPC</name>
-    <description>Version-dispatching routes for dual v1.0/v0.3 JSON-RPC deployment</description>
+    <description>Version-dispatching routes for multi-version v1.0/v0.3 JSON-RPC deployment</description>
 
     <dependencies>
         <dependency>

@@ -14,8 +14,8 @@
 
     <packaging>jar</packaging>
 
-    <name>Java A2A SDK Tests Dual-Version JSON-RPC</name>
-    <description>Tests for dual v1.0/v0.3 JSON-RPC deployment</description>
+    <name>Java A2A SDK Tests Multi-Version JSON-RPC</name>
+    <description>Tests for multi-version v1.0/v0.3 JSON-RPC deployment</description>
 
     <dependencies>
         <!-- Production multiversion module (provides MultiVersionJSONRPCRoutes) -->

@@ -1,6 +1,6 @@
-# PRD: A2A Protocol 0.3 Backward Compatibility Layer
+# A2A Protocol 0.3 Backward Compatibility Layer
 
-> **Goal**: Allow the A2A Java SDK (v1.0) to interoperate with agents running protocol v0.3 through a dedicated compatibility layer.
+> The A2A Java SDK (v1.0) interoperates with agents running protocol v0.3 through a dedicated compatibility layer.
 
 ---
 
@@ -24,6 +24,8 @@ The A2A protocol evolved from v0.3 to v1.0 with significant breaking changes. Ex
 - TCK conformance tests for v0.3
 - Integration test infrastructure (test-jar) for validating conversion layer
 - Inclusion in the SDK BOM as separate optional dependencies
+- Multi-version server deployment: `reference/multiversion-jsonrpc` and `reference/multiversion-rest` modules that dispatch requests to v1.0 or v0.3 handlers based on `A2A-Version` header via `VersionRouter`
+- Multi-version integration tests under `tests/reference/{jsonrpc,rest,grpc}` (package `org.a2aproject.sdk.tests.multiversion`)
 
 ### Out of Scope
 
@@ -31,12 +33,6 @@ The A2A protocol evolved from v0.3 to v1.0 with significant breaking changes. Ex
 - Automatic protocol version detection (client must explicitly choose API version)
 - Extras modules (OpenTelemetry, JPA stores, etc.) for v0.3
 - v0.3 format agent card (v0.3 clients must be able to parse v1.0 agent card format)
-
-### Deferred
-
-- **Dual-version server deployment**: Running both v1.0 and v0.3 transports simultaneously in a single server instance with a unified agent card
-  - **Current state**: v0.3 reference servers work standalone; need integration pattern for dual deployment
-  - **Remaining work**: Define CDI qualifier pattern, path prefix strategy, and unified agent card production
 
 ---
 
@@ -245,6 +241,30 @@ compat-0.3/
     └── pom.xml
 ```
 
+### Multi-Version Reference Modules
+
+These top-level modules provide version-dispatching routes that serve both v1.0 and v0.3 requests from a single server instance:
+
+```
+reference/
+├── common/                              # Shared utilities
+│   └── src/main/java/org/a2aproject/sdk/server/common/quarkus/
+│       └── VersionRouter.java           # Resolves protocol version from A2A-Version header
+├── multiversion-jsonrpc/                # Version-dispatching JSON-RPC routes
+│   └── src/main/java/org/a2aproject/sdk/server/multiversion/jsonrpc/
+│       └── MultiVersionJSONRPCRoutes.java
+└── multiversion-rest/                   # Version-dispatching REST routes
+    └── src/main/java/org/a2aproject/sdk/server/multiversion/rest/
+        └── MultiVersionRestRoutes.java
+
+tests/reference/                         # Multi-version integration tests
+├── jsonrpc/                             # JSON-RPC multi-version tests
+├── rest/                                # REST multi-version tests
+└── grpc/                                # gRPC multi-version tests
+```
+
+**Note**: gRPC version dispatch is handled by protobuf package namespace (`a2a.v1` for v0.3 vs `lf.a2a.v1` for v1.0), so no `multiversion-grpc` module is needed.
+
 ### Java Package Convention
 
 All compat-0.3 code uses the `org.a2aproject.sdk.compat03` package root:
@@ -312,6 +332,32 @@ The `ErrorConverter_v0_3` class centralizes error translation between v0.3 and v
 
 **Location**: `compat-0.3/server-conversion/src/main/java/org/a2aproject/sdk/compat03/conversion/ErrorConverter_v0_3.java`
 
+### Version Routing: `VersionRouter`
+
+The `VersionRouter` class in `reference/common` resolves the protocol version for incoming requests:
+
+**Location**: `reference/common/src/main/java/org/a2aproject/sdk/server/common/quarkus/VersionRouter.java`
+
+**Resolution Logic** (in `VersionRouter.resolveVersion()`):
+1. Check the `A2A-Version` HTTP header
+2. If absent, check the `A2A-Version` query parameter
+3. If neither is present, default to `"0.3"` (backward compatibility with clients that don't send a version header)
+
+The caller then dispatches based on the resolved version:
+```java
+String version = VersionRouter.resolveVersion(routingContext);
+if (VersionRouter.isV10(version)) {
+    // delegate to v1.0 handler
+} else if (VersionRouter.isV03(version)) {
+    // delegate to v0.3 handler
+} else {
+    // unrecognized version string — reject
+    throw new VersionNotSupportedError(...);
+}
+```
+
+The multi-version route classes (`MultiVersionJSONRPCRoutes`, `MultiVersionRestRoutes`) use this pattern to dispatch every endpoint to the appropriate version handler.
+
 ---
 
 ## Test Infrastructure
@@ -378,27 +424,22 @@ The `server-conversion` module produces a test-jar containing shared test infras
 </dependency>
 ```
 
-**2. Check the agent card and choose the right client:**
+**2. Find the v0.3 interface and create the client:**
 
 ```java
 AgentCard card = // ... fetch agent card from /.well-known/agent-card.json
 
-for (AgentInterface iface : card.supportedInterfaces()) {
-    if ("0.3".equals(iface.protocolVersion())) {
-        // Use the compat client for v0.3 agents
-        Client_v0_3 client = ClientBuilder_v0_3.forUrl(iface.url())
-                .transport("JSONRPC")
-                .build();
-    } else if ("1.0".equals(iface.protocolVersion())) {
-        // Use the standard client for v1.0 agents
-        Client client = ClientBuilder.forUrl(iface.url())
-                .transport("JSONRPC")
-                .build();
-    }
-}
-```
+// Find the v0.3 interface from the agent card
+AgentInterface v03Interface = card.supportedInterfaces().stream()
+        .filter(iface -> "0.3".equals(iface.protocolVersion()))
+        .findFirst()
+        .orElseThrow();
 
-**3. Use the v0.3 client API:**
+// Create the v0.3 compatibility client
+Client_v0_3 client = ClientBuilder_v0_3.forUrl(v03Interface.url())
+        .withTransport(JSONRPCTransport_v0_3.class, new JSONRPCTransportConfigBuilder_v0_3())
+        .build();
+```
 
 `Client_v0_3` exposes only operations available in v0.3. Return types are v0.3 `org.a2aproject.sdk.compat03.spec` domain objects.
 
@@ -433,76 +474,44 @@ public AgentCard_v0_3 agentCard() {
 
 The existing `AgentExecutor` implementation works unchanged. The compat reference module registers v0.3 transport endpoints via Quarkus CDI auto-discovery and delegates to the same `AgentExecutor` through the v1.0 server pipeline.
 
-### Server: Serving Both v0.3 and v1.0 (Deferred)
+### Server: Serving Multiple Protocol Versions
 
-**Status**: Architecture is in place but dual-version deployment pattern is not yet defined.
+To serve multiple protocol versions from the same server, add the compat reference module for each version you want to support alongside the v1.0 reference module. For example, to serve both v1.0 and v0.3 over JSON-RPC:
 
-**Remaining work:**
-- Define CDI qualifier pattern to differentiate v0.3 and v1.0 beans
-- Establish path prefix strategy (e.g., `/v0.3` for compat endpoints)
-- Unified agent card production with multiple `AgentInterface` entries
-- Integration testing for dual-version scenarios
+```xml
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-compat-0.3-reference-jsonrpc</artifactId>
+</dependency>
+```
 
-**Recommended approach:**
-1. Use separate URLs per protocol version (e.g., `http://localhost:9999` for v1.0, `http://localhost:9999/v0.3` for v0.3)
-2. Declare both in the v1.0 agent card with different `protocolVersion` values
-3. Register both transport handlers via Quarkus CDI with path-based routing
+For JSON-RPC and REST, multi-version convenience modules are also available that bundle all supported protocol versions with version-dispatching routes:
 
----
+```xml
+<!-- Includes v1.0 + v0.3 JSON-RPC with automatic version routing -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-multiversion-jsonrpc</artifactId>
+</dependency>
 
-## Implementation Summary
+<!-- Includes v1.0 + v0.3 REST with automatic version routing -->
+<dependency>
+    <groupId>org.a2aproject.sdk</groupId>
+    <artifactId>a2a-java-sdk-reference-multiversion-rest</artifactId>
+</dependency>
+```
 
-The implementation was completed in phases:
+**Version routing:**
+- **JSON-RPC and REST**: Clients indicate their protocol version via the `A2A-Version` header (or query parameter). If absent, the server defaults to v0.3 for backward compatibility.
+- **gRPC**: Version dispatch is handled by protobuf package namespace (`a2a.v1` vs `lf.a2a.v1`), so both v1.0 and v0.3 gRPC services are registered on the same port without a dedicated multi-version module.
 
-### Phase 1: Foundation
-- Set up module structure and POMs
-- Port v0.3 spec types to `compat-0.3/spec`
-- Generate v0.3 gRPC classes in `compat-0.3/spec-grpc`
-- Apply `_v0_3` suffix naming convention
+**Agent card**: The agent card is served in v1.0 format only. Older clients must be able to parse the v1.0 agent card format to discover their endpoint.
 
-### Phase 2: Conversion Layer
-- Create `server-conversion` module
-- Implement `Convert_v0_3_To10RequestHandler`
-- Build MapStruct mappers (params, domain, result)
-- Centralize error conversion in `ErrorConverter_v0_3`
-- Export test infrastructure via test-jar
-
-### Phase 3: Transport Handlers
-- Implement server-side transport handlers (JSONRPC, gRPC, REST)
-- Wire each transport to `Convert_v0_3_To10RequestHandler`
-- Test with v1.0 backend via `AbstractA2ARequestHandlerTest_v0_3`
-
-### Phase 4: Client
-- Implement `Client_v0_3` API
-- Build client transports (JSONRPC, gRPC, REST)
-- Validate against v0.3 spec constraints
-
-### Phase 5: Reference Servers
-- Port Quarkus reference servers (JSONRPC, gRPC, REST)
-- Integrate with test infrastructure
-- Run integration tests using v0.3 client against v0.3 reference servers
-
-### Phase 6: Testing & Validation
-- Port transport handler tests (37+ tests across 3 transports)
-- Port streaming tests (Flow.Publisher, SSE, gRPC)
-- Port reference server tests (125+ integration tests passing)
-- Enable TCK module
-
----
-
-## Key Differences from Original Plan
-
-1. **Conversion layer as separate module**: Original plan embedded mapping in `spec-grpc`; implementation uses dedicated `server-conversion` module with `Convert_v0_3_To10RequestHandler`
-
-2. **`_v0_3` suffix naming**: Not in original plan; adopted to eliminate IDE naming conflicts (233 out of 284 classes had conflicts)
-
-3. **No `reference/common` module**: Each reference server is standalone; no shared reference base
-
-4. **Test-jar pattern**: Test infrastructure exported from `server-conversion` module rather than reference common
-
-5. **Package migration during implementation**: The main codebase migrated from `io.a2a` to `org.a2aproject.sdk` while this work was in progress (PRs #750, #786)
-
-6. **Implementation order**: Test infrastructure built early; tests ported incrementally to validate conversion layer
+**Integration tests**: Multi-version scenarios are tested under `tests/reference/{jsonrpc,rest,grpc}` using both v1.0 and v0.3 clients against a single server instance.
 
 ---
 
@@ -522,23 +531,10 @@ The implementation was completed in phases:
 
 ## Status
 
-✅ **Complete:**
-- Module structure and POMs
-- v0.3 spec types and gRPC generation
-- Server conversion layer with all mappers
-- Server-side transport handlers (JSONRPC, gRPC, REST)
-- Client API and transports
-- Reference servers (JSONRPC, gRPC, REST)
-- Test infrastructure (test-jar pattern)
-- Core integration tests (125+ passing)
-- TCK module enabled
+The v0.3 compatibility layer is fully implemented: spec types, gRPC generation, conversion layer, all three transport handlers (JSON-RPC, gRPC, REST), client API and transports, reference servers, multi-version deployment, test infrastructure, 125+ integration tests, and TCK module are all in place.
 
-🔲 **Deferred:**
-- Dual v1.0/v0.3 server deployment pattern
-- Push notification test porting (requires TestHttpClient)
+🔲 **Outstanding:**
+- Push notification test porting (requires TestHttpClient; version-aware push notifications in PR #857)
 - Test metadata classes (classpath scanning)
-
-🧹 **Nice-to-have cleanup:**
 - Replace FQNs with imports (97 occurrences in 34 files)
 - Unify AgentCard producers across reference modules
-- Remove obsolete TODOs

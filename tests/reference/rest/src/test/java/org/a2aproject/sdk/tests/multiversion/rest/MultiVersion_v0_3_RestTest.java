@@ -33,7 +33,7 @@ public class MultiVersion_v0_3_RestTest extends AbstractA2AServerServerTest_v0_3
 
     @Test
     @Override
-    @Disabled("Agent card is v1.0 format in dual-version mode")
+    @Disabled("Agent card is v1.0 format in multi-version mode")
     public void testGetAgentCard() {
     }
 }

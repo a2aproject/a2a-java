@@ -47,7 +47,7 @@ public class MultiVersion_v0_3_RestWithAuthTest extends AbstractA2AServerWithAut
 
     @Test
     @Override
-    @Disabled("Agent card is v1.0 format in dual-version mode")
+    @Disabled("Agent card is v1.0 format in multi-version mode")
     public void testGetAgentCardIsPublic() {
     }
 

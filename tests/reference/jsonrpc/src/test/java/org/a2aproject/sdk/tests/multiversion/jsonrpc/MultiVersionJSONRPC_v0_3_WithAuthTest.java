@@ -47,7 +47,7 @@ public class MultiVersionJSONRPC_v0_3_WithAuthTest extends AbstractA2AServerWith
 
     @Test
     @Override
-    @Disabled("Agent card is v1.0 format in dual-version mode")
+    @Disabled("Agent card is v1.0 format in multi-version mode")
     public void testGetAgentCardIsPublic() {
     }
 }
