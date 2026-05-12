@@ -56,7 +56,15 @@ public class BasePushNotificationSender implements PushNotificationSender {
 
     @Inject
     public BasePushNotificationSender(PushNotificationConfigStore configStore) {
-        this.httpClient = A2AHttpClientFactory.create();
+        // Make sure the TCCL is one of the platform ones before the ServiceLoader
+        // in A2AHttpClientFactory's static initializer
+        ClassLoader originalTccl = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(BasePushNotificationSender.class.getClassLoader());
+            this.httpClient = A2AHttpClientFactory.create();
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalTccl);
+        }
         this.configStore = configStore;
     }
 
