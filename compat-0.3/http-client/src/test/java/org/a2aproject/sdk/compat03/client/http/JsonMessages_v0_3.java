@@ -83,6 +83,56 @@ public class JsonMessages_v0_3 {
                  ]
                }""";
 
+    /**
+     * A v1.0 format agent card returned by a current server. Contains the new {@code supportedInterfaces}
+     * and {@code securityRequirements} fields (v1.0-only), plus the backward-compat {@code url} and
+     * {@code preferredTransport} fields that the v0.3 client relies on.
+     */
+    static final String V1_AGENT_CARD = """
+            {
+              "name": "Test Agent",
+              "description": "A test agent",
+              "url": "https://agent.example.com/a2a",
+              "preferredTransport": "JSONRPC",
+              "version": "1.0.0",
+              "supportedInterfaces": [
+                {"protocolBinding": "JSONRPC", "url": "https://agent.example.com/a2a"},
+                {"protocolBinding": "GRPC", "url": "grpc://agent.example.com:9090"}
+              ],
+              "capabilities": {
+                "streaming": true,
+                "pushNotifications": false,
+                "stateTransitionHistory": false
+              },
+              "defaultInputModes": ["text/plain"],
+              "defaultOutputModes": ["text/plain"],
+              "skills": [],
+              "securityRequirements": [{"oauth2": ["read"]}]
+            }""";
+
+    /**
+     * A v1.0 format agent card without an explicit {@code preferredTransport}. The v0.3 client must
+     * fall back to the default transport ("JSONRPC").
+     */
+    static final String V1_AGENT_CARD_NO_PREFERRED_TRANSPORT = """
+            {
+              "name": "Minimal Agent",
+              "description": "Minimal agent card",
+              "url": "https://agent.example.com/a2a",
+              "version": "2.0.0",
+              "supportedInterfaces": [
+                {"protocolBinding": "JSONRPC", "url": "https://agent.example.com/a2a"}
+              ],
+              "capabilities": {
+                "streaming": false,
+                "pushNotifications": false,
+                "stateTransitionHistory": false
+              },
+              "defaultInputModes": ["text/plain"],
+              "defaultOutputModes": ["text/plain"],
+              "skills": []
+            }""";
+
     static final String AUTHENTICATION_EXTENDED_AGENT_CARD = """
             {
                 "name": "GeoSpatial Route Planner Agent Extended",

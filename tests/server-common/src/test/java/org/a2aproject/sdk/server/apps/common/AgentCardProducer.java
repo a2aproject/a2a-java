@@ -58,7 +58,9 @@ public class AgentCardProducer {
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(new ArrayList<>())
-                .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, transportUrl)));
+                .supportedInterfaces(Collections.singletonList(new AgentInterface(preferredTransport, transportUrl)))
+                .url(transportUrl)
+                .preferredTransport(preferredTransport);
 
         // Add security configuration if enabled (for authentication tests)
         if (securityEnabled) {

@@ -184,7 +184,7 @@ public class A2ACardResolver {
 
         try {
             org.a2aproject.sdk.grpc.AgentCard.Builder agentCardBuilder = org.a2aproject.sdk.grpc.AgentCard.newBuilder();
-            JSONRPCUtils.parseJsonString(body, agentCardBuilder, "");
+            JSONRPCUtils.parseJsonString(body, agentCardBuilder, "", true);
             return ProtoUtils.FromProto.agentCard(agentCardBuilder);
         } catch (A2AError | JsonProcessingException e) {
             throw new A2AClientJSONError("Could not unmarshal agent card response", e);

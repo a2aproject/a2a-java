@@ -56,7 +56,9 @@ public record AgentCard(
         @Nullable List<SecurityRequirement> securityRequirements,
         @Nullable String iconUrl,
         List<AgentInterface> supportedInterfaces,
-        @Nullable List<AgentCardSignature> signatures) {
+        @Nullable List<AgentCardSignature> signatures,
+        @Nullable String url,
+        @Nullable String preferredTransport) {
 
     /**
      * Compact constructor that validates required fields.
@@ -156,6 +158,8 @@ public record AgentCard(
         private @Nullable String iconUrl;
         private @Nullable List<AgentInterface> supportedInterfaces;
         private @Nullable List<AgentCardSignature> signatures;
+        private @Nullable String url;
+        private @Nullable String preferredTransport;
 
         /**
          * Creates a new Builder with all fields unset.
@@ -186,6 +190,8 @@ public record AgentCard(
             this.iconUrl = card.iconUrl;
             this.supportedInterfaces = card.supportedInterfaces != null ? new ArrayList<>(card.supportedInterfaces) : Collections.emptyList();
             this.signatures = card.signatures != null ? new ArrayList<>(card.signatures) : null;
+            this.url =  card.url;
+            this.preferredTransport= card.preferredTransport();
         }
 
         /**
@@ -376,6 +382,16 @@ public record AgentCard(
             return this;
         }
 
+        public Builder preferredTransport(String preferredTransport) {
+            this.preferredTransport = preferredTransport;
+            return this;
+        }
+
+        public Builder url(String url) {
+            this.url = url;
+            return this;
+        }
+
         /**
          * Builds an immutable {@link AgentCard} from the current builder state.
          * <p>
@@ -399,7 +415,9 @@ public record AgentCard(
                     securityRequirements,
                     iconUrl,
                     Assert.checkNotNullParam("supportedInterfaces", supportedInterfaces),
-                    signatures);
+                    signatures,
+                    url,
+                    preferredTransport == null ? TransportProtocol.JSONRPC.name() : preferredTransport);
         }
     }
 }

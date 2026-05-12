@@ -2,6 +2,7 @@ package org.a2aproject.sdk.compat03.client.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -92,6 +93,38 @@ public class A2ACardResolver_v0_3_Test {
         assertFalse(success);
     }
 
+
+    @Test
+    public void testParseV1AgentCardWithUrlAndPreferredTransport() throws Exception {
+        TestHttpClient client = new TestHttpClient();
+        client.body = JsonMessages_v0_3.V1_AGENT_CARD;
+
+        A2ACardResolver_v0_3 resolver = new A2ACardResolver_v0_3(client, "http://example.com/");
+        AgentCard_v0_3 card = resolver.getAgentCard();
+
+        assertEquals("Test Agent", card.name());
+        assertEquals("A test agent", card.description());
+        assertEquals("1.0.0", card.version());
+        assertEquals("https://agent.example.com/a2a", card.url());
+        assertEquals("JSONRPC", card.preferredTransport());
+        assertTrue(card.capabilities().streaming());
+    }
+
+    @Test
+    public void testParseV1AgentCardDefaultsPreferredTransportWhenAbsent() throws Exception {
+        TestHttpClient client = new TestHttpClient();
+        client.body = JsonMessages_v0_3.V1_AGENT_CARD_NO_PREFERRED_TRANSPORT;
+
+        A2ACardResolver_v0_3 resolver = new A2ACardResolver_v0_3(client, "http://example.com/");
+        AgentCard_v0_3 card = resolver.getAgentCard();
+
+        assertEquals("Minimal Agent", card.name());
+        assertEquals("https://agent.example.com/a2a", card.url());
+        // v0.3 compact constructor defaults null preferredTransport to "JSONRPC"
+        assertEquals("JSONRPC", card.preferredTransport());
+        // v1.0-only fields such as supportedInterfaces are unknown to v0.3 and must be ignored
+        assertNull(card.additionalInterfaces());
+    }
 
     @Test
     public void testGetAgentCardRequestError() throws Exception {

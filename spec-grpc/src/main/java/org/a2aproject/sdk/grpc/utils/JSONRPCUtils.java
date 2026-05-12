@@ -439,8 +439,13 @@ public class JSONRPCUtils {
     }
 
     public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder, Object id) throws JsonProcessingException {
+        parseJsonString(body, builder, id, false);
+    }
+
+    public static void parseJsonString(String body, com.google.protobuf.Message.Builder builder, Object id, boolean ignoringUnknownFields) throws JsonProcessingException {
         try {
-            JsonFormat.parser().merge(body, builder);
+            JsonFormat.Parser parser = ignoringUnknownFields ? JsonFormat.parser().ignoringUnknownFields() : JsonFormat.parser();
+            parser.merge(body, builder);
         } catch (InvalidProtocolBufferException e) {
             log.log(Level.FINE, "Protocol buffer parsing failed for JSON: {0}", body);
             log.log(Level.FINE, "Proto parsing error details", e);

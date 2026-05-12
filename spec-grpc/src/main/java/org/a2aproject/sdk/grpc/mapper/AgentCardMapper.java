@@ -30,5 +30,7 @@ public interface AgentCardMapper {
     @Mapping(target = "provider", source = "provider", conditionExpression = "java(proto.hasProvider())")
     @Mapping(target = "documentationUrl", source = "documentationUrl", conditionExpression = "java(!proto.getDocumentationUrl().isEmpty())")
     @Mapping(target = "iconUrl", source = "iconUrl", conditionExpression = "java(!proto.getIconUrl().isEmpty())")
+    @Mapping(target = "url", ignore = true)
+    @Mapping(target = "preferredTransport", ignore = true)
     org.a2aproject.sdk.spec.AgentCard fromProto(org.a2aproject.sdk.grpc.AgentCard proto);
 }
