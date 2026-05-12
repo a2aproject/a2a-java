@@ -159,7 +159,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                     if (item != null) {
                         if (useSseParser.get()) {
                             sseParser.processLine(item);
-                        } else if (!item.isEmpty()) {
+                        } else {
+                            // Preserve blank lines so JSON string values containing literal newlines survive intact
                             if (nonSseBodyBuffer.length() > 0) {
                                 nonSseBodyBuffer.append('\n');
                             }
