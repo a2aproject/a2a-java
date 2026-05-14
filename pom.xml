@@ -63,7 +63,7 @@
         <mockserver.version>5.15.0</mockserver.version>
         <mutiny-zero.version>1.1.1</mutiny-zero.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
-        <protobuf-java.version>4.33.2</protobuf-java.version>
+        <protobuf-java.version>4.34.1</protobuf-java.version>
         <protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
         <quarkus.platform.version>3.35.2</quarkus.platform.version>
         <rest-assured.version>6.0.0</rest-assured.version>
