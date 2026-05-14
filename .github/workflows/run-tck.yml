@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         java-version: [17]
-        profile: ['', 'multi-mode']
+        profile: ['', 'multi-version']
     steps:
       - name: Checkout a2a-java
         uses: actions/checkout@v6
@@ -126,7 +126,7 @@ jobs:
     strategy:
       matrix:
         java-version: [17]
-        profile: ['', 'multi-mode']
+        profile: ['', 'multi-version']
     steps:
       - name: Checkout a2a-java
         uses: actions/checkout@v6

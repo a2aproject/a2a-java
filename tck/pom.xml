@@ -47,7 +47,7 @@
 
     <profiles>
         <profile>
-            <id>multi-mode</id>
+            <id>multi-version</id>
             <dependencies>
                 <dependency>
                     <groupId>org.a2aproject.sdk</groupId>
@@ -80,14 +80,14 @@
                         <artifactId>build-helper-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>add-multi-mode-source</id>
+                                <id>add-multi-version-source</id>
                                 <phase>generate-sources</phase>
                                 <goals>
                                     <goal>add-source</goal>
                                 </goals>
                                 <configuration>
                                     <sources>
-                                        <source>src/multi-mode/java</source>
+                                        <source>src/multi-version/java</source>
                                     </sources>
                                 </configuration>
                             </execution>

@@ -25,7 +25,7 @@ The A2A protocol evolved from v0.3 to v1.0 with significant breaking changes. Ex
 - Integration test infrastructure (test-jar) for validating conversion layer
 - Inclusion in the SDK BOM as separate optional dependencies
 - Multi-version server deployment: `reference/multiversion-jsonrpc` and `reference/multiversion-rest` modules that dispatch requests to v1.0 or v0.3 handlers based on `A2A-Version` header via `VersionRouter`
-- Multi-version integration tests under `tests/reference/{jsonrpc,rest,grpc}` (package `org.a2aproject.sdk.tests.multiversion`)
+- Multi-version integration tests under `tests/multiversion/{jsonrpc,rest,grpc}` (package `org.a2aproject.sdk.tests.multiversion`)
 
 ### Out of Scope
 
@@ -262,7 +262,7 @@ reference/
     └── src/main/java/org/a2aproject/sdk/server/multiversion/rest/
         └── MultiVersionRestRoutes.java
 
-tests/reference/                         # Multi-version integration tests
+tests/multiversion/                      # Multi-version integration tests
 ├── jsonrpc/                             # JSON-RPC multi-version tests
 ├── rest/                                # REST multi-version tests
 └── grpc/                                # gRPC multi-version tests
@@ -516,7 +516,7 @@ For JSON-RPC and REST, multi-version convenience modules are also available that
 
 **Agent card**: The agent card is served in v1.0 format only. Older clients must be able to parse the v1.0 agent card format to discover their endpoint.
 
-**Integration tests**: Multi-version scenarios are tested under `tests/reference/{jsonrpc,rest,grpc}` using both v1.0 and v0.3 clients against a single server instance.
+**Integration tests**: Multi-version scenarios are tested under `tests/multiversion/{jsonrpc,rest,grpc}` using both v1.0 and v0.3 clients against a single server instance.
 
 ---
 

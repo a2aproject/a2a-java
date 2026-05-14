@@ -607,9 +607,9 @@
         <module>reference/multiversion-rest</module>
 
         <!-- Multi-version test modules -->
-        <module>tests/reference/jsonrpc</module>
-        <module>tests/reference/rest</module>
-        <module>tests/reference/grpc</module>
+        <module>tests/multiversion/jsonrpc</module>
+        <module>tests/multiversion/rest</module>
+        <module>tests/multiversion/grpc</module>
 
         <!-- BOMs - build order automatically determined by reactor based on dependencies -->
         <module>boms/extras</module>

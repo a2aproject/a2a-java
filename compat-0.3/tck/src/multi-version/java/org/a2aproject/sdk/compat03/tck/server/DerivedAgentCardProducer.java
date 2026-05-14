@@ -17,7 +17,7 @@ import org.a2aproject.sdk.spec.Compat03Fields;
 
 /**
  * Produces a v1.0 {@link AgentCard} derived from the v0.3 {@link AgentCard_v0_3}
- * when the multi-mode profile adds v1.0 reference dependencies to the classpath.
+ * when the multi-version profile adds v1.0 reference dependencies to the classpath.
  * Overrides the {@code @DefaultBean} in {@code DefaultProducers}.
  */
 @ApplicationScoped

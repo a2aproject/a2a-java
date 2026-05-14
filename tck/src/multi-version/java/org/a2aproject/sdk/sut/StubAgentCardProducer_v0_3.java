@@ -14,7 +14,7 @@ import org.a2aproject.sdk.server.PublicAgentCard;
 
 /**
  * Stub producer that satisfies the v0.3 handler CDI requirements when the
- * multi-mode profile adds compat-0.3 dependencies to the classpath.
+ * multi-version profile adds compat-0.3 dependencies to the classpath.
  * This will be replaced by a proper translation layer in the future.
  */
 @ApplicationScoped
@@ -26,7 +26,7 @@ public class StubAgentCardProducer_v0_3 {
     public AgentCard_v0_3 createStubAgentCard() {
         return new AgentCard_v0_3.Builder()
                 .name("stub")
-                .description("Stub agent card for multi-mode testing")
+                .description("Stub agent card for multi-version testing")
                 .url("http://localhost:9999")
                 .version("0.0.0")
                 .capabilities(new AgentCapabilities_v0_3.Builder().build())
