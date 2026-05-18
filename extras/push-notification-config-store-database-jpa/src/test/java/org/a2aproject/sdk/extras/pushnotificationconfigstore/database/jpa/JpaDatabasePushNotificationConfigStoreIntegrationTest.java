@@ -91,7 +91,7 @@ public class JpaDatabasePushNotificationConfigStoreIntegrationTest {
             .build();
 
         // Directly trigger the mock
-        mockPushNotificationSender.sendNotification(testTask);
+        mockPushNotificationSender.sendNotification(testTask, null);
 
         // Verify it was captured
         Queue<Task> captured = mockPushNotificationSender.getCapturedTasks();

@@ -55,7 +55,7 @@ public class EventQueueTest {
             }
             """;
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
 
     @BeforeEach
     public void init() {

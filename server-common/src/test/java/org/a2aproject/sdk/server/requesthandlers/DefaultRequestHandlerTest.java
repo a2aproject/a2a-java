@@ -8,9 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -36,9 +39,11 @@ import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendConfiguration;
 import org.a2aproject.sdk.spec.MessageSendParams;
+import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
+import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
@@ -72,11 +77,12 @@ public class DefaultRequestHandlerTest {
         .parts(new TextPart("test message"))
         .build();
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
 
     // Test infrastructure components
     protected AgentExecutor executor;
     protected TaskStore taskStore;
+    protected PushNotificationConfigStore pushConfigStore;
     protected RequestHandler requestHandler;
     protected InMemoryQueueManager queueManager;
     protected MainEventBus mainEventBus;
@@ -109,7 +115,7 @@ public class DefaultRequestHandlerTest {
         InMemoryTaskStore inMemoryTaskStore = new InMemoryTaskStore();
         taskStore = inMemoryTaskStore;
 
-        PushNotificationConfigStore pushConfigStore = new InMemoryPushNotificationConfigStore();
+        pushConfigStore = new InMemoryPushNotificationConfigStore();
 
         // Create MainEventBus and MainEventBusProcessor
         mainEventBus = new MainEventBus();
@@ -904,5 +910,214 @@ public class DefaultRequestHandlerTest {
 
         // Cleanup: release the first agent
         releaseFirstAgent.countDown();
+    }
+
+    // ── Protocol version propagation tests ──────────────────────────────────────
+
+    private static ServerCallContext contextWithVersion(String version) {
+        return new ServerCallContext(null, Map.of(), Set.of(), version);
+    }
+
+    /**
+     * Verify that onCreateTaskPushNotificationConfig stores the protocol version
+     * from the ServerCallContext in the PushNotificationConfigStore.
+     */
+    @Test
+    void testVersionStored_OnCreateTaskPushNotificationConfig() throws Exception {
+        // Arrange: create a task directly in the store so the handler can find it
+        String taskId = "version-test-task-1";
+        Task task = new Task(
+            taskId,
+            "ctx-1",
+            new TaskStatus(TaskState.TASK_STATE_WORKING),
+            null,
+            null,
+            null
+        );
+        taskStore.save(task, false);
+
+        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+            .id("")
+            .taskId(taskId)
+            .url("http://example.com/webhook")
+            .build();
+
+        // Act
+        requestHandler.onCreateTaskPushNotificationConfig(pushConfig, contextWithVersion("1.0"));
+
+        // Assert: version is stored; configId defaults to taskId when id is empty
+        assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
+            "Protocol version should be stored for the push notification config");
+    }
+
+    /**
+     * Verify that onMessageSend stores the protocol version when the request
+     * includes a push notification config (new task path).
+     */
+    @Test
+    void testVersionStored_OnMessageSend_NewTask() throws Exception {
+        // Arrange: agent completes immediately
+        agentExecutorExecute = (context, emitter) -> emitter.complete();
+
+        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+            .id("")
+            .url("http://example.com/webhook")
+            .build();
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
+            .returnImmediately(true)
+            .acceptedOutputModes(List.of())
+            .taskPushNotificationConfig(pushConfig)
+            .build();
+        MessageSendParams params = MessageSendParams.builder()
+            .message(MESSAGE)
+            .configuration(config)
+            .build();
+
+        // Act
+        EventKind eventKind = requestHandler.onMessageSend(params, contextWithVersion("1.0"));
+
+        // Assert
+        assertInstanceOf(Task.class, eventKind);
+        Task result = (Task) eventKind;
+        String taskId = result.id();
+
+        assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
+            "Protocol version should be stored when push config is provided via onMessageSend");
+    }
+
+    /**
+     * Verify that onMessageSend stores the protocol version when the request
+     * includes a push notification config on a follow-up to an existing task.
+     */
+    @Test
+    void testVersionStored_OnMessageSend_ExistingTask() throws Exception {
+        // Arrange: create an initial task (no push config) — agent stays active
+        CountDownLatch agentStarted = new CountDownLatch(1);
+        CountDownLatch agentRelease = new CountDownLatch(1);
+
+        agentExecutorExecute = (context, emitter) -> {
+            emitter.startWork();
+            agentStarted.countDown();
+            try {
+                agentRelease.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            emitter.complete();
+        };
+
+        MessageSendParams initialParams = MessageSendParams.builder()
+            .message(MESSAGE)
+            .configuration(DEFAULT_CONFIG)
+            .build();
+
+        EventKind initialResult = requestHandler.onMessageSend(initialParams, NULL_CONTEXT);
+        assertInstanceOf(Task.class, initialResult);
+        Task existingTask = (Task) initialResult;
+        assertTrue(agentStarted.await(5, TimeUnit.SECONDS), "Agent should start");
+
+        try {
+            // Now set up agent for the follow-up
+            agentExecutorExecute = (context, emitter) -> emitter.complete();
+
+            // Follow-up message WITH push config and version context
+            TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+                .id("")
+                .url("http://example.com/webhook")
+                .build();
+            MessageSendConfiguration followUpConfig = MessageSendConfiguration.builder()
+                .returnImmediately(true)
+                .acceptedOutputModes(List.of())
+                .taskPushNotificationConfig(pushConfig)
+                .build();
+            Message followUpMsg = Message.builder()
+                .messageId("follow-up-version-test")
+                .role(Message.Role.ROLE_USER)
+                .taskId(existingTask.id())
+                .parts(new TextPart("follow up"))
+                .build();
+            MessageSendParams followUpParams = MessageSendParams.builder()
+                .message(followUpMsg)
+                .configuration(followUpConfig)
+                .build();
+
+            // Act
+            EventKind result = requestHandler.onMessageSend(followUpParams, contextWithVersion("1.0"));
+
+            // Assert
+            assertInstanceOf(Task.class, result);
+            String taskId = existingTask.id();
+            assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
+                "Protocol version should be stored for push config on existing task");
+        } finally {
+            agentRelease.countDown();
+        }
+    }
+
+    /**
+     * Verify that onMessageSendStream stores the protocol version when the request
+     * includes a push notification config (new task, streaming path).
+     */
+    @Test
+    void testVersionStored_OnMessageSendStream_NewTask() throws Exception {
+        // Arrange: agent completes immediately
+        agentExecutorExecute = (context, emitter) -> emitter.complete();
+
+        TaskPushNotificationConfig pushConfig = TaskPushNotificationConfig.builder()
+            .id("")
+            .url("http://example.com/webhook")
+            .build();
+        MessageSendConfiguration config = MessageSendConfiguration.builder()
+            .returnImmediately(true)
+            .acceptedOutputModes(List.of())
+            .taskPushNotificationConfig(pushConfig)
+            .build();
+        MessageSendParams params = MessageSendParams.builder()
+            .message(MESSAGE)
+            .configuration(config)
+            .build();
+
+        // Act
+        Flow.Publisher<StreamingEventKind> publisher = requestHandler.onMessageSendStream(
+            params, contextWithVersion("1.0"));
+
+        AtomicReference<String> taskIdRef = new AtomicReference<>();
+        CountDownLatch streamDone = new CountDownLatch(1);
+        publisher.subscribe(new Flow.Subscriber<>() {
+            Flow.Subscription subscription;
+
+            @Override
+            public void onSubscribe(Flow.Subscription s) {
+                subscription = s;
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(StreamingEventKind item) {
+                if (item instanceof Task t) {
+                    taskIdRef.set(t.id());
+                } else if (item instanceof TaskStatusUpdateEvent e) {
+                    taskIdRef.set(e.taskId());
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                streamDone.countDown();
+            }
+
+            @Override
+            public void onComplete() {
+                streamDone.countDown();
+            }
+        });
+
+        assertTrue(streamDone.await(5, TimeUnit.SECONDS), "Stream should complete");
+        String taskId = taskIdRef.get();
+        assertNotNull(taskId, "Should have received a task ID from the stream");
+
+        // Assert
+        assertEquals("1.0", pushConfigStore.getProtocolVersion(taskId, taskId),
+            "Protocol version should be stored when push config is provided via onMessageSendStream");
     }
 }

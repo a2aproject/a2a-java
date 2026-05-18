@@ -12,7 +12,7 @@ on:
 env:
   # Tag/branch of the TCK
   TCK_VERSION: 1.0-dev
-  TCK_VERSION_0_3: 0.3.0.beta4
+  TCK_VERSION_0_3: 0.3.x
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
   SUT_URL: http://localhost:9999

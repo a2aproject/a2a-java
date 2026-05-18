@@ -25,13 +25,14 @@ import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.StreamingEventKind;
-import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
+import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskState;
 import org.a2aproject.sdk.spec.TaskStatus;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.a2aproject.sdk.spec.TextPart;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -164,7 +165,7 @@ public class PushNotificationSenderTest {
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 
-        sender.sendNotification(taskData);
+        sender.sendNotification(taskData, null);
 
         // Wait for the async operation to complete
         assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
@@ -218,7 +219,7 @@ public class PushNotificationSenderTest {
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 
-        sender.sendNotification(taskData);
+        sender.sendNotification(taskData, null);
 
         // Wait for the async operation to complete
         assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
@@ -249,7 +250,7 @@ public class PushNotificationSenderTest {
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 
-        sender.sendNotification(taskData);
+        sender.sendNotification(taskData, null);
 
         // Wait for the async operation to complete
         assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
@@ -279,7 +280,7 @@ public class PushNotificationSenderTest {
         Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
 
         // Don't set any configuration in the store
-        sender.sendNotification(taskData);
+        sender.sendNotification(taskData, null);
 
         // Verify no HTTP calls were made
         assertEquals(0, testHttpClient.events.size());
@@ -309,7 +310,7 @@ public class PushNotificationSenderTest {
         // Set up latch to wait for async completion (2 calls expected)
         testHttpClient.latch = new CountDownLatch(2);
 
-        sender.sendNotification(taskData);
+        sender.sendNotification(taskData, null);
 
         // Wait for the async operations to complete
         assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP calls should complete within 5 seconds");
@@ -342,7 +343,7 @@ public class PushNotificationSenderTest {
         testHttpClient.shouldThrowException = true;
 
         // This should not throw an exception - errors should be handled gracefully
-        sender.sendNotification(taskData);
+        sender.sendNotification(taskData, null);
 
         // Verify no events were successfully processed due to the error
         assertEquals(0, testHttpClient.events.size());
@@ -364,7 +365,7 @@ public class PushNotificationSenderTest {
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 
-        sender.sendNotification(message);
+        sender.sendNotification(message, null);
 
         // Wait for the async operation to complete
         assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
@@ -397,7 +398,7 @@ public class PushNotificationSenderTest {
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 
-        sender.sendNotification(statusUpdate);
+        sender.sendNotification(statusUpdate, null);
 
         // Wait for the async operation to complete
         assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
@@ -436,7 +437,7 @@ public class PushNotificationSenderTest {
         // Set up latch to wait for async completion
         testHttpClient.latch = new CountDownLatch(1);
 
-        sender.sendNotification(artifactUpdate);
+        sender.sendNotification(artifactUpdate, null);
 
         // Wait for the async operation to complete
         assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS), "HTTP call should complete within 5 seconds");
@@ -451,5 +452,68 @@ public class PushNotificationSenderTest {
         // Verify StreamResponse wrapper with 'artifactUpdate' discriminator
         String rawBody = testHttpClient.rawBodies.get(0);
         assertTrue(rawBody.contains("\"artifactUpdate\""), "Raw body should contain 'artifactUpdate' discriminator for StreamResponse");
+    }
+
+    @Test
+    public void testSendNotificationUsesFormatterForVersionedConfig() throws InterruptedException {
+        String taskId = "task_formatter_test";
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://notify.me/here")
+                .id("cfg1")
+                .taskId(taskId)
+                .build();
+        configStore.setInfo(config, "0.3");
+
+        PushNotificationPayloadFormatter formatter = new PushNotificationPayloadFormatter() {
+            @Override
+            public String targetVersion() { return "0.3"; }
+
+            @Override
+            public @Nullable String formatPayload(StreamingEventKind event, @Nullable Task snapshot) {
+                return "{\"id\":\"" + taskId + "\",\"kind\":\"task\",\"formatted\":true}";
+            }
+        };
+
+        BasePushNotificationSender formatterSender = new BasePushNotificationSender(
+                configStore, testHttpClient, List.of(formatter));
+        testHttpClient.latch = new CountDownLatch(1);
+
+        formatterSender.sendNotification(taskData, taskData);
+
+        assertTrue(testHttpClient.latch.await(5, TimeUnit.SECONDS));
+        assertEquals(1, testHttpClient.rawBodies.size());
+        assertTrue(testHttpClient.rawBodies.get(0).contains("\"formatted\":true"));
+    }
+
+    @Test
+    public void testSendNotificationSkipsWhenFormatterReturnsNull() throws InterruptedException {
+        String taskId = "task_formatter_skip";
+        Task taskData = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
+
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .url("http://notify.me/here")
+                .id("cfg1")
+                .taskId(taskId)
+                .build();
+        configStore.setInfo(config, "0.3");
+
+        PushNotificationPayloadFormatter formatter = new PushNotificationPayloadFormatter() {
+            @Override
+            public String targetVersion() { return "0.3"; }
+
+            @Override
+            public @Nullable String formatPayload(StreamingEventKind event, @Nullable Task snapshot) {
+                return null;
+            }
+        };
+
+        BasePushNotificationSender formatterSender = new BasePushNotificationSender(
+                configStore, testHttpClient, List.of(formatter));
+
+        formatterSender.sendNotification(taskData, taskData);
+
+        assertTrue(testHttpClient.rawBodies.isEmpty());
     }
 }

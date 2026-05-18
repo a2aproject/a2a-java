@@ -18,6 +18,7 @@ import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.util.PageToken;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,12 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
     @Transactional
     @Override
     public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig) {
+        return setInfo(notificationConfig, null);
+    }
+
+    @Transactional
+    @Override
+    public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig, @Nullable String protocolVersion) {
         String taskId = Assert.checkNotNullParam("taskId", notificationConfig.taskId());
         // Ensure config has an ID - default to taskId if not provided (mirroring InMemoryPushNotificationConfigStore behavior)
         if (notificationConfig.id().isEmpty()) {
@@ -44,6 +51,7 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
             notificationConfig = TaskPushNotificationConfig.builder(notificationConfig).id(taskId).build();
         }
 
+        String resolvedVersion = PushNotificationConfigStore.resolveProtocolVersion(protocolVersion);
         LOGGER.debug("Saving PushNotificationConfig for Task '{}' with ID: {}", taskId, notificationConfig.id());
         try {
             TaskConfigId configId = new TaskConfigId(taskId, notificationConfig.id());
@@ -54,11 +62,12 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
             if (existingJpaConfig != null) {
                 // Update existing entity
                 existingJpaConfig.setConfig(notificationConfig);
+                existingJpaConfig.setProtocolVersion(resolvedVersion);
                 LOGGER.debug("Updated existing PushNotificationConfig for Task '{}' with ID: {}",
                         taskId, notificationConfig.id());
             } else {
                 // Create new entity
-                JpaPushNotificationConfig jpaConfig = JpaPushNotificationConfig.createFromConfig(taskId, notificationConfig);
+                JpaPushNotificationConfig jpaConfig = JpaPushNotificationConfig.createFromConfig(taskId, notificationConfig, resolvedVersion);
                 em.persist(jpaConfig);
                 LOGGER.debug("Persisted new PushNotificationConfig for Task '{}' with ID: {}",
                         taskId, notificationConfig.id());
@@ -162,6 +171,29 @@ public class JpaDatabasePushNotificationConfigStore implements PushNotificationC
             LOGGER.debug("PushNotificationConfig not found for deletion with Task '{}' and Config ID: {}",
                     taskId, configId);
         }
+    }
+
+    @Transactional
+    @Override
+    public String getProtocolVersion(String taskId, String configId) {
+        JpaPushNotificationConfig jpaConfig = em.find(JpaPushNotificationConfig.class,
+                new TaskConfigId(taskId, configId));
+        return jpaConfig != null ? jpaConfig.getProtocolVersion() : PushNotificationConfigStore.resolveProtocolVersion(null);
+    }
+
+    @Transactional
+    @Override
+    public java.util.Map<String, String> getProtocolVersions(String taskId) {
+        List<Object[]> results = em.createQuery(
+                "SELECT c.id.configId, c.protocolVersion FROM JpaPushNotificationConfig c " +
+                "WHERE c.id.taskId = :taskId AND c.protocolVersion IS NOT NULL", Object[].class)
+                .setParameter("taskId", taskId)
+                .getResultList();
+        java.util.Map<String, String> versions = new java.util.HashMap<>();
+        for (Object[] row : results) {
+            versions.put((String) row[0], (String) row[1]);
+        }
+        return versions;
     }
 
 }

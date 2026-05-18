@@ -2,6 +2,7 @@ package org.a2aproject.sdk.server.tasks;
 
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for delivering push notifications containing task state updates to external systems.
@@ -28,8 +29,10 @@ import org.a2aproject.sdk.spec.Task;
  * {@link BasePushNotificationSender} provides HTTP webhook delivery:
  * <ul>
  *   <li>Retrieves webhook URLs from {@link PushNotificationConfigStore}</li>
- *   <li>Wraps events in StreamResponse format (per A2A spec section 4.3.3)</li>
- *   <li>Sends HTTP POST requests with StreamResponse JSON payload</li>
+ *   <li>Formats payloads according to the protocol version stored with each configuration
+ *       (v1.0 StreamResponse by default; version-specific formatters via
+ *       {@link PushNotificationPayloadFormatter} SPI)</li>
+ *   <li>Sends HTTP POST requests with the formatted JSON payload</li>
  *   <li>Logs errors but doesn't fail the request</li>
  * </ul>
  *
@@ -52,7 +55,7 @@ import org.a2aproject.sdk.spec.Task;
  *     KafkaProducer<String, StreamingEventKind> producer;
  *
  *     @Override
- *     public void sendNotification(StreamingEventKind event) {
+ *     public void sendNotification(StreamingEventKind event, Task taskSnapshot) {
  *         String taskId = extractTaskId(event);
  *         producer.send("task-updates", taskId, event);
  *     }
@@ -82,27 +85,34 @@ public interface PushNotificationSender {
     /**
      * Sends a push notification containing a streaming event.
      * <p>
-     * Called after the event has been persisted to {@link TaskStore}. The event is wrapped
-     * in a StreamResponse format (per A2A spec section 4.3.3) with the appropriate oneof
-     * field set (task, message, statusUpdate, or artifactUpdate).
-     * </p>
+     * Called after the event has been persisted to {@link TaskStore}. The payload format
+     * depends on the protocol version used to register the push notification configuration.
+     * <ul>
+     *   <li><b>v1.0 (default):</b> The event is wrapped in a StreamResponse format (per A2A spec section 4.3.3)
+     *       with the appropriate oneof field set (task, message, statusUpdate, or artifactUpdate).</li>
+     *   <li><b>v0.3:</b> The payload is a v0.3 {@code Task} JSON object, using the provided {@code taskSnapshot}.
+     *       {@code Message} events are skipped.</li>
+     * </ul>
      * <p>
      * Retrieve push notification URLs or messaging configurations from
      * {@link PushNotificationConfigStore} using the task ID extracted from the event.
      * </p>
      * Supported event types:
      * <ul>
-     *   <li>{@link Task} - wrapped in StreamResponse.task</li>
-     *   <li>{@link org.a2aproject.sdk.spec.Message} - wrapped in StreamResponse.message</li>
-     *   <li>{@link org.a2aproject.sdk.spec.TaskStatusUpdateEvent} - wrapped in StreamResponse.statusUpdate</li>
-     *   <li>{@link org.a2aproject.sdk.spec.TaskArtifactUpdateEvent} - wrapped in StreamResponse.artifactUpdate</li>
+     *   <li>{@link Task}</li>
+     *   <li>{@link org.a2aproject.sdk.spec.Message}</li>
+     *   <li>{@link org.a2aproject.sdk.spec.TaskStatusUpdateEvent}</li>
+     *   <li>{@link org.a2aproject.sdk.spec.TaskArtifactUpdateEvent}</li>
      * </ul>
      * <p>
      * <b>Error Handling:</b> Log errors but don't throw exceptions. Notifications are
      * best-effort and should not fail the primary request.
      * </p>
      *
-     * @param event the streaming event to send (Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent)
+     * @param event the streaming event to send.
+     * @param taskSnapshot the current state of the task after the event has been applied.
+     *                     Used by formatters for older protocol versions that require
+     *                     the full task state in notifications.
      */
-    void sendNotification(StreamingEventKind event);
+    void sendNotification(StreamingEventKind event, @Nullable Task taskSnapshot);
 }

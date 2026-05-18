@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
@@ -65,7 +66,7 @@ public class GrpcHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
             .build();
 
     private final ServerCallContext callContext = new ServerCallContext(
-            UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>());
+            UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), A2AProtocol_v0_3.PROTOCOL_VERSION);
 
     // ========================================
     // GetTask Tests

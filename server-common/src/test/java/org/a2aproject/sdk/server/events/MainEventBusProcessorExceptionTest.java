@@ -45,7 +45,7 @@ import ch.qos.logback.core.read.ListAppender;
  */
 public class MainEventBusProcessorExceptionTest {
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
     private static final String TASK_ID = "test-task-123";
 
     private MainEventBus mainEventBus;

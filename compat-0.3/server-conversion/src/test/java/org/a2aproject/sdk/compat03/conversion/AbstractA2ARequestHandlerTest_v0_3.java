@@ -84,7 +84,7 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
             .parts(new TextPart_v0_3("test message"))
             .build();
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
 
     // V1.0 backend infrastructure
     protected AgentExecutor agentExecutor;
@@ -183,7 +183,7 @@ public abstract class AbstractA2ARequestHandlerTest_v0_3 {
                 .defaultOutputModes(new ArrayList<>())
                 .preferredTransport("jsonrpc")
                 .skills(new ArrayList<>())
-                .protocolVersion("0.3")
+                .protocolVersion(A2AProtocol_v0_3.PROTOCOL_VERSION)
                 .build();
     }
 

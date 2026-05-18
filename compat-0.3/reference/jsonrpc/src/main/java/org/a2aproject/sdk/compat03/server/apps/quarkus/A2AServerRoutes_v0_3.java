@@ -33,6 +33,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.a2aproject.sdk.compat03.common.A2AHeaders_v0_3;
+import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
@@ -327,7 +328,7 @@ public class A2AServerRoutes_v0_3 {
             List<String> extensionHeaderValues = rc.request().headers().getAll(A2AHeaders_v0_3.X_A2A_EXTENSIONS);
             Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
 
-            return new ServerCallContext(user, state, requestedExtensions);
+            return new ServerCallContext(user, state, requestedExtensions, A2AProtocol_v0_3.PROTOCOL_VERSION);
         } else {
             CallContextFactory_v0_3 builder = callContextFactory.get();
             return builder.build(rc);

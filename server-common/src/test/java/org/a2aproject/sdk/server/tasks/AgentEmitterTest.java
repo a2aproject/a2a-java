@@ -43,7 +43,7 @@ public class AgentEmitterTest {
 
     private static final List<Part<?>> SAMPLE_PARTS = List.of(new TextPart("Test message"));
 
-    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = task -> {};
+    private static final PushNotificationSender NOOP_PUSHNOTIFICATION_SENDER = (event, snapshot) -> {};
 
     EventQueue eventQueue;
     private MainEventBus mainEventBus;

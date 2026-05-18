@@ -19,15 +19,15 @@ import org.a2aproject.sdk.spec.TransportProtocol;
  */
 @ApplicationScoped
 public class TckAgentCardProducer {
-
-    private static final String host = getEnvOrDefault("SUT_HOST", "localhost:9999");
+    private static final String HOST = getEnvOrDefault("SUT_HOST", "localhost:9999");
+    private static final String GRPC_HOST = getEnvOrDefault("SUT_GRPC_HOST", HOST);
 
     @Produces
     @PublicAgentCard
     public AgentCard agentCard() {
-        String sutJsonRpcUrl = String.format("http://%s", host);
+        String sutJsonRpcUrl = String.format("http://%s", HOST);
         String sutRestUrl = sutJsonRpcUrl;
-        String sutGrpcUrl = host;
+        String sutGrpcUrl = GRPC_HOST;
         
         return AgentCard.builder()
                 .name("A2A Java SDK System Under Test (SUT)")

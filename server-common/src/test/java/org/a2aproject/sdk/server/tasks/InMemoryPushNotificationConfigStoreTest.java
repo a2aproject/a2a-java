@@ -16,6 +16,7 @@ import java.util.List;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.common.A2AHeaders;
+import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.Task;
@@ -249,7 +250,7 @@ class InMemoryPushNotificationConfigStoreTest {
         // Mock successful HTTP response
         setupBasicMockHttpResponse();
 
-        notificationSender.sendNotification(task);
+        notificationSender.sendNotification(task, null);
 
         // Verify HTTP client was called
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
@@ -279,7 +280,7 @@ class InMemoryPushNotificationConfigStoreTest {
         when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
         when(mockHttpResponse.success()).thenReturn(true);
 
-        notificationSender.sendNotification(task);
+        notificationSender.sendNotification(task, null);
 
         // Verify HTTP client was called with proper authentication
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
@@ -301,7 +302,7 @@ class InMemoryPushNotificationConfigStoreTest {
         String taskId = "task_send_no_config";
         Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
 
-        notificationSender.sendNotification(task);
+        notificationSender.sendNotification(task, null);
 
         // Verify HTTP client was never called
         verify(mockHttpClient, never()).createPost();
@@ -315,7 +316,7 @@ class InMemoryPushNotificationConfigStoreTest {
         configStore.setInfo(config);
 
         setupBasicMockHttpResponse();
-        notificationSender.sendNotification(task);
+        notificationSender.sendNotification(task, null);
         verifyHttpCallWithoutToken(config, task, "");
     }
 
@@ -327,7 +328,7 @@ class InMemoryPushNotificationConfigStoreTest {
         configStore.setInfo(config);
 
         setupBasicMockHttpResponse();
-        notificationSender.sendNotification(task);
+        notificationSender.sendNotification(task, null);
         verifyHttpCallWithoutToken(config, task, "   ");
     }
 
@@ -591,6 +592,39 @@ class InMemoryPushNotificationConfigStoreTest {
         assertNotNull(result);
         assertTrue(result.configs().isEmpty(), "Should return empty list for non-existent task");
         assertNull(result.nextPageToken(), "Should not have nextPageToken for empty result");
+    }
+
+    @Test
+    public void testSetAndGetProtocolVersion() {
+        String taskId = "task1";
+        String configId = "cfg1";
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .id(configId).taskId(taskId).url("http://example.com/hook").build();
+        configStore.setInfo(config);
+
+        assertEquals(AgentInterface.CURRENT_PROTOCOL_VERSION, configStore.getProtocolVersion(taskId, configId));
+
+        configStore.setInfo(config, "0.3");
+        assertEquals("0.3", configStore.getProtocolVersion(taskId, configId));
+    }
+
+    @Test
+    public void testDeleteInfoCleansUpProtocolVersion() {
+        String taskId = "task1";
+        String configId = "cfg1";
+        TaskPushNotificationConfig config = TaskPushNotificationConfig.builder()
+                .id(configId).taskId(taskId).url("http://example.com/hook").build();
+        configStore.setInfo(config, "0.3");
+
+        assertEquals("0.3", configStore.getProtocolVersion(taskId, configId));
+
+        configStore.deleteInfo(taskId, configId);
+        assertEquals(AgentInterface.CURRENT_PROTOCOL_VERSION, configStore.getProtocolVersion(taskId, configId));
+    }
+
+    @Test
+    public void testGetProtocolVersionReturnsDefaultForUnknownConfig() {
+        assertEquals(AgentInterface.CURRENT_PROTOCOL_VERSION, configStore.getProtocolVersion("nonexistent", "nonexistent"));
     }
 
     @Test

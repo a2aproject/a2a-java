@@ -373,6 +373,10 @@ The two interface lists serve different clients:
 - `additionalInterfaces` — used by **v0.3 clients** to discover endpoints (uses `Legacy_0_3_AgentInterface` with v0.3 field names: `transport`/`url`)
 - `url` and `preferredTransport` — top-level fields that v0.3 clients use to discover the primary endpoint
 
+#### Push Notification Behavior
+
+Push notification payloads are automatically formatted to match the protocol version used when the push notification configuration was registered. When a v0.3 client registers a push notification configuration (via any transport), the server records the protocol version alongside the configuration. When a notification is later sent to that webhook, the payload is formatted as a v0.3 Task object. Configurations registered by v1.0 clients receive v1.0 `StreamResponse` payloads as usual. This happens transparently — no additional configuration is needed beyond adding the compat reference module.
+
 ## A2A Client
 
 The A2A Java SDK provides a Java client implementation of the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/), allowing communication with A2A servers. The Java client implementation supports the following transports:
@@ -776,7 +780,7 @@ AgentCard card = new A2ACardResolver("http://localhost:1234").getAgentCard();
 
 // Find the v0.3 interface from the agent card
 AgentInterface v03Interface = card.supportedInterfaces().stream()
-        .filter(iface -> "0.3".equals(iface.protocolVersion()))
+        .filter(iface -> A2AProtocol_v0_3.PROTOCOL_VERSION.equals(iface.protocolVersion()))
         .findFirst()
         .orElseThrow();
 

@@ -504,8 +504,9 @@ public class DefaultRequestHandler implements RequestHandler {
             if (mss.task() == null && kind instanceof Task createdTask && shouldAddPushInfo(params)) {
                 LOGGER.debug("Storing push notification config for new task {} (original taskId from params: {})",
                         createdTask.id(), params.message().taskId());
+                String version = context != null ? context.getRequestedProtocolVersion() : null;
                 pushConfigStore.setInfo(TaskPushNotificationConfig.builder(params.configuration().taskPushNotificationConfig())
-                        .taskId(createdTask.id()).build());
+                        .taskId(createdTask.id()).build(), version);
             }
 
             // Check if task requires immediate return (AUTH_REQUIRED)
@@ -662,8 +663,9 @@ public class DefaultRequestHandler implements RequestHandler {
             Objects.requireNonNull(taskId.get(), "taskId was null");
             LOGGER.debug("Storing push notification config for new streaming task {} EARLY (original taskId from params: {})",
                     taskId.get(), params.message().taskId());
+            String version = context != null ? context.getRequestedProtocolVersion() : null;
             pushConfigStore.setInfo(TaskPushNotificationConfig.builder(params.configuration().taskPushNotificationConfig())
-                    .taskId(taskId.get()).build());
+                    .taskId(taskId.get()).build(), version);
         }
 
         ResultAggregator resultAggregator = new ResultAggregator(mss.taskManager, null, executor, eventConsumerExecutor);
@@ -796,7 +798,9 @@ public class DefaultRequestHandler implements RequestHandler {
             throw new TaskNotFoundError();
         }
 
-        return pushConfigStore.setInfo(params);
+        String version = context != null ? context.getRequestedProtocolVersion() : null;
+        TaskPushNotificationConfig result = pushConfigStore.setInfo(params, version);
+        return result;
     }
 
     @Override
@@ -1051,8 +1055,9 @@ public class DefaultRequestHandler implements RequestHandler {
 
             if (pushConfigStore != null && params.configuration() != null && params.configuration().taskPushNotificationConfig() != null) {
                 LOGGER.debug("Adding push info");
+                String version = context != null ? context.getRequestedProtocolVersion() : null;
                 pushConfigStore.setInfo(TaskPushNotificationConfig.builder(params.configuration().taskPushNotificationConfig())
-                        .taskId(task.id()).build());
+                        .taskId(task.id()).build(), version);
             }
 
             requestContext = requestContextBuilder.get()

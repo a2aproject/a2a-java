@@ -9,7 +9,10 @@ import jakarta.persistence.Transient;
 
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
+import org.a2aproject.sdk.server.tasks.PushNotificationConfigStore;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.jspecify.annotations.Nullable;
+
 import java.time.Instant;
 
 @Entity
@@ -20,6 +23,9 @@ public class JpaPushNotificationConfig {
 
     @Column(name = "task_data", columnDefinition = "TEXT", nullable = false)
     private String configJson;
+
+    @Column(name = "protocol_version")
+    private String protocolVersion;
 
     @Column(name = "created_at")
     private Instant createdAt;
@@ -79,11 +85,20 @@ public class JpaPushNotificationConfig {
       this.createdAt = createdAt;
     }
 
-    static JpaPushNotificationConfig createFromConfig(String taskId, TaskPushNotificationConfig config) throws JsonProcessingException {
+    public String getProtocolVersion() {
+        return PushNotificationConfigStore.resolveProtocolVersion(protocolVersion);
+    }
+
+    public void setProtocolVersion(String protocolVersion) {
+        this.protocolVersion = protocolVersion;
+    }
+
+    static JpaPushNotificationConfig createFromConfig(String taskId, TaskPushNotificationConfig config, @Nullable String protocolVersion) throws JsonProcessingException {
         String json = JsonUtil.toJson(config);
         JpaPushNotificationConfig jpaPushNotificationConfig =
                 new JpaPushNotificationConfig(new TaskConfigId(taskId, config.id()), json);
         jpaPushNotificationConfig.config = config;
+        jpaPushNotificationConfig.protocolVersion = protocolVersion;
         return jpaPushNotificationConfig;
     }
 }

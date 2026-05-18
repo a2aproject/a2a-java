@@ -249,7 +249,7 @@ public class JpaPushNotificationConfigStoreTest {
         when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
         when(mockHttpResponse.success()).thenReturn(true);
 
-        notificationSender.sendNotification(task);
+        notificationSender.sendNotification(task, null);
 
         // Verify HTTP client was called
         ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
@@ -281,7 +281,7 @@ public class JpaPushNotificationConfigStoreTest {
         when(mockPostBuilder.post()).thenReturn(mockHttpResponse);
         when(mockHttpResponse.success()).thenReturn(true);
 
-        notificationSender.sendNotification(task);
+        notificationSender.sendNotification(task, null);
 
         // TODO: Once token authentication is implemented, verify that:
         // 1. The token is included in request headers (e.g., X-A2A-Notification-Token)
@@ -307,7 +307,7 @@ public class JpaPushNotificationConfigStoreTest {
         String taskId = "task_send_no_config";
         Task task = createSampleTask(taskId, TaskState.TASK_STATE_COMPLETED);
 
-        notificationSender.sendNotification(task);
+        notificationSender.sendNotification(task, null);
 
         // Verify HTTP client was never called
         verify(mockHttpClient, never()).createPost();

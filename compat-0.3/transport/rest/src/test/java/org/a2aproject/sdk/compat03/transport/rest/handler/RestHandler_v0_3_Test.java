@@ -3,6 +3,7 @@ package org.a2aproject.sdk.compat03.transport.rest.handler;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskMapper_v0_3;
@@ -32,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class RestHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
 
     private final ServerCallContext callContext = new ServerCallContext(
-            UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>());
+            UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), A2AProtocol_v0_3.PROTOCOL_VERSION);
 
     // ========================================
     // GetTask Tests

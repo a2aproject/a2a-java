@@ -3,6 +3,7 @@ package org.a2aproject.sdk.server.tasks;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for storing and retrieving push notification configurations for tasks.
@@ -82,6 +83,29 @@ public interface PushNotificationConfigStore {
     TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig);
 
     /**
+     * Sets or updates the push notification configuration for a task, along with the
+     * protocol version that registered it.
+     * <p>
+     * This merged method ensures the protocol version is stored using the normalized
+     * config ID (after {@link #setInfo(TaskPushNotificationConfig)} applies defaults).
+     * </p>
+     *
+     * @param notificationConfig the task push notification configuration
+     * @param protocolVersion the protocol version string, or null to use {@link org.a2aproject.sdk.spec.AgentInterface#CURRENT_PROTOCOL_VERSION}
+     * @return the potentially updated configuration (with ID set if it was null)
+     */
+    default TaskPushNotificationConfig setInfo(TaskPushNotificationConfig notificationConfig, @Nullable String protocolVersion) {
+        return setInfo(notificationConfig);
+    }
+
+    /**
+     * Resolves the protocol version, defaulting null to the current protocol version.
+     */
+    static String resolveProtocolVersion(@Nullable String protocolVersion) {
+        return protocolVersion != null ? protocolVersion : org.a2aproject.sdk.spec.AgentInterface.CURRENT_PROTOCOL_VERSION;
+    }
+
+    /**
      * Retrieves push notification configurations for a task with pagination support.
      * <p>
      * Returns all configs if {@code params.pageSize()} is 0. Otherwise, returns up to
@@ -118,5 +142,26 @@ public interface PushNotificationConfigStore {
      * @param configId the push notification configuration ID (null = use task ID)
      */
     void deleteInfo(String taskId, String configId);
+
+    /**
+     * Gets the protocol version associated with a push notification configuration.
+     *
+     * @param taskId the task ID
+     * @param configId the push notification configuration ID
+     * @return the protocol version string, defaults to the current protocol version if not set
+     */
+    default String getProtocolVersion(String taskId, String configId) {
+        return resolveProtocolVersion(null);
+    }
+
+    /**
+     * Gets all protocol versions for a task's push notification configurations in a single call.
+     *
+     * @param taskId the task ID
+     * @return a map of config ID to protocol version (only includes configs with a version set)
+     */
+    default java.util.Map<String, String> getProtocolVersions(String taskId) {
+        return java.util.Map.of();
+    }
 
 }

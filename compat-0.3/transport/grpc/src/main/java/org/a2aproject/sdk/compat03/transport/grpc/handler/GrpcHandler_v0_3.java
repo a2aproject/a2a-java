@@ -12,6 +12,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 
 import com.google.protobuf.Empty;
+import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.ErrorConverter_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
@@ -363,7 +364,7 @@ public abstract class GrpcHandler_v0_3 extends org.a2aproject.sdk.compat03.grpc.
             Map<String, Object> state = new HashMap<>();
             state.put("grpc_response_observer", responseObserver);
             Set<String> requestedExtensions = new HashSet<>();
-            return new ServerCallContext(user, state, requestedExtensions);
+            return new ServerCallContext(user, state, requestedExtensions, A2AProtocol_v0_3.PROTOCOL_VERSION);
         } else {
             return factory.create(responseObserver);
         }

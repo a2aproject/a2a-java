@@ -19,6 +19,7 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2ARequestHandlerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.conversion.mappers.domain.TaskArtifactUpdateEventMapper_v0_3;
@@ -85,7 +86,7 @@ import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
 public class JSONRPCHandler_v0_3_Test extends AbstractA2ARequestHandlerTest_v0_3 {
 
     private final ServerCallContext callContext = new ServerCallContext(
-            UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>());
+            UnauthenticatedUser.INSTANCE, Map.of("foo", "bar"), new HashSet<>(), A2AProtocol_v0_3.PROTOCOL_VERSION);
 
     // ========================================
     // GetTask Tests

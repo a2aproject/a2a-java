@@ -248,7 +248,7 @@ public class ResultAggregatorTest {
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
             new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, (event, snapshot) -> {}, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
@@ -296,7 +296,7 @@ public class ResultAggregatorTest {
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
             new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, (event, snapshot) -> {}, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
@@ -338,7 +338,7 @@ public class ResultAggregatorTest {
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
             new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, (event, snapshot) -> {}, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
@@ -385,7 +385,7 @@ public class ResultAggregatorTest {
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
             new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, (event, snapshot) -> {}, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();
@@ -431,7 +431,7 @@ public class ResultAggregatorTest {
         InMemoryTaskStore taskStore = new InMemoryTaskStore();
         InMemoryQueueManager queueManager =
             new InMemoryQueueManager(new MockTaskStateProvider(), mainEventBus);
-        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, task -> {}, queueManager);
+        MainEventBusProcessor processor = new MainEventBusProcessor(mainEventBus, taskStore, (event, snapshot) -> {}, queueManager);
         EventQueueUtil.start(processor);
 
         EventQueue queue = queueManager.getEventQueueBuilder(taskId).build().tap();

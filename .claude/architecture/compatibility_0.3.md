@@ -168,6 +168,18 @@ These fields coexist alongside the v1.0 `supportedInterfaces` field. v1.0 client
 
 `Legacy_0_3_AgentInterface` is a separate record from `AgentInterface` because they serialize to different JSON field names (`transport`/`url` vs `protocolBinding`/`url`/`tenant`).
 
+### Version-Aware Push Notifications
+
+Push notification payloads are formatted according to the protocol version used when the push notification configuration was registered. The v0.3 transport handlers pass `A2AProtocol_v0_3.PROTOCOL_VERSION` when constructing the `ServerCallContext`, which propagates through to `PushNotificationConfigStore.setInfo()`. When a notification is later sent:
+
+1. `BasePushNotificationSender` retrieves the protocol version stored alongside each push notification configuration
+2. It looks up a `PushNotificationPayloadFormatter` matching that version (discovered via CDI)
+3. The formatter serializes the payload in the appropriate wire format:
+   - **v0.3** (`PushNotificationPayloadFormatter_v0_3`): sends a v0.3 `Task` JSON object, skipping `Message` events (not supported in v0.3 push notifications)
+   - **v1.0** (default): sends a `StreamResponse` wrapper containing the event
+
+If no protocol version is stored (e.g., for configurations created before this feature), the version defaults to `AgentInterface.CURRENT_PROTOCOL_VERSION` (`"1.0"`).
+
 ---
 
 ## Module Structure
@@ -436,7 +448,7 @@ AgentCard card = // ... fetch agent card from /.well-known/agent-card.json
 
 // Find the v0.3 interface from the agent card
 AgentInterface v03Interface = card.supportedInterfaces().stream()
-        .filter(iface -> "0.3".equals(iface.protocolVersion()))
+        .filter(iface -> A2AProtocol_v0_3.PROTOCOL_VERSION.equals(iface.protocolVersion()))
         .findFirst()
         .orElseThrow();
 
@@ -536,10 +548,10 @@ For JSON-RPC and REST, multi-version convenience modules are also available that
 
 ## Status
 
-The v0.3 compatibility layer is fully implemented: spec types, gRPC generation, conversion layer, all three transport handlers (JSON-RPC, gRPC, REST), client API and transports, reference servers, multi-version deployment, test infrastructure, 125+ integration tests, and TCK module are all in place.
+The v0.3 compatibility layer is fully implemented: spec types, gRPC generation, conversion layer, all three transport handlers (JSON-RPC, gRPC, REST), client API and transports, reference servers, multi-version deployment, version-aware push notifications, test infrastructure, 125+ integration tests, and TCK module are all in place.
 
 🔲 **Outstanding:**
-- Push notification test porting (requires TestHttpClient; version-aware push notifications in PR #857)
+- Push notification test porting (requires TestHttpClient)
 - Test metadata classes (classpath scanning)
 - Replace FQNs with imports (97 occurrences in 34 files)
 - Unify AgentCard producers across reference modules

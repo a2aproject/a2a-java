@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.server.events;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
@@ -16,8 +17,8 @@ import org.a2aproject.sdk.server.tasks.TaskStore;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.spec.InternalError;
-import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.StreamingEventKind;
+import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
 import org.slf4j.Logger;
@@ -57,6 +58,8 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class MainEventBusProcessor implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(MainEventBusProcessor.class);
+
+    private record UpdateResult(boolean isFinal, @Nullable Task taskSnapshot) {}
 
     /**
      * Callback for testing synchronization with async event processing.
@@ -200,13 +203,15 @@ public class MainEventBusProcessor implements Runnable {
                     taskId, event.getClass().getSimpleName());
 
         Event eventToDistribute = null;
+        UpdateResult updateResult = null;
         boolean isReplicated = context.eventQueueItem().isReplicated();
         try {
             // Step 1: Update TaskStore FIRST (persistence before clients see it)
             // If this throws, we distribute an error to ensure "persist before client visibility"
 
             try {
-                boolean isFinal = updateTaskStore(taskId, event, isReplicated);
+                updateResult = updateTaskStore(taskId, event, isReplicated);
+                boolean isFinal = updateResult.isFinal();
 
                 eventToDistribute = event; // Success - distribute original event
 
@@ -237,9 +242,9 @@ public class MainEventBusProcessor implements Runnable {
             // Skip push notifications for replicated events to avoid duplicate notifications in multi-instance deployments
             // Push notifications are sent for all StreamingEventKind events (Task, Message, TaskStatusUpdateEvent, TaskArtifactUpdateEvent)
             // per A2A spec section 4.3.3
-            if (!isReplicated && event instanceof StreamingEventKind streamingEvent) {
+            if (!isReplicated && eventToDistribute == event && event instanceof StreamingEventKind streamingEvent) {
                 // Send the streaming event directly - it will be wrapped in StreamResponse format by PushNotificationSender
-                sendPushNotification(taskId, streamingEvent);
+                sendPushNotification(taskId, streamingEvent, updateResult != null ? updateResult.taskSnapshot() : null);
             }
 
             // Step 3: Then distribute to ChildQueues (clients see either event or error AFTER persistence attempt)
@@ -293,7 +298,7 @@ public class MainEventBusProcessor implements Runnable {
      * @return true if the task reached a final state, false otherwise
      * @throws InternalError if persistence fails
      */
-    private boolean updateTaskStore(String taskId, Event event, boolean isReplicated) throws InternalError {
+    private UpdateResult updateTaskStore(String taskId, Event event, boolean isReplicated) throws InternalError {
         try {
             // Extract contextId from event (all relevant events have it)
             String contextId = extractContextId(event);
@@ -302,10 +307,11 @@ public class MainEventBusProcessor implements Runnable {
             TaskManager taskManager = new TaskManager(taskId, contextId, taskStore, null);
 
             // Use TaskManager.process() - handles all event types with existing logic
-            boolean isFinal = taskManager.process(event, isReplicated);
+            AtomicReference<Task> taskSnapshot = new AtomicReference<>();
+            boolean isFinal = taskManager.process(event, isReplicated, taskSnapshot);
             LOGGER.debug("TaskStore updated via TaskManager.process() for task {}: {} (final: {}, replicated: {})",
                         taskId, event.getClass().getSimpleName(), isFinal, isReplicated);
-            return isFinal;
+            return new UpdateResult(isFinal, taskSnapshot.get());
 
         } catch (TaskSerializationException e) {
             // Data corruption or schema mismatch - ALWAYS permanent
@@ -362,12 +368,12 @@ public class MainEventBusProcessor implements Runnable {
      * @param taskId the task ID
      * @param event the streaming event to send (Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent)
      */
-    private void sendPushNotification(String taskId, StreamingEventKind event) {
+    private void sendPushNotification(String taskId, StreamingEventKind event, @Nullable Task taskSnapshot) {
         Runnable pushTask = () -> {
             try {
                 if (event != null) {
                     LOGGER.debug("Sending push notification for task {}", taskId);
-                    pushSender.sendNotification(event);
+                    pushSender.sendNotification(event, taskSnapshot);
                 } else {
                     LOGGER.debug("Skipping push notification - event is null for task {}", taskId);
                 }

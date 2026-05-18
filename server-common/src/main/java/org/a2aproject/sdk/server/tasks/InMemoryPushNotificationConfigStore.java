@@ -10,10 +10,11 @@ import java.util.Map;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import org.a2aproject.sdk.util.Assert;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * In-memory implementation of the PushNotificationConfigStore interface.
@@ -24,6 +25,7 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 public class InMemoryPushNotificationConfigStore implements PushNotificationConfigStore {
 
     private final Map<String, List<TaskPushNotificationConfig>> pushNotificationInfos = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, String> protocolVersions = Collections.synchronizedMap(new HashMap<>());
 
     @Inject
     public InMemoryPushNotificationConfigStore() {
@@ -50,6 +52,13 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
         notificationConfigList.add(notificationConfig);
         pushNotificationInfos.put(taskId, notificationConfigList);
         return notificationConfig;
+    }
+
+    @Override
+    public TaskPushNotificationConfig setInfo(TaskPushNotificationConfig config, @Nullable String protocolVersion) {
+        TaskPushNotificationConfig result = setInfo(config);
+        protocolVersions.put(result.taskId() + ":" + result.id(), PushNotificationConfigStore.resolveProtocolVersion(protocolVersion));
+        return result;
     }
 
     @Override
@@ -106,8 +115,27 @@ public class InMemoryPushNotificationConfigStore implements PushNotificationConf
                 break;
             }
         }
+        protocolVersions.remove(taskId + ":" + configId);
         if (notificationConfigList.isEmpty()) {
             pushNotificationInfos.remove(taskId);
         }
+    }
+
+    @Override
+    public String getProtocolVersion(String taskId, String configId) {
+        String version = protocolVersions.get(taskId + ":" + configId);
+        return PushNotificationConfigStore.resolveProtocolVersion(version);
+    }
+
+    @Override
+    public Map<String, String> getProtocolVersions(String taskId) {
+        String prefix = taskId + ":";
+        Map<String, String> result = new HashMap<>();
+        protocolVersions.forEach((key, version) -> {
+            if (key.startsWith(prefix)) {
+                result.put(key.substring(prefix.length()), version);
+            }
+        });
+        return result;
     }
 }
