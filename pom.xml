@@ -58,7 +58,7 @@
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
         <junit.version>6.0.3</junit.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <mapstruct-spi-protobuf.version>1.52.0</mapstruct-spi-protobuf.version>
+        <mapstruct-spi-protobuf.version>1.53.0</mapstruct-spi-protobuf.version>
         <mockito-core.version>5.23.0</mockito-core.version>
         <mockserver.version>5.15.0</mockserver.version>
         <mutiny-zero.version>1.1.1</mutiny-zero.version>
