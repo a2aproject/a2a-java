@@ -998,11 +998,16 @@ public class A2AServerRoutes {
          * @param rc Vert.x routing context providing HTTP response
          * @param context A2A server call context (for EventConsumer cancellation on disconnect)
          */
+        private static final int IDLE = 0;
+        private static final int WRITE_PENDING = 1;
+        private static final int COMPLETE_DEFERRED = 2;
+
         public static void writeSseStrings(Multi<String> sseStrings, RoutingContext rc, ServerCallContext context) {
             HttpServerResponse response = rc.response();
 
             sseStrings.subscribe().withSubscriber(new Flow.Subscriber<String>() {
                 Flow.@Nullable Subscription upstream;
+                final java.util.concurrent.atomic.AtomicInteger writeState = new java.util.concurrent.atomic.AtomicInteger(IDLE);
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
@@ -1031,32 +1036,25 @@ public class A2AServerRoutes {
                         if (headers.get(CONTENT_TYPE) == null) {
                             headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
                         }
-                        // Additional SSE headers to prevent buffering
                         headers.set("Cache-Control", "no-cache");
-                        headers.set("X-Accel-Buffering", "no");  // Disable nginx buffering
+                        headers.set("X-Accel-Buffering", "no");
                         response.setChunked(true);
-
-                        // CRITICAL: Disable write queue max size to prevent buffering
-                        // Vert.x buffers writes by default - we need immediate flushing for SSE
-                        response.setWriteQueueMaxSize(1);  // Force immediate flush
-
-                        // Send initial SSE comment to kickstart the stream
-                        // This forces Vert.x to send headers and start the stream immediately
+                        response.setWriteQueueMaxSize(1);
                         response.write(": SSE stream started\n\n");
                     }
 
-                    // Write SSE-formatted string to response
+                    writeState.set(WRITE_PENDING);
                     response.write(Buffer.buffer(sseEvent), new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> ar) {
                             if (ar.failed()) {
-                                // Client disconnected or write failed - cancel upstream to stop EventConsumer
-                                // NullAway: upstream is guaranteed non-null after onSubscribe
                                 java.util.Objects.requireNonNull(upstream).cancel();
                                 rc.fail(ar.cause());
-                            } else {
-                                // NullAway: upstream is guaranteed non-null after onSubscribe
+                            } else if (writeState.compareAndSet(WRITE_PENDING, IDLE)) {
                                 java.util.Objects.requireNonNull(upstream).request(1);
+                            } else {
+                                // onComplete() arrived while write was pending — end the response now
+                                endResponse(response);
                             }
                         }
                     });
@@ -1064,22 +1062,35 @@ public class A2AServerRoutes {
 
                 @Override
                 public void onError(Throwable throwable) {
-                    // Cancel upstream to stop EventConsumer when error occurs
-                    // NullAway: upstream is guaranteed non-null after onSubscribe
                     java.util.Objects.requireNonNull(upstream).cancel();
                     rc.fail(throwable);
                 }
 
                 @Override
                 public void onComplete() {
-                    if (response.bytesWritten() == 0) {
-                        // No events written - still set SSE content type
-                        MultiMap headers = response.headers();
-                        if (headers.get(CONTENT_TYPE) == null) {
-                            headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
-                        }
+                    if (!writeState.compareAndSet(WRITE_PENDING, COMPLETE_DEFERRED)) {
+                        // No write in-flight — end immediately
+                        endResponse(response);
                     }
-                    response.end();
+                    // else: write handler will call endResponse when the write completes
+                }
+
+                private void endResponse(HttpServerResponse resp) {
+                    Runnable doEnd = () -> {
+                        if (resp.ended()) return;
+                        if (resp.bytesWritten() == 0) {
+                            MultiMap headers = resp.headers();
+                            if (headers.get(CONTENT_TYPE) == null) {
+                                headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
+                            }
+                        }
+                        resp.end();
+                    };
+                    if (io.vertx.core.Context.isOnEventLoopThread()) {
+                        doEnd.run();
+                    } else {
+                        rc.vertx().runOnContext(v -> doEnd.run());
+                    }
                 }
             });
         }

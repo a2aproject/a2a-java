@@ -41,12 +41,6 @@ public class EventConsumer {
     private static final int MAX_AWAITING_FINAL_TIMEOUT_MS = 3000;
     private static final int MAX_POLL_TIMEOUTS_AWAITING_FINAL =
         (MAX_AWAITING_FINAL_TIMEOUT_MS + QUEUE_WAIT_MILLISECONDS - 1) / QUEUE_WAIT_MILLISECONDS;
-    // WORKAROUND: Sleep delay to allow SSE buffer flush before stream completion
-    // This is a temporary workaround for a race condition where tube.complete() can arrive
-    // before the final event is flushed from the SSE buffer. Ideally, this should be handled
-    // at the transport layer (e.g., MultiSseSupport) with proper write completion callbacks.
-    // TODO: Move buffer flush handling to transport layer to avoid this latency penalty
-    private static final int BUFFER_FLUSH_DELAY_MS = 150;
 
     public EventConsumer(EventQueue queue, Executor executor) {
         this.queue = queue;
@@ -215,33 +209,14 @@ public class EventConsumer {
                                 isFinalEvent = true;
                             }
 
-                            // Only send event if it's not a QueueClosedEvent
-                            // QueueClosedEvent is an internal coordination event used for replication
-                            // and should not be exposed to API consumers
-                            boolean isFinalSent = false;
                             if (!(event instanceof QueueClosedEvent)) {
                                 tube.send(item);
-                                isFinalSent = isFinalEvent;
                             }
 
                             if (isFinalEvent) {
                                 LOGGER.debug("Final or interrupted event detected, closing queue and breaking loop for queue {}", System.identityHashCode(queue));
                                 queue.close();
                                 LOGGER.debug("Queue closed, breaking loop for queue {}", System.identityHashCode(queue));
-
-                                // CRITICAL: Allow tube buffer to flush before calling tube.complete()
-                                // tube.send() buffers events asynchronously. If we call tube.complete() immediately,
-                                // the stream-end signal can reach the client BEFORE the buffered final event,
-                                // causing the client to close the connection and never receive the final event.
-                                // This is especially important in replicated scenarios where events arrive via Kafka
-                                // and timing is less deterministic.
-                                if (isFinalSent) {
-                                    try {
-                                        Thread.sleep(BUFFER_FLUSH_DELAY_MS);
-                                    } catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
-                                    }
-                                }
                                 break;
                             }
                         } catch (EventQueueClosedException e) {

@@ -458,11 +458,16 @@ public class A2AServerRoutes_v0_3 {
             // Avoid direct instantiation.
         }
 
+        private static final int IDLE = 0;
+        private static final int WRITE_PENDING = 1;
+        private static final int COMPLETE_DEFERRED = 2;
+
         public static void writeSseStrings(Multi<String> sseStrings, RoutingContext rc, ServerCallContext context) {
             HttpServerResponse response = rc.response();
 
             sseStrings.subscribe().withSubscriber(new Flow.Subscriber<String>() {
                 Flow.@Nullable Subscription upstream;
+                final java.util.concurrent.atomic.AtomicInteger writeState = new java.util.concurrent.atomic.AtomicInteger(IDLE);
 
                 @Override
                 public void onSubscribe(Flow.Subscription subscription) {
@@ -496,14 +501,17 @@ public class A2AServerRoutes_v0_3 {
                         response.write(": SSE stream started\n\n");
                     }
 
+                    writeState.set(WRITE_PENDING);
                     response.write(Buffer.buffer(sseEvent), new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> ar) {
                             if (ar.failed()) {
                                 java.util.Objects.requireNonNull(upstream).cancel();
                                 rc.fail(ar.cause());
-                            } else {
+                            } else if (writeState.compareAndSet(WRITE_PENDING, IDLE)) {
                                 java.util.Objects.requireNonNull(upstream).request(1);
+                            } else {
+                                endResponse(response);
                             }
                         }
                     });
@@ -517,13 +525,27 @@ public class A2AServerRoutes_v0_3 {
 
                 @Override
                 public void onComplete() {
-                    if (response.bytesWritten() == 0) {
-                        MultiMap headers = response.headers();
-                        if (headers.get(CONTENT_TYPE) == null) {
-                            headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
-                        }
+                    if (!writeState.compareAndSet(WRITE_PENDING, COMPLETE_DEFERRED)) {
+                        endResponse(response);
                     }
-                    response.end();
+                }
+
+                private void endResponse(HttpServerResponse resp) {
+                    Runnable doEnd = () -> {
+                        if (resp.ended()) return;
+                        if (resp.bytesWritten() == 0) {
+                            MultiMap headers = resp.headers();
+                            if (headers.get(CONTENT_TYPE) == null) {
+                                headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
+                            }
+                        }
+                        resp.end();
+                    };
+                    if (io.vertx.core.Context.isOnEventLoopThread()) {
+                        doEnd.run();
+                    } else {
+                        rc.vertx().runOnContext(v -> doEnd.run());
+                    }
                 }
             });
         }
