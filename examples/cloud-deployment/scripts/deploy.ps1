@@ -48,13 +48,27 @@ if (-not (Get-Command kubectl -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
+# Check if Maven is installed
+if (-not (Get-Command mvn -ErrorAction SilentlyContinue)) {
+    Write-Host "Error: Maven (mvn) is not installed" -ForegroundColor Red
+    Write-Host "Please install Maven first: https://maven.apache.org/install.html"
+    exit 1
+}
+
+# Check if the container tool is installed
+if (-not (Get-Command $ContainerTool -ErrorAction SilentlyContinue)) {
+    Write-Host "Error: $ContainerTool is not installed or not in PATH" -ForegroundColor Red
+    exit 1
+}
+
 # Setup local registry
 Write-Host "Setting up local registry..."
 $RegName = "kind-registry"
 $RegPort = "5001"
 
 # Create registry container if it doesn't exist
-$running = & $ContainerTool inspect -f '{{.State.Running}}' $RegName 2>$null
+# .Trim() strips trailing \r\n from docker/podman output on Windows
+$running = (& $ContainerTool inspect -f '{{.State.Running}}' $RegName 2>$null).Trim()
 if ($running -ne "true") {
     Write-Host "Creating registry container..."
     & $ContainerTool run `
@@ -68,7 +82,8 @@ if ($running -ne "true") {
 # Create Kind cluster if it doesn't exist
 Write-Host ""
 $clusters = kind get clusters 2>$null
-if ($clusters -notmatch "(?m)^kind$") {
+# \r? handles Windows CRLF line endings in kind output
+if ($clusters -notmatch "(?m)^kind\r?$") {
     Write-Host "Creating Kind cluster..."
     kind create cluster --config="..\kind-config.yaml"
     Write-Host "✓ Kind cluster created" -ForegroundColor Green
@@ -105,7 +120,8 @@ Write-Host "✓ Registry configured on nodes" -ForegroundColor Green
 # Connect registry to cluster network
 Write-Host ""
 Write-Host "Connecting registry to cluster network..."
-$networkInfo = & $ContainerTool inspect -f '{{json .NetworkSettings.Networks.kind}}' $RegName 2>$null
+# .Trim() strips trailing \r\n from docker/podman output on Windows
+$networkInfo = (& $ContainerTool inspect -f '{{json .NetworkSettings.Networks.kind}}' $RegName 2>$null).Trim()
 if ($networkInfo -eq "null" -or [string]::IsNullOrEmpty($networkInfo)) {
     & $ContainerTool network connect "kind" $RegName
     Write-Host "✓ Registry connected to cluster network" -ForegroundColor Green

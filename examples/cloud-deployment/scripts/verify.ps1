@@ -32,7 +32,8 @@ Write-Host ""
 Write-Host "Checking PostgreSQL..."
 $postgresReady = kubectl get pods -n a2a-demo -l app=postgres `
     -o "jsonpath={.items[0].status.conditions[?(@.type=='Ready')].status}" 2>$null
-if ($postgresReady -eq "True") {
+# -match handles trailing whitespace/CRLF in kubectl output on Windows
+if ($postgresReady -match "^True\s*$") {
     Write-Host "✓ PostgreSQL is ready" -ForegroundColor Green
     kubectl get pods -n a2a-demo -l app=postgres
 } else {
@@ -45,7 +46,7 @@ Write-Host ""
 Write-Host "Checking Kafka..."
 $kafkaReady = kubectl get kafka a2a-kafka -n kafka `
     -o "jsonpath={.status.conditions[?(@.type=='Ready')].status}" 2>$null
-if ($kafkaReady -eq "True") {
+if ($kafkaReady -match "^True\s*$") {
     Write-Host "✓ Kafka is ready" -ForegroundColor Green
     kubectl get kafka -n kafka
 } else {
@@ -58,7 +59,8 @@ Write-Host ""
 Write-Host "Checking A2A Agent pods..."
 $agentStatusJson = kubectl get pods -n a2a-demo -l app=a2a-agent `
     -o "jsonpath={range .items[*]}{.status.conditions[?(@.type=='Ready')].status}{'\n'}{end}" 2>$null
-$agentReady = ($agentStatusJson -split "`n" | Where-Object { $_ -eq "True" }).Count
+# -match handles trailing \r from CRLF line endings on Windows
+$agentReady = ($agentStatusJson -split "`n" | Where-Object { $_ -match "^True\s*$" }).Count
 $agentTotal = (kubectl get pods -n a2a-demo -l app=a2a-agent `
     -o "jsonpath={range .items[*]}{.metadata.name}{'\n'}{end}" 2>$null `
     | Where-Object { $_ -ne "" }).Count
