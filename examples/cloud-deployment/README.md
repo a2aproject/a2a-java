@@ -78,7 +78,9 @@ See https://kubernetes.io/docs/tasks/tools/ for installation instructions.
 
 ### 2. Deploy the Stack
 
-The deployment script will automatically create the Kind cluster and deploy all components:
+The deployment script will automatically create the Kind cluster and deploy all components.
+
+#### macOS / Linux
 
 ```bash
 cd scripts
@@ -90,9 +92,40 @@ cd scripts
 ./deploy.sh --container-tool podman
 ```
 
+#### Windows
+
+PowerShell scripts are provided as the Windows equivalent of the bash scripts.
+Open **PowerShell** (Windows Terminal recommended) and run:
+
+```powershell
+cd scripts
+
+# Allow the script to run in this session (one-time, current session only)
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+.\deploy.ps1
+```
+
+**If using Podman instead of Docker:**
+```powershell
+.\deploy.ps1 -ContainerTool podman
+```
+
+**Troubleshooting entity operator timeout on Windows:**
+
+If Kafka deployment times out waiting for the entity operator, set the environment variable and retry:
+
+```powershell
+.\cleanup.ps1
+$env:SKIP_ENTITY_OPERATOR_WAIT = "true"
+.\deploy.ps1
+```
+
+---
+
 Note that using Kind with Podman on Linux may have some occasional issues due to Kind's experimental support for Podman. In our testing, a reboot normally solves this.
 
-**Troubleshooting entity operator timeout:**
+**Troubleshooting entity operator timeout (macOS / Linux):**
 
 In some environments (particularly Linux with Podman), the Kafka entity operator may not start properly, causing deployment to timeout while waiting for Kafka to be ready. If you encounter this issue, you can skip the entity operator wait:
 
@@ -119,8 +152,14 @@ The script will:
 
 ### 3. Verify Deployment
 
+**macOS / Linux:**
 ```bash
 ./verify.sh
+```
+
+**Windows:**
+```powershell
+.\verify.ps1
 ```
 
 Expected output:
@@ -470,9 +509,16 @@ docker system prune -a   # or: podman system prune -a
 
 To remove all deployed resources:
 
+**macOS / Linux:**
 ```bash
 cd scripts
 ./cleanup.sh
+```
+
+**Windows:**
+```powershell
+cd scripts
+.\cleanup.ps1
 ```
 
 This will delete:
@@ -508,7 +554,7 @@ podman stop kind-registry && podman rm kind-registry
 docker system prune -a   # or: podman system prune -a
 ```
 
-Then re-run `./deploy.sh` to start fresh.
+Then re-run `./deploy.sh` (macOS/Linux) or `.\deploy.ps1` (Windows) to start fresh.
 
 ## Project Structure
 
@@ -534,9 +580,12 @@ cloud-deployment/
 ├── strimzi-1.0.0/
 │   └── strimzi-cluster-operator-1.0.0.yaml   # Pinned from https://strimzi.io/install/latest?namespace=kafka
 ├── scripts/
-│   ├── deploy.sh                             # Automated deployment
-│   ├── verify.sh                             # Health checks
-│   └── cleanup.sh                            # Resource cleanup
+│   ├── deploy.sh                             # Automated deployment (macOS/Linux)
+│   ├── deploy.ps1                            # Automated deployment (Windows)
+│   ├── verify.sh                             # Health checks (macOS/Linux)
+│   ├── verify.ps1                            # Health checks (Windows)
+│   ├── cleanup.sh                            # Resource cleanup (macOS/Linux)
+│   └── cleanup.ps1                           # Resource cleanup (Windows)
 └── README.md                                 # This file
 ```
 
