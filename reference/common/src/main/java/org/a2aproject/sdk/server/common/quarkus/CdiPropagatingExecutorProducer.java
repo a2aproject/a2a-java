@@ -124,13 +124,14 @@ public class CdiPropagatingExecutorProducer {
 
         CdiContextPropagatingExecutor(ExecutorService delegate, Vertx vertx,
                 Instance<CurrentIdentityAssociation> identityAssociationInstance) {
-            this.delegate = delegate;
-            this.vertx = vertx;
-            this.identityAssociationInstance = identityAssociationInstance;
+            this.delegate = java.util.Objects.requireNonNull(delegate, "delegate must not be null");
+            this.vertx = java.util.Objects.requireNonNull(vertx, "vertx must not be null");
+            this.identityAssociationInstance = java.util.Objects.requireNonNull(identityAssociationInstance, "identityAssociationInstance must not be null");
         }
 
         @Override
         public void execute(Runnable command) {
+            java.util.Objects.requireNonNull(command, "command must not be null");
             SecurityIdentity capturedIdentity = captureSecurityIdentity();
 
             delegate.execute(() -> {
