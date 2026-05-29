@@ -39,29 +39,42 @@ public class A2ACardResolverTest {
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
 
-        // baseUrl with trailing slash, agentCardParth with leading slash
-        resolver = new A2ACardResolver(client, "http://example.com/", AGENT_CARD_PATH);
+        // baseUrl with trailing slash, agentCardPath with leading slash
+        resolver = new A2ACardResolver(client, "http://example.com/", null, AGENT_CARD_PATH);
         card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
 
         // baseUrl without trailing slash, agentCardPath with leading slash
-        resolver = new A2ACardResolver(client, "http://example.com", AGENT_CARD_PATH);
+        resolver = new A2ACardResolver(client, "http://example.com", null, AGENT_CARD_PATH);
         card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
 
         // baseUrl with trailing slash, agentCardPath without leading slash
-        resolver = new A2ACardResolver(client, "http://example.com/", AGENT_CARD_PATH.substring(1));
+        resolver = new A2ACardResolver(client, "http://example.com/", null, AGENT_CARD_PATH.substring(1));
         card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
 
         // baseUrl without trailing slash, agentCardPath without leading slash
-        resolver = new A2ACardResolver(client, "http://example.com", AGENT_CARD_PATH.substring(1));
+        resolver = new A2ACardResolver(client, "http://example.com", null, AGENT_CARD_PATH.substring(1));
         card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
+
+        // baseUrl with sub-path and trailing slash — the original URI.resolve() bug silently
+        // dropped the sub-path, producing http://example.com/.well-known/agent-card.json instead
+        resolver = new A2ACardResolver(client, "http://example.com/jsonrpc/", null, AGENT_CARD_PATH);
+        card = resolver.getAgentCard();
+
+        assertEquals("http://example.com/jsonrpc" + AGENT_CARD_PATH, client.url);
+
+        // baseUrl with sub-path, no trailing slash
+        resolver = new A2ACardResolver(client, "http://example.com/jsonrpc", null, AGENT_CARD_PATH);
+        card = resolver.getAgentCard();
+
+        assertEquals("http://example.com/jsonrpc" + AGENT_CARD_PATH, client.url);
     }
 
 

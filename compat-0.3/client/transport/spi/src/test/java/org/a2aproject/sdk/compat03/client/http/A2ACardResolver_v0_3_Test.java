@@ -62,6 +62,19 @@ public class A2ACardResolver_v0_3_Test {
         card = resolver.getAgentCard();
 
         assertEquals("http://example.com" + AGENT_CARD_PATH, client.url);
+
+        // baseUrl with sub-path and trailing slash — the original URI.resolve() bug silently
+        // dropped the sub-path, producing http://example.com/.well-known/agent-card.json instead
+        resolver = new A2ACardResolver_v0_3(client, "http://example.com/jsonrpc/", AGENT_CARD_PATH);
+        card = resolver.getAgentCard();
+
+        assertEquals("http://example.com/jsonrpc" + AGENT_CARD_PATH, client.url);
+
+        // baseUrl with sub-path, no trailing slash
+        resolver = new A2ACardResolver_v0_3(client, "http://example.com/jsonrpc", AGENT_CARD_PATH);
+        card = resolver.getAgentCard();
+
+        assertEquals("http://example.com/jsonrpc" + AGENT_CARD_PATH, client.url);
     }
 
 

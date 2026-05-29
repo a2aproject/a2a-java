@@ -2,8 +2,6 @@ package org.a2aproject.sdk.client.http;
 
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
@@ -145,12 +143,26 @@ public class A2ACardResolver {
 
         this.httpClient = httpClient;
         String effectiveAgentCardPath = (agentCardPath == null || agentCardPath.isEmpty()) ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
-        try {
-            this.url = new URI(org.a2aproject.sdk.util.Utils.buildBaseUrl(new AgentInterface("JSONRPC", baseUrl, ""), tenant)).resolve(effectiveAgentCardPath).toString();
-        } catch (URISyntaxException e) {
-            throw new A2AClientError("Invalid agent URL", e);
-        }
+        String baseUrlStr = org.a2aproject.sdk.util.Utils.buildBaseUrl(new AgentInterface("JSONRPC", baseUrl, ""), tenant);
+        this.url = buildCardUrl(baseUrlStr, effectiveAgentCardPath);
         this.authHeaders = authHeaders;
+    }
+
+    /**
+     * Normalizes {@code baseUrl} and {@code cardPath} and concatenates them into a full card URL.
+     *
+     * <p>Strips any trailing slash from {@code baseUrl} and ensures {@code cardPath} starts with
+     * a leading slash before concatenating, so both {@code http://host/base/} and
+     * {@code http://host/base} produce the same result.
+     *
+     * @param baseUrl the agent base URL, must not be null
+     * @param cardPath the card endpoint path, must not be null
+     * @return the normalized card URL
+     */
+    public static String buildCardUrl(String baseUrl, String cardPath) {
+        String cleanBase = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        String normalizedPath = cardPath.startsWith("/") ? cardPath : "/" + cardPath;
+        return cleanBase + normalizedPath;
     }
 
     /**

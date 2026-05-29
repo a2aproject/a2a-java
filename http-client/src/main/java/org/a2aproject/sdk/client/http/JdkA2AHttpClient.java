@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,7 +34,7 @@ import org.a2aproject.sdk.common.A2AErrorMessages;
  * <p>This is the fallback implementation used when no higher-priority
  * {@link A2AHttpClientProvider} is available. It provides full support for:
  * <ul>
- *   <li>HTTP/2 with automatic fallback to HTTP/1.1</li>
+ *   <li>HTTP/2 for regular requests, HTTP/1.1 for SSE streaming (configurable per request type)</li>
  *   <li>Synchronous GET, POST, and DELETE requests</li>
  *   <li>Asynchronous Server-Sent Events (SSE) streaming</li>
  *   <li>Automatic redirect following</li>
@@ -52,19 +53,21 @@ import org.a2aproject.sdk.common.A2AErrorMessages;
 public class JdkA2AHttpClient implements A2AHttpClient {
 
     private final HttpClient httpClient;
+    private final HttpClient.Version requestVersion;
+    private final HttpClient.Version sseVersion;
 
     /**
      * Creates a new JDK-based HTTP client.
      *
      * <p>Configures the client with:
      * <ul>
-     *   <li>HTTP/2 preferred (with HTTP/1.1 fallback)</li>
+     *   <li>HTTP/2 for regular requests (with HTTP/1.1 fallback)</li>
+     *   <li>HTTP/1.1 for SSE streaming connections</li>
      *   <li>Normal redirect following</li>
      * </ul>
      */
     public JdkA2AHttpClient() {
         this(HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build());
     }
@@ -72,11 +75,27 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     /**
      * Creates a new JDK-based HTTP client using a caller-provided JDK {@link HttpClient}.
      *
+     * <p>Uses HTTP/2 for regular requests and HTTP/1.1 for SSE streaming connections.
+     *
      * @param httpClient the JDK HTTP client to delegate requests to
      * @throws IllegalArgumentException if {@code httpClient} is {@code null}
      */
     public JdkA2AHttpClient(HttpClient httpClient) {
+        this(httpClient, HttpClient.Version.HTTP_2, HttpClient.Version.HTTP_1_1);
+    }
+
+    /**
+     * Creates a new JDK-based HTTP client with configurable HTTP versions.
+     *
+     * @param httpClient the JDK HTTP client to delegate requests to
+     * @param requestVersion the HTTP version to use for regular (non-SSE) requests
+     * @param sseVersion the HTTP version to use for SSE streaming connections
+     * @throws IllegalArgumentException if any parameter is {@code null}
+     */
+    public JdkA2AHttpClient(HttpClient httpClient, HttpClient.Version requestVersion, HttpClient.Version sseVersion) {
         this.httpClient = checkNotNullParam("httpClient", httpClient);
+        this.requestVersion = checkNotNullParam("requestVersion", requestVersion);
+        this.sseVersion = checkNotNullParam("sseVersion", sseVersion);
     }
 
     @Override
@@ -125,9 +144,25 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             return (T) this;
         }
 
+        static boolean isCancellation(Throwable t) {
+            while (t != null) {
+                if (t instanceof CancellationException) {
+                    return true;
+                }
+                // HTTP/1.1: Http1Exchange.cancel() throws IOException synchronously with this
+                // hardcoded English message (not locale-sensitive — no resource bundle is used)
+                if (t instanceof IOException && "Request cancelled".equals(t.getMessage())) {
+                    return true;
+                }
+                t = t.getCause();
+            }
+            return false;
+        }
+
         protected HttpRequest.Builder createRequestBuilder() throws IOException {
             HttpRequest.Builder builder = HttpRequest.newBuilder()
-                    .uri(URI.create(url));
+                    .uri(URI.create(url))
+                    .version(requestVersion);
             for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
                 builder.header(headerEntry.getKey(), headerEntry.getValue());
             }
@@ -143,6 +178,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             ServerSentEventParser sseParser = new ServerSentEventParser(messageConsumer, errorConsumer);
             AtomicBoolean useSseParser = new AtomicBoolean(false);
             AtomicBoolean errorNotified = new AtomicBoolean(false);
+            AtomicBoolean completeNotified = new AtomicBoolean(false);
             StringBuilder nonSseBodyBuffer = new StringBuilder();
 
             Flow.Subscriber<String> subscriber = new Flow.Subscriber<String>() {
@@ -174,6 +210,14 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
                 @Override
                 public void onError(Throwable throwable) {
+                    if (isCancellation(throwable)) {
+                        // Treat cancellation as clean completion so completeRunnable fires and
+                        // callers can distinguish a deliberate cancel from a real error.
+                        // onComplete() guards against double-invocation via completeNotified, so
+                        // calling it here is safe even if the publisher also delivers onComplete().
+                        onComplete();
+                        return;
+                    }
                     if (errorNotified.compareAndSet(false, true)) {
                         errorConsumer.accept(throwable);
                     }
@@ -184,7 +228,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
 
                 @Override
                 public void onComplete() {
-                    if (!errorNotified.get()) {
+                    if (!errorNotified.get() && completeNotified.compareAndSet(false, true)) {
                         if (useSseParser.get()) {
                             sseParser.flush();
                         } else {
@@ -248,7 +292,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             // normally — consistent with the Vert.x and Android implementations.
             return httpClient.sendAsync(request, bodyHandler)
                     .<Void>handle((response, throwable) -> {
-                        if (throwable != null && errorNotified.compareAndSet(false, true)) {
+                        if (throwable != null && !isCancellation(throwable)
+                                && errorNotified.compareAndSet(false, true)) {
                             Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
                             errorConsumer.accept(cause);
                         }
@@ -262,7 +307,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         private HttpRequest.Builder createRequestBuilder(boolean SSE) throws IOException {
             HttpRequest.Builder builder = super.createRequestBuilder().GET();
             if (SSE) {
-                builder.header(ACCEPT, EVENT_STREAM);
+                builder.header(ACCEPT, EVENT_STREAM)
+                        .version(sseVersion);
             }
             return builder;
         }
@@ -327,7 +373,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             HttpRequest.Builder builder = super.createRequestBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
             if (SSE) {
-                builder.header(ACCEPT, EVENT_STREAM);
+                builder.header(ACCEPT, EVENT_STREAM)
+                        .version(sseVersion);
             }
             return builder;
         }

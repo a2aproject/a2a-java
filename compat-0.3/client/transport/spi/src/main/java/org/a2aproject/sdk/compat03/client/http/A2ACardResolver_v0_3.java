@@ -5,6 +5,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
+
+import org.a2aproject.sdk.client.http.A2ACardResolver;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
 import org.a2aproject.sdk.client.http.A2AHttpResponse;
@@ -65,13 +68,16 @@ public class A2ACardResolver_v0_3 {
      */
     public A2ACardResolver_v0_3(A2AHttpClient httpClient, String baseUrl, @Nullable String agentCardPath,
                                 @Nullable Map<String, String> authHeaders) throws A2AClientError_v0_3 {
+        checkNotNullParam("httpClient", httpClient);
+        checkNotNullParam("baseUrl", baseUrl);
         this.httpClient = httpClient;
         String effectiveAgentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
         try {
-            this.url = new URI(baseUrl).resolve(effectiveAgentCardPath).toString();
+            new URI(baseUrl); // validate syntax only — URI.resolve() would silently drop sub-paths
         } catch (URISyntaxException e) {
             throw new A2AClientError_v0_3("Invalid agent URL", e);
         }
+        this.url = A2ACardResolver.buildCardUrl(baseUrl, effectiveAgentCardPath);
         this.authHeaders = authHeaders;
     }
 

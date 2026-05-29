@@ -22,6 +22,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigR
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse;
+import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.util.ErrorDetail;
 import org.a2aproject.sdk.spec.JSONParseError;
@@ -483,5 +484,58 @@ public class JSONRPCUtilsTest {
         assertInstanceOf(TaskNotFoundError.class, response.getError());
         assertEquals(-32001, response.getError().getCode());
         assertEquals("Custom message", response.getError().getMessage());
+    }
+
+    @Test
+    public void testParseAgentCard() throws Exception {
+        String agentCardPayload = """
+            {
+              "defaultInputModes": [
+                "text"
+              ],
+              "defaultOutputModes": [
+                "text"
+              ],
+              "description": "Multi-transport Go agent with A2A v0.3 compatibility.",
+              "name": "ITK v10 Agent",
+              "version": "1.0.0-alpha",
+              "skills": [],
+              "capabilities": {
+                "streaming": true
+              },
+              "supportedInterfaces": [
+                {
+                  "url": "http://127.0.0.1:59679/jsonrpc",
+                  "protocolBinding": "JSONRPC",
+                  "protocolVersion": "1.0"
+                },
+                {
+                  "url": "http://127.0.0.1:59679",
+                  "protocolBinding": "JSONRPC",
+                  "protocolVersion": "0.3"
+                },
+                {
+                  "url": "http://127.0.0.1:59679/rest",
+                  "protocolBinding": "HTTP+JSON",
+                  "protocolVersion": "1.0"
+                },
+                {
+                  "url": "127.0.0.1:39915",
+                  "protocolBinding": "GRPC",
+                  "protocolVersion": "1.0"
+                }
+              ],
+              "url": "http://127.0.0.1:59679",
+              "protocolVersion": "0.3",
+              "preferredTransport": "JSONRPC"
+            }
+            """;
+        org.a2aproject.sdk.grpc.AgentCard.Builder agentCardBuilder = org.a2aproject.sdk.grpc.AgentCard.newBuilder();
+        JSONRPCUtils.parseJsonString(agentCardPayload, agentCardBuilder, "", true);
+        AgentCard agentCard = ProtoUtils.FromProto.agentCard(agentCardBuilder);
+        assertEquals("ITK v10 Agent", agentCard.name());
+        assertEquals("Multi-transport Go agent with A2A v0.3 compatibility.", agentCard.description());
+        assertEquals("1.0.0-alpha", agentCard.version());
+        assertEquals(4, agentCard.supportedInterfaces().size());
     }
 }

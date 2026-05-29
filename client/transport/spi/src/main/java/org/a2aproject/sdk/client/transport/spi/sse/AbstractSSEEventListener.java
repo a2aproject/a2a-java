@@ -1,5 +1,6 @@
 package org.a2aproject.sdk.client.transport.spi.sse;
 
+import java.io.UncheckedIOException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -76,9 +77,7 @@ public abstract class AbstractSSEEventListener {
         if (errorHandler != null) {
             errorHandler.accept(throwable);
         }
-        if (future != null) {
-            future.cancel(true); // close SSE channel
-        }
+        cancelQuietly(future);
     }
 
     /**
@@ -97,7 +96,22 @@ public abstract class AbstractSSEEventListener {
         // This covers late subscriptions to completed tasks and ensures no connection leaks
         if (shouldAutoClose(event) && future != null) {
             log.fine("Auto-closing SSE connection for final event: " + event.getClass().getSimpleName());
-            future.cancel(true); // close SSE channel
+            cancelQuietly(future);
+        }
+    }
+
+    /**
+     * Cancels a future without propagating exceptions.
+     * HTTP/1.1 connections may throw {@link java.io.IOException} synchronously
+     * when cancelled, unlike HTTP/2 which uses a clean RST_STREAM.
+     */
+    private static void cancelQuietly(@Nullable Future<Void> future) {
+        if (future != null) {
+            try {
+                future.cancel(true);
+            } catch (UncheckedIOException e) {
+                log.fine("Exception during SSE connection close: " + e.getMessage());
+            }
         }
     }
 
