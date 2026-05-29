@@ -506,6 +506,15 @@ public abstract class AbstractA2AServerTest {
 
     @Test
     public void testRequestScopedBeanAvailableOnAgentExecutorThread() throws Exception {
+        doTestRequestScopedBeanAvailableOnAgentExecutorThread(getNonStreamingClient());
+    }
+
+    @Test
+    public void testRequestScopedBeanAvailableOnAgentExecutorThreadStreaming() throws Exception {
+        doTestRequestScopedBeanAvailableOnAgentExecutorThread(getClient());
+    }
+
+    private void doTestRequestScopedBeanAvailableOnAgentExecutorThread(Client client) throws Exception {
         Message message = Message.builder()
                 .messageId("request-scoped-test")
                 .role(Message.Role.ROLE_USER)
@@ -515,21 +524,26 @@ public abstract class AbstractA2AServerTest {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Task> receivedTask = new AtomicReference<>();
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
+        AtomicBoolean completed = new AtomicBoolean(false);
 
-        getNonStreamingClient().sendMessage(message, List.of((event, agentCard) -> {
+        client.sendMessage(message, List.of((event, agentCard) -> {
             if (event instanceof TaskEvent te) {
                 receivedTask.set(te.getTask());
                 if (te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
+                    completed.set(true);
                     latch.countDown();
                 }
             } else if (event instanceof TaskUpdateEvent tue) {
                 receivedTask.set(tue.getTask());
                 if (tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED) {
+                    completed.set(true);
                     latch.countDown();
                 }
             }
         }), error -> {
-            errorRef.set(error);
+            if (!completed.get()) {
+                errorRef.set(error);
+            }
             latch.countDown();
         });
 
