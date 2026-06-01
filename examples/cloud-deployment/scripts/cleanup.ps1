@@ -16,7 +16,8 @@
 #>
 param(
     [ValidateSet("docker", "podman")]
-    [string]$ContainerTool = "docker"
+    [string]$ContainerTool = "docker",
+    [switch]$Force
 )
 
 Write-Host "============================================"
@@ -30,11 +31,15 @@ if ($ContainerTool -eq "podman") {
 }
 
 Write-Host "This will delete all resources in the a2a-demo namespace and the Kind cluster" -ForegroundColor Yellow
-$reply = Read-Host "Are you sure you want to continue? (y/N)"
 
-if ($reply -notmatch "^[Yy]$") {
-    Write-Host "Cleanup cancelled"
-    exit 0
+if (-not $Force) {
+    $reply = Read-Host "Are you sure you want to continue? (y/N)"
+    if ($reply -notmatch "^[Yy]$") {
+        Write-Host "Cleanup cancelled"
+        exit 0
+    }
+} else {
+    Write-Host "Running in forced mode, skipping confirmation." -ForegroundColor Yellow
 }
 
 Write-Host ""
