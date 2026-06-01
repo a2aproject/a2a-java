@@ -43,28 +43,37 @@ if (-not $Force) {
 }
 
 Write-Host ""
-Write-Host "Deleting A2A Agent..."
-kubectl delete -f "..\k8s\05-agent-deployment.yaml" --ignore-not-found=true
+Write-Host "Checking cluster connectivity..."
+$null = kubectl cluster-info 2>$null
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✓ Cluster reachable, deleting resources..." -ForegroundColor Green
 
-Write-Host ""
-Write-Host "Deleting ConfigMap..."
-kubectl delete -f "..\k8s\04-agent-configmap.yaml" --ignore-not-found=true
+    Write-Host ""
+    Write-Host "Deleting A2A Agent..."
+    kubectl delete -f "..\k8s\05-agent-deployment.yaml" --ignore-not-found=true
 
-Write-Host ""
-Write-Host "Deleting Kafka topic..."
-kubectl delete -f "..\k8s\03-kafka-topic.yaml" --ignore-not-found=true
+    Write-Host ""
+    Write-Host "Deleting ConfigMap..."
+    kubectl delete -f "..\k8s\04-agent-configmap.yaml" --ignore-not-found=true
 
-Write-Host ""
-Write-Host "Deleting Kafka..."
-kubectl delete -f "..\k8s\02-kafka.yaml" --ignore-not-found=true
+    Write-Host ""
+    Write-Host "Deleting Kafka topic..."
+    kubectl delete -f "..\k8s\03-kafka-topic.yaml" --ignore-not-found=true
 
-Write-Host ""
-Write-Host "Deleting PostgreSQL..."
-kubectl delete -f "..\k8s\01-postgres.yaml" --ignore-not-found=true
+    Write-Host ""
+    Write-Host "Deleting Kafka..."
+    kubectl delete -f "..\k8s\02-kafka.yaml" --ignore-not-found=true
 
-Write-Host ""
-Write-Host "Deleting namespace..."
-kubectl delete -f "..\k8s\00-namespace.yaml" --ignore-not-found=true
+    Write-Host ""
+    Write-Host "Deleting PostgreSQL..."
+    kubectl delete -f "..\k8s\01-postgres.yaml" --ignore-not-found=true
+
+    Write-Host ""
+    Write-Host "Deleting namespace..."
+    kubectl delete -f "..\k8s\00-namespace.yaml" --ignore-not-found=true
+} else {
+    Write-Host "⚠ Cluster not reachable, skipping resource deletion — resources will be removed with the cluster." -ForegroundColor Yellow
+}
 
 Write-Host ""
 Write-Host "Deleting Kind cluster..."
