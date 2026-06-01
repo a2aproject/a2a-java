@@ -3,6 +3,9 @@ package org.a2aproject.sdk.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+import java.net.URISyntaxException;
 
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.junit.jupiter.api.Test;
@@ -52,7 +55,7 @@ class UtilsTest {
     @Test
     void testBuildBaseUrl_withAgentInterface_nullInterface_throws() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Utils.buildBaseUrl(null, "/tenant");
+            Utils.buildBaseUrl((AgentInterface) null, "/tenant");
         });
     }
 
@@ -189,5 +192,118 @@ class UtilsTest {
         AgentInterface iface = new AgentInterface("JSONRPC", "https://secure.example.com", "/tenant");
         String url = Utils.buildBaseUrl(iface, null);
         assertEquals("https://secure.example.com/tenant", url);
+    }
+
+    // ========== buildBaseUrl(String, String) Tests ==========
+
+    @Test
+    void testBuildBaseUrl_string_noTenant() {
+        assertEquals("http://example.com", Utils.buildBaseUrl("http://example.com", null));
+    }
+
+    @Test
+    void testBuildBaseUrl_string_trailingSlashStripped() {
+        assertEquals("http://example.com", Utils.buildBaseUrl("http://example.com/", null));
+    }
+
+    @Test
+    void testBuildBaseUrl_string_withTenant() {
+        assertEquals("http://example.com/my-tenant", Utils.buildBaseUrl("http://example.com", "my-tenant"));
+    }
+
+    @Test
+    void testBuildBaseUrl_string_withTenantLeadingSlash() {
+        assertEquals("http://example.com/my-tenant", Utils.buildBaseUrl("http://example.com", "/my-tenant"));
+    }
+
+    @Test
+    void testBuildBaseUrl_string_withSubPath() {
+        assertEquals("http://example.com/spec03/my-tenant", Utils.buildBaseUrl("http://example.com/spec03", "my-tenant"));
+    }
+
+    @Test
+    void testBuildBaseUrl_string_nullBaseUrl_throws() {
+        assertThrows(IllegalArgumentException.class, () -> Utils.buildBaseUrl((String) null, null));
+    }
+
+    // ========== validateAbsoluteUrl Tests ==========
+
+    @Test
+    void testValidateAbsoluteUrl_valid() {
+        assertDoesNotThrow(() -> Utils.validateAbsoluteUrl("http://example.com"));
+        assertDoesNotThrow(() -> Utils.validateAbsoluteUrl("https://example.com/path"));
+        assertDoesNotThrow(() -> Utils.validateAbsoluteUrl("http://example.com:8080/path"));
+    }
+
+    @Test
+    void testValidateAbsoluteUrl_relative_throws() {
+        assertThrows(URISyntaxException.class, () -> Utils.validateAbsoluteUrl("/relative/path"));
+    }
+
+    @Test
+    void testValidateAbsoluteUrl_malformed_throws() {
+        assertThrows(URISyntaxException.class, () -> Utils.validateAbsoluteUrl("not a url"));
+    }
+
+    // ========== buildCardUrl Tests ==========
+
+    @Test
+    void testBuildCardUrl_simple() {
+        assertEquals("http://example.com/.well-known/agent-card.json",
+                Utils.buildCardUrl("http://example.com", "/.well-known/agent-card.json"));
+    }
+
+    @Test
+    void testBuildCardUrl_baseTrailingSlash() {
+        assertEquals("http://example.com/.well-known/agent-card.json",
+                Utils.buildCardUrl("http://example.com/", "/.well-known/agent-card.json"));
+    }
+
+    @Test
+    void testBuildCardUrl_pathWithoutLeadingSlash() {
+        assertEquals("http://example.com/.well-known/agent-card.json",
+                Utils.buildCardUrl("http://example.com", ".well-known/agent-card.json"));
+    }
+
+    @Test
+    void testBuildCardUrl_preservesSubPath() {
+        assertEquals("http://example.com/spec03/.well-known/agent-card.json",
+                Utils.buildCardUrl("http://example.com/spec03", "/.well-known/agent-card.json"));
+    }
+
+    @Test
+    void testBuildCardUrl_noDoubleSlash() {
+        assertEquals("http://example.com/custom/agent.json",
+                Utils.buildCardUrl("http://example.com/", "/custom/agent.json"));
+    }
+
+    // ========== stripWellKnownSuffix Tests ==========
+
+    @Test
+    void testStripWellKnownSuffix_noSuffix() {
+        assertEquals("http://example.com", Utils.stripWellKnownSuffix("http://example.com"));
+    }
+
+    @Test
+    void testStripWellKnownSuffix_withSuffix() {
+        assertEquals("http://example.com",
+                Utils.stripWellKnownSuffix("http://example.com/.well-known/agent-card.json"));
+    }
+
+    @Test
+    void testStripWellKnownSuffix_withSubPathAndSuffix() {
+        assertEquals("http://example.com/spec03",
+                Utils.stripWellKnownSuffix("http://example.com/spec03/.well-known/agent-card.json"));
+    }
+
+    @Test
+    void testStripWellKnownSuffix_trailingSlash() {
+        assertEquals("http://example.com", Utils.stripWellKnownSuffix("http://example.com/"));
+    }
+
+    @Test
+    void testStripWellKnownSuffix_unrelatedPath() {
+        assertEquals("http://example.com/custom/agent.json",
+                Utils.stripWellKnownSuffix("http://example.com/custom/agent.json"));
     }
 }

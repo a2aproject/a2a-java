@@ -2,6 +2,8 @@ package org.a2aproject.sdk.util;
 
 import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +39,8 @@ import org.jspecify.annotations.Nullable;
  * @see TaskArtifactUpdateEvent for streaming artifact updates
  */
 public class Utils {
+
+    public static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
 
     private static final Logger log = Logger.getLogger(Utils.class.getName());
 
@@ -170,6 +174,71 @@ public class Utils {
     }
 
     /**
+     * Validates that {@code url} is a syntactically valid absolute URI.
+     *
+     * @param url the URL to validate
+     * @throws URISyntaxException if the URL is syntactically invalid or not absolute
+     */
+    public static void validateAbsoluteUrl(String url) throws URISyntaxException {
+        URI uri = new URI(url);
+        if (!uri.isAbsolute()) {
+            throw new URISyntaxException(url, "URI must be absolute");
+        }
+    }
+
+    /**
+     * Normalizes {@code baseUrl} and {@code cardPath} and concatenates them into a full card URL.
+     *
+     * <p>Strips any trailing slash from {@code baseUrl} and ensures {@code cardPath} starts with
+     * a leading slash before concatenating, so both {@code http://host/base/} and
+     * {@code http://host/base} produce the same result.
+     *
+     * @param baseUrl the agent base URL, must not be null
+     * @param cardPath the card endpoint path, must not be null
+     * @return the normalized card URL
+     */
+    public static String buildCardUrl(String baseUrl, String cardPath) {
+        String normalizedPath = cardPath.startsWith("/") ? cardPath : "/" + cardPath;
+        return stripTrailingSlash(baseUrl) + normalizedPath;
+    }
+
+    /**
+     * Strips any trailing slash and the standard well-known suffix from {@code baseUrl} so that
+     * {@link #buildCardUrl} can append the desired path without doubling it.
+     *
+     * <p>Only {@link #DEFAULT_AGENT_CARD_PATH} is stripped; custom paths are never inferred
+     * from the URL structure.
+     *
+     * @param baseUrl the URL to strip
+     * @return the URL with any trailing slash and well-known suffix removed
+     */
+    public static String stripWellKnownSuffix(String baseUrl) {
+        String s = stripTrailingSlash(baseUrl);
+        return s.endsWith(DEFAULT_AGENT_CARD_PATH)
+                ? s.substring(0, s.length() - DEFAULT_AGENT_CARD_PATH.length())
+                : s;
+    }
+
+    /**
+     * Builds a base URL by combining a raw base URL string with an optional tenant path.
+     *
+     * <p>Normalizes trailing slashes on the base URL and validates/normalizes the tenant path.
+     *
+     * @param baseUrl the base URL string, must not be null
+     * @param tenant the tenant path override, may be null for no tenant
+     * @return the complete base URL with tenant path appended
+     * @throws IllegalArgumentException if tenant validation fails
+     */
+    public static String buildBaseUrl(String baseUrl, @Nullable String tenant) {
+        checkNotNullParam("baseUrl", baseUrl);
+        return stripTrailingSlash(baseUrl) + extractTenant("", tenant);
+    }
+
+    private static String stripTrailingSlash(String s) {
+        return s.endsWith("/") ? s.substring(0, s.length() - 1) : s;
+    }
+
+    /**
      * Get the first defined URL in the supported interaces of the agent card.
      *
      * @param agentCard the agentcard where the interfaces are defined.
@@ -286,10 +355,6 @@ public class Utils {
     public static String buildBaseUrl(AgentInterface agentInterface, @Nullable String tenant) {
         checkNotNullParam("agentInterface", agentInterface);
 
-        String agentUrl = agentInterface.url();
-        agentUrl = agentUrl.endsWith("/") ? agentUrl.substring(0, agentUrl.length() - 1) : agentUrl;
-        StringBuilder urlBuilder = new StringBuilder(agentUrl);
-        urlBuilder.append(extractTenant(agentInterface.tenant(), tenant));
-        return urlBuilder.toString();
+        return stripTrailingSlash(agentInterface.url()) + extractTenant(agentInterface.tenant(), tenant);
     }
 }

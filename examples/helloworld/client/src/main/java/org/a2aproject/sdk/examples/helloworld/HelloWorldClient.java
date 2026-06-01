@@ -53,7 +53,7 @@ public class HelloWorldClient {
     public static void main(String[] args) {
         OpenTelemetrySdk openTelemetrySdk = null;
         try {
-            AgentCard publicAgentCard = new A2ACardResolver(SERVER_URL).getAgentCard();
+            AgentCard publicAgentCard = A2ACardResolver.builder().baseUrl(SERVER_URL).build().getAgentCard();
             System.out.println("Successfully fetched public agent card:");
             System.out.println(JsonUtil.toJson(publicAgentCard));
             System.out.println("Using public agent card for client initialization (default).");

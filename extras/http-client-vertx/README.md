@@ -85,7 +85,7 @@ The Vert.x HTTP client is automatically discovered via **Java SPI (Service Provi
 
 ```java
 // No changes needed - A2A SDK automatically uses VertxA2AHttpClient
-A2ACardResolver resolver = new A2ACardResolver("http://localhost:9999");
+A2ACardResolver resolver = A2ACardResolver.builder().baseUrl("http://localhost:9999").build();
 AgentCard card = resolver.getAgentCard(); // Uses Vert.x under the hood
 
 // Client creation also uses Vert.x automatically
@@ -112,7 +112,7 @@ The module works out-of-the-box with sensible defaults:
 // With vertx-http-client on the classpath, it automatically uses VertxA2AHttpClient
 
 // Example 1: Fetching agent card
-A2ACardResolver resolver = new A2ACardResolver("http://localhost:9999");
+A2ACardResolver resolver = A2ACardResolver.builder().baseUrl("http://localhost:9999").build();
 AgentCard card = resolver.getAgentCard();
 
 // Example 2: Using REST transport (uses HTTP client internally)

@@ -436,7 +436,7 @@ If you want to use the HTTP+JSON/REST transport, you'll need to add a relevant d
 
 ```java
 // First, get the agent card for the A2A server agent you want to connect to
-AgentCard agentCard = new A2ACardResolver("http://localhost:1234").getAgentCard();
+AgentCard agentCard = A2ACardResolver.builder().baseUrl("http://localhost:1234").build().getAgentCard();
 
 // Specify configuration for the ClientBuilder
 ClientConfig clientConfig = new ClientConfig.Builder()
@@ -776,7 +776,7 @@ gRPC and REST transports are also available:
 #### 3. Create the v0.3 client
 
 ```java
-AgentCard card = new A2ACardResolver("http://localhost:1234").getAgentCard();
+AgentCard card = A2ACardResolver.builder().baseUrl("http://localhost:1234").build().getAgentCard();
 
 // Find the v0.3 interface from the agent card
 AgentInterface v03Interface = card.supportedInterfaces().stream()

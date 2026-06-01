@@ -24,7 +24,7 @@
  * <h2>Usage Example</h2>
  * <pre>{@code
  * // Fetch an agent card
- * A2ACardResolver resolver = new A2ACardResolver("http://localhost:9999");
+ * A2ACardResolver resolver = A2ACardResolver.builder().baseUrl("http://localhost:9999").build();
  * AgentCard card = resolver.getAgentCard();
  *
  * // Make HTTP requests

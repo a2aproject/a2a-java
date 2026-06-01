@@ -1,9 +1,10 @@
 package org.a2aproject.sdk.compat03.client.http;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+
+import static org.a2aproject.sdk.util.Assert.checkNotNullParam;
 
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.http.A2AHttpClientFactory;
@@ -13,14 +14,13 @@ import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientError_v0_3;
 import org.a2aproject.sdk.compat03.spec.A2AClientJSONError_v0_3;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
+import org.a2aproject.sdk.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 public class A2ACardResolver_v0_3 {
     private final A2AHttpClient httpClient;
     private final String url;
     private final @Nullable Map<String, String> authHeaders;
-
-    private static final String DEFAULT_AGENT_CARD_PATH = "/.well-known/agent-card.json";
 
     /**
      * Get the agent card for an A2A agent.
@@ -65,14 +65,17 @@ public class A2ACardResolver_v0_3 {
      */
     public A2ACardResolver_v0_3(A2AHttpClient httpClient, String baseUrl, @Nullable String agentCardPath,
                                 @Nullable Map<String, String> authHeaders) throws A2AClientError_v0_3 {
+        checkNotNullParam("httpClient", httpClient);
+        checkNotNullParam("baseUrl", baseUrl);
         this.httpClient = httpClient;
-        String effectiveAgentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
+        String effectiveAgentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? Utils.DEFAULT_AGENT_CARD_PATH : agentCardPath;
         try {
-            this.url = new URI(baseUrl).resolve(effectiveAgentCardPath).toString();
+            Utils.validateAbsoluteUrl(baseUrl);
+            this.url = Utils.buildCardUrl(Utils.stripWellKnownSuffix(baseUrl), effectiveAgentCardPath);
         } catch (URISyntaxException e) {
             throw new A2AClientError_v0_3("Invalid agent URL", e);
         }
-        this.authHeaders = authHeaders;
+        this.authHeaders = authHeaders != null ? Map.copyOf(authHeaders) : null;
     }
 
     /**
@@ -88,9 +91,7 @@ public class A2ACardResolver_v0_3 {
                 .addHeader("Content-Type", "application/json");
 
         if (authHeaders != null) {
-            for (Map.Entry<String, String> entry : authHeaders.entrySet()) {
-                builder.addHeader(entry.getKey(), entry.getValue());
-            }
+            builder.addHeaders(authHeaders);
         }
 
         String body;
@@ -100,7 +101,10 @@ public class A2ACardResolver_v0_3 {
                 throw new A2AClientError_v0_3("Failed to obtain agent card: " + response.status());
             }
             body = response.body();
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new A2AClientError_v0_3("Failed to obtain agent card", e);
+        } catch (IOException e) {
             throw new A2AClientError_v0_3("Failed to obtain agent card", e);
         }
 
