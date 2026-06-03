@@ -60,7 +60,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <mapstruct-spi-protobuf.version>1.52.0</mapstruct-spi-protobuf.version>
         <mockito-core.version>5.23.0</mockito-core.version>
-        <mockserver.version>5.15.0</mockserver.version>
+        <mockserver.version>6.1.0</mockserver.version>
         <mutiny-zero.version>1.1.1</mutiny-zero.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <protobuf-java.version>4.33.2</protobuf-java.version>
