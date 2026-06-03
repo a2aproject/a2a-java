@@ -22,6 +22,7 @@ public interface MessageSendParamsMapper {
      */
     @Mapping(target = "configuration", source = "configuration", conditionExpression = "java(domain.configuration() != null)")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
+    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
     org.a2aproject.sdk.grpc.SendMessageRequest toProto(MessageSendParams domain);
 
     /**
@@ -31,5 +32,6 @@ public interface MessageSendParamsMapper {
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
+    @Mapping(target = "tenant", source = "tenant", qualifiedByName = "emptyToNull")
     MessageSendParams fromProto(org.a2aproject.sdk.grpc.SendMessageRequest proto);
 }

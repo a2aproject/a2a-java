@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -11,7 +10,7 @@ import org.jspecify.annotations.Nullable;
  * @param historyLength the maximum number of items of history for the task to include in the response
  * @param tenant optional tenant, provided as a path parameter.
  */
-public record TaskQueryParams(String id, @Nullable Integer historyLength, String tenant) {
+public record TaskQueryParams(String id, @Nullable Integer historyLength, @Nullable String tenant) {
 
     /**
      * Compact constructor for validation.
@@ -24,7 +23,6 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, String
      */
     public TaskQueryParams {
         Assert.checkNotNullParam("id", id);
-        Assert.checkNotNullParam("tenant", tenant);
         if (historyLength != null && historyLength < 0) {
             throw new IllegalArgumentException("Invalid history length");
         }
@@ -37,7 +35,7 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, String
      * @param historyLength maximum number of history items to include (optional)
      */
     public TaskQueryParams(String id, @Nullable Integer historyLength) {
-        this(id, historyLength, "");
+        this(id, historyLength, null);
     }
 
     /**
@@ -46,7 +44,7 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, String
      * @param id the task identifier (required)
      */
     public TaskQueryParams(String id) {
-        this(id, null, "");
+        this(id, null, null);
     }
 
     /**
@@ -100,7 +98,7 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, String
          * @param tenant the tenant identifier
          * @return this builder for method chaining
          */
-        public Builder tenant(String tenant) {
+        public Builder tenant(@Nullable String tenant) {
             this.tenant = tenant;
             return this;
         }
@@ -115,7 +113,7 @@ public record TaskQueryParams(String id, @Nullable Integer historyLength, String
             return new TaskQueryParams(
                 Assert.checkNotNullParam("id", id),
                 historyLength,
-                Utils.defaultIfNull(tenant,"")
+                tenant
             );
         }
     }

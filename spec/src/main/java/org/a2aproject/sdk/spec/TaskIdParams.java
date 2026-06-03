@@ -1,7 +1,6 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -14,7 +13,7 @@ import org.jspecify.annotations.Nullable;
  * @param tenant optional tenant, provided as a path parameter.
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record TaskIdParams(String id, String tenant) {
+public record TaskIdParams(String id, @Nullable String tenant) {
 
     /**
      * Compact constructor for validation.
@@ -25,7 +24,6 @@ public record TaskIdParams(String id, String tenant) {
      */
     public TaskIdParams  {
         Assert.checkNotNullParam("id", id);
-        Assert.checkNotNullParam("tenant", tenant);
     }
 
     /**
@@ -34,7 +32,7 @@ public record TaskIdParams(String id, String tenant) {
      * @param id the task identifier (required)
      */
     public TaskIdParams(String id) {
-        this(id, "");
+        this(id, null);
     }
 
     /**
@@ -76,7 +74,7 @@ public record TaskIdParams(String id, String tenant) {
          * @param tenant the tenant identifier
          * @return this builder for method chaining
          */
-        public Builder tenant(String tenant) {
+        public Builder tenant(@Nullable String tenant) {
             this.tenant = tenant;
             return this;
         }
@@ -91,7 +89,7 @@ public record TaskIdParams(String id, String tenant) {
         public TaskIdParams build() {
             return new TaskIdParams(
                 Assert.checkNotNullParam("id", id),
-                Utils.defaultIfNull(tenant,"")
+                tenant
             );
         }
     }

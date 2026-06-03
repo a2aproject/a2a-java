@@ -24,6 +24,7 @@ public interface TaskIdParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "id")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataFromProto")
+    @Mapping(target = "tenant", source = "tenant", qualifiedByName = "emptyToNull")
     CancelTaskParams fromProtoCancelTaskRequest(org.a2aproject.sdk.grpc.CancelTaskRequest proto);
     
      /**
@@ -33,6 +34,7 @@ public interface TaskIdParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "id")
     @Mapping(target = "metadata", source = "metadata", qualifiedByName = "metadataToProto")
+    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
     org.a2aproject.sdk.grpc.CancelTaskRequest toProtoCancelTaskRequest(CancelTaskParams domain);
 
 
@@ -42,7 +44,7 @@ public interface TaskIdParamsMapper {
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "id")
-    @Mapping(target = "tenant", source = "tenant")
+    @Mapping(target = "tenant", source = "tenant", qualifiedByName = "emptyToNull")
     TaskIdParams fromProtoSubscribeToTaskRequest(org.a2aproject.sdk.grpc.SubscribeToTaskRequest proto);
 
     /**
@@ -51,5 +53,6 @@ public interface TaskIdParamsMapper {
      */
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
     org.a2aproject.sdk.grpc.SubscribeToTaskRequest toProtoSubscribeToTaskRequest(TaskIdParams domain);
 }

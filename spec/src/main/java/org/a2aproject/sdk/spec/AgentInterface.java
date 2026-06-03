@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.spec;
 
 import org.a2aproject.sdk.util.Assert;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Declares a combination of a target URL and protocol binding for accessing an agent.
@@ -19,13 +20,13 @@ import org.a2aproject.sdk.util.Assert;
  * @param protocolBinding the protocol binding supported at this URL (e.g., "JSONRPC", "GRPC", "HTTP+JSON") (required)
  * @param url the endpoint URL where this interface is available; must be a valid absolute HTTPS URL in production
  * (required)
- * @param tenant the tenant to be set in the request when calling the agent.
+ * @param tenant optional tenant to be set in the request when calling the agent.
  * @param protocolVersion the version of the A2A protocol this interface exposes (e.g., "1.0", "0.3") (required)
  * @see AgentCard
  * @see TransportProtocol
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record AgentInterface(String protocolBinding, String url, String tenant, String protocolVersion) {
+public record AgentInterface(String protocolBinding, String url, @Nullable String tenant, String protocolVersion) {
 
     /** The default A2A Protocol version used when not explicitly specified. */
     public static final String CURRENT_PROTOCOL_VERSION = "1.0";
@@ -42,7 +43,6 @@ public record AgentInterface(String protocolBinding, String url, String tenant, 
     public AgentInterface   {
         Assert.checkNotNullParam("protocolBinding", protocolBinding);
         Assert.checkNotNullParam("url", url);
-        Assert.checkNotNullParam("tenant", tenant);
 
         if (protocolVersion == null || protocolVersion.isEmpty()) {
             protocolVersion = CURRENT_PROTOCOL_VERSION;
@@ -67,6 +67,6 @@ public record AgentInterface(String protocolBinding, String url, String tenant, 
      * @param url the endpoint URL (see class-level JavaDoc)
      */
     public AgentInterface(String protocolBinding, String url) {
-        this(protocolBinding, url, "", CURRENT_PROTOCOL_VERSION);
+        this(protocolBinding, url, null, CURRENT_PROTOCOL_VERSION);
     }
 }

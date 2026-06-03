@@ -189,7 +189,8 @@ public class Utils {
     /**
      * Normalizes {@code baseUrl} and {@code cardPath} and concatenates them into a full card URL.
      *
-     * <p>Strips any trailing slash from {@code baseUrl} and ensures {@code cardPath} starts with
+     * <p>
+     * Strips any trailing slash from {@code baseUrl} and ensures {@code cardPath} starts with
      * a leading slash before concatenating, so both {@code http://host/base/} and
      * {@code http://host/base} produce the same result.
      *
@@ -206,7 +207,8 @@ public class Utils {
      * Strips any trailing slash and the standard well-known suffix from {@code baseUrl} so that
      * {@link #buildCardUrl} can append the desired path without doubling it.
      *
-     * <p>Only {@link #DEFAULT_AGENT_CARD_PATH} is stripped; custom paths are never inferred
+     * <p>
+     * Only {@link #DEFAULT_AGENT_CARD_PATH} is stripped; custom paths are never inferred
      * from the URL structure.
      *
      * @param baseUrl the URL to strip
@@ -222,7 +224,8 @@ public class Utils {
     /**
      * Builds a base URL by combining a raw base URL string with an optional tenant path.
      *
-     * <p>Normalizes trailing slashes on the base URL and validates/normalizes the tenant path.
+     * <p>
+     * Normalizes trailing slashes on the base URL and validates/normalizes the tenant path.
      *
      * @param baseUrl the base URL string, must not be null
      * @param tenant the tenant path override, may be null for no tenant
@@ -299,17 +302,18 @@ public class Utils {
      * <p>
      * If the provided {@code tenant} parameter is null or blank, the {@code agentTenant} is returned instead.
      *
-     * @param agentTenant the default tenant from the agent card, must not be null
+     * @param agentTenant the default tenant from the agent card, may be null or blank
      * @param tenant the tenant override from the request, may be null or blank
      * @return the normalized tenant path
      * @throws IllegalArgumentException if the tenant is invalid or unsafe
      */
-    private static String extractTenant(String agentTenant, @Nullable String tenant) {
-        checkNotNullParam("agentTenant", agentTenant);
-
+    private static String extractTenant(@Nullable String agentTenant, @Nullable String tenant) {
         String tenantPath = tenant;
         if (tenantPath == null || tenantPath.isBlank()) {
-            return agentTenant;
+            tenantPath = agentTenant;
+        }
+        if (tenantPath == null || tenantPath.isBlank()) {
+            return "";
         }
 
         // Normalize slashes

@@ -8,12 +8,15 @@ import org.mapstruct.Mapping;
  * Mapper between {@link org.a2aproject.sdk.spec.AgentInterface} and {@link org.a2aproject.sdk.grpc.AgentInterface}.
  */
 @Mapper(config = A2AProtoMapperConfig.class,
-        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
+        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED,
+        uses = A2ACommonFieldMapper.class)
 public interface AgentInterfaceMapper {
 
     AgentInterfaceMapper INSTANCE = A2AMappers.getMapper(AgentInterfaceMapper.class);
 
+    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
     org.a2aproject.sdk.grpc.AgentInterface toProto(org.a2aproject.sdk.spec.AgentInterface domain);
 
+    @Mapping(target = "tenant", source = "tenant", qualifiedByName = "emptyToNull")
     org.a2aproject.sdk.spec.AgentInterface fromProto(org.a2aproject.sdk.grpc.AgentInterface proto);
 }

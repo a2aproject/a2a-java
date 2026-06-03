@@ -3,7 +3,6 @@ package org.a2aproject.sdk.spec;
 
 
 import org.a2aproject.sdk.util.Assert;
-import org.a2aproject.sdk.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -18,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * @see TaskPushNotificationConfig for the returned configuration structure
  * @see <a href="https://a2a-protocol.org/latest/">A2A Protocol Specification</a>
  */
-public record GetTaskPushNotificationConfigParams(String taskId, String id, String tenant) {
+public record GetTaskPushNotificationConfigParams(String taskId, String id, @Nullable String tenant) {
 
     /**
      * Compact constructor that validates required fields.
@@ -31,7 +30,6 @@ public record GetTaskPushNotificationConfigParams(String taskId, String id, Stri
     public GetTaskPushNotificationConfigParams {
         Assert.checkNotNullParam("taskId", taskId);
         Assert.checkNotNullParam("id", id);
-        Assert.checkNotNullParam("tenant", tenant);
     }
 
     /**
@@ -41,7 +39,7 @@ public record GetTaskPushNotificationConfigParams(String taskId, String id, Stri
      * @param id optional configuration ID to retrieve
      */
     public GetTaskPushNotificationConfigParams(String taskId, String id) {
-        this(taskId, id, "");
+        this(taskId, id, null);
     }
 
     /**
@@ -95,7 +93,7 @@ public record GetTaskPushNotificationConfigParams(String taskId, String id, Stri
          * @param tenant the tenant
          * @return this builder for method chaining
          */
-        public Builder tenant(String tenant) {
+        public Builder tenant(@Nullable String tenant) {
             this.tenant = tenant;
             return this;
         }
@@ -109,7 +107,7 @@ public record GetTaskPushNotificationConfigParams(String taskId, String id, Stri
             return new GetTaskPushNotificationConfigParams(
                     Assert.checkNotNullParam("taskId", taskId),
                     Assert.checkNotNullParam("id", id),
-                    Utils.defaultIfNull(tenant,""));
+                    tenant);
         }
     }
 }

@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
  * <p>
  * Extracts task ID from resource name format "tasks/{id}" using {@link ResourceNameParser}.
  */
-@Mapper(config = A2AProtoMapperConfig.class)
+@Mapper(config = A2AProtoMapperConfig.class, uses = A2ACommonFieldMapper.class)
 public interface TaskQueryParamsMapper {
 
     TaskQueryParamsMapper INSTANCE = A2AMappers.getMapper(TaskQueryParamsMapper.class);
@@ -28,6 +28,6 @@ public interface TaskQueryParamsMapper {
     @BeanMapping(builder = @Builder(buildMethod = "build"))
     @Mapping(target = "id", source = "id")
     @Mapping(target = "historyLength", source = "historyLength")
-    @Mapping(target = "tenant", source = "tenant")
+    @Mapping(target = "tenant", source = "tenant", conditionExpression = "java(domain.tenant() != null)")
     org.a2aproject.sdk.grpc.GetTaskRequest toProto(TaskQueryParams domain);
 }
