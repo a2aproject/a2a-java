@@ -124,7 +124,7 @@ public class MainEventBusProcessorExceptionTest {
                   "Error message should mention serialization: " + error.getMessage());
 
         // Assert: Verify ERROR level logging
-        boolean foundErrorLog = logAppender.list.stream()
+        boolean foundErrorLog = snapshotLogs().stream()
             .anyMatch(event -> event.getLevel() == Level.ERROR
                             && event.getFormattedMessage().contains(TASK_ID)
                             && event.getFormattedMessage().contains("serialization"));
@@ -161,7 +161,7 @@ public class MainEventBusProcessorExceptionTest {
                   "Error message should contain task ID: " + error.getMessage());
 
         // Assert: Verify ERROR level logging
-        boolean foundErrorLog = logAppender.list.stream()
+        boolean foundErrorLog = snapshotLogs().stream()
             .anyMatch(event -> event.getLevel() == Level.ERROR
                             && event.getFormattedMessage().contains(TASK_ID)
                             && event.getFormattedMessage().contains("persistence failed"));
@@ -220,7 +220,7 @@ public class MainEventBusProcessorExceptionTest {
                   "Error should contain specific task ID: " + error.getMessage());
 
         // Assert: Verify specific taskId appears in logs
-        boolean foundTaskIdInLog = logAppender.list.stream()
+        boolean foundTaskIdInLog = snapshotLogs().stream()
             .anyMatch(event -> event.getFormattedMessage().contains(specificTaskId));
         assertTrue(foundTaskIdInLog, "Logs should contain specific task ID");
     }
@@ -234,6 +234,18 @@ public class MainEventBusProcessorExceptionTest {
                 .contextId("test-context")
                 .status(new TaskStatus(TaskState.TASK_STATE_SUBMITTED))
                 .build();
+    }
+
+    /**
+     * Thread-safe snapshot of the log appender's current list.
+     *
+     * <p>logAppender.doAppend() is synchronized(logAppender), so iterating
+     * logAppender.list without the same lock races with the processor thread.
+     */
+    private List<ILoggingEvent> snapshotLogs() {
+        synchronized (logAppender) {
+            return List.copyOf(logAppender.list);
+        }
     }
 
     /**
