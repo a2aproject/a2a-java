@@ -7,7 +7,6 @@ import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.HEADERS_
 import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.METHOD_NAME_KEY;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static jakarta.ws.rs.core.MediaType.SERVER_SENT_EVENTS;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +40,7 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestResponse;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler.HTTPRestStreamingResponse;
+import org.a2aproject.sdk.server.common.quarkus.SseResponseWriter;
 import org.a2aproject.sdk.server.common.quarkus.VertxSecurityHelper;
 import org.a2aproject.sdk.util.Utils;
 import io.quarkus.security.Authenticated;
@@ -48,11 +48,7 @@ import io.quarkus.security.ForbiddenException;
 import io.quarkus.security.UnauthorizedException;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.security.PermitAll;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -98,7 +94,7 @@ import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.TENANT_K
  *
  * <h2>Streaming Support</h2>
  * <p>Streaming endpoints ({@code message:stream}, {@code subscribe}) use Server-Sent Events (SSE)
- * via the inner {@link MultiSseSupport} class. SSE responses are handled by:
+ * via {@link SseResponseWriter}. SSE responses are handled by:
  * <ul>
  *   <li>Converting {@link Flow.Publisher} to Mutiny {@code Multi}</li>
  *   <li>Formatting events with {@link SseFormatter}</li>
@@ -136,7 +132,7 @@ public class A2AServerRoutes {
     @Inject
     RestHandler jsonRestHandler;
 
-    // Hook so testing can wait until the MultiSseSupport is subscribed.
+    // Hook so testing can wait until the SSE subscriber is attached.
     // Without this we get intermittent failures
     private static volatile @Nullable
     Runnable streamingMultiSseSupportSubscribedRunnable;
@@ -356,13 +352,13 @@ public class A2AServerRoutes {
             } else if (streamingResponse != null) {
                 // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
                 // CRITICAL: Subscribe synchronously to avoid race condition where EventConsumer
-                // starts emitting events before MultiSseSupport subscribes. The executor.execute()
+                // starts emitting events before the SSE subscriber is attached. The executor.execute()
                 // wrapper caused 100-600ms delays before subscription, causing events to be lost.
                 AtomicLong eventIdCounter = new AtomicLong(0);
                 Multi<String> sseEvents = Multi.createFrom().publisher(streamingResponse.getPublisher())
                         .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
                 // Write SSE-formatted strings to HTTP response
-                MultiSseSupport.writeSseStrings(sseEvents, rc, context);
+                SseResponseWriter.writeSseStrings(sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
             }
         }
     }
@@ -566,13 +562,13 @@ public class A2AServerRoutes {
             } else if (streamingResponse != null) {
                 // Convert Flow.Publisher<String> (JSON) to Multi<String> (SSE-formatted)
                 // CRITICAL: Subscribe synchronously to avoid race condition where EventConsumer
-                // starts emitting events before MultiSseSupport subscribes. The executor.execute()
+                // starts emitting events before the SSE subscriber is attached. The executor.execute()
                 // wrapper caused 100-600ms delays before subscription, causing events to be lost.
                 AtomicLong eventIdCounter = new AtomicLong(0);
                 Multi<String> sseEvents = Multi.createFrom().publisher(streamingResponse.getPublisher())
                         .map(json -> SseFormatter.formatJsonAsSSE(json, eventIdCounter.getAndIncrement()));
                 // Write SSE-formatted strings to HTTP response
-                MultiSseSupport.writeSseStrings(sseEvents, rc, context);
+                SseResponseWriter.writeSseStrings(sseEvents, rc, context, streamingMultiSseSupportSubscribedRunnable);
             }
         }
     }
@@ -934,167 +930,5 @@ public class A2AServerRoutes {
         }
     }
 
-    /**
-     * Server-Sent Events (SSE) streaming support for Vert.x/Quarkus.
-     *
-     * <p>This inner class handles the HTTP-specific aspects of SSE streaming:
-     * <ul>
-     *   <li>Writing SSE-formatted events to the HTTP response</li>
-     *   <li>Managing backpressure via {@link Flow.Subscription#request(long)}</li>
-     *   <li>Detecting client disconnection and canceling upstream</li>
-     *   <li>Setting appropriate SSE headers and chunked encoding</li>
-     * </ul>
-     *
-     * <h2>SSE Format</h2>
-     * <p>Events are formatted by {@link SseFormatter} before being passed to this class.
-     * Each event follows the SSE specification:
-     * <pre>
-     * id: 0
-     * data: {"taskStatusUpdate":{...}}
-     *
-     * id: 1
-     * data: {"taskArtifactUpdate":{...}}
-     * </pre>
-     *
-     * <h2>Backpressure Handling</h2>
-     * <p>The subscriber requests one event at a time ({@code request(1)}) and only
-     * requests the next event after the previous write completes. This ensures the
-     * HTTP connection doesn't buffer excessive data if the client is slow.
-     *
-     * <h2>Disconnect Detection</h2>
-     * <p>When the client closes the connection, this class:
-     * <ol>
-     *   <li>Calls {@link ServerCallContext#invokeEventConsumerCancelCallback()} to stop the event producer</li>
-     *   <li>Cancels the upstream subscription to stop event generation</li>
-     * </ol>
-     *
-     * <h2>Write Queue Configuration</h2>
-     * <p>Critical: Sets {@code setWriteQueueMaxSize(1)} to force immediate flushing
-     * of each event. Without this, Vert.x buffers writes, causing delays in SSE delivery.
-     *
-     * @see SseFormatter
-     * @see ServerCallContext#invokeEventConsumerCancelCallback()
-     */
-    private static class MultiSseSupport {
-        private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MultiSseSupport.class);
-
-        private MultiSseSupport() {
-            // Avoid direct instantiation.
-        }
-
-        /**
-         * Writes SSE-formatted event strings to the HTTP response with backpressure control.
-         *
-         * <p>This method subscribes to the event stream and writes each SSE-formatted string
-         * to the Vert.x HTTP response. It implements reactive backpressure by requesting
-         * events one at a time and only requesting the next after the previous write completes.
-         *
-         * <h2>Execution Flow</h2>
-         * <ol>
-         *   <li>Subscribe to upstream {@code Multi<String>} (SSE-formatted events)</li>
-         *   <li>On first event: set SSE headers, disable buffering, write kickstart comment</li>
-         *   <li>For each event: write to HTTP response asynchronously</li>
-         *   <li>After write completes: request next event (backpressure control)</li>
-         *   <li>On client disconnect or error: cancel upstream to stop event production</li>
-         * </ol>
-         *
-         * <h2>Headers Set</h2>
-         * <ul>
-         *   <li>{@code Content-Type: text/event-stream}</li>
-         *   <li>{@code Cache-Control: no-cache}</li>
-         *   <li>{@code X-Accel-Buffering: no} (disable nginx buffering)</li>
-         *   <li>Chunked encoding enabled</li>
-         * </ul>
-         *
-         * @param sseStrings Multi stream of SSE-formatted strings (from {@link SseFormatter})
-         * @param rc Vert.x routing context providing HTTP response
-         * @param context A2A server call context (for EventConsumer cancellation on disconnect)
-         */
-        public static void writeSseStrings(Multi<String> sseStrings, RoutingContext rc, ServerCallContext context) {
-            HttpServerResponse response = rc.response();
-
-            sseStrings.subscribe().withSubscriber(new Flow.Subscriber<String>() {
-                Flow.@Nullable Subscription upstream;
-
-                @Override
-                public void onSubscribe(Flow.Subscription subscription) {
-                    this.upstream = subscription;
-                    this.upstream.request(1);
-
-                    // Detect client disconnect and call EventConsumer.cancel() directly
-                    response.closeHandler(v -> {
-                        logger.debug("REST SSE connection closed by client, calling EventConsumer.cancel() to stop polling loop");
-                        context.invokeEventConsumerCancelCallback();
-                        subscription.cancel();
-                    });
-
-                    // Notify tests that we are subscribed
-                    Runnable runnable = streamingMultiSseSupportSubscribedRunnable;
-                    if (runnable != null) {
-                        runnable.run();
-                    }
-                }
-
-                @Override
-                public void onNext(String sseEvent) {
-                    // Set SSE headers on first event
-                    if (response.bytesWritten() == 0) {
-                        MultiMap headers = response.headers();
-                        if (headers.get(CONTENT_TYPE) == null) {
-                            headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
-                        }
-                        // Additional SSE headers to prevent buffering
-                        headers.set("Cache-Control", "no-cache");
-                        headers.set("X-Accel-Buffering", "no");  // Disable nginx buffering
-                        response.setChunked(true);
-
-                        // CRITICAL: Disable write queue max size to prevent buffering
-                        // Vert.x buffers writes by default - we need immediate flushing for SSE
-                        response.setWriteQueueMaxSize(1);  // Force immediate flush
-
-                        // Send initial SSE comment to kickstart the stream
-                        // This forces Vert.x to send headers and start the stream immediately
-                        response.write(": SSE stream started\n\n");
-                    }
-
-                    // Write SSE-formatted string to response
-                    response.write(Buffer.buffer(sseEvent), new Handler<AsyncResult<Void>>() {
-                        @Override
-                        public void handle(AsyncResult<Void> ar) {
-                            if (ar.failed()) {
-                                // Client disconnected or write failed - cancel upstream to stop EventConsumer
-                                // NullAway: upstream is guaranteed non-null after onSubscribe
-                                java.util.Objects.requireNonNull(upstream).cancel();
-                                rc.fail(ar.cause());
-                            } else {
-                                // NullAway: upstream is guaranteed non-null after onSubscribe
-                                java.util.Objects.requireNonNull(upstream).request(1);
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-                    // Cancel upstream to stop EventConsumer when error occurs
-                    // NullAway: upstream is guaranteed non-null after onSubscribe
-                    java.util.Objects.requireNonNull(upstream).cancel();
-                    rc.fail(throwable);
-                }
-
-                @Override
-                public void onComplete() {
-                    if (response.bytesWritten() == 0) {
-                        // No events written - still set SSE content type
-                        MultiMap headers = response.headers();
-                        if (headers.get(CONTENT_TYPE) == null) {
-                            headers.set(CONTENT_TYPE, SERVER_SENT_EVENTS);
-                        }
-                    }
-                    response.end();
-                }
-            });
-        }
-    }
 
 }
