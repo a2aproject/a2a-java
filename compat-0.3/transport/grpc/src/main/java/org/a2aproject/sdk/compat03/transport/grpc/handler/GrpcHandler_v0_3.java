@@ -43,6 +43,7 @@ import org.a2aproject.sdk.common.A2AErrorMessages;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.spec.A2AError;
+import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
@@ -235,6 +236,16 @@ public abstract class GrpcHandler_v0_3 extends org.a2aproject.sdk.compat03.grpc.
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            Context forked = Context.current().fork();
+            context.getState().put(ServerCallContext.EXECUTION_WRAPPER_KEY,
+                    (java.util.function.UnaryOperator<Runnable>) (runnable -> () -> {
+                        Context prev = forked.attach();
+                        try {
+                            runnable.run();
+                        } finally {
+                            forked.detach(prev);
+                        }
+                    }));
             MessageSendParams_v0_3 params = FromProto.messageSendParams(request);
             Flow.Publisher<StreamingEventKind_v0_3> publisher = requestHandler.onMessageSendStream(params, context);
             convertToStreamResponse(publisher, responseObserver);
@@ -259,6 +270,16 @@ public abstract class GrpcHandler_v0_3 extends org.a2aproject.sdk.compat03.grpc.
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            Context forkedSub = Context.current().fork();
+            context.getState().put(ServerCallContext.EXECUTION_WRAPPER_KEY,
+                    (java.util.function.UnaryOperator<Runnable>) (runnable -> () -> {
+                        Context prev = forkedSub.attach();
+                        try {
+                            runnable.run();
+                        } finally {
+                            forkedSub.detach(prev);
+                        }
+                    }));
             TaskIdParams_v0_3 params = FromProto.taskIdParams(request);
             Flow.Publisher<StreamingEventKind_v0_3> publisher = requestHandler.onResubscribeToTask(params, context);
             convertToStreamResponse(publisher, responseObserver);

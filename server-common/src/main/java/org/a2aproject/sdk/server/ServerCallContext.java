@@ -23,6 +23,14 @@ public class ServerCallContext {
      */
     public static final String STRICT_CONTEXT_VALIDATION_KEY = "strictContextValidation";
 
+    /**
+     * Key for an execution wrapper in the state map.
+     * Value should be a {@link java.util.function.UnaryOperator UnaryOperator&lt;Runnable&gt;} that wraps
+     * the agent execution runnable. Used by gRPC transport to fork the inbound call's context
+     * so that agent outbound calls are isolated from inbound cancellation.
+     */
+    public static final String EXECUTION_WRAPPER_KEY = "executionWrapper";
+
     // TODO Not totally sure yet about these field types
     private final Map<Object, Object> modelConfig = new ConcurrentHashMap<>();
     private final Map<String, Object> state;

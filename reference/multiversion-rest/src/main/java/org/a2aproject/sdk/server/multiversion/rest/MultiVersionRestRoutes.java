@@ -45,7 +45,7 @@ public class MultiVersionRestRoutes {
             .blockingHandler(versionDispatch(
                 MultiVersionRestRoutes::bridgeTenant,
                 (body, ctx) -> v10Routes.sendMessage(body, ctx),
-                (body, ctx) -> v03Routes.sendMessage(body, ctx)));
+                (body, ctx) -> v03Routes.sendMessage(body, ctx)), false);
 
         // POST /v1/message:stream
         router.postWithRegex("^\\/v1\\/message:stream$")
@@ -54,7 +54,7 @@ public class MultiVersionRestRoutes {
             .blockingHandler(versionDispatch(
                 MultiVersionRestRoutes::bridgeTenant,
                 (body, ctx) -> v10Routes.sendMessageStreaming(body, ctx),
-                (body, ctx) -> v03Routes.sendMessageStreaming(body, ctx)));
+                (body, ctx) -> v03Routes.sendMessageStreaming(body, ctx)), false);
 
         // GET /v1/tasks/{taskId}
         router.getWithRegex("^\\/v1\\/tasks\\/(?<taskId>[^:^/]+)$")
@@ -62,7 +62,7 @@ public class MultiVersionRestRoutes {
             .blockingHandler(versionDispatchNoBody(
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
                 ctx -> v10Routes.getTask(ctx),
-                ctx -> v03Routes.getTask(ctx)));
+                ctx -> v03Routes.getTask(ctx)), false);
 
         // POST /v1/tasks/{taskId}:cancel
         router.postWithRegex("^\\/v1\\/tasks\\/(?<taskId>[^/]+):cancel$")
@@ -71,7 +71,7 @@ public class MultiVersionRestRoutes {
             .blockingHandler(versionDispatch(
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
                 (body, ctx) -> v10Routes.cancelTask(body, ctx),
-                (body, ctx) -> v03Routes.cancelTask(ctx)));
+                (body, ctx) -> v03Routes.cancelTask(ctx)), false);
 
         // POST /v1/tasks/{taskId}:subscribe
         router.postWithRegex("^\\/v1\\/tasks\\/(?<taskId>[^/]+):subscribe$")
@@ -79,7 +79,7 @@ public class MultiVersionRestRoutes {
             .blockingHandler(versionDispatchNoBody(
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
                 ctx -> v10Routes.subscribeToTask(ctx),
-                ctx -> v03Routes.resubscribeTask(ctx)));
+                ctx -> v03Routes.resubscribeTask(ctx)), false);
 
         // POST /v1/tasks/{taskId}/pushNotificationConfigs
         router.postWithRegex("^\\/v1\\/tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs$")
@@ -88,7 +88,7 @@ public class MultiVersionRestRoutes {
             .blockingHandler(versionDispatch(
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
                 (body, ctx) -> v10Routes.createTaskPushNotificationConfiguration(body, ctx),
-                (body, ctx) -> v03Routes.setTaskPushNotificationConfiguration(body, ctx)));
+                (body, ctx) -> v03Routes.setTaskPushNotificationConfiguration(body, ctx)), false);
 
         // GET /v1/tasks/{taskId}/pushNotificationConfigs/{configId}
         router.getWithRegex("^\\/v1\\/tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^\\/]+)")
@@ -96,7 +96,7 @@ public class MultiVersionRestRoutes {
             .blockingHandler(versionDispatchNoBody(
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
                 ctx -> v10Routes.getTaskPushNotificationConfiguration(ctx),
-                ctx -> v03Routes.getTaskPushNotificationConfiguration(ctx)));
+                ctx -> v03Routes.getTaskPushNotificationConfiguration(ctx)), false);
 
         // GET /v1/tasks/{taskId}/pushNotificationConfigs
         router.getWithRegex("^\\/v1\\/tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/?$")
@@ -104,7 +104,7 @@ public class MultiVersionRestRoutes {
             .blockingHandler(versionDispatchNoBody(
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
                 ctx -> v10Routes.listTaskPushNotificationConfigurations(ctx),
-                ctx -> v03Routes.listTaskPushNotificationConfigurations(ctx)));
+                ctx -> v03Routes.listTaskPushNotificationConfigurations(ctx)), false);
 
         // DELETE /v1/tasks/{taskId}/pushNotificationConfigs/{configId}
         router.deleteWithRegex("^\\/v1\\/tasks\\/(?<taskId>[^/]+)\\/pushNotificationConfigs\\/(?<configId>[^/]+)")
@@ -112,7 +112,7 @@ public class MultiVersionRestRoutes {
             .blockingHandler(versionDispatchNoBody(
                 ctx -> { bridgeTenant(ctx); bridgeTaskId(ctx); },
                 ctx -> v10Routes.deleteTaskPushNotificationConfiguration(ctx),
-                ctx -> v03Routes.deleteTaskPushNotificationConfiguration(ctx)));
+                ctx -> v03Routes.deleteTaskPushNotificationConfiguration(ctx)), false);
 
         // GET /v1/card — v0.3 only (v1.0 uses /{tenant}/extendedAgentCard)
         router.get("/v1/card")
@@ -127,7 +127,7 @@ public class MultiVersionRestRoutes {
                 } catch (Exception e) {
                     VertxSecurityHelper.handleGenericError(ctx);
                 }
-            });
+            }, false);
     }
 
     private static void bridgeTenant(RoutingContext ctx) {

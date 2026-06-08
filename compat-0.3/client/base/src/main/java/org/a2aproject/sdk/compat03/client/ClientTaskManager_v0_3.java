@@ -43,7 +43,7 @@ public class ClientTaskManager_v0_3 {
     }
 
     public Task_v0_3 saveTaskEvent(Task_v0_3 task) throws A2AClientInvalidArgsError_v0_3 {
-        if (currentTask != null) {
+        if (currentTask != null && !currentTask.id().equals(task.id())) {
             throw new A2AClientInvalidArgsError_v0_3("Task is already set, create new manager for new tasks.");
         }
         saveTask(task);

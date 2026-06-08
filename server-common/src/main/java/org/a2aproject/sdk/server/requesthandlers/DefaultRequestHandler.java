@@ -962,7 +962,14 @@ public class DefaultRequestHandler implements RequestHandler {
         // Mark as started to prevent further callback additions (enforced by runtime check)
         runnable.markStarted();
 
-        CompletableFuture<Void> cf = CompletableFuture.runAsync(runnable, executor)
+        // Apply transport-provided execution wrapper (e.g. gRPC context fork for cancellation isolation)
+        @SuppressWarnings("unchecked")
+        java.util.function.UnaryOperator<Runnable> wrapper = requestContext.getCallContext() != null
+                ? (java.util.function.UnaryOperator<Runnable>) requestContext.getCallContext().getState().get(ServerCallContext.EXECUTION_WRAPPER_KEY)
+                : null;
+        Runnable wrappedRunnable = wrapper != null ? wrapper.apply(runnable) : runnable;
+
+        CompletableFuture<Void> cf = CompletableFuture.runAsync(wrappedRunnable, executor)
                 .whenComplete((v, err) -> {
                     if (err != null) {
                         LOGGER.error("Agent execution failed for task {}", taskId, err);

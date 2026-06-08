@@ -75,29 +75,29 @@ public class A2AServerRoutes_v0_3 {
             .handler(BodyHandler.create())
             .blockingHandler(authenticated(ctx -> {
                 sendMessage(extractBody(ctx), ctx);
-            }));
+            }), false);
 
         // POST /v1/message:stream
         router.postWithRegex("^\\/v1\\/message:stream$")
             .handler(BodyHandler.create())
             .blockingHandler(authenticatedStreaming(ctx -> {
                 sendMessageStreaming(extractBody(ctx), ctx);
-            }));
+            }), false);
 
         // GET /v1/tasks/:id
         router.get("/v1/tasks/:id")
             .order(1)
-            .blockingHandler(authenticated(this::getTask));
+            .blockingHandler(authenticated(this::getTask), false);
 
         // POST /v1/tasks/{id}:cancel
         router.postWithRegex("^\\/v1\\/tasks\\/([^/]+):cancel$")
             .order(1)
-            .blockingHandler(authenticated(this::cancelTask));
+            .blockingHandler(authenticated(this::cancelTask), false);
 
         // POST /v1/tasks/{id}:subscribe
         router.postWithRegex("^\\/v1\\/tasks\\/([^/]+):subscribe$")
             .order(1)
-            .blockingHandler(authenticatedStreaming(this::resubscribeTask));
+            .blockingHandler(authenticatedStreaming(this::resubscribeTask), false);
 
         // POST /v1/tasks/:id/pushNotificationConfigs
         router.post("/v1/tasks/:id/pushNotificationConfigs")
@@ -105,22 +105,22 @@ public class A2AServerRoutes_v0_3 {
             .handler(BodyHandler.create())
             .blockingHandler(authenticated(ctx -> {
                 setTaskPushNotificationConfiguration(extractBody(ctx), ctx);
-            }));
+            }), false);
 
         // GET /v1/tasks/:id/pushNotificationConfigs/:configId
         router.get("/v1/tasks/:id/pushNotificationConfigs/:configId")
             .order(1)
-            .blockingHandler(authenticated(this::getTaskPushNotificationConfiguration));
+            .blockingHandler(authenticated(this::getTaskPushNotificationConfiguration), false);
 
         // GET /v1/tasks/:id/pushNotificationConfigs
         router.get("/v1/tasks/:id/pushNotificationConfigs")
             .order(2)
-            .blockingHandler(authenticated(this::listTaskPushNotificationConfigurations));
+            .blockingHandler(authenticated(this::listTaskPushNotificationConfigurations), false);
 
         // DELETE /v1/tasks/:id/pushNotificationConfigs/:configId
         router.delete("/v1/tasks/:id/pushNotificationConfigs/:configId")
             .order(1)
-            .blockingHandler(authenticated(this::deleteTaskPushNotificationConfiguration));
+            .blockingHandler(authenticated(this::deleteTaskPushNotificationConfiguration), false);
 
         // Only register v0.3 agent card if no real v1.0 agent card producer exists.
         // DefaultProducers provides a @DefaultBean AgentCard fallback that is always
@@ -136,7 +136,7 @@ public class A2AServerRoutes_v0_3 {
         router.get("/v1/card")
             .order(1)
             .produces(APPLICATION_JSON)
-            .blockingHandler(authenticated(this::getAuthenticatedExtendedCard));
+            .blockingHandler(authenticated(this::getAuthenticatedExtendedCard), false);
     }
 
     private Handler<RoutingContext> authenticated(Consumer<RoutingContext> action) {

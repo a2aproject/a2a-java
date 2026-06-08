@@ -394,6 +394,19 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            // Fork the gRPC context so that agent outbound calls are isolated from
+            // the inbound streaming call's cancellation signal. The forked context is
+            // stored as a wrapper so DefaultRequestHandler can apply it without a gRPC dependency.
+            Context forked = Context.current().fork();
+            context.getState().put(ServerCallContext.EXECUTION_WRAPPER_KEY,
+                    (java.util.function.UnaryOperator<Runnable>) (runnable -> () -> {
+                        Context prev = forked.attach();
+                        try {
+                            runnable.run();
+                        } finally {
+                            forked.detach(prev);
+                        }
+                    }));
             A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
             A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             MessageSendParams params = FromProto.messageSendParams(request);
@@ -418,6 +431,18 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            // Fork context for subscribeToTask too — the EventConsumer polling loop
+            // should not be cancelled when the original inbound call is cancelled
+            Context forkedSub = Context.current().fork();
+            context.getState().put(ServerCallContext.EXECUTION_WRAPPER_KEY,
+                    (java.util.function.UnaryOperator<Runnable>) (runnable -> () -> {
+                        Context prev = forkedSub.attach();
+                        try {
+                            runnable.run();
+                        } finally {
+                            forkedSub.detach(prev);
+                        }
+                    }));
             TaskIdParams params = FromProto.taskIdParams(request);
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onSubscribeToTask(params, context);
             convertToStreamResponse(publisher, responseObserver, context);

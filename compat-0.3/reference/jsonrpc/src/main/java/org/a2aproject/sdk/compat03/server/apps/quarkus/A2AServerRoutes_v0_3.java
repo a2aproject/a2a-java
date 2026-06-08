@@ -97,7 +97,7 @@ public class A2AServerRoutes_v0_3 {
                 } catch (Exception e) {
                     VertxSecurityHelper.handleGenericError(ctx);
                 }
-            });
+            }, false);
 
         // Only register v0.3 agent card if no real v1.0 agent card producer exists.
         // DefaultProducers provides a @DefaultBean AgentCard fallback that is always

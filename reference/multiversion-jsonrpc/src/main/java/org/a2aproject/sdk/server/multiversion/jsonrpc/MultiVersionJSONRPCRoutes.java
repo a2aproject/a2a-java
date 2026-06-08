@@ -62,6 +62,6 @@ public class MultiVersionJSONRPCRoutes {
                 } catch (Exception e) {
                     VertxSecurityHelper.handleGenericError(ctx);
                 }
-            });
+            }, false);
     }
 }

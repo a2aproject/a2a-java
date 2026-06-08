@@ -15,6 +15,7 @@ import org.a2aproject.sdk.transport.grpc.handler.GrpcHandler;
 import io.quarkus.grpc.GrpcService;
 import io.quarkus.grpc.RegisterInterceptor;
 import io.quarkus.security.Authenticated;
+import io.smallrye.common.annotation.Blocking;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -68,7 +69,9 @@ import org.jspecify.annotations.Nullable;
  */
 @GrpcService
 @RegisterInterceptor(A2AExtensionsInterceptor.class)
+@RegisterInterceptor(BlockingOffloadInterceptor.class)
 @Authenticated
+@Blocking
 public class QuarkusGrpcHandler extends GrpcHandler {
 
     private final AgentCard agentCard;
