@@ -4,19 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    paths:
-      - 'client/**'
-      - 'common/**'
-      - 'http-client/**'
-      - 'itk/**'
-      - 'jsonrpc-common/**'
-      - 'reference/**'
-      - 'server-common/**'
-      - 'spec/**'
-      - 'spec-grpc/**'
-      - 'transport/**'
-      - 'pom.xml'
-      - '.github/workflows/itk.yaml'
 
 permissions:
   contents: read
