@@ -23,7 +23,7 @@ public class AdditionalRoutes {
             ctx.reroute("/");
         });
         router.route("/rest/*").handler(ctx -> {
-            log.info("Rerouting POST /rest -> /");
+            log.info("Rerouting /rest -> /");
             ctx.reroute("/");
         });
 
