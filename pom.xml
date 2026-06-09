@@ -599,6 +599,9 @@
         <module>transport/grpc</module>
         <module>transport/rest</module>
 
+        <!-- ITK (Integration Test Kit) agent -->
+        <module>itk</module>
+
         <!-- A2A Protocol v0.3 backward compatibility layer -->
         <module>compat-0.3</module>
 
