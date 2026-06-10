@@ -96,19 +96,21 @@
             <plugin>
                 <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>4.1.2</version>
+                <version>5.1.4</version>
                 <configuration>
                     <skip>${skip.protobuf.generate}</skip>
                     <cleanOutputDirectories>true</cleanOutputDirectories>
-                    <protoc>${protobuf-java.version}</protoc>
+                    <protoc kind="binary-maven">
+                        <version>${protobuf-java.version}</version>
+                    </protoc>
                     <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
-                    <binaryMavenPlugins>
-                        <binaryMavenPlugin>
+                    <plugins>
+                        <plugin kind="binary-maven">
                             <groupId>io.grpc</groupId>
                             <artifactId>protoc-gen-grpc-java</artifactId>
                             <version>${grpc.version}</version>
-                        </binaryMavenPlugin>
-                    </binaryMavenPlugins>
+                        </plugin>
+                    </plugins>
                 </configuration>
                 <executions>
                     <execution>
