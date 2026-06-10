@@ -30,7 +30,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven and run tests
-      run: mvn -B package --file pom.xml -fae ${{ matrix.os == 'windows-latest' && '-DskipDockerTests=true' || '' }}
+      run: mvn -B install --file pom.xml -fae ${{ matrix.os == 'windows-latest' && '-DskipDockerTests=true' || '' }}
     - name: Upload Test Reports
       if: failure()
       uses: actions/upload-artifact@v7
