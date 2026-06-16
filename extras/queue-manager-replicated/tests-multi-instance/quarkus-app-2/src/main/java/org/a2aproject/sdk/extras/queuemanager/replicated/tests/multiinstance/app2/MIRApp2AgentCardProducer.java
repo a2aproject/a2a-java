@@ -8,7 +8,7 @@ import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.spec.AgentCard;
 
 @ApplicationScoped
-public class MultiInstanceReplicationApp2AgentCardProducer {
+public class MIRApp2AgentCardProducer {
 
     @Produces
     @PublicAgentCard
