@@ -7,7 +7,7 @@ import org.a2aproject.sdk.extras.queuemanager.replicated.tests.multiinstance.com
 import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 
 @ApplicationScoped
-public class MultiInstanceReplicationApp2AgentExecutorProducer {
+public class MIRApp2AgentExecutorProducer {
 
     @Produces
     public AgentExecutor agentExecutor() {
