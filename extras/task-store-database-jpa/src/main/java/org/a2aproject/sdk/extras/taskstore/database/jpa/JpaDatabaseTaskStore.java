@@ -10,6 +10,8 @@ import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -20,6 +22,9 @@ import jakarta.transaction.Transactional;
 import org.a2aproject.sdk.extras.common.events.TaskFinalizedEvent;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
+import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.config.A2AConfigProvider;
 import org.a2aproject.sdk.server.tasks.TaskStateProvider;
 import org.a2aproject.sdk.server.tasks.TaskStore;
@@ -30,6 +35,7 @@ import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.util.PageToken;
 import org.a2aproject.sdk.spec.Task;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +55,19 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     @Inject
     A2AConfigProvider configProvider;
+
+    private final @org.jspecify.annotations.Nullable TaskAuthorizationProvider authorizationProvider;
+
+    public JpaDatabaseTaskStore() {
+        this.authorizationProvider = null;
+    }
+
+    @Inject
+    public JpaDatabaseTaskStore(@Any Instance<TaskAuthorizationProvider> authorizationProviderInstance) {
+        this.authorizationProvider = authorizationProviderInstance.isResolvable()
+                ? authorizationProviderInstance.get()
+                : null;
+    }
 
     /**
      * Grace period for task finalization in replicated scenarios (seconds).
@@ -250,109 +269,81 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     @Transactional
     @Override
-    public ListTasksResult list(ListTasksParams params) {
+    public ListTasksResult list(ListTasksParams params, @Nullable ServerCallContext context) {
         LOGGER.debug("Listing tasks with params: contextId={}, status={}, pageSize={}, pageToken={}",
                 params.contextId(), params.status(), params.pageSize(), params.pageToken());
 
         try {
-            // Parse pageToken once at the beginning
-            PageToken pageToken = PageToken.fromString(params.pageToken());
-            Instant tokenTimestamp = pageToken != null ? pageToken.timestamp() : null;
-            String tokenId = pageToken != null ? pageToken.id() : null;
-
-            // Build dynamic JPQL query with WHERE clauses for filtering
-            StringBuilder queryBuilder = new StringBuilder("SELECT t FROM JpaTask t WHERE 1=1");
-            StringBuilder countQueryBuilder = new StringBuilder("SELECT COUNT(t) FROM JpaTask t WHERE 1=1");
-
-            // Apply contextId filter using denormalized column
-            if (params.contextId() != null) {
-                queryBuilder.append(" AND t.contextId = :contextId");
-                countQueryBuilder.append(" AND t.contextId = :contextId");
-            }
-
-            // Apply status filter using denormalized column
-            if (params.status() != null) {
-                queryBuilder.append(" AND t.state = :state");
-                countQueryBuilder.append(" AND t.state = :state");
-            }
-
-            // Apply statusTimestampAfter filter using denormalized timestamp column
-            if (params.statusTimestampAfter() != null) {
-                queryBuilder.append(" AND t.statusTimestamp > :statusTimestampAfter");
-                countQueryBuilder.append(" AND t.statusTimestamp > :statusTimestampAfter");
-            }
-
-            // Apply pagination cursor using keyset pagination for composite sort (timestamp DESC, id ASC)
-            if (tokenTimestamp != null) {
-                // Keyset pagination: get tasks where timestamp < tokenTimestamp OR (timestamp = tokenTimestamp AND id > tokenId)
-                queryBuilder.append(" AND (t.statusTimestamp < :tokenTimestamp OR (t.statusTimestamp = :tokenTimestamp AND t.id > :tokenId))");
-            }
-
-            // Sort by status timestamp descending (most recent first), then by ID for stable ordering
-            queryBuilder.append(" ORDER BY t.statusTimestamp DESC, t.id ASC");
-
-            // Create and configure the main query
-            TypedQuery<JpaTask> query = em.createQuery(queryBuilder.toString(), JpaTask.class);
-
-            // Set filter parameters
-            if (params.contextId() != null) {
-                query.setParameter("contextId", params.contextId());
-            }
-            if (params.status() != null) {
-                query.setParameter("state", params.status().name());
-            }
-            if (params.statusTimestampAfter() != null) {
-                query.setParameter("statusTimestampAfter", params.statusTimestampAfter());
-            }
-            if (tokenTimestamp != null) {
-                query.setParameter("tokenTimestamp", tokenTimestamp);
-                query.setParameter("tokenId", tokenId);
-            }
-
-            // Apply page size limit (+1 to check for next page)
             int pageSize = params.getEffectivePageSize();
-            query.setMaxResults(pageSize + 1);
 
-            // Execute query and deserialize tasks
-            List<JpaTask> jpaTasksPage = query.getResultList();
+            // Build base WHERE clause (without cursor — shared across iterations)
+            String baseWhereClause = buildBaseWhereClause(params);
 
-            // Determine if there are more results
-            boolean hasMore = jpaTasksPage.size() > pageSize;
-            if (hasMore) {
-                jpaTasksPage = jpaTasksPage.subList(0, pageSize);
-            }
+            List<Task> tasks;
+            boolean hasMore;
+            int totalSize;
 
-            // Get total count of matching tasks
-            TypedQuery<Long> countQuery = em.createQuery(countQueryBuilder.toString(), Long.class);
-            if (params.contextId() != null) {
-                countQuery.setParameter("contextId", params.contextId());
-            }
-            if (params.status() != null) {
-                countQuery.setParameter("state", params.status().name());
-            }
-            if (params.statusTimestampAfter() != null) {
-                countQuery.setParameter("statusTimestampAfter", params.statusTimestampAfter());
-            }
-            int totalSize = countQuery.getSingleResult().intValue();
+            if (authorizationProvider != null && context != null) {
+                // Iterative fetch: accumulate pageSize authorized results across DB pages
+                tasks = new ArrayList<>(pageSize);
+                PageToken cursor = PageToken.fromString(params.pageToken());
+                boolean dbExhausted = false;
+                int maxIterations = 10;
+                int iterations = 0;
 
-            // Deserialize tasks from JSON
-            List<Task> tasks = new ArrayList<>();
-            for (JpaTask jpaTask : jpaTasksPage) {
-                try {
-                    tasks.add(jpaTask.getTask());
-                } catch (JsonProcessingException e) {
-                    LOGGER.error("Failed to deserialize task with ID: {}", jpaTask.getId(), e);
-                    throw new TaskSerializationException(jpaTask.getId(),
-                        "Failed to deserialize task during list operation", e);
+                while (tasks.size() < pageSize && !dbExhausted && iterations < maxIterations) {
+                    iterations++;
+                    int remaining = pageSize - tasks.size();
+                    int limit = remaining + 1;
+                    TypedQuery<JpaTask> query = createPageQuery(
+                            baseWhereClause, params, cursor, limit);
+                    List<JpaTask> batch = query.getResultList();
+
+                    dbExhausted = batch.size() < limit;
+
+                    int processedCount = 0;
+                    for (JpaTask jpaTask : batch) {
+                        processedCount++;
+                        Task task = deserializeTask(jpaTask);
+                        if (authorizationProvider.checkRead(context, task.id(), TaskOperation.LIST_TASKS)) {
+                            tasks.add(task);
+                            if (tasks.size() == pageSize) {
+                                break;
+                            }
+                        }
+                    }
+
+                    // Advance cursor to last fetched DB row for next iteration
+                    if (processedCount > 0) {
+                        JpaTask last = batch.get(processedCount - 1);
+                        cursor = new PageToken(last.getStatusTimestamp(), last.getId());
+                    }
+                }
+
+                hasMore = !dbExhausted;
+                // Use the authorized count to avoid leaking the existence of unauthorized tasks
+                totalSize = tasks.size();
+            } else {
+                // Single fetch — no authorization filtering needed
+                totalSize = executeCountQuery(baseWhereClause, params);
+                PageToken cursor = PageToken.fromString(params.pageToken());
+                TypedQuery<JpaTask> query = createPageQuery(
+                        baseWhereClause, params, cursor, pageSize + 1);
+                List<JpaTask> jpaTasksPage = query.getResultList();
+
+                hasMore = jpaTasksPage.size() > pageSize;
+                int batchEnd = Math.min(jpaTasksPage.size(), pageSize);
+
+                tasks = new ArrayList<>(batchEnd);
+                for (int i = 0; i < batchEnd; i++) {
+                    tasks.add(deserializeTask(jpaTasksPage.get(i)));
                 }
             }
 
-            // Determine next page token (timestamp:ID of last task if there are more results)
-            // Format: "timestamp_millis:taskId" for keyset pagination
+            // Determine next page token from the last returned task
             String nextPageToken = null;
             if (hasMore && !tasks.isEmpty()) {
                 Task lastTask = tasks.get(tasks.size() - 1);
-                // All tasks have timestamps (TaskStatus canonical constructor ensures this)
                 Instant timestamp = lastTask.status().timestamp().toInstant();
                 nextPageToken = new PageToken(timestamp, lastTask.id()).toString();
             }
@@ -369,10 +360,71 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
             return new ListTasksResult(transformedTasks, totalSize, transformedTasks.size(), nextPageToken);
 
         } catch (PersistenceException e) {
-            // Database errors from query creation, execution, or count
             LOGGER.error("Database query failed during list operation", e);
-            throw new TaskPersistenceException(null,  // No single taskId for list operation
+            throw new TaskPersistenceException(null,
                 "Database query failed during list operation", e);
+        }
+    }
+
+    private String buildBaseWhereClause(ListTasksParams params) {
+        StringBuilder sb = new StringBuilder(" WHERE 1=1");
+        if (params.contextId() != null) {
+            sb.append(" AND t.contextId = :contextId");
+        }
+        if (params.status() != null) {
+            sb.append(" AND t.state = :state");
+        }
+        if (params.statusTimestampAfter() != null) {
+            sb.append(" AND t.statusTimestamp > :statusTimestampAfter");
+        }
+        return sb.toString();
+    }
+
+    private TypedQuery<JpaTask> createPageQuery(String baseWhereClause,
+            ListTasksParams params, @org.jspecify.annotations.Nullable PageToken cursor, int maxResults) {
+        StringBuilder jpql = new StringBuilder("SELECT t FROM JpaTask t").append(baseWhereClause);
+        if (cursor != null) {
+            jpql.append(" AND (t.statusTimestamp < :tokenTimestamp"
+                    + " OR (t.statusTimestamp = :tokenTimestamp AND t.id > :tokenId))");
+        }
+        jpql.append(" ORDER BY t.statusTimestamp DESC, t.id ASC");
+
+        TypedQuery<JpaTask> query = em.createQuery(jpql.toString(), JpaTask.class);
+        setFilterParameters(query, params);
+        if (cursor != null) {
+            query.setParameter("tokenTimestamp", cursor.timestamp());
+            query.setParameter("tokenId", cursor.id());
+        }
+        query.setMaxResults(maxResults);
+        return query;
+    }
+
+    private int executeCountQuery(String baseWhereClause, ListTasksParams params) {
+        String jpql = "SELECT COUNT(t) FROM JpaTask t" + baseWhereClause;
+        TypedQuery<Long> countQuery = em.createQuery(jpql, Long.class);
+        setFilterParameters(countQuery, params);
+        return countQuery.getSingleResult().intValue();
+    }
+
+    private void setFilterParameters(TypedQuery<?> query, ListTasksParams params) {
+        if (params.contextId() != null) {
+            query.setParameter("contextId", params.contextId());
+        }
+        if (params.status() != null) {
+            query.setParameter("state", params.status().name());
+        }
+        if (params.statusTimestampAfter() != null) {
+            query.setParameter("statusTimestampAfter", params.statusTimestampAfter());
+        }
+    }
+
+    private Task deserializeTask(JpaTask jpaTask) {
+        try {
+            return jpaTask.getTask();
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Failed to deserialize task with ID: {}", jpaTask.getId(), e);
+            throw new TaskSerializationException(jpaTask.getId(),
+                    "Failed to deserialize task during list operation", e);
         }
     }
 

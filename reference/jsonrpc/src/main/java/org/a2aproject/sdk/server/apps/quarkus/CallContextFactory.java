@@ -30,10 +30,7 @@ import io.vertx.ext.web.RoutingContext;
  *     public ServerCallContext build(RoutingContext rc) {
  *         // Extract user from Quarkus security context
  *         User user = (rc.user() == null) ? UnauthenticatedUser.INSTANCE :
- *             new User() {
- *                 public boolean isAuthenticated() { return rc.userContext().authenticated(); }
- *                 public String getUsername() { return rc.user().subject(); }
- *             };
+ *             new AuthenticatedUser(rc.user().subject());
  *
  *         // Extract custom data from routing context
  *         String orgId = rc.request().getHeader("X-Organization-ID");
