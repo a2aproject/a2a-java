@@ -34,6 +34,10 @@ import org.a2aproject.sdk.spec.Task;
  */
 public final class SendMessageRequest extends NonStreamingJSONRPCRequest<MessageSendParams> {
 
+    private SendMessageRequest() {
+    }
+
+
     /**
      * Constructs a SendMessageRequest with the specified JSON-RPC fields.
      * <p>

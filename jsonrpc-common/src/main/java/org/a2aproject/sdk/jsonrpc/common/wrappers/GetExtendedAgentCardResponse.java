@@ -22,6 +22,10 @@ import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
  */
 public final class GetExtendedAgentCardResponse extends A2AResponse<AgentCard> {
 
+    private GetExtendedAgentCardResponse() {
+    }
+
+
     /**
      * Constructs response with full parameters.
      *

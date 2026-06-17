@@ -5,6 +5,9 @@ package org.a2aproject.sdk.compat03.spec;
  */
 public final class DeleteTaskPushNotificationConfigResponse_v0_3 extends JSONRPCResponse_v0_3<Void> {
 
+    private DeleteTaskPushNotificationConfigResponse_v0_3() {
+    }
+
     public DeleteTaskPushNotificationConfigResponse_v0_3(String jsonrpc, Object id, Void result, JSONRPCError_v0_3 error) {
         super(jsonrpc, id, result, error, Void.class);
     }
