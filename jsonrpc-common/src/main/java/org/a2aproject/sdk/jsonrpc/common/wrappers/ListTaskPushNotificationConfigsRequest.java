@@ -23,6 +23,10 @@ import static org.a2aproject.sdk.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CON
  */
 public final class ListTaskPushNotificationConfigsRequest extends NonStreamingJSONRPCRequest<ListTaskPushNotificationConfigsParams> {
 
+    private ListTaskPushNotificationConfigsRequest() {
+    }
+
+
     /**
      * Constructs request with all parameters.
      *

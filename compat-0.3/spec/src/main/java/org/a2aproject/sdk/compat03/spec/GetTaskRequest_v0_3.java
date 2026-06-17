@@ -12,6 +12,10 @@ import org.a2aproject.sdk.util.Assert;
  */
 public final class GetTaskRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<TaskQueryParams_v0_3> {
 
+    private GetTaskRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "tasks/get";
 
     public GetTaskRequest_v0_3(String jsonrpc, Object id, String method, TaskQueryParams_v0_3 params) {

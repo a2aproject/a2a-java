@@ -6,6 +6,9 @@ package org.a2aproject.sdk.compat03.spec;
 
 public final class CancelTaskResponse_v0_3 extends JSONRPCResponse_v0_3<Task_v0_3> {
 
+    private CancelTaskResponse_v0_3() {
+    }
+
     public CancelTaskResponse_v0_3(String jsonrpc, Object id, Task_v0_3 result, JSONRPCError_v0_3 error) {
         super(jsonrpc, id, result, error, Task_v0_3.class);
     }

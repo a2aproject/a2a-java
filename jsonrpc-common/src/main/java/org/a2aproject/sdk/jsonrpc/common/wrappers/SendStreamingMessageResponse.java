@@ -26,6 +26,10 @@ import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
  */
 public final class SendStreamingMessageResponse extends A2AResponse<StreamingEventKind> {
 
+    private SendStreamingMessageResponse() {
+    }
+
+
     /**
      * Constructs response with all parameters.
      *
