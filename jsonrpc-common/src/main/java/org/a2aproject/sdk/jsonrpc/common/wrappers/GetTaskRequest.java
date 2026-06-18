@@ -23,6 +23,10 @@ import org.a2aproject.sdk.spec.TaskQueryParams;
  */
 public final class GetTaskRequest extends NonStreamingJSONRPCRequest<TaskQueryParams> {
 
+    private GetTaskRequest() {
+    }
+
+
     /**
      * Constructs request with all parameters.
      *

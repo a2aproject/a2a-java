@@ -20,6 +20,10 @@ import org.a2aproject.sdk.spec.TaskNotFoundError;
  */
 public final class GetTaskResponse extends A2AResponse<Task> {
 
+    private GetTaskResponse() {
+    }
+
+
     /**
      * Constructs response with full parameters.
      *
