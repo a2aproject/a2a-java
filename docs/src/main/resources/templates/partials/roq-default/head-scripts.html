@@ -1,0 +1,51 @@
+{@java.lang.String tag}
+
+{#bundle /}
+
+{#if site.data.containsKey("analytics")}
+{#ga4 tag=site.data.getJsonObject('analytics').getString("ga4", "") /}
+{/if}
+
+<script>
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.menu-group-label').forEach(function (groupLi) {
+            var anchor = groupLi.querySelector('a');
+            if (!anchor) return;
+            var children = [];
+            var next = groupLi.nextElementSibling;
+            while (next && next.classList.contains('menu-group-child')) {
+                children.push(next);
+                next = next.nextElementSibling;
+            }
+            if (children.length === 0) return;
+
+            // Wrap children in a collapsible <li><ul> structure
+            var wrapperLi = document.createElement('li');
+            wrapperLi.className = 'menu-group-children-li';
+            var wrapperUl = document.createElement('ul');
+            wrapperUl.className = 'menu-group-children-wrapper';
+            children.forEach(function (child) { wrapperUl.appendChild(child); });
+            wrapperLi.appendChild(wrapperUl);
+            groupLi.insertAdjacentElement('afterend', wrapperLi);
+
+            // Add chevron inside the <a> so it inherits link styling
+            var chevron = document.createElement('i');
+            chevron.className = 'fa-solid fa-chevron-down menu-group-chevron';
+            anchor.appendChild(chevron);
+
+            var hasActive = wrapperUl.querySelector('a[href="' + window.location.pathname + '"]') !== null;
+            if (!hasActive) {
+                wrapperUl.classList.add('menu-group-collapsed');
+                chevron.style.transform = 'rotate(-90deg)';
+            }
+
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                var collapsed = wrapperUl.classList.toggle('menu-group-collapsed');
+                chevron.style.transform = collapsed ? 'rotate(-90deg)' : '';
+            });
+        });
+    });
+})();
+</script>

@@ -1,0 +1,103 @@
+/* Theme customization: https://iamroq.dev/theme/default/#css-customization */
+/* Color palette inspired by https://a2a-protocol.org (Material for MkDocs, indigo/white) */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap');
+
+@theme inline {
+    /* Primary accent: Material Design Indigo */
+    --color-accent-50: #e8eaf6;
+    --color-accent-100: #c5cae9;
+    --color-accent-200: #9fa8da;
+    --color-accent-300: #7986cb;
+    --color-accent-400: #5c6bc0;
+    --color-accent-500: #3f51b5;
+    --color-accent-600: #3949ab;
+    --color-accent-700: #303f9f;
+    --color-accent-800: #283593;
+    --color-accent-900: #1a237e;
+    --color-accent-950: #0d1257;
+
+    /* Pop color: same indigo family for buttons, links, and interactive elements */
+    --color-pop-50: #e8eaf6;
+    --color-pop-100: #c5cae9;
+    --color-pop-200: #9fa8da;
+    --color-pop-300: #7986cb;
+    --color-pop-400: #5c6bc0;
+    --color-pop-500: #3f51b5;
+    --color-pop-600: #3949ab;
+    --color-pop-700: #303f9f;
+    --color-pop-800: #283593;
+    --color-pop-900: #1a237e;
+    --color-pop-950: #0d1257;
+
+    /* Typography: Roboto matches Material Design (used by a2a-protocol.org) */
+    --font-body: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Sidebar: deep indigo gradient matching a2a-protocol.org dark navigation */
+:root {
+    --sidebar-bg: linear-gradient(180deg, #303f9f 0%, #1a237e 100%);
+}
+
+/* Hero logo sizing — a2a-java-sdk.png is square (2048x2048) */
+.roq-hero-logo {
+    @apply w-[200px];
+}
+
+/* ── Sidebar menu groups ──────────────────────────────────────────────────── */
+
+.menu-group-label a {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    cursor: pointer !important;
+}
+
+.menu-group-chevron {
+    font-size: 0.65rem;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.menu-group-children-li {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.menu-group-children-wrapper {
+    overflow: hidden;
+    max-height: 300px;
+    transition: max-height 0.25s ease;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.menu-group-children-wrapper.menu-group-collapsed {
+    max-height: 0;
+}
+
+.menu-group-child a {
+    padding-left: 2rem !important;
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+/* ── Content column width ─────────────────────────────────────────────────── */
+
+.page-content .content-main {
+    max-width: var(--container-5xl);
+}
+
+/* ── Syntax Highlighting (highlight.js) ───────────────────────────────────── */
+
+/* Match the site's monospace font (Roboto Mono) */
+.hljs,
+pre code.hljs {
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}

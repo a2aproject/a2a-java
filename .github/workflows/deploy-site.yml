@@ -1,0 +1,32 @@
+name: Roq Site Deploy
+
+on:
+  push:
+    branches: [ main ]   # Switch to the branch which should be deployed to GitHub Pages
+    paths:
+      - docs/**
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Generate Roq Site
+        uses: quarkiverse/quarkus-roq@v1.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}   # Used to automatically get the GitHub Pages url
+          site-directory: ./docs/
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
