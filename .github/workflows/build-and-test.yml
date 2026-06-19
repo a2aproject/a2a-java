@@ -3,7 +3,11 @@ name: Build and Test
 on:
   # Handle all branches for now
   push:
+    paths-ignore:
+      - '**/docs/**'
   pull_request:
+    paths-ignore:
+      - '**/docs/**'
   workflow_dispatch:
 
 # Only run the latest job
