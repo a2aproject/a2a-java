@@ -34,7 +34,9 @@
             chevron.className = 'fa-solid fa-chevron-down menu-group-chevron';
             anchor.appendChild(chevron);
 
-            var hasActive = wrapperUl.querySelector('a[href="' + window.location.pathname + '"]') !== null;
+            var hasActive = Array.from(wrapperUl.querySelectorAll('a')).some(function (a) {
+                try { return new URL(a.href).pathname === window.location.pathname; } catch (e) { return false; }
+            });
             if (!hasActive) {
                 wrapperUl.classList.add('menu-group-collapsed');
                 chevron.style.transform = 'rotate(-90deg)';
