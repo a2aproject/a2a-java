@@ -5,7 +5,6 @@ import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
@@ -28,7 +27,7 @@ import org.a2aproject.sdk.spec.TransportProtocol;
 public class QuarkusCallContextFactory_v0_3 implements CallContextFactory_v0_3 {
 
     @Inject
-    Instance<SecurityIdentity> securityIdentityInstance;
+    private Instance<SecurityIdentity> securityIdentityInstance;
 
     @Override
     public <V> ServerCallContext create(StreamObserver<V> responseObserver) {

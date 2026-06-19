@@ -29,7 +29,7 @@ import org.a2aproject.sdk.transport.grpc.handler.CallContextFactory;
 public class QuarkusCallContextFactory implements CallContextFactory {
 
     @Inject
-    Instance<SecurityIdentity> securityIdentityInstance;
+    private Instance<SecurityIdentity> securityIdentityInstance;
 
     @Override
     public <V> ServerCallContext create(StreamObserver<V> responseObserver) {

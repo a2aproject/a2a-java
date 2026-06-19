@@ -1,12 +1,12 @@
 package org.a2aproject.sdk.compat03.conversion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -30,6 +30,7 @@ import org.a2aproject.sdk.compat03.spec.HTTPAuthSecurityScheme_v0_3;
 import org.a2aproject.sdk.compat03.spec.Message_v0_3;
 import org.a2aproject.sdk.compat03.spec.Task_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
+import org.a2aproject.sdk.compat03.spec.TaskNotCancelableError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskState_v0_3;
@@ -171,8 +172,10 @@ public abstract class AbstractA2AServerWithTaskAuthorizationTest_v0_3 {
         try {
             clientA.cancelTask(new TaskIdParams_v0_3(task.id()));
         } catch (A2AClientException_v0_3 e) {
-            assertFalse(e.getCause() instanceof TaskNotFoundError_v0_3,
-                    "Owner should not get TaskNotFoundError when canceling own task");
+            // TaskNotCancelableError is acceptable: task completed before cancel arrived
+            if (!(e.getCause() instanceof TaskNotCancelableError_v0_3)) {
+                fail("Owner received unexpected error when canceling own task: " + e.getCause());
+            }
         }
     }
 

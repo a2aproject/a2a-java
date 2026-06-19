@@ -36,6 +36,7 @@ import org.a2aproject.sdk.spec.CancelTaskParams;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskNotCancelableError;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskQueryParams;
 import org.a2aproject.sdk.spec.TaskState;
@@ -157,10 +158,10 @@ public abstract class AbstractA2AServerWithTaskAuthorizationTest {
         try {
             clientA.cancelTask(new CancelTaskParams(task.id()));
         } catch (A2AClientException e) {
-            // UnsupportedOperationError is acceptable (task already completed)
-            // but TaskNotFoundError means auth failed
-            assertFalse(e.getCause() instanceof TaskNotFoundError,
-                    "Owner should not get TaskNotFoundError when canceling own task");
+            // TaskNotCancelableError is acceptable: task completed before cancel arrived
+            if (!(e.getCause() instanceof TaskNotCancelableError)) {
+                fail("Owner received unexpected error when canceling own task: " + e.getCause());
+            }
         }
     }
 

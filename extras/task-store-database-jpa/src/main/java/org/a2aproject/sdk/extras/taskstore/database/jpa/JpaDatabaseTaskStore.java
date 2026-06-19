@@ -46,17 +46,18 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaDatabaseTaskStore.class);
     private static final String A2A_REPLICATION_GRACE_PERIOD_SECONDS = "a2a.replication.grace-period-seconds";
+    private static final String A2A_REPLICATION_MAX_SCANNED_TASKS = "a2a.max-scanned-tasks";
 
     @PersistenceContext(unitName = "a2a-java")
-    EntityManager em;
+    private EntityManager em;
 
     @Inject
-    Event<TaskFinalizedEvent> taskFinalizedEvent;
+    private Event<TaskFinalizedEvent> taskFinalizedEvent;
 
     @Inject
-    A2AConfigProvider configProvider;
+    private A2AConfigProvider configProvider;
 
-    private final @org.jspecify.annotations.Nullable TaskAuthorizationProvider authorizationProvider;
+    private final @Nullable TaskAuthorizationProvider authorizationProvider;
 
     public JpaDatabaseTaskStore() {
         this.authorizationProvider = null;
@@ -78,11 +79,19 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
      * Default: 15<br>
      * Note: Property override requires a configurable {@link A2AConfigProvider} on the classpath.
      */
-    long gracePeriodSeconds;
+    private long gracePeriodSeconds;
+    /**
+     * Max number of rows being scanned when looking for a task.
+     * The a2a.max-scanned-tasks means you'll always return in at most a2a.max-scanned-tasks rows scanned
+     * regardless of how many are denied — and you might return a partial page, which is valid for a paginated API
+     * (clients already handle that via nextPageToken).
+     */
+    private long maxScanned;
 
     @PostConstruct
     void initConfig() {
         gracePeriodSeconds = Long.parseLong(configProvider.getValue(A2A_REPLICATION_GRACE_PERIOD_SECONDS));
+        maxScanned = Long.parseLong(configProvider.getValue(A2A_REPLICATION_MAX_SCANNED_TASKS));
     }
 
 
@@ -288,11 +297,9 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                 tasks = new ArrayList<>(pageSize);
                 PageToken cursor = PageToken.fromString(params.pageToken());
                 boolean dbExhausted = false;
-                int maxIterations = 10;
-                int iterations = 0;
+                int totalScanned = 0;
 
-                while (tasks.size() < pageSize && !dbExhausted && iterations < maxIterations) {
-                    iterations++;
+                while (tasks.size() < pageSize && !dbExhausted && totalScanned < maxScanned) {
                     int remaining = pageSize - tasks.size();
                     int limit = remaining + 1;
                     TypedQuery<JpaTask> query = createPageQuery(
@@ -300,6 +307,8 @@ public class JpaDatabaseTaskStore implements TaskStore, TaskStateProvider {
                     List<JpaTask> batch = query.getResultList();
 
                     dbExhausted = batch.size() < limit;
+                    int batchEnd = Math.min(batch.size(), remaining);
+                    totalScanned += batchEnd;
 
                     int processedCount = 0;
                     for (JpaTask jpaTask : batch) {
