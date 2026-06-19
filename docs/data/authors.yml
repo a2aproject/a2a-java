@@ -1,0 +1,23 @@
+ehsavoie:
+  name: "Emmanuel Hugonnet"
+  nickname: "ehsavoie"
+  job: "Software Engineer"
+  bio: "Emmanuel works at Red Hat on WildFly Messaging integration. He currently works on the WildFly AI feature pack and support for Eclipse Che."
+  avatar: ehsavoie.png
+  twitter: "ehsavoie"
+  profile: "https://github.com/ehsavoie"
+jmesnil:
+  name: "Jeff Mesnil"
+  nickname: "jmesnil"
+  job: "Software Engineer"
+  avatar: jmesnil.jpg
+  twitter: "jmesnil"
+  profile: "https://github.com/jmesnil"
+kkhan:
+  name: "Kabir Khan"
+  nickname: "kkhan"
+  job: "Software Engineer"
+  bio: "Kabir started using JBoss back in 2000, and joined the team in 2004. Since then he has worked on JBoss AS/WildFly as a core developer."
+  avatar: kkhan.jpg
+  profile: "https://github.com/kabir"
+
