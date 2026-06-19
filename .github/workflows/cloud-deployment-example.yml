@@ -2,7 +2,11 @@ name: Cloud Deployment Example Test
 
 on:
   push:
+    paths-ignore:
+      - '**/docs/**'
   pull_request:
+    paths-ignore:
+      - '**/docs/**'
   workflow_dispatch:
 
 # Only run the latest job
