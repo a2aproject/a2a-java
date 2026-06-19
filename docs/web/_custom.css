@@ -92,6 +92,12 @@
     max-width: var(--container-5xl);
 }
 
+/* ── Quick Install section ────────────────────────────────────────────────── */
+
+.roq-section pre {
+    text-align: left;
+}
+
 /* ── Syntax Highlighting (highlight.js) ───────────────────────────────────── */
 
 /* Match the site's monospace font (Roboto Mono) */
