@@ -34,6 +34,10 @@ import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
  */
 public final class GetExtendedAgentCardRequest extends NonStreamingJSONRPCRequest<Void> {
 
+    private GetExtendedAgentCardRequest() {
+    }
+
+
     /**
      * Constructs request with full parameters.
      *

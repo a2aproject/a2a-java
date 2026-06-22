@@ -32,6 +32,9 @@ import org.a2aproject.sdk.spec.StreamingEventKind;
 public abstract sealed class StreamingJSONRPCRequest<T> extends A2ARequest<T> permits SubscribeToTaskRequest,
         SendStreamingMessageRequest {
 
+    StreamingJSONRPCRequest() {
+    }
+
     StreamingJSONRPCRequest(String jsonrpc, String method, Object id, T params) {
         validateAndSetJsonParameters(jsonrpc, method, id, params, true);
     }

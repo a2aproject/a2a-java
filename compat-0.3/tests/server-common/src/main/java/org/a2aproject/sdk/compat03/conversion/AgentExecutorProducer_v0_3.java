@@ -38,6 +38,15 @@ public class AgentExecutorProducer_v0_3 {
                     return;
                 }
 
+                // Local handling: creates a task with startWork() + addArtifact() + complete()
+                if (input.startsWith("a2a-local:")) {
+                    String payload = input.substring("a2a-local:".length());
+                    agentEmitter.startWork();
+                    agentEmitter.addArtifact(List.of(new TextPart("Handled locally: " + payload)));
+                    agentEmitter.complete();
+                    return;
+                }
+
                 // Special handling for multi-event test (routed by message content)
                 if (input.startsWith("multi-event:first")) {
                     agentEmitter.startWork();

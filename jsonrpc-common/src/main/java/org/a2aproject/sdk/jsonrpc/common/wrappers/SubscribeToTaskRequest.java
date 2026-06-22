@@ -29,6 +29,10 @@ import org.a2aproject.sdk.spec.TaskIdParams;
  */
 public final class SubscribeToTaskRequest extends StreamingJSONRPCRequest<TaskIdParams> {
 
+    private SubscribeToTaskRequest() {
+    }
+
+
     /**
      * Constructs request with all parameters.
      *

@@ -22,6 +22,10 @@ import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_C
  */
 public final class DeleteTaskPushNotificationConfigRequest extends NonStreamingJSONRPCRequest<DeleteTaskPushNotificationConfigParams> {
 
+    private DeleteTaskPushNotificationConfigRequest() {
+    }
+
+
     /**
      * Creates a new DeleteTaskPushNotificationConfigRequest with the specified JSON-RPC parameters.
      *

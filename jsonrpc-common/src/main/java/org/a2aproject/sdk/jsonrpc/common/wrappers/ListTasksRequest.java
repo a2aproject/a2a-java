@@ -11,6 +11,10 @@ import org.a2aproject.sdk.spec.ListTasksParams;
  */
 public final class ListTasksRequest extends NonStreamingJSONRPCRequest<ListTasksParams> {
 
+    private ListTasksRequest() {
+    }
+
+
     /**
      * Constructs request with all parameters.
      *

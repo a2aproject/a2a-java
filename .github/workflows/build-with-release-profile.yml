@@ -7,7 +7,11 @@ name: Build with '-Prelease' (Trigger)
 
 on:
   pull_request:  # Changed from pull_request_target for security
+    paths-ignore:
+      - '**/docs/**'
   push:
+    paths-ignore:
+      - '**/docs/**'
   workflow_dispatch:
 
 # Only run the latest job

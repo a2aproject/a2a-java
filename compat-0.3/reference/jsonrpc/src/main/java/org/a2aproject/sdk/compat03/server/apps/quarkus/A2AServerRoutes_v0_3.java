@@ -58,6 +58,7 @@ import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCHandler_v0_3
 import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.AuthenticatedUser;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.common.quarkus.SseResponseWriter;
@@ -298,17 +299,8 @@ public class A2AServerRoutes_v0_3 {
             if (rc.user() == null) {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
-                user = new User() {
-                    @Override
-                    public boolean isAuthenticated() {
-                        return rc.userContext().authenticated();
-                    }
-
-                    @Override
-                    public String getUsername() {
-                        return rc.user().subject();
-                    }
-                };
+                String subject = rc.user().subject();
+                user = new AuthenticatedUser(subject != null ? subject : "");
             }
             Map<String, Object> state = new HashMap<>();
 

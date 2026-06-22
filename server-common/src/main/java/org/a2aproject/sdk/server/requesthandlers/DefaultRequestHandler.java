@@ -353,7 +353,7 @@ public class DefaultRequestHandler implements RequestHandler {
             }
         }
 
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, context);
         LOGGER.debug("Found {} tasks (total: {})", result.pageSize(), result.totalSize());
         return result;
     }
