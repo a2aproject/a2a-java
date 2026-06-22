@@ -37,7 +37,7 @@ jobs:
         profile: ['', 'multi-version']
     steps:
       - name: Checkout a2a-java
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v5
         with:
@@ -47,7 +47,7 @@ jobs:
       - name: Build a2a-java SDK
         run: mvn -B install -DskipTests
       - name: Checkout a2a-tck
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: a2aproject/a2a-tck
           path: a2a-tck
@@ -133,7 +133,7 @@ jobs:
         profile: ['', 'multi-version']
     steps:
       - name: Checkout a2a-java
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v5
         with:
@@ -143,7 +143,7 @@ jobs:
       - name: Build a2a-java SDK
         run: mvn -B install -DskipTests
       - name: Checkout a2a-tck
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: a2aproject/a2a-tck
           path: a2a-tck
