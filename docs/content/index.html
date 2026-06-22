@@ -1,0 +1,47 @@
+---
+title: A2A Java SDK Documentation
+description: A Java library that helps run agentic applications as A2A servers following the Agent2Agent (A2A) Protocol.
+name: A2A Java SDK Documentation
+simple-name: A2A Java SDK
+image: a2a-java-sdk.png
+social-github: a2aproject/a2a-java
+layout: home
+---
+
+
+{#roq/hero logo="/images/a2a-java-sdk.png"}
+  {#title}A2A <span class="shimmer">Java</span> SDK{/title}
+  {#tagline}Implement the Agent2Agent Protocol in Java{/tagline}
+  {#subtitle}A multi-module Maven library providing client and server support for A2A agent communication over JSON-RPC, gRPC, and REST transports.{/subtitle}
+  <a href="server" class="btn btn-primary">Server Guide <i class="fa-solid fa-arrow-right"></i></a>
+  <a href="client" class="btn btn-secondary">Client Guide <i class="fa-solid fa-arrow-right"></i></a>
+{/}
+
+<div class="roq-features">
+  {#roq/featureCard icon="fa-server" title="A2A Server"}
+    Run your agentic Java application as an A2A server. Implement <code>AgentExecutor</code> and let the SDK handle protocol, routing, and streaming.
+  {/}
+  {#roq/featureCard icon="fa-plug" title="A2A Client"}
+    Communicate with any A2A-compliant agent. Supports streaming, push notifications, and task lifecycle management out of the box.
+  {/}
+  {#roq/featureCard icon="fa-network-wired" title="Multiple Transports"}
+    JSON-RPC 2.0, gRPC, and HTTP+JSON/REST transports — pick what fits your stack, or support them all simultaneously.
+  {/}
+  {#roq/featureCard icon="fa-code-branch" title="Protocol Compatibility"}
+    Serve v1.0 and v0.3 clients side-by-side with zero changes to your <code>AgentExecutor</code>. The compat layer handles conversion automatically.
+  {/}
+</div>
+
+<section class="roq-section">
+  <h2>Quick Install</h2>
+  <p>Add the A2A Java SDK reference server for JSON-RPC to your Maven project:</p>
+
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.a2aproject.sdk&lt;/groupId&gt;
+    &lt;artifactId&gt;a2a-java-sdk-reference-jsonrpc&lt;/artifactId&gt;
+    &lt;version&gt;$\{org.a2aproject.sdk.version}&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+
+  <p>See the <a href="server">Server Guide</a> and <a href="client">Client Guide</a> for full setup instructions, or browse <a href="community">Community Articles</a> for tutorials and examples.</p>
+</section>
+

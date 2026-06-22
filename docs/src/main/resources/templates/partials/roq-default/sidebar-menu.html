@@ -1,0 +1,16 @@
+{@io.quarkiverse.roq.frontmatter.runtime.model.Site site}
+{@java.util.List<io.vertx.core.json.JsonObject> menu}
+{@java.lang.String menuTitle}
+
+<section class="menu">
+  <h3 class="section-title menu-title">{menuTitle ?: 'MENU'}</h3>
+  <ul>
+    {#for item in menu}
+    {#if item.getString("type")??}
+    <li class="menu-group-label"><a href="#"><i class="{item.icon}"></i>{item.title}</a></li>
+    {#else}
+    <li {#if item.containsKey("group")}class="menu-group-child"{/if}><a href="{site.url(item.path)}" {#if item.target??}target="{item.target}"{/if}><i class="{item.icon}"></i>{item.title}</a></li>
+    {/if}
+    {/for}
+  </ul>
+</section>

@@ -26,6 +26,10 @@ import org.a2aproject.sdk.spec.StreamingEventKind;
  */
 public final class SendStreamingMessageRequest extends StreamingJSONRPCRequest<MessageSendParams> {
 
+    private SendStreamingMessageRequest() {
+    }
+
+
     /**
      * Constructs request with all parameters.
      *
