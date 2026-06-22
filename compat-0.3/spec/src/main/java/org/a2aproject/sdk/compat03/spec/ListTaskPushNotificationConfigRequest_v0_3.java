@@ -10,6 +10,10 @@ import org.a2aproject.sdk.compat03.util.Utils_v0_3;
  */
 public final class ListTaskPushNotificationConfigRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<ListTaskPushNotificationConfigParams_v0_3> {
 
+    private ListTaskPushNotificationConfigRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "tasks/pushNotificationConfig/list";
 
     public ListTaskPushNotificationConfigRequest_v0_3(String jsonrpc, Object id, String method, ListTaskPushNotificationConfigParams_v0_3 params) {

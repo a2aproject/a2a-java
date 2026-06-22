@@ -7,6 +7,10 @@ import org.a2aproject.sdk.spec.A2AError;
  */
 public final class ListTasksResponse extends A2AResponse<ListTasksResult> {
 
+    private ListTasksResponse() {
+    }
+
+
     /**
      * Constructs response with all parameters.
      *
