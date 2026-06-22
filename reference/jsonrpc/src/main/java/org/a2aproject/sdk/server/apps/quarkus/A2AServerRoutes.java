@@ -63,6 +63,7 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.server.AgentCardCacheMetadata;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.AuthenticatedUser;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.common.quarkus.SseResponseWriter;
@@ -557,17 +558,8 @@ public class A2AServerRoutes {
             if (rc.user() == null) {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
-                user = new User() {
-                    @Override
-                    public boolean isAuthenticated() {
-                        return rc.userContext().authenticated();
-                    }
-
-                    @Override
-                    public String getUsername() {
-                        return rc.user().subject();
-                    }
-                };
+                String subject = rc.user().subject();
+                user = new AuthenticatedUser(subject != null ? subject : "");
             }
             Map<String, Object> state = new HashMap<>();
             // TODO Python's impl has

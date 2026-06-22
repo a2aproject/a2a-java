@@ -27,6 +27,7 @@ import jakarta.inject.Singleton;
 
 import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.AuthenticatedUser;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
@@ -888,23 +889,8 @@ public class A2AServerRoutes {
             if (rc.user() == null) {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
-                user = new User() {
-                    @Override
-                    public boolean isAuthenticated() {
-                        if (rc.userContext() != null) {
-                            return rc.userContext().authenticated();
-                        }
-                        return false;
-                    }
-
-                    @Override
-                    public String getUsername() {
-                        if (rc.user() != null && rc.user().subject() != null) {
-                            return rc.user().subject();
-                        }
-                        return "";
-                    }
-                };
+                String subject = rc.user().subject();
+                user = new AuthenticatedUser(subject != null ? subject : "");
             }
             Map<String, Object> state = new HashMap<>();
 
