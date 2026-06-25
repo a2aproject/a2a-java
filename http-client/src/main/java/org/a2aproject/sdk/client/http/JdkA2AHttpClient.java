@@ -176,16 +176,15 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 @Override
                 public void onError(Throwable throwable) {
                     if (errorNotified.compareAndSet(false, true)) {
-                        errorConsumer.accept(throwable);
-                    }
-                    if (subscription != null) {
-                        subscription.cancel();
+                        if (!(throwable instanceof java.util.concurrent.CancellationException)) {
+                            errorConsumer.accept(throwable);
+                        }
                     }
                 }
 
                 @Override
                 public void onComplete() {
-                    if (!errorNotified.get()) {
+                    if (errorNotified.compareAndSet(false, true)) {
                         if (useSseParser.get()) {
                             sseParser.flush();
                         } else {
@@ -195,9 +194,6 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                             }
                         }
                         completeRunnable.run();
-                    }
-                    if (subscription != null) {
-                        subscription.cancel();
                     }
                 }
             };
@@ -251,7 +247,9 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                     .<Void>handle((response, throwable) -> {
                         if (throwable != null && errorNotified.compareAndSet(false, true)) {
                             Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
-                            errorConsumer.accept(cause);
+                            if (!(cause instanceof java.util.concurrent.CancellationException)) {
+                                errorConsumer.accept(cause);
+                            }
                         }
                         return null;
                     });
