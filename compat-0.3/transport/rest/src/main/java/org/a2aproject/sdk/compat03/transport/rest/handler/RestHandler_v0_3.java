@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import org.a2aproject.sdk.compat03.grpc.utils.ProtoJsonUtils_v0_3;
 import org.a2aproject.sdk.compat03.grpc.utils.ProtoUtils_v0_3;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -267,7 +268,7 @@ public class RestHandler_v0_3 {
 
     private HTTPRestResponse createSuccessResponse(int statusCode, com.google.protobuf.Message.Builder builder) {
         try {
-            String jsonBody = JsonFormat.printer().print(builder);
+            String jsonBody = ProtoJsonUtils_v0_3.toJson(JsonFormat.printer(), builder);
             return new HTTPRestResponse(statusCode, "application/json", jsonBody);
         } catch (InvalidProtocolBufferException e) {
             return createErrorResponse(new InternalError_v0_3("Failed to serialize response: " + e.getMessage()));
@@ -307,7 +308,8 @@ public class RestHandler_v0_3 {
                     @Override
                     public void onNext(StreamingEventKind_v0_3 item) {
                         try {
-                            String payload = JsonFormat.printer().omittingInsignificantWhitespace().print(ProtoUtils_v0_3.ToProto.taskOrMessageStream(item));
+                            String payload = ProtoJsonUtils_v0_3.toJson(
+                                    JsonFormat.printer().omittingInsignificantWhitespace(), ProtoUtils_v0_3.ToProto.taskOrMessageStream(item));
                             tube.send(payload);
                             if (subscription != null) {
                                 subscription.request(1);

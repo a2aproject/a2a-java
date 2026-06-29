@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import io.quarkus.grpc.GrpcService;
 import io.quarkus.grpc.RegisterInterceptor;
 import io.quarkus.security.Authenticated;
+import io.smallrye.common.annotation.Blocking;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.transport.grpc.handler.CallContextFactory_v0_3;
@@ -17,7 +18,9 @@ import org.a2aproject.sdk.server.util.async.Internal;
 
 @GrpcService
 @RegisterInterceptor(A2AExtensionsInterceptor_v0_3.class)
+@RegisterInterceptor(BlockingOffloadInterceptor_v0_3.class)
 @Authenticated
+@Blocking
 public class QuarkusGrpcHandler_v0_3 extends GrpcHandler_v0_3 {
 
     private final AgentCard_v0_3 agentCard;

@@ -11,6 +11,7 @@ import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.spec.A2AClientError;
+import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.a2aproject.sdk.spec.A2AClientJSONError;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.util.Utils;
@@ -226,7 +227,8 @@ public class A2ACardResolver {
      * is performed; errors are propagated directly to the caller.
      *
      * @return the agent card
-     * @throws A2AClientError If an HTTP or network error occurs fetching the card
+     * @throws A2AClientHTTPError If the server returns a non-2xx response (carries status, body, and headers)
+     * @throws A2AClientError If a network error occurs fetching the card
      * @throws A2AClientJSONError If the response body cannot be decoded as JSON or validated
      * against the AgentCard schema
      */
@@ -245,8 +247,9 @@ public class A2ACardResolver {
         try {
             A2AHttpResponse response = builder.get();
             if (!response.success()) {
+                String msg = "Failed to obtain agent card: " + response.status();
                 LOGGER.debug("Failed to fetch agent card from {}, status: {}", cardUrl, response.status());
-                throw new A2AClientError("Failed to obtain agent card: " + response.status());
+                throw new A2AClientHTTPError(response.status(), msg, response.body(), response.headers().toMap());
             }
             body = response.body();
             LOGGER.debug("Successfully fetched agent card from {}", cardUrl);

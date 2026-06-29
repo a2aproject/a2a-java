@@ -10,6 +10,10 @@ import org.a2aproject.sdk.compat03.util.Utils_v0_3;
  */
 public final class DeleteTaskPushNotificationConfigRequest_v0_3 extends NonStreamingJSONRPCRequest_v0_3<DeleteTaskPushNotificationConfigParams_v0_3> {
 
+    private DeleteTaskPushNotificationConfigRequest_v0_3() {
+    }
+
+
     public static final String METHOD = "tasks/pushNotificationConfig/delete";
 
     public DeleteTaskPushNotificationConfigRequest_v0_3(String jsonrpc, Object id, String method, DeleteTaskPushNotificationConfigParams_v0_3 params) {

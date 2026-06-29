@@ -44,4 +44,16 @@ public interface A2AHttpResponse {
      * @return the response body, may be empty but not null
      */
     String body();
+
+    /**
+     * Returns the HTTP response headers.
+     *
+     * <p>Provides access to response headers such as {@code Retry-After},
+     * {@code WWW-Authenticate}, or any other server-provided headers.
+     *
+     * @return the response headers, never null; may be empty
+     */
+    default A2AHttpHeaders headers() {
+        return A2AHttpHeaders.EMPTY;
+    }
 }

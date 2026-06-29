@@ -206,11 +206,12 @@ compat-0.3/
 │           └── [generated classes]  # No _v0_3 suffix (generated code)
 ├── http-client/                     # HTTP client abstraction for v0.3
 │   └── pom.xml
-├── server-conversion/               # ⭐ Core conversion layer (NEW)
+├── server-conversion/               # ⭐ Core conversion layer
 │   ├── pom.xml
 │   └── src/main/java/org/a2aproject/sdk/compat03/conversion/
 │       ├── Convert_v0_3_To10RequestHandler.java  # Main adapter
 │       ├── ErrorConverter_v0_3.java              # Error conversion
+│       ├── PushNotificationPayloadFormatter_v0_3.java  # v0.3 push notification format
 │       └── mappers/
 │           ├── config/
 │           │   ├── A03ToV10MapperConfig.java     # MapStruct config
@@ -228,6 +229,8 @@ compat-0.3/
 │           │   └── ...
 │           └── result/                           # Response result mappers
 │               └── ListTaskPushNotificationConfigsResultMapper_v0_3.java
+├── tests/                           # Test infrastructure
+│   └── server-common/               # Shared test base classes (AgentExecutorProducer_v0_3)
 ├── client/                          # v0.3-compatible client
 │   ├── base/                        # Client_v0_3 — dedicated 0.3 API
 │   │   └── pom.xml
@@ -295,7 +298,7 @@ All compat-0.3 code uses the `org.a2aproject.sdk.compat03` package root:
 - `org.a2aproject.sdk.compat03.server.{apps,grpc,rest}.quarkus` — reference servers
 - `org.a2aproject.sdk.compat03.tck` — conformance tests
 
-**Note**: During this implementation, the main codebase was migrated from `io.github.a2asdk` (groupId) and `io.a2a` (package) to `org.a2aproject.sdk` (both groupId and package) via PRs #750 and #786.
+**Note**: The main codebase uses `org.a2aproject.sdk` for both groupId and package root.
 
 ---
 
@@ -416,10 +419,7 @@ The `server-conversion` module produces a test-jar containing shared test infras
 - Error mapping tests
 - Task state conversion tests
 - Reference server integration tests
-
-🔲 **Deferred:**
-- Push notification tests (depends on TestHttpClient porting)
-- Test metadata classes (classpath scanning)
+- Push notification payload formatter tests
 
 ---
 
@@ -548,10 +548,4 @@ For JSON-RPC and REST, multi-version convenience modules are also available that
 
 ## Status
 
-The v0.3 compatibility layer is fully implemented: spec types, gRPC generation, conversion layer, all three transport handlers (JSON-RPC, gRPC, REST), client API and transports, reference servers, multi-version deployment, version-aware push notifications, test infrastructure, 125+ integration tests, and TCK module are all in place.
-
-🔲 **Outstanding:**
-- Push notification test porting (requires TestHttpClient)
-- Test metadata classes (classpath scanning)
-- Replace FQNs with imports (97 occurrences in 34 files)
-- Unify AgentCard producers across reference modules
+The v0.3 compatibility layer is fully implemented: spec types, gRPC generation, conversion layer, all three transport handlers (JSON-RPC, gRPC, REST), client API and transports, reference servers, multi-version deployment, version-aware push notifications, test infrastructure, integration tests, and TCK module are all in place.

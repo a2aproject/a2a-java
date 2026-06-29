@@ -1,6 +1,7 @@
 package org.a2aproject.sdk.client.transport.rest;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,6 +11,7 @@ import org.a2aproject.sdk.client.http.A2AHttpResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.spec.A2AClientException;
+import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.a2aproject.sdk.spec.A2AErrorCodes;
 import org.a2aproject.sdk.spec.ContentTypeNotSupportedError;
 import org.a2aproject.sdk.spec.ExtendedAgentCardNotConfiguredError;
@@ -51,10 +53,14 @@ public class RestErrorMapper {
     );
 
     public static A2AClientException mapRestError(A2AHttpResponse response) {
-        return RestErrorMapper.mapRestError(response.body(), response.status());
+        return RestErrorMapper.mapRestError(response.body(), response.status(), response.headers().toMap());
     }
 
     public static A2AClientException mapRestError(String body, int code) {
+        return mapRestError(body, code, Map.of());
+    }
+
+    public static A2AClientException mapRestError(String body, int code, Map<String, List<String>> headers) {
         try {
             if (body != null && !body.isBlank()) {
                 JsonObject node = JsonUtil.fromJson(body, JsonObject.class);
@@ -64,24 +70,38 @@ public class RestErrorMapper {
                     String errorMessage = errorObj.has("message") ? errorObj.get("message").getAsString() : "";
                     ReasonAndMetadata reasonAndMetadata = extractReasonAndMetadata(errorObj);
                     if (reasonAndMetadata != null) {
-                        return mapRestErrorByReason(reasonAndMetadata.reason(), errorMessage, reasonAndMetadata.metadata());
+                        A2AClientException known = mapRestErrorByReason(reasonAndMetadata.reason(), errorMessage, reasonAndMetadata.metadata());
+                        if (known.getCause() != null) {
+                            return known;
+                        }
+                        // Unrecognized reason — include HTTP status and headers
+                        String msg = errorMessage.isEmpty() ? "Request failed with HTTP " + code : errorMessage;
+                        return new A2AClientException(msg, new A2AClientHTTPError(code, msg, body, headers));
                     }
-                    return new A2AClientException(errorMessage);
+                    return new A2AClientException(errorMessage,
+                            new A2AClientHTTPError(code, errorMessage, body, headers));
                 }
                 // Legacy format (error class name, message)
                 String className = node.has("error") ? node.get("error").getAsString() : "";
                 String errorMessage = node.has("message") ? node.get("message").getAsString() : "";
-                return mapRestErrorByClassName(className, errorMessage, code);
+                if (!className.isEmpty()) {
+                    A2AClientException known = mapRestErrorByClassName(className, errorMessage, code);
+                    if (known.getCause() != null) {
+                        return known;
+                    }
+                }
+                // Unknown or empty class name — include HTTP status and headers
+                String msg = errorMessage.isEmpty() ? "Request failed with HTTP " + code : errorMessage;
+                return new A2AClientException(msg, new A2AClientHTTPError(code, msg, body, headers));
             }
-            return mapRestErrorByClassName("", "", code);
+            String message = "Request failed with HTTP " + code;
+            return new A2AClientException(message,
+                    new A2AClientHTTPError(code, message, body, headers));
         } catch (JsonProcessingException ex) {
             Logger.getLogger(RestErrorMapper.class.getName()).log(Level.SEVERE, null, ex);
-            return new A2AClientException("Failed to parse error response: " + ex.getMessage());
+            String message = "Failed to parse error response: " + ex.getMessage();
+            return new A2AClientException(message, new A2AClientHTTPError(code, message, body, headers));
         }
-    }
-
-    public static A2AClientException mapRestError(String className, String errorMessage, int code) {
-        return mapRestErrorByClassName(className, errorMessage, code);
     }
 
     /**

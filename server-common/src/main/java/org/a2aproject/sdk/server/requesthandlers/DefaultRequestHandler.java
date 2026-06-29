@@ -353,7 +353,7 @@ public class DefaultRequestHandler implements RequestHandler {
             }
         }
 
-        ListTasksResult result = taskStore.list(params);
+        ListTasksResult result = taskStore.list(params, context);
         LOGGER.debug("Found {} tasks (total: {})", result.pageSize(), result.totalSize());
         return result;
     }
@@ -936,7 +936,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 } catch (A2AError e) {
                     // Log A2A errors at WARN level with full stack trace
                     // These are expected business errors but should be tracked
-                    LOGGER.warn("Agent execution threw A2AError for task {}: {} - {}", 
+                    LOGGER.warn("Agent execution threw A2AError for task {}: {} - {}",
                         taskId, e.getClass().getSimpleName(), e.getMessage(), e);
                     emitter.fail(e);
                 } catch (RuntimeException e) {
@@ -958,11 +958,18 @@ public class DefaultRequestHandler implements RequestHandler {
         // CRITICAL: Add callback BEFORE starting CompletableFuture to avoid race condition
         // If agent completes very fast, whenComplete can fire before caller adds callbacks
         runnable.addDoneCallback(doneCallback);
-        
+
         // Mark as started to prevent further callback additions (enforced by runtime check)
         runnable.markStarted();
 
-        CompletableFuture<Void> cf = CompletableFuture.runAsync(runnable, executor)
+        // Apply transport-provided execution wrapper (e.g. gRPC context fork for cancellation isolation)
+        @SuppressWarnings("unchecked")
+        java.util.function.UnaryOperator<Runnable> wrapper = requestContext.getCallContext() != null
+                ? (java.util.function.UnaryOperator<Runnable>) requestContext.getCallContext().getState().get(ServerCallContext.EXECUTION_WRAPPER_KEY)
+                : null;
+        Runnable wrappedRunnable = wrapper != null ? wrapper.apply(runnable) : runnable;
+
+        CompletableFuture<Void> cf = CompletableFuture.runAsync(wrappedRunnable, executor)
                 .whenComplete((v, err) -> {
                     if (err != null) {
                         LOGGER.error("Agent execution failed for task {}", taskId, err);

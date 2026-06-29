@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import org.jspecify.annotations.Nullable;
 
 import org.a2aproject.sdk.common.A2AErrorMessages;
+import org.a2aproject.sdk.spec.A2AClientHTTPError;
 
 /**
  * Default HTTP client implementation using JDK 11+ {@link HttpClient}.
@@ -92,6 +93,15 @@ public class JdkA2AHttpClient implements A2AHttpClient {
     @Override
     public DeleteBuilder createDelete() {
         return new JdkDeleteBuilder();
+    }
+
+    private static boolean isCancellation(Throwable t) {
+        for (Throwable current = t; current != null; current = current.getCause()) {
+            if (current instanceof java.util.concurrent.CancellationException) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private abstract class JdkBuilder<T extends Builder<T>> implements Builder<T> {
@@ -175,16 +185,15 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 @Override
                 public void onError(Throwable throwable) {
                     if (errorNotified.compareAndSet(false, true)) {
-                        errorConsumer.accept(throwable);
-                    }
-                    if (subscription != null) {
-                        subscription.cancel();
+                        if (!isCancellation(throwable)) {
+                            errorConsumer.accept(throwable);
+                        }
                     }
                 }
 
                 @Override
                 public void onComplete() {
-                    if (!errorNotified.get()) {
+                    if (errorNotified.compareAndSet(false, true)) {
                         if (useSseParser.get()) {
                             sseParser.flush();
                         } else {
@@ -195,9 +204,6 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                         }
                         completeRunnable.run();
                     }
-                    if (subscription != null) {
-                        subscription.cancel();
-                    }
                 }
             };
 
@@ -205,17 +211,17 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             BodyHandler<Void> bodyHandler = responseInfo -> {
                 // Check for authentication/authorization errors only
                 if (responseInfo.statusCode() == HTTP_UNAUTHORIZED || responseInfo.statusCode() == HTTP_FORBIDDEN) {
-                    final String errorMessage;
-                    if (responseInfo.statusCode() == HTTP_UNAUTHORIZED) {
-                        errorMessage = A2AErrorMessages.AUTHENTICATION_FAILED;
-                    } else {
-                        errorMessage = A2AErrorMessages.AUTHORIZATION_FAILED;
-                    }
+                    final int statusCode = responseInfo.statusCode();
+                    final String errorMessage = statusCode == HTTP_UNAUTHORIZED
+                            ? A2AErrorMessages.AUTHENTICATION_FAILED
+                            : A2AErrorMessages.AUTHORIZATION_FAILED;
+                    final A2AClientHTTPError httpError = new A2AClientHTTPError(
+                            statusCode, errorMessage, null, responseInfo.headers().map());
                     // Return a body subscriber that immediately signals error
                     return BodySubscribers.fromSubscriber(new Flow.Subscriber<List<ByteBuffer>>() {
                         @Override
                         public void onSubscribe(Flow.Subscription subscription) {
-                            subscriber.onError(new IOException(errorMessage));
+                            subscriber.onError(new IOException(errorMessage, httpError));
                         }
 
                         @Override
@@ -249,8 +255,10 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             return httpClient.sendAsync(request, bodyHandler)
                     .<Void>handle((response, throwable) -> {
                         if (throwable != null && errorNotified.compareAndSet(false, true)) {
-                            Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
-                            errorConsumer.accept(cause);
+                            if (!isCancellation(throwable)) {
+                                Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
+                                errorConsumer.accept(cause);
+                            }
                         }
                         return null;
                     });
@@ -275,9 +283,13 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                     httpClient.send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
-                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED);
+                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
+                        new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
+                                null, response.headers().map()));
             } else if (response.statusCode() == HTTP_FORBIDDEN) {
-                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED);
+                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
+                        new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
+                                null, response.headers().map()));
             }
 
             return new JdkHttpResponse(response);
@@ -304,9 +316,13 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                     httpClient.send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
-                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED);
+                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
+                        new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
+                                null, response.headers().map()));
             } else if (response.statusCode() == HTTP_FORBIDDEN) {
-                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED);
+                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
+                        new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
+                                null, response.headers().map()));
             }
 
             return new JdkHttpResponse(response);
@@ -340,9 +356,13 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                     httpClient.send(request, BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == HTTP_UNAUTHORIZED) {
-                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED);
+                throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
+                        new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
+                                null, response.headers().map()));
             } else if (response.statusCode() == HTTP_FORBIDDEN) {
-                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED);
+                throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
+                        new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
+                                null, response.headers().map()));
             }
 
             return new JdkHttpResponse(response);
@@ -378,6 +398,11 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         @Override
         public String body() {
             return response.body();
+        }
+
+        @Override
+        public A2AHttpHeaders headers() {
+            return A2AHttpHeaders.of(response.headers().map());
         }
     }
 }

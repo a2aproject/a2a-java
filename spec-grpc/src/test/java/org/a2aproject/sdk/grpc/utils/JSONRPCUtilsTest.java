@@ -2,18 +2,23 @@ package org.a2aproject.sdk.grpc.utils;
 
 import static org.a2aproject.sdk.grpc.utils.JSONRPCUtils.ERROR_MESSAGE;
 import static org.a2aproject.sdk.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static org.a2aproject.sdk.spec.A2AMethods.SEND_MESSAGE_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.Collections;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
+import org.a2aproject.sdk.grpc.SendMessageResponse;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
@@ -24,8 +29,11 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigR
 import org.a2aproject.sdk.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse;
 import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.JSONParseError;
+import org.a2aproject.sdk.spec.Message;
+import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.TaskNotFoundError;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
+import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.util.ErrorDetail;
 import org.junit.jupiter.api.Test;
 
@@ -483,6 +491,53 @@ public class JSONRPCUtilsTest {
         assertInstanceOf(TaskNotFoundError.class, response.getError());
         assertEquals(-32001, response.getError().getCode());
         assertEquals("Custom message", response.getError().getMessage());
+    }
+
+    @Test
+    public void testToJsonRPCRequest_doesNotHtmlEscapeAngleBrackets() {
+        // Reproduce issue #892: HTML special characters in message text were escaped
+        // to Unicode sequences (< for <, > for >) by JsonFormat.printer().
+        MessageSendParams params = new MessageSendParams(
+            Message.builder()
+                .role(Message.Role.ROLE_USER)
+                .parts(Collections.singletonList(new TextPart("<event-topic>")))
+                .contextId("context-1234")
+                .messageId("message-1234")
+                .build(),
+            null, null
+        );
+        org.a2aproject.sdk.grpc.SendMessageRequest protoRequest =
+            ProtoUtils.ToProto.sendMessageRequest(params);
+
+        String json = JSONRPCUtils.toJsonRPCRequest("test-id", SEND_MESSAGE_METHOD, protoRequest);
+
+        assertTrue(json.contains("<event-topic>"),
+            "JSON should preserve literal '<event-topic>' but got: " + json);
+        assertFalse(json.contains("\\u003c"),
+            "JSON must not contain HTML-escaped '<' (\\u003c) but got: " + json);
+        assertFalse(json.contains("\\u003e"),
+            "JSON must not contain HTML-escaped '>' (\\u003e) but got: " + json);
+    }
+
+    @Test
+    public void testToJsonRPCResultResponse_doesNotHtmlEscapeAngleBrackets() {
+        // Reproduce issue #892: server responses must also send literal angle brackets.
+        Message message = Message.builder()
+            .role(Message.Role.ROLE_AGENT)
+            .parts(Collections.singletonList(new TextPart("<result>")))
+            .contextId("context-1234")
+            .messageId("message-5678")
+            .build();
+        SendMessageResponse protoResponse = ProtoUtils.ToProto.taskOrMessage(message);
+
+        String json = JSONRPCUtils.toJsonRPCResultResponse("test-id", protoResponse);
+
+        assertTrue(json.contains("<result>"),
+            "JSON should preserve literal '<result>' but got: " + json);
+        assertFalse(json.contains("\\u003c"),
+            "JSON must not contain HTML-escaped '<' (\\u003c) but got: " + json);
+        assertFalse(json.contains("\\u003e"),
+            "JSON must not contain HTML-escaped '>' (\\u003e) but got: " + json);
     }
 
 }

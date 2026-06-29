@@ -688,6 +688,57 @@ public class JSONRPCTransportTest {
     }
 
     /**
+     * Test that HTTP error responses expose response headers via A2AClientHTTPError,
+     * enabling callers to read headers like Retry-After on 429 responses.
+     */
+    @Test
+    public void testHttpErrorExposeResponseHeaders() throws Exception {
+        this.server.when(
+                        request()
+                                .withMethod("POST")
+                                .withPath("/")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(429)
+                                .withHeader("Retry-After", "120")
+                                .withHeader("X-RateLimit-Remaining", "0")
+                                .withBody("{\"error\": \"Too Many Requests\"}")
+                );
+
+        JSONRPCTransport client = new JSONRPCTransport("http://localhost:4001");
+        MessageSendParams params = MessageSendParams.builder()
+                .message(Message.builder()
+                        .role(Message.Role.ROLE_USER)
+                        .parts(Collections.singletonList(new TextPart("hello")))
+                        .contextId("ctx")
+                        .messageId("msg")
+                        .build())
+                .build();
+
+        try {
+            client.sendMessage(params, null);
+            fail("Expected A2AClientException to be thrown");
+        } catch (A2AClientException e) {
+            assertInstanceOf(A2AClientHTTPError.class, e.getCause());
+            A2AClientHTTPError httpError = (A2AClientHTTPError) e.getCause();
+            assertEquals(429, httpError.getCode());
+
+            Map<String, List<String>> headers = httpError.getResponseHeaders();
+            assertNotNull(headers);
+            assertFalse(headers.isEmpty());
+
+            List<String> retryAfter = headers.getOrDefault("Retry-After", List.of());
+            assertFalse(retryAfter.isEmpty(), "Expected Retry-After header");
+            assertEquals("120", retryAfter.get(0));
+
+            List<String> rateLimitRemaining = headers.getOrDefault("X-RateLimit-Remaining", List.of());
+            assertFalse(rateLimitRemaining.isEmpty(), "Expected X-RateLimit-Remaining header");
+            assertEquals("0", rateLimitRemaining.get(0));
+        }
+    }
+
+    /**
      * Test that VersionNotSupportedError is properly unmarshalled from JSON-RPC error response.
      */
     @Test

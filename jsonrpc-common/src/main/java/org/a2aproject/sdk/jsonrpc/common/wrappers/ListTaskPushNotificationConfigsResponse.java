@@ -20,6 +20,10 @@ import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
  */
 public final class ListTaskPushNotificationConfigsResponse extends A2AResponse<ListTaskPushNotificationConfigsResult> {
 
+    private ListTaskPushNotificationConfigsResponse() {
+    }
+
+
     /**
      * Constructs response with all parameters.
      *

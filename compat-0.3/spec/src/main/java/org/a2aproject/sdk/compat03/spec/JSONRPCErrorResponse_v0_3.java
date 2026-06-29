@@ -7,6 +7,9 @@ import org.a2aproject.sdk.util.Assert;
  */
 public final class JSONRPCErrorResponse_v0_3 extends JSONRPCResponse_v0_3<Void> {
 
+    private JSONRPCErrorResponse_v0_3() {
+    }
+
     /**
      * Constructs a JSON-RPC error response with all fields.
      * <p>

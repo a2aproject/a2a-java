@@ -394,6 +394,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            installForkedContextWrapper(context);
             A2AVersionValidator.validateProtocolVersion(getAgentCardInternal(), context);
             A2AExtensions.validateRequiredExtensions(getAgentCardInternal(), context);
             MessageSendParams params = FromProto.messageSendParams(request);
@@ -418,6 +419,7 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
 
         try {
             ServerCallContext context = createCallContext(responseObserver);
+            installForkedContextWrapper(context);
             TaskIdParams params = FromProto.taskIdParams(request);
             Flow.Publisher<StreamingEventKind> publisher = getRequestHandler().onSubscribeToTask(params, context);
             convertToStreamResponse(publisher, responseObserver, context);
@@ -703,6 +705,24 @@ public abstract class GrpcHandler extends A2AServiceGrpc.A2AServiceImplBase {
             // This is another manifestation of the architectural limitation mentioned above
             return factory.create(responseObserver); // Fall back to basic create() method for now
         }
+    }
+
+    /**
+     * Forks the current gRPC context and installs it as an execution wrapper on the
+     * server call context. This isolates agent outbound calls from the inbound call's
+     * cancellation signal.
+     */
+    private void installForkedContextWrapper(ServerCallContext context) {
+        Context forked = Context.current().fork();
+        context.getState().put(ServerCallContext.EXECUTION_WRAPPER_KEY,
+                (java.util.function.UnaryOperator<Runnable>) (runnable -> () -> {
+                    Context prev = forked.attach();
+                    try {
+                        runnable.run();
+                    } finally {
+                        forked.detach(prev);
+                    }
+                }));
     }
 
     /**

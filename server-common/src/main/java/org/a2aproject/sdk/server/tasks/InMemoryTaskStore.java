@@ -6,8 +6,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
+import org.a2aproject.sdk.server.ServerCallContext;
+import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
+import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
@@ -67,7 +73,7 @@ import org.jspecify.annotations.Nullable;
  *     .statusTimestampBefore(Instant.now().minus(Duration.ofHours(48)))
  *     .build();
  *
- * List<Task> oldTasks = taskStore.list(params).tasks();
+ * List<Task> oldTasks = taskStore.list(params, context).tasks();
  * oldTasks.stream()
  *     .filter(task -> task.status().state().isFinal())
  *     .forEach(task -> taskStore.delete(task.id()));
@@ -86,6 +92,22 @@ import org.jspecify.annotations.Nullable;
 public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
 
     private final ConcurrentMap<String, Task> tasks = new ConcurrentHashMap<>();
+    private final @Nullable TaskAuthorizationProvider authorizationProvider;
+
+    public InMemoryTaskStore() {
+        this.authorizationProvider = null;
+    }
+
+    @Inject
+    public InMemoryTaskStore(@Any Instance<TaskAuthorizationProvider> authorizationProviderInstance) {
+        this.authorizationProvider = authorizationProviderInstance.isResolvable()
+                ? authorizationProviderInstance.get()
+                : null;
+    }
+
+    InMemoryTaskStore(@Nullable TaskAuthorizationProvider authorizationProvider) {
+        this.authorizationProvider = authorizationProvider;
+    }
 
     @Override
     public void save(Task task, boolean isReplicated) {
@@ -104,7 +126,7 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
     }
 
     @Override
-    public ListTasksResult list(ListTasksParams params) {
+    public ListTasksResult list(ListTasksParams params, @Nullable ServerCallContext context) {
         // Filter and sort tasks in a single stream pipeline
         List<Task> allFilteredTasks = tasks.values().stream()
                 .filter(task -> params.contextId() == null || params.contextId().equals(task.contextId()))
@@ -114,6 +136,8 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
                         (task.status() != null &&
                          task.status().timestamp() != null &&
                          task.status().timestamp().toInstant().isAfter(params.statusTimestampAfter())))
+                .filter(task -> authorizationProvider == null || context == null ||
+                        authorizationProvider.checkRead(context, task.id(), TaskOperation.LIST_TASKS))
                 .sorted(Comparator.comparing(
                         (Task t) -> (t.status() != null && t.status().timestamp() != null)
                                 // Truncate to milliseconds for consistency with pageToken precision

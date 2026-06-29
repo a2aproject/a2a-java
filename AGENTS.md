@@ -16,7 +16,7 @@ mvn clean install
 
 ## Project Structure
 
-- `spec/` — A2A specification types (Java POJOs for the protocol)
+- `spec/` — A2A specification types (Java records for the protocol)
 - `spec-grpc/` — gRPC protobuf definitions and generated classes
 - `common/` — Shared utilities used across modules
 - `client/` — Client SDK
@@ -29,10 +29,22 @@ mvn clean install
 - `jsonrpc-common/` — Shared JSON-RPC utilities
 - `reference/` — Reference server implementations built on Quarkus
   - `common/`, `jsonrpc/`, `grpc/`, `rest/`
+  - `multiversion-jsonrpc/`, `multiversion-rest/` — Multi-version dispatching (v1.0 + v0.3)
 - `tck/` — Technology Compatibility Kit (protocol conformance tests)
-- `tests/` — Integration tests
-- `extras/` — Optional add-ons (OpenTelemetry, JPA task/notification stores, replicated queue manager, Vert.x HTTP client)
+- `tests/` — Integration and server-common tests
+  - `server-common/` — Server-common integration tests
+  - `multiversion/` — Multi-version integration tests (jsonrpc, rest, grpc)
+- `extras/` — Optional add-ons
+  - `common/` — Shared classes across extras modules
+  - `opentelemetry/` — OpenTelemetry integration
+  - `task-store-database-jpa/` — JPA-backed task store
+  - `push-notification-config-store-database-jpa/` — JPA-backed push notification config store
+  - `queue-manager-replicated/` — Kafka-based replicated queue manager
+  - `http-client-vertx/` — Vert.x HTTP client
+  - `http-client-android/` — Android HTTP client
+- `compat-0.3/` — Backward compatibility layer for A2A protocol v0.3
 - `integrations/` — Runtime integrations (e.g., MicroProfile Config)
+- `test-utils-docker/` — Test utilities for conditional Docker-based test execution
 - `boms/` — Bill of Materials POMs (sdk, extras, reference, test-utils)
 - `examples/` — Sample applications (helloworld, cloud-deployment)
 
@@ -68,6 +80,7 @@ mvn clean install
 ### Skills
 
 - [update-a2a-proto](.agents/skills/update-a2a-proto/SKILL.md) — Update the gRPC proto file `a2a.proto` from upstream and regenerate Java sources
+- [fix-tck-issue](.agents/skills/fix-tck-issue/SKILL.md) — Analyze and fix A2A TCK compatibility issues across transports
 
 ### Commands
 

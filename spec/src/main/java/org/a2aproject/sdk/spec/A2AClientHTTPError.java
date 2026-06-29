@@ -1,6 +1,10 @@
 package org.a2aproject.sdk.spec;
 
+import java.util.List;
+import java.util.Map;
+
 import org.a2aproject.sdk.util.Assert;
+import org.a2aproject.sdk.util.HttpHeaderUtils;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -18,14 +22,17 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * This exception is set as the cause of {@link A2AClientException} so that callers
  * can inspect the HTTP status code while remaining backward compatible:
- * <pre>{@code
+ * <pre>
  * } catch (A2AClientException e) {
  *     if (e.getCause() instanceof A2AClientHTTPError httpError) {
- *         int status = httpError.getCode();           // e.g. 401, 503
- *         String body = httpError.getResponseBody();  // raw response body, may be null
+ *         int status = httpError.getCode();
+ *         String body = httpError.getResponseBody();
+ *         Map&lt;String, List&lt;String&gt;&gt; headers = httpError.getResponseHeaders();
+ *         String retryAfter = headers.getOrDefault("Retry-After", List.of())
+ *             .stream().findFirst().orElse(null);
  *     }
  * }
- * }</pre>
+ * </pre>
  *
  * @see A2AClientError for the base client error class
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">HTTP Status Codes</a>
@@ -48,13 +55,18 @@ public class A2AClientHTTPError extends A2AClientError {
     private final String responseBody;
 
     /**
+     * The HTTP response headers.
+     */
+    private final Map<String, List<String>> responseHeaders;
+
+    /**
      * Creates a new HTTP client error with the specified status code and message.
      *
      * @param code the HTTP status code
      * @param message the error message
      * @param data additional error data (may be the response body)
      * @throws IllegalArgumentException if code or message is null
-     * @deprecated Use {@link #A2AClientHTTPError(int, String, String)} instead to preserve the response body.
+     * @deprecated Use {@link #A2AClientHTTPError(int, String, String, Map)} instead to preserve the response body and headers.
      */
     @Deprecated(since = "1.0.0.Beta1", forRemoval = true)
     public A2AClientHTTPError(int code, String message, Object data) {
@@ -63,6 +75,7 @@ public class A2AClientHTTPError extends A2AClientError {
         this.code = code;
         this.message = message;
         this.responseBody = data instanceof String s ? s : "";
+        this.responseHeaders = Map.of();
     }
 
     /**
@@ -71,12 +84,33 @@ public class A2AClientHTTPError extends A2AClientError {
      * @param code the HTTP status code (e.g. 401, 503)
      * @param message the error message
      * @param responseBody the raw HTTP response body, may be {@code null}
+     * @deprecated Use {@link #A2AClientHTTPError(int, String, String, Map)} instead to preserve the response headers.
      */
+    @Deprecated(since = "1.0.0.Beta1", forRemoval = true)
     public A2AClientHTTPError(int code, String message, @Nullable String responseBody) {
         Assert.checkNotNullParam("message", message);
         this.code = code;
         this.message = message;
         this.responseBody = responseBody;
+        this.responseHeaders = Map.of();
+    }
+
+    /**
+     * Creates a new HTTP client error with the specified status code, message, response body, and headers.
+     *
+     * @param code the HTTP status code (e.g. 429, 503)
+     * @param message the error message
+     * @param responseBody the raw HTTP response body, may be {@code null}
+     * @param responseHeaders the HTTP response headers
+     */
+    public A2AClientHTTPError(int code, String message, @Nullable String responseBody,
+                              Map<String, List<String>> responseHeaders) {
+        Assert.checkNotNullParam("message", message);
+        Assert.checkNotNullParam("responseHeaders", responseHeaders);
+        this.code = code;
+        this.message = message;
+        this.responseBody = responseBody;
+        this.responseHeaders = HttpHeaderUtils.copyOfCaseInsensitive(responseHeaders);
     }
 
     /**
@@ -105,5 +139,17 @@ public class A2AClientHTTPError extends A2AClientError {
      */
     public @Nullable String getResponseBody() {
         return responseBody;
+    }
+
+    /**
+     * Returns the HTTP response headers.
+     *
+     * <p>Useful for examining headers like {@code Retry-After} on 429 responses
+     * or {@code WWW-Authenticate} on 401 responses.
+     *
+     * @return unmodifiable, case-insensitive map of header names to lists of values, never null
+     */
+    public Map<String, List<String>> getResponseHeaders() {
+        return responseHeaders;
     }
 }

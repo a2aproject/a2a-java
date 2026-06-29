@@ -14,6 +14,7 @@ public class ReferenceBomVerifier extends DynamicBomVerifier {
     private static final Set<String> REFERENCE_EXCLUSIONS = Set.of(
         "boms/",               // BOM test modules themselves
         "examples/",           // Example applications
+        "itk/",                // Integration Test Kit agent
         "tck/",                // TCK test suite
         "tests/",              // Integration tests
         "test-utils-docker/",  // Test utilities for Docker-based tests

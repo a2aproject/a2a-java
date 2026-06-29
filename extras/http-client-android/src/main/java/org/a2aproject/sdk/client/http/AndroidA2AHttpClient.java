@@ -6,6 +6,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 import org.a2aproject.sdk.common.A2AErrorMessages;
+import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,11 +19,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+
+import org.jspecify.annotations.Nullable;
 
 /** Android-specific implementation of {@link A2AHttpClient} using {@link HttpURLConnection}. */
 public class AndroidA2AHttpClient implements A2AHttpClient {
@@ -122,10 +126,15 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
 
     protected A2AHttpResponse execute(HttpURLConnection connection) throws IOException {
       int status = connection.getResponseCode();
+      A2AHttpHeaders responseHeaders = fromConnectionHeaders(connection.getHeaderFields());
       if (status == HTTP_UNAUTHORIZED) {
-        throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED);
+        throw new IOException(A2AErrorMessages.AUTHENTICATION_FAILED,
+            new A2AClientHTTPError(HTTP_UNAUTHORIZED, A2AErrorMessages.AUTHENTICATION_FAILED,
+                null, responseHeaders.toMap()));
       } else if (status == HTTP_FORBIDDEN) {
-        throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED);
+        throw new IOException(A2AErrorMessages.AUTHORIZATION_FAILED,
+            new A2AClientHTTPError(HTTP_FORBIDDEN, A2AErrorMessages.AUTHORIZATION_FAILED,
+                null, responseHeaders.toMap()));
       }
 
       String body = "";
@@ -136,7 +145,7 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
         body = readStreamWithLimit(is);
       }
 
-      return new AndroidHttpResponse(status, body);
+      return new AndroidHttpResponse(status, body, responseHeaders);
     }
 
     protected void processSSEResponse(
@@ -147,11 +156,13 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
       try {
         int status = connection.getResponseCode();
         if (!(status >= HTTP_OK && status < HTTP_MULT_CHOICE)) {
-          if (status == HTTP_UNAUTHORIZED) {
-            errorConsumer.accept(new IOException(A2AErrorMessages.AUTHENTICATION_FAILED));
-            return;
-          } else if (status == HTTP_FORBIDDEN) {
-            errorConsumer.accept(new IOException(A2AErrorMessages.AUTHORIZATION_FAILED));
+          if (status == HTTP_UNAUTHORIZED || status == HTTP_FORBIDDEN) {
+            A2AHttpHeaders responseHeaders = fromConnectionHeaders(connection.getHeaderFields());
+            String msg = status == HTTP_UNAUTHORIZED
+                ? A2AErrorMessages.AUTHENTICATION_FAILED
+                : A2AErrorMessages.AUTHORIZATION_FAILED;
+            errorConsumer.accept(new IOException(msg,
+                new A2AClientHTTPError(status, msg, null, responseHeaders.toMap())));
             return;
           }
 
@@ -305,10 +316,21 @@ public class AndroidA2AHttpClient implements A2AHttpClient {
     }
   }
 
-  private record AndroidHttpResponse(int status, String body) implements A2AHttpResponse {
+  private static A2AHttpHeaders fromConnectionHeaders(@Nullable Map<String, List<String>> headerFields) {
+    // HttpURLConnection.getHeaderFields() may include a null key for the HTTP status line;
+    // A2AHttpHeaders.of() filters those out automatically.
+    return A2AHttpHeaders.of(headerFields != null ? headerFields : Map.of());
+  }
+
+  private record AndroidHttpResponse(int status, String body, A2AHttpHeaders headers) implements A2AHttpResponse {
     @Override
     public boolean success() {
       return status >= HTTP_OK && status < HTTP_MULT_CHOICE;
+    }
+
+    @Override
+    public A2AHttpHeaders headers() {
+      return headers;
     }
   }
 }

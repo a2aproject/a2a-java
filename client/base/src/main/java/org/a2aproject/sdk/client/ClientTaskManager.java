@@ -23,26 +23,26 @@ import org.jspecify.annotations.Nullable;
  * Responsible for retrieving, saving, and updating the task based on
  * events received from the agent.
  */
-public class ClientTaskManager {
+class ClientTaskManager {
 
     private @Nullable Task currentTask;
     private @Nullable String taskId;
     private @Nullable String contextId;
 
-    public ClientTaskManager() {
+    ClientTaskManager() {
         this.currentTask = null;
         this.taskId = null;
         this.contextId = null;
     }
 
-    public synchronized Task getCurrentTask() throws A2AClientInvalidStateError {
+    synchronized Task getCurrentTask() throws A2AClientInvalidStateError {
         if (currentTask == null) {
             throw new A2AClientInvalidStateError("No current task");
         }
         return currentTask;
     }
 
-    public synchronized Task saveTaskEvent(Task task) throws A2AClientInvalidArgsError {
+    synchronized Task saveTaskEvent(Task task) throws A2AClientInvalidArgsError {
         if (currentTask != null) {
             throw new A2AClientInvalidArgsError("Task is already set, create new manager for new tasks.");
         }
@@ -50,7 +50,7 @@ public class ClientTaskManager {
         return task;
     }
 
-    public synchronized Task saveTaskEvent(TaskStatusUpdateEvent taskStatusUpdateEvent) throws A2AClientError {
+    synchronized Task saveTaskEvent(TaskStatusUpdateEvent taskStatusUpdateEvent) throws A2AClientError {
         if (taskId == null) {
             taskId = taskStatusUpdateEvent.taskId();
         }
@@ -86,7 +86,7 @@ public class ClientTaskManager {
         return currentTask;
     }
 
-    public synchronized Task saveTaskEvent(TaskArtifactUpdateEvent taskArtifactUpdateEvent) {
+    synchronized Task saveTaskEvent(TaskArtifactUpdateEvent taskArtifactUpdateEvent) {
         if (taskId == null) {
             taskId = taskArtifactUpdateEvent.taskId();
         }
@@ -113,7 +113,7 @@ public class ClientTaskManager {
      * @param task the task to update
      * @return the updated task
      */
-    public synchronized Task updateWithMessage(Message message, Task task) {
+    synchronized Task updateWithMessage(Message message, Task task) {
         Task.Builder taskBuilder = Task.builder(task);
         List<Message> history = new ArrayList<>(task.history());
         if (task.status().message() != null) {

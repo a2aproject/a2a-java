@@ -328,7 +328,7 @@ public class JSONRPCTransport implements ClientTransport {
         if (!response.success()) {
             int status = response.status();
             String message = "Request failed with HTTP " + status;
-            throw new A2AClientException(message, new A2AClientHTTPError(status, message, response.body()));
+            throw new A2AClientException(message, new A2AClientHTTPError(status, message, response.body(), response.headers().toMap()));
         }
         return response.body();
     }

@@ -17,6 +17,7 @@ import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.spec.A2AClientError;
+import org.a2aproject.sdk.spec.A2AClientHTTPError;
 import org.a2aproject.sdk.spec.A2AClientJSONError;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.junit.jupiter.api.Test;
@@ -134,8 +135,9 @@ public class A2ACardResolverTest {
         TestHttpClient client = createTestClient();
         client.status = 503;
         A2ACardResolver resolver = A2ACardResolver.builder().httpClient(client).baseUrl("http://example.com/").build();
-        A2AClientError error = assertThrows(A2AClientError.class, resolver::getAgentCard);
+        A2AClientHTTPError error = assertThrows(A2AClientHTTPError.class, resolver::getAgentCard);
         assertTrue(error.getMessage().contains("503"));
+        assertEquals(503, error.getCode());
     }
 
     @Test
@@ -147,7 +149,8 @@ public class A2ACardResolverTest {
                 .baseUrl("http://example.com")
                 .agentCardPath("/custom/agent.json")
                 .build();
-        assertThrows(A2AClientError.class, resolver::getAgentCard);
+        A2AClientHTTPError error = assertThrows(A2AClientHTTPError.class, resolver::getAgentCard);
+        assertEquals(404, error.getCode());
         assertEquals(1, client.urlsCalled.size());
         assertEquals("http://example.com/custom/agent.json", client.urlsCalled.get(0));
     }
