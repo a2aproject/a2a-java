@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.jspecify.annotations.Nullable;
 
 public class RestTransport_v0_3 implements ClientTransport_v0_3 {
@@ -374,11 +375,16 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
     }
 
     private String sendPostRequest(String url, PayloadAndHeaders_v0_3 payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException_v0_3 {
-        A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders);
+        MessageOrBuilder payload = (MessageOrBuilder) payloadAndHeaders.getPayload();
+        String body = payload != null ? ProtoJsonUtils.toJson(JsonFormat.printer(), payload) : "";
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(body);
+        }
+        A2AHttpClient.PostBuilder builder = buildPost(url, payloadAndHeaders, body);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Error on POST processing " + ProtoJsonUtils_v0_3.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload()));
+                log.fine("Error on POST processing " + body);
             }
             throw RestErrorMapper_v0_3.mapRestError(response);
         }
@@ -390,6 +396,10 @@ public class RestTransport_v0_3 implements ClientTransport_v0_3 {
         if (log.isLoggable(Level.FINE)) {
             log.fine(body);
         }
+        return buildPost(url, payloadAndHeaders, body);
+    }
+
+    private A2AHttpClient.PostBuilder buildPost(String url, PayloadAndHeaders_v0_3 payloadAndHeaders, String body) throws JsonProcessingException_v0_3 {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(url)
                 .addHeader("Content-Type", "application/json")

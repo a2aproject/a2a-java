@@ -60,42 +60,6 @@ public class A2AClientHTTPError extends A2AClientError {
     private final Map<String, List<String>> responseHeaders;
 
     /**
-     * Creates a new HTTP client error with the specified status code and message.
-     *
-     * @param code the HTTP status code
-     * @param message the error message
-     * @param data additional error data (may be the response body)
-     * @throws IllegalArgumentException if code or message is null
-     * @deprecated Use {@link #A2AClientHTTPError(int, String, String, Map)} instead to preserve the response body and headers.
-     */
-    @Deprecated(since = "1.0.0.Beta1", forRemoval = true)
-    public A2AClientHTTPError(int code, String message, Object data) {
-        Assert.checkNotNullParam("code", code);
-        Assert.checkNotNullParam("message", message);
-        this.code = code;
-        this.message = message;
-        this.responseBody = data instanceof String s ? s : "";
-        this.responseHeaders = Map.of();
-    }
-
-    /**
-     * Creates a new HTTP client error with the specified status code, message, and response body.
-     *
-     * @param code the HTTP status code (e.g. 401, 503)
-     * @param message the error message
-     * @param responseBody the raw HTTP response body, may be {@code null}
-     * @deprecated Use {@link #A2AClientHTTPError(int, String, String, Map)} instead to preserve the response headers.
-     */
-    @Deprecated(since = "1.0.0.Beta1", forRemoval = true)
-    public A2AClientHTTPError(int code, String message, @Nullable String responseBody) {
-        Assert.checkNotNullParam("message", message);
-        this.code = code;
-        this.message = message;
-        this.responseBody = responseBody;
-        this.responseHeaders = Map.of();
-    }
-
-    /**
      * Creates a new HTTP client error with the specified status code, message, response body, and headers.
      *
      * @param code the HTTP status code (e.g. 429, 503)

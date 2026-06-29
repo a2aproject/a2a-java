@@ -22,6 +22,7 @@ import org.a2aproject.sdk.spec.GetTaskPushNotificationConfigParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsParams;
 import org.a2aproject.sdk.spec.ListTaskPushNotificationConfigsResult;
 import org.a2aproject.sdk.spec.ListTasksParams;
+import org.a2aproject.sdk.spec.Message;
 import org.a2aproject.sdk.spec.MessageSendParams;
 import org.a2aproject.sdk.spec.StreamingEventKind;
 import org.a2aproject.sdk.spec.Task;
@@ -137,6 +138,9 @@ public class AuthorizationRequestHandlerDecorator implements RequestHandler {
             return e.taskId();
         } else if (event instanceof TaskArtifactUpdateEvent e) {
             return e.taskId();
+        } else if (event instanceof Message m) {
+            // Message.taskId() is set by AgentEmitter when a task context exists
+            return m.taskId();
         }
         return null;
     }

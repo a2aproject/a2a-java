@@ -559,7 +559,7 @@ public class A2AServerRoutes {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
                 String subject = rc.user().subject();
-                user = new AuthenticatedUser(subject != null ? subject : "");
+                user = subject != null ? new AuthenticatedUser(subject) : UnauthenticatedUser.INSTANCE;
             }
             Map<String, Object> state = new HashMap<>();
             // TODO Python's impl has
