@@ -31,6 +31,7 @@ jobs:
         id: release_notes
         uses: actions/github-script@v9
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const version = '${{ steps.version.outputs.version }}';
 
@@ -88,6 +89,7 @@ jobs:
       - name: Create GitHub Release
         uses: actions/github-script@v9
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const version = '${{ steps.version.outputs.version }}';
             const tag = context.ref.replace('refs/tags/', '');
