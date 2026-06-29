@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -36,6 +37,7 @@ import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
 import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
 import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
+import org.a2aproject.sdk.grpc.utils.ProtoJsonUtils;
 import org.a2aproject.sdk.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
@@ -431,19 +433,24 @@ public class RestTransport implements ClientTransport {
         A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
-            log.fine("Error on POST processing " + JsonFormat.printer().print((MessageOrBuilder) payloadAndHeaders.getPayload()));
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Error on POST processing " + ProtoJsonUtils.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload()));
+            }
             throw RestErrorMapper.mapRestError(response);
         }
         return response.body();
     }
 
     private A2AHttpClient.PostBuilder createPostBuilder(String url, PayloadAndHeaders payloadAndHeaders) throws JsonProcessingException, InvalidProtocolBufferException {
-        log.fine(JsonFormat.printer().print((MessageOrBuilder) payloadAndHeaders.getPayload()));
+        String body = ProtoJsonUtils.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload());
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(body);
+        }
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(url)
                 .addHeader("Content-Type", "application/json")
                 .addHeader(A2AHeaders.A2A_VERSION, AgentInterface.CURRENT_PROTOCOL_VERSION)
-                .body(JsonFormat.printer().print((MessageOrBuilder) payloadAndHeaders.getPayload()));
+                .body(body);
 
         if (payloadAndHeaders.getHeaders() != null) {
             for (Map.Entry<String, String> entry : payloadAndHeaders.getHeaders().entrySet()) {
