@@ -430,11 +430,16 @@ public class RestTransport implements ClientTransport {
     }
 
     private String sendPostRequest(String url, PayloadAndHeaders payloadAndHeaders) throws IOException, InterruptedException, JsonProcessingException {
-        A2AHttpClient.PostBuilder builder = createPostBuilder(url, payloadAndHeaders);
+        MessageOrBuilder payload = (MessageOrBuilder) payloadAndHeaders.getPayload();
+        String body = payload != null ? ProtoJsonUtils.toJson(JsonFormat.printer(), payload) : "";
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(body);
+        }
+        A2AHttpClient.PostBuilder builder = buildPost(url, payloadAndHeaders, body);
         A2AHttpResponse response = builder.post();
         if (!response.success()) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Error on POST processing " + ProtoJsonUtils.toJson(JsonFormat.printer(), (MessageOrBuilder) payloadAndHeaders.getPayload()));
+                log.fine("Error on POST processing " + body);
             }
             throw RestErrorMapper.mapRestError(response);
         }
@@ -446,6 +451,10 @@ public class RestTransport implements ClientTransport {
         if (log.isLoggable(Level.FINE)) {
             log.fine(body);
         }
+        return buildPost(url, payloadAndHeaders, body);
+    }
+
+    private A2AHttpClient.PostBuilder buildPost(String url, PayloadAndHeaders payloadAndHeaders, String body) throws JsonProcessingException {
         A2AHttpClient.PostBuilder postBuilder = httpClient.createPost()
                 .url(url)
                 .addHeader("Content-Type", "application/json")

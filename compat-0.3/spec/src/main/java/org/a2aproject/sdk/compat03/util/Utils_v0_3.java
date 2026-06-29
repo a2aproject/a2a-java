@@ -3,7 +3,6 @@ package org.a2aproject.sdk.compat03.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gson.Gson;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 
@@ -24,34 +23,17 @@ import java.util.logging.Logger;
  * <p>
  * Key capabilities:
  * <ul>
- * <li>JSON processing with pre-configured {@link Gson}</li>
+ * <li>JSON serialization via {@link #toJsonString(Object)}</li>
  * <li>Null-safe value defaults via {@link #defaultIfNull(Object, Object)}</li>
  * <li>Artifact streaming support via {@link #appendArtifactToTask(Task_v0_3, TaskArtifactUpdateEvent_v0_3, String)}</li>
- * <li>Type-safe exception rethrowing via {@link #rethrow(Throwable)}</li>
  * </ul>
  *
- * @see Gson for JSON processing
  * @see TaskArtifactUpdateEvent_v0_3 for streaming artifact updates
  */
 public class Utils_v0_3 {
 
 
     private static final Logger log = Logger.getLogger(Utils_v0_3.class.getName());
-
-    /**
-     * Deserializes JSON string into a typed object using Gson.
-     * <p>
-     * This method uses the pre-configured {@link JsonUtil_v0_3#OBJECT_MAPPER} to parse JSON.
-     *
-     * @param <T> the target type
-     * @param data JSON string to deserialize
-     * @param typeRef class reference specifying the target type
-     * @return deserialized object of type T
-     * @throws JsonProcessingException_v0_3 if JSON parsing fails
-     */
-    public static <T> T unmarshalFrom(String data, Class<T> typeRef) throws JsonProcessingException_v0_3 {
-        return JsonUtil_v0_3.fromJson(data, typeRef);
-    }
 
     public static String toJsonString(Object data) {
         try {
@@ -66,10 +48,6 @@ public class Utils_v0_3 {
             return defaultValue;
         }
         return value;
-    }
-
-    public static <T extends Throwable> void rethrow(Throwable t) throws T {
-        throw (T) t;
     }
 
     /**
