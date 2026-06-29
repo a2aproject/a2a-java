@@ -576,7 +576,8 @@ public class JSONRPCUtils {
                 output.name("method").value(method);
             }
             if (payload != null) {
-                String resultValue = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace().print(payload);
+                String resultValue = ProtoJsonUtils.toJson(
+                        JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace(), payload);
                 output.name("params").jsonValue(resultValue);
             }
             output.endObject();
@@ -593,7 +594,8 @@ public class JSONRPCUtils {
             output.beginObject();
             output.name("jsonrpc").value("2.0");
             JsonUtil.writeJsonRpcId(output, requestId);
-            String resultValue = JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace().print(builder);
+            String resultValue = ProtoJsonUtils.toJson(
+                    JsonFormat.printer().alwaysPrintFieldsWithNoPresence().omittingInsignificantWhitespace(), builder);
             output.name("result").jsonValue(resultValue);
             output.endObject();
             return result.toString();

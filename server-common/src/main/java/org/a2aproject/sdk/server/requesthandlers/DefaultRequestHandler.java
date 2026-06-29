@@ -936,7 +936,7 @@ public class DefaultRequestHandler implements RequestHandler {
                 } catch (A2AError e) {
                     // Log A2A errors at WARN level with full stack trace
                     // These are expected business errors but should be tracked
-                    LOGGER.warn("Agent execution threw A2AError for task {}: {} - {}", 
+                    LOGGER.warn("Agent execution threw A2AError for task {}: {} - {}",
                         taskId, e.getClass().getSimpleName(), e.getMessage(), e);
                     emitter.fail(e);
                 } catch (RuntimeException e) {
@@ -958,7 +958,7 @@ public class DefaultRequestHandler implements RequestHandler {
         // CRITICAL: Add callback BEFORE starting CompletableFuture to avoid race condition
         // If agent completes very fast, whenComplete can fire before caller adds callbacks
         runnable.addDoneCallback(doneCallback);
-        
+
         // Mark as started to prevent further callback additions (enforced by runtime check)
         runnable.markStarted();
 
