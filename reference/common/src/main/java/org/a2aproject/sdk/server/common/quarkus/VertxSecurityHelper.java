@@ -96,11 +96,18 @@ public final class VertxSecurityHelper {
      * the worker thread using {@code await().indefinitely()}, which is safe on worker threads
      * but would block the event loop on event loop threads.
      *
+     * <p><b>Context cleanup:</b> Unlike {@link #runInRequestContextDeferred}, this method calls
+     * {@code terminate()} immediately in the {@code finally} block, so there is no need to register
+     * {@code endHandler}/{@code closeHandler} callbacks — the context and its beans are destroyed
+     * before this method returns. Use this for non-streaming requests where the task runs synchronously
+     * on the calling thread.
+     *
      * @param ctx the Vert.x routing context containing the HTTP request
      * @param task the code to execute within the authenticated request context
      * @throws io.quarkus.security.UnauthorizedException if authentication fails
      * @throws io.quarkus.security.ForbiddenException if authorization fails
      * @throws RuntimeException if the task throws an exception
+     * @see #runInRequestContextDeferred(RoutingContext, Runnable)
      */
     public void runInRequestContext(RoutingContext ctx, Runnable task) {
         if (Context.isOnEventLoopThread()) {
@@ -132,19 +139,27 @@ public final class VertxSecurityHelper {
      * <p>Unlike {@link #runInRequestContext}, this method does <b>not</b> terminate the CDI request
      * context when the task completes. Instead, it:
      * <ol>
-     *   <li>Activates the CDI request context and captures its {@link InjectableContext.ContextState}</li>
+     *   <li>Activates the CDI request context (or captures the existing active state)</li>
      *   <li>Triggers HTTP authentication</li>
      *   <li>Executes the task</li>
-     *   <li><b>Deactivates</b> the context (detaches from the worker thread without destroying beans)</li>
+     *   <li><b>Deactivates</b> the context on the calling thread (without destroying beans) — this
+     *       prevents any external lifecycle manager (e.g. Quarkus's request filter) from calling
+     *       {@code terminate()} and destroying beans while the agent thread is still running</li>
      *   <li>Destroys the context state when the HTTP response ends or the connection closes</li>
      * </ol>
      *
      * <p>This is required for streaming (SSE) requests where the task dispatches work to a background
      * thread (via {@code CompletableFuture.runAsync} with a {@code ManagedExecutor}) and returns
      * immediately. The {@code ManagedExecutor} captures the CDI context at submit time and propagates
-     * it to the agent thread — but only if the context hasn't been destroyed yet. By deferring
+     * it to the agent thread via {@link AsyncManagedExecutorProducer} — but only if the context
+     * hasn't been destroyed yet. By deactivating (not destroying) in the finally block and deferring
      * destruction to the response lifecycle, the agent thread can access all {@code @RequestScoped}
      * beans (including OIDC token credentials for token propagation).
+     *
+     * <p>When the CDI context is already active (e.g. activated by a Quarkus request filter), this
+     * method takes ownership of its destruction lifecycle to ensure it is not prematurely terminated
+     * when the blocking handler thread returns. The context is destroyed by the SSE response
+     * {@code endHandler} / {@code closeHandler} instead.
      *
      * <p>This method is also safe for non-streaming requests: {@code response.end()} is called
      * synchronously inside the task, and the {@code endHandler} fires the cleanup shortly after.
@@ -154,6 +169,8 @@ public final class VertxSecurityHelper {
      * @throws io.quarkus.security.UnauthorizedException if authentication fails
      * @throws io.quarkus.security.ForbiddenException if authorization fails
      * @throws RuntimeException if the task throws an exception
+     * @see #runInRequestContext(RoutingContext, Runnable)
+     * @see AsyncManagedExecutorProducer
      */
     public void runInRequestContextDeferred(RoutingContext ctx, Runnable task) {
         if (Context.isOnEventLoopThread()) {
@@ -161,17 +178,14 @@ public final class VertxSecurityHelper {
                     "Cannot perform blocking authentication on event loop thread. Use blockingHandler().");
         }
         ManagedContext requestContext = Arc.container().requestContext();
-        boolean wasActive = requestContext.isActive();
-        if (wasActive) {
-            if (!httpAuthenticator.isUnsatisfied()) {
-                var identity = httpAuthenticator.get().attemptAuthentication(ctx).await().indefinitely();
-                currentIdentityAssociation.get().setIdentity(identity);
-            }
-            task.run();
-            return;
-        }
-
-        InjectableContext.ContextState state = requestContext.activate();
+        // If already active, capture the existing state; otherwise activate a fresh context.
+        // Either way we take ownership of destruction — deactivate() in finally prevents any
+        // external manager (Quarkus request filter) from calling terminate() and destroying beans
+        // while the ManagedExecutor agent thread is still running. Actual destruction is deferred
+        // to the SSE response endHandler / closeHandler.
+        InjectableContext.ContextState state = requestContext.isActive()
+                ? requestContext.getState()
+                : requestContext.activate();
 
         AtomicBoolean destroyed = new AtomicBoolean(false);
         Runnable cleanup = () -> {
@@ -196,6 +210,9 @@ public final class VertxSecurityHelper {
             cleanup.run();
             throw t;
         } finally {
+            // Deactivate on the calling thread so that Arc's terminate() (called by any external
+            // lifecycle manager when this thread returns) sees isActive() == false and skips its
+            // own destroy(). Destruction is handled exclusively by the cleanup registered above.
             requestContext.deactivate();
         }
     }
@@ -252,4 +269,5 @@ public final class VertxSecurityHelper {
                 .end("Internal Server Error");
         }
     }
+
 }
