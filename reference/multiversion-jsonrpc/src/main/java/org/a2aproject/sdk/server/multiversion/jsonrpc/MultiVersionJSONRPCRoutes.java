@@ -38,7 +38,10 @@ public class MultiVersionJSONRPCRoutes {
             .handler(BodyHandler.create())
             .blockingHandler(ctx -> {
                 try {
-                    vertxSecurityHelper.runInRequestContext(ctx, () -> {
+                    // JSON-RPC multiplexes streaming and non-streaming methods over a single
+                    // endpoint, so we always use deferred CDI context destruction — matching
+                    // the single-version A2AServerRoutes behavior.
+                    vertxSecurityHelper.runInRequestContextDeferred(ctx, () -> {
                         String version = VersionRouter.resolveVersion(ctx);
                         String body = ctx.body().asString();
 
@@ -53,7 +56,8 @@ public class MultiVersionJSONRPCRoutes {
                                 null);
                         }
                     });
-                } catch (UnauthorizedException | ForbiddenException e) {vertxSecurityHelper.handleAuthError(ctx, e);
+                } catch (UnauthorizedException | ForbiddenException e) {
+                    vertxSecurityHelper.handleAuthError(ctx, e);
                 } catch (A2AError e) {
                     ctx.response()
                         .setStatusCode(200)

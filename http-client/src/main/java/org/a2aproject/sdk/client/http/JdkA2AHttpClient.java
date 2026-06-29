@@ -95,6 +95,15 @@ public class JdkA2AHttpClient implements A2AHttpClient {
         return new JdkDeleteBuilder();
     }
 
+    private static boolean isCancellation(Throwable t) {
+        for (Throwable current = t; current != null; current = current.getCause()) {
+            if (current instanceof java.util.concurrent.CancellationException) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private abstract class JdkBuilder<T extends Builder<T>> implements Builder<T> {
         private String url = "";
         private Map<String, String> headers = new HashMap<>();
@@ -176,7 +185,7 @@ public class JdkA2AHttpClient implements A2AHttpClient {
                 @Override
                 public void onError(Throwable throwable) {
                     if (errorNotified.compareAndSet(false, true)) {
-                        if (!(throwable instanceof java.util.concurrent.CancellationException)) {
+                        if (!isCancellation(throwable)) {
                             errorConsumer.accept(throwable);
                         }
                     }
@@ -246,8 +255,8 @@ public class JdkA2AHttpClient implements A2AHttpClient {
             return httpClient.sendAsync(request, bodyHandler)
                     .<Void>handle((response, throwable) -> {
                         if (throwable != null && errorNotified.compareAndSet(false, true)) {
-                            Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
-                            if (!(cause instanceof java.util.concurrent.CancellationException)) {
+                            if (!isCancellation(throwable)) {
+                                Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
                                 errorConsumer.accept(cause);
                             }
                         }
