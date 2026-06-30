@@ -14,6 +14,7 @@ public class SdkBomVerifier extends DynamicBomVerifier {
     private static final Set<String> SDK_EXCLUSIONS = Set.of(
         "boms/",                 // BOM test modules themselves
         "examples/",             // Example applications
+        "integrations/spring-boot/", // Spring Boot integration tree is tested separately
         "itk/",                  // Integration Test Kit agent
         "tck/",                  // TCK test suite
         "compat-0.3/tck/",       // Compat 0.3 TCK (not yet enabled)

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.a2aproject.sdk</groupId>
+        <artifactId>a2a-java-sdk-spring-boot-server</artifactId>
+        <version>1.1.0.Final</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>a2a-java-sdk-spring-boot-server-rest-parent</artifactId>
+    <packaging>pom</packaging>
+
+    <name>A2A Java SDK - Spring Boot Server REST Aggregator</name>
+    <description>Aggregator for the Spring Boot REST server integration modules</description>
+
+    <modules>
+        <module>spring-boot-server-rest</module>
+        <module>spring-boot-starter-server-rest</module>
+        <module>spring-boot-server-integration-tests</module>
+        <module>spring-boot-server-rest-sut</module>
+    </modules>
+</project>

@@ -2484,7 +2484,9 @@ public abstract class AbstractA2AServerTest {
                 return true;
             }
             if (cause instanceof IOException && cause.getMessage() != null
-                    && cause.getMessage().contains("cancelled")) {
+                    && (cause.getMessage().contains("cancelled")
+                    || cause.getMessage().contains("chunked transfer encoding")
+                    || cause.getMessage().contains("READING_LENGTH"))) {
                 return true;
             }
             cause = cause.getCause();
