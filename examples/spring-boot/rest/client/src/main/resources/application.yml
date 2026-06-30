@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: a2a-java-sdk-examples-spring-boot-rest-client
+
+server:
+  port: 18081
+
+a2a:
+  example:
+    server-url: http://localhost:18080
+    hello-message: hello from the Spring Boot REST client
+    stream-message: stream from the Spring Boot REST client
+    streaming-timeout-seconds: 15

@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
  * Base class for dynamically discovering and verifying all classes in a BOM can be loaded.
  * Subclass this and pass BOM-specific exclusions and forbidden paths to the constructor.
  *
- * - Excluded paths: Not tested at all (e.g., boms/, examples/, tck/, tests/)
+ * - Excluded paths: Not tested at all (e.g., boms/, examples/, integrations/spring-boot/, tck/, tests/)
  * - Forbidden paths: Must NOT be loadable (proves BOM doesn't include wrong dependencies)
  * - Required paths: Must be loadable (everything else)
  */

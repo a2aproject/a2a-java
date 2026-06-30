@@ -61,6 +61,7 @@
         <mapstruct-spi-protobuf.version>1.52.0</mapstruct-spi-protobuf.version>
         <mockito-core.version>5.23.0</mockito-core.version>
         <mockserver.version>6.1.0</mockserver.version>
+        <lombok.version>1.18.46</lombok.version>
         <mutiny-zero.version>1.1.1</mutiny-zero.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <protobuf-java.version>4.33.2</protobuf-java.version>
@@ -356,7 +357,11 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
-                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
@@ -443,6 +448,11 @@
                                 <groupId>no.entur.mapstruct.spi</groupId>
                                 <artifactId>protobuf-spi-impl</artifactId>
                                 <version>${mapstruct-spi-protobuf.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
                             </path>
                             <!-- Other annotation processors go here.
 
@@ -575,6 +585,7 @@
         <module>client/transport/spi</module>
         <module>common</module>
         <module>examples/helloworld</module>
+        <module>examples/spring-boot</module>
         <module>examples/cloud-deployment/server</module>
         <module>extras/common</module>
         <module>extras/opentelemetry</module>
@@ -586,6 +597,7 @@
         <module>http-client</module>
         <module>jsonrpc-common</module>
         <module>integrations/microprofile-config</module>
+        <module>integrations/spring-boot</module>
         <module>reference/common</module>
         <module>reference/grpc</module>
         <module>reference/jsonrpc</module>

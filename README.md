@@ -32,6 +32,11 @@ You can find examples of how to use the A2A Java SDK in the [a2a-samples reposit
 
 More examples will be added soon.
 
+The repository also contains runnable examples in the `examples/` tree, including:
+
+- `examples/helloworld` for Quarkus-based hello world client and server samples
+- `examples/spring-boot` for Spring Boot server examples
+
 ## A2A Server
 
 The A2A Java SDK provides a Java server implementation of the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/). To run your agentic Java application as an A2A server, simply follow the steps below.
@@ -909,6 +914,7 @@ The following list contains community contributed integrations with various Java
 
 To contribute an integration, please see [CONTRIBUTING_INTEGRATIONS.md](CONTRIBUTING_INTEGRATIONS.md).
 
+* Spring Boot server integration modules live under [`integrations/spring-boot/server`](integrations/spring-boot/server/README.md).
 * This project contains integration with Quarkus and has the reference implementations for the JSON-RPC, gRPC, and HTTP+JSON (REST) transports.
 * https://github.com/wildfly-extras/a2a-jakarta - This integration is based on Jakarta EE, and should work in all runtimes supporting the [Jakarta EE Web Profile](https://jakarta.ee/specifications/webprofile/).
 
