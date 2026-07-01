@@ -53,7 +53,7 @@ For non-Quarkus environments, also add `vertx-web-client`:
 
 ### 2. Automatic Discovery (No Code Changes)
 
-The `VertxA2AHttpClientProvider` has **priority 100** (vs. 50 for the JDK client). The SDK's `A2AHttpClientFactory` uses `ServiceLoader` to discover and select the highest-priority provider available:
+The `VertxA2AHttpClientProvider` has **priority 100** (vs. 0 for the JDK client). The SDK's `A2AHttpClientFactory` uses `ServiceLoader` to discover and select the highest-priority provider available:
 
 ```java
 // No changes needed — A2A SDK automatically uses VertxA2AHttpClient

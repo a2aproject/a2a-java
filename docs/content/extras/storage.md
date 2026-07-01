@@ -67,7 +67,11 @@ The module automatically creates the required table:
 ```sql
 CREATE TABLE a2a_tasks (
     task_id VARCHAR(255) PRIMARY KEY,
-    task_data TEXT NOT NULL
+    context_id VARCHAR(255),
+    state VARCHAR(255),
+    status_timestamp TIMESTAMP,
+    task_data TEXT NOT NULL,
+    finalized_at TIMESTAMP
 );
 ```
 
@@ -126,6 +130,8 @@ CREATE TABLE a2a_push_notification_configs (
     task_id VARCHAR(255) NOT NULL,
     config_id VARCHAR(255) NOT NULL,
     task_data TEXT NOT NULL,
+    protocol_version VARCHAR(255),
+    created_at TIMESTAMP,
     PRIMARY KEY (task_id, config_id)
 );
 ```
