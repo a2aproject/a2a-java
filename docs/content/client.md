@@ -122,6 +122,10 @@ TaskPushNotificationConfig taskConfig = TaskPushNotificationConfig.builder()
 
 client.createTaskPushNotificationConfiguration(taskConfig);
 
+// Get a specific configuration
+TaskPushNotificationConfig config = client.getTaskPushNotificationConfiguration(
+        new GetTaskPushNotificationConfigParams("task-1234", "config-4567"));
+
 // List configurations
 List<TaskPushNotificationConfig> configs =
         client.listTaskPushNotificationConfigurations(
@@ -147,6 +151,17 @@ Client client = Client
         .builder(agentCard)
         .withTransport(JSONRPCTransport.class,
                 new JSONRPCTransportConfig(new JdkA2AHttpClient(jdkHttpClient)))
+        .build();
+```
+
+### REST with a Custom HTTP Client
+
+```java
+A2AHttpClient customHttpClient = ...
+
+Client client = Client
+        .builder(agentCard)
+        .withTransport(RestTransport.class, new RestTransportConfig(customHttpClient))
         .build();
 ```
 
@@ -190,6 +205,10 @@ Use `Client_v0_3` to communicate with agents that only support protocol v0.3:
 </dependency>
 ```
 
+gRPC and REST transports are also available:
+- `a2a-java-sdk-compat-0.3-client-transport-grpc`
+- `a2a-java-sdk-compat-0.3-client-transport-rest`
+
 ```java
 AgentCard card = A2ACardResolver.builder().baseUrl("http://localhost:1234")
         .build().getAgentCard();
@@ -202,6 +221,8 @@ Client_v0_3 client = ClientBuilder_v0_3.forUrl(v03Interface.url())
         .withTransport(JSONRPCTransport_v0_3.class, new JSONRPCTransportConfigBuilder_v0_3())
         .build();
 ```
+
+**Note:** `Client_v0_3` exposes only operations available in protocol v0.3. For example, `listTasks()` is not available (it was added in v1.0). Return types use v0.3 domain objects from the `org.a2aproject.sdk.compat03.spec` package.
 
 ## Examples
 
