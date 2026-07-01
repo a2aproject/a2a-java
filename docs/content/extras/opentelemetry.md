@@ -20,7 +20,7 @@ Adds distributed tracing, metrics, and context propagation to A2A servers and cl
 | Module | Artifact ID | Description |
 |--------|-------------|-------------|
 | Common | `a2a-java-sdk-opentelemetry-common` | Shared utilities and constants |
-| Server | `a2a-java-sdk-opentelemetry-server` | Server-side tracing and context-aware executor |
+| Server | `a2a-java-sdk-opentelemetry-server` | Server-side tracing |
 | Client | `a2a-java-sdk-opentelemetry-client` | Client-side instrumentation |
 | Client Propagation | `a2a-java-sdk-opentelemetry-client-propagation` | Context propagation for async client operations |
 
@@ -67,30 +67,13 @@ Response (with trace headers)
 
 ### Context-Aware Async Executor
 
-The module automatically replaces the default `AsyncExecutorProducer` with `AsyncManagedExecutorProducer`:
+> **Note:** The `AsyncManagedExecutorProducer` is provided by the **Quarkus reference server** (`reference/common`), not the OpenTelemetry module. It is documented here because it enables context propagation (including trace context) across async boundaries.
+
+The reference server replaces the default `AsyncExecutorProducer` with `AsyncManagedExecutorProducer`:
 
 - **Priority 20**: takes precedence over the default executor (priority 10)
-- **Automatic activation**: no configuration needed — just include the module
-- **Context propagation**: uses MicroProfile Context Propagation to maintain trace context across async boundaries
-
-```java
-@ApplicationScoped
-public class MyAgent implements Agent {
-
-    @Inject
-    @Internal
-    Executor executor;  // Automatically uses ManagedExecutor with context propagation
-
-    @Override
-    public void execute(RequestContext context, AgentEmitter emitter) {
-        executor.execute(() -> {
-            // Runs in a different thread but maintains the trace context
-            Span currentSpan = Span.current();
-            currentSpan.addEvent("Processing in async task");
-        });
-    }
-}
-```
+- **Automatic activation**: no configuration needed — included automatically in the Quarkus reference server
+- **Context propagation**: uses MicroProfile Context Propagation to maintain trace context and CDI request context across async boundaries
 
 > **Note:** Unlike the default `AsyncExecutorProducer`, the `AsyncManagedExecutorProducer` does not use the `a2a.executor.*` configuration properties. Pool sizing is controlled by the container's `ManagedExecutor` configuration.
 
@@ -110,20 +93,20 @@ The following attributes are automatically added to spans:
 
 | Attribute | Description |
 |-----------|-------------|
-| `genai.request` | Request parameters (if extraction enabled) |
-| `genai.response` | Response data (if extraction enabled) |
+| `gen_ai.agent.a2a.request` | Request parameters (if extraction enabled) |
+| `gen_ai.agent.a2a.response` | Response data (if extraction enabled) |
 | `error.type` | Error message (on failures) |
 
 ### Request/Response Extraction
 
-Enable request and response data extraction in spans:
+Enable request and response data extraction in spans using JVM system properties:
 
-```properties
+```
 # Extract request parameters into span attributes (disabled by default)
-a2a.opentelemetry.extract-request=true
+-Dorg.a2aproject.sdk.server.extract.request=true
 
 # Extract response data into span attributes (disabled by default)
-a2a.opentelemetry.extract-response=true
+-Dorg.a2aproject.sdk.server.extract.response=true
 ```
 
 > **Warning:** Extracting request/response data may expose sensitive information in traces. Use with caution in production environments.
@@ -161,7 +144,7 @@ For trace context propagation across async client boundaries:
 **Solution:** Ensure the OpenTelemetry server module is included and check logs for:
 
 ```
-Initializing OpenTelemetry-aware ManagedExecutor for async operations
+Initializing ManagedExecutor for async operations with CDI context propagation
 ```
 
 ### ManagedExecutor Not Available

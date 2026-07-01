@@ -33,7 +33,7 @@ The system replicates these event types while preserving their specific types:
 - `TaskArtifactUpdateEvent` — task artifact changes
 - `Message` — chat messages and responses
 - `Task` — complete task objects
-- `JSONRPCError` — error events
+- `A2AError` — error events
 
 Events are serialized using Jackson with polymorphic type information:
 
@@ -179,8 +179,8 @@ The mechanism uses **transaction-aware CDI events**: the poison pill is only sen
 
 ```java
 // JpaDatabaseTaskStore fires CDI event after persist
-if (task.getStatus().state().isFinal()) {
-    taskFinalizedEvent.fire(new TaskFinalizedEvent(task.getId()));
+if (task.status().state().isFinal()) {
+    taskFinalizedEvent.fire(new TaskFinalizedEvent(task.id(), task));
 }
 
 // ReplicatedQueueManager observes it after transaction commit
@@ -281,8 +281,8 @@ You can monitor replicated events by observing CDI events:
 @ApplicationScoped
 public class ReplicationMonitor {
 
-    public void onReplicatedEvent(@Observes ReplicatedEvent event) {
-        LOGGER.info("Received replicated event for task: " + event.getTaskId());
+    public void onReplicatedEvent(@Observes ReplicatedEventQueueItem replicatedEvent) {
+        LOGGER.info("Received replicated event for task: " + replicatedEvent.getTaskId());
     }
 }
 ```
