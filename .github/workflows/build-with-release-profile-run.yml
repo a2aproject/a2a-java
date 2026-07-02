@@ -68,7 +68,7 @@ jobs:
             });
 
       - name: Checkout PR code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # Checkout the exact commit from the PR (or push)
           # This is safe because the workflow code (this file) is always from main

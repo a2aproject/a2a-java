@@ -1,15 +1,9 @@
 package org.a2aproject.sdk.server.tasks;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.TaskAuthorizationProvider;
@@ -17,9 +11,14 @@ import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.ListTasksParams;
 import org.a2aproject.sdk.spec.Message;
-import org.a2aproject.sdk.util.PageToken;
 import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.util.PageToken;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * In-memory implementation of {@link TaskStore} and {@link TaskStateProvider}.
@@ -105,7 +104,18 @@ public class InMemoryTaskStore implements TaskStore, TaskStateProvider {
                 : null;
     }
 
-    InMemoryTaskStore(@Nullable TaskAuthorizationProvider authorizationProvider) {
+    /**
+     * Creates an in-memory task store with optional
+     * task-level authorization.
+     *
+     * <p>This constructor supports programmatic wiring
+     * in non-CDI runtimes such as Spring Framework.</p>
+     *
+     * @param authorizationProvider provider used to filter
+     *                              tasks during list operations;
+     *                              {@code null} permits all tasks
+     */
+    public InMemoryTaskStore(@Nullable TaskAuthorizationProvider authorizationProvider) {
         this.authorizationProvider = authorizationProvider;
     }
 

@@ -31,8 +31,6 @@ public class ServerCallContext {
      */
     public static final String EXECUTION_WRAPPER_KEY = "executionWrapper";
 
-    // TODO Not totally sure yet about these field types
-    private final Map<Object, Object> modelConfig = new ConcurrentHashMap<>();
     private final Map<String, Object> state;
     private final User user;
     private final Set<String> requestedExtensions;
