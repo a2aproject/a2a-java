@@ -143,7 +143,7 @@ kafka-topics.sh --create --topic replicated-events \
 ```
 
 - Guarantees global event ordering
-- Suitable for development, testing, and low-throughput production (&lt;1000 events/sec)
+- Suitable for development, testing, and low-throughput production (<1000 events/sec)
 - Cannot parallelize consumption
 
 #### Partition by Task ID (Recommended)
@@ -159,7 +159,7 @@ The `ReactiveMessagingReplicationStrategy` sends the `taskId` as the Kafka messa
 - **Per-task ordering guarantee**: all events for a single task go to the same partition
 - **Horizontal scalability**: different tasks can be processed in parallel across partitions
 - **Consumer parallelism**: multiple consumer instances can process different partitions concurrently
-- **Rule of thumb**: number of partitions &ge; number of A2A instances
+- **Rule of thumb**: number of partitions >= number of A2A instances
 
 ### Consumer Group Configuration
 

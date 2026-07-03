@@ -6,7 +6,7 @@ layout: page
 
 # HTTP Clients
 
-The A2A SDK uses an `A2AHttpClient` abstraction for all HTTP communication — fetching agent cards, making transport calls, and SSE streaming. By default, the SDK uses a JDK 11+ HttpClient implementation. These extras provide alternative implementations.
+The A2A SDK uses an `A2AHttpClient` abstraction for all HTTP communication — fetching agent cards, making transport calls, and Server-Sent Events (SSE) streaming. By default, the SDK uses a JDK 11+ HttpClient implementation. These extras provide alternative implementations.
 
 ## Vert.x HTTP Client
 
@@ -177,7 +177,15 @@ mvn dependency:tree | grep vertx-web-client
 
 ## Android HTTP Client
 
-HTTP client implementation for Android applications.
+
+HTTP client implementation for Android applications, using `HttpURLConnection` under the hood — no external dependencies required.
+
+### When to Use
+
+- Android applications targeting API level 24+ (Android 7.0+)
+- Mobile apps that need to communicate with A2A agents
+
+### 1. Add Dependency
 
 ```xml
 <dependency>
@@ -185,3 +193,15 @@ HTTP client implementation for Android applications.
     <artifactId>a2a-java-sdk-http-client-android</artifactId>
 </dependency>
 ```
+
+
+### 2. Automatic Discovery (No Code Changes)
+
+The `AndroidA2AHttpClientProvider` has **priority 110** and detects the Android runtime automatically. On non-Android runtimes, the provider returns priority `-1` and the SDK falls back to the next available client.
+
+### Features
+
+- **GET, POST, DELETE** requests with fluent builder API
+- **SSE streaming** via `getAsyncSSE()` and `postAsyncSSE()` — async operations run on a dedicated cached thread pool (`A2A-Android-Net`)
+- **Timeouts**: 15 s connection, 60 s read
+- **Response size limit**: 10 MB

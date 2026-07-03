@@ -86,6 +86,21 @@
     opacity: 0.9;
 }
 
+/* The search overlay is inside .sidebar.main which is position:fixed on    */
+/* desktop — fixed elements always form stacking contexts (z-index:auto).   */
+/* Main content paints after the sidebar in DOM order and covers it.        */
+/* Lift the sidebar above main content when search is active.               */
+
+@media (width >= 48rem) {
+    .sidebar.main:has(.search-overlay.active) {
+        z-index: 10000;
+    }
+}
+
+.hljs-copy-wrapper {
+    transform: none;
+}
+
 /* ── Content column width ─────────────────────────────────────────────────── */
 
 .page-content .content-main {

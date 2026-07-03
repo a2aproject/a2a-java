@@ -67,7 +67,8 @@ Response (with trace headers)
 
 ### Context-Aware Async Executor
 
-> **Note:** The `AsyncManagedExecutorProducer` is provided by the **Quarkus reference server** (`reference/common`), not the OpenTelemetry module. It is documented here because it enables context propagation (including trace context) across async boundaries.
+> **Note:** The `AsyncManagedExecutorProducer` is provided by the **Quarkus reference server** ([`reference/common`](https://github.com/a2aproject/a2a-java/blob/main/reference/common/src/main/java/org/a2aproject/sdk/server/common/quarkus/AsyncManagedExecutorProducer.java)), not the OpenTelemetry module. It is documented here because it enables context propagation (including trace context) across async boundaries.
+
 
 The reference server replaces the default `AsyncExecutorProducer` with `AsyncManagedExecutorProducer`:
 

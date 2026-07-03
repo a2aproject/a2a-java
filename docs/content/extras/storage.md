@@ -41,6 +41,8 @@ quarkus.hibernate-orm.database.generation=update
 
 #### For WildFly/Jakarta EE Servers
 
+> **Note:** On a Jakarta EE application server, the JPA dependencies are provided by the runtime. Mark them with `<scope>provided</scope>` in your POM to avoid packaging conflicts.
+
 Create or update your `persistence.xml`:
 
 ```xml
