@@ -1,54 +1,43 @@
-name: Build with '-Prelease' (Trigger)
-
-# Trigger workflow for release profile build verification.
-# This workflow runs on PRs and uploads the PR info for the workflow_run job.
-# The actual build with secrets happens in build-with-release-profile-run.yml
-# See: https://securitylab.github.com/research/github-actions-preventing-pwn-requests
+name: Build with '-Prelease'
 
 on:
-  pull_request:  # Changed from pull_request_target for security
+  pull_request:
     paths-ignore:
       - '**/docs/**'
   push:
+    branches:
+      - main
     paths-ignore:
       - '**/docs/**'
   workflow_dispatch:
 
-# Only run the latest job
 concurrency:
-  group: '${{ github.workflow }} @ ${{ github.head_ref || github.ref }}'
+  group: ${{ github.workflow }} @ ${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
-  trigger:
-    # Only run this job for the main repository, not for forks
-    if: github.repository == 'a2aproject/a2a-java'
+  build:
+    name: Build with -Prelease
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
-      - name: Prepare PR info
-        run: |
-          mkdir -p pr_info
+      - name: Checkout
+        uses: actions/checkout@v7
 
-          # Store PR number for workflow_run job
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo ${{ github.event.number }} > pr_info/pr_number
-            echo ${{ github.event.pull_request.head.sha }} > pr_info/pr_sha
-            echo ${{ github.event.pull_request.head.ref }} > pr_info/pr_ref
-          else
-            # For push events, store the commit sha
-            echo ${{ github.sha }} > pr_info/pr_sha
-            echo ${{ github.ref }} > pr_info/pr_ref
-          fi
-
-          echo "Event: ${{ github.event_name }}"
-          cat pr_info/*
-
-      - name: Upload PR info
-        uses: actions/upload-artifact@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
         with:
-          name: pr-info
-          path: pr_info/
-          retention-days: 1
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with release profile
+        run: >
+          mvn -B install
+          -P release
+          -DskipTests
+          -Dgpg.skip=true
+          -Drelease.auto.publish=false

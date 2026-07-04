@@ -82,11 +82,9 @@ Open PR on GitHub with title: `chore: release 0.4.0.Alpha1`
 The `build-with-release-profile.yml` workflow automatically verifies:
 - ✅ Build succeeds with `-Prelease` profile
 - ✅ All JavaDoc generation succeeds
-- ✅ GPG signing works correctly
-- ✅ JBang version validation passes
 - ✅ No compilation or test failures
 
-**Important**: This workflow tests the actual PR branch (not main) to catch issues before merge.
+**Important**: This workflow runs as a normal PR/push check and verifies that the project builds with `-P release` without using release secrets.
 
 Wait for all CI checks to pass before proceeding.
 
@@ -250,10 +248,9 @@ Follow semantic versioning with qualifiers:
 ## Workflows Reference
 
 ### build-with-release-profile.yml
-- **Triggers**: All PRs, all pushes
-- **Purpose**: Verify builds with `-Prelease` profile
-- **Special**: Tests actual PR branch (not main) using `pull_request_target` with explicit checkout
-- **Requires**: GPG and Maven Central secrets
+- **Triggers**: Pull requests, pushes to `main`, manual dispatch
+- **Purpose**: Verify the project builds with `-Prelease`
+- **Special**: Runs without GPG or Maven Central secrets
 
 ### release-to-maven-central.yml
 - **Triggers**: Tags matching `v?[0-9]+.[0-9]+.[0-9]+*`
