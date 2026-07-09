@@ -190,42 +190,8 @@ Client client = Client
 
 ## Communicating with v0.3 Agents
 
-Use `Client_v0_3` to communicate with agents that only support protocol v0.3:
-
-```xml
-<dependency>
-    <groupId>org.a2aproject.sdk</groupId>
-    <artifactId>a2a-java-sdk-compat-0.3-client</artifactId>
-    <version>$\{org.a2aproject.sdk.version}</version>
-</dependency>
-<dependency>
-    <groupId>org.a2aproject.sdk</groupId>
-    <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
-    <version>$\{org.a2aproject.sdk.version}</version>
-</dependency>
-```
-
-gRPC and REST transports are also available:
-- `a2a-java-sdk-compat-0.3-client-transport-grpc`
-- `a2a-java-sdk-compat-0.3-client-transport-rest`
-
-```java
-AgentCard card = A2ACardResolver.builder().baseUrl("http://localhost:1234")
-        .build().getAgentCard();
-
-AgentInterface v03Interface = card.supportedInterfaces().stream()
-        .filter(i -> A2AProtocol_v0_3.PROTOCOL_VERSION.equals(i.protocolVersion()))
-        .findFirst().orElseThrow();
-
-Client_v0_3 client = ClientBuilder_v0_3.forUrl(v03Interface.url())
-        .withTransport(JSONRPCTransport_v0_3.class, new JSONRPCTransportConfigBuilder_v0_3())
-        .build();
-```
-
-**Note:** `Client_v0_3` exposes only operations available in protocol v0.3. For example, `listTasks()` is not available (it was added in v1.0). Return types use v0.3 domain objects from the `org.a2aproject.sdk.compat03.spec` package.
+See [Backward Compatibility](compatibility#client-communicating-with-v03-agents) for using `Client_v0_3` with older protocol agents.
 
 ## Examples
 
-- [Hello World Client](https://github.com/a2aproject/a2a-java/blob/main/examples/helloworld/client/README.md) — Java client talking to a Python A2A server
-- [Hello World Server](https://github.com/a2aproject/a2a-java/blob/main/examples/helloworld/server/README.md) — Python client talking to a Java A2A server
-- [a2a-samples repository](https://github.com/a2aproject/a2a-samples/tree/main/samples/java/agents) — More agent examples
+See [Examples](examples) for Hello World walkthroughs and sample applications.
