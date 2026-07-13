@@ -69,7 +69,7 @@ public record Task(String id, String contextId, TaskStatus status, @Nullable Lis
         Assert.checkNotNullParam("status", status);
         artifacts = CollectionCopies.immutableListOrEmpty(artifacts);
         history = CollectionCopies.immutableListOrEmpty(history);
-        metadata = CollectionCopies.immutableNullableMap(metadata);
+        metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
     }
 
     @Override

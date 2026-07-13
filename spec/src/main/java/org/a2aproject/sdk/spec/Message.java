@@ -71,7 +71,7 @@ public record Message(Role role, List<Part<?>> parts,
         }
         parts = CollectionCopies.immutableList(parts);
         referenceTaskIds = CollectionCopies.immutableNullableList(referenceTaskIds);
-        metadata = CollectionCopies.immutableNullableMap(metadata);
+        metadata = CollectionCopies.unmodifiableNullableShallowMap(metadata);
         extensions = CollectionCopies.immutableNullableList(extensions);
     }
 
