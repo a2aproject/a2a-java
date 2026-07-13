@@ -9,6 +9,7 @@ import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.a2aproject.sdk.server.events.EventQueue;
+import org.a2aproject.sdk.server.events.QueueClosedEvent;
 import org.a2aproject.sdk.spec.A2AError;
 import org.a2aproject.sdk.spec.Artifact;
 import org.a2aproject.sdk.spec.Event;
@@ -155,6 +156,15 @@ public class AgentEmitter {
                 .status(new TaskStatus(state, message, null))
                 .build();
         eventQueue.enqueueEvent(event);
+
+        // If the caller forced finality on a non-terminal (interrupted) state, the
+        // event's own isFinal() is derived from the state and is false, so the stream
+        // would otherwise stay open (interrupted states are intentionally non-terminal;
+        // see #756). Signal explicit closure so the stream completes after this event
+        // is delivered, letting the client resume via a new request.
+        if (isFinal && !state.isFinal()) {
+            eventQueue.enqueueEvent(new QueueClosedEvent(taskId));
+        }
     }
 
     /**
@@ -569,7 +579,6 @@ public class AgentEmitter {
      *         .taskId(context.getTaskId())
      *         .contextId(context.getContextId())
      *         .status(new TaskStatus(TaskState.WORKING))
-     *         .isFinal(false)
      *         .build();
      *     emitter.emitEvent(event);
      * }

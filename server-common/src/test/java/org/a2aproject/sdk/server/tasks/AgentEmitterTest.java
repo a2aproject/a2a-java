@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.a2aproject.sdk.server.agentexecution.RequestContext;
 import org.a2aproject.sdk.server.events.EventQueue;
+import org.a2aproject.sdk.server.events.QueueClosedEvent;
 import org.a2aproject.sdk.server.events.EventQueueItem;
 import org.a2aproject.sdk.server.events.EventQueueUtil;
 import org.a2aproject.sdk.server.events.InMemoryQueueManager;
@@ -187,13 +188,13 @@ public class AgentEmitterTest {
     @Test
     public void testRequiresInputWithFinalTrue() throws Exception {
         agentEmitter.requiresInput(true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, null, true);
     }
 
     @Test
     public void testRequiresInputWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresInput(SAMPLE_MESSAGE, true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_INPUT_REQUIRED, SAMPLE_MESSAGE, true);
     }
 
     @Test
@@ -211,13 +212,13 @@ public class AgentEmitterTest {
     @Test
     public void testRequiresAuthWithFinalTrue() throws Exception {
         agentEmitter.requiresAuth(true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, null);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, null, true);
     }
 
     @Test
     public void testRequiresAuthWithMessageAndFinalTrue() throws Exception {
         agentEmitter.requiresAuth(SAMPLE_MESSAGE, true);
-        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE);
+        checkTaskStatusUpdateEventOnQueue(false, TaskState.TASK_STATE_AUTH_REQUIRED, SAMPLE_MESSAGE, true);
     }
 
     @Test
@@ -486,6 +487,10 @@ public class AgentEmitterTest {
     }
 
     private TaskStatusUpdateEvent checkTaskStatusUpdateEventOnQueue(boolean isFinal, TaskState state, Message statusMessage) throws Exception {
+        return checkTaskStatusUpdateEventOnQueue(isFinal, state, statusMessage, false);
+    }
+
+    private TaskStatusUpdateEvent checkTaskStatusUpdateEventOnQueue(boolean isFinal, TaskState state, Message statusMessage, boolean expectStreamClose) throws Exception {
         // Wait up to 5 seconds for event (async MainEventBusProcessor needs time to distribute)
         EventQueueItem item = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
         assertNotNull(item);
@@ -500,6 +505,12 @@ public class AgentEmitterTest {
         assertEquals(isFinal, tsue.isFinal());
         assertEquals(state, tsue.status().state());
         assertEquals(statusMessage, tsue.status().message());
+
+        if (expectStreamClose) {
+            EventQueueItem closeItem = eventQueue.dequeueEventItem(WAIT_MILLI_SECONDS);
+            assertNotNull(closeItem);
+            assertInstanceOf(QueueClosedEvent.class, closeItem.getEvent());
+        }
 
         // Check no additional events (still use 0 timeout for this check)
         assertNull(eventQueue.dequeueEventItem(0));
