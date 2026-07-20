@@ -158,7 +158,7 @@ public abstract class DynamicBomVerifier {
                  .filter(p -> p.toString().endsWith(".java"))
                  .filter(p -> {
                      String relativePath = toForwardSlash(projectRoot.relativize(p).toString());
-                     return relativePath.contains("/src/main/java/") && pathFilter.test(relativePath);
+                     return !relativePath.startsWith(".") && relativePath.contains("/src/main/java/") && pathFilter.test(relativePath);
                  })
                  .forEach(javaFile -> {
                      try {

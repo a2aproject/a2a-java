@@ -69,7 +69,7 @@
 
 .menu-group-children-wrapper {
     overflow: hidden;
-    max-height: 300px;
+    max-height: 1000px;
     transition: max-height 0.25s ease;
     padding: 0;
     margin: 0;
@@ -105,6 +105,35 @@
 
 .page-content .content-main {
     max-width: var(--container-5xl);
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+
+.page-content table,
+.roq-section table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+.page-content th,
+.page-content td,
+.roq-section th,
+.roq-section td {
+    padding: 0.6rem 1rem;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.page-content th,
+.roq-section th {
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.page-content tr:nth-child(even),
+.roq-section tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.03);
 }
 
 /* ── Quick Install section ────────────────────────────────────────────────── */
