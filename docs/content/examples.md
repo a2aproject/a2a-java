@@ -142,7 +142,7 @@ mvn exec:java -Dopentelemetry=true
 
 The client expects an OpenTelemetry collector on port 5317. The easiest way is to run the Java server with `-Popentelemetry` (which starts the collector automatically), then run the client with `-Dopentelemetry=true` for end-to-end traces.
 
-For more information, see the [OpenTelemetry extras module](extras/opentelemetry).
+For more information, see the [OpenTelemetry extras module]({site.url('/extras/opentelemetry')}).
 
 ## More Examples
 

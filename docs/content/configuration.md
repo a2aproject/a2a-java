@@ -47,7 +47,7 @@ a2a.blocking.consumption.timeout.seconds=5
 - **Streaming Performance**: The executor handles streaming subscriptions. Too few threads can cause timeouts under concurrent load.
 - **Resource Management**: The dedicated executor prevents streaming operations from competing with the ForkJoinPool.
 - **Concurrency**: In production with high concurrent streaming, increase pool sizes accordingly.
-- **Agent Timeouts**: LLM-based agents may need longer timeouts (60--120s) compared to simple agents.
+- **Agent Timeouts**: LLM-based agents may need longer timeouts (60-120s) compared to simple agents.
 
 ## MicroProfile Config Integration
 
